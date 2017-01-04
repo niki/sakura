@@ -101,11 +101,11 @@
 // 履歴
 //-------------------------------------------------------------------------
 
-// 最大数を変更 [REG] 2013.10.2, 2016.12.13  
-// (SearchKeyMax:16)
-// (ReplaceKeyMax:16)
-// (GrepFileMax:8)
-// (GrepFolderMax:16)
+// 最大数を変更 2013.10.2, 2016.12.13  
+// (REG/SearchKeyMax:16)
+// (REG/ReplaceKeyMax:16)
+// (REG/GrepFileMax:8)
+// (REG/GrepFolderMax:16)
 // \sakura_core\config\maxdata.h
 #define REI_CHG_MAXDATA 1
 
@@ -123,8 +123,10 @@
 // 行番号
 //-------------------------------------------------------------------------
 
-// 行番号表示の変更 [REG] 2012.9.6, 2015.6.9  
-// (LineNrMod:0)
+// 行番号表示の変更 2012.9.6, 2015.6.9  
+// (REG/LineNrMod:0)
+// (REG/LineNrModChar1: )
+// (REG/LineNrModChar5: )
 // 最上部行・最終行・10行おきに数値、1・5行おきに指定文字（Borland IDE like）  
 //   101  
 //     ･  
@@ -139,13 +141,13 @@
 #define REI_MOD_LINE_NR 1
   #define REI_MOD_LINE_NR_1 L' '//'･' // 1行おきに表示する文字 (LineNrModChar1: )
   #define REI_MOD_LINE_NR_5 L'-' // 5行おきに表示する文字 (LineNrModChar5:-)
-  // 10行おきに強調表示 [REG]  
-  // (LineNrMod10Bold:0)
+  // 10行おきに強調表示  
+  // (REG/LineNrMod10Bold:0)
   #define REI_MOD_LINE_NR_10_BOLD 0
 
-// 行番号のフォントサイズを変更する [REG]
+// 行番号のフォントサイズを変更する
 //  - 0: 無効
-//  (LineNrFontSize:900)
+//  (REG/LineNrFontSize:900)
 //   https://support.microsoft.com/ja-jp/kb/74299
 //   http://d.hatena.ne.jp/itoasuka/20100104/1262585983
 #define REI_MOD_LINE_NR_FONT_SIZE_FIX 1100
@@ -159,19 +161,19 @@
 #define REI_MOD_CARET 1
   // 0: 変更なし
   // 1-10: キャレットサイズ
-  // 11: 1バイトコードの時は1px、2バイトコードの時は2px (Mozillaっぽく) [REG]  
+  // 11: 1バイトコードの時は1px、2バイトコードの時は2px (Mozillaっぽく)  
   // 12: 半角入力の時は1px、全角入力の時は2px 2015.8.26  
-  // (CaretType:2)
+  // (REG/CaretType:2)
   #define REI_MOD_CARET_TYPE 2
-  // キャレット位置を左にずらす (文字と重ならないように, SublimeTextっぽく) [REG] 2015.8.6  
+  // キャレット位置を左にずらす (文字と重ならないように, SublimeTextっぽく) 2015.8.6  
   // 描画の関係上、左端の時はずらさずに表示  
   // IMEの表示位置もずらす  
   // 現状、重なった文字と Xorしてしまっているため見にくい  
-  // (CaretShiftLeft:1)
+  // (REG/CaretShiftLeft:1)
   #define REI_MOD_CARET_SHIFT_LEFT 1
 
-// カーソル移動リピート時の幅を 1 に変更 (default:2) [REG] 2015.8.5  
-// (CursorRepeatWidth:1)
+// カーソル移動リピート時の幅を 1 に変更 (default:2) 2015.8.5  
+// (REG/CursorRepeatWidth:1)
 #define REI_MOD_LR_CURSOR_REPEAT_WIDTH 1
 
 // 行を中央ぞろえにする 2014.3.26 - 2015.7.24  
@@ -184,9 +186,9 @@
 // 編集
 //-------------------------------------------------------------------------
 
-// 水平スクロールの変更 [REG]  
-// (HorisontalScrollMargin:1)
-// (HorizontalScrollSize:16)
+// 水平スクロールの変更  
+// (REG/HorisontalScrollMargin:1)
+// (REG/HorizontalScrollSize:16)
 //  - スクロール開始マージンを 1 に変更。画面の端でスクロール開始 2014.5.7  
 //  - スクロール幅を 16 に設定。一度に大きく移動することで見やすくする (動きはメモ帳参照) 2015.9.2  
 #define REI_MOD_HORIZONTAL_SCR 16
@@ -230,18 +232,18 @@
 // アウトライン解析ダイアログの変更 2016.12.14  
 //  - フォントをメインフォントにする
 //  - ドッキング時にウィンドウカラーをテキストに合わせない
-// (DockColorSync:0)
+// (REG/DockColorSync:0)
 #define REI_MOD_OUTLINEDLG 1
 
 // 選択領域の色を変更 2015.6.5  
 #define REI_MOD_SELAREA 1
-  // 選択領域 テキストのブレンド率 [REG] 2015.6.5  
-  // (SelectAreaTextBlendPer:0)
+  // 選択領域 テキストのブレンド率 2015.6.5  
+  // (REG/SelectAreaTextBlendPer:0)
   //  - 通常、テキスト選択時に選択色がブレンドされる率  
   #define REI_MOD_SELAREA_TEXT_BLEND_PER 0 /* % */
   
-  // 選択領域 背景のブレンド率 [REG] 2015.6.5  
-  // (SelectAreaBackBlendPer:50)
+  // 選択領域 背景のブレンド率 2015.6.5  
+  // (REG/SelectAreaBackBlendPer:50)
   //  - 通常、テキスト選択時に選択色がブレンドされる率  
   //  - テキストカラーがマゼンタだったらそのままの色を返す  
   //  - テキストカラーのＲ成分が100以下だったらブレント率として扱う  
@@ -254,8 +256,8 @@
 //  - 3: 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます) 2015.6.8  
 //       対象は空白TABなどで、コントロールコードには適用されません  
 #define REI_MOD_SP_COLOR 3
-  // 空白TAB 現在のカラーのブレンド率 [REG] 2015.6.5  
-  // (WhiteSpaceBlendPer:30)
+  // 空白TAB 現在のカラーのブレンド率 2015.6.5  
+  // (REG/WhiteSpaceBlendPer:30)
   #define REI_MOD_SP_BLEND_PER 30 /* % */
 //						     
 						     
@@ -265,16 +267,16 @@
 #define REI_MOD_COLOR_STRATEGY 1
 
 // コメント行の修正 2016.12.27
-//  - 改行以降もカラーを有効にする [REG]
-// (CommentColorWholeLine:1)
+//  - 改行以降もカラーを有効にする
+// (REG/CommentColorWholeLine:1)
 #define REI_MOD_COMMENT 1
 
 // シングルクォートとダブルクォートのカラー設定を統合する 2016.7.13  
 //  - ダブルクォーテーションの処理に統合  
 #define REI_MOD_UNIFY_QUOTE 1
 
-// 折り返し記号表示時に折り返し位置の線を引かない [REG] 2016.6.25  
-// (NoWrapLine:1)
+// 折り返し記号表示時に折り返し位置の線を引かない 2016.6.25  
+// (REG/NoWrapLine:1)
 #define REI_MOD_WRAP_LINE 1
 
 // ステータスバーを変更 2015.6.10  
@@ -284,16 +286,16 @@
 //  - 「○ 行 ○ 桁」→「(○, ○)」に変更、左端に表示  
 #define REI_MOD_STATUSBAR 1
 
-// 対括弧検索モード [REG] 2016.12.21
-// (SearchBracketMode:2)
+// 対括弧検索モード 2016.12.21
+// (REG/SearchBracketMode:2)
 #define REI_MOD_SEARCH_BRACKET_MODE 2
 
 //-------------------------------------------------------------------------
 // 機能
 //-------------------------------------------------------------------------
 
-// 正規表現検索の際、検索文字列の正規表現記号をクォートする [REG] 2015.6.1  
-// (RegexpAutoQuote:1)
+// 正規表現検索の際、検索文字列の正規表現記号をクォートする 2015.6.1  
+// (REG/RegexpAutoQuote:1)
 #define REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE 1
 
 // Grep変更 2015.8.24  
@@ -307,13 +309,13 @@
 //  - 検索中のダイアログを中央に置かない（リアルタイム時に見づらい）
 #define REI_MOD_GREP 1
 
-// 置換変更 [REG] 2016.8.4  
-// (ReplaceTextToText:1)
+// 置換変更 2016.8.4  
+// (REG/ReplaceTextToText:1)
 //  - 置換後文字列に置換前文字列を設定する  
 #define REI_MOD_REPLACE 1
 
-// フォルダ選択ダイアログを変更 [REG] 2015.8.25  
-// (SelectDirIFileOperation:1)
+// フォルダ選択ダイアログを変更 2015.8.25  
+// (REG/SelectDirIFileOperation:1)
 //  - CLSID_FileOpenDialogを使用する  
 //    使用するには Vista以降にする必要がある  
 //      WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0501  
@@ -401,7 +403,7 @@ inline DWORD RegGetDword(LPCTSTR key_name, DWORD defValue) {
                     KEY_ALL_ACCESS,           //セキュリティマスク
                     &hKey);                   //キーのハンドル
   if (rc != ERROR_SUCCESS) {
-    return false;
+    return defValue;
   }
   rc = RegQueryValueEx(hKey,              //キーのハンドル
                        key_name,          //読み取るキーの名前
