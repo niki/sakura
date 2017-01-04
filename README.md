@@ -4,6 +4,8 @@
 * 使いそうでマージ可能なものはマージしています。  
 * プロポーショナルフォントは使用していないのでスルーしています。
 
+ベースリビジョンからのマージ情報は[こちら](https://github.com/rabbiteariris/sakura2/blob/master/changes_from_r4011.txt)
+
 ## 変更内容
 <sup>†</sup> レジストリによる調整が可能な項目
 * 履歴の数を変更（検索、置換、Grep）<sup>†</sup>
