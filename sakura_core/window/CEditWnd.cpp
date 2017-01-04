@@ -1044,7 +1044,7 @@ void CEditWnd::LayoutMiniMap( void )
 {
 	if( m_pShareData->m_Common.m_sWindow.m_bDispMiniMap ){	/* タブバーを表示する */
 		if( NULL == GetMiniMap().GetHwnd() ){
-			GetMiniMap().Create( GetHwnd(), GetDocument(), -1, TRUE, true );
+			GetMiniMap().Create( GetHwnd(), GetDocument(), -1, FALSE, true );
 		}
 	}else{
 		if( NULL != GetMiniMap().GetHwnd() ){
@@ -1077,6 +1077,9 @@ void CEditWnd::EndLayoutBars( BOOL bAdjust/* = TRUE*/ )
 		// メニューから[ファンクションキーを表示]/[ステータスバーを表示]を実行して非表示のバーをアウトライン直下に表示したり、
 		// その後、ウィンドウの下部境界を上下ドラッグしてサイズ変更するとゴミが現れることがあった。
 		::SetWindowPos( m_cDlgFuncList.GetHwnd(), HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE );
+	}
+	if (NULL != GetMiniMap().GetHwnd()) {
+		::ShowWindow(GetMiniMap().GetHwnd(), nCmdShow);
 	}
 
 	if( bAdjust )
@@ -1122,6 +1125,14 @@ void CEditWnd::MessageLoop( void )
 		else if( m_cToolbar.EatMessage(&msg ) ){ }													//!<ツールバー
 		//アクセラレータ
 		else{
+			// 補完ウィンドウが表示されているときはキーボード入力を先に処理させる（カーソル移動／決定／キャンセルの処理）
+			if( msg.message == WM_KEYDOWN ){
+				if( GetActiveView().m_bHokan ){
+					if( -1 == m_cHokanMgr.KeyProc( msg.wParam, msg.lParam ) )
+						continue;	// 補完ウィンドウが処理を実行した
+				}
+			}
+
 			if( m_hAccel && TranslateAccelerator( msg.hwnd, m_hAccel, &msg ) ){}
 			//通常メッセージ
 			else{
@@ -1234,11 +1245,24 @@ LRESULT CEditWnd::DispatchEvent(
 				if( m_pShareData->m_sFlags.m_bRecordingKeyMacro	/* キーボードマクロの記録中 */
 				 && m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == GetHwnd()	/* キーボードマクロを記録中のウィンドウ */
 				){
+#if REI_MOD_STATUSBAR
+					nColor = RGB(255,0,0);
+#else
 					nColor = COLOR_BTNTEXT;
+#endif // rei_
 				}else{
 					nColor = COLOR_3DSHADOW;
 				}
+#if REI_MOD_STATUSBAR
+				if (nColor == COLOR_3DSHADOW) {
+					::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
+				}
+				else {
+					::SetTextColor( lpdis->hDC, nColor );
+				}
+#else
 				::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
+#endif // rei_
 				::SetBkMode( lpdis->hDC, TRANSPARENT );
 				
 				// 2003.08.26 Moca 上下中央位置に作画
@@ -1419,9 +1443,11 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case WM_EXITMENULOOP:
 //		MYTRACE( _T("WM_EXITMENULOOP\n") );
+#if REI_MOD_STATUSBAR == 0
 		if( NULL != m_cStatusBar.GetStatusHwnd() ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, _T(""));
 		}
+#endif // rei_
 		m_cMenuDrawer.EndDrawMenu();
 		/* メッセージの配送 */
 		return Views_DispatchEvent( hwnd, uMsg, wParam, lParam );
@@ -1707,8 +1733,11 @@ LRESULT CEditWnd::DispatchEvent(
 			CSelectLang::ChangeLang( GetDllShareData().m_Common.m_sWindow.m_szLanguageDll );
 			CShareData::getInstance()->RefreshString();
 
-			// メインメニュー	2010/5/16 Uchi
-			LayoutMainMenu();
+			// 2015.08.20 プリントプレビューのとき設定を延期する(戻るとき適用)
+			if (!m_pPrintPreview) {
+				// メインメニュー	2010/5/16 Uchi
+				LayoutMainMenu();
+			}
 
 			// Oct 10, 2000 ao
 			/* 設定変更時、ツールバーを再作成するようにする（バーの内容変更も反映） */
@@ -2999,6 +3028,9 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 		::ShowWindow( m_cFuncKeyWnd.GetHwnd(), SW_SHOW );
 		::ShowWindow( m_cTabWnd.GetHwnd(), SW_SHOW );	//@@@ 2003.06.25 MIK
 		::ShowWindow( m_cDlgFuncList.GetHwnd(), SW_SHOW );	// 2010.06.25 ryoji
+		if (NULL != GetMiniMap().GetHwnd()) {
+			::ShowWindow(GetMiniMap().GetHwnd(), SW_SHOW);
+		}
 
 		// その他のモードレスダイアログも戻す	// 2010.06.25 ryoji
 		::ShowWindow( m_cDlgFind.GetHwnd(), SW_SHOW );
@@ -3030,6 +3062,9 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 		::ShowWindow( m_cFuncKeyWnd.GetHwnd(), SW_HIDE );
 		::ShowWindow( m_cTabWnd.GetHwnd(), SW_HIDE );	//@@@ 2003.06.25 MIK
 		::ShowWindow( m_cDlgFuncList.GetHwnd(), SW_HIDE );	// 2010.06.25 ryoji
+		if (NULL != GetMiniMap().GetHwnd()) {
+			::ShowWindow(GetMiniMap().GetHwnd(), SW_HIDE);
+		}
 
 		// その他のモードレスダイアログも隠す	// 2010.06.25 ryoji
 		::ShowWindow( m_cDlgFind.GetHwnd(), SW_HIDE );
@@ -3165,8 +3200,13 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		// 2004-02-28 yasu 文字列を出力時の書式に合わせる
 		// 幅を変えた場合にはCEditView::ShowCaretPosInfo()での表示方法を見直す必要あり．
 		// ※pszLabel[3]: ステータスバー文字コード表示領域は大きめにとっておく
+#if REI_MOD_STATUSBAR
+		constexpr int	nStArrNum = 9;
+		const TCHAR*	pszLabel[nStArrNum] = { _T("(99999, 9999)"), _T(""), _T("CRLF"), _T("AAAAAAAAAAAA"), _T("Unicode BOM付"), _T("REC"), _T("上書"), _T("Tab Size: 9"), _T("123456789012") };
+#else
 		const TCHAR*	pszLabel[7] = { _T(""), _T("99999 行 9999 列"), _T("CRLF"), _T("AAAAAAAAAAAA"), _T("Unicode BOM付"), _T("REC"), _T("上書") };	//Oct. 30, 2000 JEPRO 千万行も要らん	文字コード枠を広げる 2008/6/21	Uchi
 		int			nStArrNum = 7;
+#endif // rei_
 		//	To Here
 		int			nAllWidth = rc.right - rc.left;
 		int			nSbxWidth = ::GetSystemMetrics(SM_CXVSCROLL) + ::GetSystemMetrics(SM_CXEDGE); // サイズボックスの幅
@@ -3191,6 +3231,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 			nStArr[i - 1] = nStArr[i] - ( sz.cx + nBdrWidth );
 		}
 
+#if REI_MOD_STATUSBAR == 0
 		//	Nov. 8, 2003 genta
 		//	初期状態ではすべての部分が「枠あり」だが，メッセージエリアは枠を描画しないようにしている
 		//	ため，初期化時の枠が変な風に残ってしまう．初期状態で枠を描画させなくするため，
@@ -3198,6 +3239,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		if( bUpdateStatus ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, _T(""));
 		}
+#endif // rei_
 
 		StatusBar_SetParts( m_cStatusBar.GetStatusHwnd(), nStArrNum, nStArr );
 		if (hFont != NULL)
@@ -4501,7 +4543,6 @@ void  CEditWnd::SetActivePane( int nIndex )
 		m_cDlgReplace.ChangeView( (LPARAM)&GetActiveView() );
 	}
 	if( NULL != m_cHokanMgr.GetHwnd() ){	/* 「入力補完」ダイアログ */
-		m_cHokanMgr.Hide();
 		/* モードレス時：検索対象となるビューの変更 */
 		m_cHokanMgr.ChangeView( (LPARAM)&GetActiveView() );
 	}
@@ -4616,7 +4657,7 @@ BOOL CEditWnd::WrapWindowWidth( int nPane )
 	// 右端で折り返す
 	CLayoutInt nWidth = GetView(nPane).ViewColNumToWrapColNum( GetView(nPane).GetTextArea().m_nViewColNum );
 	if( GetDocument()->m_cLayoutMgr.GetMaxLineKetas() != nWidth ){
-		ChangeLayoutParam( false, GetDocument()->m_cLayoutMgr.GetTabSpace(), nWidth );
+		ChangeLayoutParam( false, GetDocument()->m_cLayoutMgr.GetTabSpace(), GetDocument()->m_cLayoutMgr.m_tsvInfo.m_nTsvMode, nWidth );
 		ClearViewCaretPosInfo();
 		return TRUE;
 	}
@@ -4655,7 +4696,7 @@ BOOL CEditWnd::UpdateTextWrap( void )
 	@date 2005.08.14 genta 新規作成
 	@date 2008.06.18 ryoji レイアウト変更途中はカーソル移動の画面スクロールを見せない（画面のちらつき抑止）
 */
-void CEditWnd::ChangeLayoutParam( bool bShowProgress, CLayoutInt nTabSize, CLayoutInt nMaxLineKetas )
+void CEditWnd::ChangeLayoutParam( bool bShowProgress, CLayoutInt nTabSize, int nTsvMode, CLayoutInt nMaxLineKetas )
 {
 	HWND		hwndProgress = NULL;
 	if( bShowProgress && NULL != this ){
@@ -4671,7 +4712,7 @@ void CEditWnd::ChangeLayoutParam( bool bShowProgress, CLayoutInt nTabSize, CLayo
 	CLogicPointEx* posSave = SavePhysPosOfAllView();
 
 	//	レイアウトの更新
-	GetDocument()->m_cLayoutMgr.ChangeLayoutParam( nTabSize, nMaxLineKetas );
+	GetDocument()->m_cLayoutMgr.ChangeLayoutParam( nTabSize, nTsvMode, nMaxLineKetas );
 	ClearViewCaretPosInfo();
 
 	//	座標の復元

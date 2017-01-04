@@ -50,7 +50,12 @@ void CViewCommander::Command_SEARCH_DIALOG( void )
 {
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	CNativeW		cmemCurText;
+#if REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+	m_pCommanderView->GetCurrentTextForSearchDlg(
+      cmemCurText, false, m_pCommanderView->m_sCurSearchOption.bRegularExp);
+#else
 	m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText );	// 2006.08.23 ryoji ダイアログ専用関数に変更
+#endif // rei_
 
 	/* 検索文字列を初期化 */
 	if( 0 < cmemCurText.GetStringLength() ){
@@ -491,12 +496,25 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	CNativeW	cmemCurText;
+#if REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+	m_pCommanderView->GetCurrentTextForSearchDlg(
+      cmemCurText, false, m_pCommanderView->m_sCurSearchOption.bRegularExp);
+#else
 	m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText );	// 2006.08.23 ryoji ダイアログ専用関数に変更
+#endif // rei_
 
 	/* 検索文字列を初期化 */
 	if( 0 < cmemCurText.GetStringLength() ){
 		GetEditWindow()->m_cDlgReplace.m_strText = cmemCurText.GetStringPtr();
 	}
+#if REI_MOD_REPLACE
+  {
+    static bool replace_text_to_text = !!RegGetDword(L"ReplaceTextToText", true);
+    if (replace_text_to_text) {
+      GetEditWindow()->m_cDlgReplace.m_strText2 = GetEditWindow()->m_cDlgReplace.m_strText;
+    }
+  }
+#endif // rei_
 	if( 0 < GetDllShareData().m_sSearchKeywords.m_aReplaceKeys.size() ){
 		if( GetEditWindow()->m_cDlgReplace.m_nReplaceKeySequence < GetDllShareData().m_Common.m_sSearch.m_nReplaceKeySequence ){
 			GetEditWindow()->m_cDlgReplace.m_strText2 = GetDllShareData().m_sSearchKeywords.m_aReplaceKeys[0];	// 2006.08.23 ryoji 前回の置換後文字列を引き継ぐ
@@ -537,6 +555,11 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 */
 void CViewCommander::Command_REPLACE( HWND hwndParent )
 {
+	// m_sSearchOption選択のための先に適用
+	if( !m_pCommanderView->ChangeCurRegexp(false) ){
+		return;
+	}
+
 	if ( hwndParent == NULL ){	//	親ウィンドウが指定されていなければ、CEditViewが親。
 		hwndParent = m_pCommanderView->GetHwnd();
 	}
@@ -1496,7 +1519,11 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 		// 共有データへ登録
 		if( cmemCurText.GetStringLength() < _MAX_PATH ){
 			CSearchKeywordManager().AddToSearchKeyArr( cmemCurText.GetStringPtr() );
+#if REI_FIX_SEARCH_KEEP_REGEXP
+			///
+#else
 			GetDllShareData().m_Common.m_sSearch.m_sSearchOption = m_pCommanderView->m_sCurSearchOption;
+#endif // rei_
 		}
 		m_pCommanderView->m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
 		m_pCommanderView->m_bCurSearchUpdate = true;

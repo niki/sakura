@@ -1,8 +1,7 @@
 #include "StdAfx.h"
 #include "CTextStream.h"
 #include "charset/CCodeFactory.h"
-#include "charset/CShiftJis.h"	// move from CCodeMediator.h	2010/6/14 Uchi
-#include "charset/CUtf8.h"		// move from CCodeMediator.h	2010/6/14 Uchi
+#include "charset/CCodePage.h"
 #include "CEol.h"
 #include "util/file.h"			// _IS_REL_PATH
 #include "util/module.h"
@@ -51,30 +50,46 @@ CTextInputStream::~CTextInputStream()
 
 wstring CTextInputStream::ReadLineW()
 {
+	wstring strLine;
+	CNativeW memLine;
+	ReadLineW(memLine);
+	strLine.assign( memLine.c_str(), memLine.size() );	// EOL まで NULL 文字も含める
+	return strLine;
+}
+
+
+void CTextInputStream::ReadLineW(CNativeW& retLine)
+{
 	//$$ 非効率だけど今のところは許して。。
-	CNativeW line;
-	line.AllocStringBuffer(60);
+	// 2014.11.21 多少改善
+	CMemory mem;
+	mem.AllocBuffer( 60 );
+	unsigned char* p = reinterpret_cast<unsigned char*>(mem.GetRawPtr()); // unconst
+	int len = 0;
 	for (;;) {
 		int c=getc(GetFp());
 		if(c==EOF)break; //EOFで終了
 		if(c=='\r'){ c=getc(GetFp()); if(c!='\n')ungetc(c,GetFp()); break; } //"\r" または "\r\n" で終了
 		if(c=='\n')break; //"\n" で終了
-		if( line._GetMemory()->capacity() < line._GetMemory()->GetRawLength() + 10 ){
-			line._GetMemory()->AllocBuffer( line._GetMemory()->GetRawLength() * 2 );
+		if( mem.capacity() < len + 10 ){
+			mem._SetRawLength(len);
+			mem.AllocBuffer(len * 2);
+			p = reinterpret_cast<unsigned char*>(mem.GetRawPtr());
 		}
-		line._GetMemory()->AppendRawData(&c,sizeof(char));
+		p[len] = static_cast<unsigned char>(c);
+		len++;
 	}
+	mem._SetRawLength(len);
 
 	//UTF-8 → UNICODE
 	if(m_bIsUtf8){
-		CUtf8::UTF8ToUnicode(*(line._GetMemory()), &line);
+		CCodePage::CPToUnicode(mem, &retLine, CP_UTF8);
 	}
 	//Shift_JIS → UNICODE
 	else{
-		CShiftJis::SJISToUnicode(*(line._GetMemory()), &line);
+		CCodePage::CPToUnicode(mem, &retLine, 932);
 	}
 
-	return wstring().assign( line.GetStringPtr(), line.GetStringLength() );	// EOL まで NULL 文字も含める
 }
 
 

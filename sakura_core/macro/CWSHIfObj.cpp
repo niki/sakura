@@ -136,37 +136,39 @@ HRESULT CWSHIfObj::MacroCommand(int IntID, DISPPARAMS *Arguments, VARIANT* Resul
 		// 最低4つは確保
 		int argCountMin = t_max(4, ArgCount);
 		//	Nov. 29, 2005 FILE 引数を文字列で取得する
+		// 2014.06.09 Warp(VARIANT)->GetW()するのをやめてVariantのまま保持する
 		auto_array_ptr<LPWSTR> StrArgs( new LPWSTR[argCountMin] );
 		auto_array_ptr<int> strLengths( new int[argCountMin] );
+		auto_array_ptr<Variant> varArgs( new Variant[ArgCount] ); // VT_BYREFだと困るのでコピー用
 		for(I = ArgCount; I < argCountMin; I++ ){
 			StrArgs[I] = NULL;
 			strLengths[I] = 0;
 		}
-		WCHAR *S = NULL;								// 初期化必須
-		Variant varCopy;							// VT_BYREFだと困るのでコピー用
-		int Len;
 		for(I = 0; I < ArgCount; ++I)
 		{
-			if(VariantChangeType(&varCopy.Data, &(Arguments->rgvarg[I]), 0, VT_BSTR) == S_OK)
-			{
-				Wrap(&varCopy.Data.bstrVal)->GetW(&S, &Len);
+			VARIANT* const pvArg = &Arguments->rgvarg[I];
+			BSTR bstr;
+			if( pvArg->vt == VT_BSTR ){
+				bstr = pvArg->bstrVal;
+			}else if( pvArg->vt == (VT_BYREF | VT_BSTR) ){
+				bstr = *(pvArg->pbstrVal);
+			}else if( pvArg->vt == (VT_BYREF | VT_VARIANT) && pvArg->pvarVal->vt == VT_BSTR ){
+				bstr = pvArg->pvarVal->bstrVal;
+			}else{
+				if( VariantChangeType(&varArgs[I].Data, pvArg, 0, VT_BSTR) != S_OK ){
+					// Error
+					SysString str(L"", 0);
+					varArgs[I].Receive(str);
+				}
+				bstr = varArgs[I].Data.bstrVal;
 			}
-			else
-			{
-				S = new WCHAR[1];
-				S[0] = 0;
-				Len = 0;
-			}
-			StrArgs[ArgCount - I - 1] = S;			// DISPPARAMSは引数の順序が逆転しているため正しい順に直す
-			strLengths[ArgCount - I - 1] = Len;
+			// DISPPARAMSは引数の順序が逆転しているため正しい順に直す
+			StrArgs[ArgCount - I - 1] = bstr;
+			strLengths[ArgCount - I - 1] = ::SysStringLen(bstr);
 		}
 
 		// 2009.10.29 syat HandleCommandはサブクラスでオーバーライドする
 		HandleCommand(m_pView, ID, const_cast<WCHAR const **>(&StrArgs[0]), &strLengths[0], ArgCount);
-
-		//	Nov. 29, 2005 FILE 配列の破棄なので、[括弧]を追加
-		for(int J = 0; J < ArgCount; ++J)
-			delete [] StrArgs[J];
 
 		return S_OK;
 	}

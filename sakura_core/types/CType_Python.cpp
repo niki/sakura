@@ -29,10 +29,34 @@
 
 */
 #include "StdAfx.h"
+#include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
 #include "outline/CFuncInfoArr.h"
+
+int g_nKeywordsIdx_PYTHON = -1;
+
+/* Python */
+void CType_Python::InitTypeConfigImp(STypeConfig* pType)
+{
+	//–¼‘O‚ÆŠg’£Žq
+	_tcscpy( pType->m_szTypeName, _T("Python") );
+	_tcscpy( pType->m_szTypeExts, _T("py") );
+
+	//Ý’è
+	pType->m_cLineComment.CopyTo( 0, L"#", -1 );
+	pType->m_nStringType = STRING_LITERAL_PYTHON;
+	pType->m_bStringLineOnly = true;
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_PYTHON;
+	pType->m_eDefaultOutline = OUTLINE_PYTHON;
+	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;
+#if REI_MOD_UNIFY_QUOTE == 0
+	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = true;
+#endif
+	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = true;
+}
 
 
 /*!

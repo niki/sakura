@@ -4405,7 +4405,8 @@ BEGIN
 	STR_PROPTYPE_ERR			"CPropTypes::DoPropertySheet() failed.\npsh.nStartPage=[%d]\n::PropertySheet() failed.\n\n%ts\n"
 
 	// CPropTypesColor.cpp
-	STR_STRINGESC_CPP			"C/C++    \\"" "
+	STR_STRINGESC_CPP			"C/C++03  \\"" "
+	STR_STRINGESC_CPP11			"C++11    \\"" "
 	STR_STRINGESC_PLSQL			"PL/SQL   """""
 	STR_STRINGESC_HTML			"HTML/XML ="""""
 	STR_STRINGESC_CSHARP		"C#       @"""""

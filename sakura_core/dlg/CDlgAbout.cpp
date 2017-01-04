@@ -166,12 +166,21 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #if (SVN_REV == 0)
+#if 1 // rei_
+	auto_sprintf( szMsg, _T("v%d, REI ver.") _T(", Base 2.2.0.1(r4011).\r\n"),
+		HIWORD( dwVersionMS ));
+#else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		HIWORD( dwVersionLS ),
 		LOWORD( dwVersionLS )
 	);
+#endif // rei_
+#else
+#if 1 // rei_
+	auto_sprintf( szMsg, _T("v%d, Mix ver. r") _T(SVN_REV_STR) _T(", Base 2.2.0.1(r4011).\r\n"),
+		HIWORD( dwVersionMS ));
 #else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (Rev.") _T(SVN_REV_STR) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
@@ -179,6 +188,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		HIWORD( dwVersionLS ),
 		LOWORD( dwVersionLS )
 	);
+#endif // rei_
 #endif
 	cmemMsg.AppendString( szMsg );
 

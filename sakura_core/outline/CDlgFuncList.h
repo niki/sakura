@@ -24,14 +24,17 @@
 #include <Windows.h>
 #include "dlg/CDialog.h"
 #include "doc/CEditDoc.h"
+#if REI_MOD_OUTLINEDLG
+#include "util/window.h"
+#endif  //rei_
 
 class CFuncInfo;
 class CFuncInfoArr; // 2002/2/10 aroka
 class CDataProfile;
 
-#define OUTLINE_LAYOUT_FOREGROUND (0)
-#define OUTLINE_LAYOUT_BACKGROUND (1)
-#define OUTLINE_LAYOUT_FILECHANGED (2)
+#define OUTLINE_LAYOUT_FOREGROUND (0)   //!< 前面用の動作
+#define OUTLINE_LAYOUT_BACKGROUND (1)   //!< 背後用の動作
+#define OUTLINE_LAYOUT_FILECHANGED (2)  //!< ファイル切替用の動作（前面だが特殊）
 
 // ファイルツリー関連クラス
 enum EFileTreeSettingFrom{
@@ -192,6 +195,8 @@ private:
 	// 0 デフォルト(ノードに関連づけれられた値順)
 	// 1 アルファベット順
 	int m_nSortType;
+	bool m_bDummyLParamMode;
+	std::vector<int> m_vecDummylParams;
 
 	// 選択中の関数情報
 	CFuncInfo* m_cFuncInfo;
@@ -218,6 +223,10 @@ private:
 	POINT				m_ptDefaultSize;
 	POINT				m_ptDefaultSizeClient;
 	RECT				m_rcItems[12];
+	
+#if REI_MOD_OUTLINEDLG
+	CFontAutoDeleter		m_cFontText[2];
+#endif  // rei_
 };
 
 

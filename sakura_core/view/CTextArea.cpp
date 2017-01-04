@@ -48,6 +48,17 @@ void CTextArea::CopyTextAreaStatus(CTextArea* pDst) const
 	pDst->SetViewLeftCol			( this->GetViewLeftCol() );		// 表示域の一番左の桁(0開始)
 }
 
+int CTextArea::GetTopYohaku() const
+{
+#if REI_FIX_RULER_HIDE_IGNORE_BOTTOM_SPACE
+  if (m_pEditView && m_pEditView->m_pTypeData &&
+      !m_pEditView->m_pTypeData->m_ColorInfoArr[COLORIDX_RULER].m_bDisp) {
+    return 0;
+  }
+#endif  // rei_
+	return m_nTopYohaku;
+}
+
 //!表示域の再計算
 void CTextArea::UpdateViewColRowNums()
 {

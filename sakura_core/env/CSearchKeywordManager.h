@@ -38,6 +38,24 @@ struct SShare_SearchKeywords{
 	StaticVector< StaticString<WCHAR, _MAX_PATH>, MAX_REPLACEKEY, const WCHAR*>	m_aReplaceKeys;
 	StaticVector< StaticString<TCHAR, _MAX_PATH>, MAX_GREPFILE,   const TCHAR*>	m_aGrepFiles;
 	StaticVector< StaticString<TCHAR, _MAX_PATH>, MAX_GREPFOLDER, const TCHAR*>	m_aGrepFolders;
+#if REI_MOD_GREP
+	bool		m_bGrepFolders99;
+	bool		m_bGrepFolders2;
+	bool		m_bGrepFolders3;
+	bool		m_bGrepFolders4;
+	SFilePath	m_szGrepFolders2;
+	SFilePath	m_szGrepFolders3;
+	SFilePath	m_szGrepFolders4;
+#endif // rei_
+#if REI_CHG_MAXDATA
+  SShare_SearchKeywords() {
+    m_aSearchKeys.resize(RegGetDword(L"SearchKeyMax", MAX_SEARCHKEY));
+    m_aReplaceKeys.resize(RegGetDword(L"ReplaceKeyMax", MAX_REPLACEKEY));
+    m_aGrepFiles.resize(RegGetDword(L"GrepFileMax", MAX_GREPFILE));
+    m_aGrepFolders.resize(RegGetDword(L"GrepFolderMax", MAX_GREPFOLDER));
+    //ここ、呼ばれてない。。。？ MessageBoxW(NULL, L"",L"",MB_OK);
+  }
+#endif
 };
 
 //! 検索キーワード管理

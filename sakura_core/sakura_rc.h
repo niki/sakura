@@ -784,6 +784,10 @@
 #define IDC_RADIO_LINEDELETE            1715
 #define IDC_RADIO_NOHIT                 1716
 #define IDC_CHECK_BOXSELECTLOCK         1717
+#define IDC_COMBO_TSV_MODE              1718
+#define IDC_CHECK_INDENTCPPSTR          1719
+#define IDC_CHECK_INDENTCPPCMT          1720
+#define IDC_CHECK_INDENTCPPUNDO         1721
 #define IDS_AUTHOR_PAGE                 4054
 #define IDS_ABOUT_DESCRIPTION           4056
 #define IDD_TYPELIST                    5000
@@ -818,6 +822,19 @@
 #define IDD_PLUGIN_OPTION               5221
 #define IDD_PROFILEMGR                  5222
 #define IDD_FILETREE                    5223
+#if REI_MOD_GREP
+#define IDC_COMBO_FOLDER2               7000
+#define IDC_COMBO_FOLDER3               7001
+#define IDC_COMBO_FOLDER4               7002
+#define IDC_CHK_FOLDER99                7010
+#define IDC_CHK_FOLDER2                 7011
+#define IDC_CHK_FOLDER3                 7012
+#define IDC_CHK_FOLDER4                 7013
+#define IDC_BUTTON_FOLDER2              7020
+#define IDC_BUTTON_FOLDER3              7021
+#define IDC_BUTTON_FOLDER4              7022
+#define IDC_CHK_CPP                     7500
+#endif // rei_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -826,7 +843,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        230
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1718
+#define _APS_NEXT_CONTROL_VALUE         1722
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

@@ -289,7 +289,11 @@ bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 }
 
 /* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
+#if REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */, bool bRegQuote /* = false */ )
+#else
 void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */ )
+#endif // rei_
 {
 
 	int				i;
@@ -345,6 +349,52 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 		}
 	}
 
+#if REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+	// 正規表現文字をクォートする
+	// (PHP 4, PHP 5) string preg_quote ( string $str [, string $delimiter = NULL ] )
+  auto preg_quote = [](const CNativeW &str) {
+    const wchar_t *pStr = str.GetStringPtr();
+    bool bEscape = false;
+
+    CNativeW out = L"";
+
+    while (L'\0' != *pStr) {
+      if (bEscape) {
+        bEscape = false;
+      } else if (!bEscape && *pStr == L'\\') {
+        bEscape = true;
+      }
+      // 正規表現文字をクォートする . \ + * ? [ ^ ] $ ( ) { } = ! < > | : -
+      else if (*pStr == L'[' || *pStr == L']' || *pStr == L'(' || *pStr == L')' ||
+               *pStr == L'{' || *pStr == L'}' || *pStr == L'<' || *pStr == L'>' ||
+               *pStr == L'+' || *pStr == L'*' || *pStr == L'.' || *pStr == L'?' ||
+               *pStr == L'^' || *pStr == L'$' || *pStr == L'=' ||
+               *pStr == L'\\' || *pStr == L'!' || *pStr == L'|' ||
+               *pStr == L':' || *pStr == L'-') {
+        out += L"\\";
+      }
+
+      out += *pStr;
+      pStr++;
+    }
+
+    return out;
+  };
+	
+	{
+    static int regexp_auto_quote = !!RegGetDword(L"RegexpAutoQuote", true);
+    
+    if (bRegQuote) {
+      bRegQuote = regexp_auto_quote;
+    }
+  }
+	
+	//if (GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp) {
+	if (bRegQuote) {
+		cmemTopic = preg_quote(cmemTopic);
+	}
+#endif // rei_
+
 	wchar_t *pTopic2 = cmemTopic.GetStringPtr();
 	if( bTrimSpaceTab ){
 		// 前のスペース・タブを取り除く
@@ -381,18 +431,30 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 	@date 2006.08.23 ryoji 新規作成
 	@date 2014.07.01 Moca bGetHistory追加、戻り値をboolに変更
 */
+#if REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHistory, bool bRegQuote /* = false */ )
+#else
 bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHistory )
+#endif // rei_
 {
 	bool bStripMaxPath = false;
 	cmemCurText.SetString(L"");
 
 	if( GetSelectionInfo().IsTextSelected() ){	// テキストが選択されている
+#if REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+		GetCurrentTextForSearch( cmemCurText, bStripMaxPath, false, bRegQuote );
+#else
 		GetCurrentTextForSearch( cmemCurText, bStripMaxPath );
+#endif // rei_
 	}
 	else{	// テキストが選択されていない
 		bool bGet = false;
 		if( GetDllShareData().m_Common.m_sSearch.m_bCaretTextForSearch ){
+#if REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+			GetCurrentTextForSearch( cmemCurText, bStripMaxPath, false, bRegQuote );	// カーソル位置単語を取得
+#else
 			GetCurrentTextForSearch( cmemCurText, bStripMaxPath );	// カーソル位置単語を取得
+#endif // rei_
 			if( cmemCurText.GetStringLength() == 0 && bGetHistory ){
 				bGet = true;
 			}

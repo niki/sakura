@@ -75,13 +75,14 @@ BOOL CDicMgr::Search(
 	if(!in){
 		return FALSE;
 	}
+	CNativeW memLine;
 
 	wchar_t	szLine[LINEREADBUFSIZE];
 	for(int line=1 ; in; line++ ){	// 2006.04.10 fon
 		//1行読み込み
 		{
-			wstring tmp = in.ReadLineW(); //NULL != fgetws( szLine, _countof(szLine), pFile );
-			wcsncpy_s(szLine,_countof(szLine),tmp.c_str(), _TRUNCATE);
+			in.ReadLineW(memLine); //NULL != fgetws( szLine, _countof(szLine), pFile );
+			wcsncpy_s(szLine,_countof(szLine),memLine.GetStringPtr(), _TRUNCATE);
 			// auto_strlcpy(szLine,tmp.c_str(), _countof(szLine));
 		}
 
@@ -150,25 +151,26 @@ int CDicMgr::HokanSearch(
 	}
 	nKeyLen = wcslen( pszKey );
 	wstring szLine;
+	CNativeW memLine;
 	while( in ){
-		szLine = in.ReadLineW();
-		if( nKeyLen > (int)szLine.length() ){
+		in.ReadLineW(memLine);
+		if( nKeyLen > memLine.length() ){
 			continue;
 		}
 
 		//コメント無視
-		if( szLine[0] == L';' )continue;
+		if( memLine[0] == L';' )continue;
 
 		//空行無視
-		if( szLine.length() == 0 )continue;
+		if( memLine.length() == 0 )continue;
 
 		if( bHokanLoHiCase ){	/* 英大文字小文字を同一視する */
-			nRet = auto_memicmp( pszKey, szLine.c_str(), nKeyLen );
+			nRet = auto_memicmp( pszKey, memLine.c_str(), nKeyLen );
 		}else{
-			nRet = auto_memcmp( pszKey, szLine.c_str(), nKeyLen );
+			nRet = auto_memcmp( pszKey, memLine.c_str(), nKeyLen );
 		}
 		if( 0 == nRet ){
-			vKouho.push_back( szLine );
+			vKouho.push_back( wstring(memLine.c_str(), memLine.size()) );
 			if( 0 != nMaxKouho && nMaxKouho <= (int)vKouho.size() ){
 				break;
 			}

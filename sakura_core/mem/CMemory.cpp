@@ -102,7 +102,6 @@ const CMemory& CMemory::operator = ( const CMemory& rhs )
 
 
 
-
 /*
 || バッファの最後にデータを追加する（protectメンバ
 */

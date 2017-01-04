@@ -1,5 +1,5 @@
 /*!	@file
-	@brief DebugMonitorLibç”¨é–¢æ•°
+	@brief DebugMonitorLib—pŠÖ”
 
 */
 /*

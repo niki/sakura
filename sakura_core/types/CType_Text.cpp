@@ -24,6 +24,7 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
@@ -48,7 +49,9 @@ void CType_Text::InitTypeConfigImp(STypeConfig* pType)
 	//設定
 	pType->m_nMaxLineKetas = CLayoutInt(120);					/* 折り返し桁数 */
 	pType->m_eDefaultOutline = OUTLINE_TEXT;					/* アウトライン解析方法 */
+#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = false;	//Oct. 17, 2000 JEPRO	シングルクォーテーション文字列を色分け表示しない
+#endif // rei_
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = false;	//Sept. 4, 2000 JEPRO	ダブルクォーテーション文字列を色分け表示しない
 	pType->m_bKinsokuHead = false;								// 行頭禁則				//@@@ 2002.04.08 MIK
 	pType->m_bKinsokuTail = false;								// 行末禁則				//@@@ 2002.04.08 MIK
@@ -64,19 +67,11 @@ void CType_Text::InitTypeConfigImp(STypeConfig* pType)
 
 	//正規表現キーワード
 	int keywordPos = 0;
-	wchar_t* pKeyword = pType->m_RegexKeywordList;
+	int idx = 0;
 	pType->m_bUseRegexKeyword = true;							// 正規表現キーワードを使うか
-	pType->m_RegexKeywordArr[0].m_nColorIndex = COLORIDX_URL;	// 色指定番号
-	wcscpyn( &pKeyword[keywordPos],			// 正規表現キーワード
-		L"/(?<=\")(\\b[a-zA-Z]:|\\B\\\\\\\\)[^\"\\r\\n]*/k",			//   ""で挟まれた C:\～, \\～ にマッチするパターン
-		_countof(pType->m_RegexKeywordList) - 1 );
-	keywordPos += auto_strlen(&pKeyword[keywordPos]) + 1;
-	pType->m_RegexKeywordArr[1].m_nColorIndex = COLORIDX_URL;	// 色指定番号
-	wcscpyn( &pKeyword[keywordPos],			// 正規表現キーワード
-		L"/(\\b[a-zA-Z]:\\\\|\\B\\\\\\\\)[\\w\\-_.\\\\\\/$%~]*/k",		//   C:\～, \\～ にマッチするパターン
-		_countof(pType->m_RegexKeywordList) - keywordPos - 1 );
-	keywordPos += auto_strlen(&pKeyword[keywordPos]) + 1;
-	pKeyword[keywordPos] = L'\0';
+	RegexAdd( pType, keywordPos, idx++, COLORIDX_URL, L"/(?<=\")(\\b[a-zA-Z]:|\\B\\\\\\\\)[^\"\\r\\n]*/k" );    //   ""で挟まれた C:\～, \\～ にマッチするパターン
+	RegexAdd( pType, keywordPos, idx++, COLORIDX_URL, L"/(\\b[a-zA-Z]:\\\\|\\B\\\\\\\\)[\\w\\-_.\\\\\\/$%~]*/k" );    //   C:\～, \\～ にマッチするパターン
+	pType->m_bUseHokanByKeyword = false;					// 強調キーワードから入力補完
 }
 
 
@@ -183,16 +178,16 @@ void CDocOutline::MakeTopicList_txt( CFuncInfoArr* pcFuncInfoArr )
 		*/
 
 		//行文字列から改行を取り除く pLine -> pszText
-		wchar_t*	pszText = new wchar_t[nLineLen + 1];
-		wmemcpy( pszText, &pLine[i], nLineLen );
-		pszText[nLineLen] = L'\0';
-		bool bExtEol = GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol;
+		const wchar_t*	pszText = &pLine[i];
+		nLineLen -= i;
+		const bool bExtEol = GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol;
 		for( i = 0; i < nLineLen; ++i ){
 			if( WCODE::IsLineDelimiter(pszText[i], bExtEol) ){
-				pszText[i] = L'\0';
 				break;
 			}
 		}
+		std::wstring strText( pszText, i );
+		pszText = strText.c_str();
 
 		/*
 		  カーソル位置変換
@@ -230,13 +225,11 @@ void CDocOutline::MakeTopicList_txt( CFuncInfoArr* pcFuncInfoArr )
 			// nDepth = nMaxStack;
 			bAppend = false;
 		}
-		
+
 		if( bAppend ){
 			pcFuncInfoArr->AppendData( nLineCount + CLogicInt(1), ptPos.GetY2() + CLayoutInt(1) , pszText, 0, nDepth );
 			nDepth++;
 		}
-		delete [] pszText;
-
 	}
 	return;
 }

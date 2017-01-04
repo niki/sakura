@@ -157,6 +157,7 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_AT_ImmSetReconvertString(NULL)
 , m_cHistory(NULL)
 , m_cRegexKeyword(NULL)
+, m_hAtokModule(NULL)
 {
 }
 
@@ -590,6 +591,8 @@ LRESULT CEditView::DispatchEvent(
 			ImmGetCompositionString(hIMC, GCS_RESULTSTR, lptstr, dwSize);
 
 			/* テキストを貼り付け */
+			BOOL bHokan;
+			bHokan = m_bHokan;
 			if( m_bHideMouse && 0 <= m_nMousePouse ){
 				m_nMousePouse = -1;
 				::SetCursor( NULL );
@@ -600,12 +603,15 @@ LRESULT CEditView::DispatchEvent(
 			std::wstring wstr = to_wchar(lptstr);
 			GetCommander().HandleCommand( F_INSTEXT_W, true, (LPARAM)wstr.c_str(), wstr.length(), TRUE, 0 );
 #endif
+			m_bHokan = bHokan;	// 消されても表示中であるかのように誤魔化して入力補完を動作させる
 			ImmReleaseContext( hwnd, hIMC );
 
 			// add this string into text buffer of application
 
 			GlobalUnlock( hstr );
 			GlobalFree( hstr );
+
+			PostprocessCommand_hokan();	// 補完実行
 			return DefWindowProc( hwnd, uMsg, wParam, lParam );
 		}
 		return DefWindowProc( hwnd, uMsg, wParam, lParam );
@@ -1397,13 +1403,19 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 	const wchar_t*	pLine;
 	CLogicInt		nLineLen;
 	CLogicInt		nLineLen2;
+#if REI_FIX_WAITCUESOR == 0
 	CWaitCursor cWaitCursor( GetHwnd() );
+#endif // rei_
 
 
 	/* テキストが選択されているか */
 	if( !GetSelectionInfo().IsTextSelected() ){
 		return;
 	}
+
+#if REI_FIX_WAITCUESOR
+	CWaitCursor cWaitCursor( GetHwnd() );
+#endif // rei_
 
 	CLogicPoint ptFromLogic;	// 2009.07.18 ryoji Logicで記憶するように変更
 	m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
@@ -2499,6 +2511,9 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 	if( bUnderLine ){
 		nUnderLineY = GetTextArea().GetAreaTop() + (Int)(GetCaret().GetCaretLayoutPos().GetY2() - GetTextArea().GetViewTopLine())
 			 * GetTextMetrics().GetHankakuDy() + GetTextMetrics().GetHankakuHeight();
+#if REI_LINE_CENTERING
+		nUnderLineY += m_pTypeData->m_nLineSpace/2;
+#endif // rei_
 	}
 	// To Here 2007.09.09 Moca
 
@@ -2523,7 +2538,11 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			gr.SetPen( m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_sColorAttr.m_cTEXT );
 			::MoveToEx(
 				gr,
+#if REI_CUR_UL_FROM_LEFT_END
+				0,//GetTextArea().GetLeftYohaku(),
+#else
 				GetTextArea().GetAreaLeft(),
+#endif // rei_
 				nUnderLineY,
 				NULL
 			);
@@ -2559,14 +2578,25 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				nUnderLineY = -1;
 			}else if( GetTextArea().m_nViewRowNum < nY ){
 				nUnderLineY = GetTextArea().GetAreaBottom() + 1;
+#if REI_LINE_CENTERING
+				nUnderLineY += m_pTypeData->m_nLineSpace/2;
+#endif // rei_
 			}else{
 				nUnderLineY = GetTextArea().GetAreaTop() + (Int)(nY) * GetTextMetrics().GetHankakuDy();
+#if REI_LINE_CENTERING
+				nUnderLineY += m_pTypeData->m_nLineSpace/2;
+#endif // rei_
 			}
 
 			GetCaret().m_cUnderLine.Lock();
 
 			PAINTSTRUCT ps;
+#if REI_CUR_UL_FROM_LEFT_END
+			//ps.rcPaint.left = GetTextArea().GetAreaLeft();
+			ps.rcPaint.left = 0;//GetTextArea().GetLeftYohaku();
+#else
 			ps.rcPaint.left = 0;
+#endif // rei_
 			ps.rcPaint.right = GetTextArea().GetAreaRight();
 			int height;
 			if( bDrawPaint && m_nOldUnderLineYHeight != 0 ){

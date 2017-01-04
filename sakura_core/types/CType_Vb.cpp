@@ -24,11 +24,15 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
 #include "outline/CFuncInfoArr.h"
 #include "view/Colors/EColorIndexType.h"
+
+int g_nKeywordsIdx_VB = -1;
+int g_nKeywordsIdx_VB2 = -1;
 
 /* Visual Basic */
 //JUl. 10, 2001 JEPRO VB   ユーザに贈る
@@ -42,11 +46,13 @@ void CType_Vb::InitTypeConfigImp(STypeConfig* pType)
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"'", -1 );				/* 行コメントデリミタ */
 	pType->m_eDefaultOutline = OUTLINE_VB;						/* アウトライン解析方法 */
-	pType->m_nKeyWordSetIdx[0]  = 13;							/* キーワードセット */
-	pType->m_nKeyWordSetIdx[1] = 14;							/* キーワードセット2 */
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_VB;
+	pType->m_nKeyWordSetIdx[1] = g_nKeywordsIdx_VB2;
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;		/* 半角数値を色分け表示 */
 	pType->m_nStringType = STRING_LITERAL_PLSQL;				/* 文字列区切り記号エスケープ方法  0=[\"][\'] 1=[""][''] */
+#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = false;	//シングルクォーテーション文字列を色分け表示しない
+#endif // rei_
 	pType->m_bStringLineOnly = true; // 文字列は行内のみ
 }
 
@@ -402,6 +408,7 @@ void CDocOutline::MakeFuncList_VisualBasic( CFuncInfoArr* pcFuncInfoArr )
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 //Jul. 10, 2001 JEPRO 追加
 const wchar_t* g_ppszKeywordsVB[] = {
 	L"And",
@@ -727,3 +734,4 @@ const wchar_t* g_ppszKeywordsVB2[] = {
 	L"VarPtrStringArray"
 };
 int g_nKeywordsVB2 = _countof(g_ppszKeywordsVB2);
+#endif

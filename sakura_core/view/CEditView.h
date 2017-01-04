@@ -241,7 +241,7 @@ protected:
 	//! ロジック行を1行描画
 	bool DrawLogicLine(
 		HDC				hdc,			//!< [in]     作画対象
-		DispPos*		pDispPos,		//!< [in/out] 描画する箇所、描画元ソース
+		DispPos*		pDispPos,		//!< [in,out] 描画する箇所、描画元ソース
 		CLayoutInt		nLineTo			//!< [in]     作画終了するレイアウト行番号
 	);
 
@@ -471,8 +471,13 @@ public:
 
 	int IsSearchString( const CStringRef& cStr, CLogicInt, CLogicInt*, CLogicInt* ) const;	/* 現在位置が検索文字列に該当するか */	//2002.02.08 hor 引数追加
 
+#if REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false, bool bRegQuote = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
+	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false, bool bRegQuote = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
+#else
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
+#endif // rei_
 
 private:
 	/* インクリメンタルサーチ */ 
@@ -694,9 +699,9 @@ public:
 	CSearchStringPattern m_sSearchPattern;
 	mutable CBregexp	m_CurRegexp;				/*!< コンパイルデータ */
 	bool				m_bCurSrchKeyMark;			/* 検索文字列のマーク */
-	bool				m_bCurSearchUpdate;			//<! コンパイルデータ更新要求
-	int					m_nCurSearchKeySequence;	//<! 検索キーシーケンス
-	std::wstring		m_strCurSearchKey;			//<! 検索文字列
+	bool				m_bCurSearchUpdate;			//!< コンパイルデータ更新要求
+	int					m_nCurSearchKeySequence;	//!< 検索キーシーケンス
+	std::wstring		m_strCurSearchKey;			//!< 検索文字列
 	SSearchOption		m_sCurSearchOption;			// 検索／置換  オプション
 	CLogicPoint			m_ptSrchStartPos_PHY;		// 検索/置換開始時のカーソル位置 (改行単位行先頭からのバイト数(0開始), 改行単位行の行番号(0開始))
 	BOOL				m_bSearch;					/* 検索/置換開始位置を登録するか */											// 02/06/26 ai

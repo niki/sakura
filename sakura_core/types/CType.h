@@ -43,7 +43,7 @@ enum ETabArrow {
 //! アウトライン解析の種類
 enum EOutlineType{
 	OUTLINE_C,
-	OUTLINE_CPP,
+	OUTLINE_C_CPP,		// C/C++自動認識
 	OUTLINE_PLSQL,
 	OUTLINE_TEXT,
 	OUTLINE_JAVA,
@@ -57,6 +57,8 @@ enum EOutlineType{
 	OUTLINE_FILE,		//	2002.04.01 YAZAKI ルールファイル用
 	OUTLINE_PYTHON,		//	2007.02.08 genta Pythonアウトライン解析
 	OUTLINE_ERLANG,		//	2009.08.10 genta Erlangアウトライン解析
+	OUTLINE_XML,		//  2014.12.25 Moca
+	OUTLINE_CPP2,		//  2015.11.13 Moca
 	//	新しいアウトライン解析は必ずこの直前へ挿入
 	OUTLINE_CODEMAX,
 	OUTLINE_BOOKMARK,	//	2001.12.03 hor
@@ -106,11 +108,12 @@ struct SEncodingConfig{
 
 //! 文字列区切り記号エスケープ方法
 enum EStringLiteralType{
-	STRING_LITERAL_CPP,		//!< C/C++言語風
+	STRING_LITERAL_CPP,		//!< C/C++03言語風
 	STRING_LITERAL_PLSQL,	//!< PL/SQL風
 	STRING_LITERAL_HTML,	//!< HTML/XML風
 	STRING_LITERAL_CSHARP,	//!< C#風
 	STRING_LITERAL_PYTHON,	//!< Python風
+	STRING_LITERAL_CPP11,	//!< C++11言語風 Raw String付き
 };
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -122,7 +125,7 @@ struct STypeConfig{
 	//2007.09.07 変数名変更: m_nMaxLineSize→m_nMaxLineKetas
 	int					m_nIdx;
 	int					m_id;
-	TCHAR				m_szTypeName[64];				//!< タイプ属性：名称
+	TCHAR				m_szTypeName[MAX_TYPES_NAME];	//!< タイプ属性：名称
 	TCHAR				m_szTypeExts[MAX_TYPES_EXTS];	//!< タイプ属性：拡張子リスト
 	int					m_nTextWrapMethod;				//!< テキストの折り返し方法		// 2008.05.30 nasukoji
 	CLayoutInt			m_nMaxLineKetas;				//!< 折り返し桁数
@@ -132,6 +135,7 @@ struct STypeConfig{
 	ETabArrow			m_bTabArrow;					//!< タブ矢印表示		//@@@ 2003.03.26 MIK
 	EDIT_CHAR			m_szTabViewString[8+1];			//!< TAB表示文字列	// 2003.1.26 aroka サイズ拡張	// 2009.02.11 ryoji サイズ戻し(17->8+1)
 	bool				m_bInsSpace;					//!< スペースの挿入	// 2001.12.03 hor
+	int					m_nTsvMode;						//!< TSVモード	// 2015.05.02 syat
 	// 2005.01.13 MIK 配列化
 	int					m_nKeyWordSetIdx[MAX_KEYWORDSET_PER_TYPE];	//!< キーワードセット
 
@@ -188,6 +192,9 @@ struct STypeConfig{
 	SFileTree			m_sFileTree;					/*!< ファイルツリー設定 */
 
 	ESmartIndentType	m_eSmartIndent;					//!< スマートインデント種別
+	bool				m_bIndentCppStringIgnore;		//!< C/C++インデント：文字列を無視する
+	bool				m_bIndentCppCommentIgnore;		//!< C/C++インデント：コメントを無視する
+	bool				m_bIndentCppUndoSep;			//!< C/C++インデント：Undoバッファを分ける
 	int					m_nImeState;					//!< 初期IME状態	Nov. 20, 2000 genta
 
 	//	2001/06/14 asa-o 補完のタイプ別設定
@@ -246,13 +253,13 @@ struct STypeConfig{
 	int					m_nLineNumWidth;				//!< 行番号の最小桁数 2014.08.02 katze
 }; /* STypeConfig */
 
-// タイプ別設定(mini)
+//! タイプ別設定(mini)
 struct STypeConfigMini
 {
-	int			m_id;
-	TCHAR		m_szTypeName[64];				//!< タイプ属性：名称
-	TCHAR		m_szTypeExts[MAX_TYPES_EXTS];	//!< タイプ属性：拡張子リスト
-	SEncodingConfig		m_encoding;				//!< エンコードオプション
+	int					m_id;
+	TCHAR				m_szTypeName[MAX_TYPES_NAME];	//!< タイプ属性：名称
+	TCHAR				m_szTypeExts[MAX_TYPES_EXTS];	//!< タイプ属性：拡張子リスト
+	SEncodingConfig		m_encoding;						//!< エンコードオプション
 };
 
 
@@ -312,18 +319,26 @@ GEN_CTYPE(CType_Awk)
 GEN_CTYPE(CType_Basis)
 GEN_CTYPE(CType_Cobol)
 GEN_CTYPE(CType_Cpp)
+GEN_CTYPE(CType_Csharp)
+GEN_CTYPE(CType_Css)
 GEN_CTYPE(CType_Dos)
 GEN_CTYPE(CType_Html)
 GEN_CTYPE(CType_Ini)
 GEN_CTYPE(CType_Java)
+GEN_CTYPE(CType_JavaScript)
 GEN_CTYPE(CType_Pascal)
 GEN_CTYPE(CType_Perl)
+GEN_CTYPE(CType_Php)
+GEN_CTYPE(CType_Python)
 GEN_CTYPE(CType_Rich)
+GEN_CTYPE(CType_Ruby)
 GEN_CTYPE(CType_Sql)
 GEN_CTYPE(CType_Tex)
 GEN_CTYPE(CType_Text)
 GEN_CTYPE(CType_Vb)
+GEN_CTYPE(CType_Xml)
 GEN_CTYPE(CType_Other)
+#undef GEN_CTYPE
 
 
 

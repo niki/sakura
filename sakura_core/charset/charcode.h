@@ -233,7 +233,9 @@ namespace WCODE
 	//! キリル文字かどうか
 	inline bool IsCyrillic(wchar_t c)
 	{
-		return c>=0x0410 && c<=0x044F;
+		return (c>=0x0400 && c<=0x052F)  // Cyrillic, Cyrillic Supplement
+			|| (c>=0x2DE0 && c<=0x2DFF)  // Cyrillic Extended-A
+			|| (c>=0xA640 && c<=0xA69F); // Cyrillic Extended-B
 	}
 
 	//! BOX DRAWING 文字 かどうか
@@ -337,8 +339,8 @@ enum ECharWidthCacheMode {
 };
 
 // キャッシュの初期化関数群
-void SelectCharWidthCache( ECharWidthFontMode fMode, ECharWidthCacheMode cMode );  //<! モードを変更したいとき
-void InitCharWidthCache( const LOGFONT &lf, ECharWidthFontMode fMode=CWM_FONT_EDIT ); //<! フォントを変更したとき
+void SelectCharWidthCache( ECharWidthFontMode fMode, ECharWidthCacheMode cMode );  //!< モードを変更したいとき
+void InitCharWidthCache( const LOGFONT &lf, ECharWidthFontMode fMode=CWM_FONT_EDIT ); //!< フォントを変更したとき
 
 #endif /* SAKURA_CHARCODE_5A887F7C_8E08_4940_AF65_BD6850C3A7B5_H_ */
 /*[EOF]*/

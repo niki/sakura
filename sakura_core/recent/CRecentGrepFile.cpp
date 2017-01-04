@@ -38,7 +38,11 @@ CRecentGrepFile::CRecentGrepFile()
 		GetShareData()->m_sSearchKeywords.m_aGrepFiles.dataPtr(),
 		&GetShareData()->m_sSearchKeywords.m_aGrepFiles._GetSizeRef(),
 		NULL,
+#if REI_CHG_MAXDATA
+		RegGetDword(L"GrepFileMax", MAX_GREPFILE),
+#else
 		MAX_GREPFILE,
+#endif
 		NULL
 	);
 }

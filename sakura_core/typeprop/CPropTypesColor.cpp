@@ -77,6 +77,7 @@ static const DWORD p_helpids2[] = {	//11400
 
 TYPE_NAME_ID<EStringLiteralType> StringLitteralArr[] = {
 	{ STRING_LITERAL_CPP,    STR_STRINGESC_CPP },
+	{ STRING_LITERAL_CPP11,  STR_STRINGESC_CPP11 },
 	{ STRING_LITERAL_PLSQL,  STR_STRINGESC_PLSQL },
 	{ STRING_LITERAL_HTML,   STR_STRINGESC_HTML },
 	{ STRING_LITERAL_CSHARP, STR_STRINGESC_CSHARP },
@@ -686,6 +687,14 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 	for( i = 0; i < COLORIDX_LAST; ++i ){
 		GetDefaultColorInfoName( &m_Types.m_ColorInfoArr[i], i );
 		nItem = ::List_AddString( hwndWork, m_Types.m_ColorInfoArr[i].m_szName );
+#if 0//REI_MOD_UNIFY_QUOTE
+		TCHAR szText[256];
+		auto_sprintf(szText, _T("%d, %ts, %08x\n"),
+								i,
+								m_Types.m_ColorInfoArr[i].m_szName,
+								m_Types.m_ColorInfoArr[i].m_sColorAttr.m_cTEXT);
+		::OutputDebugStringW(szText);
+#endif // rei_
 		List_SetItemData( hwndWork, nItem, &m_Types.m_ColorInfoArr[i] );
 	}
 	/* 現在選択されている色タイプ */

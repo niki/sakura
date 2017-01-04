@@ -24,7 +24,11 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 
+int g_nKeywordsIdx_CORBA_IDL = -1;
+
+#ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsCORBA_IDL[] = {
 	L"any",
 	L"attribute",
@@ -65,3 +69,4 @@ const wchar_t* g_ppszKeywordsCORBA_IDL[] = {
 	L"wstring"
 };
 int g_nKeywordsCORBA_IDL = _countof(g_ppszKeywordsCORBA_IDL);
+#endif

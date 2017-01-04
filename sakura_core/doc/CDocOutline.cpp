@@ -311,7 +311,8 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 		}
 
 		//先頭文字が見出し記号のいずれかであれば、次へ進む
-		wchar_t*		pszText = NULL;
+		const wchar_t*		pszText = NULL;
+		std::wstring strText;
 		int		j;
 		for( j = 0; j < nCount; j++ ){
 			if( bRegex ){
@@ -330,9 +331,8 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 						int nIndex = pRegex[j].GetIndex();
 						int nMatchLen = pRegex[j].GetMatchLen();
 						int nTextLen = pRegex[j].GetStringLen() - nLineLen + nMatchLen;
-						pszText = new wchar_t[nTextLen + 1];
-						wmemcpy( pszText, pRegex[j].GetString() + nIndex, nTextLen );
-						pszText[nTextLen] = L'\0';
+						strText.assign( pRegex[j].GetString() + nIndex, nTextLen );
+						pszText = strText.c_str();
 						wcscpy( szTitle, test[j].szGroupName );
 						break;
 					}
@@ -357,16 +357,16 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 		//行文字列から改行を取り除く pLine -> pszText
 		// 正規表現置換のときは設定済み
 		if( NULL == pszText ){
-			pszText = new wchar_t[nLineLen + 1];
-			wmemcpy( pszText, &pLine[i], nLineLen );
-			pszText[nLineLen] = L'\0';
-			bool bExtEol = GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol;
-			for( i = 0; pszText[i] != L'\0'; ++i ){
+			pszText = &pLine[i];
+			nLineLen -= i;
+			const bool bExtEol = GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol;
+			for( i = 0; i < nLineLen; ++i ){
 				if( WCODE::IsLineDelimiter(pszText[i], bExtEol) ){
-					pszText[i] = L'\0';
 					break;
 				}
 			}
+			strText.assign( pszText, i );
+			pszText = strText.c_str();
 		}
 
 		/*
@@ -383,8 +383,7 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 
 		/* nDepthを計算 */
 		int k;
-		BOOL bAppend;
-		bAppend = TRUE;
+		bool bAppend = true;
 		for ( k = 0; k < nDepth; k++ ){
 			int nResult = wcscmp( pszStack[k], szTitle );
 			if ( nResult == 0 ){
@@ -396,7 +395,7 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 			//	ので、同じレベルに合わせてAppendData.
 			nDepth = k;
 		}
-		else if( nMaxStack> k ){
+		else if( nMaxStack > k ){
 			//	いままでに同じ見出しが存在しなかった。
 			//	Lvが高い場合は、一致するまでさかのぼる
 			for ( k = nDepth - 1; 0 <= k ; k-- ){
@@ -414,15 +413,13 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 		}else{
 			// 2002.11.03 Moca 最大値を超えるとバッファオーバーランするから規制する
 			// nDepth = nMaxStack;
-			bAppend = FALSE;
+			bAppend = false;
 		}
-		
-		if( FALSE != bAppend ){
+
+		if( bAppend ){
 			pcFuncInfoArr->AppendData( nLineCount + CLogicInt(1), ptPos.GetY2() + CLayoutInt(1) , pszText, 0, nDepth );
 			nDepth++;
 		}
-		delete [] pszText;
-
 	}
 	delete [] pRegex;
 	return;
@@ -430,9 +427,9 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 
 
 
-// From Here 2001.12.03 hor
 /*! ブックマークリスト作成（無理矢理！）
 
+	@date 2001.12.03 hor   新規作成
 	@date 2002.01.19 aroka 空行をマーク対象にするフラグ bMarkUpBlankLineEnable を導入しました。
 	@date 2005.10.11 ryoji "ａ@" の右２バイトが全角空白と判定される問題の対処
 	@date 2005.11.03 genta 文字列長修正．右端のゴミを除去
@@ -443,7 +440,6 @@ void CDocOutline::MakeFuncList_BookMark( CFuncInfoArr* pcFuncInfoArr )
 	CLogicInt		nLineLen;
 	CLogicInt		nLineCount;
 	int		leftspace, pos_wo_space, k;
-	wchar_t*	pszText;
 	BOOL	bMarkUpBlankLineEnable = GetDllShareData().m_Common.m_sOutline.m_bMarkUpBlankLineEnable;	//! 空行をマーク対象にするフラグ 20020119 aroka
 	int		nNewLineLen	= m_pcDocRef->m_cDocEditor.m_cNewLineCode.GetLen();
 	CLogicInt	nLineLast	= m_pcDocRef->m_cDocLineMgr.GetLineCount();
@@ -490,18 +486,11 @@ void CDocOutline::MakeFuncList_BookMark( CFuncInfoArr* pcFuncInfoArr )
 			k += nCharChars;
 		}
 		//	Nov. 3, 2005 genta 文字列長計算式の修正
-		{
-			int nLen = pos_wo_space - leftspace;
-			pszText = new wchar_t[nLen + 1];
-			wmemcpy( pszText, &pLine[leftspace], nLen );
-			pszText[nLen] = L'\0';
-		}
+		std::wstring strText( &pLine[leftspace], pos_wo_space - leftspace );
+
 		CLayoutPoint ptXY;
-		//int nX,nY
-		m_pcDocRef->m_cLayoutMgr.LogicToLayout(	CLogicPoint(CLogicInt(0), nLineCount), &ptXY );
-		pcFuncInfoArr->AppendData( nLineCount+CLogicInt(1), ptXY.GetY2()+CLayoutInt(1) , pszText, 0 );
-		delete [] pszText;
+		m_pcDocRef->m_cLayoutMgr.LogicToLayout( CLogicPoint(CLogicInt(0), nLineCount), &ptXY );
+		pcFuncInfoArr->AppendData( nLineCount+CLogicInt(1), ptXY.GetY2()+CLayoutInt(1), strText.c_str(), 0 );
 	}
 	return;
 }
-// To Here 2001.12.03 hor

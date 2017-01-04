@@ -20,6 +20,7 @@
 #include <tchar.h>
 #include "debug/Debug1.h"
 #include "debug/Debug3.h"
+#include "debug/CRunningTimer.h"
 
 #if 0
 //デバッグウォッチ用の型
@@ -34,7 +35,7 @@ void Test()
 }
 #endif
 
-#if defined(_DEBUG) || defined(USE_RELPRINT)
+#if defined(_DEBUG) || defined(USE_RELPRINT) || defined(USE_RELPRINT2)
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                   メッセージ出力：実装                      //
@@ -96,6 +97,6 @@ void DebugOutA( LPCSTR lpFmt, ...)
 	return;
 }
 
-#endif	// _DEBUG || USE_RELPRINT
+#endif	// _DEBUG || USE_RELPRINT || USE_RELPRINT2
 
 

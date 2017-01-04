@@ -82,7 +82,7 @@ inline void SetDllShareData(DLLSHAREDATA* pShareData)
 
 
 
-//共有フラグ
+//! 共有フラグ
 struct SShare_Flags{
 	BOOL				m_bEditWndChanging;				// 編集ウィンドウ切替中	// 2007.04.03 ryoji
 	/*	@@@ 2002.1.24 YAZAKI
@@ -108,18 +108,18 @@ public:
 
 public:
 	EditInfo			m_EditInfo_MYWM_GETFILEINFO;	//MYWM_GETFILEINFOデータ受け渡し用	####美しくない
-	CLogicPoint			m_LogicPoint;
+	CLogicPoint			m_LogicPoint;					//!< カーソル位置
 	STypeConfig			m_TypeConfig;
 };
 
-//共有ハンドル
+//! 共有ハンドル
 struct SShare_Handles{
 	HWND				m_hwndTray;
 	HWND				m_hwndDebug;
 	HACCEL				m_hAccel;
 };
 
-//EXE情報
+//! EXE情報
 struct SShare_Version{
 	DWORD				m_dwProductVersionMS;
 	DWORD				m_dwProductVersionLS;

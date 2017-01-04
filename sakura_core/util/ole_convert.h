@@ -9,7 +9,18 @@
 #include "_os/OleTypes.h"
 
 bool variant_to_wstr( VARIANT v, std::wstring& wstr );	// VARIANT•Ï”‚ğBSTR‚Æ‚İ‚È‚µAwstring‚É•ÏŠ·‚·‚é
+bool variant_to_astr( VARIANT v, std::string& astr );	// VARIANT•Ï”‚ğBSTR‚Æ‚İ‚È‚µAstring‚É•ÏŠ·‚·‚é
 bool variant_to_int( VARIANT v, int& n );	// VARIANT•Ï”‚ğ®”‚Æ‚İ‚È‚µAint‚É•ÏŠ·‚·‚é
+
+inline bool variant_to_auto_str( VARIANT v, std::wstring& wstr )
+{
+	return variant_to_wstr( v, wstr );
+}
+
+inline bool variant_to_auto_str( VARIANT v, std::string& astr )
+{
+	return variant_to_astr( v, astr );
+}
 
 #endif /* SAKURA_OLE_CONVERT_208FE8C1_C742_4ED8_9C9C_25841915706BD_H_ */
 /*[EOF]*/

@@ -24,6 +24,9 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
+
+int g_nKeywordsIdx_AWK = -1;
 
 /* awk */
 void CType_Awk::InitTypeConfigImp(STypeConfig* pType)
@@ -35,11 +38,12 @@ void CType_Awk::InitTypeConfigImp(STypeConfig* pType)
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"#", -1 );		/* 行コメントデリミタ */
 	pType->m_eDefaultOutline = OUTLINE_TEXT;			/* アウトライン解析方法 */
-	pType->m_nKeyWordSetIdx[0] = 6;						/* キーワードセット */
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_AWK;
 }
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsAWK[] = {
 	L"BEGIN",
 	L"END",
@@ -130,3 +134,4 @@ const wchar_t* g_ppszKeywordsAWK[] = {
 };
 int g_nKeywordsAWK = _countof(g_ppszKeywordsAWK);
 
+#endif

@@ -24,10 +24,13 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
 #include "outline/CFuncInfoArr.h"
+
+int g_nKeywordsIdx_PLSQL = -1;
 
 /* PL/SQL */
 void CType_Sql::InitTypeConfigImp(STypeConfig* pType)
@@ -41,7 +44,7 @@ void CType_Sql::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"/*", L"*/" );	/* ブロックコメントデリミタ */
 	pType->m_nStringType = STRING_LITERAL_PLSQL;					/* 文字列区切り記号エスケープ方法  0=[\"][\'] 1=[""][''] */
 	wcscpy( pType->m_szIndentChars, L"|★" );						/* その他のインデント対象文字 */
-	pType->m_nKeyWordSetIdx[0] = 2;									/* キーワードセット */
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_PLSQL;
 	pType->m_eDefaultOutline = OUTLINE_PLSQL;						/* アウトライン解析方法 */
 }
 
@@ -379,6 +382,7 @@ void CDocOutline::MakeFuncList_PLSQL( CFuncInfoArr* pcFuncInfoArr )
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsPLSQL[] = {
 	L"AND",
 	L"AS",
@@ -462,3 +466,4 @@ const wchar_t* g_ppszKeywordsPLSQL[] = {
 	L"SQLCODE"
 };
 int g_nKeywordsPLSQL = _countof(g_ppszKeywordsPLSQL);
+#endif

@@ -595,11 +595,11 @@ const char* CFileLoad::GetNextLineCharCode(
 			}
 		}
 		break;
-	case ENCODING_TRAIT_EBCDEC_CRLF:
-	case ENCODING_TRAIT_EBCDEC:
+	case ENCODING_TRAIT_EBCDIC_CRLF:
+	case ENCODING_TRAIT_EBCDIC:
 		// EOLÉRÅ[Éhïœä∑ÇµÇ¬Ç¬ê›íË
 		for( i = nbgn; i < nDataLen; ++i ){
-			if( m_encodingTrait == ENCODING_TRAIT_EBCDEC && bExtEol ){
+			if( m_encodingTrait == ENCODING_TRAIT_EBCDIC && bExtEol ){
 				if( pData[i] == '\x15' ){
 					pcEol->SetType(EOL_NEL);
 					neollen = 1;

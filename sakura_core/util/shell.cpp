@@ -70,6 +70,53 @@ BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TC
 	CCurrentDirectoryBackupPoint dirBack;
 	ChangeCurrentDirectoryToExeDir();
 
+#if REI_MOD_SELECTDIR
+  static bool ifile_operation = !!RegGetDword(L"SelectDirIFileOperation", true);
+  
+  if (ifile_operation) {
+    IFileOpenDialog *pFileOpenDialog;
+    HRESULT hr;
+    IShellItem *psiFolder;
+    IShellItem *psiParent;
+    LPWSTR lpszItem;
+    DWORD dwOptions;
+
+    hr = ::CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER,
+                            IID_PPV_ARGS(&pFileOpenDialog));
+    if (FAILED(hr)) {
+      return FALSE;
+    }
+
+    SHCreateItemFromParsingName(szInitFolder, NULL, IID_PPV_ARGS(&psiFolder));
+    psiFolder->GetParent(&psiParent);
+    psiFolder->GetDisplayName(SIGDN_NORMALDISPLAY, &lpszItem);
+
+    pFileOpenDialog->SetFolder(psiParent);
+    pFileOpenDialog->SetFileName(lpszItem);
+    pFileOpenDialog->GetOptions(&dwOptions);
+    pFileOpenDialog->SetOptions(dwOptions | FOS_PICKFOLDERS);
+
+    hr = pFileOpenDialog->Show(hWnd);
+    if (SUCCEEDED(hr)) {
+      LPWSTR lpszPath;
+      IShellItem *psi;
+
+      hr = pFileOpenDialog->GetResult(&psi);
+      if (SUCCEEDED(hr)) {
+        psi->GetDisplayName(SIGDN_FILESYSPATH, &lpszPath);
+        auto_strcpy(strFolderName, lpszPath);
+        ::CoTaskMemFree(lpszPath);
+        psi->Release();
+      }
+    }
+
+    ::CoTaskMemFree(lpszItem);
+    psiParent->Release();
+    pFileOpenDialog->Release();
+
+    return SUCCEEDED(hr) ? TRUE : FALSE;
+  } else {
+#endif // rei_
 	// SHBrowseForFolder()関数に渡す構造体
 	BROWSEINFO bi;
 	bi.hwndOwner = hWnd;
@@ -95,6 +142,9 @@ BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TC
 		}
 	}
 	return FALSE;
+#if REI_MOD_SELECTDIR
+  }
+#endif // rei_
 }
 
 
@@ -536,7 +586,11 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 
 			memset(&hp, 0, sizeof(hp));	// 構造体をゼロクリア
 			hp.cbStruct = sizeof(hp);
+#if REI_CHANGE_UI_FONT
+			hp.pszFont = _T(REI_FONT_AND_SIZE);
+#else
 			hp.pszFont = _T("ＭＳ Ｐゴシック, 9");
+#endif // rei_
 			hp.clrForeground = hp.clrBackground = -1;
 			hp.rcMargins.left = hp.rcMargins.top = hp.rcMargins.right = hp.rcMargins.bottom = -1;
 			if( uCommandOrg == HELP_CONTEXTMENU ){
@@ -600,8 +654,8 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 }
 
 /*フォント選択ダイアログ
-	@param plf [in/out]
-	@param piPointSize [in/out] 1/10ポイント単位
+	@param plf [in,out]
+	@param piPointSize [in,out] 1/10ポイント単位
 	
 	2008.04.27 kobake CEditDoc::SelectFont から分離
 	2009.10.01 ryoji ポイントサイズ（1/10ポイント単位）引数追加
@@ -616,10 +670,12 @@ BOOL MySelectFont( LOGFONT* plf, INT* piPointSize, HWND hwndDlgOwner, bool Fixed
 	cf.hwndOwner = hwndDlgOwner;
 	cf.hDC = NULL;
 	cf.Flags = CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT;
+#if 1 //20140910, rei_: CF_FIXEDPITCHONLYフラグを設定しない
 	if( FixedFontOnly ){
 		//FIXEDフォント
 		cf.Flags |= CF_FIXEDPITCHONLY;
 	}
+#endif // rei_
 	cf.lpLogFont = plf;
 	if( !ChooseFont( &cf ) ){
 #ifdef _DEBUG

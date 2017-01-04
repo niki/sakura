@@ -215,6 +215,7 @@ CDlgFuncList::CDlgFuncList() : CDialog(true)
 	m_pszTimerJumpFile = NULL;
 	m_ptDefaultSize.x = -1;
 	m_ptDefaultSize.y = -1;
+	m_bDummyLParamMode = false;
 }
 
 
@@ -415,6 +416,9 @@ void CDlgFuncList::SetData()
 	hwndList = ::GetDlgItem( GetHwnd(), IDC_LIST_FL );
 	hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
 
+	m_bDummyLParamMode = false;
+	m_vecDummylParams.clear();
+
 	//2002.02.08 hor 隠しといてアイテム削除→あとで表示
 	::ShowWindow( hwndList, SW_HIDE );
 	::ShowWindow( hwndTree, SW_HIDE );
@@ -424,7 +428,7 @@ void CDlgFuncList::SetData()
 
 
 	SetDocLineFuncList();
-	if( OUTLINE_CPP == m_nListType ){	/* C++メソッドリスト */
+	if( OUTLINE_C_CPP == m_nListType || OUTLINE_CPP2 == m_nListType ){	/* C++メソッドリスト */
 		m_nViewType = VIEWTYPE_TREE;
 		SetTreeJava( GetHwnd(), TRUE );	// Jan. 04, 2002 genta Java Method Treeに統合
 		::SetWindowText( GetHwnd(), LS(STR_DLGFNCLST_TITLE_CPP) );
@@ -474,6 +478,11 @@ void CDlgFuncList::SetData()
 		m_nViewType = VIEWTYPE_LIST;
 		SetListVB();
 		::SetWindowText( GetHwnd(), LS(STR_DLGFNCLST_TITLE_VB) );
+	}
+	else if( OUTLINE_XML == m_nListType ){ // XMLツリー
+		m_nViewType = VIEWTYPE_TREE;
+		SetTree();
+		::SetWindowText( GetHwnd(), _T("XML") );
 	}
 	else if ( OUTLINE_FILETREE == m_nListType ){
 		m_nViewType = VIEWTYPE_TREE;
@@ -761,9 +770,7 @@ void CDlgFuncList::SetData()
 		Combo_SetCurSel( hWnd_Combo_Sort , m_nSortType );
 		::ShowWindow( GetDlgItem( GetHwnd(), IDC_STATIC_nSortType ), SW_SHOW );
 		// 2002.11.10 Moca 追加 ソートする
-		if( 1 == m_nSortType ){
-			SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
-		}
+		SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
 	}else if( m_nListType == OUTLINE_FILETREE ){
 		::ShowWindow( GetItemHwnd(IDC_COMBO_nSortType), SW_HIDE );
 		::ShowWindow( GetItemHwnd(IDC_STATIC_nSortType), SW_HIDE );
@@ -811,6 +818,29 @@ bool CDlgFuncList::GetTreeFileFullName(HWND hwndTree, HTREEITEM target, std::tst
 }
 
 
+/*! LParamからFuncInfoの番号を算出
+	vecにはダミーのLParam番号が入っているのでずれている数を数える
+*/
+static int TreeDummylParamToFuncInfoIndex(std::vector<int>& vec, LPARAM lParam)
+{
+	// vec = { 3,6,7 }
+	// lParam 0,1,2,3,4,5,6,7,8
+	// return 0 1 2-1 3 4-1-1 5
+	int nCount = (int)vec.size();
+	int nDiff = 0;
+	for( int i = 0; i < nCount; i++ ){
+		if( vec[i] < lParam ){
+			nDiff++;
+		}else if( vec[i] == lParam ){
+			return -1;
+		}else{
+			break;
+		}
+	}
+	return lParam - nDiff;
+}
+
+
 
 /* ダイアログデータの取得 */
 /* 0==条件未入力   0より大きい==正常   0より小さい==入力エラー */
@@ -849,7 +879,16 @@ int CDlgFuncList::GetData( void )
 			if( TreeView_GetItem( hwndTree, &tvi ) ){
 				// lParamが-1以下は pcFuncInfoArrには含まれない項目
 				if( 0 <= tvi.lParam ){
-					m_cFuncInfo = m_pcFuncInfoArr->GetAt( tvi.lParam );
+					int nIndex;
+					if( m_bDummyLParamMode ){
+						// ダミー要素を排除:SetTreeJava
+						nIndex = TreeDummylParamToFuncInfoIndex(m_vecDummylParams, tvi.lParam);
+					}else{
+						nIndex = tvi.lParam;
+					}
+					if( 0 <= nIndex ){
+						m_cFuncInfo = m_pcFuncInfoArr->GetAt(nIndex);
+					}
 				}else{
 					if( m_nListType == OUTLINE_FILETREE ){
 						if( tvi.lParam == -1 ){
@@ -867,7 +906,8 @@ int CDlgFuncList::GetData( void )
 }
 
 /* Java/C++メソッドツリーの最大ネスト深さ */
-#define MAX_JAVA_TREE_NEST 16
+// 2016.03.06 vector化で16 -> 32 まで増やしておく
+#define MAX_JAVA_TREE_NEST 32
 
 /*! ツリーコントロールの初期化：Javaメソッドツリー
 
@@ -887,7 +927,6 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 	CLayoutInt		nFuncColTop(INT_MAX);
 	TV_INSERTSTRUCT	tvis;
 	const TCHAR*	pPos;
-    TCHAR           szLabel[64+6];  // Jan. 07, 2001 genta クラス名エリアの拡大
 	HTREEITEM		htiGlobal = NULL;	// Jan. 04, 2001 genta C++と統合
 	HTREEITEM		htiClass;
 	HTREEITEM		htiItem;
@@ -895,10 +934,13 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 	HTREEITEM		htiSelected = NULL;
 	TV_ITEM			tvi;
 	int				nClassNest;
-	int				nDummylParam = -64000;	// 2002.11.10 Moca クラス名のダミーlParam ソートのため
-	TCHAR			szClassArr[MAX_JAVA_TREE_NEST][64];	// Jan. 04, 2001 genta クラス名エリアの拡大 //2009.9.21 syat ネストが深すぎる際のBOF対策
+	std::tstring	strLabel;
+	std::vector<std::tstring> vStrClasses;
 
 	::EnableWindow( ::GetDlgItem( GetHwnd() , IDC_BUTTON_COPY ), TRUE );
+	m_bDummyLParamMode = true;
+	m_vecDummylParams.clear();
+	int nlParamCount = 0;
 
 	hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
 
@@ -931,6 +973,7 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 		const TCHAR*		pWork;
 		pWork = pcFuncInfo->m_cmemFuncName.GetStringPtr();
 		int m = 0;
+		vStrClasses.clear();
 		nClassNest = 0;
 		/* クラス名::メソッドの場合 */
 		if( NULL != ( pPos = _tcsstr( pWork, _T("::") ) )
@@ -947,14 +990,13 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 					k = nWorkLen;
 					break;
 				}
-				// 2005-09-02 D.S.Koba GetSizeOfChar
 				nCharChars = CNativeT::GetSizeOfChar( pWork, nWorkLen, k );
 				if( 1 == nCharChars && 0 == nNestTemplate && _T(':') == pWork[k] ){
 					//	Jan. 04, 2001 genta
 					//	C++の統合のため、\に加えて::をクラス区切りとみなすように
 					if( k < nWorkLen - 1 && _T(':') == pWork[k+1] ){
-						auto_memcpy( szClassArr[nClassNest], &pWork[m], k - m );
-						szClassArr[nClassNest][k - m] = _T('\0');
+						std::tstring strClass(&pWork[m], k - m);
+						vStrClasses.push_back(strClass);
 						++nClassNest;
 						m = k + 2;
 						++k;
@@ -967,8 +1009,8 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 						break;
 				}
 				else if( 1 == nCharChars && _T('\\') == pWork[k] ){
-					auto_memcpy( szClassArr[nClassNest], &pWork[m], k - m );
-					szClassArr[nClassNest][k - m] = _T('\0');
+					std::tstring strClass(&pWork[m], k - m);
+					vStrClasses.push_back(strClass);
 					++nClassNest;
 					m = k + 1;
 				}
@@ -1006,30 +1048,23 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 				// となっているとみなし、szClassArr[k] が 「クラス名」と一致すれば、それを親ノードに設定。
 				// ただし、一致する項目が複数ある場合は最初の項目を親ノードにする。
 				// 一致しない場合は「(クラス名)(半角スペース一個)クラス」のノードを作成する。
-				size_t nClassNameLen = _tcslen( szClassArr[k] );
+				size_t nClassNameLen = vStrClasses[k].size();
 				for( ; NULL != htiClass ; htiClass = TreeView_GetNextSibling( hwndTree, htiClass ))
 				{
 					tvi.mask = TVIF_HANDLE | TVIF_TEXT;
 					tvi.hItem = htiClass;
-					tvi.pszText = szLabel;
-					tvi.cchTextMax = _countof(szLabel);
-					if( TreeView_GetItem( hwndTree, &tvi ) )
-					{
-						if( 0 == _tcsncmp( szClassArr[k],szLabel,nClassNameLen) )
-						{
-							if( _countof(szLabel) < (nClassNameLen +1) )
-								break;// バッファ不足では無条件にマッチする
-							else
-							{
-								if(bAddClass)
-								{
-									if(szLabel[nClassNameLen]==L' ')
-										break;
+
+					std::vector<TCHAR> vecStr;
+					if( TreeView_GetItemTextVector(hwndTree, tvi, vecStr) ){
+						const TCHAR* pszLabel = &vecStr[0];
+						if( 0 == _tcsncmp(vStrClasses[k].c_str(), pszLabel, nClassNameLen) ){
+							if( bAddClass ){
+								if( pszLabel[nClassNameLen]==L' ' ){
+									break;
 								}
-								else
-								{
-									if(szLabel[nClassNameLen]==L'\0')
-										break;
+							}else{
+								if( pszLabel[nClassNameLen]==L'\0' ){
+									break;
 								}
 							}
 						}
@@ -1039,36 +1074,30 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 				/* クラス名のアイテムが登録されていないので登録 */
 				if( NULL == htiClass ){
 					// 2002/10/28 frozen 上からここへ移動
-					TCHAR*	pClassName;
-					pClassName = new TCHAR[ _tcslen( szClassArr[k] ) + 1 + m_pcFuncInfoArr->AppendTextLenMax() ]; // 2002/10/28 frozen +9は追加する文字列の最大長（" 名前空間"が最大）// 2011.09.25 syat プラグインによる拡張対応
-					_tcscpy( pClassName, szClassArr[k] );
+					std::tstring strClassName = vStrClasses[k];
 
-					tvis.item.lParam = -1;
 					if( bAddClass )
 					{
 						if( pcFuncInfo->m_nInfo == FL_OBJ_NAMESPACE )
 						{
 							//_tcscat( pClassName, _T(" 名前空間") );
-							_tcscat( pClassName, to_tchar(m_pcFuncInfoArr->GetAppendText( FL_OBJ_NAMESPACE ).c_str()) );
-							tvis.item.lParam = i;
+							strClassName += to_tchar(m_pcFuncInfoArr->GetAppendText(FL_OBJ_NAMESPACE).c_str());
 						}
 						else
 							//_tcscat( pClassName, _T(" クラス") );
-							_tcscat( pClassName, to_tchar(m_pcFuncInfoArr->GetAppendText( FL_OBJ_CLASS ).c_str()) );
-							tvis.item.lParam = nDummylParam;
-							nDummylParam++;
+							strClassName += to_tchar(m_pcFuncInfoArr->GetAppendText(FL_OBJ_CLASS).c_str());
 					}
-
 					tvis.hParent = htiParent;
 					tvis.hInsertAfter = TVI_LAST;
 					tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
-					tvis.item.pszText = const_cast<TCHAR*>(to_tchar(pClassName));
+					tvis.item.pszText = const_cast<TCHAR*>(strClassName.c_str());
+					// 2016.03.06 item.lParamは登録順の連番に変更
+					tvis.item.lParam = nlParamCount;
+					m_vecDummylParams.push_back(nlParamCount);
+					nlParamCount++;
+
 
 					htiClass = TreeView_InsertItem( hwndTree, &tvis );
-					//	Jan. 04, 2001 genta
-					//	不要になったらさっさと削除
-					delete [] pClassName; // 2002/10/28 frozen 下からここへ移動
-
 				}else{
 					//none
 				}
@@ -1101,16 +1130,15 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 					tvg.item.mask = TVIF_TEXT | TVIF_PARAM;
 					//tvg.item.pszText = const_cast<TCHAR*>(_T("グローバル"));
 					tvg.item.pszText = const_cast<TCHAR*>(sGlobal.c_str());
-					tvg.item.lParam = nDummylParam;
+					tvg.item.lParam = nlParamCount;
+					m_vecDummylParams.push_back(nlParamCount);
+					nlParamCount++;
 					htiGlobal = TreeView_InsertItem( hwndTree, &tvg );
-					nDummylParam++;
 				}
 				htiClass = htiGlobal;
 			}
 		}
-		TCHAR*		pFuncName;
-		pFuncName = new TCHAR[ _tcslen(pWork) + m_pcFuncInfoArr->AppendTextLenMax() ];	// ↓で追加する文字列が収まるだけ確保
-		_tcscpy( pFuncName, pWork );
+		std::tstring strFuncName = pWork;
 
 		// 2002/10/27 frozen 追加文字列の種類を増やした
 		switch(pcFuncInfo->m_nInfo)
@@ -1120,17 +1148,17 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 		case FL_OBJ_GLOBAL:			//「グローバル」は別の場所で処理してるので除外
 			break;
 		default:
-			_tcscat( pFuncName, to_tchar(m_pcFuncInfoArr->GetAppendText( pcFuncInfo->m_nInfo ).c_str()) );
+			strFuncName += to_tchar(m_pcFuncInfoArr->GetAppendText(pcFuncInfo->m_nInfo).c_str());
 		}
 
 /* 該当クラス名のアイテムの子として、メソッドのアイテムを登録 */
 		tvis.hParent = htiClass;
 		tvis.hInsertAfter = TVI_LAST;
 		tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
-		tvis.item.pszText = pFuncName;
-		tvis.item.lParam = i;
+		tvis.item.pszText = const_cast<TCHAR*>(strFuncName.c_str());
+		tvis.item.lParam = nlParamCount;
+		nlParamCount++;
 		htiItem = TreeView_InsertItem( hwndTree, &tvis );
-		delete [] pFuncName;
 
 		/* クリップボードにコピーするテキストを編集 */
 		WCHAR szText[2048];
@@ -1493,7 +1521,8 @@ void CDlgFuncList::SetTree(bool tagjump, bool nolabel)
 		HTREEITEM hItem;
 		TV_INSERTSTRUCT cTVInsertStruct;
 		cTVInsertStruct.hParent = phParentStack[ nStackPointer ];
-		cTVInsertStruct.hInsertAfter = TVI_LAST;	//	必ず最後に追加。
+		// 2016.04.24 TVI_LASTは要素数が多いとすごく遅い。TVI_FIRSTを使い後でソートしなおす
+		cTVInsertStruct.hInsertAfter = TVI_FIRST;
 		cTVInsertStruct.item.mask = TVIF_TEXT | TVIF_PARAM;
 		cTVInsertStruct.item.pszText = pcFuncInfo->m_cmemFuncName.GetStringPtr();
 		cTVInsertStruct.item.lParam = i;	//	あとでこの数値（＝m_pcFuncInfoArrの何番目のアイテムか）を見て、目的地にジャンプするぜ!!。
@@ -1996,6 +2025,19 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
+#if REI_MOD_OUTLINEDLG
+	// フォント設定
+	{
+		HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_TREE_FL ), WM_GETFONT, 0, 0 );
+		HFONT hFont = SetMainFont( GetItemHwnd( IDC_TREE_FL ) );
+		m_cFontText[0].SetFont( hFontOld, hFont, GetItemHwnd( IDC_TREE_FL ) );
+	}
+	{
+		HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_LIST_FL ), WM_GETFONT, 0, 0 );
+		HFONT hFont = SetMainFont( GetItemHwnd( IDC_LIST_FL ) );
+		m_cFontText[1].SetFont( hFontOld, hFont, GetItemHwnd( IDC_LIST_FL ) );
+	}
+#endif  // rei_
 
 	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 }
@@ -2183,6 +2225,10 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 	}
 
 #ifdef DEFINE_SYNCCOLOR
+#if REI_MOD_OUTLINEDLG
+  bool dock_color_sync = !!RegGetDword(L"DockColorSync", 0);
+  if (dock_color_sync)
+#endif // rei_
 	if( IsDocking() ){
 		if( hwndList == pnmh->hwndFrom || hwndTree == pnmh->hwndFrom ){
 			if( pnmh->code == NM_CUSTOMDRAW ){
@@ -2371,6 +2417,10 @@ int CALLBACK Compare_by_ItemData(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSo
 
 BOOL CDlgFuncList::OnDestroy( void )
 {
+#if REI_MOD_OUTLINEDLG
+	m_cFontText[0].ReleaseOnDestroy();
+	m_cFontText[1].ReleaseOnDestroy();
+#endif  // rei_
 	CDialog::OnDestroy();
 
 	/* アウトライン ■位置とサイズを記憶する */ // 20060201 aroka
@@ -2644,6 +2694,10 @@ void CDlgFuncList::SyncColor( void )
 	if( !IsDocking() )
 		return;
 #ifdef DEFINE_SYNCCOLOR
+#if REI_MOD_OUTLINEDLG
+  bool dock_color_sync = !!RegGetDword(L"DockColorSync", 0);
+  if (!dock_color_sync) return;
+#endif // rei_
 	// テキスト色・背景色をビューと同色にする
 	CEditView* pcEditView = (CEditView*)m_lParam;
 	const STypeConfig	*TypeDataPtr = &(pcEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute());
@@ -3232,14 +3286,15 @@ void CDlgFuncList::DoMenu( POINT pt, HWND hwndFrom )
 	CDocTypeManager().GetTypeConfig( CTypeConfig(m_nDocType), m_type );
 	EDockSide eDockSide = ProfDockSide();	// 設定上の配置
 	UINT uFlags = MF_BYPOSITION | MF_STRING;
+	const bool bDropDown = (hwndFrom == GetHwnd()); // true=ドロップダウン, false=右クリック
 	HMENU hMenu = ::CreatePopupMenu();
-	HMENU hMenuSub = ::CreatePopupMenu();
+	HMENU hMenuSub = bDropDown ? NULL : ::CreatePopupMenu();
 	int iPos = 0;
 	int iPosSub = 0;
-	HMENU& hMenuRef = ( hwndFrom == GetHwnd() )? hMenu: hMenuSub;
-	int& iPosRef = ( hwndFrom == GetHwnd() )? iPos: iPosSub;
+	HMENU& hMenuRef = bDropDown ? hMenu : hMenuSub;
+	int& iPosRef = bDropDown ? iPos : iPosSub;
 
-	if( hwndFrom != GetHwnd() ){
+	if( bDropDown == false ){
 		// 将来、ここに hwndFrom に応じた状況依存メニューを追加するといいかも
 		// （ツリーなら「すべて展開」／「すべて縮小」とか、そういうの）
 		::InsertMenu( hMenu, iPos++, MF_BYPOSITION | MF_STRING, 450, LS(STR_DLGFNCLST_MENU_UPDATE) );
@@ -3276,7 +3331,7 @@ void CDlgFuncList::DoMenu( POINT pt, HWND hwndFrom )
 	::InsertMenu( hMenuRef, iPosRef++, MF_BYPOSITION | MF_SEPARATOR, 0,	NULL );
 	::InsertMenu( hMenuRef, iPosRef++, MF_BYPOSITION | MF_STRING, 305, LS(STR_DLGFNCLST_MENU_UNIFY) );
 
-	if( hwndFrom != GetHwnd() ){
+	if( bDropDown == false ){
 		::InsertMenu( hMenu, iPos++, MF_BYPOSITION | MF_SEPARATOR, 0,	NULL );
 		::InsertMenu( hMenu, iPos++, MF_BYPOSITION | MF_STRING, 452, LS(STR_DLGFNCLST_MENU_CLOSE) );
 	}

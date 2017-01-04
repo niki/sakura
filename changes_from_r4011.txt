@@ -1,0 +1,106 @@
+先頭に - がついているリビジョンは未適用.
+---------------------------------------------------------------------------
+http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からのマージ分
+      	Fix: UTF-7自動認識を厳しくする  [patchunicode:#988]
+      	Imp: カラーの文字列にC++11を追加,C/C++はC/C++03に変更しRawを処理しない  [patchunicode:#956]
+      	Chg: マクロ保存でS_を追加しない  [patchunicode:#943]
+      	Fix: CProfileの読み込みの高速化  [patchunicode:#908]
+      	Imp: マクロの文字列コピーを減らす  [patchunicode:#830]
+      	Imp: タイプ別設定の追加と強調キーワードの外部化  [patchunicode:#720]
+      	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
+---------------------------------------------------------------------------
+ r4156	Imp: アウトライン解析ツリー表示の高速化  [patchunicode:#1056]
+ r4154	Fix: Win10で無題のタブアイコンがGrepになる [patchunicode:#1080] Contributed by LR4, Moca
+ r4153	Fix: アウトライン解析KR対策以降でANSIビルドエラーが出る [patchunicode:#1088] Contributed by Moca
+ r4151	Keep: maxdata定義追加 [patchunicode:#1085]
+ r4147	Fix: 編集中ファイルからGrepのときサブフォルダ共通設定を上書きしない [patchunicode:#1032] Contributed by Moca
+ r4146	Keep: new/deleteからwstringに置き換え [patchunicode:#1086]
+ r4145	Keep: maxdata定義追加 [patchunicode:#1085]
+ r4143	Keep: typo修正(Doxygenコメント)
+ r4142	Fix: IO_ProfileのコマンドIDプラグイン名処理をまとめる [patchunicode:#1064] Contributed by Moca
+ r4139	Fix: キーボードでCPをチェックするとキーボードで操作できなくなる [patchunicode:#1084] Contributed by Moca
+-r4138	Imp: アウトラインのツリーの逆順ソート追加 [patchunicode:#1038] Contributed by Moca
+ r4137	Fix: Grepダイアログが言語切替でウィンドウサイズが変わらない [patchunicode:#1071] Contributed by Moca
+ r4133	Fix: アウトライン解析C++/Javaのソート順がおかしいバグの修正  [patchunicode:#1031]
+ r4131	Keep: typo修正(Doxygenコメント)
+ r4130	Fix: C++アウトラインでのK&R引数定義対策  [patchunicode:#1012]
+--- 2.3.1.0 ---------------------------------------------------------------
+ r4125	Fix: アウトライン解析C++/Javaツリーのクラス名の最大長の修正  [patchunicode:#1030]
+ r4123	Fix: 外部コマンド実行の標準出力を得るUTF-8で文字化け [patchunicode:#1077] Contributed by Moca
+-r4119	Chg: ini読み取り専用オプション [patchunicode:#937] Contributed by Moca
+ r4118	Fix: バックアップの詳細設定の時刻がUTCになっている [patchunicode:#937]
+ r4117	Chg: メールアドレスの記号類を許可する [patchunicode:#1063]
+-r4416	Fix: オートスクロールの横方向がpx単位になっている [patchunicode:#1062] Contributed by Moca
+-r4115	Fix: 1行目で前の段落へ移動を実行すると落ちる [patchunicode:#1023] Contributed by Moca
+-r4114	Fix: プラグインオプションのコンボボックスの高さが不正 [patchunicode:#1054] Contributed by Moca
+ r4113	Fix: EOF直前の改行を改行なしに置換するとEOFの再描画が不足する [patchunicode:#1008]
+-r4112	Fix: ユーザ別設定のときのマルチプロファイルの場所がおかしい [patchunicode:#1024] Contributed by Moca
+-r4111	Imp: タイプ一覧の基本も初期化できるように [patchunicode:#1037] Contributed by Moca
+-r4109	Fix: プロファイルマネージャで表示直後(default)が削除・名前変更できるバグ [patchunicode:#1061] Contributed by Moca
+ r4108	Keep: x64コンパイル時のmigemo呼び出し規約判定省略 [patchunicode:#1075]
+ r4107	Fix: マクロ関数InputBoxバッファオーバーラン [patchunicode:#1058]
+-r4106	Fix: 起動時のプロファイルマネージャで新規作成・名前変更で落ちる [patchunicode:#1059] Contributed by Moca
+ r4105	Fix: CDlgInput1が言語切り替え未対応 [patchunicode:#1060]
+-r4103	Fix: slnファイルのタイプをVC2005Expressにする [patchunicode:#1073] Contributed by Moca
+-r4102	Imp:  カーソル左右リピート設定(iniのみ) [patchunicode:#926] Contributed by Moca
+ r4101	Fix: 共通設定マクロ一覧の幅調整 [patchunicode:#974]
+-r4100	Fix: プロファイルマネージャが左上に表示される [patchunicode:#1025] Contributed by Moca
+-r4099	Fix: プロファイルマネージャのアイコンがおかしい [patchunicode:#1039] Contributed by Moca
+ r4097	Fix: テキスト・ルールファイル解析での範囲外アクセスの修正 [patchunicode:#1010]
+ r4096	Fix: ミニマップのDIFFマークを非表示に修正 [patchunicode:#1029]
+ r4093	Fix: アウトラインのメニュー表示でリソースリーク [patchunicode:#1048]
+ r4092	Fix: テキスト・ルールファイル解析での範囲外アクセスの修正 [patchunicode:#1010]
+-r4090	Fix: WCODE::IsCtrlCode()でNUL文字がfalseになるためコントロールコードとして描画されない [patchunicode:#1035] Contributed by Moca
+-r4088	Keep: assertダイアログでファイル行番号を画面に表示 [patchunicode:#957] Contributed by Moca
+ r4087	Fix: C++アウトライン解析で異常終了する [patchunicode:#1007]
+-r4086	Fix: TSV,CSVモードコンボボックスの縦幅を広げる [patchunicode:#1033] Contributed by Moca
+ r4085	Fix: ソートコマンドでメモリーリーク [patchunicode:#1027]
+ r4084	Fix: CDCFontでフォント削除がおかしい [patchunicode:#1026]
+ r4083	Fix: 単語種別のキリル文字の範囲修正 [patchunicode:#1022]
+ r4082	Fix: C++インデントでコメント行を改行するとRuntime Error [patchunicode:#1021]
+ r4081	Fix: フォント拡大縮小がOpenTypeのPostScriptだと動作しない [patchunicode:#1020]
+ r4080	Fix: コードページ対応 [patchunicode:#311] 
+-r4077	Keep: インクリメントサーチ定義 [patchunicode:#1018]
+ r4075	Fix: migemo_close()呼び出し [patchunicode:#1017] 
+ r4074	Fix: アウトラインを上下にドッキングした場合の初期表示の高さが不正 [patchunicode:#1016] 
+ r4073	Keep: typo修正(コメント)
+ r4072	Keep: typo修正(コメント)
+-r4071	Fix: 上書きモードでの矩形選択入力で選択範囲を削除するオプションを追加 [patchunicode:#821]
+-r4070	Fix: プロポーショナルフォント [patchunicode:#713]
+ r4068	Fix: 外部コマンド実行の拡張  [patchunicode:#324] 
+ r4066	Fix: すべて置換の高速化 [patchunicode:#521] 
+-r4065	Fix: プロポーショナルフォント [patchunicode:#713]
+ r4063	Keep: typo修正(Doxygenコメント)
+ r4061	Fix: 共通・タイプ別設定変更後にタイトルバー更新  [patchunicode:#1013] 
+ r4055	Keep: コメント追記(コマンドラインオプション用定数)
+--- 2.3.0.0 ---------------------------------------------------------------
+ r4048	Fix: スクロールできないときマウスキャプチャされたままになる
+ r4047	New: XMLアウトラインとHTMLの修正
+-r4046	Fix: 文字の間隔の適用値が今までと異なる [patchunicode:#1003] Contributed by Moca 文字間隔回りがおかしいのを修正します。 1. プロポーショナル版で全角の文字間隔が2倍になるように 2. CTextMetrics::CalcTextWidth2/3の文字間隔の引数がずれてたバグの修正 3. CLayoutMgr::getIndentOffsetの文字幅にさらに文字間隔が足されていたバグの修正
+-r4045	Imp: 桁数表示のオプション化 [patchunicode:#1004] Contributed by Moca, syat プロポーショナル対応にてステータスバーに表示する桁数が文字単位に変わったことに関して、共通設定でルーラー桁単位にできるようにします。
+-r4043	Fix: 折り返し記号をOFFにしても折り返し記号が消えない [patchunicode:#1002] unicode:2290 等幅フォント、右端折り返しのときの折り返し記号の描画を修正します。 ・タイプ別設定から折り返し記号の表示をやめても記号が消えない ・半角文字を入力すると行末にゴミが残る
+ r4038	Fix: タブの検索をキーマクロとして保存できない
+ r4037	Fix: ミニマップが印刷プレビューで表示されたままになる
+-r4036	Keep: MinGWコンパイル対応 [patchunicode:#995]
+-r4035	New: プロポーショナルフォント [patchunicode:#713] wiki:Request/500 フォント設定、印刷ページ設定でプロポーショナルフォントが使用できるようになります。
+ r4034	Fix: Undo/Redo時にキャレットが期待する位置に移動しない  [patchunicode:#999]
+ r4033	Fix: キーワードヘルプの表示位置不正  [patchunicode:#998]
+ r4032	Fix: 「ミニマップを隠す」メニュー／ツールバーのアイコンが窪んだ状態にならない [patchunicode:#997]
+ r4031	Fix: 入力補完中のIME動作がおかしい [patchunicode:#996]
+ r4030	Keep: ミニマップビュー生成時にメンバを初期化する
+ r4029	Fix: 複数ファイルを「送る」メニューから開いたときの挙動 [patchunicode:#990]
+ r4028	Fix: C/C++用強調キーワードにてfinalとfloatが動作しない [patchunicode:#993]
+ r4027	Fix: 正規表現のGrep置換で行内の1つめしか置換されない [patchunicode:#984]
+ r4026	Fix: Grepの検索対象ファイルを厳密にする [patchunicode#992]
+-r4025	Keep: コンパイルオプションに/NXCOMPAT /SAFESEH /DYNAMICBASEを追加 [patchunicode#826] Contributed by Moca /NXCOMPAT　データ実行防止 /SAFESEH　安全な例外ハンドラー /DYNAMICBASE　ASLR ベースアドレスランダム化　(Visual Studio 2005 SP1以降専用) を追加します。
+ r4024	Fix: 正規表現OFF置換で異常終了する [patchunicode#994]
+-r4023	Keep: USE_CRASHDUMPをデフォルトで有効化 [patchunicode#995] unicode:2268 クラッシュ時の解析支援のためミニダンプをリリースビルドでも有効化します。
+ r4022	Fix:　メッセージボックスのコピーがおかしい [patchunicode#816]
+ r4021	Fix: DLL,EXEの検索パスのセキュリティ設定変更 Contributed by Moca [patchunicode:#805]
+ r4020	Imp: C/C++インデントの改良 Contributed by Moca [patchunicode:#717]
+ r4019	New: TSV、CSVモード [patchunicode:#991] Request/359 TSV、CSVを編集するモードを追加します。
+ r4018	Fix: TCITEMの cchTextMaxメンバが初期化されていなかった。 関連 BBS [unicode:2263]
+ r4017	Fix: EBCDIC typo修正 [patchunicode:#987]
+ r4016	Fix: (選択)前の変更行へが追加されるときにもセパレータが余分に追加される [patchunicode:#983]
+--- 2.2.0.1 ---------------------------------------------------------------
+ r4011	base.

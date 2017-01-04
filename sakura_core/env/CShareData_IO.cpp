@@ -94,6 +94,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	if( bRead ){
 		if( !cProfile.ReadProfile( szIniFileName ) ){
 			/* 設定ファイルが存在しない */
+
+			// キーワードファイルのインポート
+			pcShare->InitKeyword( &GetDllShareData(), true );
 			return false;
 		}
 
@@ -315,6 +318,15 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("GREPFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFolders[i] );
 	}
+#if REI_MOD_GREP
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[*].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders99 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders2 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders3 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[2].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders4 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Path"), pShare->m_sSearchKeywords.m_szGrepFolders2 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Path"), pShare->m_sSearchKeywords.m_szGrepFolders3 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[2].Path"), pShare->m_sSearchKeywords.m_szGrepFolders4 );
+#endif // rei_
 }
 
 /*!
@@ -592,7 +604,6 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("szInyouKigou")			, MakeStringBufferW(common.m_sFormat.m_szInyouKigou) );
 	
 	// 2001/06/14 asa-o 補完とキーワードヘルプはタイプ別に移動したので削除：３行
-	cProfile.IOProfileData( pszSecName, LTEXT("bUseHokan")				, common.m_sHelper.m_bUseHokan );
 	// 2002/09/21 Moca bGrepKanjiCode_AutoDetect は bGrepCharSetに統合したので削除
 	// 2001/06/19 asa-o タイプ別に移動したので削除：1行
 	cProfile.IOProfileData_WrapInt( pszSecName, LTEXT("bSaveWindowSize"), common.m_sWindow.m_eSaveWindowSize );	//#####フラグ名が激しくきもい
@@ -787,6 +798,31 @@ bool GetPlugCmdInfoByFuncCode(
 }
 
 
+/*! プラグイン名or機能番号文字列をEFunctionCodeにする
+
+	@param[in]	pszFuncName		プラグイン名or機能番号文字列
+	@return 機能コード
+*/
+static EFunctionCode GetFunctionStrToFunctionCode(const WCHAR* pszFuncName)
+{
+	EFunctionCode n;
+	if (pszFuncName == NULL) {
+		n = F_DEFAULT;
+	}else if (wcschr(pszFuncName, L'/') != NULL) {
+		// Plugin名
+		n = GetPlugCmdInfoByName(pszFuncName);
+	}else if (WCODE::Is09(pszFuncName[0]) 
+	  && (pszFuncName[1] == L'\0' || WCODE::Is09(pszFuncName[1]))) {
+		n = (EFunctionCode)auto_atol(pszFuncName);
+	}else {
+		n = CSMacroMgr::GetFuncInfoByName(0, pszFuncName, NULL);
+	}
+	if (n == F_INVALID) {
+		n = F_DEFAULT;
+	}
+	return n;
+}
+
 /*!
 	@brief 共有データのToolbarセクションの入出力
 	@param[in]		bRead		true: 読み込み / false: 書き込み
@@ -903,20 +939,7 @@ void CShareData_IO::IO_CustMenu( CDataProfile& cProfile, CommonSetting_CustomMen
 			auto_sprintf( szKeyName, LTEXT("nCMIF[%02d][%02d]"), i, j );
 			if (cProfile.IsReadingMode()) {
 				cProfile.IOProfileData(pszSecName, szKeyName, MakeStringBufferW(szFuncName));
-				if (wcschr(szFuncName, L'/') != NULL) {
-					// Plugin名
-					n = GetPlugCmdInfoByName(szFuncName);
-				}
-				else if ( WCODE::Is09(*szFuncName) 
-				  && (szFuncName[1] == L'\0' || WCODE::Is09(szFuncName[1])) ) {
-					n = (EFunctionCode)auto_atol(szFuncName);
-				}
-				else {
-					n = CSMacroMgr::GetFuncInfoByName(0, szFuncName, NULL);
-				}
-				if ( n == F_INVALID ) {
-					n = F_DEFAULT;
-				}
+				n = GetFunctionStrToFunctionCode(szFuncName);
 				menu.m_nCustMenuItemFuncArr[i][j] = n;
 			}
 			else {
@@ -1059,19 +1082,7 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 						pn = auto_strchr(p,',');
 						if (pn == NULL)	break;
 						*pn = 0;
-						if (wcschr(p, L'/') != NULL) {
-							// Plugin名
-							n = GetPlugCmdInfoByName( p );
-						}
-						else if (WCODE::Is09(*p) && (p[1] == L'\0' || WCODE::Is09(p[1]))) {
-							n = (EFunctionCode)auto_atol( p);
-						}
-						else {
-							n = CSMacroMgr::GetFuncInfoByName(0, p, NULL);
-						}
-						if( n == F_INVALID ) {
-							n = F_DEFAULT;
-						}
+						n = GetFunctionStrToFunctionCode(p);
 						tmpKeydata.m_nFuncCodeArr[j] = n;
 						p = pn+1;
 					}
@@ -1371,11 +1382,11 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	assert( 100 < MAX_REGEX_KEYWORDLEN + 20 );
 
 	// 2005.04.07 D.S.Koba
-	static const WCHAR* pszForm = LTEXT("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d");	//MIK
+	static const WCHAR* pszForm = LTEXT("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d");	//MIK
 	auto_strcpy( szKeyName, LTEXT("nInts") );
 	if( cProfile.IsReadingMode() ){
 		if( cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) ) ){
-			int buf[11];
+			int buf[12];
 			scan_ints( szKeyData, pszForm, buf );
 			types.m_nIdx					= buf[ 0];
 			types.m_nMaxLineKetas			= buf[ 1];
@@ -1388,6 +1399,7 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 			types.m_nLineTermType			= buf[ 8];
 			types.m_bWordWrap				= (buf[ 9]!=0);
 			types.m_nCurrentPrintSetting	= buf[10];
+			types.m_nTsvMode				= buf[11];
 		}
 		// 折り返し幅の最小値は10。少なくとも４ないとハングアップする。 // 20050818 aroka
 		if( types.m_nMaxLineKetas < CLayoutInt(MINLINEKETAS) ){
@@ -1406,7 +1418,8 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 			types.m_bLineNumIsCRLF?1:0,
 			types.m_nLineTermType,
 			types.m_bWordWrap?1:0,
-			types.m_nCurrentPrintSetting
+			types.m_nCurrentPrintSetting,
+			types.m_nTsvMode
 		);
 		cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) );
 	}
@@ -1566,6 +1579,9 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	cProfile.IOProfileData( pszSecName, LTEXT("nOutlineSortType")		, types.m_nOutlineSortType );/* アウトライン解析ソート基準 */
 	ShareData_IO_FileTree( cProfile, types.m_sFileTree, pszSecName );
 	cProfile.IOProfileData_WrapInt( pszSecName, LTEXT("nSmartIndent")		, types.m_eSmartIndent );/* スマートインデント種別 */
+	cProfile.IOProfileData( pszSecName, LTEXT("bIndentCppStringIgnore")		, types.m_bIndentCppStringIgnore );
+	cProfile.IOProfileData( pszSecName, LTEXT("bIndentCppCommentIgnore")	, types.m_bIndentCppCommentIgnore );
+	cProfile.IOProfileData( pszSecName, LTEXT("bIndentCppUndoSep")	, types.m_bIndentCppUndoSep );
 	//	Nov. 20, 2000 genta
 	cProfile.IOProfileData( pszSecName, LTEXT("nImeState")			, types.m_nImeState );	//	IME制御
 
@@ -1797,6 +1813,9 @@ void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 					pCKeyWordSetMgr->SetKeyWordArr( i, nKeyWordNum, sValue.c_str() );
 				}
 			}
+		}else{
+			// キーワードファイルのインポート
+			CShareData::getInstance()->InitKeyword( &GetDllShareData(), true );
 		}
 	}else{
 		int nSize = pCKeyWordSetMgr->m_nKeyWordSetNum;
@@ -1981,7 +2000,7 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 			{1, F_MODIFYLINE_NEXT, F_FUNCLIST_PREV, L'\0', false, false}, 	// 次の変更行へ
 			{1, F_MODIFYLINE_PREV, F_MODIFYLINE_NEXT, L'\0', false, false}, 	// 前の変更行へ
 			{1, F_MODIFYLINE_NEXT_SEL, F_GOFILEEND_SEL, L'\0', true, false}, 	// (選択)次の変更行へ
-			{1, F_MODIFYLINE_PREV_SEL, F_MODIFYLINE_NEXT_SEL, L'\0', true, false}, 	// (選択)前の変更行へ
+			{1, F_MODIFYLINE_PREV_SEL, F_MODIFYLINE_NEXT_SEL, L'\0', false, false}, 	// (選択)前の変更行へ
 		};
 		for( int i = 0; i < _countof(addInfos); i++ ){
 			SMainMenuAddItemInfo& item = addInfos[i];
@@ -2019,7 +2038,7 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 						const int nLevel = pcMenuTlb[r].m_nLevel;
 						if( item.m_bAddPrevSeparete ){
 							pcMenu->m_nType    = T_SEPARATOR;
-							pcMenu->m_nFunc    = F_0;
+							pcMenu->m_nFunc    = F_SEPARATOR;
 							pcMenu->m_nLevel   = nLevel;
 							pcMenu->m_sName[0] = L'\0';
 							pcMenu->m_sKey[0]  = L'\0';
@@ -2037,7 +2056,7 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 						if( item.m_bAddNextSeparete ){
 							pcMenu++;
 							pcMenu->m_nType    = T_SEPARATOR;
-							pcMenu->m_nFunc    = F_0;
+							pcMenu->m_nFunc    = F_SEPARATOR;
 							pcMenu->m_nLevel   = nLevel;
 							pcMenu->m_sName[0] = L'\0';
 							pcMenu->m_sKey[0]  = L'\0';
@@ -2148,20 +2167,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 			p = pn;
 			pn = wcschr( p, L',' );
 			if (pn != NULL)		*pn++ = L'\0';
-			if (wcschr(p, L'/') != NULL) {
-				// Plugin名
-				n = GetPlugCmdInfoByName(p);
-			}
-			else if (WCODE::Is09( *p )
-			  && (WCODE::Is09( p[1] ) == L'\0' ||  WCODE::Is09( p[1] ))) {
-				n = (EFunctionCode)auto_atol( p );
-			}
-			else {
-				n = CSMacroMgr::GetFuncInfoByName(0, p, NULL);
-			}
-			if ( n == F_INVALID ) {
-				n = F_DEFAULT;
-			}
+			n = GetFunctionStrToFunctionCode(p);
 			pcMenu->m_nFunc = n;
 			if (pn == NULL) {
 				continue;
@@ -2305,6 +2311,10 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 	for( j = 0; j < COLORIDX_LAST; ++j ){
 		static const WCHAR* pszForm = LTEXT("%d,%d,%06x,%06x,%d");
 		auto_sprintf( szKeyName, LTEXT("C[%ts]"), g_ColorAttributeArr[j].szName );	//Stonee, 2001/01/12, 2001/01/15
+#if REI_MOD_UNIFY_QUOTE
+		//::MessageBoxW(NULL,szKeyName,L"",MB_OK);
+		//::OutputDebugStringW(szKeyName);
+#endif // rei_
 		if( pcProfile->IsReadingMode() ){
 			if( pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) ) ){
 				int buf[5];

@@ -55,10 +55,11 @@ BOOL CPPAMacroMgr::LoadKeyMacro( HINSTANCE hInstance, const TCHAR* pszPath )
 	CNativeW cmemWork;
 
 	// バッファ（cmemWork）にファイル内容を読み込み、m_cPPAに渡す。
+	CNativeW strLine;
 	while( in ){
-		wstring szLine = in.ReadLineW();
-		szLine += L"\n";
-		cmemWork.AppendString(szLine.c_str());
+		in.ReadLineW(strLine);
+		strLine.AppendString(L"\n");
+		cmemWork.AppendNativeData(strLine);
 	}
 	in.Close();
 

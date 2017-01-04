@@ -68,7 +68,9 @@ static ColorInfoIni ColorInfo_DEFAULT[] = {
 	{ STR_COLOR_SEARCH_WORD4,				{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0,   0,   0 ),	RGB( 255, 153, 153 ) } } },
 	{ STR_COLOR_SEARCH_WORD5,				{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0,   0,   0 ),	RGB( 255, 102, 255 ) } } },
 	{ STR_COLOR_COMMENT,					{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0, 128,   0 ),	RGB( 255, 251, 240 ) } } },
+#if REI_MOD_UNIFY_QUOTE == 0
 	{ STR_COLOR_SINGLE_QUOTE,				{ TRUE,		{ FALSE,	FALSE },	{ RGB(  64, 128, 128 ),	RGB( 255, 251, 240 ) } } },
+#endif // rei_
 	{ STR_COLOR_DOUBLE_QUOTE,				{ TRUE,		{ FALSE,	FALSE },	{ RGB( 128,   0,  64 ),	RGB( 255, 251, 240 ) } } },
 	{ STR_COLOR_HERE_DOCUMENT,				{ FALSE,	{ FALSE,	FALSE },	{ RGB( 128,   0,  64 ),	RGB( 255, 251, 240 ) } } },
 	{ STR_COLOR_URL,						{ TRUE,		{ FALSE,	TRUE  },	{ RGB(   0,   0, 255 ),	RGB( 255, 251, 240 ) } } },

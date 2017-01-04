@@ -101,8 +101,48 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	CNativeT		cmWork2;
 	CNativeT		cmWork3;
 	cmWork1.SetString( cDlgGrep.m_strText.c_str() );
+#if REI_MOD_GREP
+	int count = 0;
+	CNativeT temp;
+	if (!cDlgGrep.m_bFromThisText) {
+		if (cDlgGrep.m_bFolder99) {
+			temp.SetString( cDlgGrep.m_szFolder );
+			count++;
+		}
+		if (cDlgGrep.m_bFolder2) {
+			if (count > 0)  temp.AppendString(_T(";"));
+			temp.AppendString(cDlgGrep.m_szFolder2);
+			count++;
+		}
+		if (cDlgGrep.m_bFolder3) {
+			if (count > 0) temp.AppendString(_T(";"));
+			temp.AppendString(cDlgGrep.m_szFolder3);
+			count++;
+		}
+		if (cDlgGrep.m_bFolder4) {
+			if (count > 0) temp.AppendString(_T(";"));
+			temp.AppendString(cDlgGrep.m_szFolder4);
+			count++;
+		}
+	}
+	if (count > 0) {
+		if (temp.GetStringLength() == 0) return;
+		cmWork2.SetString( cDlgGrep.m_szFile );
+		cmWork3.SetString( temp.GetStringPtr() );
+	} else {
+		TCHAR	szWorkFolder[MAX_PATH];
+		TCHAR	szWorkFile[MAX_PATH];
+		// 2003.08.01 Moca ファイル名はスペースなどは区切り記号になるので、""で囲い、エスケープする
+		szWorkFile[0] = _T('"');
+		SplitPath_FolderAndFile( cDlgGrep.m_szCurrentFilePath, szWorkFolder, szWorkFile + 1 );
+		_tcscat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
+		cmWork2.SetString( szWorkFile );
+		cmWork3.SetString( szWorkFolder );
+	}
+#else
 	cmWork2.SetString( cDlgGrep.m_szFile );
 	cmWork3.SetString( cDlgGrep.m_szFolder );
+#endif // rei_
 	cmWork1.Replace( L"\"", L"\"\"" );
 	cmWork2.Replace( _T("\""), _T("\"\"") );
 	cmWork3.Replace( _T("\""), _T("\"\"") );
@@ -122,7 +162,11 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 
 	//GOPTオプション
 	TCHAR pOpt[64] = _T("");
+#if REI_MOD_GREP
+	if( (count > 0) && cDlgGrep.m_bSubFolder )_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
+#else
 	if( cDlgGrep.m_bSubFolder					)_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
+#endif // rei_
 	if( cDlgGrep.m_sSearchOption.bLoHiCase		)_tcscat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
 	if( cDlgGrep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// 正規表現
 	if( cDlgGrep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// 行を出力する

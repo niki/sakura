@@ -170,8 +170,9 @@ BOOL CKeyMacroMgr::LoadKeyMacro( HINSTANCE hInstance, const TCHAR* pszPath )
 	const TCHAR* MACRO_ERROR_TITLE = MACRO_ERROR_TITLE_string.c_str();
 
 	int line = 1;	//	エラー時に行番号を通知するため．1始まり．
+	CNativeW strLine;
 	for( ; in.Good() ; ++line ){
-		std::wstring strLine = in.ReadLineW();
+		in.ReadLineW(strLine);
 		const WCHAR* szLine = strLine.c_str(); // '\0'終端文字列を取得
 		using namespace WCODE;
 

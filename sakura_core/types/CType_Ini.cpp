@@ -38,6 +38,8 @@ void CType_Ini::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );				/* 行コメントデリミタ */
 	pType->m_cLineComment.CopyTo( 1, L";", -1 );				/* 行コメントデリミタ2 */
 	pType->m_eDefaultOutline = OUTLINE_TEXT;					/* アウトライン解析方法 */
+#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = false;	//シングルクォーテーション文字列を色分け表示しない
+#endif // rei_
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = false;	//ダブルクォーテーション文字列を色分け表示しない
 }

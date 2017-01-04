@@ -24,10 +24,12 @@
 
 #include "StdAfx.h"
 #include "CType.h"
+#include "types/CTypeInit.h"
 #include "view/Colors/EColorIndexType.h"
 #include "env/CDocTypeManager.h"
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
+#include "typeprop/CImpExpManager.h"
 
 void _DefaultConfig(STypeConfig* pType);
 
@@ -72,6 +74,8 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConf
 		new CType_Text(),	//テキスト
 		new CType_Cpp(),	//C/C++
 		new CType_Html(),	//HTML
+		new CType_Css(),	//CSS
+		new CType_JavaScript(),	//JavaScript
 		new CType_Sql(),	//PL/SQL
 		new CType_Cobol(),	//COBOL
 		new CType_Java(),	//Java
@@ -81,7 +85,12 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConf
 		new CType_Pascal(),	//Pascal
 		new CType_Tex(),	//TeX
 		new CType_Perl(),	//Perl
+		new CType_Php(),	//PHP
+		new CType_Python(),	//Python
+		new CType_Ruby(),	//Ruby
 		new CType_Vb(),		//Visual Basic
+		new CType_Csharp(),	//C#
+		new CType_Xml(),	//XML
 		new CType_Rich(),	//リッチテキスト
 		new CType_Ini(),	//設定ファイル
 	};
@@ -105,39 +114,86 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConf
 
 	強調キーワード関連の初期化処理
 
+	@param[in] bInit false=初期化時, true=sakura.iniがなかったとき
+
 	@date 2005.01.30 genta CShareData::Init()から分離．
 		キーワード定義を関数の外に出し，登録をマクロ化して簡潔に．
+	@date 2013.12.22 Moca キーワードをインポートするように
 */
-void CShareData::InitKeyword(DLLSHAREDATA* pShareData)
+void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 {
 	/* 強調キーワードのテストデータ */
 	pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx = 0;
-
+	CKeyWordSetMgr& cKeyWordSetMgr = pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
 	int nSetCount = -1;
+	TCHAR szKeywordDir[_MAX_PATH];
+	GetExedir( szKeywordDir, _T("Keyword\\") );
 
-#define PopulateKeyword(name,case_sensitive,aryname) \
+#define PopulateKeyword1(name,case_sensitive,aryname, filename) \
 	extern const wchar_t* g_ppszKeywords##aryname[]; \
 	extern int g_nKeywords##aryname; \
-	pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.AddKeyWordSet( (name), (case_sensitive) );	\
-	pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.SetKeyWordArr( ++nSetCount, g_nKeywords##aryname, g_ppszKeywords##aryname );
-	
-	PopulateKeyword( L"C/C++",			true,	CPP );			/* セット 0の追加 */
-	PopulateKeyword( L"HTML",			false,	HTML );			/* セット 1の追加 */
-	PopulateKeyword( L"PL/SQL",			false,	PLSQL );		/* セット 2の追加 */
-	PopulateKeyword( L"COBOL",			true,	COBOL );		/* セット 3の追加 */
-	PopulateKeyword( L"Java",			true,	JAVA );			/* セット 4の追加 */
-	PopulateKeyword( L"CORBA IDL",		true,	CORBA_IDL );	/* セット 5の追加 */
-	PopulateKeyword( L"AWK",			true,	AWK );			/* セット 6の追加 */
-	PopulateKeyword( L"MS-DOS batch",	false,	BAT );			/* セット 7の追加 */	//Oct. 31, 2000 JEPRO 'バッチファイル'→'batch' に短縮
-	PopulateKeyword( L"Pascal",			false,	PASCAL );		/* セット 8の追加 */	//Nov. 5, 2000 JEPRO 大・小文字の区別を'しない'に変更
-	PopulateKeyword( L"TeX",			true,	TEX );			/* セット 9の追加 */	//Sept. 2, 2000 jepro Tex →TeX に修正 Bool値は大・小文字の区別
-	PopulateKeyword( L"TeX2",			true,	TEX2 );			/* セット10の追加 */	//Jan. 19, 2001 JEPRO 追加
-	PopulateKeyword( L"Perl",			true,	PERL );			/* セット11の追加 */
-	PopulateKeyword( L"Perl2",			true,	PERL2 );		/* セット12の追加 */	//Jul. 10, 2001 JEPRO Perlから変数を分離・独立
-	PopulateKeyword( L"Visual Basic",	false,	VB );			/* セット13の追加 */	//Jul. 10, 2001 JEPRO
-	PopulateKeyword( L"Visual Basic2",	false,	VB2 );			/* セット14の追加 */	//Jul. 10, 2001 JEPRO
-	PopulateKeyword( L"Rich Text",		true,	RTF );			/* セット15の追加 */	//Jul. 10, 2001 JEPRO
+	if( bInit ){ \
+		++nSetCount; \
+	}else{ \
+		extern int g_nKeywordsIdx_##aryname; \
+		g_nKeywordsIdx_##aryname = ++nSetCount; \
+		cKeyWordSetMgr.AddKeyWordSet( (name), (case_sensitive) );	\
+		cKeyWordSetMgr.SetKeyWordArr( nSetCount, g_nKeywords##aryname, g_ppszKeywords##aryname ); \
+	} \
 
+#define PopulateKeyword2(name,case_sensitive, aryname, filename) \
+	if( bInit ){ \
+		++nSetCount; \
+		bool bCase = cKeyWordSetMgr.GetKeyWordCase( nSetCount ); \
+		CImpExpKeyWord impKeyword( pShareData->m_Common, nSetCount, bCase ); \
+		std::wstring sKeywordPath; \
+		std::wstring TmpMsg; \
+		sKeywordPath = to_wchar(szKeywordDir); \
+		sKeywordPath += filename; \
+		impKeyword.Import( sKeywordPath, TmpMsg ); \
+	}else{ \
+		extern int g_nKeywordsIdx_##aryname; \
+		g_nKeywordsIdx_##aryname = ++nSetCount; \
+		pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.AddKeyWordSet( (name), (case_sensitive) ); \
+	} \
+
+#ifdef BUILD_OPT_IMPKEYWORD
+#define PopulateKeyword PopulateKeyword1
+#else
+#define PopulateKeyword PopulateKeyword2
+#endif
+	PopulateKeyword1( L"C/C++",			true,	CPP,   L"cpp.kwd" );
+	PopulateKeyword( L"HTML",			false,	HTML,  L"html5.kwd" );
+	PopulateKeyword( L"PL/SQL",			false,	PLSQL, L"plsql.kwd" );
+	PopulateKeyword( L"COBOL",			true,	COBOL, L"COBOL.kwd" );
+	PopulateKeyword( L"Java",			true,	JAVA,  L"java.kwd" );
+	PopulateKeyword( L"CORBA IDL",		true,	CORBA_IDL, L"corba.kwd" );
+	PopulateKeyword( L"AWK",			true,	AWK,   L"awk.kwd" );
+	PopulateKeyword( L"MS-DOS batch",	false,	BAT,   L"batch.kwd" );		//Oct. 31, 2000 JEPRO 'バッチファイル'→'batch' に短縮
+	PopulateKeyword( L"Pascal",			false,	PASCAL, L"pascal.kwd" );	//Nov. 5, 2000 JEPRO 大・小文字の区別を'しない'に変更
+	PopulateKeyword( L"TeX",			true,	TEX,   L"tex1.kwd" );		//Sept. 2, 2000 jepro Tex →TeX に修正 Bool値は大・小文字の区別
+	PopulateKeyword( L"TeX2",			true,	TEX2,  L"tex2.kwd" );		//Jan. 19, 2001 JEPRO 追加
+	PopulateKeyword( L"Perl",			true,	PERL,  L"perl.kwd" );
+	PopulateKeyword( L"Perl2",			true,	PERL2, L"perlvar.kwd" );	//Jul. 10, 2001 JEPRO Perlから変数を分離・独立
+	PopulateKeyword( L"Visual Basic",	false,	VB,    L"vb.kwd" );			//Jul. 10, 2001 JEPRO
+	PopulateKeyword( L"Visual Basic2",	false,	VB2,   L"vb2.kwd" );		//Jul. 10, 2001 JEPRO
+	PopulateKeyword( L"Rich Text",		true,	RTF,   L"rtf.kwd" );		//Jul. 10, 2001 JEPRO
+	// 2013.12.22 Moca 以下ruby4まで追加
+	PopulateKeyword2( L"C#",			true,	CSHARP,  L"csharp.kwd" );
+	PopulateKeyword2( L"C# content",	true,	CSHARP2, L"csharp-context.kwd" );
+	PopulateKeyword2( L"CSS",			true,	CSS,     L"css2.1.kwd" );
+	PopulateKeyword2( L"JavaScript",	true,	JS,      L"ecmascript_sys.kwd" );
+	PopulateKeyword2( L"JavaScript2",	true,	JS2,     L"javascript.kwd" );
+	PopulateKeyword2( L"PHP",			true,	PHP,     L"php_reserved.kwd" );
+	PopulateKeyword2( L"PHP2",			true,	PHP2,    L"php.kwd" );
+	PopulateKeyword2( L"python",		true,	PYTHON,  L"python_2.5.kwd" );
+	PopulateKeyword2( L"Ruby1",			true,	RUBY,    L"ruby1.kwd" );
+	PopulateKeyword2( L"Ruby2",			true,	RUBY2,   L"ruby2.kwd" );
+	PopulateKeyword2( L"Ruby3",			true,	RUBY3,   L"ruby3.kwd" );
+	PopulateKeyword2( L"Ruby4",			true,	RUBY4,   L"ruby4.kwd" );
+
+#undef PopulateKeyword1
+#undef PopulateKeyword2
 #undef PopulateKeyword
 }
 
@@ -158,6 +214,7 @@ void _DefaultConfig(STypeConfig* pType)
 	pType->m_nColumnSpace = 0;					/* 文字と文字の隙間 */
 	pType->m_nLineSpace = 1;					/* 行間のすきま */
 	pType->m_nTabSpace = CLayoutInt(4);					/* TABの文字数 */
+	pType->m_nTsvMode = 0;						/* TSVモード */
 	for( int i = 0; i < MAX_KEYWORDSET_PER_TYPE; i++ ){
 		pType->m_nKeyWordSetIdx[i] = -1;
 	}
@@ -191,7 +248,7 @@ void _DefaultConfig(STypeConfig* pType)
 
 	//	2003.06.23 Moca ファイル内からの入力補完機能
 	pType->m_bUseHokanByFile = true;			//! 入力補完 開いているファイル内から候補を探す
-	pType->m_bUseHokanByKeyword = false;			// 強調キーワードから入力補完
+	pType->m_bUseHokanByKeyword = true;			// 強調キーワードから入力補完
 
 	// 文字コード設定
 	pType->m_encoding.m_bPriorCesu8 = false;
@@ -242,6 +299,9 @@ void _DefaultConfig(STypeConfig* pType)
 	pType->m_nOutlineSortType = 0;					/* アウトライン解析ソート基準 */
 	CShareData::InitFileTree( &pType->m_sFileTree );
 	pType->m_eSmartIndent = SMARTINDENT_NONE;		/* スマートインデント種別 */
+	pType->m_bIndentCppStringIgnore = true;
+	pType->m_bIndentCppCommentIgnore = true;
+	pType->m_bIndentCppUndoSep = false;
 	pType->m_nImeState = IME_CMODE_NOCONVERSION;	/* IME入力 */
 
 	pType->m_szOutlineRuleFilename[0] = L'\0';		//Dec. 4, 2000 MIK
@@ -290,4 +350,20 @@ void _DefaultConfig(STypeConfig* pType)
 	pType->m_bUseTypeFont = false;			//!< タイプ別フォントの使用
 
 	pType->m_nLineNumWidth = LINENUMWIDTH_MIN;	//!< 行番号最小桁数 2014.08.02 katze
+}
+
+void RegexAdd(STypeConfig* pType, int& keywordPos, int idx, int colorIdx, const wchar_t* keyword )
+{
+	wchar_t* pKeyword = pType->m_RegexKeywordList;
+	pType->m_RegexKeywordArr[idx].m_nColorIndex = colorIdx;
+	wcscpyn( &pKeyword[keywordPos], keyword, _countof(pType->m_RegexKeywordList) - keywordPos - 1 );
+	keywordPos += auto_strlen(&pKeyword[keywordPos]) + 1;
+	pKeyword[keywordPos] = L'\0';
+}
+
+void SetColorInfoBC(STypeConfig* pType, int index, bool bBold, COLORREF color)
+{
+	pType->m_ColorInfoArr[index].m_bDisp = true;
+	pType->m_ColorInfoArr[index].m_sFontAttr.m_bBoldFont = bBold;
+	pType->m_ColorInfoArr[index].m_sColorAttr.m_cTEXT = color;
 }

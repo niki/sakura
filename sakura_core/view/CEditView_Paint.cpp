@@ -527,6 +527,7 @@ inline COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha)
 
 COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorInfo& info2)
 {
+#if REI_MOD_SELAREA == 0 && REI_MOD_SP_COLOR == 0
 	if( info.m_sColorAttr.m_cTEXT != info.m_sColorAttr.m_cBACK ){
 		return info.m_sColorAttr.m_cTEXT;
 	}
@@ -534,12 +535,19 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 	if( info.m_sColorAttr.m_cBACK == m_crBack ){
 		return  info2.m_sColorAttr.m_cTEXT ^ 0x00FFFFFF;
 	}
+#endif // rei_
+#if REI_MOD_SELAREA
+	static int nBlendPer = RegGetDword(L"SelectAreaTextBlendPer", REI_MOD_SELAREA_TEXT_BLEND_PER);
+	int alpha = 255*nBlendPer/100;
+#else
 	int alpha = 255*30/100; // 30%
+#endif // rei_
 	return MakeColor2(info.m_sColorAttr.m_cTEXT, info2.m_sColorAttr.m_cTEXT, alpha);
 }
 
 COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorInfo& info2)
 {
+#if REI_MOD_SELAREA == 0 && REI_MOD_SP_COLOR == 0
 	if( info.m_sColorAttr.m_cTEXT != info.m_sColorAttr.m_cBACK ){
 		return info.m_sColorAttr.m_cBACK;
 	}
@@ -547,7 +555,20 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	if( info.m_sColorAttr.m_cBACK == m_crBack ){
 		return  info2.m_sColorAttr.m_cBACK ^ 0x00FFFFFF;
 	}
+#endif // rei_
+#if REI_MOD_SELAREA
+	if (info.m_sColorAttr.m_cTEXT == RGB(255,0,255)) { // テキストカラーがマゼンタだったらそのまま
+		return info.m_sColorAttr.m_cBACK;
+	}
+	static int nBlendPer = RegGetDword(L"SelectAreaBackBlendPer", REI_MOD_SELAREA_BACK_BLEND_PER);
+	int alpha = 255*nBlendPer/100;
+	//int r = GetRValue(info.m_sColorAttr.m_cTEXT); // テキストカラーのＲ成分をブレント率として扱う
+	//if (r <= 100) { // 100よりも大きい場合は既定のブレンド率
+	//	alpha = 255*r/100;
+	//}
+#else
 	int alpha = 255*30/100; // 30%
+#endif // rei_
 	return MakeColor2(info.m_sColorAttr.m_cBACK, info2.m_sColorAttr.m_cBACK, alpha);
 }
 
@@ -558,6 +579,9 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 
 void CEditView::OnPaint( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp )
 {
+	if (m_pcEditWnd->m_pPrintPreview) {
+		return;
+	}
 	bool bChangeFont = m_bMiniMap;
 	if( bChangeFont ){
 		SelectCharWidthCache( CWM_FONT_MINIMAP, CWM_CACHE_LOCAL );
@@ -618,6 +642,9 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		}
 		return;
 	}
+#if REI_OUTPUT_DEBUG_STRING
+	::OutputDebugStringW(L"OnPaint2 start.\n");
+#endif // rei_
 	if( m_hdcCompatDC && NULL == m_hbmpCompatBMP
 		 || m_nCompatBMPWidth < (pPs->rcPaint.right - pPs->rcPaint.left)
 		 || m_nCompatBMPHeight < (pPs->rcPaint.bottom - pPs->rcPaint.top) ){
@@ -655,15 +682,17 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	// bUseMemoryDC = FALSE;
 	BOOL bUseMemoryDC = (m_hdcCompatDC != NULL);
 	assert_warning(gr != m_hdcCompatDC);
+	bool bClipping = false;
 	if( bUseMemoryDC ){
 		hdcOld = gr;
 		gr = m_hdcCompatDC;
 	}else{
-		if( bTransText || pPs->rcPaint.bottom - pPs->rcPaint.top <= 2 || pPs->rcPaint.left - pPs->rcPaint.right <= 2 ){
+		if( bTransText || pPs->rcPaint.bottom - pPs->rcPaint.top <= 2 || pPs->rcPaint.right - pPs->rcPaint.left <= 2 ){
 			// 透過処理の場合フォントの輪郭が重ね塗りになるため自分でクリッピング領域を設定
 			// 2以下はたぶんアンダーライン・カーソル行縦線の作画
 			// MemoryDCの場合は転送が矩形クリッピングの代わりになっている
 			gr.SetClipping(pPs->rcPaint);
+			bClipping = true;
 		}
 	}
 
@@ -785,33 +814,25 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 				nLayoutLineTo
 			);
 
-//			if(bDispResult){
-//				pPs->rcPaint.bottom += nLineHeight;	// EOF再描画対応
-//				break;
-//			}
+			if(bDispResult){
+				// EOF再描画対応
+				nLayoutLineTo++;
+				int nBackImageTop = pPs->rcPaint.bottom;
+				pPs->rcPaint.bottom += nLineHeight;
+				if(bClipping){
+					gr.SetClipping(pPs->rcPaint);
+				}
+				if(bTransText){
+					HDC hdcBgImg = CreateCompatibleDC(gr);
+					HBITMAP hOldBmp = (HBITMAP)::SelectObject(hdcBgImg, m_pcEditDoc->m_hBackImg);
+					RECT rc = pPs->rcPaint;
+					rc.top = nBackImageTop;
+					DrawBackImage(gr, rc, hdcBgImg);
+					SelectObject(hdcBgImg, hOldBmp);
+					DeleteObject(hdcBgImg);
+				}
+			}
 		}
-	}
-
-
-	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	//              テキストの無い部分の塗りつぶし                 //
-	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	if( !bTransText && sPos.GetDrawPos().y < pPs->rcPaint.bottom ){
-		RECT rcBack;
-		rcBack.left   = pPs->rcPaint.left;
-		rcBack.right  = pPs->rcPaint.right;
-		rcBack.top    = sPos.GetDrawPos().y;
-		rcBack.bottom = pPs->rcPaint.bottom;
-
-		cTextType.FillBack(gr,rcBack);
-	}
-	{
-		if( !m_bMiniMap ){
-			GetTextDrawer().DispNoteLine( gr, sPos.GetDrawPos().y, pPs->rcPaint.bottom, pPs->rcPaint.left, pPs->rcPaint.right );
-		}
-		// 2006.04.29 行部分は行ごとに作画し、ここでは縦線の残りを作画
-		GetTextDrawer().DispVerticalLines( gr, sPos.GetDrawPos().y, pPs->rcPaint.bottom, CLayoutInt(0), CLayoutInt(-1) );
-		GetTextDrawer().DispWrapLine( gr, sPos.GetDrawPos().y, pPs->rcPaint.bottom );	// 2009.10.24 ryoji
 	}
 
 	cTextType.RewindGraphicsState(gr);
@@ -860,6 +881,10 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	/* キャレットを現在位置に表示します */
 	if( bCaretShowFlag_Old )	// 2008.06.09 ryoji
 		GetCaret().ShowCaret_( this->GetHwnd() ); // 2002/07/22 novice
+	
+#if REI_OUTPUT_DEBUG_STRING
+	::OutputDebugStringW(L"OnPaint2 finish.\n");
+#endif // rei_
 	return;
 }
 
@@ -875,7 +900,7 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 */
 bool CEditView::DrawLogicLine(
 	HDC				_hdc,			//!< [in]     作画対象
-	DispPos*		_pDispPos,		//!< [in/out] 描画する箇所、描画元ソース
+	DispPos*		_pDispPos,		//!< [in,out] 描画する箇所、描画元ソース
 	CLayoutInt		nLineTo			//!< [in]     作画終了するレイアウト行番号
 )
 {
@@ -1014,6 +1039,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	CTypeSupport	cCaretLineBg(this, COLORIDX_CARETLINEBG);
 	CTypeSupport	cEvenLineBg(this, COLORIDX_EVENLINEBG);
 	CTypeSupport	cPageViewBg(this, COLORIDX_PAGEVIEW);
+#if REI_MOD_COMMENT
+  static bool comment_color_whole_line = !!RegGetDword(L"CommentColorWholeLine", 1);
+	int comment_mode = 0;
+	CTypeSupport	cComment(this, COLORIDX_COMMENT);
+#endif  // rei_
 	CEditView& cActiveView = m_pcEditWnd->GetActiveView();
 	CTypeSupport&	cBackType = (cCaretLineBg.IsDisp() &&
 		GetCaret().GetCaretLayoutPos().GetY() == pInfo->m_pDispPos->GetLayoutLineRef() && !m_bMiniMap
@@ -1029,6 +1059,19 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	if( bTransText ){
 		bTransText = cBackType.GetBackColor() == cTextType.GetBackColor();
 	}
+
+#if 0//REI_MOD_SP_COLOR == 3
+	// 行背景描画
+	{
+		RECT rcClip;
+		bool rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
+		if(rcClipRet){
+			if( !bTransText ){
+				cBackType.FillBack(pInfo->m_gr,rcClip);
+			}
+		}
+	}
+#endif
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                        行番号描画                           //
@@ -1077,26 +1120,98 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	}
 	//行終端または折り返しに達するまでループ
 	if(pcLayout){
+		int nPosBgn = pInfo->m_nPosInLogic; // Logic
+		CLayoutInt nDrawX = pInfo->m_pDispPos->GetDrawCol(); // Layout
+		const CLayoutInt nDrawXLeft = GetTextArea().GetViewLeftCol() - GetTextMetrics().GetLayoutXDefault(CLayoutXInt(2));
+#ifdef _UNICODE
+		const int nDrawBlockLen = 1000; // ExtTextOutの長さ制限にかからない適当な値
+#else
+		const int nDrawBlockLen = 500;
+#endif
+		bool bDrawViewLeft = false;
 		int nPosTo = pcLayout->GetLogicOffset() + pcLayout->GetLengthWithEOL();
 		CFigureManager* pcFigureManager = CFigureManager::getInstance();
 		while(pInfo->m_nPosInLogic < nPosTo){
-			//色切替
-			if( pInfo->CheckChangeColor(cLineStr) ){
-				CColor3Setting cColor;
-				pInfo->DoChangeColor(&cColor);
-				SetCurrentColor(pInfo->m_gr, cColor.eColorIndex, cColor.eColorIndex2, cColor.eColorIndexBg);
-			}
-
-			//1文字情報取得 $$高速化可能
+			//1文字情報取得
 			CFigure& cFigure = pcFigureManager->GetFigure(&cLineStr.GetPtr()[pInfo->GetPosInLogic()],
 				cLineStr.GetLength() - pInfo->GetPosInLogic());
 
+			if( !cFigure.IsFigureText() || nDrawBlockLen < pInfo->GetPosInLogic() - nPosBgn || (!bDrawViewLeft && nDrawXLeft <= nDrawX) ){
+				if( (!bDrawViewLeft && nDrawXLeft <= nDrawX) ){
+					// 合成文字が画面の途中で切れないように、画面左端より少し前に一度出力する
+					bDrawViewLeft = true;
+				}
+				if( 0 < pInfo->GetPosInLogic() - nPosBgn ){
+					pcFigureManager->GetTextFigure().DrawImp(pInfo, nPosBgn, pInfo->GetPosInLogic() - nPosBgn);
+					nPosBgn = pInfo->GetPosInLogic();
+				}
+			}
+
+			//色切替
+			if( pInfo->CheckChangeColor(cLineStr) ){
+				if( 0 < pInfo->GetPosInLogic() - nPosBgn ){
+					pcFigureManager->GetTextFigure().DrawImp(pInfo, nPosBgn, pInfo->GetPosInLogic() - nPosBgn);
+					nPosBgn = pInfo->GetPosInLogic();
+				}
+				CColor3Setting cColor;
+				pInfo->DoChangeColor(&cColor);
+				SetCurrentColor(pInfo->m_gr, cColor.eColorIndex, cColor.eColorIndex2, cColor.eColorIndexBg);
+				
+#if REI_MOD_COMMENT
+        if (comment_color_whole_line) {
+          if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_COMMENT) {
+            comment_mode = 1;
+          } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK1) {
+            comment_mode = 2;
+          } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK2) {
+            comment_mode = 2;
+          } else {
+            if (comment_mode != 1) {
+              comment_mode = 0;
+            }
+          }
+        }
+#endif  // rei_
+			}
+
+#if REI_MOD_COMMENT
+      if (comment_color_whole_line) {
+        if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_COMMENT) {
+          comment_mode = 1;
+        } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK1) {
+          comment_mode = 2;
+        } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK2) {
+          comment_mode = 2;
+        }
+
+        if (comment_mode) {
+          if (pInfo->m_cIndex.eColorIndex != COLORIDX_SELECT) {
+            pInfo->m_cIndex.eColorIndex = COLORIDX_COMMENT;
+          }
+        }
+      }
+#endif  // rei_
+
 			//1文字描画
-			cFigure.DrawImp(pInfo);
-			if( bSkipRight && GetTextArea().GetAreaRight() < pInfo->m_pDispPos->GetDrawPos().x ){
+			if( !cFigure.IsFigureText() ){
+				cFigure.DrawImp(pInfo);
+				nPosBgn = pInfo->GetPosInLogic();
+				nDrawX = pInfo->m_pDispPos->GetDrawCol();
+			}else{
+				nDrawX += pcFigureManager->GetTextFigure().GetDrawSize(pInfo);
+				pcFigureManager->GetTextFigure().FowardChars(pInfo);
+			}
+			if( bSkipRight && GetTextArea().GetRightCol() < nDrawX ){
+				if( 0 < pInfo->GetPosInLogic() - nPosBgn ){
+					pcFigureManager->GetTextFigure().DrawImp(pInfo, nPosBgn, pInfo->GetPosInLogic() - nPosBgn);
+					nPosBgn = pInfo->GetPosInLogic();
+				}
 				pInfo->m_nPosInLogic = nPosTo;
 				break;
 			}
+		}
+		if( 0 < pInfo->GetPosInLogic() - nPosBgn ){
+			pcFigureManager->GetTextFigure().DrawImp(pInfo, nPosBgn, pInfo->GetPosInLogic() - nPosBgn);
 		}
 	}
 
@@ -1126,6 +1241,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	bool rcClipRet = GetTextArea().GenerateClipRectRight(&rcClip,*pInfo->m_pDispPos);
 	if(rcClipRet){
 		if( !bTransText ){
+#if REI_MOD_COMMENT
+		  if (comment_mode) {
+		    cComment.FillBack(pInfo->m_gr,rcClip);
+		  } else
+#endif  // rei_
 			cBackType.FillBack(pInfo->m_gr,rcClip);
 		}
 		CTypeSupport cSelectType(this, COLORIDX_SELECT);
@@ -1172,6 +1292,22 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		CLayoutInt(-1)
 	);
 
+#if REI_MOD_WRAP_LINE
+  {
+    static bool no_wrap_line = !!RegGetDword(L"NoWrapLine", true);
+    
+    if (!no_wrap_line) {
+      // 折り返し桁縦線描画
+    	if( !m_bMiniMap ){
+    		GetTextDrawer().DispWrapLine(
+    			pInfo->m_gr,
+    			pInfo->m_pDispPos->GetDrawPos().y,
+    			pInfo->m_pDispPos->GetDrawPos().y + nLineHeight
+    		);
+    	}
+    }
+  }
+#else
 	// 折り返し桁縦線描画
 	if( !m_bMiniMap ){
 		GetTextDrawer().DispWrapLine(
@@ -1180,6 +1316,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			pInfo->m_pDispPos->GetDrawPos().y + nLineHeight
 		);
 	}
+#endif // rei_
 
 	// 反転描画
 	if( pcLayout && GetSelectionInfo().IsTextSelected() ){

@@ -1831,6 +1831,7 @@ void CTabWnd::TabWindowNotify( WPARAM wParam, LPARAM lParam )
 			tcitem.mask    = TCIF_TEXT | TCIF_IMAGE;
 			TCHAR	szNameOld[1024];
 			tcitem.pszText = szNameOld;
+			tcitem.cchTextMax = _countof(szNameOld);
 			TabCtrl_GetItem( m_hwndTab, nIndex, &tcitem );
 			if( 0 != auto_strcmp( szNameOld, szName )
 				|| tcitem.iImage != GetImageIndex( p ) ){
@@ -2348,6 +2349,9 @@ void CTabWnd::LayoutTab( void )
 
 	// タブのアイテムサイズを調整する（等幅のときのサイズやフォント切替時の高さ調整）
 	// ※ 画面のちらつきや体感性能にさほど影響は無さそうなので条件を絞らず毎回 TabCtrl_SetItemSize() を実行する
+#if 0//REI_FIX_TABWND
+	if (bSameTabWidth || bChgFont) {
+#endif // rei_
 	RECT rcTab;
 	int nCount;
 	int cx;
@@ -2376,6 +2380,9 @@ void CTabWnd::LayoutTab( void )
 		cx += bDispTabIcon? (nWidth + 2)/3: (nWidth + 1)/2;	// それっぽく調整: ボタン幅の 1/3（アイコン有） or 1/2（アイコン無）
 	}
 	TabCtrl_SetPadding( m_hwndTab, DpiScaleX(cx), DpiScaleY(3) );
+#if 0//REI_FIX_TABWND
+	}
+#endif // rei_
 
 	// 新しいウィンドウスタイルを適用する
 	// ※ TabCtrl_SetPadding() の後でやらないと設定変更の直後にアイコンやテキストの描画位置がずれる場合がある
@@ -2429,9 +2436,10 @@ HIMAGELIST CTabWnd::InitImageList( void )
 		// 注：複製後に差し替えて利用するアイコンには事前にアクセスしておかないとイメージが入らない
 		//     ここでは「フォルダを閉じたアイコン」、「フォルダを開いたアイコン」を差し替え用として利用
 		//     WinNT4.0 では SHGetFileInfo() の第一引数に同名を指定すると同じインデックスを返してくることがある？
+		// 2016.08.06 ".0" の場合に Win10で同じインデックスが返ってくるので、"C:\\"に変更
 
 		hImlSys = (HIMAGELIST)::SHGetFileInfo(
-			_T(".0"),
+			_T("C:\\"),
 			FILE_ATTRIBUTE_DIRECTORY,
 			&sfi,
 			sizeof(sfi),
@@ -2462,8 +2470,10 @@ HIMAGELIST CTabWnd::InitImageList( void )
 		// （利用しないアイコンと差し替える）
 		m_hIconApp = GetAppIcon( GetAppInstance(), ICON_DEFAULT_APP, FN_APP_ICON, true );
 		ImageList_ReplaceIcon( hImlNew, m_iIconApp, m_hIconApp );
-		m_hIconGrep = GetAppIcon( GetAppInstance(), ICON_DEFAULT_GREP, FN_GREP_ICON, true );
-		ImageList_ReplaceIcon( hImlNew, m_iIconGrep, m_hIconGrep );
+		if( m_iIconApp != m_iIconGrep ){
+			m_hIconGrep = GetAppIcon( GetAppInstance(), ICON_DEFAULT_GREP, FN_GREP_ICON, true );
+			ImageList_ReplaceIcon( hImlNew, m_iIconGrep, m_hIconGrep );
+		}
 	}
 
 l_end:
@@ -2514,7 +2524,9 @@ int CTabWnd::GetImageIndex( EditNode* pNode )
 			// イメージリストにアプリケーションアイコンと Grepアイコンを登録する
 			// （利用しないアイコンと差し替える）
 			ImageList_ReplaceIcon( hImlNew, m_iIconApp, m_hIconApp );
-			ImageList_ReplaceIcon( hImlNew, m_iIconGrep, m_hIconGrep );
+			if( m_iIconApp != m_iIconGrep ){
+				ImageList_ReplaceIcon( hImlNew, m_iIconGrep, m_hIconGrep );
+			}
 
 			// タブにアイコンイメージを設定する
 			if( m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon )

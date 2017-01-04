@@ -24,6 +24,9 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
+
+int g_nKeywordsIdx_BAT = -1;
 
 /* MS-DOSバッチファイル */
 void CType_Dos::InitTypeConfigImp(STypeConfig* pType)
@@ -34,12 +37,21 @@ void CType_Dos::InitTypeConfigImp(STypeConfig* pType)
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"REM ", -1 );	/* 行コメントデリミタ */
-	pType->m_eDefaultOutline = OUTLINE_TEXT;		/* アウトライン解析方法 */
-	pType->m_nKeyWordSetIdx[0] = 7;					/* キーワードセット */
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_BAT;
+
+	pType->m_eDefaultOutline = OUTLINE_FILE;		/* アウトライン解析方法 */
+	auto_strcpy( pType->m_szOutlineRuleFilename, _T("Keyword\\bat.rl") );
+
+	pType->m_KeyHelpArr[0].m_bUse = true;
+	auto_strcpy( pType->m_KeyHelpArr[0].m_szAbout, _T(";バッチファイルのキーワードヘルプ定義") );
+	auto_strcpy( pType->m_KeyHelpArr[0].m_szPath, _T("Keyword\\bat_win2k.khp") );
+	pType->m_bUseKeyWordHelp = true;		// 辞書選択機能の使用可否
+	pType->m_nKeyHelpNum = 1;				// 登録辞書数
 }
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsBAT[] = {
 	L"PATH",
 	L"PROMPT",
@@ -115,3 +127,4 @@ const wchar_t* g_ppszKeywordsBAT[] = {
 	L"CONFIG$"
 };
 int g_nKeywordsBAT = _countof(g_ppszKeywordsBAT);
+#endif

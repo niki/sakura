@@ -24,11 +24,15 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
 #include "outline/CFuncInfoArr.h"
 #include "view/Colors/EColorIndexType.h"
+
+int g_nKeywordsIdx_PERL = -1;
+int g_nKeywordsIdx_PERL2 = -1;
 
 /* Perl */
 //Jul. 08, 2001 JEPRO Perl ユーザに贈る
@@ -42,8 +46,8 @@ void CType_Perl::InitTypeConfigImp(STypeConfig* pType)
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"#", -1 );					/* 行コメントデリミタ */
 	pType->m_eDefaultOutline = OUTLINE_PERL;						/* アウトライン解析方法 */
-	pType->m_nKeyWordSetIdx[0]  = 11;								/* キーワードセット */
-	pType->m_nKeyWordSetIdx[1] = 12;								/* キーワードセット2 */
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_PERL;
+	pType->m_nKeyWordSetIdx[1] = g_nKeywordsIdx_PERL2;
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;			/* 半角数値を色分け表示 */
 	pType->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp = true;	//対括弧の強調をデフォルトON	//Sep. 21, 2002 genta
 	pType->m_bStringLineOnly = true; // 文字列は行内のみ
@@ -184,6 +188,7 @@ void CDocOutline::MakeFuncList_Perl( CFuncInfoArr* pcFuncInfoArr )
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsPERL[] = {
 	//Jul. 10, 2001 JEPRO	変数を第２強調キーワードとして分離した
 	L"break",
@@ -526,3 +531,4 @@ const wchar_t* g_ppszKeywordsPERL2[] = {
 	L"$SIG"
 };
 int g_nKeywordsPERL2 = _countof(g_ppszKeywordsPERL2);
+#endif

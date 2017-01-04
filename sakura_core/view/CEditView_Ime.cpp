@@ -81,7 +81,21 @@ void CEditView::SetIMECompFormPos( void )
 	::GetCaretPos( &point );
 	CompForm.dwStyle = CFS_POINT;
 	CompForm.ptCurrentPos.x = (long) point.x;
+#if REI_MOD_CARET
+  {
+    static int caret_shift_left = RegGetDword(L"CaretShiftLeft", REI_MOD_CARET_SHIFT_LEFT);
+    if (caret_shift_left > 0 ) {
+    	if (GetCaret().GetCaretLayoutPos().GetX() > 0) {
+    		CompForm.ptCurrentPos.x += (long)caret_shift_left;
+    	}
+    }
+  }
+#endif // rei_
 	CompForm.ptCurrentPos.y = (long) point.y + GetCaret().GetCaretSize().cy - GetTextMetrics().GetHankakuHeight();
+#if 0//REI_LINE_CENTERING // •ÏŠ·ˆÊ’u
+	CompForm.ptCurrentPos.y -= m_pTypeData->m_nLineSpace/2 +
+	                           (m_pTypeData->m_nLineSpace & 1);
+#endif // rei_
 
 	if ( hIMC ){
 		::ImmSetCompositionWindow( hIMC, &CompForm );

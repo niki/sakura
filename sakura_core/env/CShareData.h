@@ -95,13 +95,14 @@ public:
 
 	static CMutex& GetMutexShareWork();
 
+	void InitKeyword(DLLSHAREDATA*, bool);
+
 protected:
 	/*
 	||  À‘•ƒwƒ‹ƒpŠÖ”
 	*/
 
 	//	Jan. 30, 2005 genta ‰Šú‰»ŠÖ”‚Ì•ªŠ„
-	void InitKeyword(DLLSHAREDATA*);
 	bool InitKeyAssign(DLLSHAREDATA*); // 2007.11.04 genta ‹N“®’†~‚Ì‚½‚ß’l‚ğ•Ô‚·
 	void RefreshKeyAssignString(DLLSHAREDATA*);
 	void InitToolButtons(DLLSHAREDATA*);

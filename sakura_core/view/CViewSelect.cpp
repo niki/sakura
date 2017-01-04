@@ -191,13 +191,13 @@ void CViewSelect::DrawSelectArea(bool bDrawBracketCursorLine)
 				if(m_sSelect.GetFrom() == m_sSelectOld.GetFrom() && m_sSelect.GetTo().x != m_sSelectOld.GetTo().x){
 					// GetTo‚Ìs‚ª‘ÎÛ
 					rc.top = rc.bottom = m_sSelect.GetTo().GetY2();
-					drawLeft  = t_min(m_sSelect.GetTo().x, m_sSelectOld.GetTo().x);
-					drawRight = t_max(m_sSelect.GetTo().x, m_sSelectOld.GetTo().x) + 1;
+					drawLeft  = t_min(m_sSelect.GetTo().x, m_sSelectOld.GetTo().x) - 2; // ‡¬•¶š‘Îô‚Å-2
+					drawRight = t_max(m_sSelect.GetTo().x, m_sSelectOld.GetTo().x) + 4; // ‡¬•¶š‘Îô‚Å+4
 				}else if(m_sSelect.GetTo() == m_sSelectOld.GetTo() && m_sSelect.GetFrom().x != m_sSelectOld.GetFrom().x){
 					// GetFrom‚Ìs‚ª‘ÎÛ
 					rc.top = rc.bottom = m_sSelect.GetFrom().GetY2();
-					drawLeft  = t_min(m_sSelectOld.GetFrom().x, m_sSelect.GetFrom().x);
-					drawRight = t_max(m_sSelectOld.GetFrom().x, m_sSelect.GetFrom().x) + 1;
+					drawLeft  = t_min(m_sSelectOld.GetFrom().x, m_sSelect.GetFrom().x) - 2; // ‡¬•¶š‘Îô‚Å-2
+					drawRight = t_max(m_sSelectOld.GetFrom().x, m_sSelect.GetFrom().x) + 4; // ‡¬•¶š‘Îô‚Å+4
 				}else{
 					rc.UnionStrictRect(rcOld, rcNew);
 				}
@@ -505,7 +505,7 @@ void CViewSelect::DrawSelectAreaLine(
 	CLayoutInt nSelectTo = lineArea.GetTo().GetX2();
 	if( nSelectFrom == INT_MAX || nSelectTo == INT_MAX ){
 		CLayoutInt nPosX = CLayoutInt(0);
-		CMemoryIterator it = CMemoryIterator(pcLayout, layoutMgr.GetTabSpace());
+		CMemoryIterator it = CMemoryIterator(pcLayout, layoutMgr.GetTabSpace(), layoutMgr.m_tsvInfo);
 		
 		while( !it.end() ){
 			it.scanNext();
@@ -644,7 +644,9 @@ void CViewSelect::PrintSelectionInfoMsg() const
 		}else if( m_bSelectingLock ){
 			pView->m_pcEditWnd->m_cStatusBar.SendStatusMessage2( _T("selecting") );
 		}else{
+#if REI_MOD_STATUSBAR == 0
 			pView->m_pcEditWnd->m_cStatusBar.SendStatusMessage2( _T("") );
+#endif // rei_
 		}
 		return;
 	}

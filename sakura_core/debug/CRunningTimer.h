@@ -31,16 +31,28 @@
 		   distribution.
 */
 
-#ifndef _CRUNNINGTIMER_H_
-#define _CRUNNINGTIMER_H_
+#ifndef SAKURA_CRUNNINGTIMER_H_
+#define SAKURA_CRUNNINGTIMER_H_
 
 #include <windows.h>
 // RunningTimerで経過時間の測定を行う場合にはコメントを外してください
 //#define TIME_MEASURE
 
+// 2014.11.21 Moca ReleaseモードでもCRunningTimerを使うための定義
+//#define USE_RUNTIMER
+
+
+#if defined(TIME_MEASURE) || defined(_DEBUG)
+#ifndef USE_RUNTIMER
+#define USE_RUNTIMER 1
+#endif
+#endif
+
 /*-----------------------------------------------------------------------
 クラスの宣言
 -----------------------------------------------------------------------*/
+#ifdef USE_RUNTIMER
+#define USE_RELPRINT2 1
 /*!
 	@brief 処理所要時間の計測クラス
 
@@ -72,14 +84,13 @@ protected:
 	char	m_szText[100];	//!< タイマー名
 	int		m_nDeapth;	//!< このオブジェクトのネストの深さ
 
-#ifdef _DEBUG
 	static int m_nNestCount;
-#endif
 };
+#endif // USE_RUNTIMER
 
 //	Oct. 16, 2002 genta
 //	#ifdef _DEBUG～#endifで逐一囲まなくても簡単にタイマーのON/OFFを行うためのマクロ
-#if defined(_DEBUG) && defined(TIME_MEASURE)
+#ifdef TIME_MEASURE
   #define MY_TRACETIME(c,m) (c).WriteTrace(m)
   #define MY_RUNNINGTIMER(c,m) CRunningTimer c(m)
 #else
@@ -87,8 +98,17 @@ protected:
   #define MY_RUNNINGTIMER(c,m)
 #endif
 
+// ReleaseでUSE_RUNTIMERのときも実行する用
+#ifdef USE_RUNTIMER
+  #define MY_TRACETIME2(c,m) (c).WriteTrace(m)
+  #define MY_RUNNINGTIMER2(c,m) CRunningTimer c(m)
+#else
+  #define MY_TRACETIME2(c,m)
+  #define MY_RUNNINGTIMER2(c,m)
+#endif
+
 ///////////////////////////////////////////////////////////////////////
-#endif /* _CRUNNINGTIMER_H_ */
+#endif /* SAKURA__CRUNNINGTIMER_H_ */
 
 
 

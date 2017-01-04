@@ -588,7 +588,7 @@ UTF-8のエンコーディング
 \u800～\uFFFF     (UCS2)  0000 0000 0000 0000  aaaa bbbb cccc dddd  -> 1110 aaaa  10bb bbcc  10cc dddd     ---
 \u10000～\u1FFFFF (UCS4)  0000 0000 000a bbbb  cccc dddd eeee ffff  -> 1111 0abb  10bb cccc  10dd ddee  10ee ffff
 
-参考資料：「UCSとUTF」http://homepage1.nifty.com/nomenclator/unicode/ucs_utf.htm
+参考資料：「UCSとUTF」http://nomenclator.la.coocan.jp/unicode/ucs_utf.htm
 * --------------------------------------------------------------------------------------------------------------- */
 
 /*!
@@ -654,7 +654,7 @@ int CheckUtf8Char( const char *pS, const int nLen, ECharSet *peCharset, const bo
 			goto EndFunc;
 		}
 	}else
-	if( 3 < nLen && (c0 & 0xf8) == 0xf0 ){
+	if( 3 < nLen && (c0 & 0xf8) == 0xf0 ){	// 第１バイトが11110abbの場合
 		c1 = pS[1];
 		c2 = pS[2];
 		c3 = pS[3];
@@ -709,25 +709,28 @@ EndFunc:
 	return ncwidth;
 }
 
+/*!
+	UTF-8 文字をチェック　(組み合わせ文字列考慮なし)
+
+	@note 途中までUTF-8のエンコーディングが合っていれば、CHARSET_BINARY2を設定する
+
+	@date 2015.12.30 novice  第１バイトが11110abbのとき、nLenより大きい値を返すのを修正
+*/
 int CheckUtf8Char2( const char *pS, const int nLen, ECharSet *peCharset, const bool bAllow4byteCode, const int nOption )
 {
 	unsigned char c0, c1, c2;
 	int ncwidth;
 	ECharSet echarset;
 
-	ECharSet echarset1;
-	int nclen1;
-
 	if( nLen < 1 ){
 		return 0;
 	}
 
-	nclen1 = CheckUtf8Char( pS, nLen, &echarset1, true, 0 );
-	echarset = echarset1;
+	ncwidth = CheckUtf8Char( pS, nLen, &echarset, true, 0 );
 	c0 = pS[0];
-	if( echarset1 == CHARSET_BINARY ){
+	if( echarset == CHARSET_BINARY ){
 		if( 1 == nLen && (c0 & 0xe0) == 0xc0 ){	// 第１バイトが110aaabbの場合
-			echarset = CHARSET_BINARY2;
+			echarset = CHARSET_BINARY2; // 文字列断片(継続用)
 			ncwidth = 1;
 			goto EndFunc;
 		}else
@@ -735,6 +738,7 @@ int CheckUtf8Char2( const char *pS, const int nLen, ECharSet *peCharset, const b
 			c1 = pS[1];
 			// 第２バイトが10bbbbcc、第３バイトが10ccddddの場合
 			if( (c1 & 0xc0) == 0x80 ){
+				echarset = CHARSET_BINARY2; // 文字列断片(継続用)
 				ncwidth = 2;	// ３バイトコードの先頭2バイトである
 				if( (c0 & 0x0f) == 0 && (c1 & 0x20) == 0 ){
 					// デコードできない.(往復変換不可領域)
@@ -754,12 +758,12 @@ int CheckUtf8Char2( const char *pS, const int nLen, ECharSet *peCharset, const b
 				goto EndFunc;
 			}
 		}else
-		if( 1 == nLen && (c0 & 0xf0) == 0xe0 ){
-			echarset = CHARSET_BINARY2;
+		if( 1 == nLen && (c0 & 0xf0) == 0xe0 ){	// 第１バイトが1110aaaaの場合
+			echarset = CHARSET_BINARY2; // 文字列断片(継続用)
 			ncwidth = 1;
 			goto EndFunc;
 		}else
-		if( 0 < nLen && nLen <= 3 && (c0 & 0xf8) == 0xf0 ){
+		if( 0 < nLen && nLen <= 3 && (c0 & 0xf8) == 0xf0 ){	// 第１バイトが11110abbの場合
 			if( 1 < nLen ){
 				c1 = pS[1];
 			}else{
@@ -772,8 +776,8 @@ int CheckUtf8Char2( const char *pS, const int nLen, ECharSet *peCharset, const b
 			}
 			// 第2バイトが10bbcccc、第3バイトが10ddddee
 			if( (c1 & 0xc0) == 0x80 && (c2 & 0xc0) == 0x80 ){
-				ncwidth = std::max(nLen,3);  // ４バイトコードである
-				echarset = CHARSET_UNI_SURROG;  // サロゲートペアの文字（初期化）
+				ncwidth = nLen;  // ４バイトコードである
+				echarset = CHARSET_BINARY2; // 文字列断片(継続用)
 				// 第1バイトのabb=000、第2バイトのbb=00の場合（\u10000未満に変換される）
 				if( (c0 & 0x07) == 0 && (c1 & 0x30) == 0 ){
 					// デコードできない.(往復変換不可領域)
@@ -795,7 +799,6 @@ int CheckUtf8Char2( const char *pS, const int nLen, ECharSet *peCharset, const b
 			}
 		}
 	}else{
-		ncwidth = nclen1;
 		goto EndFunc;
 	}
 
@@ -997,7 +1000,7 @@ int CheckUtf7DPart( const char *pS, const int nLen, char **ppNextChar, bool *pbE
 
 	@note この関数の前に CheckUtf7DPart() が実行される必要がある。
 */
-int CheckUtf7BPart( const char *pS, const int nLen, char **ppNextChar, bool *pbError, const int nOption )
+int CheckUtf7BPart( const char *pS, const int nLen, char **ppNextChar, bool *pbError, const int nOption, bool* pbNoAddPoint )
 {
 	const char *pr, *pr_end;
 	bool berror_found, bminus_found;
@@ -1008,6 +1011,9 @@ int CheckUtf7BPart( const char *pS, const int nLen, char **ppNextChar, bool *pbE
 	ECharSet echarset;
 	CMemory cmbuffer;
 
+	if( pbNoAddPoint ){
+		*pbNoAddPoint = false;
+	}
 
 	if( nLen < 1 ){
 		if( pbError ){
@@ -1125,6 +1131,15 @@ EndFunc:;
 		// '-' をスキップ。
 		*ppNextChar = const_cast<char*>(pr) + 1;
 	}else{
+		if( (UC_LOOSE != (nOption & UC_LOOSE)) && bminus_found == false ){
+			// 2015.03.05 Moca エンコードチェック時に終端の'-'がない場合はポイントを加算しない
+			if( pr < pr_end ){
+				// バッファの終端の場合を除く
+				if( pbNoAddPoint ){
+					*pbNoAddPoint = true;
+				}
+			}
+		}
 		*ppNextChar = const_cast<char*>(pr);
 	}
 

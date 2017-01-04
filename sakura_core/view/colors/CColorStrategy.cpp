@@ -203,7 +203,9 @@ CColorStrategyPool::CColorStrategyPool()
 	m_vStrategies.push_back(new CColor_BlockComment(COLORIDX_BLOCK1));	// ブロックコメント
 	m_vStrategies.push_back(new CColor_BlockComment(COLORIDX_BLOCK2));	// ブロックコメント2
 	m_vStrategies.push_back(new CColor_LineComment);		// 行コメント
+#if 1//REI_MOD_UNIFY_QUOTE == 0
 	m_vStrategies.push_back(new CColor_SingleQuote);		// シングルクォーテーション文字列
+#endif // rei_
 	m_vStrategies.push_back(new CColor_DoubleQuote);		// ダブルクォーテーション文字列
 	m_vStrategies.push_back(new CColor_Url);				// URL
 	m_vStrategies.push_back(new CColor_Numeric);			// 半角数字
@@ -252,7 +254,7 @@ void CColorStrategyPool::NotifyOnStartScanLogic()
 
 // 2005.11.20 Mocaコメントの色分けがON/OFF関係なく行われていたバグを修正
 void CColorStrategyPool::CheckColorMODE(
-	CColorStrategy**	ppcColorStrategy,	//!< [in/out]
+	CColorStrategy**	ppcColorStrategy,	//!< [in,out]
 	int					nPos,
 	const CStringRef&	cLineStr
 )
@@ -273,7 +275,9 @@ void CColorStrategyPool::CheckColorMODE(
 		if(m_pcBlockComment1 && m_pcBlockComment1->BeginColor(cLineStr,nPos)){ *ppcColorStrategy = m_pcBlockComment1; return; }
 		if(m_pcBlockComment2 && m_pcBlockComment2->BeginColor(cLineStr,nPos)){ *ppcColorStrategy = m_pcBlockComment2; return; }
 		if(m_pcLineComment && m_pcLineComment->BeginColor(cLineStr,nPos)){ *ppcColorStrategy = m_pcLineComment; return; }
+#if 1//REI_MOD_UNIFY_QUOTE == 0
 		if(m_pcSingleQuote && m_pcSingleQuote->BeginColor(cLineStr,nPos)){ *ppcColorStrategy = m_pcSingleQuote; return; }
+#endif // rei_
 		if(m_pcDoubleQuote && m_pcDoubleQuote->BeginColor(cLineStr,nPos)){ *ppcColorStrategy = m_pcDoubleQuote; return; }
 	}
 }
@@ -301,7 +305,11 @@ void CColorStrategyPool::OnChangeSetting(void)
 	m_pcBlockComment1 = static_cast<CColor_BlockComment*>(GetStrategyByColor(COLORIDX_BLOCK1));	// ブロックコメント
 	m_pcBlockComment2 = static_cast<CColor_BlockComment*>(GetStrategyByColor(COLORIDX_BLOCK2));	// ブロックコメント2
 	m_pcLineComment = static_cast<CColor_LineComment*>(GetStrategyByColor(COLORIDX_COMMENT));	// 行コメント
+#if REI_MOD_UNIFY_QUOTE
+	m_pcSingleQuote = static_cast<CColor_SingleQuote*>(GetStrategyByColor(COLORIDX_WSTRING));	// シングルクォーテーション文字列
+#else
 	m_pcSingleQuote = static_cast<CColor_SingleQuote*>(GetStrategyByColor(COLORIDX_SSTRING));	// シングルクォーテーション文字列
+#endif // rei_
 	m_pcDoubleQuote = static_cast<CColor_DoubleQuote*>(GetStrategyByColor(COLORIDX_WSTRING));	// ダブルクォーテーション文字列
 
 	// 色分けをしない場合に、処理をスキップできるように確認する
@@ -309,7 +317,9 @@ void CColorStrategyPool::OnChangeSetting(void)
 	EColorIndexType bSkipColorTypeTable[] = {
 		COLORIDX_DIGIT,
 		COLORIDX_COMMENT,
+#if REI_MOD_UNIFY_QUOTE == 0
 		COLORIDX_SSTRING,
+#endif // rei_
 		COLORIDX_WSTRING,
 		COLORIDX_HEREDOC,
 		COLORIDX_URL,
@@ -393,24 +403,45 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("LNO"), 0},
 	{_T("MOD"), 0},
 	{_T("EBK"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
+#if REI_MOD_SP_COLOR >= 2
+	{_T("TAB"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
+	{_T("SPC"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},	//2002.04.28 Add By KK
+	{_T("ZEN"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
+#else
 	{_T("TAB"), 0},
 	{_T("SPC"), 0},	//2002.04.28 Add By KK
 	{_T("ZEN"), 0},
+#endif // rei_
 	{_T("CTL"), 0},
+#if REI_MOD_SP_COLOR >= 2
+	{_T("EOL"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
+#else
 	{_T("EOL"), 0},
+#endif // rei_
+#if REI_MOD_COLOR_STRATEGY
+	{_T("RAP"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
+	{_T("VER"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
+#else
 	{_T("RAP"), 0},
 	{_T("VER"), 0},  // 2005.11.08 Moca 指定桁縦線
+#endif // rei_
 	{_T("EOF"), 0},
 	{_T("NUM"), 0},	//@@@ 2001.02.17 by MIK 半角数値の強調
 	{_T("BRC"), 0},	//対括弧	// 02/09/18 ai Add
+#if REI_MOD_SELAREA
+	{_T("SEL"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
+#else
 	{_T("SEL"), 0},
+#endif
 	{_T("FND"), 0},
 	{_T("FN2"), 0},
 	{_T("FN3"), 0},
 	{_T("FN4"), 0},
 	{_T("FN5"), 0},
 	{_T("CMT"), 0},
+#if REI_MOD_UNIFY_QUOTE == 0
 	{_T("SQT"), 0},
+#endif // rei_
 	{_T("WQT"), 0},
 	{_T("HDC"), 0},
 	{_T("URL"), 0},
@@ -438,7 +469,6 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("DFC"), 0},	//DIFF変更	//@@@ 2002.06.01 MIK
 	{_T("DFD"), 0},	//DIFF削除	//@@@ 2002.06.01 MIK
 	{_T("MRK"), 0},	//ブックマーク	// 02/10/16 ai Add
-	{_T("PGV"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("LAST"), 0}	// Not Used
 };
 

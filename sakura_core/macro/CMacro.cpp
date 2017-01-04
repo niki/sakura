@@ -469,7 +469,7 @@ void CMacro::Save( HINSTANCE hInstance, CTextOutputStream& out ) const
 	/* 2002.2.2 YAZAKI CSMacroMgrに頼む */
 	if (CSMacroMgr::GetFuncInfoByID( hInstance, nFuncID, szFuncName, szFuncNameJapanese)){
 		// 2014.01.24 Moca マクロ書き出しをm_eTypeを追加して統合
-		out.WriteF( L"S_%ls(", szFuncName );
+		out.WriteF( L"%ls(", szFuncName ); // 2014.12.25 Moca "S_"を削除
 		CMacroParam* pParam = m_pParamTop;
 		while( pParam ){
 			if( pParam != m_pParamTop ){
@@ -485,15 +485,15 @@ void CMacro::Save( HINSTANCE hInstance, CTextOutputStream& out ) const
 				cmemWork.SetString( pText, nTextLen );
 				cmemWork.Replace( L"\\", L"\\\\" );
 				cmemWork.Replace( L"\'", L"\\\'" );
-				cmemWork.Replace( L"\r", L"\\\r" );
-				cmemWork.Replace( L"\n", L"\\\n" );
-				cmemWork.Replace( L"\t", L"\\\t" );
+				cmemWork.Replace( L"\r", L"\\r" );
+				cmemWork.Replace( L"\n", L"\\n" );
+				cmemWork.Replace( L"\t", L"\\t" );
 				cmemWork.Replace( L"\0", 1, L"\\u0000", 6 );
 				const wchar_t u0085[] = {0x85, 0};
 				cmemWork.Replace( u0085, L"\\u0085" );
 				cmemWork.Replace( L"\u2028", L"\\u2028" );
 				cmemWork.Replace( L"\u2029", L"\\u2029" );
-				for( int c = 0; c < 0x20; c++ ){
+				for( int c = 1; c < 0x20; c++ ){
 					int nLen = cmemWork.GetStringLength();
 					const wchar_t* p = cmemWork.GetStringPtr();
 					for( int i = 0; i < nLen; i++ ){
@@ -502,7 +502,7 @@ void CMacro::Save( HINSTANCE hInstance, CTextOutputStream& out ) const
 							wchar_t to[7];
 							from[0] = c;
 							from[1] = L'\0';
-							auto_sprintf( to, L"\\u%4x", c );
+							auto_sprintf( to, L"\\u%04x", c );
 							cmemWork.Replace( from, to );
 							break;
 						}
@@ -1516,13 +1516,8 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 			if(ArgSize != 1) return false;
 			if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[0]) ), 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
 			//void ExpandParameter(const char* pszSource, char* pszBuffer, int nBufferLen);
-			//pszSourceを展開して、pszBufferにコピー
-			wchar_t *Source;
-			int SourceLength;
-			Wrap(&varCopy.Data.bstrVal)->GetW(&Source, &SourceLength);
 			wchar_t Buffer[2048];
-			CSakuraEnvironment::ExpandParameter(Source, Buffer, 2047);
-			delete[] Source;
+			CSakuraEnvironment::ExpandParameter(varCopy.Data.bstrVal, Buffer, 2047);
 			SysString S(Buffer, wcslen(Buffer));
 			Wrap(&Result)->Receive(S);
 		}
@@ -1581,6 +1576,7 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 				View->m_pcEditWnd->ChangeLayoutParam(
 					false, 
 					CLayoutInt(varCopy.Data.iVal),
+					View->m_pcEditDoc->m_cLayoutMgr.m_tsvInfo.m_nTsvMode,
 					View->m_pcEditDoc->m_cLayoutMgr.GetMaxLineKetas()
 				);
 
@@ -1695,6 +1691,7 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 			View->m_pcEditWnd->ChangeLayoutParam(
 				false, 
 				View->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(),
+				View->m_pcEditDoc->m_cLayoutMgr.m_tsvInfo.m_nTsvMode,
 				CLayoutInt(varCopy.Data.iVal)
 			);
 		}
@@ -1768,7 +1765,9 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 			}
 
 			TCHAR *Buffer = new TCHAR[ nMaxLen+1 ];
-			_tcscpy( Buffer, sDefaultValue.c_str() );
+			size_t nLen = t_min( sDefaultValue.length(), (size_t)nMaxLen);
+			auto_memcpy( Buffer, sDefaultValue.c_str(), nLen );
+			Buffer[nLen] = _T('\0');
 			CDlgInput1 cDlgInput1;
 			if( cDlgInput1.DoModal( G_AppInstance(), View->GetHwnd(), _T("sakura macro"), sMessage.c_str(), nMaxLen, Buffer ) ) {
 				SysString S( Buffer, _tcslen(Buffer) );
@@ -1831,18 +1830,12 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 		//	2011.03.18 syat バージョン番号の比較
 		{
 			if( ArgSize != 2 ) return false;
-			TCHAR *Source;
-			int SourceLength;
 
-			if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[0]) ), 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
-			Wrap(&varCopy.Data.bstrVal)->GetT(&Source, &SourceLength);
-			std::tstring sVerA = Source;	// バージョンA
-			delete[] Source;
+			std::tstring sVerA;	// バージョンA
+			if( !variant_to_auto_str(Arguments[0], sVerA) ) return false;	// VT_BSTRとして解釈
 
-			if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[1]) ), 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
-			Wrap(&varCopy.Data.bstrVal)->GetT(&Source, &SourceLength);
-			std::tstring sVerB = Source;	// バージョンB
-			delete[] Source;
+			std::tstring sVerB;	// バージョンB
+			if( !variant_to_auto_str(Arguments[1], sVerB) ) return false;	// VT_BSTRとして解釈
 
 			Wrap( &Result )->Receive( CompareVersion( sVerA.c_str(), sVerB.c_str() ) );
 		}
@@ -1971,15 +1964,24 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 				nOpt = varCopy.Data.intVal;	// オプション
 			}
 
+			const TCHAR* pszClipText = _T("");
+			int nClipTextLen = 0;
 			if( ArgSize >= 2 ){
 				if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[1]) ), 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
+#ifdef UNICODE
+				pszClipText = varCopy.Data.bstrVal;
+				nClipTextLen = ::SysStringLen(varCopy.Data.bstrVal);
+#else
 				Wrap(&varCopy.Data.bstrVal)->GetT(&sValue);
+				pszClipText = sValue.c_str();
+				nClipTextLen = (int)sValue.size();
+#endif
 			}
 
 			// 2013.06.12 オプション設定
 			bool bColumnSelect = ((nOpt & 0x01) == 0x01);
 			bool bLineSelect = ((nOpt & 0x02) == 0x02);
-			bool bRet = View->MySetClipboardData( sValue.c_str(), sValue.size(), bColumnSelect, bLineSelect );
+			bool bRet = View->MySetClipboardData( pszClipText, nClipTextLen, bColumnSelect, bLineSelect );
 			Wrap( &Result )->Receive( bRet );
 		}
 		return true;

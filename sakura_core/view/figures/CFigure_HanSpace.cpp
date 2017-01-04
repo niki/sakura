@@ -28,6 +28,43 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 	CMyRect rcClip;
 	if(pcView->GetTextArea().GenerateClipRect(&rcClip,*pDispPos,1))
 	{
+#if REI_MOD_HAN_SPACE
+#if REI_MOD_SP_COLOR == 3
+		// 塗りつぶしで消去
+		const CTextMetrics* pMetrics=&pcView->GetTextMetrics();
+		gr.SetBrushColor(gr.GetTextBackColor());
+		::FillRect( gr, &rcClip, gr.GetCurrentBrush());
+#else  //REI_MOD_SP_COLOR
+		// 空白で消去
+		CMyRect rcClipBottom=rcClip;
+		::ExtTextOutW_AnyBuild(
+			gr,
+			pDispPos->GetDrawPos().x,
+#if REI_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace/2) +
+#endif  //REI_LINE_CENTERING
+			pDispPos->GetDrawPos().y,
+			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+			&rcClipBottom,
+			L" ",//L"･",
+			1,
+			pcView->GetTextMetrics().GetDxArray_AllHankaku()
+		);
+#endif  //REI_MOD_SP_COLOR
+		
+		// 半角スペースをドットで表現
+		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
+		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
+#if REI_LINE_CENTERING
+		y += (pcView->m_pTypeData->m_nLineSpace/2);
+#endif  //REI_LINE_CENTERING
+		gr.SetPen( gr.GetCurrentTextForeColor() );
+		x--; // 少し左め
+		::MoveToEx( gr, x, y-2, NULL );
+		::LineTo(   gr, x+2, y-2 );
+		::MoveToEx( gr, x, y-1, NULL );
+		::LineTo(   gr, x+2, y-1 );
+#else  //REI_MOD_HAN_SPACE
 		//小文字"o"の下半分を出力
 		CMyRect rcClipBottom=rcClip;
 		rcClipBottom.top=rcClip.top+pcView->GetTextMetrics().GetHankakuHeight()/2;
@@ -55,6 +92,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			1,
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
+#endif  //REI_MOD_HAN_SPACE
 	}
 
 	//位置進める

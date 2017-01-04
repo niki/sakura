@@ -24,11 +24,14 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
 #include "outline/CFuncInfoArr.h"
 #include "view/Colors/EColorIndexType.h"
+
+int g_nKeywordsIdx_JAVA = -1;
 
 /* Java */
 void CType_Java::InitTypeConfigImp(STypeConfig* pType)
@@ -40,7 +43,7 @@ void CType_Java::InitTypeConfigImp(STypeConfig* pType)
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );					/* 行コメントデリミタ */
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"/*", L"*/" );	/* ブロックコメントデリミタ */
-	pType->m_nKeyWordSetIdx[0] = 4;									/* キーワードセット */
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_JAVA;									/* キーワードセット */
 	pType->m_eDefaultOutline = OUTLINE_JAVA;						/* アウトライン解析方法 */
 	pType->m_eSmartIndent = SMARTINDENT_CPP;						/* スマートインデント種別 */
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;			//半角数値を色分け表示	//Mar. 10, 2001 JEPRO
@@ -454,6 +457,7 @@ void CDocOutline::MakeFuncList_Java( CFuncInfoArr* pcFuncInfoArr )
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsJAVA[] = {
 	L"abstract",
 	L"assert",	// Mar. 8, 2003 genta
@@ -506,3 +510,4 @@ const wchar_t* g_ppszKeywordsJAVA[] = {
 	L"while"
 };
 int g_nKeywordsJAVA = _countof(g_ppszKeywordsJAVA);
+#endif

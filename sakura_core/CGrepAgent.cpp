@@ -294,8 +294,9 @@ DWORD CGrepAgent::DoGrep(
 		bool bError;
 		if( bGrepReplace && !bGrepPaste ){
 			// Grep置換
+			// 2015.03.03 Grep置換がoptGlobalじゃないバグを修正
 			bError = !pattern.SetPattern(pcViewDst->GetHwnd(), pcmGrepKey->GetStringPtr(), pcmGrepKey->GetStringLength(),
-				cmemReplace.GetStringPtr(), sSearchOption, &cRegexp);
+				cmemReplace.GetStringPtr(), sSearchOption, &cRegexp, true);
 		}else{
 			bError = !pattern.SetPattern(pcViewDst->GetHwnd(), pcmGrepKey->GetStringPtr(), pcmGrepKey->GetStringLength(),
 				sSearchOption, &cRegexp);
@@ -375,8 +376,9 @@ DWORD CGrepAgent::DoGrep(
 		if( FALSE == type.m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp ){
 			// 2011.11.28 色指定が無効ならエスケープしない
 		}else
+		// 文字列区切り記号エスケープ方法
 		if( type.m_nStringType == STRING_LITERAL_CPP || type.m_nStringType == STRING_LITERAL_CSHARP
-			|| type.m_nStringType == STRING_LITERAL_PYTHON ){	/* 文字列区切り記号エスケープ方法 */
+			|| type.m_nStringType == STRING_LITERAL_PYTHON || type.m_nStringType == STRING_LITERAL_CPP11 ){
 			cmemWork2.Replace( L"\\", L"\\\\" );
 			cmemWork2.Replace( L"\'", L"\\\'" );
 			cmemWork2.Replace( L"\"", L"\\\"" );
@@ -403,8 +405,9 @@ DWORD CGrepAgent::DoGrep(
 			if( FALSE == type.m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp ){
 				// 2011.11.28 色指定が無効ならエスケープしない
 			}else
+			// 文字列区切り記号エスケープ方法
 			if( type.m_nStringType == STRING_LITERAL_CPP || type.m_nStringType == STRING_LITERAL_CSHARP
-				|| type.m_nStringType == STRING_LITERAL_PYTHON ){	/* 文字列区切り記号エスケープ方法 */
+				|| type.m_nStringType == STRING_LITERAL_PYTHON || type.m_nStringType == STRING_LITERAL_CPP11 ){
 				cmemWork2.Replace( L"\\", L"\\\\" );
 				cmemWork2.Replace( L"\'", L"\\\'" );
 				cmemWork2.Replace( L"\"", L"\\\"" );

@@ -120,7 +120,9 @@ const int* CTextMetrics::GenerateDxArray(
 {
 	bool bHigh;				// サロゲートペア（上位）
 
-	vResultArray->resize(nLength);
+	if( (int)vResultArray->size() < nLength ){
+		vResultArray->resize(nLength);
+	}
 	if(!pText || nLength<=0)return NULL;
 
 	int* p=&(*vResultArray)[0];

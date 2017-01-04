@@ -200,7 +200,7 @@ void CViewCommander::Command_INDENT( const wchar_t* const pData, const CLogicInt
 						{ rcSel.GetTo().x, &nIdxTo, &xLayoutTo },
 						{ CLayoutInt(-1), 0, 0 }
 					};
-					CMemoryIterator it( pcLayout, this->GetDocument()->m_cLayoutMgr.GetTabSpace() );
+					CMemoryIterator it( pcLayout, this->GetDocument()->m_cLayoutMgr.GetTabSpace(), this->GetDocument()->m_cLayoutMgr.m_tsvInfo );
 					for( int i = 0; 0 <= sortedKetas[i].keta; ++i ) {
 						for( ; ! it.end(); it.addDelta() ) {
 							if( sortedKetas[i].keta == it.getColumn() ) {
@@ -771,10 +771,12 @@ void CViewCommander::Command_SORT(BOOL bAsc)	//bAsc:TRUE=¸‡,FALSE=~‡
 		}
 		lastData.cmemLine._SetStringLength(nLen);
 	}
-	// 2010.08.22 Moca swap‚Åíœ
 	{
-		std::vector<SORTDATA*> temp;
-		temp.swap(sta);
+		// 2016.03.04 Moca sta“àƒf[ƒ^‚Ìíœ–Y‚êC³
+		int nSize = (int)sta.size();
+		for(int k = 0; k < nSize; k++){
+			delete sta[k];
+		}
 	}
 
 	CLayoutRange sSelectOld_Layout;

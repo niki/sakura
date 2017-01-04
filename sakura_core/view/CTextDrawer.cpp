@@ -54,6 +54,9 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 	if( 0 >= nLength ){
 		return;
 	}
+#if REI_OUTPUT_DEBUG_STRING
+	::OutputDebugStringW(L"DispText\n");
+#endif // rei_
 	int x=pDispPos->GetDrawPos().x;
 	int y=pDispPos->GetDrawPos().y;
 
@@ -62,7 +65,7 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 	const CTextArea* pArea=GetTextArea();
 
 	//文字間隔配列を生成
-	static vector<int> vDxArray(1);
+	static vector<int> vDxArray(302);
 	const int* pDxArray=pMetrics->GenerateDxArray(&vDxArray,pData,nLength,this->m_pEditView->GetTextMetrics().GetHankakuDx());
 
 	//文字列のピクセル幅
@@ -130,6 +133,10 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 			if(nDrawLength >= nDrawDataMaxLength)break;
 			nWorkWidth += pDrawDxArray[nDrawLength++];
 		}
+		// 合成文字対策(とりあえず必ず+1)
+		if( nDrawLength < nDrawDataMaxLength ){
+			nDrawLength++;
+		}
 		// サロゲートペア対策	2008/7/5 Uchi	Update 7/8 Uchi
 		if (nDrawLength < nDrawDataMaxLength && pDrawDxArray[nDrawLength] == 0) {
 			nDrawLength++;
@@ -139,6 +146,9 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 		::ExtTextOutW_AnyBuild(
 			hdc,
 			nDrawX,					//X
+#if REI_LINE_CENTERING
+			(m_pEditView->m_pTypeData->m_nLineSpace/2) +
+#endif // rei_
 			y,						//Y
 			ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
 			&rcClip,
@@ -358,6 +368,11 @@ void CTextDrawer::DispLineNumber(
 	int				y
 ) const
 {
+#if REI_OUTPUT_DEBUG_STRING
+	wchar_t debugBuf[100];
+	::wsprintf(debugBuf, L"DispLineNumber(%d)\n", nLineNum+1);
+	::OutputDebugStringW(debugBuf);
+#endif // rei_
 	//$$ 高速化：SearchLineByLayoutYにキャッシュを持たせる
 	const CLayout*	pcLayout = CEditDoc::GetInstance(0)->m_cLayoutMgr.SearchLineByLayoutY( nLineNum );
 
@@ -473,12 +488,46 @@ void CTextDrawer::DispLineNumber(
 				sFont.m_hFont = pView->GetFontset().ChooseFontHandle( sFont.m_sFontAttr );
 			}
 		}
+#if REI_MOD_LINE_NR_FONT_SIZE_FIX
+		sFont.m_hFont = pView->GetFontset().ChooseLineNrFontHandle( sFont.m_sFontAttr );
+#endif
 		gr.PushTextForeColor(fgcolor);	//テキスト：行番号の色
 		gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
 		gr.PushMyFont(sFont);	//フォント：行番号のフォント
 
 		//描画文字列
+#if REI_MOD_LINE_NR
+  static bool line_nr_mod = !!RegGetDword(L"LineNrMod", false);  // Borland IDE like
+  static bool line_nr_mod_10_bold = !!RegGetDword(L"LineNrMod10Bold", REI_MOD_LINE_NR_10_BOLD);  // 10行ごとに強調表示
+  char nr_char_1[4] = {};
+  char nr_char_5[4] = {};
+  if (line_nr_mod) {
+    if (!RegGetString(L"LineNrModChar1", nr_char_1)) {
+      nr_char_1[0] = REI_MOD_LINE_NR_1;
+      nr_char_1[1] = '\0';
+    }
+    if (!RegGetString(L"LineNrModChar5", nr_char_5)) {
+      nr_char_5[0] = REI_MOD_LINE_NR_5;
+      nr_char_5[1] = '\0';
+    }
+  }
+#endif  // rei_
+
+#if REI_MOD_LINE_NR
+    // フォント属性を太字にする
+    auto fnFont_AttrToBold = [&]() {
+      if (line_nr_mod_10_bold) {
+        gr.PopMyFont();
+        sFont.m_sFontAttr.m_bBoldFont = true;
+        sFont.m_hFont = pView->GetFontset().ChooseFontHandle(sFont.m_sFontAttr);
+        gr.PushMyFont(sFont);
+      }
+    };
+		
+		wchar_t szLineNum[18] = {}; // 初期化する
+#else
 		wchar_t szLineNum[18];
+#endif // rei_
 		int nLineCols;
 		int nLineNumCols;
 		{
@@ -488,11 +537,66 @@ void CTextDrawer::DispLineNumber(
 				if( NULL == pcLayout || 0 != pcLayout->GetLogicOffset() ){ //折り返しレイアウト行
 					wcscpy( szLineNum, L" " );
 				}else{
+#if REI_MOD_LINE_NR
+          if (line_nr_mod) {
+            int logicLineNo = pcLayout->GetLogicLineNo() + 1;
+
+            _itow( pcLayout->GetLogicLineNo() + 1, szLineNum, 10 );	/* 対応する論理行番号 */
+
+            if ((pcLayout->GetLogicLineNo() == pView->GetCaret().GetCaretLogicPos().y) ||
+                (nLineNum == pView->GetTextArea().GetViewTopLine())) {
+              // キャレット位置と先頭行で行番号を表示
+              //
+            } else if (nLineNum == CEditDoc::GetInstance(0)->m_cLayoutMgr.GetLineCount() - 1) {
+              // 最終行
+              //
+            } else if ((logicLineNo % 10) == 0) {
+              // 10行単位で行番号を表示
+              fnFont_AttrToBold();
+            } else if ((logicLineNo % 5) == 0) {
+              // 5行単位の印をつける
+              szLineNum[0] = nr_char_5[0];
+              szLineNum[1] = L'\0';
+            } else {
+              // 1行単位の印をつける
+              szLineNum[0] = nr_char_1[0];
+              szLineNum[1] = L'\0';
+            }
+          } else
+#endif // rei_
 					_itow( pcLayout->GetLogicLineNo() + 1, szLineNum, 10 );	/* 対応する論理行番号 */
 //###デバッグ用
 //					_itow( CModifyVisitor().GetLineModifiedSeq(pCDocLine), szLineNum, 10 );	// 行の変更番号
 				}
 			}else{
+#if REI_MOD_LINE_NR
+        if (line_nr_mod) {
+          int lineNo = (int)nLineNum + 1;
+          
+          /* 物理行（レイアウト行）番号表示モード */
+          _itow( (Int)nLineNum + 1, szLineNum, 10 );
+          
+          if (((Int)nLineNum == pView->GetCaret().GetCaretLayoutPos().GetY()) ||
+              (nLineNum == pView->GetTextArea().GetViewTopLine())) {
+            // キャレット位置と先頭行で行番号を表示
+            //
+          } else if (nLineNum == CEditDoc::GetInstance(0)->m_cLayoutMgr.GetLineCount() - 1) {
+            // 最終行
+            //
+          } else if ((lineNo % 10) == 0) {
+            // 10行単位で行番号を表示
+            fnFont_AttrToBold();
+          } else if ((lineNo % 5) == 0) {
+            // 5行単位の印をつける
+            szLineNum[0] = nr_char_5[0];
+            szLineNum[1] = L'\0';
+          } else {
+            // 1行単位の印をつける
+            szLineNum[0] = nr_char_1[0];
+            szLineNum[1] = L'\0';
+          }
+        } else
+#endif // rei_
 				/* 物理行（レイアウト行）番号表示モード */
 				_itow( (Int)nLineNum + 1, szLineNum, 10 );
 			}
@@ -507,10 +611,54 @@ void CTextDrawer::DispLineNumber(
 			}
 		}
 
+#if REI_MOD_LINE_NR_FONT_SIZE_FIX
+		static int nHankakuDx = 10;
+		static int nHankakuDy = 18;
+		static bool _set = false;;
+		static int anHankakuDx[64];
+		if (!_set) {
+			HDC hdc = GetDC(NULL);
+			{
+				HFONT hFontOld = (HFONT)::SelectObject( hdc, sFont.m_hFont );
+				SIZE	sz;
+		#ifdef _UNICODE
+				::GetTextExtentPoint32( hdc, L"xx", 2, &sz );
+		#else
+				::GetTextExtentPoint32( hdc, LS(STR_ERR_DLGEDITVW2), 2, &sz );
+		#endif
+				nHankakuDy = sz.cy;
+				nHankakuDx = sz.cx / 2;
+				::SelectObject( hdc, hFontOld );
+			}
+			ReleaseDC(NULL,hdc);
+			
+			for (int i = 0; i < sizeof(anHankakuDx)/sizeof(anHankakuDx[0]); i++) {
+				anHankakuDx[i] = nHankakuDx;
+			}
+			_set = true;
+		}
+		int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1 - 1) * ( nHankakuDx ) + nCharWidth;
+		::ExtTextOutW_AnyBuild( gr,
+			drawNumTop,
+#if REI_LINE_CENTERING
+			(pView->m_pTypeData->m_nLineSpace/2) +
+#endif // rei_
+			(pView->GetTextMetrics().GetHankakuDy() - nHankakuDy) / 2 +
+			y,
+			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+			&rcLineNum,
+			szLineNum,
+			nLineCols,
+			anHankakuDx
+		);
+#else
 		//	Sep. 23, 2002 genta
 		int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
 		::ExtTextOutW_AnyBuild( gr,
 			drawNumTop,
+#if REI_LINE_CENTERING
+			(pView->m_pTypeData->m_nLineSpace/2) +
+#endif // rei_
 			y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcLineNum,
@@ -518,6 +666,7 @@ void CTextDrawer::DispLineNumber(
 			nLineCols,
 			pView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
+#endif
 
 		/* 行番号区切り 0=なし 1=縦線 2=任意 */
 		if( 1 == pTypes->m_nLineTermType ){
@@ -526,7 +675,11 @@ void CTextDrawer::DispLineNumber(
 			rc.top = y;
 			rc.right = nLineNumAreaWidth - 1;
 			rc.bottom = y + nLineHeight;
+#if REI_FIX_LINE_TERM_TYPE
+			gr.FillSolidMyRect(rc, cGyouType.GetTextColor());
+#else
 			gr.FillSolidMyRect(rc, fgcolor);
+#endif
 		}
 
 		gr.PopTextForeColor();
@@ -555,7 +708,9 @@ void CTextDrawer::DispLineNumber(
 		}
 
 		//DIFFマーク描画
-		CDiffLineGetter(pCDocLine).DrawDiffMark(gr,y,nLineHeight,fgcolor);
+		if( !pView->m_bMiniMap ){
+			CDiffLineGetter(pCDocLine).DrawDiffMark(gr,y,nLineHeight,fgcolor);
+		}
 	}
 
 	// 行番号とテキストの隙間の描画

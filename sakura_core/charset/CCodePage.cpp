@@ -121,21 +121,35 @@ EConvertResult CCodePage::CPToUnicode(const CMemory& cSrc, CNativeW* pDst, int c
 	int nDstCch = MultiByteToWideChar2(codepage, nToWideCharFlags, pSrc, nSrcLen, NULL, 0);
 	// 変換先バッファサイズとその確保
 	wchar_t* pDstBuffer;
-	try{
-		pDstBuffer = new wchar_t[nDstCch];
-	}catch( ... ){
-		pDstBuffer = NULL;
-	}
-	if( pDstBuffer == NULL ){
-		return RESULT_FAILURE;
+	bool bMemDstPtr;
+	if( nDstCch <= pDst->capacity() && &cSrc != pDst->_GetMemory() && NULL != pDst->GetStringPtr() ){
+		bMemDstPtr = true;
+		pDstBuffer = pDst->GetStringPtr(); // unconst
+	}else{
+		bMemDstPtr = false;
+		try{
+			pDstBuffer = new wchar_t[nDstCch];
+		}catch( ... ){
+			pDstBuffer = NULL;
+		}
+		if( pDstBuffer == NULL ){
+			return RESULT_FAILURE;
+		}
 	}
 
 	// 変換
 	int nDstLen; // cch
 	EConvertResult ret = CPToUni(pSrc, nSrcLen, pDstBuffer, nDstCch, nDstLen, codepage);
+	if( ret == RESULT_FAILURE ){
+		return ret;
+	}
 
-	pDst->_GetMemory()->SetRawDataHoldBuffer( pDstBuffer, nDstLen*sizeof(wchar_t) );
-	delete [] pDstBuffer;
+	if( bMemDstPtr ){
+		pDst->_SetStringLength(nDstCch);
+	}else{
+		pDst->_GetMemory()->SetRawDataHoldBuffer( pDstBuffer, nDstLen*sizeof(wchar_t) );
+		delete [] pDstBuffer;
+	}
 
 	return ret;
 }
@@ -385,9 +399,9 @@ EEncodingTrait CCodePage::GetEncodingTrait(int charcodeEx)
 			CHAR testNel[10];
 			int nRetNel = ::WideCharToMultiByte(codepage, 0, nel, 1, testNel, sizeof(testNel), NULL, NULL);
 			if( nRetNel && 0 == memcmp(testNel, "\x15", 1) ){
-				return ENCODING_TRAIT_EBCDEC;
+				return ENCODING_TRAIT_EBCDIC;
 			}
-			return ENCODING_TRAIT_EBCDEC_CRLF;
+			return ENCODING_TRAIT_EBCDIC_CRLF;
 		}
 		if(0 == memcmp(testCrlf, "\r\n", 2)){ return ENCODING_TRAIT_ASCII; }
 		return ENCODING_TRAIT_ERROR;
@@ -492,6 +506,9 @@ int CCodePage::AddComboCodePages(HWND hwnd, HWND combo, int nSelCode)
 	}
 	// 幅を変更
 	CDialog::OnCbnDropDown(combo, true);
+
+	// CPのチェックボックスがDisableになるのでフォーカスを移動
+	::SetFocus(combo);
 	return nSel;
 }
 

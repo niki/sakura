@@ -67,14 +67,23 @@ void CVisualProgress::OnProgress(int nPer)
 
 void CVisualProgress::_Begin()
 {
+#if REI_FIX_WAITCUESOR == 0
 	//砂時計
 	if(!m_pcWaitCursor){
 		m_pcWaitCursor = new CWaitCursor( CEditWnd::getInstance()->GetHwnd() );
 	}
+#endif // rei_
 
 	//プログレスバー
 	HWND hwndProgress = CEditWnd::getInstance()->m_cStatusBar.GetProgressHwnd();
 	if( hwndProgress ){
+#if REI_FIX_WAITCUESOR
+		//砂時計
+		if(!m_pcWaitCursor){
+			m_pcWaitCursor = new CWaitCursor( CEditWnd::getInstance()->GetHwnd() );
+		}
+#endif // rei_
+		
 		::ShowWindow( hwndProgress, SW_SHOW );
 		//範囲設定・リセット
 		Progress_SetRange( hwndProgress, 0, 101 );

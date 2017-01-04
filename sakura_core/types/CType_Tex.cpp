@@ -24,11 +24,15 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
 #include "outline/CFuncInfoArr.h"
 #include "view/Colors/EColorIndexType.h"
+
+int g_nKeywordsIdx_TEX = -1;
+int g_nKeywordsIdx_TEX2 = -1;
 
 /* TeX */
 //Oct. 31, 2000 JEPRO TeX  ユーザに贈る
@@ -44,7 +48,9 @@ void CType_Tex::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_eDefaultOutline = OUTLINE_TEX;						/* アウトライン解析方法 */
 	pType->m_nKeyWordSetIdx[0] = 9;								/* キーワードセット */
 	pType->m_nKeyWordSetIdx[1] = 10;							/* キーワードセット2 */	//Jan. 19, 2001 JEPRO
+#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = false;	//シングルクォーテーション文字列を色分け表示しない
+#endif // rei_
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = false;	//ダブルクォーテーション文字列を色分け表示しない
 }
 
@@ -181,6 +187,7 @@ void CDocOutline::MakeTopicList_tex(CFuncInfoArr* pcFuncInfoArr)
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsTEX[] = {
 //Nov. 20, 2000 JEPRO	大幅追加 & 若干修正・削除 --ほとんどコマンドのみ
 	L"error",
@@ -720,7 +727,7 @@ const wchar_t* g_ppszKeywordsTEX2[] = {
 	//	環境コマンド
 	//Jan. 19, 2001 JEPRO 本当は{}付きでキーワードにしたかったが単語として認識してくれないので止めた
 	L"abstract",
-	L"array"
+	L"array",
 	L"center",
 	L"description",
 	L"document",
@@ -838,4 +845,5 @@ const wchar_t* g_ppszKeywordsTEX2[] = {
 //		"zw"
 };
 int g_nKeywordsTEX2 = _countof(g_ppszKeywordsTEX2);
+#endif
 

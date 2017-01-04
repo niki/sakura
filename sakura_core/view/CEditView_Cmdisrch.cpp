@@ -252,7 +252,11 @@ void CEditView::ISearchExit()
 		CSearchKeywordManager().AddToSearchKeyArr( m_strCurSearchKey.c_str() );
 	}
 	m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
+#if REI_FIX_ISEARCH_KEEP_REGEXP
+	///
+#else
 	GetDllShareData().m_Common.m_sSearch.m_sSearchOption = m_sCurSearchOption;
+#endif
 	m_pcEditWnd->m_cToolbar.AcceptSharedSearchKey();
 	m_nISearchDirection = SEARCH_BACKWARD;
 	m_nISearchMode = 0;
@@ -266,8 +270,10 @@ void CEditView::ISearchExit()
 	GetCursorPos(&point1);
 	OnMOUSEMOVE(0,point1.x,point1.y);
 
+#if REI_MOD_STATUSBAR == 0
 	//ステータス表示エリアをクリア
 	SendStatusMessage(_T(""));
+#endif // rei_
 
 }
 

@@ -50,7 +50,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 	CTypeSupport cTabType(pcView,COLORIDX_TAB);
 
 	// Ç±ÇÍÇ©ÇÁï`âÊÇ∑ÇÈÉ^Éuïù
-	int tabDispWidth = (Int)pcView->m_pcEditDoc->m_cLayoutMgr.GetActualTabSpace( sPos.GetDrawCol() );
+	int tabDispWidth = (Int)pcView->m_pcEditDoc->m_cLayoutMgr.GetActualTsvSpace( sPos.GetDrawCol(), WCODE::TAB );
 
 	// É^ÉuãLçÜóÃàÊ
 	RECT rcClip2;
@@ -76,6 +76,21 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				pMetrics->GetDxArray_AllHankaku()
 			);
 		}else{
+#if REI_MOD_SP_COLOR == 3
+			if( !cTabType.IsDisp() ){
+				//îwåi
+				::ExtTextOutW_AnyBuild(
+					gr,
+					sPos.GetDrawPos().x,
+					sPos.GetDrawPos().y,
+					ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+					&rcClip2,
+					L"        ",
+					tabDispWidth <= 8 ? tabDispWidth : 8, // Sep. 22, 2002 genta
+					pMetrics->GetDxArray_AllHankaku()
+				);
+			}
+#else
 			//îwåi
 			::ExtTextOutW_AnyBuild(
 				gr,
@@ -87,6 +102,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				tabDispWidth <= 8 ? tabDispWidth : 8, // Sep. 22, 2002 genta
 				pMetrics->GetDxArray_AllHankaku()
 			);
+#endif // rei_
 
 			//É^ÉuñÓàÛï\é¶
 			if( cTabType.IsDisp() ){
@@ -100,8 +116,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 						_DrawTabArrow(
 							gr,
 							sPos.GetDrawPos().x,
+//# if REI_LINE_CENTERING
+//							(pcView->m_pTypeData->m_nLineSpace/2) +
+//# endif // rei_
 							sPos.GetDrawPos().y,
 							pMetrics->GetHankakuWidth(),
+  #if REI_LINE_CENTERING
+							pcView->m_pTypeData->m_nLineSpace +
+  #endif // rei_
 							pMetrics->GetHankakuHeight(),
 							gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 							gr.GetCurrentTextForeColor()
@@ -112,8 +134,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 					_DrawTabArrow(
 						gr,
 						nPosLeft,
+//  #if REI_LINE_CENTERING
+//						(pcView->m_pTypeData->m_nLineSpace/2) +
+//  #endif // rei_
 						sPos.GetDrawPos().y,
 						nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab AreaàÍîtÇ… 2013/4/11 Uchi
+  #if REI_LINE_CENTERING
+						pcView->m_pTypeData->m_nLineSpace +
+  #endif // rei_
 						pMetrics->GetHankakuHeight(),
 						gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 						gr.GetCurrentTextForeColor()
@@ -150,6 +178,31 @@ void _DrawTabArrow(
 	int sy = nPosY + ( nHeight / 2 );
 	int sa = nHeight / 4;								// ËVÇÃsize
 
+#if REI_MOD_TAB
+  #if REI_MOD_SP_COLOR == 3
+	{
+		gr.SetBrushColor(gr.GetTextBackColor());
+		
+		RECT rc;
+		rc.left = nPosX;
+		rc.top = nPosY;
+		rc.right = rc.left + nWidth;
+		rc.bottom = rc.top + nHeight;
+		::FillRect( gr, &rc, gr.GetCurrentBrush());
+	}
+  #endif // rei_
+	
+	
+	sy++; // è≠Çµâ∫Çﬂ
+	
+	::MoveToEx( gr, nPosX+1, sy, NULL );
+	::LineTo(   gr, sx+1, sy );
+	
+	if( bBold ){
+		::MoveToEx( gr, nPosX+1, sy+1, NULL );
+		::LineTo(   gr, sx+1, sy+1 );
+	}
+#else
 	DWORD pp[] = { 3, 2 };
 	POINT pt[5];
 	pt[0].x = nPosX;	//ÅuÑüÅvç∂í[Ç©ÇÁâEí[
@@ -177,6 +230,7 @@ void _DrawTabArrow(
 		pt[4].y += 1;
 		::PolyPolyline( gr, pt, pp, _countof(pp));
 	}
+#endif // rei_
 
 	gr.PopPen();
 }

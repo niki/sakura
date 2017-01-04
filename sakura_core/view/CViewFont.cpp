@@ -34,6 +34,11 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 	int quality = GetDllShareData().m_Common.m_sWindow.m_nMiniMapQuality;
 	int outPrec = OUT_TT_ONLY_PRECIS;	// FixedSys等でMiniMapのフォントが小さくならない修正
 
+#if REI_MOD_LINE_NR_FONT_SIZE_FIX
+  static float font_size = (float)RegGetDword(L"LineNrFontSize", REI_MOD_LINE_NR_FONT_SIZE_FIX) / 100;
+  float font_height = -(font_size * LOGPIXELSY) / 72;
+#endif
+
 	/* フォント作成 */
 	lf = *plf;
 	if( m_bMiniMap ){
@@ -43,6 +48,12 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 	}
 	m_hFont_HAN = CreateFontIndirect( &lf );
 	m_LogFont = lf;
+#if REI_MOD_LINE_NR_FONT_SIZE_FIX
+  if (font_height < 0.0f) {
+    lf.lfHeight = (LONG)font_height;
+  }
+  m_hFont_HAN_LN = CreateFontIndirect( &lf );
+#endif
 
 	/* 太字フォント作成 */
 	lf = *plf;
@@ -56,6 +67,12 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 		lf.lfWeight = 1000;
 	}
 	m_hFont_HAN_BOLD = CreateFontIndirect( &lf );
+#if REI_MOD_LINE_NR_FONT_SIZE_FIX
+  if (font_height < 0.0f) {
+    lf.lfHeight = (LONG)font_height;
+  }
+  m_hFont_HAN_BOLD_LN = CreateFontIndirect( &lf );
+#endif
 
 	/* 下線フォント作成 */
 	lf = *plf;
@@ -67,6 +84,12 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 	
 	lf.lfUnderline = TRUE;
 	m_hFont_HAN_UL = CreateFontIndirect( &lf );
+#if REI_MOD_LINE_NR_FONT_SIZE_FIX
+  if (font_height < 0.0f) {
+    lf.lfHeight = (LONG)font_height;
+  }
+  m_hFont_HAN_UL_LN = CreateFontIndirect( &lf );
+#endif
 
 	/* 太字下線フォント作成 */
 	lf = *plf;
@@ -81,6 +104,12 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 		lf.lfWeight = 1000;
 	}
 	m_hFont_HAN_BOLD_UL = CreateFontIndirect( &lf );
+#if REI_MOD_LINE_NR_FONT_SIZE_FIX
+  if (font_height < 0.0f) {
+    lf.lfHeight = (LONG)font_height;
+  }
+  m_hFont_HAN_BOLD_UL_LN = CreateFontIndirect( &lf );
+#endif
 }
 
 /*! フォント削除
@@ -91,6 +120,12 @@ void CViewFont::DeleteFont()
 	DeleteObject( m_hFont_HAN_BOLD );
 	DeleteObject( m_hFont_HAN_UL );
 	DeleteObject( m_hFont_HAN_BOLD_UL );
+#if REI_MOD_LINE_NR_FONT_SIZE_FIX
+	DeleteObject( m_hFont_HAN_LN );
+	DeleteObject( m_hFont_HAN_BOLD_LN );
+	DeleteObject( m_hFont_HAN_UL_LN );
+	DeleteObject( m_hFont_HAN_BOLD_UL_LN );
+#endif
 }
 
 /*! フォントを選ぶ
@@ -113,4 +148,23 @@ HFONT CViewFont::ChooseFontHandle( SFontAttr sFontAttr ) const
 		}
 	}
 }
+
+#if REI_MOD_LINE_NR_FONT_SIZE_FIX
+HFONT CViewFont::ChooseLineNrFontHandle( SFontAttr sFontAttr ) const
+{
+	if( sFontAttr.m_bBoldFont ){	/* 太字か */
+		if( sFontAttr.m_bUnderLine ){	/* 下線か */
+			return m_hFont_HAN_BOLD_UL_LN;
+		}else{
+			return m_hFont_HAN_BOLD_LN;
+		}
+	}else{
+		if( sFontAttr.m_bUnderLine ){	/* 下線か */
+			return m_hFont_HAN_UL_LN;
+		}else{
+			return m_hFont_HAN_LN;
+		}
+	}
+}
+#endif
 

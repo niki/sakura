@@ -208,7 +208,7 @@ void CDialog::SetDialogPosSize()
 	if( -1 != m_xPos && -1 != m_yPos ){
 		/* ウィンドウ位置・サイズを再現 */
 		// 2014.11.28 フォント変更対応
-		if( m_nWidth == -1 ){
+		if( m_nWidth == -1 && m_nHeight == -1 ){
 			RECT	rc;
 			::GetWindowRect( m_hWnd, &rc );
 			m_nWidth = rc.right - rc.left;
@@ -279,11 +279,10 @@ BOOL CDialog::OnDestroy( void )
 		m_yPos = cWindowPlacement.rcNormalPosition.top;
 		m_nWidth = cWindowPlacement.rcNormalPosition.right - cWindowPlacement.rcNormalPosition.left;
 		m_nHeight = cWindowPlacement.rcNormalPosition.bottom - cWindowPlacement.rcNormalPosition.top;
-		// 2014.11.28 フォント変更によるサイズ変更対応
-		if( !m_bSizable ){
-			m_nWidth = -1;
-			m_nHeight = -1;
-		}
+	}
+	if( !m_bSizable ){
+		m_nWidth = -1;
+		m_nHeight = -1;
 	}
 	/* 破棄 */
 	if( NULL != m_hwndSizeBox ){
