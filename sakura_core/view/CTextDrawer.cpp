@@ -488,9 +488,6 @@ void CTextDrawer::DispLineNumber(
 				sFont.m_hFont = pView->GetFontset().ChooseFontHandle( sFont.m_sFontAttr );
 			}
 		}
-#if REI_MOD_LINE_NR_FONT_SIZE_FIX
-		sFont.m_hFont = pView->GetFontset().ChooseLineNrFontHandle( sFont.m_sFontAttr );
-#endif
 		gr.PushTextForeColor(fgcolor);	//テキスト：行番号の色
 		gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
 		gr.PushMyFont(sFont);	//フォント：行番号のフォント
@@ -499,18 +496,6 @@ void CTextDrawer::DispLineNumber(
 #if REI_MOD_LINE_NR
   static bool line_nr_mod = !!RegGetDword(L"LineNrMod", false);  // Borland IDE like
   static bool line_nr_mod_10_bold = !!RegGetDword(L"LineNrMod10Bold", REI_MOD_LINE_NR_10_BOLD);  // 10行ごとに強調表示
-  char nr_char_1[4] = {};
-  char nr_char_5[4] = {};
-  if (line_nr_mod) {
-    if (!RegGetString(L"LineNrModChar1", nr_char_1)) {
-      nr_char_1[0] = REI_MOD_LINE_NR_1;
-      nr_char_1[1] = '\0';
-    }
-    if (!RegGetString(L"LineNrModChar5", nr_char_5)) {
-      nr_char_5[0] = REI_MOD_LINE_NR_5;
-      nr_char_5[1] = '\0';
-    }
-  }
 #endif  // rei_
 
 #if REI_MOD_LINE_NR
@@ -555,11 +540,11 @@ void CTextDrawer::DispLineNumber(
               fnFont_AttrToBold();
             } else if ((logicLineNo % 5) == 0) {
               // 5行単位の印をつける
-              szLineNum[0] = nr_char_5[0];
+              szLineNum[0] = REI_MOD_LINE_NR_5;
               szLineNum[1] = L'\0';
             } else {
               // 1行単位の印をつける
-              szLineNum[0] = nr_char_1[0];
+              szLineNum[0] = REI_MOD_LINE_NR_1;
               szLineNum[1] = L'\0';
             }
           } else
@@ -588,11 +573,11 @@ void CTextDrawer::DispLineNumber(
             fnFont_AttrToBold();
           } else if ((lineNo % 5) == 0) {
             // 5行単位の印をつける
-            szLineNum[0] = nr_char_5[0];
+            szLineNum[0] = REI_MOD_LINE_NR_5;
             szLineNum[1] = L'\0';
           } else {
             // 1行単位の印をつける
-            szLineNum[0] = nr_char_1[0];
+            szLineNum[0] = REI_MOD_LINE_NR_1;
             szLineNum[1] = L'\0';
           }
         } else
@@ -611,47 +596,6 @@ void CTextDrawer::DispLineNumber(
 			}
 		}
 
-#if REI_MOD_LINE_NR_FONT_SIZE_FIX
-		static int nHankakuDx = 10;
-		static int nHankakuDy = 18;
-		static bool _set = false;;
-		static int anHankakuDx[64];
-		if (!_set) {
-			HDC hdc = GetDC(NULL);
-			{
-				HFONT hFontOld = (HFONT)::SelectObject( hdc, sFont.m_hFont );
-				SIZE	sz;
-		#ifdef _UNICODE
-				::GetTextExtentPoint32( hdc, L"xx", 2, &sz );
-		#else
-				::GetTextExtentPoint32( hdc, LS(STR_ERR_DLGEDITVW2), 2, &sz );
-		#endif
-				nHankakuDy = sz.cy;
-				nHankakuDx = sz.cx / 2;
-				::SelectObject( hdc, hFontOld );
-			}
-			ReleaseDC(NULL,hdc);
-			
-			for (int i = 0; i < sizeof(anHankakuDx)/sizeof(anHankakuDx[0]); i++) {
-				anHankakuDx[i] = nHankakuDx;
-			}
-			_set = true;
-		}
-		int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1 - 1) * ( nHankakuDx ) + nCharWidth;
-		::ExtTextOutW_AnyBuild( gr,
-			drawNumTop,
-#if REI_LINE_CENTERING
-			(pView->m_pTypeData->m_nLineSpace/2) +
-#endif // rei_
-			(pView->GetTextMetrics().GetHankakuDy() - nHankakuDy) / 2 +
-			y,
-			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-			&rcLineNum,
-			szLineNum,
-			nLineCols,
-			anHankakuDx
-		);
-#else
 		//	Sep. 23, 2002 genta
 		int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
 		::ExtTextOutW_AnyBuild( gr,
@@ -666,7 +610,6 @@ void CTextDrawer::DispLineNumber(
 			nLineCols,
 			pView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
-#endif
 
 		/* 行番号区切り 0=なし 1=縦線 2=任意 */
 		if( 1 == pTypes->m_nLineTermType ){
@@ -699,7 +642,14 @@ void CTextDrawer::DispLineNumber(
 	{
 		// 2001.12.03 hor
 		/* とりあえずブックマークに縦線 */
+#if REI_FIX_DRAW_BOOKMARK_LINE_NOGYOU
+    bool bookmark_line = false;
+    bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp();
+    bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !CTypeSupport(pView,COLORIDX_GYOU).IsDisp();
+    if (bookmark_line)
+#else
 		if(CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp() )
+#endif
 		{
 			gr.PushPen(cColorType.GetTextColor(),2);
 			::MoveToEx( gr, 1, y, NULL );

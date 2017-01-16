@@ -40,9 +40,7 @@ void CType_Xml::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_nStringType = STRING_LITERAL_HTML;
 	pType->m_bStringLineOnly = true;
 	pType->m_eDefaultOutline = OUTLINE_XML;
-#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = true;
-#endif // rei_
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = true;
 	pType->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp = true;
 

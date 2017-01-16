@@ -45,9 +45,6 @@ public:
 	}
 
 	HFONT ChooseFontHandle( SFontAttr sFontAttr ) const;		/* フォントを選ぶ */
-#if REI_MOD_LINE_NR_FONT_SIZE_FIX
-	HFONT ChooseLineNrFontHandle( SFontAttr sFontAttr ) const;		/* フォントを選ぶ */
-#endif
 
 	HFONT GetFontHan() const
 	{
@@ -67,12 +64,6 @@ private:
 	HFONT	m_hFont_HAN_BOLD;		/* 現在のフォントハンドル(太字) */
 	HFONT	m_hFont_HAN_UL;			/* 現在のフォントハンドル(下線) */
 	HFONT	m_hFont_HAN_BOLD_UL;	/* 現在のフォントハンドル(太字、下線) */
-#if REI_MOD_LINE_NR_FONT_SIZE_FIX
-	HFONT	m_hFont_HAN_LN;					/* 現在のフォントハンドル */
-	HFONT	m_hFont_HAN_BOLD_LN;		/* 現在のフォントハンドル(太字) */
-	HFONT	m_hFont_HAN_UL_LN;			/* 現在のフォントハンドル(下線) */
-	HFONT	m_hFont_HAN_BOLD_UL_LN;	/* 現在のフォントハンドル(太字、下線) */
-#endif
 
 	LOGFONT	m_LogFont;
 	bool	m_bMiniMap;

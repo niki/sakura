@@ -71,52 +71,48 @@ BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TC
 	ChangeCurrentDirectoryToExeDir();
 
 #if REI_MOD_SELECTDIR
-  static bool ifile_operation = !!RegGetDword(L"SelectDirIFileOperation", true);
-  
-  if (ifile_operation) {
-    IFileOpenDialog *pFileOpenDialog;
-    HRESULT hr;
-    IShellItem *psiFolder;
-    IShellItem *psiParent;
-    LPWSTR lpszItem;
-    DWORD dwOptions;
+  IFileOpenDialog *pFileOpenDialog;
+  HRESULT hr;
+  IShellItem *psiFolder;
+  IShellItem *psiParent;
+  LPWSTR lpszItem;
+  DWORD dwOptions;
 
-    hr = ::CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER,
-                            IID_PPV_ARGS(&pFileOpenDialog));
-    if (FAILED(hr)) {
-      return FALSE;
-    }
+  hr = ::CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER,
+                          IID_PPV_ARGS(&pFileOpenDialog));
+  if (FAILED(hr)) {
+    return FALSE;
+  }
 
-    SHCreateItemFromParsingName(szInitFolder, NULL, IID_PPV_ARGS(&psiFolder));
-    psiFolder->GetParent(&psiParent);
-    psiFolder->GetDisplayName(SIGDN_NORMALDISPLAY, &lpszItem);
+  SHCreateItemFromParsingName(szInitFolder, NULL, IID_PPV_ARGS(&psiFolder));
+  psiFolder->GetParent(&psiParent);
+  psiFolder->GetDisplayName(SIGDN_NORMALDISPLAY, &lpszItem);
 
-    pFileOpenDialog->SetFolder(psiParent);
-    pFileOpenDialog->SetFileName(lpszItem);
-    pFileOpenDialog->GetOptions(&dwOptions);
-    pFileOpenDialog->SetOptions(dwOptions | FOS_PICKFOLDERS);
+  pFileOpenDialog->SetFolder(psiParent);
+  pFileOpenDialog->SetFileName(lpszItem);
+  pFileOpenDialog->GetOptions(&dwOptions);
+  pFileOpenDialog->SetOptions(dwOptions | FOS_PICKFOLDERS);
 
-    hr = pFileOpenDialog->Show(hWnd);
+  hr = pFileOpenDialog->Show(hWnd);
+  if (SUCCEEDED(hr)) {
+    LPWSTR lpszPath;
+    IShellItem *psi;
+
+    hr = pFileOpenDialog->GetResult(&psi);
     if (SUCCEEDED(hr)) {
-      LPWSTR lpszPath;
-      IShellItem *psi;
-
-      hr = pFileOpenDialog->GetResult(&psi);
-      if (SUCCEEDED(hr)) {
-        psi->GetDisplayName(SIGDN_FILESYSPATH, &lpszPath);
-        auto_strcpy(strFolderName, lpszPath);
-        ::CoTaskMemFree(lpszPath);
-        psi->Release();
-      }
+      psi->GetDisplayName(SIGDN_FILESYSPATH, &lpszPath);
+      auto_strcpy(strFolderName, lpszPath);
+      ::CoTaskMemFree(lpszPath);
+      psi->Release();
     }
+  }
 
-    ::CoTaskMemFree(lpszItem);
-    psiParent->Release();
-    pFileOpenDialog->Release();
+  ::CoTaskMemFree(lpszItem);
+  psiParent->Release();
+  pFileOpenDialog->Release();
 
-    return SUCCEEDED(hr) ? TRUE : FALSE;
-  } else {
-#endif // rei_
+  return SUCCEEDED(hr) ? TRUE : FALSE;
+#else
 	// SHBrowseForFolder()ä÷êîÇ…ìnÇ∑ç\ë¢ëÃ
 	BROWSEINFO bi;
 	bi.hwndOwner = hWnd;
@@ -142,8 +138,6 @@ BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TC
 		}
 	}
 	return FALSE;
-#if REI_MOD_SELECTDIR
-  }
 #endif // rei_
 }
 

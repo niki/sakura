@@ -66,11 +66,7 @@ protected:
 class CColor_SingleQuote : public CColor_Quote{
 public:
 	CColor_SingleQuote() : CColor_Quote(L'\'') { }
-#if REI_MOD_UNIFY_QUOTE
-	virtual EColorIndexType GetStrategyColor() const{ return COLORIDX_WSTRING; }
-#else
 	virtual EColorIndexType GetStrategyColor() const{ return COLORIDX_SSTRING; }
-#endif // rei_
 };
 
 class CColor_DoubleQuote : public CColor_Quote{

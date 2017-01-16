@@ -29,12 +29,12 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 	if(pcView->GetTextArea().GenerateClipRect(&rcClip,*pDispPos,1))
 	{
 #if REI_MOD_HAN_SPACE
-#if REI_MOD_SP_COLOR == 3
+#if REI_MOD_SP_COLOR
 		// 塗りつぶしで消去
 		const CTextMetrics* pMetrics=&pcView->GetTextMetrics();
 		gr.SetBrushColor(gr.GetTextBackColor());
 		::FillRect( gr, &rcClip, gr.GetCurrentBrush());
-#else  //REI_MOD_SP_COLOR
+#else
 		// 空白で消去
 		CMyRect rcClipBottom=rcClip;
 		::ExtTextOutW_AnyBuild(
@@ -42,7 +42,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			pDispPos->GetDrawPos().x,
 #if REI_LINE_CENTERING
 			(pcView->m_pTypeData->m_nLineSpace/2) +
-#endif  //REI_LINE_CENTERING
+#endif  // rei_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipBottom,
@@ -50,14 +50,14 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			1,
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
-#endif  //REI_MOD_SP_COLOR
+#endif  // rei_
 		
 		// 半角スペースをドットで表現
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
 #if REI_LINE_CENTERING
 		y += (pcView->m_pTypeData->m_nLineSpace/2);
-#endif  //REI_LINE_CENTERING
+#endif  // rei_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // 少し左め
 		::MoveToEx( gr, x, y-2, NULL );

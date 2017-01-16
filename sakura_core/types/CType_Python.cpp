@@ -52,9 +52,7 @@ void CType_Python::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_PYTHON;
 	pType->m_eDefaultOutline = OUTLINE_PYTHON;
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;
-#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = true;
-#endif
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = true;
 }
 

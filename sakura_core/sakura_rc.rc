@@ -4600,12 +4600,8 @@ BEGIN
 	STR_COLOR_SEARCH_WORD4			"検索文字列4"
 	STR_COLOR_SEARCH_WORD5			"検索文字列5"
 	STR_COLOR_COMMENT				"コメント"
-#if REI_MOD_UNIFY_QUOTE
-	STR_COLOR_DOUBLE_QUOTE			"文字"
-#else
 	STR_COLOR_SINGLE_QUOTE			"シングルクォーテーション文字列"
 	STR_COLOR_DOUBLE_QUOTE			"ダブルクォーテーション文字列"
-#endif // rei_
 	STR_COLOR_HERE_DOCUMENT			"ヒアドキュメント"
 	STR_COLOR_URL					"URL"
 

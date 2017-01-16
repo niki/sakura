@@ -43,9 +43,7 @@ void CType_Css::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_eDefaultOutline = OUTLINE_TEXT;
 	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_CSS;
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;
-#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = true;
-#endif // rei_
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = true;
 	pType->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp = true;
 }

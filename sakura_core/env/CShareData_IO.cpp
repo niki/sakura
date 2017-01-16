@@ -2311,10 +2311,6 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 	for( j = 0; j < COLORIDX_LAST; ++j ){
 		static const WCHAR* pszForm = LTEXT("%d,%d,%06x,%06x,%d");
 		auto_sprintf( szKeyName, LTEXT("C[%ts]"), g_ColorAttributeArr[j].szName );	//Stonee, 2001/01/12, 2001/01/15
-#if REI_MOD_UNIFY_QUOTE
-		//::MessageBoxW(NULL,szKeyName,L"",MB_OK);
-		//::OutputDebugStringW(szKeyName);
-#endif // rei_
 		if( pcProfile->IsReadingMode() ){
 			if( pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) ) ){
 				int buf[5];

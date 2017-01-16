@@ -562,10 +562,6 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	}
 	static int nBlendPer = RegGetDword(L"SelectAreaBackBlendPer", REI_MOD_SELAREA_BACK_BLEND_PER);
 	int alpha = 255*nBlendPer/100;
-	//int r = GetRValue(info.m_sColorAttr.m_cTEXT); // テキストカラーのＲ成分をブレント率として扱う
-	//if (r <= 100) { // 100よりも大きい場合は既定のブレンド率
-	//	alpha = 255*r/100;
-	//}
 #else
 	int alpha = 255*30/100; // 30%
 #endif // rei_
@@ -1060,7 +1056,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		bTransText = cBackType.GetBackColor() == cTextType.GetBackColor();
 	}
 
-#if 0//REI_MOD_SP_COLOR == 3
+#if 0//REI_MOD_SP_COLOR
 	// 行背景描画
 	{
 		RECT rcClip;

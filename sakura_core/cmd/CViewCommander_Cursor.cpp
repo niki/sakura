@@ -206,6 +206,13 @@ int CViewCommander::Command_LEFT( bool bSelect, bool bRepeat )
 		const CLayout* pcLayout = GetDocument()->m_cLayoutMgr.SearchLineByLayoutY( ptCaretMove.GetY2() );
 		/* カーソルが左端にある */
 		if( ptCaretMove.GetX2() == (pcLayout ? pcLayout->GetIndent() : CLayoutInt(0))) {
+#if REI_CURSOR_NO_LINE_MOVE
+      bool cursor_no_line_move = !!RegGetDword(L"CursorNoLineMove", 0);
+      if (cursor_no_line_move) {
+        nRes = 0;
+        break;
+      }
+#endif // rei_
 			if( 0 < ptCaretMove.GetY2()
 			   && ! m_pCommanderView->GetSelectionInfo().IsBoxSelecting()
 			) {
@@ -363,11 +370,23 @@ void CViewCommander::Command_RIGHT( bool bSelect, bool bIgnoreCurrentSelection, 
 					} else { // 改行文字がぶら下がっているときは例外。
 						x_max = x_wrap;
 						on_x_max = MOVE_NEXTLINE_NEXTTIME;
+#if REI_CURSOR_NO_LINE_MOVE
+            bool cursor_no_line_move = !!RegGetDword(L"CursorNoLineMove", 0);
+            if (cursor_no_line_move) {
+              on_x_max = STOP;
+            }
+#endif // rei_
 					}
 				}
 			} else {
 				x_max = x_wrap;
 				on_x_max = wrapped ? MOVE_NEXTLINE_IMMEDIATELY : MOVE_NEXTLINE_NEXTTIME;
+#if REI_CURSOR_NO_LINE_MOVE
+        bool cursor_no_line_move = !!RegGetDword(L"CursorNoLineMove", 0);
+        if (cursor_no_line_move && !wrapped) {
+          on_x_max = STOP;
+        }
+#endif // rei_
 			}
 
 			// キャレットの移動先を決める。

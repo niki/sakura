@@ -109,7 +109,7 @@ cmd/CViewCommander.o \
 cmd/CViewCommander_Bookmark.o \
 cmd/CViewCommander_Clipboard.o \
 cmd/CViewCommander_Convert.o \
-cmd/CViewCommander_Cursor.o \
+cmd/cviewcommander_cursor.o \
 cmd/CViewCommander_CustMenu.o \
 cmd/CViewCommander_Diff.o \
 cmd/CViewCommander_Edit.o \
@@ -356,7 +356,7 @@ util/tchar_printf.o \
 util/tchar_receive.o \
 util/tchar_template.o \
 util/window.o \
-view/CCaret.o \
+view/ccaret.o \
 view/CEditView.o \
 view/CEditView_Cmdgrep.o \
 view/CEditView_CmdHokan.o \
@@ -394,7 +394,7 @@ view/figures/CFigureStrategy.o \
 view/figures/CFigure_Comma.o \
 view/figures/CFigure_CtrlCode.o \
 view/figures/CFigure_Eol.o \
-view/figures/CFigure_HanSpace.o \
+view/figures/cfigure_hanspace.o \
 view/figures/CFigure_Tab.o \
 view/figures/CFigure_ZenSpace.o \
 window/CAutoScrollWnd.o \

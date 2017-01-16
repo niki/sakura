@@ -612,7 +612,7 @@ void CCaret::ShowEditCaret()
 #endif // rei_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
 #if REI_MOD_CARET
-      static int caret_type = RegGetDword(L"CaretType", REI_MOD_CARET_TYPE);
+      static int caret_type = RegGetDword(L"CaretType", REI_MOD_CARET);
       if (caret_type == 11) {
   			nCaretWidth = 1;
   			
@@ -1271,18 +1271,6 @@ POINT CCaret::CalcCaretDrawPos(const CLayoutPoint& ptCaretPos) const
 			+ (Int)(nY) * m_pEditView->GetTextMetrics().GetHankakuDy()
 			+ m_pEditView->GetTextMetrics().GetHankakuHeight() - GetCaretSize().cy; //‰ºŠñ‚¹
 	}
-#if REI_MOD_CARET
-  {
-    static int caret_shift_left = RegGetDword(L"CaretShiftLeft", REI_MOD_CARET_SHIFT_LEFT);
-    if (caret_shift_left > 0) {
-    	int nPosXMin = m_pEditView->GetTextArea().GetAreaLeft();
-    	nPosX -= caret_shift_left;
-    	if (nPosX < nPosXMin) {
-    		nPosX = nPosXMin;
-    	}
-    }
-  }
-#endif // rei_
 #if REI_LINE_CENTERING
 	//nPosY += m_pEditView->m_pTypeData->m_nLineSpace;  // sŠÔŠu‚ğŠÜ‚Ş‚‚³‚É‚·‚éê‡
 	nPosY += m_pEditView->m_pTypeData->m_nLineSpace/2;  // •¶š‚Ì‚‚³‚É‚·‚éê‡

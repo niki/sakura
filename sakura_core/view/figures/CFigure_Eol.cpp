@@ -69,7 +69,7 @@ bool CFigure_Eol::DrawImp(SColorStrategyInfo* pInfo)
 	const CLayout* pcLayout = pInfo->m_pDispPos->GetLayoutRef();
 	CEol cEol = pcLayout->GetLayoutEol();
 	if(cEol.GetLen()){
-#if REI_MOD_SP_COLOR >= 2
+#if REI_MOD_SP_COLOR
 		bool bTrans = DrawImp_StyleSelect(pInfo);
 #else
 		// CFigureSpace::DrawImp_StyleSelectもどき。選択・検索色を優先する
@@ -150,7 +150,7 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 		CTypeSupport cBgLineType(pcView,COLORIDX_CARETLINEBG);
 		CTypeSupport cEvenBgLineType(pcView,COLORIDX_EVENLINEBG);
 		CTypeSupport cPageViewBgLineType(pcView,COLORIDX_PAGEVIEW);
-#if REI_MOD_COLOR_STRATEGY
+#if REI_MOD_COMMENT
 		bool bBgcolor = true;
 #else
 		bool bBgcolor = cWrapType.GetBackColor() == cTextType.GetBackColor();

@@ -55,11 +55,7 @@ void CEditView::SetBracketPairPos( bool flag )
 	bit1(in)  : 前方文字を調べるか？   0:調べない  1:調べる
 	bit2(out) : 見つかった位置         0:後ろ      1:前
 	*/
-#if REI_MOD_SEARCH_BRACKET_MODE
-	mode = RegGetDword(L"SearchBracketMode", REI_MOD_SEARCH_BRACKET_MODE);
-#else
 	mode = 2;
-#endif
 
 	CLayoutPoint ptColLine;
 

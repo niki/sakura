@@ -42,9 +42,7 @@ void CType_Rich::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_eDefaultOutline = OUTLINE_TEXT;					/* アウトライン解析方法 */
 	pType->m_nKeyWordSetIdx[0]  = g_nKeywordsIdx_RTF;
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;		/* 半角数値を色分け表示 */
-#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = false;	//シングルクォーテーション文字列を色分け表示しない
-#endif // rei_
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = false;	//ダブルクォーテーション文字列を色分け表示しない
 	pType->m_ColorInfoArr[COLORIDX_URL].m_bDisp = false;		//URLにアンダーラインを引かない
 }

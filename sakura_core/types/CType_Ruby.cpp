@@ -49,9 +49,7 @@ void CType_Ruby::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_nKeyWordSetIdx[2] = g_nKeywordsIdx_RUBY3;
 	pType->m_nKeyWordSetIdx[3] = g_nKeywordsIdx_RUBY4;
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;
-#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = false;
-#endif // rei_
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = false;
 	SetColorInfoBC(pType, COLORIDX_KEYWORD1, true,  RGB(255,  0,  0));
 	SetColorInfoBC(pType, COLORIDX_KEYWORD2, false, RGB(128,  0,128));
@@ -81,9 +79,7 @@ void CType_Ruby::InitTypeConfigImp(STypeConfig* pType)
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_COMMENT, L"/#.*/k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_TEXT, L"/[\\$\\\\][\"'`]/k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_TEXT, L"/[\\w\\d]'/k" );
-#if REI_MOD_UNIFY_QUOTE == 0 //Ç±ÇÃèàóùÇÕïKóv..
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_SSTRING, L"/'[^\\r\\n]*'/k" );
-#endif // rei_
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_WSTRING, L"/\"[^\\r\\n]*\"/k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_KEYWORD4, L"/\\./k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_KEYWORD3, L"/[\\[\\]\\|\\,\\.]/k" );

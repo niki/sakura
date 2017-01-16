@@ -176,9 +176,7 @@ protected:
 class CColor_LineComment;
 class CColor_BlockComment;
 class CColor_BlockComment;
-#if 1//REI_MOD_UNIFY_QUOTE == 0
 class CColor_SingleQuote;
-#endif // rei_
 class CColor_DoubleQuote;
 class CColor_Heredoc;
 
@@ -225,9 +223,7 @@ private:
 	CColor_LineComment*				m_pcLineComment;
 	CColor_BlockComment*			m_pcBlockComment1;
 	CColor_BlockComment*			m_pcBlockComment2;
-#if 1//REI_MOD_UNIFY_QUOTE == 0
 	CColor_SingleQuote*				m_pcSingleQuote;
-#endif // rei_
 	CColor_DoubleQuote*				m_pcDoubleQuote;
 	CColor_Heredoc*					m_pcHeredoc;
 

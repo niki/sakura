@@ -2538,7 +2538,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			gr.SetPen( m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_sColorAttr.m_cTEXT );
 			::MoveToEx(
 				gr,
-#if REI_CUR_UL_FROM_LEFT_END
+#if REI_MOD_CUR_UL
 				0,//GetTextArea().GetLeftYohaku(),
 #else
 				GetTextArea().GetAreaLeft(),
@@ -2591,7 +2591,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 			GetCaret().m_cUnderLine.Lock();
 
 			PAINTSTRUCT ps;
-#if REI_CUR_UL_FROM_LEFT_END
+#if REI_MOD_CUR_UL
 			//ps.rcPaint.left = GetTextArea().GetAreaLeft();
 			ps.rcPaint.left = 0;//GetTextArea().GetLeftYohaku();
 #else

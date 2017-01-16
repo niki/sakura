@@ -49,9 +49,7 @@ void CType_Html::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_bStringLineOnly = true; // 文字列は行内のみ
 	pType->m_nKeyWordSetIdx[0] = 1;										/* キーワードセット */
 	pType->m_eDefaultOutline = OUTLINE_HTML;							/* アウトライン解析方法 */
-#if REI_MOD_UNIFY_QUOTE == 0
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = true;				//シングルクォートの色分けOFF
-#endif // rei_
 }
 
 

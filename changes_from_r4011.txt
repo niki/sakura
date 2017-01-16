@@ -9,6 +9,12 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からのマージ分
       	Imp: タイプ別設定の追加と強調キーワードの外部化  [patchunicode:#720]
       	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
+http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
+-r4162	Fix: タブ幅がフォントサイズが大きいと4固定になる [patchunicode:#1078] Contributed by Moca
+-r4161	Imp: Grepファイル・フォルダ長を512に拡張 [patchunicode:#1076] Contributed by Moca
+-r4160	Fix: 設定画面のファイル選択ダイアログで相対パスにできるときはする [patchunicode:#985] Contributed by Moca
+-r4159	Imp: アウトラインメニューにすべて展開・縮小・ブックマーク削除・全削除を追加 [patchunicode:#1049] Contributed by Moca
+-r4158	Fix:  CUxThemeの保守修正パッチ [patchunicode:#1091] Contributed by berryzplus
  r4156	Imp: アウトライン解析ツリー表示の高速化  [patchunicode:#1056]
  r4154	Fix: Win10で無題のタブアイコンがGrepになる [patchunicode:#1080] Contributed by LR4, Moca
  r4153	Fix: アウトライン解析KR対策以降でANSIビルドエラーが出る [patchunicode:#1088] Contributed by Moca

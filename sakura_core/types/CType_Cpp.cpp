@@ -1420,14 +1420,12 @@ void CEditView::SmartIndent_CPP( wchar_t wcChar )
 				}else{
 					EColorIndexType eColorIndex = layout->GetColorTypePrev();
 					switch( eColorIndex ){
-#if REI_MOD_UNIFY_QUOTE == 0
 					case COLORIDX_SSTRING:
 						if( m_pTypeData->m_bIndentCppStringIgnore ){
 							nMode = 2;
 							nBegin = 0;
 						}
 						break;
-#endif // rei_
 					case COLORIDX_WSTRING:
 						if( m_pTypeData->m_bIndentCppStringIgnore ){
 							nMode = 1;

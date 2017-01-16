@@ -76,7 +76,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				pMetrics->GetDxArray_AllHankaku()
 			);
 		}else{
-#if REI_MOD_SP_COLOR == 3
+#if REI_MOD_SP_COLOR
 			if( !cTabType.IsDisp() ){
 				//îwåi
 				::ExtTextOutW_AnyBuild(
@@ -179,7 +179,7 @@ void _DrawTabArrow(
 	int sa = nHeight / 4;								// ËVÇÃsize
 
 #if REI_MOD_TAB
-  #if REI_MOD_SP_COLOR == 3
+  #if REI_MOD_SP_COLOR
 	{
 		gr.SetBrushColor(gr.GetTextBackColor());
 		

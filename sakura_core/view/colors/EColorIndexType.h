@@ -67,9 +67,7 @@ enum EColorIndexType {
 	COLORIDX_SEARCH4,		//!< 検索文字列4
 	COLORIDX_SEARCH5,		//!< 検索文字列5
 	COLORIDX_COMMENT,		//!< 行コメント						//Dec. 4, 2000 shifted by MIK
-#if REI_MOD_UNIFY_QUOTE == 0
 	COLORIDX_SSTRING,		//!< シングルクォーテーション文字列	//Dec. 4, 2000 shifted by MIK
-#endif // rei_
 	COLORIDX_WSTRING,		//!< ダブルクォーテーション文字列		//Dec. 4, 2000 shifted by MIK
 	COLORIDX_HEREDOC,		//!< ヒアドキュメント
 	COLORIDX_URL,			//!< URL								//Dec. 4, 2000 shifted by MIK
