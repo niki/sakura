@@ -177,10 +177,7 @@ int CViewCommander::Command_LEFT( bool bSelect, bool bRepeat )
 	bool	bMoveCaretLine = false;
 	int		nRepeat = bRepeat ? 2 : 1;
 #if REI_MOD_LR_CURSOR_REPEAT_WIDTH
-  {
-    static int cursor_repeat_width = RegGetDword(L"CursorRepeatWidth", 1);
-	  nRepeat = bRepeat ? cursor_repeat_width : 1;
-  }
+	nRepeat = 1;
 #endif  // rei_
 	int		nRes = 0;
 	CLayoutPoint ptCaretMove = GetCaret().GetCaretLayoutPos();
@@ -292,10 +289,7 @@ void CViewCommander::Command_RIGHT( bool bSelect, bool bIgnoreCurrentSelection, 
 	bool	bMoveCaretLine = false;
 	int nRepeat = bRepeat ? 2 : 1; // à⁄ìÆÇ∑ÇÈâÒêî
 #if REI_MOD_LR_CURSOR_REPEAT_WIDTH
-  {
-    static int cursor_repeat_width = RegGetDword(L"CursorRepeatWidth", 1);
-	  nRepeat = bRepeat ? cursor_repeat_width : 1;
-  }
+	nRepeat = 1;
 #endif  // rei_
 	CLayoutPoint ptCaretMove = GetCaret().GetCaretLayoutPos();
 	for( int nRepCount = 0; nRepCount < nRepeat; ++nRepCount ) {

@@ -1036,8 +1036,6 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	CTypeSupport	cEvenLineBg(this, COLORIDX_EVENLINEBG);
 	CTypeSupport	cPageViewBg(this, COLORIDX_PAGEVIEW);
 #if REI_MOD_COMMENT
-  static DWORD comment_type_flag = RegGetDword(L"CommentType", 0x01);
-  bool comment_color_whole_line = !!(comment_type_flag & 0x01);
 	int comment_mode = 0;
 	CTypeSupport	cComment(this, COLORIDX_COMMENT);
 #endif  // rei_
@@ -1155,36 +1153,32 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				SetCurrentColor(pInfo->m_gr, cColor.eColorIndex, cColor.eColorIndex2, cColor.eColorIndexBg);
 				
 #if REI_MOD_COMMENT
-        if (comment_color_whole_line) {
-          if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_COMMENT) {
-            comment_mode = 1;
-          } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK1) {
-            comment_mode = 2;
-          } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK2) {
-            comment_mode = 2;
-          } else {
-            if (comment_mode != 1) {
-              comment_mode = 0;
-            }
-          }
-        }
-#endif  // rei_
-			}
-
-#if REI_MOD_COMMENT
-      if (comment_color_whole_line) {
         if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_COMMENT) {
           comment_mode = 1;
         } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK1) {
           comment_mode = 2;
         } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK2) {
           comment_mode = 2;
-        }
-
-        if (comment_mode) {
-          if (pInfo->m_cIndex.eColorIndex != COLORIDX_SELECT) {
-            pInfo->m_cIndex.eColorIndex = COLORIDX_COMMENT;
+        } else {
+          if (comment_mode != 1) {
+            comment_mode = 0;
           }
+        }
+#endif  // rei_
+			}
+
+#if REI_MOD_COMMENT
+      if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_COMMENT) {
+        comment_mode = 1;
+      } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK1) {
+        comment_mode = 2;
+      } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK2) {
+        comment_mode = 2;
+      }
+
+      if (comment_mode) {
+        if (pInfo->m_cIndex.eColorIndex != COLORIDX_SELECT) {
+          pInfo->m_cIndex.eColorIndex = COLORIDX_COMMENT;
         }
       }
 #endif  // rei_

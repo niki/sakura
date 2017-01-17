@@ -158,7 +158,6 @@
 #define REI_MOD_CARET 2
 
 // カーソル移動リピート時の幅を 1 に変更 (default:2) 2015.8.5  
-// (REG/CursorRepeatWidth:1)
 #define REI_MOD_LR_CURSOR_REPEAT_WIDTH 1
 
 // カーソルの行移動禁止 2017.1.5
@@ -171,8 +170,6 @@
 //-------------------------------------------------------------------------
 
 // 水平スクロールの変更  
-// (REG/HScrollMargin:1)
-// (REG/HScrollSize:16)
 //  - スクロール開始マージンを 1 に変更。画面の端でスクロール開始 2014.5.7  
 //  - スクロール幅を 16 に設定。一度に大きく移動することで見やすくする (動きはメモ帳参照) 2015.9.2  
 #define REI_MOD_HORIZONTAL_SCR 16
@@ -259,8 +256,7 @@
 #define REI_MOD_COLOR_STRATEGY 1
 
 // コメント行の修正 2016.12.27
-// (REG/CommentType:1)
-// 0x01: 改行以降もカラーを有効にする
+//  - 改行以降もカラーを有効にする
 #define REI_MOD_COMMENT 1
 
 // 折り返し記号表示時に折り返し位置の線を引かない 2016.6.25  
