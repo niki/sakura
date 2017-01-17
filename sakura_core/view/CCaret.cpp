@@ -210,7 +210,7 @@ CLayoutInt CCaret::MoveCursor(
 	nScrollColNum = CLayoutInt(0);
 #if REI_MOD_HORIZONTAL_SCR
   {
-    static int margin_size = RegGetDword(L"HorisontalScrollMargin", 1);
+    static int margin_size = RegGetDword(L"HScrollMargin", 1);
     nScrollMarginRight = CLayoutInt(margin_size);
     nScrollMarginLeft = CLayoutInt(margin_size);
   }
@@ -236,7 +236,7 @@ CLayoutInt CCaret::MoveCursor(
 			( m_pEditView->GetTextArea().GetViewLeftCol() + m_pEditView->GetTextArea().m_nViewColNum - nScrollMarginRight ) - ptWk_CaretPos.GetX2();
 #if REI_MOD_HORIZONTAL_SCR
 		if (nScrollColNum != 0) {
-		  static int scr_size = RegGetDword(L"HorizontalScrollSize", REI_MOD_HORIZONTAL_SCR);
+		  static int scr_size = RegGetDword(L"HScrollSize", REI_MOD_HORIZONTAL_SCR);
       if (scr_size > 1) {
   			if (nScrollColNum < 0) {
   				nScrollColNum = -(-nScrollColNum + scr_size - 1) / scr_size * scr_size;
@@ -253,7 +253,7 @@ CLayoutInt CCaret::MoveCursor(
 		nScrollColNum = m_pEditView->GetTextArea().GetViewLeftCol() + nScrollMarginLeft - ptWk_CaretPos.GetX2();
 #if REI_MOD_HORIZONTAL_SCR
 		if (nScrollColNum != 0) {
-		  static int scr_size = RegGetDword(L"HorizontalScrollSize", REI_MOD_HORIZONTAL_SCR);
+		  static int scr_size = RegGetDword(L"HScrollSize", REI_MOD_HORIZONTAL_SCR);
       if (scr_size > 1) {
   			if (nScrollColNum < 0) {
   				nScrollColNum = -(-nScrollColNum + scr_size - 1) / scr_size * scr_size;

@@ -1,7 +1,6 @@
 先頭に - がついているリビジョンは未適用.
 ---------------------------------------------------------------------------
 http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からのマージ分
-      	Fix: UTF-7自動認識を厳しくする  [patchunicode:#988]
       	Imp: カラーの文字列にC++11を追加,C/C++はC/C++03に変更しRawを処理しない  [patchunicode:#956]
       	Chg: マクロ保存でS_を追加しない  [patchunicode:#943]
       	Fix: CProfileの読み込みの高速化  [patchunicode:#908]
@@ -10,6 +9,8 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からのマージ分
       	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
+-r4164	Fix: タイプ別から共通設定キーワードを表示すると内容が一致しない [patchunicode:#1083] Contributed by Moca
+ r4163	Fix: UTF-7自動認識を厳しくする  [patchunicode:#988]
 -r4162	Fix: タブ幅がフォントサイズが大きいと4固定になる [patchunicode:#1078] Contributed by Moca
 -r4161	Imp: Grepファイル・フォルダ長を512に拡張 [patchunicode:#1076] Contributed by Moca
 -r4160	Fix: 設定画面のファイル選択ダイアログで相対パスにできるときはする [patchunicode:#985] Contributed by Moca

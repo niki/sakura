@@ -1036,7 +1036,8 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	CTypeSupport	cEvenLineBg(this, COLORIDX_EVENLINEBG);
 	CTypeSupport	cPageViewBg(this, COLORIDX_PAGEVIEW);
 #if REI_MOD_COMMENT
-  static bool comment_color_whole_line = !!RegGetDword(L"CommentColorWholeLine", 1);
+  static DWORD comment_type_flag = RegGetDword(L"CommentType", 0x01);
+  bool comment_color_whole_line = !!(comment_type_flag & 0x01);
 	int comment_mode = 0;
 	CTypeSupport	cComment(this, COLORIDX_COMMENT);
 #endif  // rei_

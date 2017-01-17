@@ -494,8 +494,9 @@ void CTextDrawer::DispLineNumber(
 
 		//描画文字列
 #if REI_MOD_LINE_NR
-  static bool line_nr_mod = !!RegGetDword(L"LineNrMod", false);  // Borland IDE like
-  static bool line_nr_mod_10_bold = !!RegGetDword(L"LineNrMod10Bold", REI_MOD_LINE_NR_10_BOLD);  // 10行ごとに強調表示
+  static DWORD line_nr_mod_flag = RegGetDword(L"LineNrMod", 0);
+  bool line_nr_mod = !!(line_nr_mod_flag & 1);  // Borland IDE like
+  bool line_nr_mod_10_bold = !!(line_nr_mod_flag & 2);  // 10行ごとに強調表示
 #endif  // rei_
 
 #if REI_MOD_LINE_NR

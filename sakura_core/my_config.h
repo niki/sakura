@@ -106,11 +106,11 @@
 //-------------------------------------------------------------------------
 
 // 最大数を変更 2013.10.2, 2016.12.13  
+// \sakura_core\config\maxdata.h
 // (REG/SearchKeyMax:16)
 // (REG/ReplaceKeyMax:16)
 // (REG/GrepFileMax:8)
 // (REG/GrepFolderMax:16)
-// \sakura_core\config\maxdata.h
 #define REI_CHG_MAXDATA 1
 
 
@@ -129,7 +129,7 @@
 
 // 行番号表示の変更 2012.9.6, 2015.6.9  
 // (REG/LineNrMod:0)
-// 最上部行・最終行・10行おきに数値、1・5行おきに指定文字（Borland IDE like）  
+// 0x01: 最上部行・最終行・10行おきに数値、1・5行おきに指定文字（Borland IDE like）  
 //   101  
 //     ･  
 //     ･  
@@ -140,10 +140,10 @@
 //     ･  
 //     ･  
 //   110  
+// 0x02: 10行おきに強調表示
 #define REI_MOD_LINE_NR 1
   #define REI_MOD_LINE_NR_1 L'･'  // 1行おきに表示する文字
   #define REI_MOD_LINE_NR_5 L'-'  // 5行おきに表示する文字
-  #define REI_MOD_LINE_NR_10_BOLD 0  // 10行おきに強調表示 (REG/LineNrMod10Bold:0)
 
 //-------------------------------------------------------------------------
 // キャレット
@@ -171,8 +171,8 @@
 //-------------------------------------------------------------------------
 
 // 水平スクロールの変更  
-// (REG/HorisontalScrollMargin:1)
-// (REG/HorizontalScrollSize:16)
+// (REG/HScrollMargin:1)
+// (REG/HScrollSize:16)
 //  - スクロール開始マージンを 1 に変更。画面の端でスクロール開始 2014.5.7  
 //  - スクロール幅を 16 に設定。一度に大きく移動することで見やすくする (動きはメモ帳参照) 2015.9.2  
 #define REI_MOD_HORIZONTAL_SCR 16
@@ -259,8 +259,8 @@
 #define REI_MOD_COLOR_STRATEGY 1
 
 // コメント行の修正 2016.12.27
-//  - 改行以降もカラーを有効にする
-// (REG/CommentColorWholeLine:1)
+// (REG/CommentType:1)
+// 0x01: 改行以降もカラーを有効にする
 #define REI_MOD_COMMENT 1
 
 // 折り返し記号表示時に折り返し位置の線を引かない 2016.6.25  
