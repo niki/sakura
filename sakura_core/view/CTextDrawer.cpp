@@ -502,12 +502,10 @@ void CTextDrawer::DispLineNumber(
 #if REI_MOD_LINE_NR
     // フォント属性を太字にする
     auto fnFont_AttrToBold = [&]() {
-      if (line_nr_mod_10_bold) {
-        gr.PopMyFont();
-        sFont.m_sFontAttr.m_bBoldFont = true;
-        sFont.m_hFont = pView->GetFontset().ChooseFontHandle(sFont.m_sFontAttr);
-        gr.PushMyFont(sFont);
-      }
+      gr.PopMyFont();
+      sFont.m_sFontAttr.m_bBoldFont = true;
+      sFont.m_hFont = pView->GetFontset().ChooseFontHandle(sFont.m_sFontAttr);
+      gr.PushMyFont(sFont);
     };
 		
 		wchar_t szLineNum[18] = {}; // 初期化する
@@ -538,7 +536,9 @@ void CTextDrawer::DispLineNumber(
               //
             } else if ((logicLineNo % 10) == 0) {
               // 10行単位で行番号を表示
-              fnFont_AttrToBold();
+              if (line_nr_mod_10_bold) {
+                fnFont_AttrToBold();
+              }
             } else if ((logicLineNo % 5) == 0) {
               // 5行単位の印をつける
               szLineNum[0] = REI_MOD_LINE_NR_5;
@@ -571,7 +571,9 @@ void CTextDrawer::DispLineNumber(
             //
           } else if ((lineNo % 10) == 0) {
             // 10行単位で行番号を表示
-            fnFont_AttrToBold();
+            if (line_nr_mod_10_bold) {
+              fnFont_AttrToBold();
+            }
           } else if ((lineNo % 5) == 0) {
             // 5行単位の印をつける
             szLineNum[0] = REI_MOD_LINE_NR_5;

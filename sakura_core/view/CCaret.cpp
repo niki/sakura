@@ -763,7 +763,11 @@ void CCaret::ShowEditCaret()
 	
 #if REI_MOD_LINE_NR
 	// s”Ô†‚ÌÄ•`‰æ
-	m_pEditView->Call_OnPaint( PAINT_LINENUMBER, false );
+	static DWORD line_nr_mod_flag = RegGetDword(L"LineNrMod", 0);
+  bool line_nr_mod = !!(line_nr_mod_flag);
+  if (line_nr_mod) {
+    m_pEditView->Call_OnPaint( PAINT_LINENUMBER, false );
+  }
 #endif // rei_
 }
 
