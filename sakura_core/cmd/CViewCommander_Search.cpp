@@ -509,7 +509,7 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 	}
 #if REI_MOD_REPLACE
   {
-    static bool replace_text_to_text = !!RegGetDword(L"ReplaceTextToText", true);
+    static bool replace_text_to_text = !!RegGetDword(L"ReplaceTextToText", 1);
     if (replace_text_to_text) {
       GetEditWindow()->m_cDlgReplace.m_strText2 = GetEditWindow()->m_cDlgReplace.m_strText;
     }

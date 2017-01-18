@@ -180,7 +180,7 @@
 //-------------------------------------------------------------------------
 
 // VisualStyle
-// (REG/VisualStyle:-1)
+// (REG/VisualStyle:0)
 #define REI_VISUAL_STYLE 1
 
 // 行を中央ぞろえにする 2014.3.26 - 2015.7.24  
@@ -226,7 +226,7 @@
 // アウトライン解析ダイアログの変更 2016.12.14  
 //  - フォントをメインフォントにする
 //  - ドッキング時にウィンドウカラーをテキストに合わせない
-// (REG/DockColorSync:0)
+// (REG/OutlineDockColorDefault:0)
 #define REI_MOD_OUTLINEDLG 1
 
 // 選択領域の色を変更  
@@ -256,7 +256,7 @@
 #define REI_MOD_COLOR_STRATEGY 1
 
 // コメント行の修正 2016.12.27
-//  - 改行以降もカラーを有効にする
+// 0x01: 改行以降もカラーを有効にする
 #define REI_MOD_COMMENT 1
 
 // 折り返し記号表示時に折り返し位置の線を引かない 2016.6.25  

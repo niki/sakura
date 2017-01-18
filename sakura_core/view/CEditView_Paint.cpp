@@ -1283,31 +1283,18 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		CLayoutInt(-1)
 	);
 
-#if REI_MOD_WRAP_LINE
-  {
-    static bool no_wrap_line = !!RegGetDword(L"NoWrapLine", true);
-    
-    if (!no_wrap_line) {
-      // Ü‚è•Ô‚µŒ…cü•`‰æ
-    	if( !m_bMiniMap ){
-    		GetTextDrawer().DispWrapLine(
-    			pInfo->m_gr,
-    			pInfo->m_pDispPos->GetDrawPos().y,
-    			pInfo->m_pDispPos->GetDrawPos().y + nLineHeight
-    		);
-    	}
-    }
-  }
-#else
 	// Ü‚è•Ô‚µŒ…cü•`‰æ
 	if( !m_bMiniMap ){
+#if REI_MOD_WRAP_LINE
+    static bool no_wrap_line = !!RegGetDword(L"NoWrapLine", 1);
+    if (!no_wrap_line)
+#endif // rei_
 		GetTextDrawer().DispWrapLine(
 			pInfo->m_gr,
 			pInfo->m_pDispPos->GetDrawPos().y,
 			pInfo->m_pDispPos->GetDrawPos().y + nLineHeight
 		);
 	}
-#endif // rei_
 
 	// ”½“]•`‰æ
 	if( pcLayout && GetSelectionInfo().IsTextSelected() ){

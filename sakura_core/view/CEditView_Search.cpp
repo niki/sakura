@@ -382,7 +382,7 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
   };
 	
 	{
-    static int regexp_auto_quote = !!RegGetDword(L"RegexpAutoQuote", true);
+    static int regexp_auto_quote = !!RegGetDword(L"RegexpAutoQuote", 1);
     
     if (bRegQuote) {
       bRegQuote = regexp_auto_quote;
