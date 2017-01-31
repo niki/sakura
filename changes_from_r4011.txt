@@ -101,7 +101,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4026	Fix: Grepの検索対象ファイルを厳密にする [patchunicode#992]
  r4025	Keep: コンパイルオプションに/NXCOMPAT /SAFESEH /DYNAMICBASEを追加 [patchunicode#826] Contributed by Moca /NXCOMPAT　データ実行防止 /SAFESEH　安全な例外ハンドラー /DYNAMICBASE　ASLR ベースアドレスランダム化　(Visual Studio 2005 SP1以降専用) を追加します。
  r4024	Fix: 正規表現OFF置換で異常終了する [patchunicode#994]
--r4023	Keep: USE_CRASHDUMPをデフォルトで有効化 [patchunicode#995] unicode:2268 クラッシュ時の解析支援のためミニダンプをリリースビルドでも有効化します。
+ r4023	Keep: USE_CRASHDUMPをデフォルトで有効化 [patchunicode#995] unicode:2268 クラッシュ時の解析支援のためミニダンプをリリースビルドでも有効化します。
  r4022	Fix:　メッセージボックスのコピーがおかしい [patchunicode#816]
  r4021	Fix: DLL,EXEの検索パスのセキュリティ設定変更 Contributed by Moca [patchunicode:#805]
  r4020	Imp: C/C++インデントの改良 Contributed by Moca [patchunicode:#717]
