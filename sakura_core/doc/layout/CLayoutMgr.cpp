@@ -791,13 +791,17 @@ int CLayoutMgr::SearchWord(
 	物理位置(行頭からのバイト数、折り返し無し行位置)
 	→レイアウト位置(行頭からの表示桁位置、折り返しあり行位置)
 
+	@param[in]  ptLogic   ロジック位置
+	@param[out] pptLayout レイアウト位置
+	@param[in]  nLineHint レイアウトY値のヒント。求める値に近い値を渡すと高速に検索できる。
+
 	@date 2004.06.16 Moca インデント表示の際のTABを含む行の座標ずれ修正
 	@date 2007.09.06 kobake 関数名をCaretPos_Phys2LogからLogicToLayoutに変更
 */
 void CLayoutMgr::LogicToLayout(
-	const CLogicPoint&	ptLogic,	//!< [in]  ロジック位置
-	CLayoutPoint*		pptLayout,	//!< [out] レイアウト位置
-	CLayoutInt			nLineHint	//!< [in]  レイアウトY値のヒント。求める値に近い値を渡すと高速に検索できる。
+	const CLogicPoint&	ptLogic,
+	CLayoutPoint*		pptLayout,
+	CLayoutInt			nLineHint
 )
 {
 	pptLayout->Clear();
@@ -826,7 +830,7 @@ void CLayoutMgr::LogicToLayout(
 			pptLayout->SetY( m_nLines );
 			return;
 		}
-		
+
 		//ロジックYがでかすぎる場合は、一致するまでデクリメント (
 		while(pLayout->GetLogicLineNo() > ptLogic.GetY2()){
 			pLayout = pLayout->GetPrevLayout();
@@ -835,7 +839,7 @@ void CLayoutMgr::LogicToLayout(
 
 		//ロジックYが同じでOffsetが行き過ぎている場合は戻る
 		if(pLayout->GetLogicLineNo() == ptLogic.GetY2()){
-			while( pLayout->GetPrevLayout() && pLayout->GetPrevLayout()->GetLogicLineNo() == ptLogic.GetY2()
+			while( pLayout && pLayout->GetPrevLayout() && pLayout->GetPrevLayout()->GetLogicLineNo() == ptLogic.GetY2()
 				&& ptLogic.x < pLayout->GetLogicOffset() ){
 				pLayout = pLayout->GetPrevLayout();
 				nCaretPosY--;
@@ -845,7 +849,7 @@ void CLayoutMgr::LogicToLayout(
 
 
 	//	Layoutを１つずつ先に進めながらptLogic.yが物理行に一致するLayoutを探す
-	do{
+	while( pLayout ){
 		if( ptLogic.GetY2() == pLayout->GetLogicLineNo() ){
 			// 2013.05.10 Moca 高速化
 			const CLayout* pLayoutNext = pLayout->GetNextLayout();
@@ -921,7 +925,6 @@ void CLayoutMgr::LogicToLayout(
 		nCaretPosY++;
 		pLayout = pLayout->GetNextLayout();
 	}
-	while( pLayout );
 
 	//	2004.06.16 Moca インデント表示の際の位置ずれ修正
 	pptLayout->Set(
