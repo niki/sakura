@@ -88,7 +88,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
 -r4043	Fix: 折り返し記号をOFFにしても折り返し記号が消えない [patchunicode:#1002] unicode:2290 等幅フォント、右端折り返しのときの折り返し記号の描画を修正します。 ・タイプ別設定から折り返し記号の表示をやめても記号が消えない ・半角文字を入力すると行末にゴミが残る
  r4038	Fix: タブの検索をキーマクロとして保存できない
  r4037	Fix: ミニマップが印刷プレビューで表示されたままになる
--r4036	Keep: MinGWコンパイル対応 [patchunicode:#995]
+ r4036	Keep: MinGWコンパイル対応 [patchunicode:#995]
 -r4035	New: プロポーショナルフォント [patchunicode:#713] wiki:Request/500 フォント設定、印刷ページ設定でプロポーショナルフォントが使用できるようになります。
  r4034	Fix: Undo/Redo時にキャレットが期待する位置に移動しない  [patchunicode:#999]
  r4033	Fix: キーワードヘルプの表示位置不正  [patchunicode:#998]
