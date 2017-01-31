@@ -9,6 +9,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からのマージ分
       	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
+ r4165	Fix: DragFinishがたりない [patchunicode:#1042] Contributed by Moca
 -r4164	Fix: タイプ別から共通設定キーワードを表示すると内容が一致しない [patchunicode:#1083] Contributed by Moca
  r4163	Fix: UTF-7自動認識を厳しくする  [patchunicode:#988]
 -r4162	Fix: タブ幅がフォントサイズが大きいと4固定になる [patchunicode:#1078] Contributed by Moca
