@@ -48,7 +48,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4107	Fix: マクロ関数InputBoxバッファオーバーラン [patchunicode:#1058]
 -r4106	Fix: 起動時のプロファイルマネージャで新規作成・名前変更で落ちる [patchunicode:#1059] Contributed by Moca
  r4105	Fix: CDlgInput1が言語切り替え未対応 [patchunicode:#1060]
--r4103	Fix: slnファイルのタイプをVC2005Expressにする [patchunicode:#1073] Contributed by Moca
+ r4103	Fix: slnファイルのタイプをVC2005Expressにする [patchunicode:#1073] Contributed by Moca
 -r4102	Imp:  カーソル左右リピート設定(iniのみ) [patchunicode:#926] Contributed by Moca
  r4101	Fix: 共通設定マクロ一覧の幅調整 [patchunicode:#974]
 -r4100	Fix: プロファイルマネージャが左上に表示される [patchunicode:#1025] Contributed by Moca
