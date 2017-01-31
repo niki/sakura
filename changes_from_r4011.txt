@@ -58,7 +58,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4093	Fix: アウトラインのメニュー表示でリソースリーク [patchunicode:#1048]
  r4092	Fix: テキスト・ルールファイル解析での範囲外アクセスの修正 [patchunicode:#1010]
 -r4090	Fix: WCODE::IsCtrlCode()でNUL文字がfalseになるためコントロールコードとして描画されない [patchunicode:#1035] Contributed by Moca
--r4088	Keep: assertダイアログでファイル行番号を画面に表示 [patchunicode:#957] Contributed by Moca
+ r4088	Keep: assertダイアログでファイル行番号を画面に表示 [patchunicode:#957] Contributed by Moca
  r4087	Fix: C++アウトライン解析で異常終了する [patchunicode:#1007]
 -r4086	Fix: TSV,CSVモードコンボボックスの縦幅を広げる [patchunicode:#1033] Contributed by Moca
  r4085	Fix: ソートコマンドでメモリーリーク [patchunicode:#1027]
