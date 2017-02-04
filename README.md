@@ -8,6 +8,8 @@
 
 ベースリビジョンからのマージ情報は[こちら](https://github.com/rabbiteariris/sakura2/blob/master/changes_from_r4011.txt)
 
+<img src="https://raw.github.com/wiki/rabbiteariris/sakura2/images/sakura0.png" width="600px">
+
 <br>
 
 <sup>†</sup> レジストリによる調整が可能な項目
