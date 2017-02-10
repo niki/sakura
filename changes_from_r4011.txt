@@ -10,7 +10,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からのマージ分
 ---------------------------------------------------------------------------
 http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
 -r4169	Fix: ミニマップにドロップすると落ちる [patchunicode:#1094] Contributed by Moca
--r4168	Keep: static変数削除 [patchunicode:#1096]
+ r4168	Keep: static変数削除 [patchunicode:#1096]
  r4166	Fix: 正規表現キーワードで落ちることがある [patchunicode:#1095] Contributed by Moca
  r4165	Fix: DragFinishがたりない [patchunicode:#1042] Contributed by Moca
 -r4164	Fix: タイプ別から共通設定キーワードを表示すると内容が一致しない [patchunicode:#1083] Contributed by Moca
