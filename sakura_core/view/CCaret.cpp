@@ -1021,7 +1021,8 @@ void CCaret::ShowCaretPosInfo()
 		}
 		// IDを合わせるためにタブサイズを行数の位置に表示
 		TCHAR	szText_TabSize[16];
-		auto_sprintf( szText_TabSize, _T("Tab Size: %d"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace() );
+		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
+		auto_sprintf( szText_TabSize, _T("Tab: %d%s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T("(SP)") : _T("") );
 //-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             szText_TabSize );
 		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             _T("") );
 		//	May 12, 2000 genta
