@@ -39,6 +39,9 @@
 #include "func/Funccode.h"
 #include "env/DLLSHAREDATA.h"
 #include "util/container.h"
+#if REI_MOD_DIRECTTAGJUMP
+#include "util/os.h"
+#endif  // rei_
 #include "util/shell.h"
 #include "util/file.h"
 #include "util/window.h"
@@ -464,14 +467,27 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	RECT rcDialog = GetDllShareData().m_Common.m_sOthers.m_rcTagJumpDialog;
 	if( rcDialog.left != 0 ||
 		rcDialog.bottom != 0 ){
+#if REI_MOD_DIRECTTAGJUMP
+		m_nWidth = rcDialog.right - rcDialog.left;
+		m_nHeight = rcDialog.bottom - rcDialog.top;
+		
+		RECT rcWork;
+		GetMonitorWorkRect(&rc, &rcWork);
+		
+		m_xPos = rcWork.left + (rcWork.right - rcWork.left) / 2 - m_nWidth / 2;
+		m_yPos = rcWork.top + (rcWork.bottom - rcWork.top) / 2 - m_nHeight / 2;
+#else
 		m_xPos = rcDialog.left;
 		m_yPos = rcDialog.top;
 		m_nWidth = rcDialog.right - rcDialog.left;
 		m_nHeight = rcDialog.bottom - rcDialog.top;
+#endif  // rei_
 	}
 
+#if REI_MOD_DIRECTTAGJUMP == 0
 	// ウィンドウのリサイズ
 	SetDialogPosSize();
+#endif  // rei_
 
 	//リストビューの表示位置を取得する。
 	hwndList = ::GetDlgItem( hwndDlg, IDC_LIST_TAGJUMP );
