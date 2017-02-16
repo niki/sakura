@@ -2,13 +2,13 @@
 ---------------------------------------------------------------------------
 http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からのマージ分
       	Imp: カラーの文字列にC++11を追加,C/C++はC/C++03に変更しRawを処理しない  [patchunicode:#956]
-      	Chg: マクロ保存でS_を追加しない  [patchunicode:#943]
       	Fix: CProfileの読み込みの高速化  [patchunicode:#908]
       	Imp: マクロの文字列コピーを減らす  [patchunicode:#830]
       	Imp: タイプ別設定の追加と強調キーワードの外部化  [patchunicode:#720]
       	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
+ r4173	Chg: マクロ保存でS_を追加しない  [patchunicode:#943]
  r4169	Fix: ミニマップにドロップすると落ちる [patchunicode:#1094] Contributed by Moca
  r4168	Keep: static変数削除 [patchunicode:#1096]
  r4166	Fix: 正規表現キーワードで落ちることがある [patchunicode:#1095] Contributed by Moca
@@ -19,7 +19,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
 -r4161	Imp: Grepファイル・フォルダ長を512に拡張 [patchunicode:#1076] Contributed by Moca
 -r4160	Fix: 設定画面のファイル選択ダイアログで相対パスにできるときはする [patchunicode:#985] Contributed by Moca
 -r4159	Imp: アウトラインメニューにすべて展開・縮小・ブックマーク削除・全削除を追加 [patchunicode:#1049] Contributed by Moca
--r4158	Fix:  CUxThemeの保守修正パッチ [patchunicode:#1091] Contributed by berryzplus
+ r4158	Fix:  CUxThemeの保守修正パッチ [patchunicode:#1091] Contributed by berryzplus
  r4156	Imp: アウトライン解析ツリー表示の高速化  [patchunicode:#1056]
  r4154	Fix: Win10で無題のタブアイコンがGrepになる [patchunicode:#1080] Contributed by LR4, Moca
  r4153	Fix: アウトライン解析KR対策以降でANSIビルドエラーが出る [patchunicode:#1088] Contributed by Moca
@@ -76,7 +76,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4074	Fix: アウトラインを上下にドッキングした場合の初期表示の高さが不正 [patchunicode:#1016] 
  r4073	Keep: typo修正(コメント)
  r4072	Keep: typo修正(コメント)
--r4071	Fix: 上書きモードでの矩形選択入力で選択範囲を削除するオプションを追加 [patchunicode:#821]
+ r4071	Fix: 上書きモードでの矩形選択入力で選択範囲を削除するオプションを追加 [patchunicode:#821]
 -r4070	Fix: プロポーショナルフォント [patchunicode:#713]
  r4068	Fix: 外部コマンド実行の拡張  [patchunicode:#324] 
  r4066	Fix: すべて置換の高速化 [patchunicode:#521] 
@@ -89,7 +89,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4047	New: XMLアウトラインとHTMLの修正
 -r4046	Fix: 文字の間隔の適用値が今までと異なる [patchunicode:#1003] Contributed by Moca 文字間隔回りがおかしいのを修正します。 1. プロポーショナル版で全角の文字間隔が2倍になるように 2. CTextMetrics::CalcTextWidth2/3の文字間隔の引数がずれてたバグの修正 3. CLayoutMgr::getIndentOffsetの文字幅にさらに文字間隔が足されていたバグの修正
 -r4045	Imp: 桁数表示のオプション化 [patchunicode:#1004] Contributed by Moca, syat プロポーショナル対応にてステータスバーに表示する桁数が文字単位に変わったことに関して、共通設定でルーラー桁単位にできるようにします。
--r4043	Fix: 折り返し記号をOFFにしても折り返し記号が消えない [patchunicode:#1002] unicode:2290 等幅フォント、右端折り返しのときの折り返し記号の描画を修正します。 ・タイプ別設定から折り返し記号の表示をやめても記号が消えない ・半角文字を入力すると行末にゴミが残る
+!r4043	Fix: 折り返し記号をOFFにしても折り返し記号が消えない [patchunicode:#1002] unicode:2290 等幅フォント、右端折り返しのときの折り返し記号の描画を修正します。 ・タイプ別設定から折り返し記号の表示をやめても記号が消えない ・半角文字を入力すると行末にゴミが残る
  r4038	Fix: タブの検索をキーマクロとして保存できない
  r4037	Fix: ミニマップが印刷プレビューで表示されたままになる
  r4036	Keep: MinGWコンパイル対応 [patchunicode:#995]
