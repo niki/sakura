@@ -43,7 +43,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4117	Chg: メールアドレスの記号類を許可する [patchunicode:#1063]
 -r4416	Fix: オートスクロールの横方向がpx単位になっている [patchunicode:#1062] Contributed by Moca
  r4115	Fix: 1行目で前の段落へ移動を実行すると落ちる [patchunicode:#1023] Contributed by Moca
--r4114	Fix: プラグインオプションのコンボボックスの高さが不正 [patchunicode:#1054] Contributed by Moca
+ r4114	Fix: プラグインオプションのコンボボックスの高さが不正 [patchunicode:#1054] Contributed by Moca
  r4113	Fix: EOF直前の改行を改行なしに置換するとEOFの再描画が不足する [patchunicode:#1008]
 -r4112	Fix: ユーザ別設定のときのマルチプロファイルの場所がおかしい [patchunicode:#1024] Contributed by Moca
 -r4111	Imp: タイプ一覧の基本も初期化できるように [patchunicode:#1037] Contributed by Moca
