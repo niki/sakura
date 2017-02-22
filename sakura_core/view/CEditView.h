@@ -760,6 +760,11 @@ public:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(CEditView);
+	
+#if REI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+public:
+	bool m_ignore_update_window;  // UpdateWindow‚ð–³Ž‹‚·‚é
+#endif
 };
 
 

@@ -160,6 +160,9 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_cHistory(NULL)
 , m_cRegexKeyword(NULL)
 , m_hAtokModule(NULL)
+#if REI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+, m_ignore_update_window(false)
+#endif
 {
 }
 
@@ -1408,7 +1411,7 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 	const wchar_t*	pLine;
 	CLogicInt		nLineLen;
 	CLogicInt		nLineLen2;
-#if REI_FIX_WAITCUESOR == 0
+#if REI_MOD_WAITCUESOR == 0
 	CWaitCursor cWaitCursor( GetHwnd() );
 #endif // rei_
 
@@ -1418,7 +1421,7 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 		return;
 	}
 
-#if REI_FIX_WAITCUESOR
+#if REI_MOD_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
 #endif // rei_
 

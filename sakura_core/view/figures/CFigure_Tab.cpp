@@ -76,21 +76,6 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				pMetrics->GetDxArray_AllHankaku()
 			);
 		}else{
-#if REI_MOD_SP_COLOR
-			if( !cTabType.IsDisp() ){
-				//îwåi
-				::ExtTextOutW_AnyBuild(
-					gr,
-					sPos.GetDrawPos().x,
-					sPos.GetDrawPos().y,
-					ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-					&rcClip2,
-					L"        ",
-					tabDispWidth <= 8 ? tabDispWidth : 8, // Sep. 22, 2002 genta
-					pMetrics->GetDxArray_AllHankaku()
-				);
-			}
-#else
 			//îwåi
 			::ExtTextOutW_AnyBuild(
 				gr,
@@ -102,7 +87,6 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				tabDispWidth <= 8 ? tabDispWidth : 8, // Sep. 22, 2002 genta
 				pMetrics->GetDxArray_AllHankaku()
 			);
-#endif // rei_
 
 			//É^ÉuñÓàÛï\é¶
 			if( cTabType.IsDisp() ){
@@ -179,20 +163,6 @@ void _DrawTabArrow(
 	int sa = nHeight / 4;								// ËVÇÃsize
 
 #if REI_MOD_TAB
-  #if REI_MOD_SP_COLOR
-	{
-		gr.SetBrushColor(gr.GetTextBackColor());
-		
-		RECT rc;
-		rc.left = nPosX;
-		rc.top = nPosY;
-		rc.right = rc.left + nWidth;
-		rc.bottom = rc.top + nHeight;
-		::FillRect( gr, &rc, gr.GetCurrentBrush());
-	}
-  #endif // rei_
-	
-	
 	sy++; // è≠Çµâ∫Çﬂ
 	
 	::MoveToEx( gr, nPosX+1, sy, NULL );

@@ -491,7 +491,7 @@ void CEditView::DeleteData(
 
 	/* テキストが選択されているか */
 	if( GetSelectionInfo().IsTextSelected() ){
-#if REI_FIX_WAITCUESOR == 0
+#if REI_MOD_WAITCUESOR == 0
 		CWaitCursor cWaitCursor( this->GetHwnd() );  // 2002.02.05 hor
 #endif // rei_
 		if( !m_bDoing_UndoRedo ){	/* アンドゥ・リドゥの実行中か */
