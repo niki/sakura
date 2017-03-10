@@ -88,13 +88,7 @@ CFuncKeyWnd::CFuncKeyWnd()
 	lf.lfClipPrecision	= 0x2;
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
-#if REI_CHANGE_UI_FONT
-	//_tcscpy( lf.lfFaceName, _T("Meiryo UI") );
-	_tcscpy( lf.lfFaceName, _T(REI_FONT) );
-	lf.lfHeight			= DpiPointsToPixels(-10);	// 2009.10.01 ryoji 高DPI対応（ポイント数から算出）
-#else
 	_tcscpy( lf.lfFaceName, _T("ＭＳ Ｐゴシック") );
-#endif // rei_
 	m_hFont = ::CreateFontIndirect( &lf );
 
 	m_bSizeBox = false;

@@ -162,7 +162,11 @@ protected:
 	HWND GetItemHwnd(int nID){ return ::GetDlgItem( GetHwnd(), nID ); }
 
 	// コントロールに画面のフォントを設定	2012/11/27 Uchi
+#if REI_MOD_SET_MAIN_FONT
+	HFONT SetMainFont( HWND hTarget, int pt = -10 );
+#else
 	HFONT SetMainFont( HWND hTarget );
+#endif  // rei_
 };
 
 

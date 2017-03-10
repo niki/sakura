@@ -356,7 +356,7 @@ util/tchar_printf.o \
 util/tchar_receive.o \
 util/tchar_template.o \
 util/window.o \
-view/ccaret.o \
+view/CCaret.o \
 view/CEditView.o \
 view/CEditView_Cmdgrep.o \
 view/CEditView_CmdHokan.o \

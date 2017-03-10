@@ -90,11 +90,19 @@
 #22. 2017.2.13
  起動時に最近使ったファイルから存在しないファイルの項目を削除
 
+#23. 2017.3.3
+ テキスト描画、右端が欠ける
+ [patchunicode:#588]をあてて目立たなくはしている
+ sakura_core\view\CEditView_Paint.cpp
+ pcFigureManager->GetTextFigure().DrawImp(pInfo, nPosBgn, pInfo->GetPosInLogic() - nPosBgn);
+
 -------------------------------------------------------------------------- */
 
 // ● フォント
 //   https://support.microsoft.com/ja-jp/kb/74299
 //   http://d.hatena.ne.jp/itoasuka/20100104/1262585983
+//
+// lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 //-------------------------------------------------------------------------
 // デバッグ用
@@ -208,21 +216,9 @@
 // 数値色付け u ul ll 1. 0.f の形に対応 2015.1.26 - 2015.6.1  
 #define REI_MOD_NUMERIC_SUFFIX_COLOR 1
 
-// フォントを「ＭＳ Ｐゴシック」から変更 2015.6.2  
-//  - sakura_rc.rc は数が多いので置換で対応することにした  
-#define REI_CHANGE_UI_FONT 1
-  #if REI_CHANGE_UI_FONT
-    //#define REI_FONT "Meiryo UI"
-    //#define REI_FONT_AND_SIZE REI_FONT ", 9"
-    //#define REI_CHG_FONT 9, REI_FONT
-    #define REI_FONT "MS UI Gothic"
-    #define REI_FONT_AND_SIZE REI_FONT ", 10"
-    #define REI_CHG_FONT 10, REI_FONT
-  #else
-    #define REI_FONT "ＭＳ Ｐゴシック"
-    #define REI_FONT_AND_SIZE REI_FONT ", 9"
-    #define REI_CHG_FONT 9, REI_FONT
-  #endif
+// SetMainFontを修正
+//  - 引数ptを追加、デフォルトを10ポイントにする 2017.3.7
+#define REI_MOD_SET_MAIN_FONT 1
 
 // アウトライン解析ダイアログの変更 2016.12.14  
 //  - フォントをメインフォントにする

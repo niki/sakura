@@ -652,6 +652,45 @@ bool CDialog::DirectoryUp( TCHAR* szDir )
 }
 
 // コントロールに画面のフォントを設定	2012/11/27 Uchi
+#if REI_MOD_SET_MAIN_FONT
+#include "util/window.h"
+HFONT CDialog::SetMainFont( HWND hTarget, int pt )
+{
+	if (hTarget == NULL)	return NULL;
+
+	HFONT	hFont;
+	LOGFONT	lf;
+
+	// 設定するフォントの高さを取得
+	hFont = (HFONT)::SendMessage(hTarget, WM_GETFONT, 0, 0);
+	GetObject(hFont, sizeof(lf), &lf);
+
+	// LOGFONTの作成
+	lf = m_pShareData->m_Common.m_sView.m_lf;
+	lf.lfHeight			= DpiPointsToPixels(pt);	// 2009.10.01 ryoji 高DPI対応（ポイント数から算出）
+	lf.lfWidth			= 0;
+	lf.lfEscapement		= 0;
+	lf.lfOrientation	= 0;
+	lf.lfWeight			= FW_NORMAL;
+	lf.lfItalic			= FALSE;
+	lf.lfUnderline		= FALSE;
+	lf.lfStrikeOut		= FALSE;
+	//lf.lfCharSet		= lf.lfCharSet;
+	lf.lfOutPrecision	= OUT_TT_ONLY_PRECIS;		// Raster Font を使わないように
+	//lf.lfClipPrecision	= lf.lfClipPrecision;
+	//lf.lfQuality		= lf.lfQuality;
+	//lf.lfPitchAndFamily	= lf.lfPitchAndFamily;
+	//_tcsncpy( lf.lfFaceName, lf.lfFaceName, _countof(lf.lfFaceName));	// 画面のフォントに設定	2012/11/27 Uchi
+
+	// フォントを作成
+	hFont = ::CreateFontIndirect(&lf);
+	if (hFont) {
+		// フォントの設定
+		::SendMessage(hTarget, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
+	}
+	return hFont;
+}
+#else
 HFONT CDialog::SetMainFont( HWND hTarget )
 {
 	if (hTarget == NULL)	return NULL;
@@ -689,6 +728,7 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 	}
 	return hFont;
 }
+#endif  // rei_
 
 void CDialog::ResizeItem( HWND hTarget, const POINT& ptDlgDefault, const POINT& ptDlgNew, const RECT& rcItemDefault, EAnchorStyle anchor, bool bUpdate)
 {
