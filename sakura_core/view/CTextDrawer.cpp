@@ -470,6 +470,43 @@ void CTextDrawer::DispLineNumber(
 			cBackType.FillBack(gr,rcLineNum);
 		}
 		bDispLineNumTrans = true;
+
+#if REI_MOD_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
+    if (CEditDoc::GetInstance(0)->m_cLayoutMgr.GetLineCount() == nLineNum) {
+      const CLayout* pcLayout = CEditDoc::GetInstance(0)->m_cLayoutMgr.SearchLineByLayoutY(nLineNum - 1);
+      if( pcLayout && pcLayout->GetLayoutEol() != EOL_NONE ){  // EOFだけの行
+        SFONT sFont = cColorType.GetTypeFont();
+        gr.PushTextForeColor(fgcolor);	//テキスト：行番号の色
+        gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
+        gr.PushMyFont(sFont);	//フォント：行番号のフォント
+        
+        wchar_t szLineNum[18];
+        _itow( (Int)nLineNum + 1, szLineNum, 10 );
+        int nLineCols = wcslen( szLineNum );
+        int nLineNumCols = nLineCols; // 2010.08.17 Moca 位置決定に行番号区切りは含めない
+        
+        int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
+        ::ExtTextOutW_AnyBuild( gr,
+          drawNumTop,
+#if REI_LINE_CENTERING
+          (pView->m_pTypeData->m_nLineSpace/2) +
+#endif // rei_
+          y,
+          ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+          &rcLineNum,
+          szLineNum,
+          nLineCols,
+          pView->GetTextMetrics().GetDxArray_AllHankaku()
+        );
+        
+        gr.PopTextForeColor();
+        gr.PopTextBackColor();
+        gr.PopMyFont();
+        
+        bDispLineNumTrans = false;
+      }
+    }
+#endif  // rei_
 	}
 	else if( CTypeSupport(pView,COLORIDX_GYOU).IsDisp() ){ /* 行番号表示／非表示 */
 		SFONT sFont = cColorType.GetTypeFont();
@@ -494,9 +531,9 @@ void CTextDrawer::DispLineNumber(
 
 		//描画文字列
 #if REI_MOD_LINE_NR
-  static DWORD line_nr_mod_flag = RegGetDword(L"LineNrMod", 0);
-  bool line_nr_mod = !!(line_nr_mod_flag & 1);  // Borland IDE like
-  bool line_nr_mod_10_bold = !!(line_nr_mod_flag & 2);  // 10行ごとに強調表示
+    static DWORD line_nr_mod_flag = RegGetDword(L"LineNrMod", 0);
+    bool line_nr_mod = !!(line_nr_mod_flag & 1);  // Borland IDE like
+    bool line_nr_mod_10_bold = !!(line_nr_mod_flag & 2);  // 10行ごとに強調表示
 #endif  // rei_
 
 #if REI_MOD_LINE_NR

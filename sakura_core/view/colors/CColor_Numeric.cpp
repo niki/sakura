@@ -103,17 +103,6 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 			/* Ú”öŒê */
 			if( p < q )
 			{
-#if REI_MOD_NUMERIC_SUFFIX_COLOR
-// u,ul
-				if( *p == L'U' || *p == L'u' ) {
-					p++; i++;
-					
-					if ( *p == L'L' || *p == L'l' ) {
-						p++; i++;
-					}
-				}
-				else
-#endif // rei_
 				if( *p == L'L' || *p == L'l' || *p == L'F' || *p == L'f' )
 				{
 					p++; i++;
@@ -183,39 +172,15 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 				}
 				p++; i++;
 			}
-#if REI_MOD_NUMERIC_SUFFIX_COLOR
-// 0. 1.
-#else
 			if( *(p - 1)  == L'.' ) return i - 1;  /* ÅŒã‚ª "." ‚È‚çŠÜ‚ß‚È‚¢ */
-#endif // rei_
 			/* Ú”öŒê */
 			if( p < q )
 			{
-#if REI_MOD_NUMERIC_SUFFIX_COLOR
-// ll fl 
-				if( (( d == 0 ) && ( *p == L'L' || *p == L'l' ))
-				 || *p == L'F' || *p == L'f' )
-				{
-					p++; i++;
-					
-					if ( *p == L'L' || *p == L'l' ) {
-						p++; i++;
-					}
-				}
-				else if( (( d == 0 ) && ( *p == L'U' || *p == L'u' )) ) {
-					p++; i++;
-					
-					if ( *p == L'L' || *p == L'l' ) {
-						p++; i++;
-					}
-				}
-#else
 				if( (( d == 0 ) && ( *p == L'L' || *p == L'l' ))
 				 || *p == L'F' || *p == L'f' )
 				{
 					p++; i++;
 				}
-#endif // rei_
 			}
 			return i;
 		}
@@ -280,10 +245,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 				}
 				p++; i++;
 			}
-#if REI_MOD_NUMERIC_SUFFIX_COLOR
-#else
 			if( *(p - 1)  == L'.' ) return i - 1;  /* ÅŒã‚ª "." ‚È‚çŠÜ‚ß‚È‚¢ */
-#endif // rei_
 			/* Ú”öŒê */
 			if( p < q )
 			{
@@ -342,30 +304,11 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 			/*if( *p == L'.' ) return i - 1;*/  /* ÅŒã‚ª "." ‚È‚çŠÜ‚ß‚È‚¢ */
 			if( p < q )
 			{
-#if REI_MOD_NUMERIC_SUFFIX_COLOR
-				if( (( d == 0 ) && ( *p == L'L' || *p == L'l' ))
-				 || *p == L'F' || *p == L'f' )
-				{
-					p++; i++;
-					
-					if ( *p == L'L' || *p == L'l' ) {
-						p++; i++;
-					}
-				}
-				else if( (( d == 0 ) && ( *p == L'U' || *p == L'u' )) ) {
-					p++; i++;
-					
-					if ( *p == L'L' || *p == L'l' ) {
-						p++; i++;
-					}
-				}
-#else
 				if( (( d == 0 ) && ( *p == L'L' || *p == L'l' ))
 				 || *p == L'F' || *p == L'f' )
 				{
 					p++; i++;
 				}
-#endif // rei_
 			}
 			return i;
 		}
@@ -433,37 +376,15 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 			}
 			p++; i++;
 		}
-#if REI_MOD_NUMERIC_SUFFIX_COLOR
-#else
 		if( *(p - 1) == L'.' ) return i - 1;  /* ÅŒã‚ª "." ‚È‚çŠÜ‚ß‚È‚¢ */
-#endif // rei_
 		/* Ú”öŒê */
 		if( p < q )
 		{
-#if REI_MOD_NUMERIC_SUFFIX_COLOR
-			if( (( d == 0 ) && ( *p == L'L' || *p == L'l' ))
-			 || *p == L'F' || *p == L'f' )
-			{
-				p++; i++;
-				
-				if ( *p == L'L' || *p == L'l' ) {
-					p++; i++;
-				}
-			}
-			else if( (( d == 0 ) && ( *p == L'U' || *p == L'u' )) ) {
-				p++; i++;
-				
-				if ( *p == L'L' || *p == L'l' ) {
-					p++; i++;
-				}
-			}
-#else
 			if( (( d == 0 ) && ( *p == L'L' || *p == L'l' ))
 			 || *p == L'F' || *p == L'f' )
 			{
 				p++; i++;
 			}
-#endif // rei_
 		}
 		return i;
 	}
@@ -535,47 +456,20 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 		//if( i <= 2 ) return 0;
 		//if( *(p - 1)  == L'.' ) return i - 1;  /* ÅŒã‚ª "." ‚È‚çŠÜ‚ß‚È‚¢ */
 		if( i == 1 ) return 0;
-#if REI_MOD_NUMERIC_SUFFIX_COLOR
-// -0.f
-		if( *(p - 1) == L'.' )
-		{
-			if( i - 1 == 1 ) return 0;
-		}
-#else
 		if( *(p - 1) == L'.' )
 		{
 			i--;
 			if( i == 1 ) return 0;
 			return i;
 		}  //@@@ 2001.11.09 end MIK
-#endif // rei_
 		/* Ú”öŒê */
 		if( p < q )
 		{
-#if REI_MOD_NUMERIC_SUFFIX_COLOR
-			if( (( d == 0 ) && ( *p == L'L' || *p == L'l' ))
-			 || *p == L'F' || *p == L'f' )
-			{
-				p++; i++;
-				
-				if ( *p == L'L' || *p == L'l' ) {
-					p++; i++;
-				}
-			}
-			else if( (( d == 0 ) && ( *p == L'U' || *p == L'u' )) ) {
-				p++; i++;
-				
-				if ( *p == L'L' || *p == L'l' ) {
-					p++; i++;
-				}
-			}
-#else
 			if( (( d == 0 ) && ( *p == L'L' || *p == L'l' ))
 			 || *p == L'F' || *p == L'f' )
 			{
 				p++; i++;
 			}
-#endif // rei_
 		}
 		return i;
 	}
