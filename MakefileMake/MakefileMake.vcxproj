@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}</ProjectGuid>
-    <RootNamespace>MakefileMake_vc2015</RootNamespace>
+    <RootNamespace>MakefileMake</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5B80674D-87F3-42B5-96A7-D9D003F3AF20}</ProjectGuid>
-    <RootNamespace>HeaderMake_vc2015</RootNamespace>
+    <RootNamespace>HeaderMake</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
