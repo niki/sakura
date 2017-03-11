@@ -472,39 +472,51 @@ void CTextDrawer::DispLineNumber(
 		bDispLineNumTrans = true;
 
 #if REI_MOD_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
+    bool disp = false;
+    
+    if (CEditDoc::GetInstance(0)->m_cLayoutMgr.GetLineCount() == 0 &&
+        y < nLineHeight + m_pEditView->GetTextArea().GetTopYohaku()) {
+      disp = true;
+      nLineNum = 0;
+    }
+    
     if (CEditDoc::GetInstance(0)->m_cLayoutMgr.GetLineCount() == nLineNum) {
       const CLayout* pcLayout = CEditDoc::GetInstance(0)->m_cLayoutMgr.SearchLineByLayoutY(nLineNum - 1);
       if( pcLayout && pcLayout->GetLayoutEol() != EOL_NONE ){  // EOFだけの行
-        SFONT sFont = cColorType.GetTypeFont();
-        gr.PushTextForeColor(fgcolor);	//テキスト：行番号の色
-        gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
-        gr.PushMyFont(sFont);	//フォント：行番号のフォント
-        
-        wchar_t szLineNum[18];
-        _itow( (Int)nLineNum + 1, szLineNum, 10 );
-        int nLineCols = wcslen( szLineNum );
-        int nLineNumCols = nLineCols; // 2010.08.17 Moca 位置決定に行番号区切りは含めない
-        
-        int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
-        ::ExtTextOutW_AnyBuild( gr,
-          drawNumTop,
-#if REI_LINE_CENTERING
-          (pView->m_pTypeData->m_nLineSpace/2) +
-#endif // rei_
-          y,
-          ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-          &rcLineNum,
-          szLineNum,
-          nLineCols,
-          pView->GetTextMetrics().GetDxArray_AllHankaku()
-        );
-        
-        gr.PopTextForeColor();
-        gr.PopTextBackColor();
-        gr.PopMyFont();
-        
-        bDispLineNumTrans = false;
+        disp = true;
       }
+    }
+    
+    if (disp) {
+      SFONT sFont = cColorType.GetTypeFont();
+      gr.PushTextForeColor(fgcolor);	//テキスト：行番号の色
+      gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
+      gr.PushMyFont(sFont);	//フォント：行番号のフォント
+      
+      wchar_t szLineNum[18];
+      _itow( (Int)nLineNum + 1, szLineNum, 10 );
+      int nLineCols = wcslen( szLineNum );
+      int nLineNumCols = nLineCols; // 2010.08.17 Moca 位置決定に行番号区切りは含めない
+      
+      int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
+      ::ExtTextOutW_AnyBuild( gr,
+        drawNumTop,
+#if REI_LINE_CENTERING
+        (pView->m_pTypeData->m_nLineSpace/2) +
+#endif // rei_
+        y,
+        ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+        &rcLineNum,
+        szLineNum,
+        nLineCols,
+        pView->GetTextMetrics().GetDxArray_AllHankaku()
+      );
+      
+      gr.PopTextForeColor();
+      gr.PopTextBackColor();
+      gr.PopMyFont();
+      
+      bDispLineNumTrans = false;
     }
 #endif  // rei_
 	}
