@@ -329,7 +329,7 @@
 #define REI_FIX_DRAW_BOOKMARK_LINE_NOGYOU 1
 
 // ルーラー非表示時は「ルーラーとテキストの隙間」を無視する 2016.12.28
-#define REI_FIX_RULER_HIDE_IGNORE_BOTTOM_SPACE 1
+#define REI_FIX_RULER_HIDE_IGNORE_BOTTOM_SPACE 0
 
 // 行番号縦線を行番号の色で描画する 2016.12.21
 #define REI_FIX_LINE_TERM_TYPE 1
