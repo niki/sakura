@@ -48,8 +48,10 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		// 半角スペースをドットで表現
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
+		y++; // 少し下め
+		y++; // 少し下め
   #if REI_LINE_CENTERING
-		y += (pcView->m_pTypeData->m_nLineSpace/2);
+		//y += (pcView->m_pTypeData->m_nLineSpace/2);
   #endif  // rei_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // 少し左め
