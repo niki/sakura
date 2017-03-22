@@ -4149,6 +4149,10 @@ void CEditWnd::ChangeFileNameNotify( const TCHAR* pszTabCaption, const TCHAR* _p
 			p->m_szFilePath[ size ] = _T('\0');
 
 			p->m_bIsGrep = bIsGrep;
+
+#if REI_MOD_MODIFIED_TAB_CAPTION_COLOR
+			p->m_bIsModified = GetDocument()->m_cDocEditor.IsModified();
+#endif  // rei_
 		}
 	}
 	cRecentEditNode.Terminate();

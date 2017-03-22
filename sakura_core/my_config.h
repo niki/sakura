@@ -137,6 +137,10 @@
 // (REG/VisualStyle:0)
 #define REI_VISUAL_STYLE 1
 
+// 変更ドキュメントタブ名カラーを設定
+// (REG/ModifiedTabCaptionColor:0x00BBGGRR)
+#define REI_MOD_MODIFIED_TAB_CAPTION_COLOR (0x000000d8)
+
 // 行を中央ぞろえにする 2014.3.26 - 2015.7.24  
 //  - デフォルトでは行は上揃えになっているので行間は下に付加される  
 //  - キャレットを行間含む高さにする  

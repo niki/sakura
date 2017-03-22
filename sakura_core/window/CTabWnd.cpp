@@ -1423,7 +1423,13 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 
 		// テキスト描画
 		COLORREF clrText;
+#if REI_MOD_MODIFIED_TAB_CAPTION_COLOR
+		EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
+		clrText = p && p->m_bIsModified ? RegGetDword(L"ModifiedTabCaptionColor", REI_MOD_MODIFIED_TAB_CAPTION_COLOR)
+		                                : ::GetSysColor(COLOR_MENUTEXT);
+#else
 		clrText = ::GetSysColor(COLOR_MENUTEXT);
+#endif  // rei_
 		gr.PushTextForeColor( clrText );
 		gr.SetTextBackTransparent(true);
 		RECT rcText = rcItem;
@@ -2341,6 +2347,9 @@ void CTabWnd::LayoutTab( void )
 	// オーナードロー状態を共通設定に追随させる
 	BOOL bDispTabClose = m_pShareData->m_Common.m_sTabBar.m_bDispTabClose;
 	BOOL bOwnerDraw = bDispTabClose;
+#if REI_MOD_MODIFIED_TAB_CAPTION_COLOR
+	bOwnerDraw = TRUE;
+#endif  // rei_
 	if( bOwnerDraw && !(lStyle & TCS_OWNERDRAWFIXED) ){
 		lStyle |= TCS_OWNERDRAWFIXED;
 	}else if( !bOwnerDraw && (lStyle & TCS_OWNERDRAWFIXED) ){
