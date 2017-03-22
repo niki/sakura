@@ -2358,9 +2358,6 @@ void CTabWnd::LayoutTab( void )
 
 	// タブのアイテムサイズを調整する（等幅のときのサイズやフォント切替時の高さ調整）
 	// ※ 画面のちらつきや体感性能にさほど影響は無さそうなので条件を絞らず毎回 TabCtrl_SetItemSize() を実行する
-#if 0//REI_FIX_TABWND
-	if (bSameTabWidth || bChgFont) {
-#endif // rei_
 	RECT rcTab;
 	int nCount;
 	int cx;
@@ -2389,9 +2386,6 @@ void CTabWnd::LayoutTab( void )
 		cx += bDispTabIcon? (nWidth + 2)/3: (nWidth + 1)/2;	// それっぽく調整: ボタン幅の 1/3（アイコン有） or 1/2（アイコン無）
 	}
 	TabCtrl_SetPadding( m_hwndTab, DpiScaleX(cx), DpiScaleY(3) );
-#if 0//REI_FIX_TABWND
-	}
-#endif // rei_
 
 	// 新しいウィンドウスタイルを適用する
 	// ※ TabCtrl_SetPadding() の後でやらないと設定変更の直後にアイコンやテキストの描画位置がずれる場合がある
