@@ -18,19 +18,17 @@
 いくつかの設定をレジストリで変更できます(`[HKEY_CURRENT_USER\SOFTWARE\sakura_REI\SearchKeyMax=dword:00000010]`)<br>
 
 - 履歴(検索、置換、Grep)の値を変更<br>
-  検索→16 `SearchKeyMax=dword:00000010`<br>
-  置換→16 `ReplaceKeyMax=dword:00000010`<br>
-  Grepファイル→8 `GrepFileMax=dword:00000008`<br>
-  Grepフォルダ→16 `GrepFolderMax=dword:00000010`<br>
+  検索→16 `RecentSearchKeyMax=dword:00000010`<br>
+  置換→16 `RecentReplaceKeyMax=dword:00000010`<br>
+  Grepファイル→8 `RecentGrepFileMax=dword:00000008`<br>
+  Grepフォルダ→16 `RecentGrepFolderMax=dword:00000010`<br>
 
 - 多重オープンの許可<br>
   Shiftを押しながらファイルのドロップで同じファイルでも新しいウィンドウで開きます<br>
 
 - 変更したウィンドウのタブ名カラーを変更 `ModifiedTabCaptionColor=dword:000000d8`<br>
 
-- 行番号表示<br>
-  EOFのみの行(起動時とか)にも行番号を表示<br>
-  あと、Borland IDEみたくできます `LineNrMod=dword:00000001`<br>
+- EOFのみの行(起動時とか)にも行番号を表示<br>
 
 - キャレットのサイズを変更可能に<br>
   レジストリにより何種類か変更できます `CaretType=dword:00000000`<br>

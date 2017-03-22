@@ -39,7 +39,7 @@ CRecentGrepFolder::CRecentGrepFolder()
 		&GetShareData()->m_sSearchKeywords.m_aGrepFolders._GetSizeRef(),
 		NULL,
 #if REI_CHG_MAXDATA
-		RegGetDword(L"GrepFolderMax", MAX_GREPFOLDER),
+		RegGetDword(L"RecentGrepFolderMax", MAX_GREPFOLDER),
 #else
 		MAX_GREPFOLDER,
 #endif

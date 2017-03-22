@@ -222,10 +222,10 @@
 
 // 最大数を変更 2013.10.2, 2016.12.13  
 // \sakura_core\config\maxdata.h
-// (REG/SearchKeyMax:16)
-// (REG/ReplaceKeyMax:16)
-// (REG/GrepFileMax:8)
-// (REG/GrepFolderMax:16)
+// (REG/RecentSearchKeyMax:16)
+// (REG/RecentReplaceKeyMax:16)
+// (REG/RecentGrepFileMax:8)
+// (REG/RecentGrepFolderMax:16)
 #define REI_CHG_MAXDATA 1
 
 // 正規表現検索の際、検索文字列の正規表現記号をクォートする 2015.6.1  

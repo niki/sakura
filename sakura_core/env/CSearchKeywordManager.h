@@ -49,10 +49,10 @@ struct SShare_SearchKeywords{
 #endif // rei_
 #if REI_CHG_MAXDATA
   SShare_SearchKeywords() {
-    m_aSearchKeys.resize(RegGetDword(L"SearchKeyMax", MAX_SEARCHKEY));
-    m_aReplaceKeys.resize(RegGetDword(L"ReplaceKeyMax", MAX_REPLACEKEY));
-    m_aGrepFiles.resize(RegGetDword(L"GrepFileMax", MAX_GREPFILE));
-    m_aGrepFolders.resize(RegGetDword(L"GrepFolderMax", MAX_GREPFOLDER));
+    m_aSearchKeys.resize(RegGetDword(L"RecentSearchKeyMax", MAX_SEARCHKEY));
+    m_aReplaceKeys.resize(RegGetDword(L"RecentReplaceKeyMax", MAX_REPLACEKEY));
+    m_aGrepFiles.resize(RegGetDword(L"RecentGrepFileMax", MAX_GREPFILE));
+    m_aGrepFolders.resize(RegGetDword(L"RecentGrepFolderMax", MAX_GREPFOLDER));
     //ここ、呼ばれてない。。。？ MessageBoxW(NULL, L"",L"",MB_OK);
   }
 #endif

@@ -39,7 +39,7 @@ CRecentReplace::CRecentReplace()
 		&GetShareData()->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef(),
 		NULL,
 #if REI_CHG_MAXDATA
-		RegGetDword(L"ReplaceKeyMax", MAX_REPLACEKEY),
+		RegGetDword(L"RecentReplaceKeyMax", MAX_REPLACEKEY),
 #else
 		MAX_REPLACEKEY,
 #endif
