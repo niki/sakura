@@ -137,10 +137,6 @@
 // 表示
 //-------------------------------------------------------------------------
 
-// VisualStyle
-// (REG/VisualStyle:0)
-#define REI_VISUAL_STYLE 1
-
 // 変更ドキュメントタブ名カラーを設定
 // (REG/ModifiedTabCaptionColor:0x00BBGGRR)
 #define REI_MOD_MODIFIED_TAB_CAPTION_COLOR (0x000000d8)
@@ -149,24 +145,6 @@
 //  - デフォルトでは行は上揃えになっているので行間は下に付加される  
 //  - キャレットを行間含む高さにする  
 #define REI_LINE_CENTERING 1
-
-// 行番号表示の変更 2012.9.6, 2015.6.9  
-// (REG/LineNrMod:0)
-// 0x01: 最上部行・最終行・10行おきに数値、1・5行おきに指定文字（Borland IDE like）  
-//   101  
-//     ･  
-//     ･  
-//     ･  
-//     -  
-//     ･  
-//     ･  
-//     ･  
-//     ･  
-//   110  
-// 0x02: 10行おきに強調表示
-#define REI_MOD_LINE_NR 1
-  #define REI_MOD_LINE_NR_1 L'･'  // 1行おきに表示する文字
-  #define REI_MOD_LINE_NR_5 L'-'  // 5行おきに表示する文字
 
 // EOFのみの行に行番号を表示 2017.3.10
 #define REI_MOD_EOFLN_DISP_NR 1

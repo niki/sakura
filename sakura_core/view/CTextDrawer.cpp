@@ -542,25 +542,7 @@ void CTextDrawer::DispLineNumber(
 		gr.PushMyFont(sFont);	//フォント：行番号のフォント
 
 		//描画文字列
-#if REI_MOD_LINE_NR
-    static DWORD line_nr_mod_flag = RegGetDword(L"LineNrMod", 0);
-    bool line_nr_mod = !!(line_nr_mod_flag & 1);  // Borland IDE like
-    bool line_nr_mod_10_bold = !!(line_nr_mod_flag & 2);  // 10行ごとに強調表示
-#endif  // rei_
-
-#if REI_MOD_LINE_NR
-    // フォント属性を太字にする
-    auto fnFont_AttrToBold = [&]() {
-      gr.PopMyFont();
-      sFont.m_sFontAttr.m_bBoldFont = true;
-      sFont.m_hFont = pView->GetFontset().ChooseFontHandle(sFont.m_sFontAttr);
-      gr.PushMyFont(sFont);
-    };
-		
-		wchar_t szLineNum[18] = {}; // 初期化する
-#else
 		wchar_t szLineNum[18];
-#endif // rei_
 		int nLineCols;
 		int nLineNumCols;
 		{
@@ -570,70 +552,11 @@ void CTextDrawer::DispLineNumber(
 				if( NULL == pcLayout || 0 != pcLayout->GetLogicOffset() ){ //折り返しレイアウト行
 					wcscpy( szLineNum, L" " );
 				}else{
-#if REI_MOD_LINE_NR
-          if (line_nr_mod) {
-            int logicLineNo = pcLayout->GetLogicLineNo() + 1;
-
-            _itow( pcLayout->GetLogicLineNo() + 1, szLineNum, 10 );	/* 対応する論理行番号 */
-
-            if ((pcLayout->GetLogicLineNo() == pView->GetCaret().GetCaretLogicPos().y) ||
-                (nLineNum == pView->GetTextArea().GetViewTopLine())) {
-              // キャレット位置と先頭行で行番号を表示
-              //
-            } else if (nLineNum == CEditDoc::GetInstance(0)->m_cLayoutMgr.GetLineCount() - 1) {
-              // 最終行
-              //
-            } else if ((logicLineNo % 10) == 0) {
-              // 10行単位で行番号を表示
-              if (line_nr_mod_10_bold) {
-                fnFont_AttrToBold();
-              }
-            } else if ((logicLineNo % 5) == 0) {
-              // 5行単位の印をつける
-              szLineNum[0] = REI_MOD_LINE_NR_5;
-              szLineNum[1] = L'\0';
-            } else {
-              // 1行単位の印をつける
-              szLineNum[0] = REI_MOD_LINE_NR_1;
-              szLineNum[1] = L'\0';
-            }
-          } else
-#endif // rei_
 					_itow( pcLayout->GetLogicLineNo() + 1, szLineNum, 10 );	/* 対応する論理行番号 */
 //###デバッグ用
 //					_itow( CModifyVisitor().GetLineModifiedSeq(pCDocLine), szLineNum, 10 );	// 行の変更番号
 				}
 			}else{
-#if REI_MOD_LINE_NR
-        if (line_nr_mod) {
-          int lineNo = (int)nLineNum + 1;
-          
-          /* 物理行（レイアウト行）番号表示モード */
-          _itow( (Int)nLineNum + 1, szLineNum, 10 );
-          
-          if (((Int)nLineNum == pView->GetCaret().GetCaretLayoutPos().GetY()) ||
-              (nLineNum == pView->GetTextArea().GetViewTopLine())) {
-            // キャレット位置と先頭行で行番号を表示
-            //
-          } else if (nLineNum == CEditDoc::GetInstance(0)->m_cLayoutMgr.GetLineCount() - 1) {
-            // 最終行
-            //
-          } else if ((lineNo % 10) == 0) {
-            // 10行単位で行番号を表示
-            if (line_nr_mod_10_bold) {
-              fnFont_AttrToBold();
-            }
-          } else if ((lineNo % 5) == 0) {
-            // 5行単位の印をつける
-            szLineNum[0] = REI_MOD_LINE_NR_5;
-            szLineNum[1] = L'\0';
-          } else {
-            // 1行単位の印をつける
-            szLineNum[0] = REI_MOD_LINE_NR_1;
-            szLineNum[1] = L'\0';
-          }
-        } else
-#endif // rei_
 				/* 物理行（レイアウト行）番号表示モード */
 				_itow( (Int)nLineNum + 1, szLineNum, 10 );
 			}
