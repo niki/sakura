@@ -77,6 +77,11 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 			);
 		}else{
 			//îwåi
+#if REI_MOD_TAB
+			// ìhÇËÇ¬Ç‘ÇµÇ≈è¡ãé
+			gr.SetBrushColor(gr.GetTextBackColor());
+			::FillRect(gr, &rcClip2, gr.GetCurrentBrush());
+#else
 			::ExtTextOutW_AnyBuild(
 				gr,
 				sPos.GetDrawPos().x,
@@ -87,6 +92,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				tabDispWidth <= 8 ? tabDispWidth : 8, // Sep. 22, 2002 genta
 				pMetrics->GetDxArray_AllHankaku()
 			);
+#endif
 
 			//É^ÉuñÓàÛï\é¶
 			if( cTabType.IsDisp() ){

@@ -29,21 +29,24 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 	if(pcView->GetTextArea().GenerateClipRect(&rcClip,*pDispPos,1))
 	{
 #if REI_MOD_HAN_SPACE
-		// 空白で消去
-		CMyRect rcClipBottom=rcClip;
-		::ExtTextOutW_AnyBuild(
-			gr,
-			pDispPos->GetDrawPos().x,
-#  if REI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace/2) +
-#  endif  // rei_
-			pDispPos->GetDrawPos().y,
-			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-			&rcClipBottom,
-			L" ",//L"･",
-			1,
-			pcView->GetTextMetrics().GetDxArray_AllHankaku()
-		);
+		// 塗りつぶしで消去
+		gr.SetBrushColor(gr.GetTextBackColor());
+		::FillRect(gr, &rcClip, gr.GetCurrentBrush());
+//		// 空白で消去
+//		CMyRect rcClipBottom=rcClip;
+//		::ExtTextOutW_AnyBuild(
+//			gr,
+//			pDispPos->GetDrawPos().x,
+//#  if REI_LINE_CENTERING
+//			(pcView->m_pTypeData->m_nLineSpace/2) +
+//#  endif  // rei_
+//			pDispPos->GetDrawPos().y,
+//			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+//			&rcClipBottom,
+//			L" ",//L"･",
+//			1,
+//			pcView->GetTextMetrics().GetDxArray_AllHankaku()
+//		);
 		
 		// 半角スペースをドットで表現
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
