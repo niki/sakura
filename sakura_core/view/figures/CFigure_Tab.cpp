@@ -100,14 +100,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 						_DrawTabArrow(
 							gr,
 							sPos.GetDrawPos().x,
-//# if REI_LINE_CENTERING
+//#if REI_LINE_CENTERING
 //							(pcView->m_pTypeData->m_nLineSpace/2) +
-//# endif // rei_
+//#endif // rei_
 							sPos.GetDrawPos().y,
 							pMetrics->GetHankakuWidth(),
-  #if REI_LINE_CENTERING
+#if REI_LINE_CENTERING
 							pcView->m_pTypeData->m_nLineSpace +
-  #endif // rei_
+#endif // rei_
 							pMetrics->GetHankakuHeight(),
 							gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 							gr.GetCurrentTextForeColor()
@@ -118,14 +118,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 					_DrawTabArrow(
 						gr,
 						nPosLeft,
-//  #if REI_LINE_CENTERING
+//#if REI_LINE_CENTERING
 //						(pcView->m_pTypeData->m_nLineSpace/2) +
-//  #endif // rei_
+//#endif // rei_
 						sPos.GetDrawPos().y,
 						nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Areaˆê”t‚É 2013/4/11 Uchi
-  #if REI_LINE_CENTERING
+#if REI_LINE_CENTERING
 						pcView->m_pTypeData->m_nLineSpace +
-  #endif // rei_
+#endif // rei_
 						pMetrics->GetHankakuHeight(),
 						gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 						gr.GetCurrentTextForeColor()
@@ -167,11 +167,6 @@ void _DrawTabArrow(
 	
 	::MoveToEx( gr, nPosX+1, sy, NULL );
 	::LineTo(   gr, sx+1, sy );
-	
-	if( bBold ){
-		::MoveToEx( gr, nPosX+1, sy+1, NULL );
-		::LineTo(   gr, sx+1, sy+1 );
-	}
 #else
 	DWORD pp[] = { 3, 2 };
 	POINT pt[5];

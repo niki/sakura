@@ -537,8 +537,9 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 	}
 #endif // rei_
 #if REI_MOD_SELAREA
-	static int nBlendPer = RegGetDword(L"SelectAreaTextBlendPer", REI_MOD_SELAREA_TEXT_BLEND_PER);
-	int alpha = 255*nBlendPer/100;
+	int nBlendPer = RegGetDword(L"SelectAreaBlendPer", REI_MOD_SELAREA_BLEND_PER);
+	nBlendPer = (nBlendPer >> 8) & 0xff;
+	int alpha = 255 * nBlendPer / 100;
 #else
 	int alpha = 255*30/100; // 30%
 #endif // rei_
@@ -560,8 +561,9 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	if (info.m_sColorAttr.m_cTEXT == RGB(255,0,255)) { // テキストカラーがマゼンタだったらそのまま
 		return info.m_sColorAttr.m_cBACK;
 	}
-	static int nBlendPer = RegGetDword(L"SelectAreaBackBlendPer", REI_MOD_SELAREA_BACK_BLEND_PER);
-	int alpha = 255*nBlendPer/100;
+	int nBlendPer = RegGetDword(L"SelectAreaBlendPer", REI_MOD_SELAREA_BLEND_PER);
+	nBlendPer = nBlendPer & 0xff;
+	int alpha = 255 * nBlendPer / 100;
 #else
 	int alpha = 255*30/100; // 30%
 #endif // rei_

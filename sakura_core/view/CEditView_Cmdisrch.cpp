@@ -252,7 +252,7 @@ void CEditView::ISearchExit()
 		CSearchKeywordManager().AddToSearchKeyArr( m_strCurSearchKey.c_str() );
 	}
 	m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
-#if REI_FIX_ISEARCH_KEEP_REGEXP
+#if REI_FIX_SEARCH_KEEP_REGEXP
 	///
 #else
 	GetDllShareData().m_Common.m_sSearch.m_sSearchOption = m_sCurSearchOption;

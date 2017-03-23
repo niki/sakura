@@ -34,9 +34,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-  #if REI_LINE_CENTERING
+#  if REI_LINE_CENTERING
 			(pcView->m_pTypeData->m_nLineSpace/2) +
-  #endif  // rei_
+#  endif  // rei_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipBottom,
@@ -50,22 +50,25 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
 		y++; // è≠Çµâ∫Çﬂ
 		y++; // è≠Çµâ∫Çﬂ
-  #if REI_LINE_CENTERING
-		//y += (pcView->m_pTypeData->m_nLineSpace/2);
-  #endif  // rei_
+//#  if REI_LINE_CENTERING
+//		y += (pcView->m_pTypeData->m_nLineSpace/2);
+//#  endif  // rei_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // è≠Çµç∂Çﬂ
 		::MoveToEx( gr, x, y-2, NULL );
 		::LineTo(   gr, x+2, y-2 );
 		::MoveToEx( gr, x, y-1, NULL );
 		::LineTo(   gr, x+2, y-1 );
-#else  //REI_MOD_HAN_SPACE
+#else
 		//è¨ï∂éö"o"ÇÃâ∫îºï™ÇèoóÕ
 		CMyRect rcClipBottom=rcClip;
 		rcClipBottom.top=rcClip.top+pcView->GetTextMetrics().GetHankakuHeight()/2;
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
+#  if REI_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace/2) +
+#  endif  // rei_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipBottom,
@@ -80,6 +83,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
+#  if REI_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace/2) +
+#  endif  // rei_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipTop,
@@ -87,7 +93,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			1,
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
-#endif  //REI_MOD_HAN_SPACE
+#endif  // rei_
 	}
 
 	//à íuêiÇﬂÇÈ

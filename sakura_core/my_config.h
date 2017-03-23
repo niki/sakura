@@ -123,7 +123,7 @@
 
 // 垂直スクロールの変更
 //  - スクロールマージン行を調整
-#define REI_MOD_VERTICAL_SCR 
+#define REI_MOD_VERTICAL_SCR 0
 
 // タブ文字のタブと空白の切り替えを追加
 //  - S_ChangeTabWidthマクロに負の値を渡すとタブ文字の切り替え
@@ -172,21 +172,17 @@
 //  - テキストと背景のブレンド率設定 2015.6.5  
 //  - 選択時のテキスト属性（太字、下線）に選択領域ではなく現在のテキストを使用する
 #define REI_MOD_SELAREA 1
-  // 選択領域 テキストのブレンド率 2015.6.5  
-  // (REG/SelectAreaTextBlendPer:0)
-  #define REI_MOD_SELAREA_TEXT_BLEND_PER 0 /* % */
-  
-  // 選択領域 背景のブレンド率 2015.6.5  
-  // (REG/SelectAreaBackBlendPer:100)
-  #define REI_MOD_SELAREA_BACK_BLEND_PER 100 /* % */
+  // 選択領域のブレンド率[%] 2015.6.5  
+  // (REG/SelectAreaBlendPer:0x00000064)
+  #define REI_MOD_SELAREA_BLEND_PER (/*Text=*/(0 << 8) | /*Back=*/(100))
 
 // 空白TAB,改行のカラーを変更 2015.6.5  
 //  - 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます) 2015.6.8  
 //    対象は空白TABなどで、コントロールコードには適用されません  
 #define REI_MOD_SP_COLOR 1
-  // 空白TAB 現在のカラーのブレンド率 2015.6.5  
-  // (REG/WhiteSpaceBlendPer:30)
-  #define REI_MOD_SP_BLEND_PER 30 /* % */
+  // 空白TAB 現在のカラーのブレンド率[%] 2015.6.5  
+  // (REG/WhiteSpaceBlendPer:0x0000001E)
+  #define REI_MOD_SP_BLEND_PER (30)
 //						     
 						     
 
@@ -287,11 +283,10 @@
 // 修正
 //-------------------------------------------------------------------------
 
-// 検索マーク切り替えの際に検索ダイアログの「正規表現」が影響を受けないようにする 2015.6.1  
+// 検索ダイアログの「正規表現」が影響を受けないようにする
+//  - 検索マーク切り替え時 2015.6.1  
+//  - インクリメンタルサーチ時 2016.12.14
 #define REI_FIX_SEARCH_KEEP_REGEXP 1
-
-// インクリメンタルサーチの際に検索ダイアログの「正規表現」が影響を受けないようにする 2016.12.14
-#define REI_FIX_ISEARCH_KEEP_REGEXP 1
 
 // 行番号が非表示でブックマークが表示のときブックマークは線で描画する 2017.1.13
 #define REI_FIX_DRAW_BOOKMARK_LINE_NOGYOU 1

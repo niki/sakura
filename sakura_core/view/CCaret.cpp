@@ -212,11 +212,11 @@ CLayoutInt CCaret::MoveCursor(
 	// 水平スクロール量（文字数）の算出
 	nScrollColNum = CLayoutInt(0);
 #if REI_MOD_HORIZONTAL_SCR
-  {
-    static const int kMarginSize = 1;
-    nScrollMarginRight = CLayoutInt(kMarginSize);
-    nScrollMarginLeft = CLayoutInt(kMarginSize);
-  }
+	{
+		static const int kMarginSize = 1;
+		nScrollMarginRight = CLayoutInt(kMarginSize);
+		nScrollMarginLeft = CLayoutInt(kMarginSize);
+	}
 #else
 	nScrollMarginRight = CLayoutInt(SCROLLMARGIN_RIGHT);
 	nScrollMarginLeft = CLayoutInt(SCROLLMARGIN_LEFT);
@@ -239,14 +239,14 @@ CLayoutInt CCaret::MoveCursor(
 			( m_pEditView->GetTextArea().GetViewLeftCol() + m_pEditView->GetTextArea().m_nViewColNum - nScrollMarginRight ) - ptWk_CaretPos.GetX2();
 #if REI_MOD_HORIZONTAL_SCR
 		if (nScrollColNum != 0) {
-		  static const int kScrollSize = REI_MOD_HORIZONTAL_SCR;
-      if (kScrollSize > 1) {
-  			if (nScrollColNum < 0) {
-  				nScrollColNum = -(-nScrollColNum + kScrollSize - 1) / kScrollSize * kScrollSize;
-  			} else {
-  				nScrollColNum = (nScrollColNum + kScrollSize - 1) / kScrollSize * kScrollSize;
-  			}
-  		}
+			static const int kScrollSize = REI_MOD_HORIZONTAL_SCR;
+			if (kScrollSize > 1) {
+				if (nScrollColNum < 0) {
+					nScrollColNum = -(-nScrollColNum + kScrollSize - 1) / kScrollSize * kScrollSize;
+				} else {
+					nScrollColNum = (nScrollColNum + kScrollSize - 1) / kScrollSize * kScrollSize;
+				}
+			}
 		}
 #endif // rei_
 	}
@@ -256,14 +256,14 @@ CLayoutInt CCaret::MoveCursor(
 		nScrollColNum = m_pEditView->GetTextArea().GetViewLeftCol() + nScrollMarginLeft - ptWk_CaretPos.GetX2();
 #if REI_MOD_HORIZONTAL_SCR
 		if (nScrollColNum != 0) {
-		  static const int kScrollSize = REI_MOD_HORIZONTAL_SCR;
-      if (kScrollSize > 1) {
-  			if (nScrollColNum < 0) {
-  				nScrollColNum = -(-nScrollColNum + kScrollSize - 1) / kScrollSize * kScrollSize;
-  			} else {
-  				nScrollColNum = (nScrollColNum + kScrollSize - 1) / kScrollSize * kScrollSize;
-  			}
-  	  }
+			static const int kScrollSize = REI_MOD_HORIZONTAL_SCR;
+			if (kScrollSize > 1) {
+				if (nScrollColNum < 0) {
+					nScrollColNum = -(-nScrollColNum + kScrollSize - 1) / kScrollSize * kScrollSize;
+				} else {
+					nScrollColNum = (nScrollColNum + kScrollSize - 1) / kScrollSize * kScrollSize;
+				}
+			}
 		}
 #endif // rei_
 		if( 0 > m_pEditView->GetTextArea().GetViewLeftCol() - nScrollColNum ){
@@ -588,9 +588,9 @@ void CCaret::ShowEditCaret()
 	int				nCaretHeight = 0;
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();
-#if 0//REI_LINE_CENTERING // Caretの高さ
-		nCaretHeight += m_pEditView->m_pTypeData->m_nLineSpace;
-#endif // rei_
+//#if REI_LINE_CENTERING // Caretの高さ
+//		nCaretHeight += m_pEditView->m_pTypeData->m_nLineSpace;
+//#endif // rei_
 		if( m_pEditView->IsInsMode() ){
 			nCaretWidth = 2;
 		}else{
@@ -619,9 +619,9 @@ void CCaret::ShowEditCaret()
 	// カーソルのタイプ = win
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();					/* キャレットの高さ */
-#if 0//REI_LINE_CENTERING // Caretの高さ
-		nCaretHeight += m_pEditView->m_pTypeData->m_nLineSpace;
-#endif // rei_
+//#if REI_LINE_CENTERING // Caretの高さ
+//		nCaretHeight += m_pEditView->m_pTypeData->m_nLineSpace;
+//#endif // rei_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
 #if REI_MOD_CARET
       static int caret_type = RegGetDword(L"CaretType", REI_MOD_CARET);
@@ -1025,7 +1025,7 @@ void CCaret::ShowCaretPosInfo()
 		// IDを合わせるためにタブサイズを行数の位置に表示
 		TCHAR	szText_TabSize[16];
 		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
-		auto_sprintf( szText_TabSize, _T("Tab: %d%s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T("(SP)") : _T("") );
+		auto_sprintf( szText_TabSize, _T("Tab %d%s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T("[SP]") : _T("") );
 //-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             szText_TabSize );
 		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             _T("") );
 		//	May 12, 2000 genta
