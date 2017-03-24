@@ -240,7 +240,10 @@ bool CProfile::WriteProfile(
 )
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
-	if (!!RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
+	if (2 == RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
+		return false;  // レジストリ書き込み禁止
+	}
+	if (1 == RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
 		return true;
 	}
 #endif  // rei_
@@ -394,7 +397,10 @@ bool CProfile::SetProfileDataImp(
 )
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
-	if (!!RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
+	if (2 == RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
+		return false;  // レジストリ書き込み禁止
+	}
+	if (1 == RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
 		return SetProfileDataReg(strSectionName, strEntryKey, strEntryValue);
 	}
 #endif  // rei_
