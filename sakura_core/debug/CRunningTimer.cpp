@@ -19,18 +19,7 @@
 #include "debug/CRunningTimer.h"
 #include "_main/global.h"
 
-#ifdef USE_RUNTIMER
-
-#if !defined(_DEBUG) && defined(USE_RUNTIMER)
-// Debug1.h
-void DebugOutW( LPCWSTR lpFmt, ...);
-void DebugOutA( LPCSTR lpFmt, ...);
-#endif
-#ifdef _UNICODE
-#define DebugOutT DebugOutW
-#else
-#define DebugOutT DebugOutA
-#endif
+#ifdef _DEBUG
 
 #pragma comment(lib, "winmm.lib")
 
@@ -38,14 +27,13 @@ int CRunningTimer::m_nNestCount = 0;
 
 CRunningTimer::CRunningTimer( const char* pszText )
 {
-	timeBeginPeriod(1);
 	Reset();
 	if( pszText != NULL )
 		strcpy( m_szText, pszText );
 	else
 		m_szText[0] = '\0';
 	m_nDeapth = m_nNestCount++;
-	DebugOutT( _T("%3d:\"%hs\" : Enter \n"), m_nDeapth, m_szText );
+	MYTRACE( _T("%3d:\"%hs\" : Enter \n"), m_nDeapth, m_szText );
 	return;
 }
 
@@ -54,7 +42,6 @@ CRunningTimer::~CRunningTimer()
 {
 	WriteTrace("Exit Scope");
 	m_nNestCount--;
-	timeEndPeriod(1);
 	return;
 }
 
@@ -75,8 +62,8 @@ DWORD CRunningTimer::Read()
 */
 void CRunningTimer::WriteTrace(const char* msg) const
 {
-	DebugOutT( _T("%3d:\"%hs\", %d‡_•b : %hs\n"), m_nDeapth, m_szText, timeGetTime() - m_nStartTime, msg );
+	MYTRACE( _T("%3d:\"%hs\", %d‡_•b : %hs\n"), m_nDeapth, m_szText, timeGetTime() - m_nStartTime, msg );
 }
-#endif // USE_RUNTIMER
+#endif
 
 

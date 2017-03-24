@@ -135,9 +135,6 @@ public:
 	int capacity(){
 		return _GetMemory()->capacity() / sizeof(wchar_t);
 	}
-	int size() const { return GetStringLength(); }
-	int length() const { return size(); }
-	const wchar_t* c_str() const { return GetStringPtr(); }
 
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
