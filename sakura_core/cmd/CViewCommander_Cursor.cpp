@@ -183,7 +183,7 @@ int CViewCommander::Command_LEFT( bool bSelect, bool bRepeat )
 		bUnderlineDoNotOFF = false;		//選択状態ならアンダーライン消去を行う
 	}
 	bool	bMoveCaretLine = false;
-	int		nRepeat = bRepeat ? 2 : 1;
+	int		nRepeat = bRepeat ? GetDllShareData().m_Common.m_sGeneral.m_nRepeatedMoveCaretNum : 1; // 移動する回数
 #if REI_MOD_LR_CURSOR_REPEAT_WIDTH
 	nRepeat = 1;
 #endif  // rei_
@@ -278,7 +278,7 @@ int CViewCommander::Command_LEFT( bool bSelect, bool bRepeat )
 
 
 
-/* カーソル右移動
+/*! @brief カーソル右移動
 	@date 2014.01.10 Moca キーリピート時、MoveCursorを一度にまとめる
 */
 void CViewCommander::Command_RIGHT( bool bSelect, bool bIgnoreCurrentSelection, bool bRepeat )
@@ -288,7 +288,7 @@ void CViewCommander::Command_RIGHT( bool bSelect, bool bIgnoreCurrentSelection, 
 		bUnderlineDoNotOFF = false;		//選択状態ならアンダーライン消去を行う
 	}
 	bool	bMoveCaretLine = false;
-	int nRepeat = bRepeat ? 2 : 1; // 移動する回数
+	int nRepeat = bRepeat ? GetDllShareData().m_Common.m_sGeneral.m_nRepeatedMoveCaretNum : 1; // 移動する回数
 #if REI_MOD_LR_CURSOR_REPEAT_WIDTH
 	nRepeat = 1;
 #endif  // rei_
