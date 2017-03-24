@@ -184,9 +184,6 @@ int CViewCommander::Command_LEFT( bool bSelect, bool bRepeat )
 	}
 	bool	bMoveCaretLine = false;
 	int		nRepeat = bRepeat ? GetDllShareData().m_Common.m_sGeneral.m_nRepeatedMoveCaretNum : 1; // 移動する回数
-#if REI_MOD_LR_CURSOR_REPEAT_WIDTH
-	nRepeat = 1;
-#endif  // rei_
 	int		nRes = 0;
 	CLayoutPoint ptCaretMove = GetCaret().GetCaretLayoutPos();
 	for( int nRepCount = 0; nRepCount < nRepeat; ++nRepCount ) {
@@ -289,9 +286,6 @@ void CViewCommander::Command_RIGHT( bool bSelect, bool bIgnoreCurrentSelection, 
 	}
 	bool	bMoveCaretLine = false;
 	int nRepeat = bRepeat ? GetDllShareData().m_Common.m_sGeneral.m_nRepeatedMoveCaretNum : 1; // 移動する回数
-#if REI_MOD_LR_CURSOR_REPEAT_WIDTH
-	nRepeat = 1;
-#endif  // rei_
 	CLayoutPoint ptCaretMove = GetCaret().GetCaretLayoutPos();
 	for( int nRepCount = 0; nRepCount < nRepeat; ++nRepCount ) {
 		// 2003.06.28 Moca [EOF]のみの行にカーソルがあるときに右を押しても選択を解除できない問題に
