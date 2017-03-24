@@ -51,6 +51,9 @@ void CProfile::Init( void )
 	m_strProfileName = _T("");
 	m_ProfileData.clear();
 	m_bRead = true;
+#if REI_USE_REGISTRY_FOR_PROFILES
+	m_bReg = false;
+#endif  // rei_
 	return;
 }
 
@@ -123,8 +126,9 @@ void CProfile::ReadOneline(
 bool CProfile::ReadProfile( const TCHAR* pszProfileName )
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
-	if (!!RegGetDword(L"UseRegistryForReadProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT) &&
-			IsExistProfileReg()) {
+	if (IsRegMode() &&
+			IsExistProfileReg(m_strProfileName) &&
+			!RegGetDword(L"NoReadProfilesFromRegistry", 0)) {
 		return true;
 	}
 #endif  // rei_
@@ -240,11 +244,9 @@ bool CProfile::WriteProfile(
 )
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
-	if (2 == RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
+	if (IsRegMode() &&
+			!RegGetDword(L"NoWriteProfilesToRegistry", 0)) {
 		return false;  // レジストリ書き込み禁止
-	}
-	if (1 == RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
-		return true;
 	}
 #endif  // rei_
 
@@ -362,9 +364,10 @@ bool CProfile::GetProfileDataImp(
 )
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
-	if (!!RegGetDword(L"UseRegistryForReadProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT) &&
-			IsExistProfileReg()) {
-		return GetProfileDataReg(strSectionName, strEntryKey, strEntryValue);
+	if (IsRegMode() &&
+			IsExistProfileReg(m_strProfileName) &&
+			!RegGetDword(L"NoReadProfilesFromRegistry", 0)) {
+		return GetRegProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
 	}
 #endif  // rei_
 
@@ -397,11 +400,9 @@ bool CProfile::SetProfileDataImp(
 )
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
-	if (2 == RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
-		return false;  // レジストリ書き込み禁止
-	}
-	if (1 == RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
-		return SetProfileDataReg(strSectionName, strEntryKey, strEntryValue);
+	if (IsRegMode() &&
+			!RegGetDword(L"NoWriteProfilesToRegistry", 0)) {
+		return SetRegProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
 	}
 #endif  // rei_
 

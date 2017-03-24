@@ -214,10 +214,9 @@
 // プロファイルの読み書きにレジストリを使用する
 //  - レジストリキーがない場合はiniファイルから読み込む
 //  - バージョンアップ時のバックアップファイル作成は行わない
-// (REG/UseRegistryForReadProfiles:1)
-// (REG/UseRegistryForWriteProfiles:1)
+// (REG/NoReadProfilesFromRegistry:0) 1にするとレジストリから読み込まなくなります
+// (REG/NoWriteProfilesToRegistry:0) 1にするとレジストリに書き込まなくなります
 #define REI_USE_REGISTRY_FOR_PROFILES 1
-  #define REI_USE_REGISTRY_FOR_PROFILES_DEFAULT 0 
 
 // 開かれているファイルを自己管理する前提で多重オープンの許可 2013.6.19  
 //  - Shiftを押しながらファイルドロップで多重オープン  
@@ -340,6 +339,7 @@
 //#include <locale>
 //#include <codecvt>
 //#include <vector>
+#include <errno.h>
 
 //------------------------------------------------------------------
 //! レジストリキーの読み取り(DWORD)
@@ -348,26 +348,27 @@
 //------------------------------------------------------------------
 inline DWORD RegGetDword(LPCTSTR key_name, DWORD defValue) {
   HKEY hKey;
-  DWORD dwType = REG_DWORD; // REG_SZ;
+  DWORD dwType = REG_DWORD;  // REG_SZ;
   DWORD dwByte = 4;
   DWORD dwValue;
   LONG rc;
 
-  rc = RegOpenKeyEx(HKEY_CURRENT_USER,       //親キー
-                    L"Software\\sakura_REI", //サブキー
-                    0,                       //常にゼロ
-                    KEY_ALL_ACCESS,          //セキュリティマスク
-                    &hKey);                  //キーのハンドル
+  std::wstring subkey = L"Software\\sakura_REI";
 
-  if (rc != ERROR_SUCCESS)
-    return defValue;
+  rc = RegOpenKeyEx(HKEY_CURRENT_USER,  //親キー
+                    subkey.c_str(),     //サブキー
+                    0,                  //常にゼロ
+                    KEY_ALL_ACCESS,     //セキュリティマスク
+                    &hKey);             //キーのハンドル
 
-  rc = RegQueryValueEx(hKey,             //キーのハンドル
-                       key_name,         //読み取るキーの名前
-                       NULL,             //常に NULL
-                       &dwType,          //データのタイプ
-                       (BYTE *)&dwValue, //受け取る領域
-                       &dwByte);         //領域のバイト数(受け取ったバイト数)
+  if (rc != ERROR_SUCCESS) return defValue;
+
+  rc = RegQueryValueEx(hKey,              //キーのハンドル
+                       key_name,          //読み取るキーの名前
+                       NULL,              //常に NULL
+                       &dwType,           //データのタイプ
+                       (BYTE *)&dwValue,  //受け取る領域
+                       &dwByte);          //領域のバイト数(受け取ったバイト数)
 
   RegCloseKey(hKey);
 
@@ -389,28 +390,31 @@ inline bool RegGetString(LPCTSTR key_name, char *out) {
   DWORD dwByte;
   LONG rc;
 
-  rc = RegOpenKeyEx(HKEY_CURRENT_USER,       //親キー
-                    L"Software\\sakura_REI", //サブキー
-                    0,                       //常にゼロ
-                    KEY_ALL_ACCESS,          //セキュリティマスク
-                    &hKey);                  //キーのハンドル
+  std::wstring subkey = L"Software\\sakura_REI";
 
-  if (rc != ERROR_SUCCESS)
-    return false;
+  rc = RegOpenKeyEx(HKEY_CURRENT_USER,  //親キー
+                    subkey.c_str(),     //サブキー
+                    0,                  //常にゼロ
+                    KEY_ALL_ACCESS,     //セキュリティマスク
+                    &hKey);             //キーのハンドル
 
-  rc = RegQueryValueEx(hKey,     //キーのハンドル
-                       key_name, //読み取るキーの名前
-                       NULL,     //常に NULL
-                       &dwType,  //データのタイプ
-                       NULL,     //受け取る領域
-                       &dwByte); //領域のバイト数(受け取ったバイト数)
+  if (rc != ERROR_SUCCESS) return false;
 
-  rc = RegQueryValueEx(hKey,                 //キーのハンドル
-                       key_name,             //読み取るキーの名前
-                       NULL,                 //常に NULL
-                       &dwType,              //データのタイプ
-                       (LPBYTE)(LPCTSTR)out, //受け取る領域
-                       &dwByte); //領域のバイト数(受け取ったバイト数)
+  rc = RegQueryValueEx(hKey,      //キーのハンドル
+                       key_name,  //読み取るキーの名前
+                       NULL,      //常に NULL
+                       &dwType,   //データのタイプ
+                       NULL,      //受け取る領域
+                       &dwByte);  //領域のバイト数(受け取ったバイト数)
+
+  if (rc != ERROR_SUCCESS) return false;
+
+  rc = RegQueryValueEx(hKey,                  //キーのハンドル
+                       key_name,              //読み取るキーの名前
+                       NULL,                  //常に NULL
+                       &dwType,               //データのタイプ
+                       (LPBYTE)(LPCTSTR)out,  //受け取る領域
+                       &dwByte);              //領域のバイト数(受け取ったバイト数)
 
   RegCloseKey(hKey);
 
@@ -422,26 +426,43 @@ inline bool RegGetString(LPCTSTR key_name, char *out) {
 }
 
 //------------------------------------------------------------------
-//! レジストリキーの確認
-//! @param section_name
-//! @param key_name
-//! @param data
+//! ファイル名の取得
+//! @param path パス名
 //------------------------------------------------------------------
-inline bool IsExistProfileReg() {
+inline std::wstring ExtractFileName(const std::wstring &path) {
+  std::wstring fname;
+  size_t pos = path.rfind('\\');
+  if (pos != std::wstring::npos) {
+    return path.substr(pos + 1, path.size() - pos - 1);
+  } else {
+    pos = path.rfind('/');
+    if (pos != std::wstring::npos) {
+      return path.substr(pos + 1, path.size() - pos - 1);
+    }
+  }
+  return path;
+}
+
+//------------------------------------------------------------------
+//! レジストリキーの確認
+//! @param profile_name プロファイル名
+//! @return true:存在する, false:存在しない
+//------------------------------------------------------------------
+inline bool IsExistProfileReg(const std::wstring &profile_name) {
   HKEY hKey;
   LONG rc;
-  
-  std::wstring subkey = L"Software\\sakura";
-  
-  rc = RegOpenKeyEx(HKEY_CURRENT_USER, //親キー
-                    subkey.c_str(),    //サブキー
-                    0,                 //常にゼロ
-                    KEY_ALL_ACCESS,    //セキュリティマスク
-                    &hKey);            //キーのハンドル
-  
-  if (rc != ERROR_SUCCESS)
-    return false;
-  
+
+  std::wstring fname = ExtractFileName(profile_name);
+  std::wstring subkey = L"Software\\" + fname;
+
+  rc = RegOpenKeyEx(HKEY_CURRENT_USER,  //親キー
+                    subkey.c_str(),     //サブキー
+                    0,                  //常にゼロ
+                    KEY_ALL_ACCESS,     //セキュリティマスク
+                    &hKey);             //キーのハンドル
+
+  if (rc != ERROR_SUCCESS) return false;
+
   RegCloseKey(hKey);
 
   return true;
@@ -449,96 +470,141 @@ inline bool IsExistProfileReg() {
 
 //------------------------------------------------------------------
 //! レジストリキーの読み取り(SZ)
-//! @param section_name
-//! @param key_name
-//! @param data
+//! @param profile_name プロファイル名
+//! @param section_name セクション名
+//! @param key_name キー名
+//! @param data データ
 //------------------------------------------------------------------
-inline bool GetProfileDataReg(const std::wstring &section_name,
-                              const std::wstring &key_name,
-                              std::wstring &data) {
+inline bool GetRegProfileString(const std::wstring &profile_name, const std::wstring &section_name,
+                                const std::wstring &key_name, std::wstring &data) {
   HKEY hKey;
   DWORD dwType = REG_SZ;
   DWORD dwByte = 1024;
   LONG rc;
-  wchar_t *buffer = new wchar_t[dwByte];
-  // std::shared_ptr<wchar_t> buffer(new wchar_t[dwByte],
-  //                             std::default_delete<wchar_t[]>());
 
-  std::wstring subkey = L"Software\\sakura\\" + section_name;
+  std::wstring fname = ExtractFileName(profile_name);
+  std::wstring subkey = L"Software\\" + fname + L"\\" + section_name;
 
   data = L"";
 
-  rc = RegOpenKeyEx(HKEY_CURRENT_USER, //親キー
-                    subkey.c_str(),    //サブキー
-                    0,                 //常にゼロ
-                    KEY_ALL_ACCESS,    //セキュリティマスク
-                    &hKey);            //キーのハンドル
+  rc = RegOpenKeyEx(HKEY_CURRENT_USER,  //親キー
+                    subkey.c_str(),     //サブキー
+                    0,                  //常にゼロ
+                    KEY_ALL_ACCESS,     //セキュリティマスク
+                    &hKey);             //キーのハンドル
 
-  if (rc != ERROR_SUCCESS) {
-    delete[] buffer;
-    return false;
-  }
+  if (rc != ERROR_SUCCESS) return false;
 
-  rc = RegQueryValueExW(hKey,             //キーのハンドル
-                        key_name.c_str(), //読み取るキーの名前
-                        NULL,             //常に NULL
-                        &dwType,          //データのタイプ
-                        (LPBYTE)buffer,   //受け取る領域
-                        &dwByte);         //領域のバイト数(受け取ったバイト数)
+  rc = RegQueryValueExW(hKey,              //キーのハンドル
+                        key_name.c_str(),  //読み取るキーの名前
+                        NULL,              //常に NULL
+                        &dwType,           //データのタイプ
+                        NULL,              //受け取る領域
+                        &dwByte);          //領域のバイト数(受け取ったバイト数)
 
-  RegCloseKey(hKey);
+  if (rc != ERROR_SUCCESS) return false;
 
-  if (rc != ERROR_SUCCESS) {
-    delete[] buffer;
-    return false;
-  } else {
-    if (dwByte == 0) {
-      data.assign(L"");
+  if (dwType == REG_DWORD) {
+    int i;
+    rc = RegQueryValueExW(hKey,              //キーのハンドル
+                          key_name.c_str(),  //読み取るキーの名前
+                          NULL,              //常に NULL
+                          &dwType,           //データのタイプ
+                          (BYTE *)&i,        //受け取る領域
+                          &dwByte);          //領域のバイト数(受け取ったバイト数)
+
+    RegCloseKey(hKey);
+
+    if (rc != ERROR_SUCCESS) {
+      return false;
     } else {
-      data.assign(buffer);
+      data.assign(std::to_wstring(i));
+      return true;
     }
-    delete[] buffer;
-    // std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
-    // data = cv.from_bytes(buffer);  //string→wstring
-    return true;
+
+  } else {
+    wchar_t *buffer = new wchar_t[dwByte + 1];
+
+    rc = RegQueryValueExW(hKey,              //キーのハンドル
+                          key_name.c_str(),  //読み取るキーの名前
+                          NULL,              //常に NULL
+                          &dwType,           //データのタイプ
+                          (LPBYTE)buffer,    //受け取る領域
+                          &dwByte);          //領域のバイト数(受け取ったバイト数)
+
+    RegCloseKey(hKey);
+
+    if (rc != ERROR_SUCCESS) {
+      delete[] buffer;
+      return false;
+    } else {
+      if (dwByte == 0) {
+        data.assign(L"");
+      } else {
+        buffer[dwByte] = L'\0';
+        data.assign(buffer);
+      }
+      delete[] buffer;
+      return true;
+    }
   }
 }
 
 //------------------------------------------------------------------
 //! レジストリキーの書き込み(SZ)
-//! @param section_name
-//! @param key_name
-//! @param data
+//! @param profile_name プロファイル名
+//! @param section_name セクション名
+//! @param key_name キー名
+//! @param data データ
 //------------------------------------------------------------------
-inline bool SetProfileDataReg(const std::wstring &section_name,
-                              const std::wstring &key_name,
-                              const std::wstring &data) {
+inline bool SetRegProfileString(const std::wstring &profile_name, const std::wstring &section_name,
+                                const std::wstring &key_name, const std::wstring &data) {
   HKEY hKey;
-  DWORD dwDisposition; //新規作成:REG_CREATED_NEW_KEY
-                       //既存:REG_OPENED_EXISTING_KEY
+  DWORD dwType = REG_SZ;
+  DWORD dwDisposition;  //新規作成:REG_CREATED_NEW_KEY
+                        //既存:REG_OPENED_EXISTING_KEY
   LONG rc;
 
-  std::wstring subkey = L"Software\\sakura\\" + section_name;
+  std::wstring fname = ExtractFileName(profile_name);
+  std::wstring subkey = L"Software\\" + fname + L"\\" + section_name;
 
-  rc = RegCreateKeyEx(HKEY_CURRENT_USER,       //親キー
-                      subkey.c_str(),          //サブキー
-                      0,                       //常にゼロ
-                      NULL,                    //
-                      REG_OPTION_NON_VOLATILE, //再起動しても消えない設定
-                      KEY_ALL_ACCESS,          //セキュリティマスク
-                      NULL,                    //
-                      &hKey,                   //
+  rc = RegCreateKeyEx(HKEY_CURRENT_USER,        //親キー
+                      subkey.c_str(),           //サブキー
+                      0,                        //常にゼロ
+                      NULL,                     //
+                      REG_OPTION_NON_VOLATILE,  //再起動しても消えない設定
+                      KEY_ALL_ACCESS,           //セキュリティマスク
+                      NULL,                     //
+                      &hKey,                    //
                       &dwDisposition);
 
-  if (rc != ERROR_SUCCESS)
-    return false;
+  if (rc != ERROR_SUCCESS) return false;
 
-  rc = RegSetValueEx(hKey,                                //キーのハンドル
-                     key_name.c_str(),                    //読み取るキーの名前
-                     NULL,                                //常に NULL
-                     REG_SZ,                              //データのタイプ
-                     (CONST BYTE *)(LPCTSTR)data.c_str(), //書き込む領域
-                     (int)data.length() * 2); // dataのサイズを指定する
+  int i = 0;
+  bool is_num = false;
+
+  if (!data.empty()) {
+    wchar_t *endptr;
+    errno = 0;
+    i = wcstol(data.c_str(), &endptr, 10);
+    is_num = !(*endptr != L'\0' || (i == INT_MAX && errno == ERANGE));
+  }
+
+  if (is_num) {
+    rc = RegSetValueEx(hKey,              //キーのハンドル
+                       key_name.c_str(),  //読み取るキーの名前
+                       NULL,              //常に NULL
+                       REG_DWORD,         //データのタイプ
+                       (CONST BYTE *)&i,  //書き込む領域
+                       sizeof(DWORD));    // dataのサイズを指定する
+  } else {
+    rc = RegSetValueEx(hKey,                                 //キーのハンドル
+                       key_name.c_str(),                     //読み取るキーの名前
+                       NULL,                                 //常に NULL
+                       REG_SZ,                               //データのタイプ
+                       (CONST BYTE *)(LPCTSTR)data.c_str(),  //書き込む領域
+                       (int)data.length() * 2);              // dataのサイズを指定する
+  }
 
   RegCloseKey(hKey);
 

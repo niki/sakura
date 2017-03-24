@@ -88,6 +88,10 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	TCHAR	szIniFileName[_MAX_PATH + 1];
 	CFileNameManager::getInstance()->GetIniFileName( szIniFileName, strProfileName.c_str(), bRead );	// 2007.05.19 ryoji iniファイル名を取得する
 
+#if REI_USE_REGISTRY_FOR_PROFILES
+	cProfile.SetRegMode(szIniFileName);
+#endif  // rei_
+
 //	MYTRACE( _T("Iniファイル処理-1 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
 

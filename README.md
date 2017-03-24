@@ -19,6 +19,12 @@
 
 #### ・ファイル系
 
+- プロファイルの読み書きにレジストリを使用する<br>
+  レジストリキーがない場合はiniファイルから読み込みます.<br>
+  バージョンアップ時のバックアップファイル作成は行いません.<br>
+  ・読み込み無効化 `NoReadProfilesFromRegistry:00000001`<br>
+  ・書き込み無効化 `NoWriteProfilesToRegistry:00000001`<br>
+
 - 履歴(検索、置換、Grep)の値を変更<br>
   検索→16 `RecentSearchKeyMax=dword:00000010`<br>
   置換→16 `RecentReplaceKeyMax=dword:00000010`<br>
