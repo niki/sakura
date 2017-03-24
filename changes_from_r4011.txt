@@ -39,7 +39,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
 --- 2.3.1.0 ---------------------------------------------------------------
  r4125	Fix: アウトライン解析C++/Javaツリーのクラス名の最大長の修正  [patchunicode:#1030]
  r4123	Fix: 外部コマンド実行の標準出力を得るUTF-8で文字化け [patchunicode:#1077] Contributed by Moca
--r4119	Chg: ini読み取り専用オプション [patchunicode:#937] Contributed by Moca
+ r4119	Chg: ini読み取り専用オプション [patchunicode:#937] Contributed by Moca
  r4118	Fix: バックアップの詳細設定の時刻がUTCになっている [patchunicode:#937]
  r4117	Chg: メールアドレスの記号類を許可する [patchunicode:#1063]
 -r4416	Fix: オートスクロールの横方向がpx単位になっている [patchunicode:#1062] Contributed by Moca
@@ -47,14 +47,14 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4114	Fix: プラグインオプションのコンボボックスの高さが不正 [patchunicode:#1054] Contributed by Moca
  r4113	Fix: EOF直前の改行を改行なしに置換するとEOFの再描画が不足する [patchunicode:#1008]
 -r4112	Fix: ユーザ別設定のときのマルチプロファイルの場所がおかしい [patchunicode:#1024] Contributed by Moca
--r4111	Imp: タイプ一覧の基本も初期化できるように [patchunicode:#1037] Contributed by Moca
+ r4111	Imp: タイプ一覧の基本も初期化できるように [patchunicode:#1037] Contributed by Moca
 -r4109	Fix: プロファイルマネージャで表示直後(default)が削除・名前変更できるバグ [patchunicode:#1061] Contributed by Moca
  r4108	Keep: x64コンパイル時のmigemo呼び出し規約判定省略 [patchunicode:#1075]
  r4107	Fix: マクロ関数InputBoxバッファオーバーラン [patchunicode:#1058]
 -r4106	Fix: 起動時のプロファイルマネージャで新規作成・名前変更で落ちる [patchunicode:#1059] Contributed by Moca
  r4105	Fix: CDlgInput1が言語切り替え未対応 [patchunicode:#1060]
  r4103	Fix: slnファイルのタイプをVC2005Expressにする [patchunicode:#1073] Contributed by Moca
--r4102	Imp:  カーソル左右リピート設定(iniのみ) [patchunicode:#926] Contributed by Moca
+ r4102	Imp:  カーソル左右リピート設定(iniのみ) [patchunicode:#926] Contributed by Moca
  r4101	Fix: 共通設定マクロ一覧の幅調整 [patchunicode:#974]
 -r4100	Fix: プロファイルマネージャが左上に表示される [patchunicode:#1025] Contributed by Moca
 -r4099	Fix: プロファイルマネージャのアイコンがおかしい [patchunicode:#1039] Contributed by Moca
@@ -65,7 +65,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
 -r4090	Fix: WCODE::IsCtrlCode()でNUL文字がfalseになるためコントロールコードとして描画されない [patchunicode:#1035] Contributed by Moca
  r4088	Keep: assertダイアログでファイル行番号を画面に表示 [patchunicode:#957] Contributed by Moca
  r4087	Fix: C++アウトライン解析で異常終了する [patchunicode:#1007]
--r4086	Fix: TSV,CSVモードコンボボックスの縦幅を広げる [patchunicode:#1033] Contributed by Moca
+ r4086	Fix: TSV,CSVモードコンボボックスの縦幅を広げる [patchunicode:#1033] Contributed by Moca
  r4085	Fix: ソートコマンドでメモリーリーク [patchunicode:#1027]
  r4084	Fix: CDCFontでフォント削除がおかしい [patchunicode:#1026]
  r4083	Fix: 単語種別のキリル文字の範囲修正 [patchunicode:#1022]
