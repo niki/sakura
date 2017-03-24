@@ -1,65 +1,67 @@
 #ifndef MY_CONFIG_H
 #define MY_CONFIG_H
 
+// clang-format off
+
 // 2016.7.28, 2.1.1.4(r3825)ベース
 // 2016.7.29, 2.2.0.1(r4011)ベース
 
 /* --------------------------------------------------------------------------
 ●やりたいこと.
 
-~~#1. 2015.6.1~~
+- [x] #1. 2015.6.1
  検索時、選択している文字列があった場合に正規表現にチェックが入っていたら
  正規表現で使用する記号を自動的にクォートする.
  PHPの preg_quote みたいなもの.
 
-#2. 2015.6.2
+- [ ] #2. 2015.6.2
  検索文字列がある行番号の色を変更したい.
 
-#3. 2015.6.5
+- [ ] #3. 2015.6.5
  bug?, 単語を削除する際、一瞬選択状態になる
 
-~~#4. 2015.6.5~~
+- [x] #4. 2015.6.5
  bug, カーソル移動したときに移動前の状態が一瞬残る
  \view\CEditView_Scroll.cpp:void CEditView::ScrollDraw() があやしい?
  ScrollWindowEx() で行われる更新をなんとかすればいい?
 
-~~#5. 2015.6.5~~
+- [x] #5. 2015.6.5
  Grep対象のフォルダの複数指定.
 
-#6. 2015.6.8
+- [ ] #6. 2015.6.8
  起動時、最近使ったファイルの整理. 存在しないファイルの項目を排除.
 
-~~#7. 2015.6.9~~ pending
+- [x] #7. 2015.6.9 *pending
  デフォルトの正規表現ライブラリを使用する.
  → re2 http://naoyat.hatenablog.jp/entry/2012/01/12/220812  
  → SRELL http://www.akenotsuki.com/misc/srell/  
 
-#8. 2015.6.9
+- [ ] #8. 2015.6.9
  ウィンドウ一覧, DELでウィンドウを閉じる.
  \window\CTabWnd.cpp : CTabWnd::TabListMenu : TrackPopupMenu()
  → すでにパッチあり [patchunicode:#1072] ウィンドウ一覧ダイアログ 
 
-~~#9. 2015.6.10~~
+- [x] #9. 2015.6.10
  ステータスバーにタイプ名を表示.
  \window\CMainStatusBar.cpp : CMainStatusBar::CreateStatusBar()
  \apiwrap\CommonControl.h : ApiWrap::StatusBar_SetParts
  \window\CEditWnd.cpp : CEditWnd::OnSize2 : nStArr カラムサイズ
 
-#10. 2015.6.11
- iniをレジストリにする.
+- [x] #10. 2015.6.11
+ iniをレジストリによる読み書きにする.
 
-#11. 2015.6.30
+- [ ] #11. 2015.6.30
  コメント内の検索文字列はコメント色の影響を受ける.
 
-#12. 2015.7.2
+- [ ] #12. 2015.7.2
  開いているタブのファイル名をコピー.
 
-#14. 2015.8.4
+- [ ] #14. 2015.8.4
  タスクバーアイコンのちらつき
  \window\CTabWnd.cpp:CTabWnd::ShowHideWindow()
  SendMessageTimeout() と TabWnd_ActivateFrameWindow() の関係
 
-#16. 2015.8.25
+- [ ] #16. 2015.8.25
  タブを切り替えた際、タブがクリックした位置とは別の位置にスクロール?するのを直したい
  LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
  void CTabWnd::ShowHideWindow( HWND hwnd, BOOL bDisp )
@@ -68,26 +70,26 @@
  2001年12月: TM SOFT(http://tm-soft.seesaa.net/archives/20011218-1.html)
  TabCtrl_GetItemRect()
 
-~~#17. 2015.11.23~~
+- [x] #17. 2015.11.23
  置換のとき、置換後ボックスに置換前のテキストを入れる  
 
-#18. 2016.12.13
+- [ ] #18. 2016.12.13
  各ダイアログボックスの位置をデスクトップの中央ではなく  
  呼び出し元ウィンドウの中央、または左上に配置する  
   →Grep検索中
   →外部コマンド実行ダイアログ
 
-#19. 2017.1.5
+- [ ] #19. 2017.1.5
  検索文字列の背景色が空白タブに反映されない
  REI_MOD_SP_COLOR の修正による影響  
 
-~~#20. 2017.1.10~~
+- [x] #20. 2017.1.10
  選択中のテキストの装飾は元のテキストを優先する
 
-#21. 2017.1.10
+- [ ] #21. 2017.1.10
  bug?, 画面上端下端でキャレットが消えたタイミングでスクロールさせるとキャレットが消えたままスクロールする
 
-#22. 2017.3.3
+- [ ] #22. 2017.3.3
  テキスト描画、右端が欠ける
  [patchunicode:#588]をあてて目立たなくはしている
  sakura_core\view\CEditView_Paint.cpp
@@ -209,6 +211,14 @@
 // 機能
 //-------------------------------------------------------------------------
 
+// プロファイルの読み書きにレジストリを使用する
+//  - レジストリキーがない場合はiniファイルから読み込む
+//  - バージョンアップ時のバックアップファイル作成は行わない
+// (REG/UseRegistryForReadProfiles:1)
+// (REG/UseRegistryForWriteProfiles:1)
+#define REI_USE_REGISTRY_FOR_PROFILES 1
+  #define REI_USE_REGISTRY_FOR_PROFILES_DEFAULT 0 
+
 // 開かれているファイルを自己管理する前提で多重オープンの許可 2013.6.19  
 //  - Shiftを押しながらファイルドロップで多重オープン  
 #define REI_MULTIPLE_OPEN_FILES 1
@@ -322,36 +332,45 @@
 //
 //#define USE_SSE2
 
+// clang-format on
 
 #include <windows.h>
+#include <memory>
+#include <string>
+//#include <locale>
+//#include <codecvt>
+//#include <vector>
 
 //------------------------------------------------------------------
 //! レジストリキーの読み取り(DWORD)
-//! @param[in] key_name
-//! @param[in] defValue
+//! @param key_name
+//! @param defValue
 //------------------------------------------------------------------
 inline DWORD RegGetDword(LPCTSTR key_name, DWORD defValue) {
   HKEY hKey;
-  DWORD dwType = REG_DWORD;  // REG_SZ;
+  DWORD dwType = REG_DWORD; // REG_SZ;
   DWORD dwByte = 4;
   DWORD dwValue;
   LONG rc;
 
-  rc = RegOpenKeyEx(HKEY_CURRENT_USER,        //親キー
-                    L"Software\\sakura_REI",  //サブキー
-                    0,                        //常にゼロ
-                    KEY_ALL_ACCESS,           //セキュリティマスク
-                    &hKey);                   //キーのハンドル
-  if (rc != ERROR_SUCCESS) {
+  rc = RegOpenKeyEx(HKEY_CURRENT_USER,       //親キー
+                    L"Software\\sakura_REI", //サブキー
+                    0,                       //常にゼロ
+                    KEY_ALL_ACCESS,          //セキュリティマスク
+                    &hKey);                  //キーのハンドル
+
+  if (rc != ERROR_SUCCESS)
     return defValue;
-  }
-  rc = RegQueryValueEx(hKey,              //キーのハンドル
-                       key_name,          //読み取るキーの名前
-                       NULL,              //常に NULL
-                       &dwType,           //データのタイプ
-                       (BYTE *)&dwValue,  //受け取る領域
-                       &dwByte);          //領域のバイト数(受け取ったバイト数)
+
+  rc = RegQueryValueEx(hKey,             //キーのハンドル
+                       key_name,         //読み取るキーの名前
+                       NULL,             //常に NULL
+                       &dwType,          //データのタイプ
+                       (BYTE *)&dwValue, //受け取る領域
+                       &dwByte);         //領域のバイト数(受け取ったバイト数)
+
   RegCloseKey(hKey);
+
   if (rc != ERROR_SUCCESS) {
     return defValue;
   } else {
@@ -361,8 +380,8 @@ inline DWORD RegGetDword(LPCTSTR key_name, DWORD defValue) {
 
 //------------------------------------------------------------------
 //! レジストリキーの読み取り(SZ)
-//! @param[in] key_name
-//! @param[in] defValue
+//! @param key_name
+//! @param out
 //------------------------------------------------------------------
 inline bool RegGetString(LPCTSTR key_name, char *out) {
   HKEY hKey;
@@ -370,27 +389,31 @@ inline bool RegGetString(LPCTSTR key_name, char *out) {
   DWORD dwByte;
   LONG rc;
 
-  rc = RegOpenKeyEx(HKEY_CURRENT_USER,        //親キー
-                    L"Software\\sakura_REI",  //サブキー
-                    0,                        //常にゼロ
-                    KEY_ALL_ACCESS,           //セキュリティマスク
-                    &hKey);                   //キーのハンドル
-  if (rc != ERROR_SUCCESS) {
+  rc = RegOpenKeyEx(HKEY_CURRENT_USER,       //親キー
+                    L"Software\\sakura_REI", //サブキー
+                    0,                       //常にゼロ
+                    KEY_ALL_ACCESS,          //セキュリティマスク
+                    &hKey);                  //キーのハンドル
+
+  if (rc != ERROR_SUCCESS)
     return false;
-  }
-  rc = RegQueryValueEx(hKey,                  //キーのハンドル
-                       key_name,              //読み取るキーの名前
-                       NULL,                  //常に NULL
-                       &dwType,               //データのタイプ
-                       NULL,                  //受け取る領域
-                       &dwByte);              //領域のバイト数(受け取ったバイト数)
-  rc = RegQueryValueEx(hKey,                  //キーのハンドル
-                       key_name,              //読み取るキーの名前
-                       NULL,                  //常に NULL
-                       &dwType,               //データのタイプ
-                       (LPBYTE)(LPCTSTR)out,  //受け取る領域
-                       &dwByte);              //領域のバイト数(受け取ったバイト数)
+
+  rc = RegQueryValueEx(hKey,     //キーのハンドル
+                       key_name, //読み取るキーの名前
+                       NULL,     //常に NULL
+                       &dwType,  //データのタイプ
+                       NULL,     //受け取る領域
+                       &dwByte); //領域のバイト数(受け取ったバイト数)
+
+  rc = RegQueryValueEx(hKey,                 //キーのハンドル
+                       key_name,             //読み取るキーの名前
+                       NULL,                 //常に NULL
+                       &dwType,              //データのタイプ
+                       (LPBYTE)(LPCTSTR)out, //受け取る領域
+                       &dwByte); //領域のバイト数(受け取ったバイト数)
+
   RegCloseKey(hKey);
+
   if (rc != ERROR_SUCCESS) {
     return false;
   } else {
@@ -398,4 +421,132 @@ inline bool RegGetString(LPCTSTR key_name, char *out) {
   }
 }
 
-#endif  /* MY_CONFIG_H */
+//------------------------------------------------------------------
+//! レジストリキーの確認
+//! @param section_name
+//! @param key_name
+//! @param data
+//------------------------------------------------------------------
+inline bool IsExistProfileReg() {
+  HKEY hKey;
+  LONG rc;
+  
+  std::wstring subkey = L"Software\\sakura";
+  
+  rc = RegOpenKeyEx(HKEY_CURRENT_USER, //親キー
+                    subkey.c_str(),    //サブキー
+                    0,                 //常にゼロ
+                    KEY_ALL_ACCESS,    //セキュリティマスク
+                    &hKey);            //キーのハンドル
+  
+  if (rc != ERROR_SUCCESS)
+    return false;
+  
+  RegCloseKey(hKey);
+
+  return true;
+}
+
+//------------------------------------------------------------------
+//! レジストリキーの読み取り(SZ)
+//! @param section_name
+//! @param key_name
+//! @param data
+//------------------------------------------------------------------
+inline bool GetProfileDataReg(const std::wstring &section_name,
+                              const std::wstring &key_name,
+                              std::wstring &data) {
+  HKEY hKey;
+  DWORD dwType = REG_SZ;
+  DWORD dwByte = 1024;
+  LONG rc;
+  wchar_t *buffer = new wchar_t[dwByte];
+  // std::shared_ptr<wchar_t> buffer(new wchar_t[dwByte],
+  //                             std::default_delete<wchar_t[]>());
+
+  std::wstring subkey = L"Software\\sakura\\" + section_name;
+
+  data = L"";
+
+  rc = RegOpenKeyEx(HKEY_CURRENT_USER, //親キー
+                    subkey.c_str(),    //サブキー
+                    0,                 //常にゼロ
+                    KEY_ALL_ACCESS,    //セキュリティマスク
+                    &hKey);            //キーのハンドル
+
+  if (rc != ERROR_SUCCESS) {
+    delete[] buffer;
+    return false;
+  }
+
+  rc = RegQueryValueExW(hKey,             //キーのハンドル
+                        key_name.c_str(), //読み取るキーの名前
+                        NULL,             //常に NULL
+                        &dwType,          //データのタイプ
+                        (LPBYTE)buffer,   //受け取る領域
+                        &dwByte);         //領域のバイト数(受け取ったバイト数)
+
+  RegCloseKey(hKey);
+
+  if (rc != ERROR_SUCCESS) {
+    delete[] buffer;
+    return false;
+  } else {
+    if (dwByte == 0) {
+      data.assign(L"");
+    } else {
+      data.assign(buffer);
+    }
+    delete[] buffer;
+    // std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
+    // data = cv.from_bytes(buffer);  //string→wstring
+    return true;
+  }
+}
+
+//------------------------------------------------------------------
+//! レジストリキーの書き込み(SZ)
+//! @param section_name
+//! @param key_name
+//! @param data
+//------------------------------------------------------------------
+inline bool SetProfileDataReg(const std::wstring &section_name,
+                              const std::wstring &key_name,
+                              const std::wstring &data) {
+  HKEY hKey;
+  DWORD dwDisposition; //新規作成:REG_CREATED_NEW_KEY
+                       //既存:REG_OPENED_EXISTING_KEY
+  LONG rc;
+
+  std::wstring subkey = L"Software\\sakura\\" + section_name;
+
+  rc = RegCreateKeyEx(HKEY_CURRENT_USER,       //親キー
+                      subkey.c_str(),          //サブキー
+                      0,                       //常にゼロ
+                      NULL,                    //
+                      REG_OPTION_NON_VOLATILE, //再起動しても消えない設定
+                      KEY_ALL_ACCESS,          //セキュリティマスク
+                      NULL,                    //
+                      &hKey,                   //
+                      &dwDisposition);
+
+  if (rc != ERROR_SUCCESS)
+    return false;
+
+  rc = RegSetValueEx(hKey,                                //キーのハンドル
+                     key_name.c_str(),                    //読み取るキーの名前
+                     NULL,                                //常に NULL
+                     REG_SZ,                              //データのタイプ
+                     (CONST BYTE *)(LPCTSTR)data.c_str(), //書き込む領域
+                     (int)data.length() * 2); // dataのサイズを指定する
+
+  RegCloseKey(hKey);
+
+  if (rc != ERROR_SUCCESS) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+#endif /* MY_CONFIG_H */

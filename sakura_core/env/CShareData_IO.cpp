@@ -100,6 +100,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			return false;
 		}
 
+#if REI_USE_REGISTRY_FOR_PROFILES == 0
 		// バージョンアップ時はバックアップファイルを作成する	// 2011.01.28 ryoji
 		TCHAR iniVer[256];
 		DWORD mH, mL, lH, lL;
@@ -117,6 +118,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			::lstrcat(szBkFileName, _T(".bak"));
 			::CopyFile(szIniFileName, szBkFileName, FALSE);
 		}
+#endif  // rei_
 	}
 //	MYTRACE( _T("Iniファイル処理 0 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 

@@ -122,6 +122,13 @@ void CProfile::ReadOneline(
 */
 bool CProfile::ReadProfile( const TCHAR* pszProfileName )
 {
+#if REI_USE_REGISTRY_FOR_PROFILES
+	if (!!RegGetDword(L"UseRegistryForReadProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT) &&
+			IsExistProfileReg()) {
+		return true;
+	}
+#endif  // rei_
+
 	m_strProfileName = pszProfileName;
 
 	CTextInputStream in(m_strProfileName.c_str());
@@ -232,6 +239,12 @@ bool CProfile::WriteProfile(
 	const WCHAR* pszComment
 )
 {
+#if REI_USE_REGISTRY_FOR_PROFILES
+	if (!!RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
+		return true;
+	}
+#endif  // rei_
+
 	if( pszProfileName!=NULL ) {
 		m_strProfileName = pszProfileName;
 	}
@@ -345,6 +358,13 @@ bool CProfile::GetProfileDataImp(
 	wstring&		strEntryValue	//!< [out] エントリ値
 )
 {
+#if REI_USE_REGISTRY_FOR_PROFILES
+	if (!!RegGetDword(L"UseRegistryForReadProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT) &&
+			IsExistProfileReg()) {
+		return GetProfileDataReg(strSectionName, strEntryKey, strEntryValue);
+	}
+#endif  // rei_
+
 	std::vector< Section >::iterator iter;
 	std::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	MAP_STR_STR::iterator mapiter;
@@ -373,6 +393,12 @@ bool CProfile::SetProfileDataImp(
 	const wstring&	strEntryValue	//!< [in] エントリ値
 )
 {
+#if REI_USE_REGISTRY_FOR_PROFILES
+	if (!!RegGetDword(L"UseRegistryForWriteProfiles", REI_USE_REGISTRY_FOR_PROFILES_DEFAULT)) {
+		return SetProfileDataReg(strSectionName, strEntryKey, strEntryValue);
+	}
+#endif  // rei_
+
 	std::vector< Section >::iterator iter;
 	std::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	MAP_STR_STR::iterator mapiter;
