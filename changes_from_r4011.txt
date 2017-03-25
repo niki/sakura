@@ -7,8 +7,8 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からのマージ分
       	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
--r4176	New: ウィンドウ一覧ダイアログ [patchunicode:#1072] Contributed by Moca
--r4175	Imp: キーワードヘルプメニューのオプション [patchunicode:#1066] Contributed by Moca
+ r4176	New: ウィンドウ一覧ダイアログ [patchunicode:#1072] Contributed by Moca
+ r4175	Imp: キーワードヘルプメニューのオプション [patchunicode:#1066] Contributed by Moca
  r4173	Chg: マクロ保存でS_を追加しない  [patchunicode:#943]
  r4169	Fix: ミニマップにドロップすると落ちる [patchunicode:#1094] Contributed by Moca
  r4168	Keep: static変数削除 [patchunicode:#1096]
