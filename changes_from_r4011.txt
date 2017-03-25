@@ -14,12 +14,12 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4168	Keep: static変数削除 [patchunicode:#1096]
  r4166	Fix: 正規表現キーワードで落ちることがある [patchunicode:#1095] Contributed by Moca
  r4165	Fix: DragFinishがたりない [patchunicode:#1042] Contributed by Moca
--r4164	Fix: タイプ別から共通設定キーワードを表示すると内容が一致しない [patchunicode:#1083] Contributed by Moca
+ r4164	Fix: タイプ別から共通設定キーワードを表示すると内容が一致しない [patchunicode:#1083] Contributed by Moca
  r4163	Fix: UTF-7自動認識を厳しくする  [patchunicode:#988]
 -r4162	Fix: タブ幅がフォントサイズが大きいと4固定になる [patchunicode:#1078] Contributed by Moca
 -r4161	Imp: Grepファイル・フォルダ長を512に拡張 [patchunicode:#1076] Contributed by Moca
--r4160	Fix: 設定画面のファイル選択ダイアログで相対パスにできるときはする [patchunicode:#985] Contributed by Moca
--r4159	Imp: アウトラインメニューにすべて展開・縮小・ブックマーク削除・全削除を追加 [patchunicode:#1049] Contributed by Moca
+ r4160	Fix: 設定画面のファイル選択ダイアログで相対パスにできるときはする [patchunicode:#985] Contributed by Moca
+ r4159	Imp: アウトラインメニューにすべて展開・縮小・ブックマーク削除・全削除を追加 [patchunicode:#1049] Contributed by Moca
  r4158	Fix:  CUxThemeの保守修正パッチ [patchunicode:#1091] Contributed by berryzplus
  r4156	Imp: アウトライン解析ツリー表示の高速化  [patchunicode:#1056]
  r4154	Fix: Win10で無題のタブアイコンがGrepになる [patchunicode:#1080] Contributed by LR4, Moca
@@ -31,7 +31,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4143	Keep: typo修正(Doxygenコメント)
  r4142	Fix: IO_ProfileのコマンドIDプラグイン名処理をまとめる [patchunicode:#1064] Contributed by Moca
  r4139	Fix: キーボードでCPをチェックするとキーボードで操作できなくなる [patchunicode:#1084] Contributed by Moca
--r4138	Imp: アウトラインのツリーの逆順ソート追加 [patchunicode:#1038] Contributed by Moca
+ r4138	Imp: アウトラインのツリーの逆順ソート追加 [patchunicode:#1038] Contributed by Moca
  r4137	Fix: Grepダイアログが言語切替でウィンドウサイズが変わらない [patchunicode:#1071] Contributed by Moca
  r4133	Fix: アウトライン解析C++/Javaのソート順がおかしいバグの修正  [patchunicode:#1031]
  r4131	Keep: typo修正(Doxygenコメント)
@@ -46,18 +46,18 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4115	Fix: 1行目で前の段落へ移動を実行すると落ちる [patchunicode:#1023] Contributed by Moca
  r4114	Fix: プラグインオプションのコンボボックスの高さが不正 [patchunicode:#1054] Contributed by Moca
  r4113	Fix: EOF直前の改行を改行なしに置換するとEOFの再描画が不足する [patchunicode:#1008]
--r4112	Fix: ユーザ別設定のときのマルチプロファイルの場所がおかしい [patchunicode:#1024] Contributed by Moca
+ r4112	Fix: ユーザ別設定のときのマルチプロファイルの場所がおかしい [patchunicode:#1024] Contributed by Moca
  r4111	Imp: タイプ一覧の基本も初期化できるように [patchunicode:#1037] Contributed by Moca
--r4109	Fix: プロファイルマネージャで表示直後(default)が削除・名前変更できるバグ [patchunicode:#1061] Contributed by Moca
+ r4109	Fix: プロファイルマネージャで表示直後(default)が削除・名前変更できるバグ [patchunicode:#1061] Contributed by Moca
  r4108	Keep: x64コンパイル時のmigemo呼び出し規約判定省略 [patchunicode:#1075]
  r4107	Fix: マクロ関数InputBoxバッファオーバーラン [patchunicode:#1058]
--r4106	Fix: 起動時のプロファイルマネージャで新規作成・名前変更で落ちる [patchunicode:#1059] Contributed by Moca
+ r4106	Fix: 起動時のプロファイルマネージャで新規作成・名前変更で落ちる [patchunicode:#1059] Contributed by Moca
  r4105	Fix: CDlgInput1が言語切り替え未対応 [patchunicode:#1060]
  r4103	Fix: slnファイルのタイプをVC2005Expressにする [patchunicode:#1073] Contributed by Moca
  r4102	Imp:  カーソル左右リピート設定(iniのみ) [patchunicode:#926] Contributed by Moca
  r4101	Fix: 共通設定マクロ一覧の幅調整 [patchunicode:#974]
--r4100	Fix: プロファイルマネージャが左上に表示される [patchunicode:#1025] Contributed by Moca
--r4099	Fix: プロファイルマネージャのアイコンがおかしい [patchunicode:#1039] Contributed by Moca
+ r4100	Fix: プロファイルマネージャが左上に表示される [patchunicode:#1025] Contributed by Moca
+ r4099	Fix: プロファイルマネージャのアイコンがおかしい [patchunicode:#1039] Contributed by Moca
  r4097	Fix: テキスト・ルールファイル解析での範囲外アクセスの修正 [patchunicode:#1010]
  r4096	Fix: ミニマップのDIFFマークを非表示に修正 [patchunicode:#1029]
  r4093	Fix: アウトラインのメニュー表示でリソースリーク [patchunicode:#1048]
@@ -72,7 +72,7 @@ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からの
  r4082	Fix: C++インデントでコメント行を改行するとRuntime Error [patchunicode:#1021]
  r4081	Fix: フォント拡大縮小がOpenTypeのPostScriptだと動作しない [patchunicode:#1020]
  r4080	Fix: コードページ対応 [patchunicode:#311] 
--r4077	Keep: インクリメントサーチ定義 [patchunicode:#1018]
+ r4077	Keep: インクリメントサーチ定義 [patchunicode:#1018]
  r4075	Fix: migemo_close()呼び出し [patchunicode:#1017] 
  r4074	Fix: アウトラインを上下にドッキングした場合の初期表示の高さが不正 [patchunicode:#1016] 
  r4073	Keep: typo修正(コメント)
