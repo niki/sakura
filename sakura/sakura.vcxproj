@@ -549,6 +549,7 @@
     <ClInclude Include="..\sakura_core\dlg\CDlgSetCharSet.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgTagJumpList.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgTagsMake.h" />
+    <ClInclude Include="..\sakura_core\dlg\CDlgWindowList.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgWinSize.h" />
     <ClInclude Include="..\sakura_core\docplus\CBookmarkManager.h" />
     <ClInclude Include="..\sakura_core\docplus\CDiffManager.h" />
@@ -903,6 +904,7 @@
     <ClCompile Include="..\sakura_core\dlg\CDlgSetCharSet.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgTagJumpList.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgTagsMake.cpp" />
+    <ClCompile Include="..\sakura_core\dlg\CDlgWindowList.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgWinSize.cpp" />
     <ClCompile Include="..\sakura_core\docplus\CBookmarkManager.cpp" />
     <ClCompile Include="..\sakura_core\docplus\CDiffManager.cpp" />

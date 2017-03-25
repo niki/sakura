@@ -36,6 +36,7 @@
 #define IDD_MACRORUNNING                138
 #define IDD_SETCHARSET                  139
 #define IDD_GREP_REPLACE                140
+#define IDD_WINLIST                     141
 #define IDB_MYTOOL                      200
 #define IDB_SCROLL_CENTER               201
 #define IDB_SCROLL_VERTICAL             202
@@ -789,6 +790,9 @@
 #define IDC_CHECK_INDENTCPPCMT          1720
 #define IDC_CHECK_INDENTCPPUNDO         1721
 #define IDC_STATIC_MENU                 1723
+#define IDC_LIST_WINDOW                 1724
+#define IDC_BUTTON_SAVE                 1725
+#define IDC_BUTTON_CLOSE                1726
 #define IDS_AUTHOR_PAGE                 4054
 #define IDS_ABOUT_DESCRIPTION           4056
 #define IDD_TYPELIST                    5000
@@ -844,7 +848,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        230
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1724
+#define _APS_NEXT_CONTROL_VALUE         1727
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif
