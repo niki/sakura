@@ -935,7 +935,11 @@ void CCaret::ShowCaretPosInfo()
 				}
 			}
 			else{
+#if REI_MOD_STATUSBAR
+				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName2());
+#else
 				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName());
+#endif
 			}
 		}
 	}

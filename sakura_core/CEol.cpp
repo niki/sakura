@@ -58,14 +58,31 @@ struct SEolDefinition{
 };
 static const SEolDefinition g_aEolTable[] = {
 	{ _T("改行無"),	L"",			"",			0 },
+#if REI_MOD_STATUSBAR
+	{ _T("CRLF(Win)"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
+	{ _T("LF(Unix)"),		L"\x0a",		"\x0a",		1 },
+	{ _T("CR(Mac)"),		L"\x0d",		"\x0d",		1 },
+#else
 	{ _T("CRLF"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
 	{ _T("LF"),		L"\x0a",		"\x0a",		1 },
 	{ _T("CR"),		L"\x0d",		"\x0d",		1 },
+#endif  // rei_
 	{ _T("NEL"),	L"\x85",		"",			1 },
 	{ _T("LS"),		L"\u2028",		"",			1 },
 	{ _T("PS"),		L"\u2029",		"",			1 },
 };
 
+#if REI_MOD_STATUSBAR
+static const SEolDefinition g_aEolTable2[] = {
+	{ _T("改行無"),	L"",			"",			0 },
+	{ _T("CRLF(0D0A)"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
+	{ _T("LF(0A)"),		L"\x0a",		"\x0a",		1 },
+	{ _T("CR(0D)"),		L"\x0d",		"\x0d",		1 },
+	{ _T("NEL(85)"),	L"\x85",		"",			1 },
+	{ _T("LS"),		L"\u2028",		"",			1 },
+	{ _T("PS"),		L"\u2029",		"",			1 },
+};
+#endif  // rei_
 
 
 struct SEolDefinitionForUniFile{
@@ -149,6 +166,12 @@ const TCHAR* CEol::GetName() const
 {
 	return g_aEolTable[ m_eEolType ].m_szName;
 }
+#if REI_MOD_STATUSBAR
+const TCHAR* CEol::GetName2() const
+{
+	return g_aEolTable2[ m_eEolType ].m_szName;
+}
+#endif  // rei_
 
 //!< 現在のEOL文字列先頭へのポインタを取得
 const wchar_t* CEol::GetValue2() const
