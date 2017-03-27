@@ -2,6 +2,7 @@
 //
 #define SAKURA_LANG_RESOURCE
 
+#include "my_config.h" // rei_
 #ifndef SAKURA_LANG_RESOURCE
 	#include "sakura_rc.h"
 	#include "Funccode_define.h"
@@ -195,7 +196,11 @@ BEGIN
                     CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
+#if REI_MOD_GREP
+IDD_GREP DIALOGEX 0, 0, 308, 216
+#else
 IDD_GREP DIALOGEX 0, 0, 308, 171
+#endif // rei_
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTEXTHELP
 CAPTION "Grep Term Input"
@@ -331,7 +336,11 @@ BEGIN
 END
 
 IDD_GREPRUNNING DIALOGEX 0, 0, 293, 79
+#if REI_MOD_GREP
+STYLE DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | WS_SYSMENU
+#else
 STYLE DS_SETFOREGROUND | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+#endif  // rei_
 CAPTION "Grep Running..."
 FONT 9, "Tahoma"
 BEGIN
@@ -604,9 +613,15 @@ BEGIN
                     IDC_STATIC,30,10,137,8
 END
 
+#if REI_MOD_EXECDLG
+IDD_EXEC DIALOGEX 0, 0, 292, 137
+STYLE DS_MODALFRAME | DS_3DLOOK | 
+    DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+#else
 IDD_EXEC DIALOGEX 30, 0, 292, 137
 STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | DS_CENTERMOUSE | 
     DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+#endif  // rei_
 EXSTYLE WS_EX_CONTEXTHELP
 CAPTION "Execute an external command"
 FONT 9, "Tahoma"
@@ -776,8 +791,13 @@ BEGIN
 END
 
 IDD_TAGJUMPLIST DIALOGEX 0, 0, 410, 189
+#if REI_MOD_DIRECTTAGJUMP
+STYLE DS_CENTER | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_THICKFRAME | WS_CAPTION | 
+WS_SYSMENU | WS_CLIPCHILDREN
+#else
 STYLE DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_THICKFRAME | WS_CAPTION | 
 WS_SYSMENU | WS_CLIPCHILDREN
+#endif  // rei_
 EXSTYLE WS_EX_CONTEXTHELP
 CAPTION "Direct Tag Jump List"
 FONT 9, "Tahoma"
@@ -1252,10 +1272,6 @@ BEGIN
     CONTROL         "Search within selection(&P)",IDC_CHECK_KEYHELP_PREFIX,
                     "Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,7,224,
                     108,10
-    LTEXT           "&Right Click Menu",IDC_STATIC_MENU,120,225,70,8,NOT 
-                    WS_GROUP
-    COMBOBOX        IDC_COMBO_MENU,192,223,60,180,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PROP_WINDOW DIALOGEX 0, 0, 302, 244
@@ -3912,7 +3928,11 @@ BEGIN
 	STR_ERR_DLGEDITVW6			"Å°"
 	STR_MENU_KEYWORDINFO		"Copy Keyword description to clipboard"				// Right click menu
 	STR_MENU_OPENKEYWORDDIC		"Open keyword dictionary"							// Right click menu
+#if REI_MOD_STATUSBAR
+	STR_STATUS_ROW_COL			"(%d, %d)"
+#else
 	STR_STATUS_ROW_COL			"%5d Ln %4d Col"
+#endif  // rei_
 	STR_INS_MODE_INS			"INS"													// Insert mode
 	STR_INS_MODE_OVR			"OVR"													// Overwrite mode
 	STR_GREP_SEARCH_CONDITION	"\r\nÅ† Search Conditions  "							// Output from GREP resuilts
@@ -4414,7 +4434,11 @@ BEGIN
 	STR_OUTLINE_TEXT			"Text"			// <-- FIXME CHECK was Nashi
 	STR_TAB_SYMBOL_CHARA		"Character"
 	STR_TAB_SYMBOL_SHORT_ARROW	"Short Arrow"
+#if REI_MOD_TAB
+	STR_TAB_SYMBOL_LONG_ARROW	"Line"
+#else
 	STR_TAB_SYMBOL_LONG_ARROW	"Long Arrow"
+#endif  // rei_
 	STR_SMART_INDENT_NONE		"None"				// smart indent
 	STR_SMART_INDENT_C_CPP		"C/C++"
 	STR_WRAP_INDENT_NONE		"None"				// ident
