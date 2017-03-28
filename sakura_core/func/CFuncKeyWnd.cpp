@@ -88,7 +88,11 @@ CFuncKeyWnd::CFuncKeyWnd()
 	lf.lfClipPrecision	= 0x2;
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
+#if REI_MOD_UI_FONT
+	_tcscpy( lf.lfFaceName, _T("MS Shell Dlg") );
+#else
 	_tcscpy( lf.lfFaceName, _T("‚l‚r ‚oƒSƒVƒbƒN") );
+#endif  // rei_
 	m_hFont = ::CreateFontIndirect( &lf );
 
 	m_bSizeBox = false;

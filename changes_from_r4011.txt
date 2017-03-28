@@ -1,6 +1,7 @@
 先頭に - がついているリビジョンは未適用.
 ---------------------------------------------------------------------------
 http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2からのマージ分
+      	Imp: UnicodeをUTF-16表記に変更  [patchunicode:#1102]
       	Imp: カラーの文字列にC++11を追加,C/C++はC/C++03に変更しRawを処理しない  [patchunicode:#956]
       	Imp: マクロの文字列コピーを減らす  [patchunicode:#830]
       	Imp: タイプ別設定の追加と強調キーワードの外部化  [patchunicode:#720]

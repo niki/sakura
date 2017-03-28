@@ -86,6 +86,8 @@
 
 #### ・UI系
 
++ リソース(ダイアログ)のフォントを `9, "ＭＳ Ｐゴシック"` から `9, "MS Shell Dlg"` へ変更<br>
+
 + 変更したウィンドウのタブ名カラーを変更 `TabCaptionColorModified=dword:00d70000`<br>
 
 + キーマクロ記録中のウィンドウのタブ名カラーを変更 `TabCaptionColorRecMacro=dword:000000d8`<br>

@@ -580,7 +580,11 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 
 			memset(&hp, 0, sizeof(hp));	// ç\ë¢ëÃÇÉ[ÉçÉNÉäÉA
 			hp.cbStruct = sizeof(hp);
+#if REI_MOD_UI_FONT
+			hp.pszFont = _T("MS Shell Dlg, 9");
+#else
 			hp.pszFont = _T("ÇlÇr ÇoÉSÉVÉbÉN, 9");
+#endif  // rei_
 			hp.clrForeground = hp.clrBackground = -1;
 			hp.rcMargins.left = hp.rcMargins.top = hp.rcMargins.right = hp.rcMargins.bottom = -1;
 			if( uCommandOrg == HELP_CONTEXTMENU ){
