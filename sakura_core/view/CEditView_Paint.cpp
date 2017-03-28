@@ -1155,34 +1155,44 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				SetCurrentColor(pInfo->m_gr, cColor.eColorIndex, cColor.eColorIndex2, cColor.eColorIndexBg);
 				
 #if REI_MOD_COMMENT
-        if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_COMMENT) {
-          comment_mode = 1;
-        } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK1) {
-          comment_mode = 2;
-        } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK2) {
-          comment_mode = 2;
-        } else {
-          if (comment_mode != 1) {
-            comment_mode = 0;
-          }
-        }
+				if (pInfo->m_pStrategyFound) {
+					comment_mode = 0;
+				} else if (pInfo->m_pStrategy) {
+					switch (pInfo->m_pStrategy->GetStrategyColor()) {
+					case COLORIDX_COMMENT: comment_mode = 1; break;
+					case COLORIDX_BLOCK1:  comment_mode = 2; break;
+					case COLORIDX_BLOCK2:  comment_mode = 0; break;
+					default:
+						if (comment_mode != 1) comment_mode = 0;
+						break;
+					}
+				} else {
+					if (comment_mode != 1) comment_mode = 0;
+				}
 #endif  // rei_
 			}
 
 #if REI_MOD_COMMENT
-      if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_COMMENT) {
-        comment_mode = 1;
-      } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK1) {
-        comment_mode = 2;
-      } else if (pInfo->m_pStrategy && pInfo->m_pStrategy->GetStrategyColor() == COLORIDX_BLOCK2) {
-        comment_mode = 2;
-      }
+			if (pInfo->m_pStrategyFound) {
+				comment_mode = 0;
+			} else if (pInfo->m_pStrategy) {
+				switch (pInfo->m_pStrategy->GetStrategyColor()) {
+				case COLORIDX_COMMENT: comment_mode = 1; break;
+				case COLORIDX_BLOCK1:  comment_mode = 2; break;
+				case COLORIDX_BLOCK2:  comment_mode = 0; break;
+				default:
+					if (comment_mode != 1) comment_mode = 0;
+					break;
+				}
+			} else {
+				if (comment_mode != 1) comment_mode = 0;
+			}
 
-      if (comment_mode) {
-        if (pInfo->m_cIndex.eColorIndex != COLORIDX_SELECT) {
-          pInfo->m_cIndex.eColorIndex = COLORIDX_COMMENT;
-        }
-      }
+			if (comment_mode) {
+				if (pInfo->m_cIndex.eColorIndex != COLORIDX_SELECT) {
+					pInfo->m_cIndex.eColorIndex = COLORIDX_COMMENT;
+				}
+			}
 #endif  // rei_
 
 			//1•¶Žš•`‰æ
