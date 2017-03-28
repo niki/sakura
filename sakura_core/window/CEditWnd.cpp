@@ -4153,6 +4153,11 @@ void CEditWnd::ChangeFileNameNotify( const TCHAR* pszTabCaption, const TCHAR* _p
 #if REI_MOD_MODIFIED_TAB_CAPTION_COLOR
 			p->m_bIsModified = GetDocument()->m_cDocEditor.IsModified();
 #endif  // rei_
+#if REI_MOD_RECMACRO_TAB_CAPTION_COLOR
+			p->m_bIsRecMacro =
+			    (GetDllShareData().m_sFlags.m_bRecordingKeyMacro &&
+			     GetDllShareData().m_sFlags.m_hwndRecordingKeyMacro == CEditWnd::getInstance()->GetHwnd());
+#endif  // rei_
 		}
 	}
 	cRecentEditNode.Terminate();

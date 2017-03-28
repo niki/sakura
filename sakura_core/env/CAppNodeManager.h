@@ -41,6 +41,9 @@ struct EditNode {
 #if REI_MOD_MODIFIED_TAB_CAPTION_COLOR
 	bool m_bIsModified;  // 変更したか
 #endif  // rei_
+#if REI_MOD_RECMACRO_TAB_CAPTION_COLOR
+	bool m_bIsRecMacro;  // キーマクロ記録中か
+#endif  // rei_
 	UINT			m_showCmdRestore;			//!< 元のサイズに戻すときのサイズ種別		//@@@ 2007.06.20 ryoji
 	BOOL			m_bClosing;					//!< 終了中か（「最後のファイルを閉じても(無題)を残す」用）	//@@@ 2007.06.20 ryoji
 
