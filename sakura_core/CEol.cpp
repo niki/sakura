@@ -74,13 +74,13 @@ static const SEolDefinition g_aEolTable[] = {
 
 #if REI_MOD_STATUSBAR
 static const SEolDefinition g_aEolTable2[] = {
-	{ _T("â¸çsñ≥"),	L"",			"",			0 },
-	{ _T("CRLF(0D0A)"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
-	{ _T("LF(0A)"),		L"\x0a",		"\x0a",		1 },
-	{ _T("CR(0D)"),		L"\x0d",		"\x0d",		1 },
-	{ _T("NEL(85)"),	L"\x85",		"",			1 },
-	{ _T("LS"),		L"\u2028",		"",			1 },
-	{ _T("PS"),		L"\u2029",		"",			1 },
+	{ _T("â¸çsñ≥"),				L"",					"",			0 },
+	{ _T("0D0A(CRLF)"),		L"\x0d\x0a",	"\x0d\x0a",	2 },
+	{ _T("0A(LF)"),				L"\x0a",			"\x0a",		1 },
+	{ _T("0D(CR)"),				L"\x0d",			"\x0d",		1 },
+	{ _T("85(NEL)"),			L"\x85",			"",			1 },
+	{ _T("u2028(LS)"),		L"\u2028",		"",			1 },
+	{ _T("u2029(PS)"),		L"\u2029",		"",			1 },
 };
 #endif  // rei_
 
