@@ -51,9 +51,6 @@ void CProfile::Init( void )
 	m_strProfileName = _T("");
 	m_ProfileData.clear();
 	m_bRead = true;
-#if REI_USE_REGISTRY_FOR_PROFILES
-	m_bReg = false;
-#endif  // rei_
 	return;
 }
 

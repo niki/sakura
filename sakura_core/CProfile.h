@@ -60,7 +60,11 @@ class CProfile
 	};
 
 public:
+#if REI_USE_REGISTRY_FOR_PROFILES
+	CProfile() : m_bReg(false) {}
+#else
 	CProfile() {}
+#endif  // rei_
 	~CProfile() {}
 	void Init( void );
 	bool IsReadingMode( void ) { return m_bRead; }
