@@ -187,9 +187,6 @@ CLayoutInt CCaret::MoveCursor(
 		if( 1 > nCaretMarginY ){
 			nCaretMarginY = 1;
 		}
-#if REI_MOD_VERTICAL_SCR
-		nCaretMarginY = 0;
-#endif  // rei_
 	}
 	// 2004.04.02 Moca 行だけ有効な座標に修正するのを厳密に処理する
 	GetAdjustCursorPos( &ptWk_CaretPos );
@@ -323,23 +320,14 @@ CLayoutInt CCaret::MoveCursor(
 		}
 	}
 	// 移動先は、画面の最大行数－２より下か？（down キー）
-#if REI_MOD_VERTICAL_SCR
-	else if( ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine() >= m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY ){
-#else
 	else if( ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine() >= m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY - 2 ){
-#endif  // rei_
 		CLayoutInt ii = m_pEditDoc->m_cLayoutMgr.GetLineCount();
 		if( ii - ptWk_CaretPos.y < nCaretMarginY + 1 &&
 			ii - m_pEditView->GetTextArea().GetViewTopLine() < m_pEditView->GetTextArea().m_nViewRowNum ) {
 		}
 		else{
-#if REI_MOD_VERTICAL_SCR
-			nScrollRowNum =
-				-(ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine()) + (m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY);
-#else
 			nScrollRowNum =
 				-(ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine()) + (m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY - 2);
-#endif  // rei_
 		}
 	}
 #if REI_FIX_CURSOR_MOVE_FLICKER

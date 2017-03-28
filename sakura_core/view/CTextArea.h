@@ -105,14 +105,10 @@ public:
 		return m_nViewCy;
 	}
 
-#if REI_FIX_RULER_HIDE_IGNORE_BOTTOM_SPACE
-	int GetTopYohaku() const;
-#else
 	int GetTopYohaku() const
 	{
 		return m_nTopYohaku;
 	}
-#endif  // rei_
 	void SetTopYohaku(int nPixel)
 	{
 		m_nTopYohaku=nPixel;

@@ -593,11 +593,7 @@ void CTextDrawer::DispLineNumber(
 			rc.top = y;
 			rc.right = nLineNumAreaWidth - 1;
 			rc.bottom = y + nLineHeight;
-#if REI_FIX_LINE_TERM_TYPE
-			gr.FillSolidMyRect(rc, cGyouType.GetTextColor());
-#else
 			gr.FillSolidMyRect(rc, fgcolor);
-#endif
 		}
 
 		gr.PopTextForeColor();
@@ -617,14 +613,7 @@ void CTextDrawer::DispLineNumber(
 	{
 		// 2001.12.03 hor
 		/* とりあえずブックマークに縦線 */
-#if REI_FIX_DRAW_BOOKMARK_LINE_NOGYOU
-    bool bookmark_line = false;
-    bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp();
-    bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !CTypeSupport(pView,COLORIDX_GYOU).IsDisp();
-    if (bookmark_line)
-#else
 		if(CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp() )
-#endif
 		{
 			gr.PushPen(cColorType.GetTextColor(),2);
 			::MoveToEx( gr, 1, y, NULL );
