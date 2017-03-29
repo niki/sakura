@@ -6,10 +6,12 @@
 * よさげなパッチをマージ
 * プロポーショナルフォント関連はスルー
 
-ベースリビジョンからのマージ情報は[こちら](https://github.com/rabbiteariris/sakura2/blob/master/changes_from_r4011.txt)
+ベースリビジョンからのマージ情報は[こちら](https://github.com/rabbiteariris/sakura2201R/blob/master/changes_from_r4011.txt)
 
-<img src="https://raw.github.com/wiki/rabbiteariris/sakura2/images/sakura0.png" width="50%">
-<img src="https://raw.github.com/wiki/rabbiteariris/sakura2/images/sakura1.png" width="50%">
+Latest version: [sakura-2.2.0.1R-x86-20170329.zip](https://raw.github.com/wiki/rabbiteariris/sakura2201R/bin/sakura-2.2.0.1R-x86-20170329.zip)
+
+<img src="https://raw.github.com/wiki/rabbiteariris/sakura2201R/images/sakura0.png" width="50%">
+<img src="https://raw.github.com/wiki/rabbiteariris/sakura2201R/images/sakura1.png" width="50%">
 
 <br>
 
