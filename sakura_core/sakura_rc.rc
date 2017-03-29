@@ -3636,7 +3636,13 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_AUTHOR_PAGE         "http://sakura-editor.sourceforge.net/"
+#if REI_MOD_VERDLG
+    IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n\
+\r\n\
+@ Rabbiteariris ver.\r\n"
+#else
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n"
+#endif  // rei_
 END
 
 STRINGTABLE DISCARDABLE 

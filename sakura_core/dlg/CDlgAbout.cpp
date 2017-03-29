@@ -82,8 +82,10 @@ const DWORD p_helpids[] = {	//12900
 #    else
 #      define COMPILER_TYPE "MSVC "
 #    endif
+//#    define COMPILER_TYPE "V"
 #    define COMPILER_VER _MSC_FULL_VER
 #  else
+#    define COMPILER_TYPE "V"
 #    define COMPILER_VER _MSC_VER
 #  endif  // rei?
 #else
@@ -186,24 +188,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #if (SVN_REV == 0)
-#if REI_MOD_VERDLG
-	auto_sprintf(szMsg, _T("Ver. %d.%d.%d.%dR\r\n"),
-		HIWORD( dwVersionMS ),
-		LOWORD( dwVersionMS ),
-		HIWORD( dwVersionLS ),
-		LOWORD( dwVersionLS )
-	);
-#else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d\r\n"),
-		HIWORD( dwVersionMS ),
-		LOWORD( dwVersionMS ),
-		HIWORD( dwVersionLS ),
-		LOWORD( dwVersionLS )
-	);
-#endif  // rei_
-#else
-#if REI_MOD_VERDLG
-	auto_sprintf(szMsg, _T("Ver. %d.%d.%d.%dR (Rev.") _T(SVN_REV_STR) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		HIWORD( dwVersionLS ),
@@ -216,7 +201,6 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		HIWORD( dwVersionLS ),
 		LOWORD( dwVersionLS )
 	);
-#endif  // rei_
 #endif
 	cmemMsg.AppendString( szMsg );
 
@@ -231,19 +215,11 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// コンパイル情報
 	cmemMsg.AppendString( _T("      Compile Info: ") );
 	int Compiler_ver = COMPILER_VER;
-#if REI_MOD_VERDLG
-	auto_sprintf( szMsg, _T(COMPILER_TYPE) _T(TARGET_M_SUFFIX) _T(" (%d)\r\n")
-			_T("                    ") TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
-		Compiler_ver,
-		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
-	);
-#else
 	auto_sprintf( szMsg, _T(COMPILER_TYPE) _T(TARGET_M_SUFFIX) _T("%d ")
 			TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
 		Compiler_ver,
 		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
 	);
-#endif  // rei_
 	cmemMsg.AppendString( szMsg );
 
 	// 更新日情報
