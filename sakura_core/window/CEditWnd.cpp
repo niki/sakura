@@ -4265,10 +4265,17 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 	}
 	else {
 		::GetWindowRect( GetActiveView().GetHwnd(), &rc );
+#if REI_MOD_WINLIST_POPUP
+		pt.x = rc.left + RegGetDword(L"WinListPopupLeft", 2);
+		pt.x = std::max(std::min(pt.x, rc.right), rc.left);
+		pt.y = rc.top + RegGetDword(L"WinListPopupTop", 2);
+		pt.y = std::max(std::min(pt.y, rc.bottom), rc.top);
+#else
 		pt.x = rc.right - 150;
 		if( pt.x < rc.left )
 			pt.x = rc.left;
 		pt.y = rc.top;
+#endif // rei_
 	}
 
 	// ウィンドウ一覧メニューをポップアップ表示する
