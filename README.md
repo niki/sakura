@@ -8,8 +8,6 @@
 
 ベースリビジョンからのマージ情報は[こちら](https://github.com/rabbiteariris/sakura2201R/blob/master/changes_from_r4011.txt)
 
-Latest version: [sakura-2.2.0.1R-x86-20170329.zip](https://raw.github.com/wiki/rabbiteariris/sakura2201R/bin/sakura-2.2.0.1R-x86-20170329.zip)
-
 <img src="https://raw.github.com/wiki/rabbiteariris/sakura2201R/images/sakura0.png" width="50%">
 <img src="https://raw.github.com/wiki/rabbiteariris/sakura2201R/images/sakura1.png" width="50%">
 
