@@ -63,6 +63,28 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
 
 	if( pArea->IsRectIntersected(rcClip2) ){
+#if REI_MOD_TAB
+		// ìhÇËÇ¬Ç‘ÇµÇ≈è¡ãé
+		gr.SetBrushColor(gr.GetTextBackColor());
+		::FillRect(gr, &rcClip2, gr.GetCurrentBrush());
+		
+		int	nPosLeft = rcClip2.left > sPos.GetDrawPos().x ? rcClip2.left : sPos.GetDrawPos().x;
+		_DrawTabArrow(
+			gr,
+			nPosLeft,
+//#if REI_LINE_CENTERING
+//		(pcView->m_pTypeData->m_nLineSpace/2) +
+//#endif // rei_
+			sPos.GetDrawPos().y,
+			nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab AreaàÍîtÇ… 2013/4/11 Uchi
+#if REI_LINE_CENTERING
+			pcView->m_pTypeData->m_nLineSpace +
+#endif // rei_
+			pMetrics->GetHankakuHeight(),
+			gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
+			gr.GetCurrentTextForeColor()
+		);
+#else
 		if( cTabType.IsDisp() && TABARROW_STRING == m_pTypeData->m_bTabArrow ){	//É^Éuí èÌï\é¶	//@@@ 2003.03.26 MIK
 			//@@@ 2001.03.16 by MIK
 			::ExtTextOutW_AnyBuild(
@@ -77,11 +99,6 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 			);
 		}else{
 			//îwåi
-#if REI_MOD_TAB
-			// ìhÇËÇ¬Ç‘ÇµÇ≈è¡ãé
-			gr.SetBrushColor(gr.GetTextBackColor());
-			::FillRect(gr, &rcClip2, gr.GetCurrentBrush());
-#else
 			::ExtTextOutW_AnyBuild(
 				gr,
 				sPos.GetDrawPos().x,
@@ -92,7 +109,6 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				tabDispWidth <= 8 ? tabDispWidth : 8, // Sep. 22, 2002 genta
 				pMetrics->GetDxArray_AllHankaku()
 			);
-#endif
 
 			//É^ÉuñÓàÛï\é¶
 			if( cTabType.IsDisp() ){
@@ -139,6 +155,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				}
 			}
 		}
+#endif  // rei_
 	}
 
 	//XÇêiÇﬂÇÈ

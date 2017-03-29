@@ -1104,9 +1104,11 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,117,93,7,
                     12
     LTEXT           "T&AB表示",IDC_STATIC,16,110,56,8,NOT WS_GROUP
+#if REI_MOD_TAB == 0
     COMBOBOX        IDC_CHECK_TAB_ARROW,48,108,46,80,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_EDIT_TABVIEWSTRING,102,108,40,12,ES_AUTOHSCROLL
+#endif  // rei_
     CONTROL         "S&PACEの挿入",IDC_CHECK_INS_SPACE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,70,123,57,10
     COMBOBOX        IDC_COMBO_TSV_MODE,16,123,46,40,CBS_DROPDOWNLIST | 
@@ -3639,7 +3641,8 @@ BEGIN
 #if REI_MOD_VERDLG
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n\
 \r\n\
-@ Rabbiteariris ver.\r\n"
+@ Rabbiteariris ver.\r\n\
+  https://github.com/rabbiteariris/sakura2201R\r\n"
 #else
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n"
 #endif  // rei_
@@ -4528,11 +4531,7 @@ BEGIN
 	STR_OUTLINE_TEXT			"テキスト"
 	STR_TAB_SYMBOL_CHARA		"文字指定"
 	STR_TAB_SYMBOL_SHORT_ARROW	"短い矢印"
-#if REI_MOD_TAB
-	STR_TAB_SYMBOL_LONG_ARROW	"線"
-#else
 	STR_TAB_SYMBOL_LONG_ARROW	"長い矢印"
-#endif // rei_
 	STR_SMART_INDENT_NONE		"なし"				// smart indent
 	STR_SMART_INDENT_C_CPP		"C/C++"
 	STR_WRAP_INDENT_NONE		"なし"				// ident

@@ -1472,8 +1472,10 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	if( types.m_id < 0 ){
 		types.m_id *= -1;
 	}
+#if REI_MOD_TAB == 0
 	cProfile.IOProfileData( pszSecName, LTEXT("szTabViewString"), MakeStringBufferW(types.m_szTabViewString) );
 	cProfile.IOProfileData_WrapInt( pszSecName, LTEXT("bTabArrow")	, types.m_bTabArrow );	//@@@ 2003.03.26 MIK
+#endif  // rei_
 	cProfile.IOProfileData( pszSecName, LTEXT("bInsSpace")			, types.m_bInsSpace );	// 2001.12.03 hor
 
 	cProfile.IOProfileData( pszSecName, LTEXT("nTextWrapMethod"), types.m_nTextWrapMethod );		// 2008.05.30 nasukoji
