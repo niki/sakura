@@ -139,13 +139,13 @@
 
 //------------------------------------------------------------------
 // 変更ドキュメントタブ名カラーを設定
-// (REG/TabCaptionColorModified:0x00BBGGRR)
+// (REG/TabCaptionModifiedColor:0x00BBGGRR)
 //------------------------------------------------------------------
 #define REI_MOD_MODIFIED_TAB_CAPTION_COLOR (0x00d70000)
 
 //------------------------------------------------------------------
 // マクロ記録中ドキュメントタブ名カラーを設定
-// (REG/TabCaptionColorRecMacro:0x00BBGGRR)
+// (REG/TabCaptionRecMacroColor:0x00BBGGRR)
 //------------------------------------------------------------------
 #define REI_MOD_RECMACRO_TAB_CAPTION_COLOR (0x000000d8)
 
@@ -322,7 +322,7 @@
 // アウトライン解析ダイアログの変更 2016.12.14
 //  - フォントをメインフォントにする
 //  - ドッキング時にウィンドウカラーをテキストに合わせない
-// (REG/OutlineDockColorDefault:0)
+// (REG/NoOutlineDockSystemColor:0)
 //------------------------------------------------------------------
 #define REI_MOD_OUTLINEDLG 1
 

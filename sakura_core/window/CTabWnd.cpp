@@ -1427,14 +1427,14 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 #if REI_MOD_RECMACRO_TAB_CAPTION_COLOR
 		if (clrText == ::GetSysColor(COLOR_MENUTEXT)) {
 			EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
-			clrText = p && p->m_bIsRecMacro ? RegGetDword(L"TabCaptionColorRecMacro", REI_MOD_RECMACRO_TAB_CAPTION_COLOR)
+			clrText = p && p->m_bIsRecMacro ? RegGetDword(L"TabCaptionRecMacroColor", REI_MOD_RECMACRO_TAB_CAPTION_COLOR)
 			                                : ::GetSysColor(COLOR_MENUTEXT);
 		}
 #endif  // rei_
 #if REI_MOD_MODIFIED_TAB_CAPTION_COLOR
 		if (clrText == ::GetSysColor(COLOR_MENUTEXT)) {
 			EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
-			clrText = p && p->m_bIsModified ? RegGetDword(L"TabCaptionColorModified", REI_MOD_MODIFIED_TAB_CAPTION_COLOR)
+			clrText = p && p->m_bIsModified ? RegGetDword(L"TabCaptionModifiedColor", REI_MOD_MODIFIED_TAB_CAPTION_COLOR)
 			                                : ::GetSysColor(COLOR_MENUTEXT);
 		}
 #endif  // rei_
