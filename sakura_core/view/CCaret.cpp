@@ -612,7 +612,7 @@ void CCaret::ShowEditCaret()
 //#endif // rei_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
 #if REI_MOD_CARET
-      static int caret_type = RegGetDword(L"CaretType", REI_MOD_CARET);
+      int caret_type = RegKey(REI_REGKEY).get(_T("CaretType"), REI_MOD_CARET);
       if (caret_type == 11) {
   			nCaretWidth = 1;
   			

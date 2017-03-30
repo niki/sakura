@@ -537,7 +537,7 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 	}
 #endif // rei_
 #if REI_MOD_SELAREA
-	int nBlendPer = RegGetDword(L"SelectAreaBlendPer", REI_MOD_SELAREA_BLEND_PER);
+	static int nBlendPer = RegKey(REI_REGKEY).get(_T("SelectAreaBlendPer"), REI_MOD_SELAREA_BLEND_PER);
 	nBlendPer = (nBlendPer >> 8) & 0xff;
 	int alpha = 255 * nBlendPer / 100;
 #else
@@ -561,7 +561,7 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	if (info.m_sColorAttr.m_cTEXT == RGB(255,0,255)) { // テキストカラーがマゼンタだったらそのまま
 		return info.m_sColorAttr.m_cBACK;
 	}
-	int nBlendPer = RegGetDword(L"SelectAreaBlendPer", REI_MOD_SELAREA_BLEND_PER);
+	static int nBlendPer = RegKey(REI_REGKEY).get(_T("SelectAreaBlendPer"), REI_MOD_SELAREA_BLEND_PER);
 	nBlendPer = nBlendPer & 0xff;
 	int alpha = 255 * nBlendPer / 100;
 #else
@@ -1298,7 +1298,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	// 折り返し桁縦線描画
 	if( !m_bMiniMap ){
 #if REI_MOD_WRAP_LINE
-    static bool no_wrap_line = !!RegGetDword(L"NoWrapLine", 1);
+    static bool no_wrap_line = !!RegKey(REI_REGKEY).get(_T("NoWrapLine"), 1);
     if (!no_wrap_line)
 #endif // rei_
 		GetTextDrawer().DispWrapLine(

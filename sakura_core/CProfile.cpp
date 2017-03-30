@@ -108,8 +108,8 @@ bool CProfile::ReadProfile( const TCHAR* pszProfileName )
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			IsExistProfileReg(m_strProfileName) &&
-			!RegGetDword(L"NoReadProfilesFromRegistry", 0)) {
+			RegKey(ut::regkey(m_strProfileName)).valid() &&
+			!RegKey(REI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 0)) {
 		return true;
 	}
 #endif  // rei_
@@ -226,7 +226,7 @@ bool CProfile::WriteProfile(
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			!RegGetDword(L"NoWriteProfilesToRegistry", 0)) {
+			!RegKey(REI_REGKEY).get(_T("NoWriteProfilesToRegistry"), 0)) {
 		return false;  // ÉåÉWÉXÉgÉäèëÇ´çûÇ›ã÷é~
 	}
 #endif  // rei_
@@ -346,9 +346,9 @@ bool CProfile::GetProfileDataImp(
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			IsExistProfileReg(m_strProfileName) &&
-			!RegGetDword(L"NoReadProfilesFromRegistry", 0)) {
-		return GetRegProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
+			RegKey(ut::regkey(m_strProfileName)).valid() &&
+			!RegKey(REI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 0)) {
+		return RegGetProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
 	}
 #endif  // rei_
 
@@ -382,8 +382,8 @@ bool CProfile::SetProfileDataImp(
 {
 #if REI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			!RegGetDword(L"NoWriteProfilesToRegistry", 0)) {
-		return SetRegProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
+			!RegKey(REI_REGKEY).get(_T("NoWriteProfilesToRegistry"), 0)) {
+		return RegSetProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
 	}
 #endif  // rei_
 

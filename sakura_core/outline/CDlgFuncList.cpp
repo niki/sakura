@@ -2231,7 +2231,7 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 
 #ifdef DEFINE_SYNCCOLOR
 #if REI_MOD_OUTLINEDLG
-  bool dock_color_sync = !!RegGetDword(L"NoOutlineDockSystemColor", 0);
+  bool dock_color_sync = !!RegKey(REI_REGKEY).get(_T("NoOutlineDockSystemColor"), 0);
   if (dock_color_sync)
 #endif // rei_
 	if( IsDocking() ){
@@ -2776,7 +2776,7 @@ void CDlgFuncList::SyncColor( void )
 		return;
 #ifdef DEFINE_SYNCCOLOR
 #if REI_MOD_OUTLINEDLG
-  bool dock_color_sync = !!RegGetDword(L"NoOutlineDockSystemColor", 0);
+  bool dock_color_sync = !!RegKey(REI_REGKEY).get(_T("NoOutlineDockSystemColor"), 0);
   if (!dock_color_sync) return;
 #endif // rei_
 	// テキスト色・背景色をビューと同色にする

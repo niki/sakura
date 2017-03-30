@@ -39,7 +39,7 @@ CRecentGrepFile::CRecentGrepFile()
 		&GetShareData()->m_sSearchKeywords.m_aGrepFiles._GetSizeRef(),
 		NULL,
 #if REI_CHG_MAXDATA
-		RegGetDword(L"RecentGrepFileMax", MAX_GREPFILE),
+		RegKey(REI_REGKEY).get(_T("RecentGrepFileMax"), MAX_GREPFILE),
 #else
 		MAX_GREPFILE,
 #endif

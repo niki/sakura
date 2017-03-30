@@ -189,7 +189,7 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	//bIgnore |= (colorIdx == COLORIDX_SSTRING);
 	//bIgnore |= (colorIdx == COLORIDX_WSTRING);
 	if (!bIgnore) {
-	  static int nBlendPer = RegGetDword(L"WhiteSpaceBlendPer", REI_MOD_SP_BLEND_PER);
+	  static int nBlendPer = RegKey(REI_REGKEY).get(_T("WhiteSpaceBlendPer"), REI_MOD_SP_BLEND_PER);
     // 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
     COLORREF col1 = cCurrentType2.GetTextColor();
     COLORREF col2 = crBack;	// 合成済みの色を使用する

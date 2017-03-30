@@ -43,7 +43,7 @@ CRecentSearch::CRecentSearch()
 		&GetShareData()->m_sSearchKeywords.m_aSearchKeys._GetSizeRef(),
 		NULL,
 #if REI_CHG_MAXDATA
-		RegGetDword(L"RecentSearchKeyMax", MAX_SEARCHKEY),
+		RegKey(REI_REGKEY).get(_T("RecentSearchKeyMax"), MAX_SEARCHKEY),
 #else
 		MAX_SEARCHKEY,
 #endif
