@@ -4029,11 +4029,7 @@ BEGIN
 	STR_ERR_DLGEDITVW6			"■"
 	STR_MENU_KEYWORDINFO		"キーワードの説明をクリップボードにコピー"
 	STR_MENU_OPENKEYWORDDIC		"キーワード辞書を開く"
-#if REI_MOD_STATUSBAR
-	STR_STATUS_ROW_COL			"(%d, %d)"
-#else
 	STR_STATUS_ROW_COL			"%5d 行 %4d 桁"
-#endif // rei_
 	STR_INS_MODE_INS			"挿入"
 	STR_INS_MODE_OVR			"上書"
 	STR_GREP_SEARCH_CONDITION	"\r\n□検索条件  "

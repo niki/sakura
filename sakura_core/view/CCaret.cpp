@@ -992,12 +992,8 @@ void CCaret::ShowCaretPosInfo()
 	// ステータスバーに状態を書き出す
 	else{
 #if REI_MOD_STATUSBAR
-		int columnCnt = 0;
-		
 		TCHAR	szText_1[64];
-		int max = std::max(m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetLineCount(), 1);
-		int cur = std::max(m_pEditView->GetCaret().GetCaretLogicPos().y, 0);
-		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), ptCaret.y, ptCaret.x );
+		auto_sprintf( szText_1, _T("  %d:%d"), ptCaret.y, ptCaret.x );
 
 		TCHAR	szText_6[16];
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
@@ -1005,32 +1001,39 @@ void CCaret::ShowCaretPosInfo()
 		}else{
 			_tcscpy( szText_6, LS( STR_INS_MODE_OVR ) );	// "上書"
 		}
-//		if( m_bClearStatus ){
-//			::StatusBar_SetText( hwndStatusBar, columnCnt | SBT_NOBORDERS, _T("") );
-//		}
-//		columnCnt++;
-		if (m_pEditView->GetSelectionInfo().IsTextSelected()) {
-			columnCnt++;
-		} else {
-			::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             szText_1 );
+		if (!m_pEditView->GetSelectionInfo().IsTextSelected()) {
+			TCHAR path[_MAX_PATH] = {};
+			const TCHAR *full_path = m_pEditView->GetDocument()->m_cDocFile.GetFilePath();
+			if (full_path) {
+				_tcsncpy(path, full_path, _MAX_PATH - 1);
+				path[_MAX_PATH - 1] = _T('\0');
+
+				int aWidth[1] = {};
+				::SendMessage(hwndStatusBar, SB_GETPARTS, (WPARAM)1, (LPARAM)aWidth);
+
+				HDC hdc = ::GetDC(hwndStatusBar);
+				::PathCompactPath(hdc, path, aWidth[0]);  // パスを縮める
+				::ReleaseDC(hwndStatusBar, hdc);
+			}
+			_tcscat(path, szText_1);  // 行番号をくっつける
+			::StatusBar_SetText( hwndStatusBar, 0 | SBT_NOBORDERS, path );
 		}
-		// IDを合わせるためにタブサイズを行数の位置に表示
-		TCHAR	szText_TabSize[16];
-		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
-		auto_sprintf( szText_TabSize, _T("Tab %d%s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T("[SP]") : _T("") );
-//-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             szText_TabSize );
-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             _T("") );
+		::StatusBar_SetText( hwndStatusBar, 1 | 0,             _T("")/*szText_1*/ );
 		//	May 12, 2000 genta
 		//	改行コードの表示を追加．後ろの番号を1つずつずらす
 		//	From Here
-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             szEolMode );
+		::StatusBar_SetText( hwndStatusBar, 2 | 0,             szEolMode );
 		//	To Here
-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             szCaretChar );
-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             pszCodeName );
-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | SBT_OWNERDRAW, _T("") );
-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             szText_6 );
-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             szText_TabSize );
-		::StatusBar_SetText( hwndStatusBar, columnCnt++ | 0,             m_pEditView->m_pTypeData->m_szTypeName );
+		::StatusBar_SetText( hwndStatusBar, 3 | 0,             szCaretChar );
+		::StatusBar_SetText( hwndStatusBar, 4 | 0,             pszCodeName );
+		::StatusBar_SetText( hwndStatusBar, 5 | SBT_OWNERDRAW, _T("") );
+		::StatusBar_SetText( hwndStatusBar, 6 | 0,             szText_6 );
+
+		TCHAR	szText_TabSize[16];
+		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
+		auto_sprintf( szText_TabSize, _T("Tab %d%s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T("[SP]") : _T("") );
+		::StatusBar_SetText( hwndStatusBar, 7 | 0,             szText_TabSize );
+		::StatusBar_SetText( hwndStatusBar, 8 | 0,             m_pEditView->m_pTypeData->m_szTypeName );
 #else
 		TCHAR	szText_1[64];
 		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), ptCaret.y, ptCaret.x );	//Oct. 30, 2000 JEPRO 千万行も要らん

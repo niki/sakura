@@ -8,7 +8,6 @@
 #ifndef MY_REG_H
 #define MY_REG_H
 
-#include <windows.h>
 #include <memory>
 #include <string>
 //#include <locale>

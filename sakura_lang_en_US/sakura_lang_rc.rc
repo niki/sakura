@@ -4014,11 +4014,7 @@ BEGIN
 	STR_ERR_DLGEDITVW6			"Å°"
 	STR_MENU_KEYWORDINFO		"Copy Keyword description to clipboard"				// Right click menu
 	STR_MENU_OPENKEYWORDDIC		"Open keyword dictionary"							// Right click menu
-#if REI_MOD_STATUSBAR
-	STR_STATUS_ROW_COL			"(%d, %d)"
-#else
 	STR_STATUS_ROW_COL			"%5d Ln %4d Col"
-#endif  // rei_
 	STR_INS_MODE_INS			"INS"													// Insert mode
 	STR_INS_MODE_OVR			"OVR"													// Overwrite mode
 	STR_GREP_SEARCH_CONDITION	"\r\nÅ† Search Conditions  "							// Output from GREP resuilts
