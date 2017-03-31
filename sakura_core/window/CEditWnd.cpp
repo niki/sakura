@@ -1245,24 +1245,11 @@ LRESULT CEditWnd::DispatchEvent(
 				if( m_pShareData->m_sFlags.m_bRecordingKeyMacro	/* キーボードマクロの記録中 */
 				 && m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == GetHwnd()	/* キーボードマクロを記録中のウィンドウ */
 				){
-#ifdef REI_MOD_STATUSBAR
-					nColor = RGB(255,0,0);
-#else
 					nColor = COLOR_BTNTEXT;
-#endif  // rei_
 				}else{
 					nColor = COLOR_3DSHADOW;
 				}
-#ifdef REI_MOD_STATUSBAR
-				if (nColor == COLOR_3DSHADOW) {
-					::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
-				}
-				else {
-					::SetTextColor( lpdis->hDC, nColor );
-				}
-#else
 				::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
-#endif  // rei_
 				::SetBkMode( lpdis->hDC, TRANSPARENT );
 				
 				// 2003.08.26 Moca 上下中央位置に作画
@@ -1494,6 +1481,32 @@ LRESULT CEditWnd::DispatchEvent(
 				else if( mp->dwItemSpec == 4 ){	//	文字コードセット→文字コードセット指定
 					GetDocument()->HandleCommand( F_CHG_CHARSET );
 				}
+#ifdef REI_MOD_STATUSBAR
+				else if( mp->dwItemSpec == 7 ){	//	タブサイズ
+					const CLayoutMgr *pLayoutMgr = &GetDocument()->m_cLayoutMgr;
+					int tab_size = pLayoutMgr->GetTabSpace();
+					bool change = false;
+					if (tab_size == 2) {
+						tab_size = 4;
+					} else if (tab_size == 4) {
+						tab_size = 8;
+					} else if (tab_size == 8) {
+						tab_size = 2;
+					}
+					GetDocument()->m_pcEditWnd->ChangeLayoutParam(
+						false, 
+						CLayoutInt(tab_size),
+						pLayoutMgr->m_tsvInfo.m_nTsvMode,
+						pLayoutMgr->GetMaxLineKetas()
+					);
+					// 2009.08.28 nasukoji	「折り返さない」選択時にTAB幅が変更されたらテキスト最大幅の再算出が必要
+					if( GetDocument()->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP ){
+						// 最大幅の再算出時に各行のレイアウト長の計算も行う
+						GetDocument()->m_cLayoutMgr.CalculateTextWidth();
+					}
+					GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );		// TAB幅が変わったので再描画が必要
+				}
+#endif  // rei_
 			}
 			else if( pnmh->code == NM_RCLICK ){
 				LPNMMOUSE mp = (LPNMMOUSE) lParam;
@@ -1553,6 +1566,12 @@ LRESULT CEditWnd::DispatchEvent(
 						GetActiveView().GetCommander().HandleCommand( F_CHGMOD_EOL, true, nEOLCode, 0, 0, 0 );
 					}
 				}
+#ifdef REI_MOD_STATUSBAR
+				else if( mp->dwItemSpec == 7 ){	//	タブサイズ
+					GetDocument()->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
+					GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );
+				}
+#endif  // rei_
 			}
 			return 0L;
 		}

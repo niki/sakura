@@ -1031,7 +1031,7 @@ void CCaret::ShowCaretPosInfo()
 		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
 		auto_sprintf( szText_TabSize, _T("Tab %d%s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T("[SP]") : _T("") );
 		::StatusBar_SetText( hwndStatusBar, 7 | 0,             szText_TabSize );
-		::StatusBar_SetText( hwndStatusBar, 8 | 0,             m_pEditView->m_pTypeData->m_szTypeName );
+		::StatusBar_SetText( hwndStatusBar, 8 | SBT_NOBORDERS, m_pEditView->m_pTypeData->m_szTypeName );
 #else
 		TCHAR	szText_1[64];
 		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), ptCaret.y, ptCaret.x );	//Oct. 30, 2000 JEPRO 千万行も要らん
