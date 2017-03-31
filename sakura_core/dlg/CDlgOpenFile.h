@@ -1,8 +1,8 @@
-/*!	@file
-	@brief ƒtƒ@ƒCƒ‹ƒI[ƒvƒ“ƒ_ƒCƒAƒƒOƒ{ƒbƒNƒX
+ï»¿/*!	@file
+	@brief ãƒ•ã‚¡ã‚¤ãƒ«ã‚ªãƒ¼ãƒ—ãƒ³ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒœãƒƒã‚¯ã‚¹
 
 	@author Norio Nakatani
-	@date	1998/08/10 ì¬
+	@date	1998/08/10 ä½œæˆ
 */
 /*
 	Copyright (C) 1998-2001, Norio Nakatani
@@ -33,14 +33,14 @@ struct OPENFILENAMEZ;
 class CDlgOpenFileMem;
 
 
-/*!	ƒtƒ@ƒCƒ‹ƒI[ƒvƒ“ƒ_ƒCƒAƒƒOƒ{ƒbƒNƒX
+/*!	ãƒ•ã‚¡ã‚¤ãƒ«ã‚ªãƒ¼ãƒ—ãƒ³ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒœãƒƒã‚¯ã‚¹
 
-	@date 2002.2.17 YAZAKI CShareData‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚ÍACProcess‚É‚Ğ‚Æ‚Â‚ ‚é‚Ì‚İB
+	@date 2002.2.17 YAZAKI CShareDataã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã¯ã€CProcessã«ã²ã¨ã¤ã‚ã‚‹ã®ã¿ã€‚
 */
 class CDlgOpenFile
 {
 public:
-	//ƒRƒ“ƒXƒgƒ‰ƒNƒ^EƒfƒXƒgƒ‰ƒNƒ^
+	//ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ãƒ»ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	CDlgOpenFile();
 	~CDlgOpenFile();
 	void Create(
@@ -52,38 +52,38 @@ public:
 		const std::vector<LPCTSTR>& vOPENFOLDER		= std::vector<LPCTSTR>()
 	);
 
-	//‘€ì
-	bool DoModal_GetOpenFileName( TCHAR*, bool bSetCurDir = false, bool bAddTextFilter = true );	/* ŠJ‚­ƒ_ƒCƒAƒƒO ƒ‚[ƒ_ƒ‹ƒ_ƒCƒAƒƒO‚Ì•\¦ */	//2002/08/21 moca	ˆø”’Ç‰Á
-	bool DoModal_GetSaveFileName( TCHAR*, bool bSetCurDir = false );	/* •Û‘¶ƒ_ƒCƒAƒƒO ƒ‚[ƒ_ƒ‹ƒ_ƒCƒAƒƒO‚Ì•\¦ */	//2002/08/21 30,2002 moca	ˆø”’Ç‰Á
-	bool DoModalOpenDlg( SLoadInfo* pLoadInfo, std::vector<std::tstring>*, bool bOptions = true );	/* ŠJ‚­ƒ_ƒCƒAƒO ƒ‚[ƒ_ƒ‹ƒ_ƒCƒAƒƒO‚Ì•\¦ */
-	bool DoModalSaveDlg( SSaveInfo*	pSaveInfo, bool bSimpleMode );	/* •Û‘¶ƒ_ƒCƒAƒƒO ƒ‚[ƒ_ƒ‹ƒ_ƒCƒAƒƒO‚Ì•\¦ */
+	//æ“ä½œ
+	bool DoModal_GetOpenFileName( TCHAR*, bool bSetCurDir = false, bool bAddTextFilter = true );	/* é–‹ããƒ€ã‚¤ã‚¢ãƒ­ã‚° ãƒ¢ãƒ¼ãƒ€ãƒ«ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®è¡¨ç¤º */	//2002/08/21 moca	å¼•æ•°è¿½åŠ 
+	bool DoModal_GetSaveFileName( TCHAR*, bool bSetCurDir = false );	/* ä¿å­˜ãƒ€ã‚¤ã‚¢ãƒ­ã‚° ãƒ¢ãƒ¼ãƒ€ãƒ«ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®è¡¨ç¤º */	//2002/08/21 30,2002 moca	å¼•æ•°è¿½åŠ 
+	bool DoModalOpenDlg( SLoadInfo* pLoadInfo, std::vector<std::tstring>*, bool bOptions = true );	/* é–‹ããƒ€ã‚¤ã‚¢ã‚° ãƒ¢ãƒ¼ãƒ€ãƒ«ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®è¡¨ç¤º */
+	bool DoModalSaveDlg( SSaveInfo*	pSaveInfo, bool bSimpleMode );	/* ä¿å­˜ãƒ€ã‚¤ã‚¢ãƒ­ã‚° ãƒ¢ãƒ¼ãƒ€ãƒ«ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®è¡¨ç¤º */
 
 protected:
 	CDlgOpenFileMem*	m_mem;
 
 	/*
-	||  À‘•ƒwƒ‹ƒpŠÖ”
+	||  å®Ÿè£…ãƒ˜ãƒ«ãƒ‘é–¢æ•°
 	*/
 
-	//	May 29, 2004 genta ƒGƒ‰[ˆ—‚ğ‚Ü‚Æ‚ß‚é (advised by MIK)
+	//	May 29, 2004 genta ã‚¨ãƒ©ãƒ¼å‡¦ç†ã‚’ã¾ã¨ã‚ã‚‹ (advised by MIK)
 	void	DlgOpenFail(void);
 
-	// 2005.11.02 ryoji OS ƒo[ƒWƒ‡ƒ“‘Î‰‚Ì OPENFILENAME ‰Šú‰»—pŠÖ”
+	// 2005.11.02 ryoji OS ãƒãƒ¼ã‚¸ãƒ§ãƒ³å¯¾å¿œã® OPENFILENAME åˆæœŸåŒ–ç”¨é–¢æ•°
 	void InitOfn( OPENFILENAMEZ* );
 
-	// 2005.11.02 ryoji ‰ŠúƒŒƒCƒAƒEƒgİ’èˆ—
+	// 2005.11.02 ryoji åˆæœŸãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆè¨­å®šå‡¦ç†
 	static void InitLayout( HWND hwndOpenDlg, HWND hwndDlg, HWND hwndBaseCtrl );
 
-	// 2006.09.03 Moca ƒtƒ@ƒCƒ‹ƒ_ƒCƒAƒƒO‚ÌƒGƒ‰[‰ñ”ğ
-	//! ƒŠƒgƒ‰ƒC‹@”\•t‚« GetOpenFileName
+	// 2006.09.03 Moca ãƒ•ã‚¡ã‚¤ãƒ«ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®ã‚¨ãƒ©ãƒ¼å›é¿
+	//! ãƒªãƒˆãƒ©ã‚¤æ©Ÿèƒ½ä»˜ã GetOpenFileName
 	bool _GetOpenFileNameRecover( OPENFILENAMEZ* ofn );
-	//! ƒŠƒgƒ‰ƒC‹@”\•t‚« GetOpenFileName
+	//! ãƒªãƒˆãƒ©ã‚¤æ©Ÿèƒ½ä»˜ã GetOpenFileName
 	bool GetSaveFileNameRecover( OPENFILENAMEZ* ofn );
 
 	friend UINT_PTR CALLBACK OFNHookProc( HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam );
 
 public:
-	// İ’èƒtƒHƒ‹ƒ_‘Š‘Îƒtƒ@ƒCƒ‹‘I‘ğ(‹¤—Lƒf[ƒ^,iniˆÊ’uˆË‘¶)
+	// è¨­å®šãƒ•ã‚©ãƒ«ãƒ€ç›¸å¯¾ãƒ•ã‚¡ã‚¤ãƒ«é¸æŠ(å…±æœ‰ãƒ‡ãƒ¼ã‚¿,iniä½ç½®ä¾å­˜)
 	static BOOL SelectFile(HWND parent, HWND hwndCtl, const TCHAR* filter, bool resolvePath, bool bAddTextFilter = true);
 
 private:

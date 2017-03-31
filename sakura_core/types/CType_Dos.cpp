@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Copyright (C) 2008, kobake
 
 	This software is provided 'as-is', without any express or implied
@@ -28,25 +28,25 @@
 
 int g_nKeywordsIdx_BAT = -1;
 
-/* MS-DOSƒoƒbƒ`ƒtƒ@ƒCƒ‹ */
+/* MS-DOSãƒãƒƒãƒãƒ•ã‚¡ã‚¤ãƒ« */
 void CType_Dos::InitTypeConfigImp(STypeConfig* pType)
 {
-	//–¼‘O‚ÆŠg’£Žq
-	_tcscpy( pType->m_szTypeName, _T("MS-DOSƒoƒbƒ`ƒtƒ@ƒCƒ‹") );
+	//åå‰ã¨æ‹¡å¼µå­
+	_tcscpy( pType->m_szTypeName, _T("MS-DOSãƒãƒƒãƒãƒ•ã‚¡ã‚¤ãƒ«") );
 	_tcscpy( pType->m_szTypeExts, _T("bat") );
 
-	//Ý’è
-	pType->m_cLineComment.CopyTo( 0, L"REM ", -1 );	/* sƒRƒƒ“ƒgƒfƒŠƒ~ƒ^ */
+	//è¨­å®š
+	pType->m_cLineComment.CopyTo( 0, L"REM ", -1 );	/* è¡Œã‚³ãƒ¡ãƒ³ãƒˆãƒ‡ãƒªãƒŸã‚¿ */
 	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_BAT;
 
-	pType->m_eDefaultOutline = OUTLINE_FILE;		/* ƒAƒEƒgƒ‰ƒCƒ“‰ðÍ•û–@ */
+	pType->m_eDefaultOutline = OUTLINE_FILE;		/* ã‚¢ã‚¦ãƒˆãƒ©ã‚¤ãƒ³è§£æžæ–¹æ³• */
 	auto_strcpy( pType->m_szOutlineRuleFilename, _T("Keyword\\bat.rl") );
 
 	pType->m_KeyHelpArr[0].m_bUse = true;
-	auto_strcpy( pType->m_KeyHelpArr[0].m_szAbout, _T(";ƒoƒbƒ`ƒtƒ@ƒCƒ‹‚ÌƒL[ƒ[ƒhƒwƒ‹ƒv’è‹`") );
+	auto_strcpy( pType->m_KeyHelpArr[0].m_szAbout, _T(";ãƒãƒƒãƒãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚­ãƒ¼ãƒ¯ãƒ¼ãƒ‰ãƒ˜ãƒ«ãƒ—å®šç¾©") );
 	auto_strcpy( pType->m_KeyHelpArr[0].m_szPath, _T("Keyword\\bat_win2k.khp") );
-	pType->m_bUseKeyWordHelp = true;		// Ž«‘‘I‘ð‹@”\‚ÌŽg—p‰Â”Û
-	pType->m_nKeyHelpNum = 1;				// “o˜^Ž«‘”
+	pType->m_bUseKeyWordHelp = true;		// è¾žæ›¸é¸æŠžæ©Ÿèƒ½ã®ä½¿ç”¨å¯å¦
+	pType->m_nKeyHelpNum = 1;				// ç™»éŒ²è¾žæ›¸æ•°
 }
 
 
@@ -91,16 +91,16 @@ const wchar_t* g_ppszKeywordsBAT[] = {
 	L"EXIT",
 	L"CTTY",
 	L"ECHO",
-	L"@ECHO",	//Oct. 31, 2000 JEPRO '@' ‚ð‹­’²‰Â”\‚É‚µ‚½‚Ì‚Å’Ç‰Á
+	L"@ECHO",	//Oct. 31, 2000 JEPRO '@' ã‚’å¼·èª¿å¯èƒ½ã«ã—ãŸã®ã§è¿½åŠ 
 	L"LOCK",
 	L"UNLOCK",
 	L"GOTO",
 	L"SHIFT",
 	L"IF",
 	L"FOR",
-	L"DO",	//Nov. 2, 2000 JEPRO ’Ç‰Á
-	L"IN",	//Nov. 2, 2000 JEPRO ’Ç‰Á
-	L"ELSE",	//Nov. 2, 2000 JEPRO ’Ç‰Á Win2000‚ÅŽg‚¦‚é
+	L"DO",	//Nov. 2, 2000 JEPRO è¿½åŠ 
+	L"IN",	//Nov. 2, 2000 JEPRO è¿½åŠ 
+	L"ELSE",	//Nov. 2, 2000 JEPRO è¿½åŠ  Win2000ã§ä½¿ãˆã‚‹
 	L"CLS",
 	L"TRUENAME",
 	L"LOADHIGH",

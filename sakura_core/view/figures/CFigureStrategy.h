@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Copyright (C) 2008, kobake
 
 	This software is provided 'as-is', without any express or implied
@@ -28,17 +28,17 @@
 #include "view/colors/CColorStrategy.h" //SColorStrategyInfo
 
 
-//$$ƒŒƒCƒAƒEƒg\’zƒtƒ[(DoLayout)‚à CFigure ‚Ås‚¤‚Æ®—‚µ‚â‚·‚¢
+//$$ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆæ§‹ç¯‰ãƒ•ãƒ­ãƒ¼(DoLayout)ã‚‚ CFigure ã§è¡Œã†ã¨æ•´ç†ã—ã‚„ã™ã„
 class CFigure{
 public:
 	virtual ~CFigure(){}
 	virtual bool DrawImp(SColorStrategyInfo* pInfo) = 0;
 	virtual bool Match(const wchar_t* pText, int nTextLen) const = 0;
 
-	//! F•ª‚¯•\¦‘ÎÛ”»’è
+	//! è‰²åˆ†ã‘è¡¨ç¤ºå¯¾è±¡åˆ¤å®š
 	virtual bool Disp(void) const = 0;
 
-	//! İ’èXV
+	//! è¨­å®šæ›´æ–°
 	virtual void Update(void)
 	{
 		CEditDoc* pCEditDoc = CEditDoc::GetInstance(0);
@@ -51,10 +51,10 @@ protected:
 	const STypeConfig* m_pTypeData;
 };
 
-//! ’ÊíƒeƒLƒXƒg•`‰æ
+//! é€šå¸¸ãƒ†ã‚­ã‚¹ãƒˆæç”»
 class CFigure_Text : public CFigure{
 public:
-	// •¶š—ñ‚ği‚ß‚é
+	// æ–‡å­—åˆ—ã‚’é€²ã‚ã‚‹
 	void FowardChars(SColorStrategyInfo* pInfo);
 	CLayoutInt GetDrawSize(SColorStrategyInfo* pInfo) const;
 	bool DrawImp(SColorStrategyInfo* pInfo){
@@ -67,7 +67,7 @@ public:
 		return true;
 	}
 
-	//! F•ª‚¯•\¦‘ÎÛ”»’è
+	//! è‰²åˆ†ã‘è¡¨ç¤ºå¯¾è±¡åˆ¤å®š
 	virtual bool Disp(void) const
 	{
 		return true;
@@ -78,7 +78,7 @@ public:
 	}
 };
 
-//! Šeí‹ó”’i”¼Šp‹ó”’^‘SŠp‹ó”’^ƒ^ƒu^‰üsj•`‰æ—p‚ÌŠî–{ƒNƒ‰ƒX
+//! å„ç¨®ç©ºç™½ï¼ˆåŠè§’ç©ºç™½ï¼å…¨è§’ç©ºç™½ï¼ã‚¿ãƒ–ï¼æ”¹è¡Œï¼‰æç”»ç”¨ã®åŸºæœ¬ã‚¯ãƒ©ã‚¹
 class CFigureSpace : public CFigure{
 public:
 	virtual bool DrawImp(SColorStrategyInfo* pInfo);
@@ -86,7 +86,7 @@ protected:
 	virtual void DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans) const = 0;
 	virtual EColorIndexType GetColorIdx(void) const = 0;
 
-	//! F•ª‚¯•\¦‘ÎÛ”»’è
+	//! è‰²åˆ†ã‘è¡¨ç¤ºå¯¾è±¡åˆ¤å®š
 	virtual bool Disp(void) const
 	{
 		EColorIndexType nColorIndex = GetColorIdx();
@@ -107,7 +107,7 @@ protected:
 
 	EColorIndexType GetDispColorIdx(void) const{ return m_nDispColorIndex; }
 
-	// À‘••â•
+	// å®Ÿè£…è£œåŠ©
 	bool DrawImp_StyleSelect(SColorStrategyInfo* pInfo);
 	void DrawImp_StylePop(SColorStrategyInfo* pInfo);
 	void DrawImp_DrawUnderline(SColorStrategyInfo* pInfo, DispPos&);

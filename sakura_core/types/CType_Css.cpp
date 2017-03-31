@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Copyright (C) 2008, kobake
 	Copyright (C) 2014, Moca
 
@@ -32,11 +32,11 @@ int g_nKeywordsIdx_CSS = -1;
 /* CSS */
 void CType_Css::InitTypeConfigImp(STypeConfig* pType)
 {
-	//–¼‘O‚ÆŠg’£Žq
+	//åå‰ã¨æ‹¡å¼µå­
 	_tcscpy( pType->m_szTypeName, _T("CSS") );
 	_tcscpy( pType->m_szTypeExts, _T("css") );
 
-	//Ý’è
+	//è¨­å®š
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"/*", L"*/" );
 	pType->m_nStringType = STRING_LITERAL_CPP;
 	pType->m_bStringLineOnly = true;

@@ -1079,6 +1079,7 @@
       <Filter>Cpp Source Files\uiparts</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\view\figures\CFigure_Comma.h" />
+    <ClInclude Include="..\sakura_core\dlg\CDlgWindowList.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\sakura_core\Funccode_x.hsrc">
@@ -2245,6 +2246,7 @@
     <ClCompile Include="..\sakura_core\types\CType_Ruby.cpp" />
     <ClCompile Include="..\sakura_core\types\CType_Xml.cpp" />
     <ClCompile Include="..\sakura_core\view\figures\CFigure_Comma.cpp" />
+    <ClCompile Include="..\sakura_core\dlg\CDlgWindowList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\resource\auto_scroll_center.bmp">

@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Copyright (C) 2008, kobake
 
 	This software is provided 'as-is', without any express or implied
@@ -30,27 +30,27 @@
 int g_nKeywordsIdx_PASCAL = -1;
 
 /* Pascal */
-//Mar. 10, 2001 JEPRO	”¼Šp”’l‚ðF•ª‚¯•\Ž¦
+//Mar. 10, 2001 JEPRO	åŠè§’æ•°å€¤ã‚’è‰²åˆ†ã‘è¡¨ç¤º
 void CType_Pascal::InitTypeConfigImp(STypeConfig* pType)
 {
-	//–¼‘O‚ÆŠg’£Žq
+	//åå‰ã¨æ‹¡å¼µå­
 	_tcscpy( pType->m_szTypeName, _T("Pascal") );
 	_tcscpy( pType->m_szTypeExts, _T("dpr,pas") );
 
-	//Ý’è
-	pType->m_cLineComment.CopyTo( 0, L"//", -1 );					/* sƒRƒƒ“ƒgƒfƒŠƒ~ƒ^ */		//Nov. 5, 2000 JEPRO ’Ç‰Á
-	pType->m_cBlockComments[0].SetBlockCommentRule( L"{", L"}" );	/* ƒuƒƒbƒNƒRƒƒ“ƒgƒfƒŠƒ~ƒ^ */	//Nov. 5, 2000 JEPRO ’Ç‰Á
-	pType->m_cBlockComments[1].SetBlockCommentRule( L"(*", L"*)" );	/* ƒuƒƒbƒNƒRƒƒ“ƒgƒfƒŠƒ~ƒ^2 */	//@@@ 2001.03.10 by MIK
-	pType->m_nStringType = 1;										/* •¶Žš—ñ‹æØ‚è‹L†ƒGƒXƒP[ƒv•û–@  0=[\"][\'] 1=[""][''] */	//Nov. 5, 2000 JEPRO ’Ç‰Á
+	//è¨­å®š
+	pType->m_cLineComment.CopyTo( 0, L"//", -1 );					/* è¡Œã‚³ãƒ¡ãƒ³ãƒˆãƒ‡ãƒªãƒŸã‚¿ */		//Nov. 5, 2000 JEPRO è¿½åŠ 
+	pType->m_cBlockComments[0].SetBlockCommentRule( L"{", L"}" );	/* ãƒ–ãƒ­ãƒƒã‚¯ã‚³ãƒ¡ãƒ³ãƒˆãƒ‡ãƒªãƒŸã‚¿ */	//Nov. 5, 2000 JEPRO è¿½åŠ 
+	pType->m_cBlockComments[1].SetBlockCommentRule( L"(*", L"*)" );	/* ãƒ–ãƒ­ãƒƒã‚¯ã‚³ãƒ¡ãƒ³ãƒˆãƒ‡ãƒªãƒŸã‚¿2 */	//@@@ 2001.03.10 by MIK
+	pType->m_nStringType = 1;										/* æ–‡å­—åˆ—åŒºåˆ‡ã‚Šè¨˜å·ã‚¨ã‚¹ã‚±ãƒ¼ãƒ—æ–¹æ³•  0=[\"][\'] 1=[""][''] */	//Nov. 5, 2000 JEPRO è¿½åŠ 
 	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_PASCAL;
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;			//@@@ 2001.11.11 upd MIK
-	pType->m_bStringLineOnly = true; // •¶Žš—ñ‚Ís“à‚Ì‚Ý
+	pType->m_bStringLineOnly = true; // æ–‡å­—åˆ—ã¯è¡Œå†…ã®ã¿
 }
 
 
 
 #ifdef BUILD_OPT_IMPKEYWORD
-// 2014.11.23 PASCAL‚ª__stdcall‚É’uŠ·‚³‚ê‚é‚½‚ßPASCAL‚É•ÏX
+// 2014.11.23 PASCALãŒ__stdcallã«ç½®æ›ã•ã‚Œã‚‹ãŸã‚PASCALã«å¤‰æ›´
 const wchar_t* g_ppszKeywordsPASCAL[] = {
 	L"and",
 	L"exports",

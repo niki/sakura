@@ -1,13 +1,13 @@
-#include "StdAfx.h"
+ï»¿#include "StdAfx.h"
 #include "view/CEditView.h" // SColorStrategyInfo
 #include "CFigure_Tab.h"
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "types/CTypeSupport.h"
 
-//2007.08.28 kobake ’Ç‰Á
+//2007.08.28 kobake è¿½åŠ 
 void _DispTab( CGraphics& gr, DispPos* pDispPos, const CEditView* pcView );
-//ƒ^ƒu–îˆó•`‰æŠÖ”	//@@@ 2003.03.26 MIK
+//ã‚¿ãƒ–çŸ¢å°æç”»é–¢æ•°	//@@@ 2003.03.26 MIK
 void _DrawTabArrow( CGraphics& gr, int nPosX, int nPosY, int nWidth, int nHeight, bool bBold, COLORREF pColor );
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -26,21 +26,21 @@ bool CFigure_Tab::Match(const wchar_t* pText, int nTextLen) const
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                         •`‰æÀ‘•                            //
+//                         æç”»å®Ÿè£…                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-/*! TAB•`‰æ
+/*! TABæç”»
 	@date 2001.03.16 by MIK
-	@date 2002.09.22 genta ‹¤’Ê®‚Ì‚­‚­‚è‚¾‚µ
-	@date 2002.09.23 genta LayoutMgr‚Ì’l‚ğg‚¤
-	@date 2003.03.26 MIK ƒ^ƒu–îˆó•\¦
-	@date 2013.05.31 novice TAB•\¦‘Î‰(•¶šw’è/’Z‚¢–îˆó/’·‚¢–îˆó)
+	@date 2002.09.22 genta å…±é€šå¼ã®ããã‚Šã ã—
+	@date 2002.09.23 genta LayoutMgrã®å€¤ã‚’ä½¿ã†
+	@date 2003.03.26 MIK ã‚¿ãƒ–çŸ¢å°è¡¨ç¤º
+	@date 2013.05.31 novice TABè¡¨ç¤ºå¯¾å¿œ(æ–‡å­—æŒ‡å®š/çŸ­ã„çŸ¢å°/é•·ã„çŸ¢å°)
 */
 void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans) const
 {
 	DispPos& sPos=*pDispPos;
 
-	//•K—v‚ÈƒCƒ“ƒ^[ƒtƒF[ƒX
+	//å¿…è¦ãªã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹
 	const CTextMetrics* pMetrics=&pcView->GetTextMetrics();
 	const CTextArea* pArea=&pcView->GetTextArea();
 
@@ -49,10 +49,10 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 
 	CTypeSupport cTabType(pcView,COLORIDX_TAB);
 
-	// ‚±‚ê‚©‚ç•`‰æ‚·‚éƒ^ƒu•
+	// ã“ã‚Œã‹ã‚‰æç”»ã™ã‚‹ã‚¿ãƒ–å¹…
 	int tabDispWidth = (Int)pcView->m_pcEditDoc->m_cLayoutMgr.GetActualTsvSpace( sPos.GetDrawCol(), WCODE::TAB );
 
-	// ƒ^ƒu‹L†—Ìˆæ
+	// ã‚¿ãƒ–è¨˜å·é ˜åŸŸ
 	RECT rcClip2;
 	rcClip2.left = sPos.GetDrawPos().x;
 	rcClip2.right = rcClip2.left + nCharWidth * tabDispWidth;
@@ -63,8 +63,8 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
 
 	if( pArea->IsRectIntersected(rcClip2) ){
-#if REI_MOD_TAB
-		// “h‚è‚Â‚Ô‚µ‚ÅÁ‹
+#ifdef REI_MOD_TAB
+		// å¡—ã‚Šã¤ã¶ã—ã§æ¶ˆå»
 		gr.SetBrushColor(gr.GetTextBackColor());
 		::FillRect(gr, &rcClip2, gr.GetCurrentBrush());
 		
@@ -72,20 +72,20 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 		_DrawTabArrow(
 			gr,
 			nPosLeft,
-//#if REI_LINE_CENTERING
-//		(pcView->m_pTypeData->m_nLineSpace/2) +
-//#endif // rei_
+//#ifdef REI_LINE_CENTERING
+//		(pcView->m_pTypeData->m_nLineSpace / 2) +
+//#endif  // rei_
 			sPos.GetDrawPos().y,
-			nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Areaˆê”t‚É 2013/4/11 Uchi
-#if REI_LINE_CENTERING
+			nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Areaä¸€æ¯ã« 2013/4/11 Uchi
+#ifdef REI_LINE_CENTERING
 			pcView->m_pTypeData->m_nLineSpace +
-#endif // rei_
+#endif  // rei_
 			pMetrics->GetHankakuHeight(),
 			gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 			gr.GetCurrentTextForeColor()
 		);
 #else
-		if( cTabType.IsDisp() && TABARROW_STRING == m_pTypeData->m_bTabArrow ){	//ƒ^ƒu’Êí•\¦	//@@@ 2003.03.26 MIK
+		if( cTabType.IsDisp() && TABARROW_STRING == m_pTypeData->m_bTabArrow ){	//ã‚¿ãƒ–é€šå¸¸è¡¨ç¤º	//@@@ 2003.03.26 MIK
 			//@@@ 2001.03.16 by MIK
 			::ExtTextOutW_AnyBuild(
 				gr,
@@ -98,7 +98,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				pMetrics->GetDxArray_AllHankaku()
 			);
 		}else{
-			//”wŒi
+			//èƒŒæ™¯
 			::ExtTextOutW_AnyBuild(
 				gr,
 				sPos.GetDrawPos().x,
@@ -110,26 +110,26 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				pMetrics->GetDxArray_AllHankaku()
 			);
 
-			//ƒ^ƒu–îˆó•\¦
+			//ã‚¿ãƒ–çŸ¢å°è¡¨ç¤º
 			if( cTabType.IsDisp() ){
-				// •¶šF‚â‘¾š‚©‚Ç‚¤‚©‚ğŒ»İ‚Ì DC ‚©‚ç’²‚×‚é	// 2009.05.29 ryoji 
-				// iŒŸõƒ}ƒbƒ`“™‚Ìó‹µ‚É_“î‚É‘Î‰‚·‚é‚½‚ßA‚±‚±‚Í‹L†‚ÌFw’è‚É‚ÍŒˆ‚ß‘Å‚¿‚µ‚È‚¢j
-				//	‘¾š‚©‚Ç‚¤‚©İ’è‚àŒ©‚é—l‚É‚·‚é 2013/4/11 Uchi
-				// 2013.06.21 novice •¶šFA‘¾š‚ğCGraphics‚©‚çæ“¾
+				// æ–‡å­—è‰²ã‚„å¤ªå­—ã‹ã©ã†ã‹ã‚’ç¾åœ¨ã® DC ã‹ã‚‰èª¿ã¹ã‚‹	// 2009.05.29 ryoji 
+				// ï¼ˆæ¤œç´¢ãƒãƒƒãƒç­‰ã®çŠ¶æ³ã«æŸ”è»Ÿã«å¯¾å¿œã™ã‚‹ãŸã‚ã€ã“ã“ã¯è¨˜å·ã®è‰²æŒ‡å®šã«ã¯æ±ºã‚æ‰“ã¡ã—ãªã„ï¼‰
+				//	å¤ªå­—ã‹ã©ã†ã‹è¨­å®šã‚‚è¦‹ã‚‹æ§˜ã«ã™ã‚‹ 2013/4/11 Uchi
+				// 2013.06.21 novice æ–‡å­—è‰²ã€å¤ªå­—ã‚’CGraphicsã‹ã‚‰å–å¾—
 
 				if( TABARROW_SHORT == m_pTypeData->m_bTabArrow ){
-					if( rcClip2.left <= sPos.GetDrawPos().x ){ // Apr. 1, 2003 MIK s”Ô†‚Æd‚È‚é
+					if( rcClip2.left <= sPos.GetDrawPos().x ){ // Apr. 1, 2003 MIK è¡Œç•ªå·ã¨é‡ãªã‚‹
 						_DrawTabArrow(
 							gr,
 							sPos.GetDrawPos().x,
-//#if REI_LINE_CENTERING
-//							(pcView->m_pTypeData->m_nLineSpace/2) +
-//#endif // rei_
+//#ifdef REI_LINE_CENTERING
+//							(pcView->m_pTypeData->m_nLineSpace / 2) +
+//#endif  // rei_
 							sPos.GetDrawPos().y,
 							pMetrics->GetHankakuWidth(),
-#if REI_LINE_CENTERING
+#ifdef REI_LINE_CENTERING
 							pcView->m_pTypeData->m_nLineSpace +
-#endif // rei_
+#endif  // rei_
 							pMetrics->GetHankakuHeight(),
 							gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 							gr.GetCurrentTextForeColor()
@@ -140,14 +140,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 					_DrawTabArrow(
 						gr,
 						nPosLeft,
-//#if REI_LINE_CENTERING
-//						(pcView->m_pTypeData->m_nLineSpace/2) +
-//#endif // rei_
+//#ifdef REI_LINE_CENTERING
+//						(pcView->m_pTypeData->m_nLineSpace / 2) +
+//#endif  // rei_
 						sPos.GetDrawPos().y,
-						nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Areaˆê”t‚É 2013/4/11 Uchi
-#if REI_LINE_CENTERING
+						nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Areaä¸€æ¯ã« 2013/4/11 Uchi
+#ifdef REI_LINE_CENTERING
 						pcView->m_pTypeData->m_nLineSpace +
-#endif // rei_
+#endif  // rei_
 						pMetrics->GetHankakuHeight(),
 						gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 						gr.GetCurrentTextForeColor()
@@ -158,67 +158,67 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 #endif  // rei_
 	}
 
-	//X‚ği‚ß‚é
+	//Xã‚’é€²ã‚ã‚‹
 	sPos.ForwardDrawCol(tabDispWidth);
 }
 
 
 
 /*
-	ƒ^ƒu–îˆó•`‰æŠÖ”
+	ã‚¿ãƒ–çŸ¢å°æç”»é–¢æ•°
 */
 void _DrawTabArrow(
 	CGraphics&	gr,
-	int			nPosX,   //ƒsƒNƒZƒ‹X
-	int			nPosY,   //ƒsƒNƒZƒ‹Y
-	int			nWidth,  //ƒsƒNƒZƒ‹W
-	int			nHeight, //ƒsƒNƒZƒ‹H
+	int			nPosX,   //ãƒ”ã‚¯ã‚»ãƒ«X
+	int			nPosY,   //ãƒ”ã‚¯ã‚»ãƒ«Y
+	int			nWidth,  //ãƒ”ã‚¯ã‚»ãƒ«W
+	int			nHeight, //ãƒ”ã‚¯ã‚»ãƒ«H
 	bool		bBold,
 	COLORREF	pColor
 )
 {
-	// ƒyƒ“İ’è
+	// ãƒšãƒ³è¨­å®š
 	gr.PushPen( pColor, 0 );
 
-	// –îˆó‚Ìæ“ª
+	// çŸ¢å°ã®å…ˆé ­
 	int sx = nPosX + nWidth - 2;
 	int sy = nPosY + ( nHeight / 2 );
-	int sa = nHeight / 4;								// èV‚Ìsize
+	int sa = nHeight / 4;								// éƒã®size
 
-#if REI_MOD_TAB
-	sy++; // ­‚µ‰º‚ß
+#ifdef REI_MOD_TAB
+	sy++; // å°‘ã—ä¸‹ã‚
 	
 	::MoveToEx( gr, nPosX+1, sy, NULL );
 	::LineTo(   gr, sx+1, sy );
 #else
 	DWORD pp[] = { 3, 2 };
 	POINT pt[5];
-	pt[0].x = nPosX;	//u„Ÿv¶’[‚©‚ç‰E’[
+	pt[0].x = nPosX;	//ã€Œâ”€ã€å·¦ç«¯ã‹ã‚‰å³ç«¯
 	pt[0].y = sy;
-	pt[1].x = sx;		//u^v‰E’[‚©‚çÎ‚ß¶‰º
+	pt[1].x = sx;		//ã€Œï¼ã€å³ç«¯ã‹ã‚‰æ–œã‚å·¦ä¸‹
 	pt[1].y = sy;
-	pt[2].x = sx - sa;	//	–îˆó‚Ìæ’[‚É–ß‚é
+	pt[2].x = sx - sa;	//	çŸ¢å°ã®å…ˆç«¯ã«æˆ»ã‚‹
 	pt[2].y = sy + sa;
-	pt[3].x = sx;		//u_v‰E’[‚©‚çÎ‚ß¶ã
+	pt[3].x = sx;		//ã€Œï¼¼ã€å³ç«¯ã‹ã‚‰æ–œã‚å·¦ä¸Š
 	pt[3].y = sy;
 	pt[4].x = sx - sa;
 	pt[4].y = sy - sa;
 	::PolyPolyline( gr, pt, pp, _countof(pp));
 
 	if( bBold ){
-		pt[0].x += 0;	//u„Ÿv¶’[‚©‚ç‰E’[
+		pt[0].x += 0;	//ã€Œâ”€ã€å·¦ç«¯ã‹ã‚‰å³ç«¯
 		pt[0].y += 1;
-		pt[1].x += 0;	//u^v‰E’[‚©‚çÎ‚ß¶‰º
+		pt[1].x += 0;	//ã€Œï¼ã€å³ç«¯ã‹ã‚‰æ–œã‚å·¦ä¸‹
 		pt[1].y += 1;
-		pt[2].x += 0;	//	–îˆó‚Ìæ’[‚É–ß‚é
+		pt[2].x += 0;	//	çŸ¢å°ã®å…ˆç«¯ã«æˆ»ã‚‹
 		pt[2].y += 1;
-		pt[3].x += 0;	//u_v‰E’[‚©‚çÎ‚ß¶ã
+		pt[3].x += 0;	//ã€Œï¼¼ã€å³ç«¯ã‹ã‚‰æ–œã‚å·¦ä¸Š
 		pt[3].y += 1;
 		pt[4].x += 0;
 		pt[4].y += 1;
 		::PolyPolyline( gr, pt, pp, _countof(pp));
 	}
-#endif // rei_
+#endif  // rei_
 
 	gr.PopPen();
 }

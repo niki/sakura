@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+ï»¿#include "StdAfx.h"
 #include "view/CEditView.h" // SColorStrategyInfo
 #include "CFigure_ZenSpace.h"
 #include "types/CTypeSupport.h"
@@ -10,7 +10,7 @@
 
 bool CFigure_ZenSpace::Match(const wchar_t* pText, int nTextLen) const
 {
-	if( pText[0] == L'@' ){
+	if( pText[0] == L'ã€€' ){
 		return true;
 	}
 	return false;
@@ -18,24 +18,24 @@ bool CFigure_ZenSpace::Match(const wchar_t* pText, int nTextLen) const
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                         •`‰æŽÀ‘•                            //
+//                         æç”»å®Ÿè£…                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-//! ‘SŠpƒXƒy[ƒX•`‰æ
+//! å…¨è§’ã‚¹ãƒšãƒ¼ã‚¹æç”»
 void CFigure_ZenSpace::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans ) const
 {
-	//ƒNƒŠƒbƒsƒ“ƒO‹éŒ`‚ðŒvŽZB‰æ–ÊŠO‚È‚ç•`‰æ‚µ‚È‚¢
+	//ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°çŸ©å½¢ã‚’è¨ˆç®—ã€‚ç”»é¢å¤–ãªã‚‰æç”»ã—ãªã„
 	RECT rc;
 	if(pcView->GetTextArea().GenerateClipRect(&rc,*pDispPos,2))
 	{
-		//•`‰æ
+		//æç”»
 		const wchar_t* szZenSpace =
-			CTypeSupport(pcView,COLORIDX_ZENSPACE).IsDisp()?L" ":L"@";
+			CTypeSupport(pcView,COLORIDX_ZENSPACE).IsDisp()?L"â–¡":L"ã€€";
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#if REI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace/2) +
+#ifdef REI_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace / 2) +
 #endif  // rei_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -46,6 +46,6 @@ void CFigure_ZenSpace::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* p
 		);
 	}
 
-	//ˆÊ’ui‚ß‚é
+	//ä½ç½®é€²ã‚ã‚‹
 	pDispPos->ForwardDrawCol(2);
 }

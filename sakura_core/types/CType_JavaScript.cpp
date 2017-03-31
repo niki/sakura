@@ -1,4 +1,4 @@
-/*
+﻿/*
 	Copyright (C) 2008, kobake
 	Copyright (C) 2014, Moca
 
@@ -33,11 +33,11 @@ int g_nKeywordsIdx_JS2 = -1;
 /* JavaScript */
 void CType_JavaScript::InitTypeConfigImp(STypeConfig* pType)
 {
-	//���O�Ɗg���q
+	//名前と拡張子
 	_tcscpy( pType->m_szTypeName, _T("JavaScript") );
 	_tcscpy( pType->m_szTypeExts, _T("js, json") );
 
-	//�ݒ�
+	//設定
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"/*", L"*/" );
 	pType->m_bStringLineOnly = true;
@@ -49,18 +49,18 @@ void CType_JavaScript::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp = true;
 	SetColorInfoBC(pType, COLORIDX_REGEX1, false,  RGB(  0,  0,128));
 
-	// ���[���t�@�C��
+	// ルールファイル
 	pType->m_eDefaultOutline = OUTLINE_FILE;
 	auto_strcpy( pType->m_szOutlineRuleFilename, _T("Keyword\\JavaScript.rule") );
 
 	int keywordPos = 0;
 	int idx = 0;
 	pType->m_bUseRegexKeyword = true;
-	// ���K�\�����e�����͕����ˑ��Ȃ̂ŁA�����ɂ͒�`�ł��Ȃ����Ƃɒ���
-	// ���K�\�����e��������/*��A//���������ꍇ�Ȃǂ����������Ȃ�
-	// �uret = a / b /i;�v�̂悤�ȏꍇ�ɂ��F���ς�邱�Ƃɒ���
-	RegexAdd( pType, keywordPos, idx++, COLORIDX_COMMENT, L"/\\/\\*(\\*[^\\/]|[^\\*]\\/|[^\\*\\/])*\\*\\//k" ); // �R�����g /* */ �s���ɂ���ƁA���K�\���L�[���[�h�F�ɂȂ��Ă��܂��΍�
-	RegexAdd( pType, keywordPos, idx++, COLORIDX_REGEX1, L"/(?<=[^a-zA-Z0-9_])\\/(\\\\.|[^\\\\\\/\\r\\n]){1,400}\\/[gimy]{0,4}/k" ); // ���K�\�����e����
+	// 正規表現リテラルは文脈依存なので、厳密には定義できないことに注意
+	// 正規表現リテラル中に/*や、//があった場合などもおかしくなる
+	// 「ret = a / b /i;」のような場合にも色が変わることに注意
+	RegexAdd( pType, keywordPos, idx++, COLORIDX_COMMENT, L"/\\/\\*(\\*[^\\/]|[^\\*]\\/|[^\\*\\/])*\\*\\//k" ); // コメント /* */ 行内にあると、正規表現キーワード色になってしまう対策
+	RegexAdd( pType, keywordPos, idx++, COLORIDX_REGEX1, L"/(?<=[^a-zA-Z0-9_])\\/(\\\\.|[^\\\\\\/\\r\\n]){1,400}\\/[gimy]{0,4}/k" ); // 正規表現リテラル
 }
 
 

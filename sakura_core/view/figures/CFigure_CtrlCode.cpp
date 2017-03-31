@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+ï»¿#include "StdAfx.h"
 #include "view/CEditView.h" // SColorStrategyInfo
 #include "CFigure_CtrlCode.h"
 #include "types/CTypeSupport.h"
@@ -9,8 +9,8 @@
 
 bool CFigure_CtrlCode::Match(const wchar_t* pText, int nTextLen) const
 {
-	//“––Ê‚ÍASCII§Œä•¶ŽšiC0 Controls, IsHankaku()‚Å”¼Špˆµ‚¢j‚¾‚¯‚ð§Œä•¶Žš•\Ž¦‚É‚·‚é
-	//‚»‚¤‚µ‚È‚¢‚Æ IsHankaku(0x0600)==false ‚È‚Ì‚É iswcntrl(0x0600)!=0 ‚Ì‚æ‚¤‚ÈƒP[ƒX‚Å•\Ž¦Œ…‚ª‚¸‚ê‚é
+	//å½“é¢ã¯ASCIIåˆ¶å¾¡æ–‡å­—ï¼ˆC0 Controls, IsHankaku()ã§åŠè§’æ‰±ã„ï¼‰ã ã‘ã‚’åˆ¶å¾¡æ–‡å­—è¡¨ç¤ºã«ã™ã‚‹
+	//ãã†ã—ãªã„ã¨ IsHankaku(0x0600)==false ãªã®ã« iswcntrl(0x0600)!=0 ã®ã‚ˆã†ãªã‚±ãƒ¼ã‚¹ã§è¡¨ç¤ºæ¡ãŒãšã‚Œã‚‹
 	//U+0600: ARABIC NUMBER SIGN
 	if(!(pText[0] & 0xFF80) && WCODE::IsControlCode(pText[0])){
 		return true;
@@ -20,7 +20,7 @@ bool CFigure_CtrlCode::Match(const wchar_t* pText, int nTextLen) const
 
 void CFigure_CtrlCode::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans ) const
 {
-	//ƒNƒŠƒbƒsƒ“ƒO‹éŒ`‚ðŒvŽZB‰æ–ÊŠO‚È‚ç•`‰æ‚µ‚È‚¢
+	//ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°çŸ©å½¢ã‚’è¨ˆç®—ã€‚ç”»é¢å¤–ãªã‚‰æç”»ã—ãªã„
 	RECT rc;
 	if(pcView->GetTextArea().GenerateClipRect(&rc,*pDispPos,1))
 	{
@@ -30,13 +30,13 @@ void CFigure_CtrlCode::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* p
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rc,
-			L"¥",
+			L"ãƒ»",
 			1,
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
 	}
 
-	//ˆÊ’ui‚ß‚é
+	//ä½ç½®é€²ã‚ã‚‹
 	pDispPos->ForwardDrawCol(1);
 }
 
@@ -47,8 +47,8 @@ void CFigure_CtrlCode::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* p
 
 bool CFigure_HanBinary::Match(const wchar_t* pText, int nTextLen) const
 {
-	int nLen = pText[1]? 2:1;	// ¦ pText ‚Íí‚ÉI’[‚æ‚è‚àŽè‘O
-	if(CNativeW::GetKetaOfChar(pText, nLen, 0) == 1){	// ”¼Šp
+	int nLen = pText[1]? 2:1;	// â€» pText ã¯å¸¸ã«çµ‚ç«¯ã‚ˆã‚Šã‚‚æ‰‹å‰
+	if(CNativeW::GetKetaOfChar(pText, nLen, 0) == 1){	// åŠè§’
 		ECharSet e;
 		CheckUtf16leChar(pText, nLen, &e, UC_NONCHARACTER);
 		if(e == CHARSET_BINARY){
@@ -60,7 +60,7 @@ bool CFigure_HanBinary::Match(const wchar_t* pText, int nTextLen) const
 
 void CFigure_HanBinary::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans ) const
 {
-	//ƒNƒŠƒbƒsƒ“ƒO‹éŒ`‚ðŒvŽZB‰æ–ÊŠO‚È‚ç•`‰æ‚µ‚È‚¢
+	//ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°çŸ©å½¢ã‚’è¨ˆç®—ã€‚ç”»é¢å¤–ãªã‚‰æç”»ã—ãªã„
 	RECT rc;
 	if(pcView->GetTextArea().GenerateClipRect(&rc,*pDispPos,1))
 	{
@@ -70,13 +70,13 @@ void CFigure_HanBinary::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* 
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rc,
-			L"¬",
+			L"ã€“",
 			1,
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
 	}
 
-	//ˆÊ’ui‚ß‚é
+	//ä½ç½®é€²ã‚ã‚‹
 	pDispPos->ForwardDrawCol(1);
 }
 
@@ -87,8 +87,8 @@ void CFigure_HanBinary::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* 
 
 bool CFigure_ZenBinary::Match(const wchar_t* pText, int nTextLen) const
 {
-	int nLen = pText[1]? 2:1;	// ¦ pText ‚Íí‚ÉI’[‚æ‚è‚àŽè‘O
-	if(CNativeW::GetKetaOfChar(pText, nLen, 0) > 1){	// ‘SŠp
+	int nLen = pText[1]? 2:1;	// â€» pText ã¯å¸¸ã«çµ‚ç«¯ã‚ˆã‚Šã‚‚æ‰‹å‰
+	if(CNativeW::GetKetaOfChar(pText, nLen, 0) > 1){	// å…¨è§’
 		ECharSet e;
 		CheckUtf16leChar(pText, nLen, &e, UC_NONCHARACTER);
 		if(e == CHARSET_BINARY){
@@ -100,7 +100,7 @@ bool CFigure_ZenBinary::Match(const wchar_t* pText, int nTextLen) const
 
 void CFigure_ZenBinary::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans ) const
 {
-	//ƒNƒŠƒbƒsƒ“ƒO‹éŒ`‚ðŒvŽZB‰æ–ÊŠO‚È‚ç•`‰æ‚µ‚È‚¢
+	//ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°çŸ©å½¢ã‚’è¨ˆç®—ã€‚ç”»é¢å¤–ãªã‚‰æç”»ã—ãªã„
 	RECT rc;
 	if(pcView->GetTextArea().GenerateClipRect(&rc,*pDispPos,2))
 	{
@@ -110,12 +110,12 @@ void CFigure_ZenBinary::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* 
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rc,
-			L"¬",
+			L"ã€“",
 			1,
 			pcView->GetTextMetrics().GetDxArray_AllZenkaku()
 		);
 	}
 
-	//ˆÊ’ui‚ß‚é
+	//ä½ç½®é€²ã‚ã‚‹
 	pDispPos->ForwardDrawCol(2);
 }

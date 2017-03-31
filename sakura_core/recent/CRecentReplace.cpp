@@ -1,4 +1,4 @@
-/*
+﻿/*
 	Copyright (C) 2008, kobake
 
 	This software is provided 'as-is', without any express or implied
@@ -29,7 +29,7 @@
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                           ����                              //
+//                           生成                              //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 CRecentReplace::CRecentReplace()
@@ -38,23 +38,23 @@ CRecentReplace::CRecentReplace()
 		GetShareData()->m_sSearchKeywords.m_aReplaceKeys.dataPtr(),
 		&GetShareData()->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef(),
 		NULL,
-#if REI_CHG_MAXDATA
+#ifdef REI_CHG_MAXDATA
 		RegKey(REI_REGKEY).get(_T("RecentReplaceKeyMax"), MAX_REPLACEKEY),
 #else
 		MAX_REPLACEKEY,
-#endif
+#endif  // rei_
 		NULL
 	);
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                      �I�[�o�[���C�h                         //
+//                      オーバーライド                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 /*
-	�A�C�e���̔�r�v�f���擾����B
+	アイテムの比較要素を取得する。
 
-	@note	�擾��̃|�C���^�̓��[�U�Ǘ��̍\���̂ɃL���X�g���ĎQ�Ƃ��Ă��������B
+	@note	取得後のポインタはユーザ管理の構造体にキャストして参照してください。
 */
 const TCHAR* CRecentReplace::GetItemText( int nIndex ) const
 {

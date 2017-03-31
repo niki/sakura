@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Copyright (C) 2014, Moca
 
 	This software is provided 'as-is', without any express or implied
@@ -25,7 +25,7 @@
 #ifndef SAKURA_CTYPEINIT_H_
 #define SAKURA_CTYPEINIT_H_
 
-// “à‘ ƒL[ƒ[ƒh‚ğ’è‹`‚·‚é‚É‚Í‚±‚ê‚ğ’è‹`‚µ‚Ä‚­‚¾‚³‚¢
+// å†…è”µã‚­ãƒ¼ãƒ¯ãƒ¼ãƒ‰ã‚’å®šç¾©ã™ã‚‹ã«ã¯ã“ã‚Œã‚’å®šç¾©ã—ã¦ãã ã•ã„
 // #define BUILD_OPT_IMPKEYWORD 1
 
 void RegexAdd(STypeConfig* pType, int& keywordPos, int idx, int colorIdx, const wchar_t* keyword );

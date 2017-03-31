@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Copyright (C) 2008, kobake
 
 	This software is provided 'as-is', without any express or implied
@@ -31,13 +31,13 @@ int g_nKeywordsIdx_AWK = -1;
 /* awk */
 void CType_Awk::InitTypeConfigImp(STypeConfig* pType)
 {
-	//–¼‘O‚ÆŠg’£Žq
+	//åå‰ã¨æ‹¡å¼µå­
 	_tcscpy( pType->m_szTypeName, _T("AWK") );
 	_tcscpy( pType->m_szTypeExts, _T("awk") );
 
-	//Ý’è
-	pType->m_cLineComment.CopyTo( 0, L"#", -1 );		/* sƒRƒƒ“ƒgƒfƒŠƒ~ƒ^ */
-	pType->m_eDefaultOutline = OUTLINE_TEXT;			/* ƒAƒEƒgƒ‰ƒCƒ“‰ðÍ•û–@ */
+	//è¨­å®š
+	pType->m_cLineComment.CopyTo( 0, L"#", -1 );		/* è¡Œã‚³ãƒ¡ãƒ³ãƒˆãƒ‡ãƒªãƒŸã‚¿ */
+	pType->m_eDefaultOutline = OUTLINE_TEXT;			/* ã‚¢ã‚¦ãƒˆãƒ©ã‚¤ãƒ³è§£æžæ–¹æ³• */
 	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_AWK;
 }
 

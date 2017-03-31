@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+ï»¿#include "StdAfx.h"
 #include "view/CEditView.h" // SColorStrategyInfo
 
 #include "CFigure_HanSpace.h"
@@ -18,59 +18,59 @@ bool CFigure_HanSpace::Match(const wchar_t* pText, int nTextLen) const
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                         •`‰æŽÀ‘•                            //
+//                         æç”»å®Ÿè£…                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-//! ”¼ŠpƒXƒy[ƒX•`‰æ
+//! åŠè§’ã‚¹ãƒšãƒ¼ã‚¹æç”»
 void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans) const
 {
-	//ƒNƒŠƒbƒsƒ“ƒO‹éŒ`‚ðŒvŽZB‰æ–ÊŠO‚È‚ç•`‰æ‚µ‚È‚¢
+	//ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°çŸ©å½¢ã‚’è¨ˆç®—ã€‚ç”»é¢å¤–ãªã‚‰æç”»ã—ãªã„
 	CMyRect rcClip;
 	if(pcView->GetTextArea().GenerateClipRect(&rcClip,*pDispPos,1))
 	{
-#if REI_MOD_HAN_SPACE
-		// “h‚è‚Â‚Ô‚µ‚ÅÁ‹Ž
+#ifdef REI_MOD_HAN_SPACE
+		// å¡—ã‚Šã¤ã¶ã—ã§æ¶ˆåŽ»
 		gr.SetBrushColor(gr.GetTextBackColor());
 		::FillRect(gr, &rcClip, gr.GetCurrentBrush());
-//		// ‹ó”’‚ÅÁ‹Ž
+//		// ç©ºç™½ã§æ¶ˆåŽ»
 //		CMyRect rcClipBottom=rcClip;
 //		::ExtTextOutW_AnyBuild(
 //			gr,
 //			pDispPos->GetDrawPos().x,
-//#  if REI_LINE_CENTERING
-//			(pcView->m_pTypeData->m_nLineSpace/2) +
+//#  ifdef REI_LINE_CENTERING
+//			(pcView->m_pTypeData->m_nLineSpace / 2) +
 //#  endif  // rei_
 //			pDispPos->GetDrawPos().y,
 //			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 //			&rcClipBottom,
-//			L" ",//L"¥",
+//			L" ",//L"ãƒ»",
 //			1,
 //			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 //		);
 		
-		// ”¼ŠpƒXƒy[ƒX‚ðƒhƒbƒg‚Å•\Œ»
+		// åŠè§’ã‚¹ãƒšãƒ¼ã‚¹ã‚’ãƒ‰ãƒƒãƒˆã§è¡¨ç¾
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
-		y++; // ­‚µ‰º‚ß
-		y++; // ­‚µ‰º‚ß
-//#  if REI_LINE_CENTERING
-//		y += (pcView->m_pTypeData->m_nLineSpace/2);
+		y++; // å°‘ã—ä¸‹ã‚
+		y++; // å°‘ã—ä¸‹ã‚
+//#  ifdef REI_LINE_CENTERING
+//		y += (pcView->m_pTypeData->m_nLineSpace / 2);
 //#  endif  // rei_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
-		x--; // ­‚µ¶‚ß
+		x--; // å°‘ã—å·¦ã‚
 		::MoveToEx( gr, x, y-2, NULL );
 		::LineTo(   gr, x+2, y-2 );
 		::MoveToEx( gr, x, y-1, NULL );
 		::LineTo(   gr, x+2, y-1 );
 #else
-		//¬•¶Žš"o"‚Ì‰º”¼•ª‚ðo—Í
+		//å°æ–‡å­—"o"ã®ä¸‹åŠåˆ†ã‚’å‡ºåŠ›
 		CMyRect rcClipBottom=rcClip;
 		rcClipBottom.top=rcClip.top+pcView->GetTextMetrics().GetHankakuHeight()/2;
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#  if REI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace/2) +
+#  ifdef REI_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace / 2) +
 #  endif  // rei_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -80,14 +80,14 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
 		
-		//ã”¼•ª‚Í•’Ê‚Ì‹ó”’‚Åo—Íi"o"‚Ìã”¼•ª‚ðÁ‚·j
+		//ä¸ŠåŠåˆ†ã¯æ™®é€šã®ç©ºç™½ã§å‡ºåŠ›ï¼ˆ"o"ã®ä¸ŠåŠåˆ†ã‚’æ¶ˆã™ï¼‰
 		CMyRect rcClipTop=rcClip;
 		rcClipTop.bottom=rcClip.top+pcView->GetTextMetrics().GetHankakuHeight()/2;
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#  if REI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace/2) +
+#  ifdef REI_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace / 2) +
 #  endif  // rei_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -99,6 +99,6 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 #endif  // rei_
 	}
 
-	//ˆÊ’ui‚ß‚é
+	//ä½ç½®é€²ã‚ã‚‹
 	pDispPos->ForwardDrawCol(1);
 }

@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Copyright (C) 2008, kobake
 	Copyright (C) 2014, Moca
 
@@ -33,11 +33,11 @@ int g_nKeywordsIdx_CSHARP2 = -1;
 /* C# */
 void CType_Csharp::InitTypeConfigImp(STypeConfig* pType)
 {
-	//–¼‘O‚ÆŠg’£Žq
+	//åå‰ã¨æ‹¡å¼µå­
 	_tcscpy( pType->m_szTypeName, _T("C#") );
 	_tcscpy( pType->m_szTypeExts, _T("cs") );
 
-	//Ý’è
+	//è¨­å®š
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"/*", L"*/" );
 	pType->m_nStringType = STRING_LITERAL_CSHARP;

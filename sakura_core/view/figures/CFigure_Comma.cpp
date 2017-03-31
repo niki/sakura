@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+Ôªø#include "StdAfx.h"
 #include "view/CEditView.h" // SColorStrategyInfo
 #include "CFigure_Comma.h"
 #include "env/CShareData.h"
@@ -23,16 +23,16 @@ bool CFigure_Comma::Match(const wchar_t* pText, int nTextLen) const
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                         ï`âÊé¿ëï                            //
+//                         ÊèèÁîªÂÆüË£Ö                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-/*! ÉJÉìÉ}ï`âÊ
+/*! „Ç´„É≥„ÉûÊèèÁîª
 */
 void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans) const
 {
 	DispPos& sPos=*pDispPos;
 
-	//ïKóvÇ»ÉCÉìÉ^Å[ÉtÉFÅ[ÉX
+	//ÂøÖË¶Å„Å™„Ç§„É≥„Çø„Éº„Éï„Çß„Éº„Çπ
 	const CTextMetrics* pMetrics=&pcView->GetTextMetrics();
 	const CTextArea* pArea=&pcView->GetTextArea();
 
@@ -41,10 +41,10 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 
 	CTypeSupport cTabType(pcView,COLORIDX_TAB);
 
-	// Ç±ÇÍÇ©ÇÁï`âÊÇ∑ÇÈÉ^Éuïù
+	// „Åì„Çå„Åã„ÇâÊèèÁîª„Åô„Çã„Çø„ÉñÂπÖ
 	int tabDispWidth = (Int)pcView->m_pcEditDoc->m_cLayoutMgr.GetActualTsvSpace( sPos.GetDrawCol(), L',' );
 
-	// É^ÉuãLçÜóÃàÊ
+	// „Çø„ÉñË®òÂè∑È†òÂüü
 	RECT rcClip2;
 	rcClip2.left = sPos.GetDrawPos().x;
 	rcClip2.right = rcClip2.left + nCharWidth * tabDispWidth;
@@ -55,7 +55,7 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
 
 	if( pArea->IsRectIntersected(rcClip2) ){
-		if( cTabType.IsDisp() ){	//CSVÉÇÅ[Éh
+		if( cTabType.IsDisp() ){	//CSV„É¢„Éº„Éâ
 			::ExtTextOutW_AnyBuild(
 				gr,
 				sPos.GetDrawPos().x,
@@ -69,7 +69,7 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 		}
 	}
 
-	//XÇêiÇﬂÇÈ
+	//X„ÇíÈÄ≤„ÇÅ„Çã
 	sPos.ForwardDrawCol(tabDispWidth);
 }
 

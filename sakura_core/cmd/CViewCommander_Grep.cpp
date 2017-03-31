@@ -1,5 +1,5 @@
-/*!	@file
-@brief CViewCommanderƒNƒ‰ƒX‚ÌƒRƒ}ƒ“ƒh(Grep)ŠÖ”ŒQ
+ï»¿/*!	@file
+@brief CViewCommanderã‚¯ãƒ©ã‚¹ã®ã‚³ãƒãƒ³ãƒ‰(Grep)é–¢æ•°ç¾¤
 
 */
 /*
@@ -21,42 +21,42 @@
 #include "plugin/CPlugin.h"
 #include "plugin/CJackManager.h"
 
-/*! GREPƒ_ƒCƒAƒƒO‚Ì•\¦
+/*! GREPãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®è¡¨ç¤º
 
-	@date 2005.01.10 genta CEditView_Command‚æ‚èˆÚ“®
+	@date 2005.01.10 genta CEditView_Commandã‚ˆã‚Šç§»å‹•
 	@author Yazaki
 */
 void CViewCommander::Command_GREP_DIALOG( void )
 {
 	CNativeW	cmemCurText;
-	// 2014.07.01 •¡”GrepƒEƒBƒ“ƒhƒE‚ğg‚¢•ª‚¯‚Ä‚¢‚éê‡‚È‚Ç‚É‰e‹¿‚µ‚È‚¢‚æ‚¤‚ÉA–¢İ’è‚Ì‚Æ‚«‚¾‚¯History‚ğŒ©‚é
+	// 2014.07.01 è¤‡æ•°Grepã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ä½¿ã„åˆ†ã‘ã¦ã„ã‚‹å ´åˆãªã©ã«å½±éŸ¿ã—ãªã„ã‚ˆã†ã«ã€æœªè¨­å®šã®ã¨ãã ã‘Historyã‚’è¦‹ã‚‹
 	bool bGetHistory = GetEditWindow()->m_cDlgGrep.m_bSetText == false;
 
-	/* Œ»İƒJ[ƒ\ƒ‹ˆÊ’u’PŒê‚Ü‚½‚Í‘I‘ğ”ÍˆÍ‚æ‚èŒŸõ“™‚ÌƒL[‚ğæ“¾ */
-#if REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+	/* ç¾åœ¨ã‚«ãƒ¼ã‚½ãƒ«ä½ç½®å˜èªã¾ãŸã¯é¸æŠç¯„å›²ã‚ˆã‚Šæ¤œç´¢ç­‰ã®ã‚­ãƒ¼ã‚’å–å¾— */
+#ifdef REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg(
       cmemCurText, bGetHistory, m_pCommanderView->m_sCurSearchOption.bRegularExp);
 #else
-	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText, bGetHistory );	// 2006.08.23 ryoji ƒ_ƒCƒAƒƒOê—pŠÖ”‚É•ÏX
-#endif // rei_
+	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText, bGetHistory );	// 2006.08.23 ryoji ãƒ€ã‚¤ã‚¢ãƒ­ã‚°å°‚ç”¨é–¢æ•°ã«å¤‰æ›´
+#endif  // rei_
 
 	if( bSet ){
 		GetEditWindow()->m_cDlgGrep.m_strText = cmemCurText.GetStringPtr();
 		GetEditWindow()->m_cDlgGrep.m_bSetText = true;
 	}
 
-	/* Grepƒ_ƒCƒAƒƒO‚Ì•\¦ */
+	/* Grepãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®è¡¨ç¤º */
 	int nRet = GetEditWindow()->m_cDlgGrep.DoModal( G_AppInstance(), m_pCommanderView->GetHwnd(), GetDocument()->m_cDocFile.GetFilePath() );
 //	MYTRACE( _T("nRet=%d\n"), nRet );
 	if( !nRet ){
 		return;
 	}
-	HandleCommand(F_GREP, true, 0, 0, 0, 0);	//	GREPƒRƒ}ƒ“ƒh‚Ì”­s
+	HandleCommand(F_GREP, true, 0, 0, 0, 0);	//	GREPã‚³ãƒãƒ³ãƒ‰ã®ç™ºè¡Œ
 }
 
-/*! GREPÀs
+/*! GREPå®Ÿè¡Œ
 
-	@date 2005.01.10 genta CEditView_Command‚æ‚èˆÚ“®
+	@date 2005.01.10 genta CEditView_Commandã‚ˆã‚Šç§»å‹•
 */
 void CViewCommander::Command_GREP( void )
 {
@@ -66,7 +66,7 @@ void CViewCommander::Command_GREP( void )
 	CNativeW		cmWork4;
 
 	cmWork1.SetString( GetEditWindow()->m_cDlgGrep.m_strText.c_str() );
-#if REI_MOD_GREP
+#ifdef REI_MOD_GREP
 	int count = 0;
 	CNativeT temp;
 	if (!GetEditWindow()->m_cDlgGrep.m_bFromThisText) {
@@ -97,7 +97,7 @@ void CViewCommander::Command_GREP( void )
 	} else {
 		TCHAR	szWorkFolder[MAX_PATH];
 		TCHAR	szWorkFile[MAX_PATH];
-		// 2003.08.01 Moca ƒtƒ@ƒCƒ‹–¼‚ÍƒXƒy[ƒX‚È‚Ç‚Í‹æØ‚è‹L†‚É‚È‚é‚Ì‚ÅA""‚ÅˆÍ‚¢AƒGƒXƒP[ƒv‚·‚é
+		// 2003.08.01 Moca ãƒ•ã‚¡ã‚¤ãƒ«åã¯ã‚¹ãƒšãƒ¼ã‚¹ãªã©ã¯åŒºåˆ‡ã‚Šè¨˜å·ã«ãªã‚‹ã®ã§ã€""ã§å›²ã„ã€ã‚¨ã‚¹ã‚±ãƒ¼ãƒ—ã™ã‚‹
 		szWorkFile[0] = _T('"');
 		SplitPath_FolderAndFile( GetEditWindow()->m_cDlgGrep.m_szCurrentFilePath, szWorkFolder, szWorkFile + 1 );
 		_tcscat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
@@ -107,20 +107,20 @@ void CViewCommander::Command_GREP( void )
 #else
 	cmWork2.SetString( GetEditWindow()->m_cDlgGrep.m_szFile );
 	cmWork3.SetString( GetEditWindow()->m_cDlgGrep.m_szFolder );
-#endif // rei_
+#endif  // rei_
 
-	/*	¡‚ÌEditView‚ÉGrepŒ‹‰Ê‚ğ•\¦‚·‚éB
-		Grepƒ‚[ƒh‚Ì‚Æ‚«A‚Ü‚½‚Í–¢•ÒW‚Å–³‘è‚©‚ÂƒAƒEƒgƒvƒbƒg‚Å‚È‚¢ê‡B
-		©ƒEƒBƒ“ƒhƒE‚ªGrepÀs’†‚àA(ˆÙíI—¹‚·‚é‚Ì‚Å)•ÊƒEƒBƒ“ƒhƒE‚É‚·‚é
+	/*	ä»Šã®EditViewã«Grepçµæœã‚’è¡¨ç¤ºã™ã‚‹ã€‚
+		Grepãƒ¢ãƒ¼ãƒ‰ã®ã¨ãã€ã¾ãŸã¯æœªç·¨é›†ã§ç„¡é¡Œã‹ã¤ã‚¢ã‚¦ãƒˆãƒ—ãƒƒãƒˆã§ãªã„å ´åˆã€‚
+		è‡ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒGrepå®Ÿè¡Œä¸­ã‚‚ã€(ç•°å¸¸çµ‚äº†ã™ã‚‹ã®ã§)åˆ¥ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ã™ã‚‹
 	*/
 	if( (  CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode &&
 		  !CEditApp::getInstance()->m_pcGrepAgent->m_bGrepRunning ) ||
 		( !GetDocument()->m_cDocEditor.IsModified() &&
-		  !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() &&		/* Œ»İ•ÒW’†‚Ìƒtƒ@ƒCƒ‹‚ÌƒpƒX */
+		  !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() &&		/* ç¾åœ¨ç·¨é›†ä¸­ã®ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‘ã‚¹ */
 		  !CAppMode::getInstance()->IsDebugMode()
 		)
 	){
-		// 2011.01.23 Grepƒ^ƒCƒv•Ê“K—p
+		// 2011.01.23 Grepã‚¿ã‚¤ãƒ—åˆ¥é©ç”¨
 		if( !GetDocument()->m_cDocEditor.IsModified() && GetDocument()->m_cDocLineMgr.GetLineCount() == 0 ){
 			CTypeConfig cTypeGrep = CDocTypeManager().GetDocumentTypeOfExt( _T("grepout") );
 			const STypeConfigMini* pConfig;
@@ -138,11 +138,11 @@ void CViewCommander::Command_GREP( void )
 			&cmWork2,
 			&cmWork3,
 			false,
-#if REI_MOD_GREP
+#ifdef REI_MOD_GREP
 			(count > 0) ? GetEditWindow()->m_cDlgGrep.m_bSubFolder : false,
 #else
 			GetEditWindow()->m_cDlgGrep.m_bSubFolder,
-#endif
+#endif  // rei_
 			false,
 			true, // Header
 			GetEditWindow()->m_cDlgGrep.m_sSearchOption,
@@ -156,7 +156,7 @@ void CViewCommander::Command_GREP( void )
 			false
 		);
 
-		//ƒvƒ‰ƒOƒCƒ“FDocumentOpenƒCƒxƒ“ƒgÀs
+		//ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ï¼šDocumentOpenã‚¤ãƒ™ãƒ³ãƒˆå®Ÿè¡Œ
 		CPlug::Array plugs;
 		CWSHIfObj::List params;
 		CJackManager::getInstance()->GetUsablePlug( PP_DOCUMENT_OPEN, 0, &plugs );
@@ -165,27 +165,27 @@ void CViewCommander::Command_GREP( void )
 		}
 	}
 	else{
-		// •ÒWƒEƒBƒ“ƒhƒE‚ÌãŒÀƒ`ƒFƒbƒN
-		if( GetDllShareData().m_sNodes.m_nEditArrNum >= MAX_EDITWINDOWS ){	//Å‘å’lC³	//@@@ 2003.05.31 MIK
+		// ç·¨é›†ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ä¸Šé™ãƒã‚§ãƒƒã‚¯
+		if( GetDllShareData().m_sNodes.m_nEditArrNum >= MAX_EDITWINDOWS ){	//æœ€å¤§å€¤ä¿®æ­£	//@@@ 2003.05.31 MIK
 			OkMessage( m_pCommanderView->GetHwnd(), LS(STR_MAXWINDOW), MAX_EDITWINDOWS );
 			return;
 		}
 
-		/*======= Grep‚ÌÀs =============*/
-		/* GrepŒ‹‰ÊƒEƒBƒ“ƒhƒE‚Ì•\¦ */
+		/*======= Grepã®å®Ÿè¡Œ =============*/
+		/* Grepçµæœã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®è¡¨ç¤º */
 		CControlTray::DoGrepCreateWindow(G_AppInstance(), m_pCommanderView->GetHwnd(), GetEditWindow()->m_cDlgGrep);
 	}
 	return;
 }
 
-/*! GREP’uŠ·ƒ_ƒCƒAƒƒO‚Ì•\¦
+/*! GREPç½®æ›ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®è¡¨ç¤º
 */
 void CViewCommander::Command_GREP_REPLACE_DLG( void )
 {
 	CNativeW	cmemCurText;
 	CDlgGrepReplace& cDlgGrepRep = GetEditWindow()->m_cDlgGrepReplace;
 
-	// •¡”GrepƒEƒBƒ“ƒhƒE‚ğg‚¢•ª‚¯‚Ä‚¢‚éê‡‚È‚Ç‚É‰e‹¿‚µ‚È‚¢‚æ‚¤‚ÉA–¢İ’è‚Ì‚Æ‚«‚¾‚¯History‚ğŒ©‚é
+	// è¤‡æ•°Grepã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ä½¿ã„åˆ†ã‘ã¦ã„ã‚‹å ´åˆãªã©ã«å½±éŸ¿ã—ãªã„ã‚ˆã†ã«ã€æœªè¨­å®šã®ã¨ãã ã‘Historyã‚’è¦‹ã‚‹
 	bool bGetHistory = cDlgGrepRep.m_bSetText == false;
 
 	m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText, bGetHistory );
@@ -204,10 +204,10 @@ void CViewCommander::Command_GREP_REPLACE_DLG( void )
 	if( !nRet ){
 		return;
 	}
-	HandleCommand(F_GREP_REPLACE, TRUE, 0, 0, 0, 0);	//	GREPƒRƒ}ƒ“ƒh‚Ì”­s
+	HandleCommand(F_GREP_REPLACE, TRUE, 0, 0, 0, 0);	//	GREPã‚³ãƒãƒ³ãƒ‰ã®ç™ºè¡Œ
 }
 
-/*! GREP’uŠ·Às
+/*! GREPç½®æ›å®Ÿè¡Œ
 */
 void CViewCommander::Command_GREP_REPLACE( void )
 {
@@ -222,14 +222,14 @@ void CViewCommander::Command_GREP_REPLACE( void )
 	cmWork3.SetString( cDlgGrepRep.m_szFolder );
 	cmWork4.SetString( cDlgGrepRep.m_strText2.c_str() );
 
-	/*	¡‚ÌEditView‚ÉGrepŒ‹‰Ê‚ğ•\¦‚·‚éB
-		Grepƒ‚[ƒh‚Ì‚Æ‚«A‚Ü‚½‚Í–¢•ÒW‚Å–³‘è‚©‚ÂƒAƒEƒgƒvƒbƒg‚Å‚È‚¢ê‡B
-		©ƒEƒBƒ“ƒhƒE‚ªGrepÀs’†‚àA(ˆÙíI—¹‚·‚é‚Ì‚Å)•ÊƒEƒBƒ“ƒhƒE‚É‚·‚é
+	/*	ä»Šã®EditViewã«Grepçµæœã‚’è¡¨ç¤ºã™ã‚‹ã€‚
+		Grepãƒ¢ãƒ¼ãƒ‰ã®ã¨ãã€ã¾ãŸã¯æœªç·¨é›†ã§ç„¡é¡Œã‹ã¤ã‚¢ã‚¦ãƒˆãƒ—ãƒƒãƒˆã§ãªã„å ´åˆã€‚
+		è‡ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒGrepå®Ÿè¡Œä¸­ã‚‚ã€(ç•°å¸¸çµ‚äº†ã™ã‚‹ã®ã§)åˆ¥ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ã™ã‚‹
 	*/
 	if( (  CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode &&
 		  !CEditApp::getInstance()->m_pcGrepAgent->m_bGrepRunning ) ||
 		( !GetDocument()->m_cDocEditor.IsModified() &&
-		  !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() &&		/* Œ»İ•ÒW’†‚Ìƒtƒ@ƒCƒ‹‚ÌƒpƒX */
+		  !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() &&		/* ç¾åœ¨ç·¨é›†ä¸­ã®ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‘ã‚¹ */
 		  !CAppMode::getInstance()->IsDebugMode()
 		)
 	){
@@ -256,13 +256,13 @@ void CViewCommander::Command_GREP_REPLACE( void )
 		);
 	}
 	else{
-		// •ÒWƒEƒBƒ“ƒhƒE‚ÌãŒÀƒ`ƒFƒbƒN
-		if( GetDllShareData().m_sNodes.m_nEditArrNum >= MAX_EDITWINDOWS ){	//Å‘å’lC³	//@@@ 2003.05.31 MIK
-			OkMessage( m_pCommanderView->GetHwnd(), _T("•ÒWƒEƒBƒ“ƒhƒE”‚ÌãŒÀ‚Í%d‚Å‚·B\n‚±‚êˆÈã‚Í“¯‚ÉŠJ‚¯‚Ü‚¹‚ñB"), MAX_EDITWINDOWS );
+		// ç·¨é›†ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ä¸Šé™ãƒã‚§ãƒƒã‚¯
+		if( GetDllShareData().m_sNodes.m_nEditArrNum >= MAX_EDITWINDOWS ){	//æœ€å¤§å€¤ä¿®æ­£	//@@@ 2003.05.31 MIK
+			OkMessage( m_pCommanderView->GetHwnd(), _T("ç·¨é›†ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦æ•°ã®ä¸Šé™ã¯%dã§ã™ã€‚\nã“ã‚Œä»¥ä¸Šã¯åŒæ™‚ã«é–‹ã‘ã¾ã›ã‚“ã€‚"), MAX_EDITWINDOWS );
 			return;
 		}
-		/*======= Grep‚ÌÀs =============*/
-		/* GrepŒ‹‰ÊƒEƒBƒ“ƒhƒE‚Ì•\¦ */
+		/*======= Grepã®å®Ÿè¡Œ =============*/
+		/* Grepçµæœã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®è¡¨ç¤º */
 		cmWork1.Replace( L"\"", L"\"\"" );
 		cmWork2.Replace( _T("\""), _T("\"\"") );
 		cmWork3.Replace( _T("\""), _T("\"\"") );
@@ -283,23 +283,23 @@ void CViewCommander::Command_GREP_REPLACE( void )
 		auto_sprintf( szTemp, _T("%d"), cDlgGrepRep.m_nGrepCharSet );
 		cCmdLine.AppendString(szTemp);
 
-		//GOPTƒIƒvƒVƒ‡ƒ“
+		//GOPTã‚ªãƒ—ã‚·ãƒ§ãƒ³
 		TCHAR	pOpt[64];
 		pOpt[0] = _T('\0');
-		if( cDlgGrepRep.m_bSubFolder				)_tcscat( pOpt, _T("S") );	// ƒTƒuƒtƒHƒ‹ƒ_‚©‚ç‚àŒŸõ‚·‚é
-		if( cDlgGrepRep.m_sSearchOption.bWordOnly	)_tcscat( pOpt, _T("W") );	// ’PŒê’PˆÊ‚Å’T‚·
-		if( cDlgGrepRep.m_sSearchOption.bLoHiCase	)_tcscat( pOpt, _T("L") );	// ‰p‘å•¶š‚Æ‰p¬•¶š‚ğ‹æ•Ê‚·‚é
-		if( cDlgGrepRep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// ³‹K•\Œ»
-		if( cDlgGrepRep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// s‚ğo—Í‚·‚é
-		// if( cDlgGrepRep.m_nGrepOutputLineType == 2     )_tcscat( pOpt, _T("N") );	// ”Ûƒqƒbƒgs‚ğo—Í‚·‚é 2014.09.23
-		if( 1 == cDlgGrepRep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("1") );	// Grep: o—ÍŒ`®
-		if( 2 == cDlgGrepRep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("2") );	// Grep: o—ÍŒ`®
+		if( cDlgGrepRep.m_bSubFolder				)_tcscat( pOpt, _T("S") );	// ã‚µãƒ–ãƒ•ã‚©ãƒ«ãƒ€ã‹ã‚‰ã‚‚æ¤œç´¢ã™ã‚‹
+		if( cDlgGrepRep.m_sSearchOption.bWordOnly	)_tcscat( pOpt, _T("W") );	// å˜èªå˜ä½ã§æ¢ã™
+		if( cDlgGrepRep.m_sSearchOption.bLoHiCase	)_tcscat( pOpt, _T("L") );	// è‹±å¤§æ–‡å­—ã¨è‹±å°æ–‡å­—ã‚’åŒºåˆ¥ã™ã‚‹
+		if( cDlgGrepRep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// æ­£è¦è¡¨ç¾
+		if( cDlgGrepRep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// è¡Œã‚’å‡ºåŠ›ã™ã‚‹
+		// if( cDlgGrepRep.m_nGrepOutputLineType == 2     )_tcscat( pOpt, _T("N") );	// å¦ãƒ’ãƒƒãƒˆè¡Œã‚’å‡ºåŠ›ã™ã‚‹ 2014.09.23
+		if( 1 == cDlgGrepRep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("1") );	// Grep: å‡ºåŠ›å½¢å¼
+		if( 2 == cDlgGrepRep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("2") );	// Grep: å‡ºåŠ›å½¢å¼
 		if( 3 == cDlgGrepRep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("3") );
 		if( cDlgGrepRep.m_bGrepOutputFileOnly		)_tcscat( pOpt, _T("F") );
 		if( cDlgGrepRep.m_bGrepOutputBaseFolder		)_tcscat( pOpt, _T("B") );
 		if( cDlgGrepRep.m_bGrepSeparateFolder		)_tcscat( pOpt, _T("D") );
-		if( cDlgGrepRep.m_bPaste					)_tcscat( pOpt, _T("C") );	// ƒNƒŠƒbƒvƒ{[ƒh‚©‚ç“\‚è•t‚¯
-		if( cDlgGrepRep.m_bBackup					)_tcscat( pOpt, _T("O") );	// ƒoƒbƒNƒAƒbƒvì¬
+		if( cDlgGrepRep.m_bPaste					)_tcscat( pOpt, _T("C") );	// ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã‹ã‚‰è²¼ã‚Šä»˜ã‘
+		if( cDlgGrepRep.m_bBackup					)_tcscat( pOpt, _T("O") );	// ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ä½œæˆ
 		if( 0 < _tcslen( pOpt ) ){
 			cCmdLine.AppendString( _T(" -GOPT=") );
 			cCmdLine.AppendString( pOpt );

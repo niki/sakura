@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Copyright (C) 2008, kobake
 	Copyright (C) 2014, Moca
 
@@ -30,11 +30,11 @@
 /* CSS */
 void CType_Xml::InitTypeConfigImp(STypeConfig* pType)
 {
-	//–¼‘O‚ÆŠg’£Žq
+	//åå‰ã¨æ‹¡å¼µå­
 	_tcscpy( pType->m_szTypeName, _T("XML") );
 	_tcscpy( pType->m_szTypeExts, _T("xml,xsl,xslt") );
 
-	//Ý’è
+	//è¨­å®š
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"<!--", L"-->" );
 	pType->m_cBlockComments[1].SetBlockCommentRule( L"<![CDATA[", L"]]>" );
 	pType->m_nStringType = STRING_LITERAL_HTML;

@@ -1,5 +1,5 @@
-/*
-	2008.05.18 kobake CShareData ‚©‚ç•ª—£
+ï»¿/*
+	2008.05.18 kobake CShareData ã‹ã‚‰åˆ†é›¢
 */
 /*
 	Copyright (C) 2008, kobake
@@ -27,18 +27,18 @@
 #ifndef SAKURA_CSEARCHKEYWORDMANAGER_6D883D8B_3076_423C_BADA_B4C5DCB3E6E5_H_
 #define SAKURA_CSEARCHKEYWORDMANAGER_6D883D8B_3076_423C_BADA_B4C5DCB3E6E5_H_
 
-// —væs’è‹`
+// è¦å…ˆè¡Œå®šç¾©
 // #include "DLLSHAREDATA.h"
 
 
-//‹¤—Lƒƒ‚ƒŠ“à\‘¢‘Ì
+//å…±æœ‰ãƒ¡ãƒ¢ãƒªå†…æ§‹é€ ä½“
 struct SShare_SearchKeywords{
-	// -- -- ŒŸõƒL[ -- -- //
+	// -- -- æ¤œç´¢ã‚­ãƒ¼ -- -- //
 	StaticVector< StaticString<WCHAR, _MAX_PATH>, MAX_SEARCHKEY,  const WCHAR*>	m_aSearchKeys;
 	StaticVector< StaticString<WCHAR, _MAX_PATH>, MAX_REPLACEKEY, const WCHAR*>	m_aReplaceKeys;
 	StaticVector< StaticString<TCHAR, _MAX_PATH>, MAX_GREPFILE,   const TCHAR*>	m_aGrepFiles;
 	StaticVector< StaticString<TCHAR, _MAX_PATH>, MAX_GREPFOLDER, const TCHAR*>	m_aGrepFolders;
-#if REI_MOD_GREP
+#ifdef REI_MOD_GREP
 	bool		m_bGrepFolders99;
 	bool		m_bGrepFolders2;
 	bool		m_bGrepFolders3;
@@ -46,19 +46,19 @@ struct SShare_SearchKeywords{
 	SFilePath	m_szGrepFolders2;
 	SFilePath	m_szGrepFolders3;
 	SFilePath	m_szGrepFolders4;
-#endif // rei_
-#if REI_CHG_MAXDATA
-  SShare_SearchKeywords() {
-    m_aSearchKeys.resize(RegKey(REI_REGKEY).get(_T("RecentSearchKeyMax"), MAX_SEARCHKEY));
-    m_aReplaceKeys.resize(RegKey(REI_REGKEY).get(_T("RecentReplaceKeyMax"), MAX_REPLACEKEY));
-    m_aGrepFiles.resize(RegKey(REI_REGKEY).get(_T("RecentGrepFileMax"), MAX_GREPFILE));
-    m_aGrepFolders.resize(RegKey(REI_REGKEY).get(_T("RecentGrepFolderMax"), MAX_GREPFOLDER));
-    //‚±‚±AŒÄ‚Î‚ê‚Ä‚È‚¢BBBH MessageBoxW(NULL, L"",L"",MB_OK);
-  }
-#endif
+#endif  // rei_
+#ifdef REI_CHG_MAXDATA
+	SShare_SearchKeywords() {
+		m_aSearchKeys.resize(RegKey(REI_REGKEY).get(_T("RecentSearchKeyMax"), MAX_SEARCHKEY));
+		m_aReplaceKeys.resize(RegKey(REI_REGKEY).get(_T("RecentReplaceKeyMax"), MAX_REPLACEKEY));
+		m_aGrepFiles.resize(RegKey(REI_REGKEY).get(_T("RecentGrepFileMax"), MAX_GREPFILE));
+		m_aGrepFolders.resize(RegKey(REI_REGKEY).get(_T("RecentGrepFolderMax"), MAX_GREPFOLDER));
+		//ã“ã“ã€å‘¼ã°ã‚Œã¦ãªã„ã€‚ã€‚ã€‚ï¼Ÿ MessageBoxW(NULL, L"",L"",MB_OK);
+	}
+#endif  // rei_
 };
 
-//! ŒŸõƒL[ƒ[ƒhŠÇ—
+//! æ¤œç´¢ã‚­ãƒ¼ãƒ¯ãƒ¼ãƒ‰ç®¡ç†
 class CSearchKeywordManager{
 public:
 	CSearchKeywordManager()
@@ -66,10 +66,10 @@ public:
 		m_pShareData = &GetDllShareData();
 	}
 	//@@@ 2002.2.2 YAZAKI
-	void		AddToSearchKeyArr( const wchar_t* pszSearchKey );	//	m_aSearchKeys‚ÉpszSearchKey‚ğ’Ç‰Á‚·‚é
-	void		AddToReplaceKeyArr( const wchar_t* pszReplaceKey );	//	m_aReplaceKeys‚ÉpszReplaceKey‚ğ’Ç‰Á‚·‚é
-	void		AddToGrepFileArr( const TCHAR* pszGrepFile );		//	m_aGrepFiles‚ÉpszGrepFile‚ğ’Ç‰Á‚·‚é
-	void		AddToGrepFolderArr( const TCHAR* pszGrepFolder );	//	m_aGrepFolders.size()‚ÉpszGrepFolder‚ğ’Ç‰Á‚·‚é
+	void		AddToSearchKeyArr( const wchar_t* pszSearchKey );	//	m_aSearchKeysã«pszSearchKeyã‚’è¿½åŠ ã™ã‚‹
+	void		AddToReplaceKeyArr( const wchar_t* pszReplaceKey );	//	m_aReplaceKeysã«pszReplaceKeyã‚’è¿½åŠ ã™ã‚‹
+	void		AddToGrepFileArr( const TCHAR* pszGrepFile );		//	m_aGrepFilesã«pszGrepFileã‚’è¿½åŠ ã™ã‚‹
+	void		AddToGrepFolderArr( const TCHAR* pszGrepFolder );	//	m_aGrepFolders.size()ã«pszGrepFolderã‚’è¿½åŠ ã™ã‚‹
 private:
 	DLLSHAREDATA* m_pShareData;
 };

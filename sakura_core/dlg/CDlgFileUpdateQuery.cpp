@@ -1,7 +1,7 @@
-/*! @file
-	@brief �X�V�ʒm�y�ъm�F�_�C�A���O
+﻿/*! @file
+	@brief 更新通知及び確認ダイアログ
 
-	�t�@�C���̍X�V�ʒm�Ɠ���̊m�F���s���_�C�A���O�{�b�N�X
+	ファイルの更新通知と動作の確認を行うダイアログボックス
 
 	@author genta
 	@date 2002.12.04
@@ -44,25 +44,25 @@ BOOL CDlgFileUpdateQuery::OnInitDialog( HWND hWnd, WPARAM wParam, LPARAM lParam 
 }
 
 /*!
-	�{�^���������ꂽ�Ƃ��̓���
+	ボタンが押されたときの動作
 */
 BOOL CDlgFileUpdateQuery::OnBnClicked(int id)
 {
 	int result;
 	switch( id ){
-	case IDC_BTN_RELOAD: // �ēǍ�
+	case IDC_BTN_RELOAD: // 再読込
 		result = 1;
 		break;
-	case IDC_BTN_CLOSE: // ����
+	case IDC_BTN_CLOSE: // 閉じる
 		result = 0;
 		break;
-	case IDC_BTN_NOTIFYONLY: // �Ȍ�ʒm���b�Z�[�W�̂�
+	case IDC_BTN_NOTIFYONLY: // 以後通知メッセージのみ
 		result = 2;
 		break;
-	case IDC_BTN_NOSUPERVISION: // �Ȍ�X�V���Ď����Ȃ�
+	case IDC_BTN_NOSUPERVISION: // 以後更新を監視しない
 		result = 3;
 		break;
-	case IDC_BTN_AUTOLOAD:		// �Ȍ㖢�ҏW�ōă��[�h
+	case IDC_BTN_AUTOLOAD:		// 以後未編集で再ロード
 		result = 4;
 		break;
 	default:

@@ -1,11 +1,11 @@
-/*!	@file
-	@brief INIƒtƒ@ƒCƒ‹“üo—Í
+ï»¿/*!	@file
+	@brief INIãƒ•ã‚¡ã‚¤ãƒ«å…¥å‡ºåŠ›
 
 	@author D.S.Koba
-	@date 2003-10-21 D.S.Koba ƒƒ“ƒoŠÖ”‚Ì–¼‘O‚Æˆø”‚ğ‚»‚Ì‚Ü‚Ü‚É‚µ‚Äƒƒ“ƒo•Ï”CŠÖ”‚Ì’†g‚ğ‘‚«’¼‚µ
-	@date 2004-01-10 D.S.Koba •Ô’l‚ğBOOL‚©‚çbool‚Ö•ÏXBIOProfileData‚ğŒ^•Ê‚ÌŠÖ”‚É•ª‚¯Cˆø”‚ğŒ¸‚ç‚·
-	@date 2006-02-11 D.S.Koba “Ç‚İ‚İ/‘‚«o‚µ‚ğˆø”‚Å‚È‚­Cƒƒ“ƒo‚Å”»•Ê
-	@date 2006-02-12 D.S.Koba IOProfileData‚Ì’†g‚Ì“Ç‚İ‚İ‚Æ‘‚«o‚µ‚ğŠÖ”‚É•ª‚¯‚é
+	@date 2003-10-21 D.S.Koba ãƒ¡ãƒ³ãƒé–¢æ•°ã®åå‰ã¨å¼•æ•°ã‚’ãã®ã¾ã¾ã«ã—ã¦ãƒ¡ãƒ³ãƒå¤‰æ•°ï¼Œé–¢æ•°ã®ä¸­èº«ã‚’æ›¸ãç›´ã—
+	@date 2004-01-10 D.S.Koba è¿”å€¤ã‚’BOOLã‹ã‚‰boolã¸å¤‰æ›´ã€‚IOProfileDataã‚’å‹åˆ¥ã®é–¢æ•°ã«åˆ†ã‘ï¼Œå¼•æ•°ã‚’æ¸›ã‚‰ã™
+	@date 2006-02-11 D.S.Koba èª­ã¿è¾¼ã¿/æ›¸ãå‡ºã—ã‚’å¼•æ•°ã§ãªãï¼Œãƒ¡ãƒ³ãƒã§åˆ¤åˆ¥
+	@date 2006-02-12 D.S.Koba IOProfileDataã®ä¸­èº«ã®èª­ã¿è¾¼ã¿ã¨æ›¸ãå‡ºã—ã‚’é–¢æ•°ã«åˆ†ã‘ã‚‹
 */
 /*
 	Copyright (C) 2003-2006, D.S.Koba
@@ -40,14 +40,14 @@
 #include <map>
 
 /*-----------------------------------------------------------------------
-ƒNƒ‰ƒX‚ÌéŒ¾
+ã‚¯ãƒ©ã‚¹ã®å®£è¨€
 -----------------------------------------------------------------------*/
 /*!
-	@brief INIƒtƒ@ƒCƒ‹“üo—Í
+	@brief INIãƒ•ã‚¡ã‚¤ãƒ«å…¥å‡ºåŠ›
 */
 class CProfile
 {
-	//•¶š—ñŒ^
+	//æ–‡å­—åˆ—å‹
 	typedef std::wstring wstring;
 	typedef std::string string;
 
@@ -60,7 +60,7 @@ class CProfile
 	};
 
 public:
-#if REI_USE_REGISTRY_FOR_PROFILES
+#ifdef REI_USE_REGISTRY_FOR_PROFILES
 	CProfile() : m_bReg(false) {}
 #else
 	CProfile() {}
@@ -70,7 +70,7 @@ public:
 	bool IsReadingMode( void ) { return m_bRead; }
 	void SetReadingMode( void ) { m_bRead = true; }
 	void SetWritingMode( void ) { m_bRead = false; }
-#if REI_USE_REGISTRY_FOR_PROFILES
+#ifdef REI_USE_REGISTRY_FOR_PROFILES
 	bool IsRegMode( void ) { return m_bReg; }
 	void SetRegMode( const TCHAR* pszProfileName ) {
 		m_bReg = true;
@@ -95,11 +95,11 @@ protected:
 	bool SetProfileDataImp( const wstring& strSectionName, const wstring& strEntryKey, const wstring& strEntryValue );
 
 protected:
-	// ƒƒ“ƒo•Ï”
-	tstring					m_strProfileName;	//!< ÅŒã‚É“Ç‚İ‘‚«‚µ‚½ƒtƒ@ƒCƒ‹–¼
+	// ãƒ¡ãƒ³ãƒå¤‰æ•°
+	tstring					m_strProfileName;	//!< æœ€å¾Œã«èª­ã¿æ›¸ãã—ãŸãƒ•ã‚¡ã‚¤ãƒ«å
 	std::vector< Section >	m_ProfileData;
-	bool					m_bRead;			//!< ƒ‚[ƒh(true=“Ç‚İ‚İ/false=‘‚«o‚µ)
-#if REI_USE_REGISTRY_FOR_PROFILES
+	bool					m_bRead;			//!< ãƒ¢ãƒ¼ãƒ‰(true=èª­ã¿è¾¼ã¿/false=æ›¸ãå‡ºã—)
+#ifdef REI_USE_REGISTRY_FOR_PROFILES
 	bool m_bReg;
 #endif  // rei_
 };

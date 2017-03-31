@@ -1,4 +1,4 @@
-/*
+﻿/*
 	Copyright (C) 2008, kobake
 
 	This software is provided 'as-is', without any express or implied
@@ -33,7 +33,7 @@
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                           ����                              //
+//                           生成                              //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 CRecentSearch::CRecentSearch()
@@ -42,23 +42,23 @@ CRecentSearch::CRecentSearch()
 		GetShareData()->m_sSearchKeywords.m_aSearchKeys.dataPtr(),
 		&GetShareData()->m_sSearchKeywords.m_aSearchKeys._GetSizeRef(),
 		NULL,
-#if REI_CHG_MAXDATA
+#ifdef REI_CHG_MAXDATA
 		RegKey(REI_REGKEY).get(_T("RecentSearchKeyMax"), MAX_SEARCHKEY),
 #else
 		MAX_SEARCHKEY,
-#endif
+#endif  // rei_
 		NULL
 	);
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                      �I�[�o�[���C�h                         //
+//                      オーバーライド                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 /*
-	�A�C�e���̔�r�v�f���擾����B
+	アイテムの比較要素を取得する。
 
-	@note	�擾��̃|�C���^�̓��[�U�Ǘ��̍\���̂ɃL���X�g���ĎQ�Ƃ��Ă��������B
+	@note	取得後のポインタはユーザ管理の構造体にキャストして参照してください。
 */
 const TCHAR* CRecentSearch::GetItemText( int nIndex ) const
 {

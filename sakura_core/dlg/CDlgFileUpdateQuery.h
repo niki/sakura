@@ -1,7 +1,7 @@
-/*! @file
-	@brief �X�V�ʒm�y�ъm�F�_�C�A���O
+﻿/*! @file
+	@brief 更新通知及び確認ダイアログ
 
-	�t�@�C���̍X�V�ʒm�Ɠ���̊m�F���s���_�C�A���O�{�b�N�X
+	ファイルの更新通知と動作の確認を行うダイアログボックス
 
 	@author genta
 	@date 2002.12.04

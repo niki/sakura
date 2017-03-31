@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Copyright (C) 2008, kobake
 	Copyright (C) 2014, Moca
 
@@ -35,11 +35,11 @@ int g_nKeywordsIdx_RUBY4 = -1;
 /* Ruby */
 void CType_Ruby::InitTypeConfigImp(STypeConfig* pType)
 {
-	//–¼‘O‚ÆŠg’£Žq
+	//åå‰ã¨æ‹¡å¼µå­
 	_tcscpy( pType->m_szTypeName, _T("Ruby") );
 	_tcscpy( pType->m_szTypeExts, _T("rb") );
 
-	//Ý’è
+	//è¨­å®š
 	pType->m_nTabSpace = CKetaXInt(2);
 	pType->m_cLineComment.CopyTo( 0, L"#", -1 );
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"=begin", L"=end" );
