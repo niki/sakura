@@ -246,8 +246,8 @@
 // プロファイルの読み書きにレジストリを使用する
 //  - レジストリキーがない場合はiniファイルから読み込む
 //  - バージョンアップ時のバックアップファイル作成は行わない
-// (REG/NoReadProfilesFromRegistry:0) 1にするとレジストリから読み込まなくなります
-// (REG/NoWriteProfilesToRegistry:0) 1にするとレジストリに書き込まなくなります
+// (REG/NoReadProfilesFromRegistry:1) 1にするとレジストリから読み込まなくなります
+// (REG/NoWriteProfilesToRegistry:1) 1にするとレジストリに書き込まなくなります
 //------------------------------------------------------------------
 #define REI_USE_REGISTRY_FOR_PROFILES
 

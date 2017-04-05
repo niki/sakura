@@ -106,7 +106,7 @@ inline std::tstring regkey(const std::tstring &prof, const std::tstring &section
 class RegKey {
  public:
   RegKey() : hKey(0) {}
-  explicit RegKey(const std::tstring &key_name, bool write_mode = false) : hKey(0) {
+  explicit RegKey(const std::tstring &key_name, bool write_mode = false) : RegKey() {
     if (write_mode) {
       DWORD dwDisposition;  // 新規作成:REG_CREATED_NEW_KEY
                             // 既存:REG_OPENED_EXISTING_KEY
@@ -193,6 +193,11 @@ class RegKey {
   HKEY hKey;
 };
 
+class RegKeyW : public RegKey {
+ public:
+  explicit RegKeyW(const std::tstring &key_name) : RegKey(key_name, true) {}
+};
+
 //------------------------------------------------------------------
 //! レジストリキーの読み取り(SZ)
 //! @param prof プロファイル名
@@ -248,7 +253,7 @@ inline bool RegGetProfileString(const std::tstring &prof, const std::tstring &se
 inline bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
                                 const std::tstring &entry, const std::tstring &data) {
   if (data.empty()) {
-    return RegKey(ut::regkey(prof, section), true).write(entry, _T(""));
+    return RegKeyW(ut::regkey(prof, section)).write(entry, _T(""));
   } else {
     int i = 0;
     bool is_num = false;
@@ -260,9 +265,9 @@ inline bool RegSetProfileString(const std::tstring &prof, const std::tstring &se
     is_num = !(*endptr != L'\0' || (i == INT_MAX && errno == ERANGE));
 
     if (is_num) {
-      return RegKey(ut::regkey(prof, section), true).write(entry, (DWORD)i);
+      return RegKeyW(ut::regkey(prof, section)).write(entry, (DWORD)i);
     } else {
-      return RegKey(ut::regkey(prof, section), true).write(entry, data);
+      return RegKeyW(ut::regkey(prof, section)).write(entry, data);
     }
   }
 }

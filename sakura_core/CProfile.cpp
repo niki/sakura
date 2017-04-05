@@ -108,10 +108,12 @@ bool CProfile::ReadProfile( const TCHAR* pszProfileName )
 {
 #ifdef REI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			RegKey(ut::regkey(m_strProfileName)).valid() &&
-			!RegKey(REI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 0)) {
+			!RegKey(REI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 1) &&
+			RegKey(ut::regkey(m_strProfileName)).valid()) {
 		return true;
 	}
+	// レジストリキーがない場合はiniを読み込みに行く
+	ResetRegMode();
 #endif  // rei_
 
 	m_strProfileName = pszProfileName;
@@ -226,8 +228,8 @@ bool CProfile::WriteProfile(
 {
 #ifdef REI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			!RegKey(REI_REGKEY).get(_T("NoWriteProfilesToRegistry"), 0)) {
-		return false;  // レジストリ書き込み禁止
+			!RegKey(REI_REGKEY).get(_T("NoWriteProfilesToRegistry"), 1)) {
+		return false;
 	}
 #endif  // rei_
 
@@ -346,8 +348,7 @@ bool CProfile::GetProfileDataImp(
 {
 #ifdef REI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			RegKey(ut::regkey(m_strProfileName)).valid() &&
-			!RegKey(REI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 0)) {
+			!RegKey(REI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 1)) {
 		return RegGetProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
 	}
 #endif  // rei_
@@ -382,7 +383,7 @@ bool CProfile::SetProfileDataImp(
 {
 #ifdef REI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			!RegKey(REI_REGKEY).get(_T("NoWriteProfilesToRegistry"), 0)) {
+			!RegKey(REI_REGKEY).get(_T("NoWriteProfilesToRegistry"), 1)) {
 		return RegSetProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
 	}
 #endif  // rei_

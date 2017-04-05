@@ -71,11 +71,12 @@ public:
 	void SetReadingMode( void ) { m_bRead = true; }
 	void SetWritingMode( void ) { m_bRead = false; }
 #ifdef REI_USE_REGISTRY_FOR_PROFILES
-	bool IsRegMode( void ) { return m_bReg; }
-	void SetRegMode( const TCHAR* pszProfileName ) {
+	bool IsRegMode() { return m_bReg; }
+	void SetRegMode(const TCHAR* pszProfileName) {
 		m_bReg = true;
 		m_strProfileName = pszProfileName;
 	}
+	void ResetRegMode() { m_bReg = false; }
 #endif  // rei_
 	bool ReadProfile( const TCHAR* );
 	bool ReadProfileRes( const TCHAR*, const TCHAR*, std::vector<std::wstring>* = NULL );				// 200/5/19 Uchi
