@@ -159,6 +159,11 @@ void CDlgGrepReplace::SetData( void )
 	CheckDlgButtonBool( GetHwnd(), IDC_CHK_BACKUP, m_bBackup );
 
 	CDlgGrep::SetData();
+
+#ifdef REI_MOD_DIALOG_POS
+	CEditView* pcEditView=(CEditView*)m_lParam;
+	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
+#endif  // rei_
 }
 
 

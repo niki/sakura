@@ -54,6 +54,10 @@ int CDlgSetCharSet::DoModal( HINSTANCE hInstance, HWND hwndParent, ECodeType* pn
 
 BOOL CDlgSetCharSet::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+#ifdef REI_MOD_DIALOG_POS
+	SetPlaceOfWindow();
+#endif  // rei_
+
 	_SetHwnd( hwndDlg );
 	
 	m_hwndCharSet = ::GetDlgItem( GetHwnd(), IDC_COMBO_CHARSET );	// 文字コードセットコンボボックス

@@ -1927,6 +1927,11 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 				if( m_nHeight < DOCK_MIN_SIZE ) m_nHeight = DOCK_MIN_SIZE;
 			}
 		}
+#ifdef REI_MOD_DIALOG_POS
+		else {
+			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
+		}
+#endif  // rei_
 	}
 
 	if( !m_bInChangeLayout ){	// ChangeLayout() 処理中は設定変更しない

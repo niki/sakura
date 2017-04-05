@@ -182,6 +182,10 @@ WNDPROC g_pOnFolderProc;
 
 BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+#ifdef REI_MOD_DIALOG_POS
+	SetPlaceOfWindow();
+#endif  // rei_
+
 	_SetHwnd( hwndDlg );
 
 	/* ユーザーがコンボボックスのエディット コントロールに入力できるテキストの長さを制限する */

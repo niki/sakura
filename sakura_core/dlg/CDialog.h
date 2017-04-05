@@ -152,6 +152,9 @@ public:
 	DLLSHAREDATA*	m_pShareData;
 	BOOL			m_bInited;
 	HINSTANCE		m_hLangRsrcInstance;		// メッセージリソースDLLのインスタンスハンドル	// 2011.04.10 nasukoji
+#ifdef REI_MOD_DIALOG_POS
+	HWND			m_hwndPlaceOfWindow;
+#endif  // rei_
 
 protected:
 	void CreateSizeBox( void );
@@ -164,6 +167,11 @@ protected:
 	HFONT SetMainFont( HWND hTarget, int pt = -9 );
 #else
 	HFONT SetMainFont( HWND hTarget );
+#endif  // rei_
+
+#ifdef REI_MOD_DIALOG_POS
+	void SetPlaceOfWindow();
+	void SetPlaceOfWindow(HWND hWnd);
 #endif  // rei_
 };
 

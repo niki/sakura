@@ -39,9 +39,6 @@
 #include "func/Funccode.h"
 #include "env/DLLSHAREDATA.h"
 #include "util/container.h"
-#ifdef REI_MOD_DIRECTTAGJUMP
-#include "util/os.h"
-#endif  // rei_
 #include "util/shell.h"
 #include "util/file.h"
 #include "util/window.h"
@@ -317,7 +314,7 @@ void CDlgTagJumpList::UpdateData( bool bInit )
 		lvi.mask     = LVIF_TEXT;
 		lvi.iItem    = nIndex;
 		lvi.iSubItem = 0;
-#ifdef REI_MOD_DIRECTTAGJUMP
+#ifdef REI_MOD_TAGJUMP
 		lvi.pszText  = item->filename;
 		ListView_InsertItem( hwndList, &lvi );
 		
@@ -444,6 +441,10 @@ int CDlgTagJumpList::GetData( void )
 */
 BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+#ifdef REI_MOD_DIALOG_POS
+	SetPlaceOfWindow();
+#endif  // rei_
+
 	HWND		hwndList;
 	LV_COLUMN	col;
 	RECT		rc;
@@ -467,27 +468,14 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	RECT rcDialog = GetDllShareData().m_Common.m_sOthers.m_rcTagJumpDialog;
 	if( rcDialog.left != 0 ||
 		rcDialog.bottom != 0 ){
-#ifdef REI_MOD_DIRECTTAGJUMP
-		m_nWidth = rcDialog.right - rcDialog.left;
-		m_nHeight = rcDialog.bottom - rcDialog.top;
-		
-		RECT rcWork;
-		GetMonitorWorkRect(&rc, &rcWork);
-		
-		m_xPos = rcWork.left + (rcWork.right - rcWork.left) / 2 - m_nWidth / 2;
-		m_yPos = rcWork.top + (rcWork.bottom - rcWork.top) / 2 - m_nHeight / 2;
-#else
 		m_xPos = rcDialog.left;
 		m_yPos = rcDialog.top;
 		m_nWidth = rcDialog.right - rcDialog.left;
 		m_nHeight = rcDialog.bottom - rcDialog.top;
-#endif  // rei_
 	}
 
-#ifndef REI_MOD_DIRECTTAGJUMP
 	// ウィンドウのリサイズ
 	SetDialogPosSize();
-#endif  // rei_
 
 	//リストビューの表示位置を取得する。
 	hwndList = ::GetDlgItem( hwndDlg, IDC_LIST_TAGJUMP );
@@ -497,7 +485,7 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	
 	int nWidth = (rc.right - rc.left) - ::GetSystemMetrics( SM_CXHSCROLL ) - CTextWidthCalc::WIDTH_MARGIN_SCROLLBER;
 
-#ifdef REI_MOD_DIRECTTAGJUMP
+#ifdef REI_MOD_TAGJUMP
 	// ファイル
 	col.mask     = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 	col.fmt      = LVCFMT_LEFT;

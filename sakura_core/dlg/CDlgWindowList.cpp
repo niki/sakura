@@ -191,6 +191,10 @@ INT_PTR CDlgWindowList::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARA
 
 BOOL CDlgWindowList::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
 {
+#ifdef REI_MOD_DIALOG_POS
+	SetPlaceOfWindow();
+#endif  // rei_
+
 	_SetHwnd(hwndDlg);
 
 	CreateSizeBox();
