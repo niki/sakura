@@ -31,13 +31,15 @@
 		   distribution.
 */
 
-#ifndef _CPROFILE_H_
-#define _CPROFILE_H_
+#ifndef SAKURA_CPROFILE_H_
+#define SAKURA_CPROFILE_H_
 
 #include <Windows.h>
 #include <string>
 #include <vector>
 #include <map>
+
+class CNativeW;
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -87,7 +89,7 @@ public:
 	void DUMP( void );
 
 protected:
-	void ReadOneline( const wstring& line );
+	void ReadOneline( const CNativeW& line );
 	bool _WriteFile( const tstring& strFilename, const std::vector< wstring >& vecLine);
 
 
@@ -111,6 +113,6 @@ protected:
 
 
 ///////////////////////////////////////////////////////////////////////
-#endif /* _CPROFILE_H_ */
+#endif /* SAKURA_CPROFILE_H_ */
 
 

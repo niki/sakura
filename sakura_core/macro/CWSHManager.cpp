@@ -97,8 +97,11 @@ BOOL CWSHMacroManager::LoadKeyMacro(HINSTANCE hInstance, const TCHAR* pszPath)
 	if(!in)
 		return FALSE;
 
+	CNativeW strLine;
 	while(in){
-		m_Source+=in.ReadLineW()+L"\r\n";
+		in.ReadLineW(strLine);
+		strLine.AppendString(L"\r\n");
+		m_Source.append(strLine.c_str(), strLine.size());
 	}
 	return TRUE;
 }
