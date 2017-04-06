@@ -106,18 +106,18 @@ inline std::tstring regkey(const std::tstring &prof, const std::tstring &section
 class RegKey {
  public:
   RegKey() : hKey(0) {}
-  explicit RegKey(const std::tstring &key_name, bool write_mode = false) : RegKey() {
-    if (write_mode) {
+  explicit RegKey(const std::tstring &key_name, bool write_ok = false) : RegKey() {
+    if (write_ok) {
       DWORD dwDisposition;  // 新規作成:REG_CREATED_NEW_KEY
                             // 既存:REG_OPENED_EXISTING_KEY
-      RegCreateKeyEx(HKEY_CURRENT_USER, key_name.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE,
-                     KEY_ALL_ACCESS, NULL, &hKey, &dwDisposition);
+      ::RegCreateKeyEx(HKEY_CURRENT_USER, key_name.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE,
+                       KEY_ALL_ACCESS, NULL, &hKey, &dwDisposition);
     } else {
-      RegOpenKeyEx(HKEY_CURRENT_USER, key_name.c_str(), 0, KEY_ALL_ACCESS, &hKey);
+      ::RegOpenKeyEx(HKEY_CURRENT_USER, key_name.c_str(), 0, KEY_ALL_ACCESS, &hKey);
     }
   }
   ~RegKey() {
-    if (hKey != 0) RegCloseKey(hKey);
+    if (hKey != 0) ::RegCloseKey(hKey);
   }
 
   operator HKEY &() { return hKey; }
@@ -130,7 +130,7 @@ class RegKey {
 
     DWORD &dwType = *pdwType;
     DWORD &dwByte = *pdwByte;
-    return RegQueryValueEx(hKey, entry.c_str(), NULL, &dwType, NULL, &dwByte) == ERROR_SUCCESS;
+    return ::RegQueryValueEx(hKey, entry.c_str(), NULL, &dwType, NULL, &dwByte) == ERROR_SUCCESS;
   }
 
   //! DWORDの読み込み
@@ -139,7 +139,7 @@ class RegKey {
 
     DWORD dwType = REG_DWORD;
     DWORD dwByte = sizeof(DWORD);
-    return RegQueryValueEx(hKey, entry.c_str(), NULL, &dwType, (BYTE *)data, &dwByte) ==
+    return ::RegQueryValueEx(hKey, entry.c_str(), NULL, &dwType, (BYTE *)data, &dwByte) ==
            ERROR_SUCCESS;
   }
 
@@ -160,11 +160,11 @@ class RegKey {
     DWORD dwType;
     DWORD dwByte;
 
-    LONG rc = RegQueryValueEx(hKey, entry.c_str(), NULL, &dwType, NULL, &dwByte);
+    LONG rc = ::RegQueryValueEx(hKey, entry.c_str(), NULL, &dwType, NULL, &dwByte);
     if (rc != ERROR_SUCCESS) return false;
     if (!data) return (rc == ERROR_SUCCESS);
 
-    rc = RegQueryValueEx(hKey, entry.c_str(), NULL, &dwType, (LPBYTE)data, &dwByte);
+    rc = ::RegQueryValueEx(hKey, entry.c_str(), NULL, &dwType, (LPBYTE)data, &dwByte);
     ((LPBYTE)data)[dwByte] = '\0';
     return (rc == ERROR_SUCCESS);
   }
@@ -173,15 +173,15 @@ class RegKey {
   bool write(const std::tstring &entry, DWORD data) {
     if (!valid()) return false;
 
-    return RegSetValueEx(hKey, entry.c_str(), NULL, REG_DWORD, (CONST BYTE *)&data,
-                         sizeof(DWORD)) == ERROR_SUCCESS;
+    return ::RegSetValueEx(hKey, entry.c_str(), NULL, REG_DWORD, (CONST BYTE *)&data,
+                           sizeof(DWORD)) == ERROR_SUCCESS;
   }
 
   //! 文字列の書き込み
   bool write(const std::tstring &entry, LPCTSTR data, size_t size) {
     if (!valid()) return false;
 
-    return RegSetValueEx(hKey, entry.c_str(), NULL, REG_SZ, (CONST BYTE *)data, (int)size) ==
+    return ::RegSetValueEx(hKey, entry.c_str(), NULL, REG_SZ, (CONST BYTE *)data, (int)size) ==
            ERROR_SUCCESS;
   }
 
@@ -189,13 +189,23 @@ class RegKey {
     return write(entry, data.c_str(), (data.length() + 1) * sizeof(TCHAR));
   }
 
+  //! キーの削除
+  bool deleteKey(const std::tstring &key) {
+    return ::RegDeleteKey(hKey, key.c_str()) == ERROR_SUCCESS;
+  }
+
+  //! エントリの削除
+  bool deleteEntry(const std::tstring &entry) {
+    return ::RegDeleteValue(hKey, entry.c_str()) == ERROR_SUCCESS;
+  }
+
  private:
   HKEY hKey;
 };
 
-class RegKeyW : public RegKey {
+class RegKeyRW : public RegKey {
  public:
-  explicit RegKeyW(const std::tstring &key_name) : RegKey(key_name, true) {}
+  explicit RegKeyRW(const std::tstring &key_name) : RegKey(key_name, true) {}
 };
 
 //------------------------------------------------------------------
@@ -253,7 +263,8 @@ inline bool RegGetProfileString(const std::tstring &prof, const std::tstring &se
 inline bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
                                 const std::tstring &entry, const std::tstring &data) {
   if (data.empty()) {
-    return RegKeyW(ut::regkey(prof, section)).write(entry, _T(""));
+    //return RegKeyRW(ut::regkey(prof, section)).deleteEntry(entry);  // 空のときは削除
+    return RegKeyRW(ut::regkey(prof, section)).write(entry, _T(""));
   } else {
     int i = 0;
     bool is_num = false;
@@ -265,9 +276,9 @@ inline bool RegSetProfileString(const std::tstring &prof, const std::tstring &se
     is_num = !(*endptr != L'\0' || (i == INT_MAX && errno == ERANGE));
 
     if (is_num) {
-      return RegKeyW(ut::regkey(prof, section)).write(entry, (DWORD)i);
+      return RegKeyRW(ut::regkey(prof, section)).write(entry, (DWORD)i);
     } else {
-      return RegKeyW(ut::regkey(prof, section)).write(entry, data);
+      return RegKeyRW(ut::regkey(prof, section)).write(entry, data);
     }
   }
 }

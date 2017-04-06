@@ -13,22 +13,20 @@
 
 <br>
 
-### ● 注意<br>
-現バージョンはレジストリを使用しています.<br>
-レジストリに抵抗がある方の使用はおすすめしません.<br>
-
 ### ● 変更内容<br>
 いくつかの設定はレジストリで変更できます.<br>
 `[HKEY_CURRENT_USER\SOFTWARE\sakura_REI]` を参照してください.<br>
 
 #### ・ファイル系
 
-+ 設定情報の読み書きにレジストリを使用する<br>
++ 設定情報の読み書きにレジストリを選択可能にする<br>
+  レジストリから設定情報を読み込む場合は<br>
+    `NoReadProfilesFromRegistry:dword:00000000`<br>
+  レジストリに設定情報を書き込む場合は<br>
+    `NoWriteProfilesToRegistry:dword:00000000`<br>
+  としてください。
+  レジストリキーがない場合はiniファイルから読み込みます.<br>
   アンインストールする際は `[HKEY_CURRENT_USER\SOFTWARE\sakura.ini]` を削除してください(キー名はプロファイル名で変わりますので注意).<br>
-  レジストリキーがない場合はiniファイルから読み込みます. つまりレジストリ優先で設定情報を扱います.<br>
-  また、バージョンアップ時のバックアップファイル作成は行いません.<br>
-    ・レジストリ読み込み無効化 `NoReadProfilesFromRegistry:dword:00000001`<br>
-    ・レジストリ書き込み無効化 `NoWriteProfilesToRegistry:dword:00000001`<br>
 
 + 履歴(検索、置換、Grep)の値を変更<br>
   検索 30→16 `RecentSearchKeyMax=dword:00000010`<br>
