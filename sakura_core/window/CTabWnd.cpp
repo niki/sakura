@@ -144,6 +144,12 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	// 2005.09.01 ryoji タブ部のメッセージ処理を個別に関数化し、タブ順序変更の処理を追加
 	switch( uMsg )
 	{
+#ifdef REI_FIX_TABWND
+	case WM_LBUTTONDBLCLK:
+		if (!!RegKey(REI_REGKEY).get(_T("DoubleClickClosesTab"), 1))
+			return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
+#endif  // rei_
+
 	case WM_LBUTTONDOWN:
 		return OnTabLButtonDown( wParam, lParam );
 
@@ -2126,6 +2132,10 @@ void CTabWnd::AdjustWindowPlacement( void )
 			::SetWindowPos( hwnd, hwndInsertAfter, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
 			SetCarmWindowPlacement( hwnd, &wp );	// 位置を復元する
 			::UpdateWindow( hwnd );	// 強制描画
+			
+#ifdef REI_FIX_TABWND
+			::Sleep(10);
+#endif  // rei_
 		}
 	}
 }
