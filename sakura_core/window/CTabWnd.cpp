@@ -147,7 +147,7 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 #ifdef REI_FIX_TABWND
 	case WM_LBUTTONDBLCLK:
 		{  // @todo OnTabLButtonDblClkを作ること
-			m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL;
+			BreakInterTabDblClkJudgment();
 			if (!!RegKey(REI_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
 				return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
 			} else {
@@ -308,6 +308,10 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 		break;
 
 	case DRAG_DRAG:
+#ifdef REI_FIX_TABWND
+		// ドラッグ時はタブ間ダブルクリックを解除する
+		BreakInterTabDblClkJudgment();
+#endif  // rei_
 		if ( 0 > nDstTab )	// タブの外でドロップ
 		{
 			// タブの分離処理
@@ -448,6 +452,10 @@ LRESULT CTabWnd::OnTabMouseMove( WPARAM wParam, LPARAM lParam )
 		// ここに来たらドラッグ開始なので break しないでそのまま DRAG_DRAG 処理に入る
 
 	case DRAG_DRAG:
+#ifdef REI_FIX_TABWND
+		// ドラッグ時はタブ間ダブルクリックを解除する
+		BreakInterTabDblClkJudgment();
+#endif  // rei_
 		// ドラッグ中のマウスカーソルを表示する
 		HINSTANCE hInstance;
 		LPCTSTR lpCursorName;
@@ -543,8 +551,7 @@ LRESULT CTabWnd::OnTabTimer( WPARAM wParam, LPARAM lParam )
 		//TCHAR szMsg[128];
 		//auto_sprintf(szMsg, L"CTabWnd: ** Timeout, m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL\n"),
 		//OutputDebugStringW(szMsg);
-		::KillTimer(m_hwndTab, 2);  // タイマーを殺す
-		m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL;
+		BreakInterTabDblClkJudgment();
 	}
 #endif  // rei_
 
