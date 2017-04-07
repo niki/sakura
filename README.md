@@ -21,7 +21,8 @@
 + MSVC2015を使用<br>
 + 最適化オプションを O2 に設定<br>
 + ランタイムライブラリを MD に設定
-+ TCMalloc版を用意 (ビルドには libtcmalloc_minimal.lib が必要です)<br>
++ TCMalloc(Copyright (c) 2005, Google Inc.)版を用意.<br>
+  (ビルドは libtcmalloc_minimal.lib を sakura/ 直下にコピーしてください)<br>
 
 #### ・ファイル系
 + 履歴 (検索、置換、Grep)の値を少なめに変更.<br>
