@@ -84,6 +84,7 @@
 //  [patchunicode:#588]をあてて目立たなくはしている
 //  sakura_core\view\CEditView_Paint.cpp
 //  pcFigureManager->GetTextFigure().DrawImp(pInfo, nPosBgn, pInfo->GetPosInLogic() - nPosBgn);
+//  [patchunicode:#860]をあてれば解消しそう
 //
 // - [ ] 2017.4.4
 //  BkSpを押したときにタブ入力文字だけしかない場合は逆TABにする
@@ -113,7 +114,7 @@
 //  - スクロール開始マージンを 1 に変更。画面の端でスクロール開始 2014.5.7
 //  - スクロール幅を 16 に設定。一度に大きく移動することで見やすくする (動きはメモ帳参照) 2015.9.2
 //------------------------------------------------------------------
-#define REI_MOD_HORIZONTAL_SCR 16
+#define REI_MOD_HORIZONTAL_SCR (16)
 
 //------------------------------------------------------------------
 // タブ入力文字の切り替え(タブ<->空白)を追加
@@ -164,7 +165,7 @@
 // 12: 半角入力の時は1px、全角入力の時は2px 2015.8.26
 // (REG/CaretType:2)
 //------------------------------------------------------------------
-#define REI_MOD_CARET 2
+#define REI_MOD_CARET (2)
 
 //------------------------------------------------------------------
 // 半角空白文字を "・" で描画 2013.6.2
@@ -327,8 +328,8 @@
 // (REG/PlaceDialogWindowLeft:21)
 //------------------------------------------------------------------
 #define REI_MOD_DIALOG_POS
-  #define REI_MOD_DIALOG_PLACE_TOP 74
-  #define REI_MOD_DIALOG_PLACE_LEFT 21
+  #define REI_MOD_DIALOG_PLACE_TOP (74)
+  #define REI_MOD_DIALOG_PLACE_LEFT (21)
 
 //------------------------------------------------------------------
 // タグジャンプ一覧を変更
@@ -346,11 +347,14 @@
 
 //------------------------------------------------------------------
 // ウィンドウ一覧ポップアップを変更
-//  - 位置を左に変更 2017.3.29
-//    (REG/WinListPopupLeft:2)
-//    (REG/WinListPopupTop:2)
+//  - 位置を指定可能にする 2017.3.29
+//  - 0xffffffff指定でウィンドウの中央に配置 2017.4.7
+//    (REG/WinListPopupTop:0xffffffff)
+//    (REG/WinListPopupLeft:150)
 //------------------------------------------------------------------
 #define REI_MOD_WINLIST_POPUP
+  #define REI_MOD_WINLIST_POPUP_TOP (0xffffffff)
+  #define REI_MOD_WINLIST_POPUP_LEFT (150)
 
 //------------------------------------------------------------------
 // バージョン情報ダイアログの変更 2017.3.15
