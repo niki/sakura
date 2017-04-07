@@ -139,22 +139,22 @@
 
 + PlaceDialogWindowLeft (dword)<br>
     ダイアログの横表示位置を変更<br>
-      ```
+```
       21 (default)
       ||
       |+-- 分子
       +--- 分母
-      ```
+```
       この場合は編集ウィンドウの横半分(1/2)の位置に表示される<br>
 
 + PlaceDialogWindowTop (dword)<br>
     ダイアログの縦表示位置を変更<br>
-      ```
+```
       74 (default)
       ||
       |+-- 分子
       +--- 分母
-      ```
+```
       この場合は編集ウィンドウの4/7の位置に表示される<br>
 
 + RecentSearchKeyMax (dword)<br>
