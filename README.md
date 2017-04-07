@@ -200,10 +200,14 @@
     キーマクロ記録時のタブ名のテキストカラーを設定, 形式は 0x00BBGGRR<br>
       `0x000000d8`: (default)<br>
 
-+ WinListPopupLeft (dword)<br>
-    ウィンドウ一覧ポップアップの表示位置を変更 (左上基準)<br>
-      `150`: (default)<br>
-
 + WinListPopupTop (dword)<br>
     ウィンドウ一覧ポップアップの表示位置を変更 (左上基準)<br>
       `0xffffffff`: センタリング (default)<br>
+
++ WinListPopupLeft (dword)<br>
+    ウィンドウ一覧ポップアップの表示位置を変更 (左上基準)<br>
+      `0xffffffff`: センタリング (default)<br>
+
++ WinListPopupWidth (dword)<br>
+    ウィンドウ一覧ポップアップの表示幅を変更 (タブアイコン表示のときのみ有効)<br>
+      `400`: (default)<br>
