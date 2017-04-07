@@ -124,16 +124,6 @@
       `0`: システムカラーを使う (default)<br>
       `1`: システムカラーを使わない<br>
 
-+ NoReadProfilesFromRegistry (dword)<br>
-    設定情報をレジストリから…<br>
-      `0`: 読み込む<br>
-      `1`: 読み込まない (default)<br>
-
-+ NoWriteProfilesToRegistry (dword)<br>
-    設定情報をレジストリに…<br>
-      `0`: 書き込む<br>
-      `1`: 書き込まない (default)<br>
-
 + NoWrapLine (dword)<br>
     折り返し縦線を…<br>
       `0`: 描画する<br>
