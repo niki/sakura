@@ -146,8 +146,14 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	{
 #ifdef REI_FIX_TABWND
 	case WM_LBUTTONDBLCLK:
-		if (!!RegKey(REI_REGKEY).get(_T("DoubleClickClosesTab"), 1))
-			return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
+		{  // @todo OnTabLButtonDblClkを作ること
+			m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL;
+			if (!!RegKey(REI_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
+				return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
+			} else {
+				return 1L;
+			}
+		}
 #endif  // rei_
 
 	case WM_LBUTTONDOWN:
@@ -255,6 +261,35 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 		BreakDrag();
 		return 0L;
 	}
+
+#ifdef REI_FIX_TABWND
+	// タブ間のダブルクリックでタブを閉じる処理
+	// 別のタブをクリックすると違うウィンドウのタブウィンドウに切り替わるので
+	// 非アクティブタブに対してダブルクリックができないための暫定対応
+	{
+		HWND &hwndInterTab = m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment;
+		if (hwndInterTab != (HWND)-1) {  // 閉じてる最中ではない
+			TCITEM	tcitem;
+			tcitem.mask   = TCIF_PARAM;
+			tcitem.lParam = 0;
+			TabCtrl_GetItem( m_hwndTab, nDstTab, &tcitem );
+			
+			if (hwndInterTab != NULL) {    // タブウィンドウが設定されている
+				if (hwndInterTab == (HWND)tcitem.lParam) {  // 同じタブウィンドウ
+					//TCHAR szMsg[128];
+					//auto_sprintf(szMsg, L"CTabWnd: >>> Send WM_LBUTTONDBLCLK %d\n", m_hwndTab);
+					//OutputDebugStringW(szMsg);
+					hwndInterTab = (HWND)-1;   // 閉じてる最中
+					::KillTimer(m_hwndTab, 2);  // タイマーを殺す
+					::SendMessageAny(m_hwndTab, WM_LBUTTONDBLCLK, 0, lParam);
+					return 0L;
+				}
+			} else {
+				hwndInterTab = (HWND)tcitem.lParam;
+			}
+		}
+	}
+#endif  // rei_
 
 	// マウスドロップ処理
 	switch( m_eDragState )
@@ -503,6 +538,16 @@ LRESULT CTabWnd::OnTabTimer( WPARAM wParam, LPARAM lParam )
 		if( nDstTab < 0 )
 			::SendMessageAny( m_hwndTab, WM_MOUSEMOVE, 0, MAKELONG( hitinfo.pt.x, hitinfo.pt.y ) );
 	}
+#ifdef REI_FIX_TABWND
+	if (wParam == 2) {
+		//TCHAR szMsg[128];
+		//auto_sprintf(szMsg, L"CTabWnd: ** Timeout, m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL\n"),
+		//OutputDebugStringW(szMsg);
+		::KillTimer(m_hwndTab, 2);  // タイマーを殺す
+		m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL;
+	}
+#endif  // rei_
+
 
 	return 0L;
 }
@@ -2138,6 +2183,11 @@ void CTabWnd::AdjustWindowPlacement( void )
 #endif  // rei_
 		}
 	}
+
+#ifdef REI_FIX_TABWND
+	// タブ間ダブルクリック判定タイマー起動
+	::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime() + 10, NULL );
+#endif  // rei_
 }
 
 /*!	アクティブ化の少ない SetWindowPlacement() を実行する

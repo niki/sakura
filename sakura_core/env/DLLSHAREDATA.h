@@ -91,6 +91,9 @@ struct SShare_Flags{
 	*/
 	BOOL				m_bRecordingKeyMacro;		/* キーボードマクロの記録中 */
 	HWND				m_hwndRecordingKeyMacro;	/* キーボードマクロを記録中のウィンドウ */
+#ifdef REI_FIX_TABWND
+	HWND				m_hwndInterTabDblClkJudgment;	/* タブ間のダブルクリック判定 */
+#endif  // rei_
 };
 
 //共有ワークバッファ
