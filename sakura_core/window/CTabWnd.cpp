@@ -1296,7 +1296,16 @@ LRESULT CTabWnd::OnMeasureItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		}
 
 		lpmis->itemHeight = ::GetSystemMetrics( SM_CYMENU );
+#ifdef REI_MOD_WINLIST_POPUP
+		DWORD width = RegKey(REI_REGKEY).get(_T("WinListPopupWidth"), REI_MOD_WINLIST_POPUP_WIDTH);
+		if (width > 0) {
+			lpmis->itemWidth = width;
+		} else {
+			lpmis->itemWidth = (cxIcon + DpiScaleX(8)) + size.cx;
+		}
+#else
 		lpmis->itemWidth = (cxIcon + DpiScaleX(8)) + size.cx;
+#endif  // rei_
 
 		::SelectObject( hdc, hFontOld );
 		::DeleteObject( hFont );
@@ -3058,21 +3067,34 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 			RECT rc;
 			::GetWindowRect(GetParentHwnd(), &rc);
 
-			DWORD left = RegKey(REI_REGKEY).get(_T("WinListPopupLeft"), REI_MOD_WINLIST_POPUP_LEFT);
-			DWORD top = RegKey(REI_REGKEY).get(_T("WinListPopupTop"), REI_MOD_WINLIST_POPUP_TOP);
-
+			// X自動配置
 			if (pt.x == (LONG)-1) {
+				DWORD left = RegKey(REI_REGKEY).get(_T("WinListPopupLeft"), REI_MOD_WINLIST_POPUP_LEFT);
+
 				if (left == (DWORD)-1) {
-					pt.x = rc.left + left;
-					pt.x = std::max(std::min(pt.x, rc.right), rc.left);
+					// センタリング
+					DWORD width = RegKey(REI_REGKEY).get(_T("WinListPopupWidth"), REI_MOD_WINLIST_POPUP_WIDTH);
+
+					if (width > 0 && m_hIml) {
+						pt.x = rc.left + (rc.right - rc.left) / 2 - width / 2;
+					} else {
+						pt.x = rc.left + 8;
+					}
+
 				} else {
+					// 固定位置
 					pt.x = rc.left + left;
-					pt.x = std::max(std::min(pt.x, rc.right), rc.left);
 				}
+
+				pt.x = std::max(std::min(pt.x, rc.right), rc.left);
 			}
 
+			// Y自動配置
 			if (pt.y == (LONG)-1) {
+				DWORD top = RegKey(REI_REGKEY).get(_T("WinListPopupTop"), REI_MOD_WINLIST_POPUP_TOP);
+
 				if (top == (DWORD)-1) {
+					// センタリング
 					int menu_count = ::GetMenuItemCount(hMenu);
 					DWORD menu_height = ::GetSystemMetrics(SM_CYMENU) * menu_count;
 					DWORD menu_width = 0;
@@ -3083,16 +3105,14 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 					if (mi.cyMax > 0 && menu_height > mi.cyMax)
 						menu_height = mi.cyMax;
 
-					//RECT rcItem;
-					//::GetMenuItemRect(NULL, hMenu, 0, &rcItem);
-					//menu_width = (rcItem.right - rcItem.left);
-
-					//pt.x = rc.left + (rc.right - rc.left) / 2 - menu_width / 2;
 					pt.y = rc.top + (rc.bottom - rc.top) / 2 - menu_height / 2;
+
 				} else {
+					// 固定位置
 					pt.y = rc.top + top;
-					pt.y = std::max(std::min(pt.y, rc.bottom), rc.top);
 				}
+
+				pt.y = std::max(std::min(pt.y, rc.bottom), rc.top);
 			}
 		}
 #endif  // rei_

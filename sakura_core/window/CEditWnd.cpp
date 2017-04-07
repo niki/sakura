@@ -4319,6 +4319,7 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 		}
 
 		if (top == (DWORD)-1) {
+			// センタリング
 			DWORD menu_height = ::GetSystemMetrics(SM_CYMENU) * ::GetMenuItemCount(hMenu);
 			
 			MENUINFO mi;
@@ -4327,7 +4328,6 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 			if (mi.cyMax > 0 && menu_height > mi.cyMax)
 				menu_height = mi.cyMax;
 			
-			//pt.x = rc.left + (rc.right - rc.left) / 2 - menu_width / 2;
 			pt.y = rc.top + (rc.bottom - rc.top) / 2 - menu_height / 2;
 		}
 #endif  // rei_

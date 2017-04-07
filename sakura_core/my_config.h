@@ -350,11 +350,13 @@
 //  - 位置を指定可能にする 2017.3.29
 //  - 0xffffffff指定でウィンドウの中央に配置 2017.4.7
 //    (REG/WinListPopupTop:0xffffffff)
-//    (REG/WinListPopupLeft:150)
+//    (REG/WinListPopupLeft:0xffffffff)
+//    (REG/WinListPopupWidth:400)
 //------------------------------------------------------------------
 #define REI_MOD_WINLIST_POPUP
   #define REI_MOD_WINLIST_POPUP_TOP (0xffffffff)
-  #define REI_MOD_WINLIST_POPUP_LEFT (150)
+  #define REI_MOD_WINLIST_POPUP_LEFT (0xffffffff)
+  #define REI_MOD_WINLIST_POPUP_WIDTH (400)
 
 //------------------------------------------------------------------
 // バージョン情報ダイアログの変更 2017.3.15
