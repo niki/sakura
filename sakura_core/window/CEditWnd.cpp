@@ -4281,13 +4281,11 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 		::GetCursorPos( &pt );	// マウスカーソル位置に変更
 	}
 	else {
-		::GetWindowRect( GetActiveView().GetHwnd(), &rc );
 #ifdef REI_MOD_WINLIST_POPUP
-		pt.x = rc.left + RegKey(REI_REGKEY).get(_T("WinListPopupLeft"), 2);
-		pt.x = std::max(std::min(pt.x, rc.right), rc.left);
-		pt.y = rc.top + RegKey(REI_REGKEY).get(_T("WinListPopupTop"), 2);
-		pt.y = std::max(std::min(pt.y, rc.bottom), rc.top);
+		pt.x = (LONG)-1;
+		pt.y = (LONG)-1;
 #else
+		::GetWindowRect( GetActiveView().GetHwnd(), &rc );
 		pt.x = rc.right - 150;
 		if( pt.x < rc.left )
 			pt.x = rc.left;
@@ -4305,6 +4303,34 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 		HMENU hMenu = ::CreatePopupMenu();	// 2006.03.23 fon
 		int nRowNum = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pEditNodeArr, TRUE );
 		WinListMenu( hMenu, pEditNodeArr, nRowNum, TRUE );
+#ifdef REI_MOD_WINLIST_POPUP
+		::GetWindowRect( GetActiveView().GetHwnd(), &rc );
+
+		DWORD left = RegKey(REI_REGKEY).get(_T("WinListPopupLeft"), REI_MOD_WINLIST_POPUP_LEFT);
+		DWORD top = RegKey(REI_REGKEY).get(_T("WinListPopupTop"), REI_MOD_WINLIST_POPUP_TOP);
+
+		if (pt.x == (LONG)-1) {
+			pt.x = rc.left + left;
+			pt.x = std::max(std::min(pt.x, rc.right), rc.left);
+		}
+		if (pt.y == (LONG)-1) {
+			pt.y = rc.top + top;
+			pt.y = std::max(std::min(pt.y, rc.bottom), rc.top);
+		}
+
+		if (top == (DWORD)-1) {
+			DWORD menu_height = ::GetSystemMetrics(SM_CYMENU) * ::GetMenuItemCount(hMenu);
+			
+			MENUINFO mi;
+			::GetMenuInfo(hMenu, &mi);
+			
+			if (mi.cyMax > 0 && menu_height > mi.cyMax)
+				menu_height = mi.cyMax;
+			
+			//pt.x = rc.left + (rc.right - rc.left) / 2 - menu_width / 2;
+			pt.y = rc.top + (rc.bottom - rc.top) / 2 - menu_height / 2;
+		}
+#endif  // rei_
 		// メニューを表示する
 		RECT rcWork;
 		GetMonitorWorkRect( pt, &rcWork );	// モニタのワークエリア
