@@ -62,24 +62,12 @@ class CProfile
 	};
 
 public:
-#ifdef REI_USE_REGISTRY_FOR_PROFILES
-	CProfile() : m_bReg(false) {}
-#else
 	CProfile() {}
-#endif  // rei_
 	~CProfile() {}
 	void Init( void );
 	bool IsReadingMode( void ) { return m_bRead; }
 	void SetReadingMode( void ) { m_bRead = true; }
 	void SetWritingMode( void ) { m_bRead = false; }
-#ifdef REI_USE_REGISTRY_FOR_PROFILES
-	bool IsRegMode() { return m_bReg; }
-	void SetRegMode(const TCHAR* pszProfileName) {
-		m_bReg = true;
-		m_strProfileName = pszProfileName;
-	}
-	void ResetRegMode() { m_bReg = false; }
-#endif  // rei_
 	bool ReadProfile( const TCHAR* );
 	bool ReadProfileRes( const TCHAR*, const TCHAR*, std::vector<std::wstring>* = NULL );				// 200/5/19 Uchi
 	bool WriteProfile( const TCHAR*, const WCHAR* pszComment);
@@ -102,9 +90,6 @@ protected:
 	tstring					m_strProfileName;	//!< 最後に読み書きしたファイル名
 	std::vector< Section >	m_ProfileData;
 	bool					m_bRead;			//!< モード(true=読み込み/false=書き出し)
-#ifdef REI_USE_REGISTRY_FOR_PROFILES
-	bool m_bReg;
-#endif  // rei_
 };
 
 #define _INI_T LTEXT

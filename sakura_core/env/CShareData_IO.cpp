@@ -88,12 +88,6 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	TCHAR	szIniFileName[_MAX_PATH + 1];
 	CFileNameManager::getInstance()->GetIniFileName( szIniFileName, strProfileName.c_str(), bRead );	// 2007.05.19 ryoji iniファイル名を取得する
 
-#ifdef REI_USE_REGISTRY_FOR_PROFILES
-	if (!RegKey(REI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 1)) {
-		cProfile.SetRegMode(szIniFileName);
-	}
-#endif  // rei_
-
 //	MYTRACE( _T("Iniファイル処理-1 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
 
@@ -106,9 +100,6 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			return false;
 		}
 
-#ifdef REI_USE_REGISTRY_FOR_PROFILES
-		if (!cProfile.IsRegMode()) {
-#endif  // rei_
 		// バージョンアップ時はバックアップファイルを作成する	// 2011.01.28 ryoji
 		TCHAR iniVer[256];
 		DWORD mH, mL, lH, lL;
@@ -126,9 +117,6 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			::lstrcat(szBkFileName, _T(".bak"));
 			::CopyFile(szIniFileName, szBkFileName, FALSE);
 		}
-#ifdef REI_USE_REGISTRY_FOR_PROFILES
-		}
-#endif  // rei_
 	}
 //	MYTRACE( _T("Iniファイル処理 0 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
