@@ -2179,7 +2179,7 @@ void CTabWnd::AdjustWindowPlacement( void )
 			::UpdateWindow( hwnd );	// 強制描画
 			
 #ifdef REI_FIX_TABWND
-			::Sleep(10);
+			::Sleep(10);  // ウィンドウ切り替え時のちらつき抑制
 #endif  // rei_
 		}
 	}
