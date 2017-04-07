@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 14 for Windows Desktop
+# Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sakura", "sakura.vcxproj", "{AF03508C-515E-4A0E-87BE-67ED1E254BD0}"
@@ -18,6 +18,8 @@ Global
 		Debug|x86 = Debug|x86
 		Release_Ansi|x64 = Release_Ansi|x64
 		Release_Ansi|x86 = Release_Ansi|x86
+		Release_Unicode_TCMalloc|x64 = Release_Unicode_TCMalloc|x64
+		Release_Unicode_TCMalloc|x86 = Release_Unicode_TCMalloc|x86
 		Release_Unicode|x64 = Release_Unicode|x64
 		Release_Unicode|x86 = Release_Unicode|x86
 		Release|x64 = Release|x64
@@ -40,6 +42,10 @@ Global
 		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Ansi|x64.Build.0 = Release_Ansi|x64
 		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Ansi|x86.ActiveCfg = Release_Ansi|Win32
 		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Ansi|x86.Build.0 = Release_Ansi|Win32
+		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Unicode_TCMalloc|x64.ActiveCfg = Release_Unicode_TCMalloc|x64
+		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Unicode_TCMalloc|x64.Build.0 = Release_Unicode_TCMalloc|x64
+		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Unicode_TCMalloc|x86.ActiveCfg = Release_Unicode_TCMalloc|Win32
+		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Unicode_TCMalloc|x86.Build.0 = Release_Unicode_TCMalloc|Win32
 		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Unicode|x64.ActiveCfg = Release_Unicode|x64
 		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Unicode|x64.Build.0 = Release_Unicode|x64
 		{AF03508C-515E-4A0E-87BE-67ED1E254BD0}.Release_Unicode|x86.ActiveCfg = Release_Unicode|Win32
@@ -64,6 +70,10 @@ Global
 		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Ansi|x64.Build.0 = Release|x64
 		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Ansi|x86.ActiveCfg = Release|Win32
 		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Ansi|x86.Build.0 = Release|Win32
+		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Unicode_TCMalloc|x64.ActiveCfg = Release|x64
+		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Unicode_TCMalloc|x64.Build.0 = Release|x64
+		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Unicode_TCMalloc|x86.ActiveCfg = Release|Win32
+		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Unicode_TCMalloc|x86.Build.0 = Release|Win32
 		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Unicode|x64.ActiveCfg = Release|x64
 		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Unicode|x64.Build.0 = Release|x64
 		{5B80674D-87F3-42B5-96A7-D9D003F3AF20}.Release_Unicode|x86.ActiveCfg = Release|Win32
@@ -88,6 +98,10 @@ Global
 		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Ansi|x64.Build.0 = Release|x64
 		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Ansi|x86.ActiveCfg = Release|Win32
 		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Ansi|x86.Build.0 = Release|Win32
+		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Unicode_TCMalloc|x64.ActiveCfg = Release|x64
+		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Unicode_TCMalloc|x64.Build.0 = Release|x64
+		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Unicode_TCMalloc|x86.ActiveCfg = Release|Win32
+		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Unicode_TCMalloc|x86.Build.0 = Release|Win32
 		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Unicode|x64.ActiveCfg = Release|x64
 		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Unicode|x64.Build.0 = Release|x64
 		{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}.Release_Unicode|x86.ActiveCfg = Release|Win32
