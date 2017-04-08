@@ -1,10 +1,15 @@
 ## サクラエディタ２改造版
 * 2.2.0.1をベースに[ココ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)からマージ
 * 基本的に元ソースは残しつつの修正
-* 他のテキストエディタでよかったところを移植
+* 他のテキストエディタでよかったところなどを移植
 * バグ?とか気になったところの修正
 * いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ
 * プロポーショナルフォント関連はスルー (個人的に使用していないため)
+* 動作環境<br>
+  + Windows10 RS1以降で動作します<br>
+    (_WIN32_WINNT に 0x0A00 を設定)<br>
+    (ターゲットプラットフォームバージョンに 10.0.14393.0 を設定)<br>
+  + Visual Studio 2015 の [Visual C++ 再頒布可能パッケージ](https://www.microsoft.com/ja-jp/download/details.aspx?id=48145)が必要<br>
 
 ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)
 
