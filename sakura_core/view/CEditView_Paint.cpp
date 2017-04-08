@@ -1297,10 +1297,6 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 
 	// 折り返し桁縦線描画
 	if( !m_bMiniMap ){
-#ifdef REI_MOD_WRAP_LINE
-		static bool no_wrap_line = !!RegKey(REI_REGKEY).get(_T("NoWrapLine"), 1);
-		if (!no_wrap_line)
-#endif  // rei_
 		GetTextDrawer().DispWrapLine(
 			pInfo->m_gr,
 			pInfo->m_pDispPos->GetDrawPos().y,
