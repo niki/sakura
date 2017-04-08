@@ -2202,7 +2202,7 @@ void CTabWnd::AdjustWindowPlacement( void )
 
 #ifdef REI_FIX_TABWND
 	// タブ間ダブルクリック判定タイマー起動
-	::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime() + 10, NULL );
+	::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime(), NULL );
 #endif  // rei_
 }
 
