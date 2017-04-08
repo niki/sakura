@@ -393,7 +393,7 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("LNO"), 0},
 	{_T("MOD"), 0},
 	{_T("EBK"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
-#ifdef REI_MOD_SP_COLOR
+#ifdef REI_MOD_WS_COLOR
 	{_T("TAB"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("SPC"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},	//2002.04.28 Add By KK
 	{_T("ZEN"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
@@ -403,7 +403,7 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("ZEN"), 0},
 #endif  // rei_
 	{_T("CTL"), 0},
-#ifdef REI_MOD_SP_COLOR
+#ifdef REI_MOD_WS_COLOR
 	{_T("EOL"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("EOL"), 0},

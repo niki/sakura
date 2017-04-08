@@ -198,10 +198,10 @@
 //  - 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無効化されます) 2015.6.8
 //    対象は空白TABなどで、コントロールコードには適用されません
 //------------------------------------------------------------------
-#define REI_MOD_SP_COLOR
+#define REI_MOD_WS_COLOR
   // 空白,TAB,改行 現在のカラーのブレンド率[%] 2015.6.5
   // (REG/WhiteSpaceBlendPer:0x0000001E)
-  #define REI_MOD_SP_BLEND_PER (30)
+  #define REI_MOD_WS_BLEND_PER (30)
 //						     
 						     
 

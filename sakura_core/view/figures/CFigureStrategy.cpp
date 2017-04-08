@@ -143,22 +143,32 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	bool blendColor = pInfo->GetCurrentColor() != pInfo->GetCurrentColor2() && cCurrentType.GetTextColor() == cCurrentType.GetBackColor(); // 選択混合色
 	bool bBold;
 #ifdef REI_MOD_SELAREA
-	blendColor = true;
+	blendColor = pInfo->GetCurrentColor() == COLORIDX_SELECT;  // 選択色
 #endif  // rei_
 	if( blendColor ){
+#ifdef REI_MOD_WS_COLOR
+		CTypeSupport& cText = cCurrentType2;
+		CTypeSupport& cBack = cCurrentType3;
+#else
 		CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType2 : cSpaceType;
 		CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType3 : cSpaceType;
+#endif  // rei_
 		crText = pcView->GetTextColorByColorInfo2(cCurrentType.GetColorInfo(), cText.GetColorInfo());
 		crBack = pcView->GetBackColorByColorInfo2(cCurrentType.GetColorInfo(), cBack.GetColorInfo());
 		bBold = cCurrentType2.IsBoldFont();
 	}else{
+#ifdef REI_MOD_WS_COLOR
+		CTypeSupport& cText = cCurrentType;
+		CTypeSupport& cBack = cCurrentType1;
+#else
 		CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType : cSpaceType;
 		CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType1 : cSpaceType;
+#endif  // rei_
 		crText = cText.GetTextColor();
 		crBack = cBack.GetBackColor();
 		bBold = cCurrentType.IsBoldFont();
 	}
-#ifdef REI_MOD_SP_COLOR
+#ifdef REI_MOD_WS_COLOR
 	//! 色をマージする
 	//! @param colText テキスト色
 	//! @param colBase ベースとなる色
@@ -189,7 +199,7 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	//bIgnore |= (colorIdx == COLORIDX_SSTRING);
 	//bIgnore |= (colorIdx == COLORIDX_WSTRING);
 	if (!bIgnore) {
-	  static int nBlendPer = RegKey(REI_REGKEY).get(_T("WhiteSpaceBlendPer"), REI_MOD_SP_BLEND_PER);
+	  static int nBlendPer = RegKey(REI_REGKEY).get(_T("WhiteSpaceBlendPer"), REI_MOD_WS_BLEND_PER);
     // 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
     COLORREF col1 = cCurrentType2.GetTextColor();
     COLORREF col2 = crBack;	// 合成済みの色を使用する

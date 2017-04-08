@@ -527,7 +527,7 @@ inline COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha)
 
 COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorInfo& info2)
 {
-#if !defined(REI_MOD_SELAREA) && !defined(REI_MOD_SP_COLOR)
+#if !defined(REI_MOD_SELAREA) && !defined(REI_MOD_WS_COLOR)
 	if( info.m_sColorAttr.m_cTEXT != info.m_sColorAttr.m_cBACK ){
 		return info.m_sColorAttr.m_cTEXT;
 	}
@@ -548,7 +548,7 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 
 COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorInfo& info2)
 {
-#if !defined(REI_MOD_SELAREA) && !defined(REI_MOD_SP_COLOR)
+#if !defined(REI_MOD_SELAREA) && !defined(REI_MOD_WS_COLOR)
 	if( info.m_sColorAttr.m_cTEXT != info.m_sColorAttr.m_cBACK ){
 		return info.m_sColorAttr.m_cBACK;
 	}
@@ -558,9 +558,6 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	}
 #endif  // rei_
 #ifdef REI_MOD_SELAREA
-	if (info.m_sColorAttr.m_cTEXT == RGB(255,0,255)) { // テキストカラーがマゼンタだったらそのまま
-		return info.m_sColorAttr.m_cBACK;
-	}
 	static int nBlendPer = RegKey(REI_REGKEY).get(_T("SelectAreaBlendPer"), REI_MOD_SELAREA_BLEND_PER);
 	nBlendPer = nBlendPer & 0xff;
 	int alpha = 255 * nBlendPer / 100;
@@ -1057,7 +1054,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		bTransText = cBackType.GetBackColor() == cTextType.GetBackColor();
 	}
 
-#if 0//def REI_MOD_SP_COLOR
+#if 0//def REI_MOD_WS_COLOR
 	// 行背景描画
 	{
 		RECT rcClip;
