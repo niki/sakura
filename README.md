@@ -4,7 +4,7 @@
 * 他のテキストエディタでよかったところを移植
 * バグ?とか気になったところの修正
 * いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ
-* プロポーショナルフォント関連はスルー(個人的に使用しないため)
+* プロポーショナルフォント関連はスルー (個人的に使用していないため)
 
 ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)
 
@@ -21,8 +21,8 @@
 + MSVC2015を使用<br>
 + 最適化オプションを O2 に設定<br>
 + ランタイムライブラリを MD に設定
-+ TCMalloc(Copyright (c) 2005, Google Inc.)版を用意.<br>
-  (ビルドは libtcmalloc_minimal.lib を sakura/ 直下にコピーしてください)<br>
++ TCMalloc(Copyright (c) 2005, Google Inc.)構成を作成.<br>
+  (ビルドするには libtcmalloc_minimal.lib を sakura/ 直下にコピーする必要があります)<br>
 
 #### ・ファイル系
 + 履歴 (検索、置換、Grep)の値を少なめに変更.<br>
@@ -106,6 +106,8 @@
   この修正がこの改造版のすべてかと思います.<br>
 
 ### ● レジストリ詳細<br>
+[HKEY_CURRENT_USER\SOFTWARE\sakura_REI]<br>
+
 + CaretType (dword)<br>
     キャレットのサイズを…<br>
       `0`: 変更なし<br>
@@ -131,6 +133,7 @@
       |+-- 分子
       +--- 分母
 ```
+
       この場合は編集ウィンドウの横半分(1/2)の位置に表示される<br>
 
 + PlaceDialogWindowTop (dword)<br>
@@ -141,6 +144,7 @@
       |+-- 分子
       +--- 分母
 ```
+
       この場合は編集ウィンドウの4/7の位置に表示される<br>
 
 + RecentSearchKeyMax (dword)<br>
