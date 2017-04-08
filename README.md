@@ -13,8 +13,8 @@
 
 ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)
 
-![](https://raw.github.com/wiki/calette/sakura2201c/images/sakura0.png)
-![](https://raw.github.com/wiki/calette/sakura2201c/images/sakura1.png)
+![main](https://raw.github.com/wiki/calette/sakura2201c/images/sakura0.gif)
+![grep](https://raw.github.com/wiki/calette/sakura2201c/images/sakura1.gif)
 
 <br>
 
