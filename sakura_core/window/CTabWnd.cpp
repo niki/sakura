@@ -286,6 +286,7 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 				}
 			} else {
 				hwndInterTab = (HWND)tcitem.lParam;
+				::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime(), NULL );
 			}
 		}
 	}
