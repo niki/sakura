@@ -2608,12 +2608,22 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 			}else if( GetTextArea().m_nViewRowNum < nY ){
 				nUnderLineY = GetTextArea().GetAreaBottom() + 1;
 #ifdef REI_LINE_CENTERING
-				nUnderLineY += m_pTypeData->m_nLineSpace / 2;
+				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
+				// 背景色の描画領域全体に影響してしまう
+				// アンダーライン処理とごっちゃになっていてわかりにくい
+				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
+					nUnderLineY += m_pTypeData->m_nLineSpace / 2;
+				}
 #endif  // rei_
 			}else{
 				nUnderLineY = GetTextArea().GetAreaTop() + (Int)(nY) * GetTextMetrics().GetHankakuDy();
 #ifdef REI_LINE_CENTERING
-				nUnderLineY += m_pTypeData->m_nLineSpace / 2;
+				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
+				// 背景色の描画領域全体に影響してしまう
+				// アンダーライン処理とごっちゃになっていてわかりにくい
+				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
+					nUnderLineY += m_pTypeData->m_nLineSpace / 2;
+				}
 #endif  // rei_
 			}
 
