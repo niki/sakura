@@ -47,25 +47,25 @@
 
 + 行を中央ぞろえにする.<br>
   デフォルトでは上揃えになっていて行の間隔が下に付加されている.<br>
-  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image004.png)
+  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image004.gif)
 
 + 半角空白文字を `･` で描画.<br>
   Sublime Textみて、これだ！って思いました<br>
-  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image005.png)
+  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image005.gif)
 
 + タブ文字を線のみで描画.<br>
   Sublime Textみて(ry<br>
-  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image006.png)
+  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image006.gif)
 
 + コメント行の背景カラーを改行以降も有効にする.<br>
   行コメントとかブロックコメントの背景カラーを設定している場合にわかりやすくなります<br>
   Sublime Tex(ry<br>
-  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image007.png)
+  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image007.gif)
 
 + 空白タブ、改行のカラーは現在のテキストカラーから自動で設定.<br>
   コメント内の空白タブ、改行の色が色分けに影響を受けます.<br>
   Sub(ry<br>
-  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image008.png)
+  ![](https://raw.github.com/wiki/calette/sakura2201c/images/image008.gif)
 
 + 選択範囲カラーのブレンド率を変更.<br>
 
