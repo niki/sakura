@@ -69,9 +69,9 @@ int CDlgExec::DoModal( HINSTANCE hInstance, HWND hwndParent, LPARAM lParam )
 
 BOOL CDlgExec::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 {
-#ifdef REI_MOD_DIALOG_POS
+#ifdef CL_MOD_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // rei_
+#endif  // cl_
 
 	_SetHwnd( hwnd );
 	

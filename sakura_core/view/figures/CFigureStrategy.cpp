@@ -53,7 +53,7 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	int nIdx = nPos;
 	bool bTrans = pInfo->m_pcView->IsBkBitmap() && CTypeSupport(pInfo->m_pcView, COLORIDX_TEXT).GetBackColor() == pInfo->m_gr.GetTextBackColor();
 	
-#ifdef REI_MOD_SELAREA
+#ifdef CL_MOD_SELAREA
   bool select = pInfo->GetCurrentColor() != pInfo->GetCurrentColor2();
   if (select) {
     CTypeSupport cCurrentType2(
@@ -66,7 +66,7 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
         pInfo->m_pcView->GetFontset().ChooseFontHandle(sFont.m_sFontAttr);
     pInfo->m_gr.PushMyFont(sFont);
   }
-#endif  // rei_
+#endif  // cl_
 	
 	pInfo->m_pcView->GetTextDrawer().DispText(
 		pInfo->m_gr,
@@ -77,11 +77,11 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	);
 	// pInfo->m_nPosInLogic += nLength; ここでは進めない
 	
-#ifdef REI_MOD_SELAREA
+#ifdef CL_MOD_SELAREA
   if (select) {
     pInfo->m_gr.PopMyFont();
   }
-#endif  // rei_
+#endif  // cl_
 	
 	return true;
 }
@@ -142,33 +142,33 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	COLORREF crBack;
 	bool blendColor = pInfo->GetCurrentColor() != pInfo->GetCurrentColor2() && cCurrentType.GetTextColor() == cCurrentType.GetBackColor(); // 選択混合色
 	bool bBold;
-#ifdef REI_MOD_SELAREA
+#ifdef CL_MOD_SELAREA
 	blendColor = pInfo->GetCurrentColor() == COLORIDX_SELECT;  // 選択色
-#endif  // rei_
+#endif  // cl_
 	if( blendColor ){
-#ifdef REI_MOD_WS_COLOR
+#ifdef CL_MOD_WS_COLOR
 		CTypeSupport& cText = cCurrentType2;
 		CTypeSupport& cBack = cCurrentType3;
 #else
 		CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType2 : cSpaceType;
 		CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType3 : cSpaceType;
-#endif  // rei_
+#endif  // cl_
 		crText = pcView->GetTextColorByColorInfo2(cCurrentType.GetColorInfo(), cText.GetColorInfo());
 		crBack = pcView->GetBackColorByColorInfo2(cCurrentType.GetColorInfo(), cBack.GetColorInfo());
 		bBold = cCurrentType2.IsBoldFont();
 	}else{
-#ifdef REI_MOD_WS_COLOR
+#ifdef CL_MOD_WS_COLOR
 		CTypeSupport& cText = cCurrentType;
 		CTypeSupport& cBack = cCurrentType1;
 #else
 		CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType : cSpaceType;
 		CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType1 : cSpaceType;
-#endif  // rei_
+#endif  // cl_
 		crText = cText.GetTextColor();
 		crBack = cBack.GetBackColor();
 		bBold = cCurrentType.IsBoldFont();
 	}
-#ifdef REI_MOD_WS_COLOR
+#ifdef CL_MOD_WS_COLOR
 	//! 色をマージする
 	//! @param colText テキスト色
 	//! @param colBase ベースとなる色
@@ -199,13 +199,13 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	//bIgnore |= (colorIdx == COLORIDX_SSTRING);
 	//bIgnore |= (colorIdx == COLORIDX_WSTRING);
 	if (!bIgnore) {
-	  static int nBlendPer = RegKey(REI_REGKEY).get(_T("WhiteSpaceBlendPer"), REI_MOD_WS_BLEND_PER);
+	  static int nBlendPer = RegKey(CL_REGKEY).get(_T("WhiteSpaceBlendPer"), CL_MOD_WS_BLEND_PER);
     // 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
     COLORREF col1 = cCurrentType2.GetTextColor();
     COLORREF col2 = crBack;	// 合成済みの色を使用する
     crText = fnMeargeColor(col1, col2, nBlendPer);
 	}
-#endif  // rei_
+#endif  // cl_
 	//cSpaceType.SetGraphicsState_WhileThisObj(pInfo->gr);
 
 	pInfo->m_gr.PushTextForeColor(crText);

@@ -38,11 +38,11 @@ CRecentReplace::CRecentReplace()
 		GetShareData()->m_sSearchKeywords.m_aReplaceKeys.dataPtr(),
 		&GetShareData()->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef(),
 		NULL,
-#ifdef REI_CHG_MAXDATA
-		RegKey(REI_REGKEY).get(_T("RecentReplaceKeyMax"), MAX_REPLACEKEY),
+#ifdef CL_CHG_MAXDATA
+		RegKey(CL_REGKEY).get(_T("RecentReplaceKeyMax"), MAX_REPLACEKEY),
 #else
 		MAX_REPLACEKEY,
-#endif  // rei_
+#endif  // cl_
 		NULL
 	);
 }

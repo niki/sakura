@@ -55,7 +55,7 @@ public:
 	bool			m_bSetText;				//!< 検索文字列を設定したか
 	SFilePath	m_szFile;					/*!< 検索ファイル */
 	SFilePath	m_szFolder;					/*!< 検索フォルダ */
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
 	bool		m_bFolder99;
 	bool		m_bFolder2;
 	bool		m_bFolder3;
@@ -63,7 +63,7 @@ public:
 	SFilePath	m_szFolder2;				/*!< 検索フォルダ */
 	SFilePath	m_szFolder3;				/*!< 検索フォルダ */
 	SFilePath	m_szFolder4;				/*!< 検索フォルダ */
-#endif  // rei_
+#endif  // cl_
 	SFilePath	m_szCurrentFilePath;
 protected:
 	SComboBoxItemDeleter	m_comboDelText;

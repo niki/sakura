@@ -36,9 +36,9 @@
 
 BOOL CDlgFileUpdateQuery::OnInitDialog( HWND hWnd, WPARAM wParam, LPARAM lParam )
 {
-#ifdef REI_MOD_DIALOG_POS
+#ifdef CL_MOD_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // rei_
+#endif  // cl_
 
 	::DlgItem_SetText( hWnd, IDC_UPDATEDFILENAME, m_pFilename );
 	::DlgItem_SetText( hWnd, IDC_QUERYRELOADMSG, m_bModified ?

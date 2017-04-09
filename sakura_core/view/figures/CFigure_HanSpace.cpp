@@ -28,7 +28,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 	CMyRect rcClip;
 	if(pcView->GetTextArea().GenerateClipRect(&rcClip,*pDispPos,1))
 	{
-#ifdef REI_MOD_HAN_SPACE
+#ifdef CL_MOD_HAN_SPACE
 		// 塗りつぶしで消去
 		gr.SetBrushColor(gr.GetTextBackColor());
 		::FillRect(gr, &rcClip, gr.GetCurrentBrush());
@@ -37,9 +37,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //		::ExtTextOutW_AnyBuild(
 //			gr,
 //			pDispPos->GetDrawPos().x,
-//#  ifdef REI_LINE_CENTERING
+//#  ifdef CL_LINE_CENTERING
 //			(pcView->m_pTypeData->m_nLineSpace / 2) +
-//#  endif  // rei_
+//#  endif  // cl_
 //			pDispPos->GetDrawPos().y,
 //			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 //			&rcClipBottom,
@@ -53,9 +53,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
 		y++; // 少し下め
 		y++; // 少し下め
-//#  ifdef REI_LINE_CENTERING
+//#  ifdef CL_LINE_CENTERING
 //		y += (pcView->m_pTypeData->m_nLineSpace / 2);
-//#  endif  // rei_
+//#  endif  // cl_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // 少し左め
 		::MoveToEx( gr, x, y-2, NULL );
@@ -69,9 +69,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#  ifdef REI_LINE_CENTERING
+#  ifdef CL_LINE_CENTERING
 			(pcView->m_pTypeData->m_nLineSpace / 2) +
-#  endif  // rei_
+#  endif  // cl_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipBottom,
@@ -86,9 +86,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#  ifdef REI_LINE_CENTERING
+#  ifdef CL_LINE_CENTERING
 			(pcView->m_pTypeData->m_nLineSpace / 2) +
-#  endif  // rei_
+#  endif  // cl_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipTop,
@@ -96,7 +96,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			1,
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
-#endif  // rei_
+#endif  // cl_
 	}
 
 	//位置進める

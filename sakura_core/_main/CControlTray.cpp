@@ -100,7 +100,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	CNativeT		cmWork2;
 	CNativeT		cmWork3;
 	cmWork1.SetString( cDlgGrep.m_strText.c_str() );
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
 	int count = 0;
 	CNativeT temp;
 	if (!cDlgGrep.m_bFromThisText) {
@@ -141,7 +141,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 #else
 	cmWork2.SetString( cDlgGrep.m_szFile );
 	cmWork3.SetString( cDlgGrep.m_szFolder );
-#endif  // rei_
+#endif  // cl_
 	cmWork1.Replace( L"\"", L"\"\"" );
 	cmWork2.Replace( _T("\""), _T("\"\"") );
 	cmWork3.Replace( _T("\""), _T("\"\"") );
@@ -161,11 +161,11 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 
 	//GOPTオプション
 	TCHAR pOpt[64] = _T("");
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
 	if( (count > 0) && cDlgGrep.m_bSubFolder )_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
 #else
 	if( cDlgGrep.m_bSubFolder					)_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
-#endif  // rei_
+#endif  // cl_
 	if( cDlgGrep.m_sSearchOption.bLoHiCase		)_tcscat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
 	if( cDlgGrep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// 正規表現
 	if( cDlgGrep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// 行を出力する

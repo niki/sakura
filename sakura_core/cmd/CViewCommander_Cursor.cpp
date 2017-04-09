@@ -97,9 +97,9 @@ int CViewCommander::Command_UP( bool bSelect, bool bRepeat, int lines )
 
 	int		nRepeat = 0;
 
-#ifdef REI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pCommanderView->m_ignore_update_window = true;
-#endif  // rei_
+#endif  // cl_
 	/* キーリピート時のスクロールを滑らかにするか */
 	if( !GetDllShareData().m_Common.m_sGeneral.m_nRepeatedScroll_Smooth ){
 		CLayoutInt i;
@@ -121,10 +121,10 @@ int CViewCommander::Command_UP( bool bSelect, bool bRepeat, int lines )
 			}
 		}
 	}
-#ifdef REI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pCommanderView->m_ignore_update_window = false;
 	::UpdateWindow(m_pCommanderView->GetHwnd());
-#endif  // rei_
+#endif  // cl_
 	return nRepeat;
 }
 
@@ -135,9 +135,9 @@ int CViewCommander::Command_DOWN( bool bSelect, bool bRepeat )
 {
 	int		nRepeat;
 	nRepeat = 0;
-#ifdef REI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pCommanderView->m_ignore_update_window = true;
-#endif  // rei_
+#endif  // cl_
 	/* キーリピート時のスクロールを滑らかにするか */
 	if( !GetDllShareData().m_Common.m_sGeneral.m_nRepeatedScroll_Smooth ){
 		CLayoutInt i;
@@ -159,10 +159,10 @@ int CViewCommander::Command_DOWN( bool bSelect, bool bRepeat )
 			}
 		}
 	}
-#ifdef REI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pCommanderView->m_ignore_update_window = false;
 	::UpdateWindow(m_pCommanderView->GetHwnd());
-#endif  // rei_
+#endif  // cl_
 	return nRepeat;
 }
 

@@ -2,7 +2,7 @@
 //
 //#define SAKURA_LANG_RESOURCE
 
-#include "my_config.h" // rei_
+#include "my_config.h" // cl_
 
 #ifndef SAKURA_LANG_RESOURCE
 	#include "sakura_rc.h"
@@ -195,11 +195,11 @@ BEGIN
                     CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
 IDD_GREP DIALOGEX 0, 0, 308, 216
 #else
 IDD_GREP DIALOGEX 0, 0, 308, 171
-#endif  // rei_
+#endif  // cl_
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTEXTHELP
 CAPTION "Grep条件入力"
@@ -208,7 +208,7 @@ BEGIN
     LTEXT           "条件(&N)",IDC_STATIC,5,6,26,8
     COMBOBOX        IDC_COMBO_TEXT,46,4,257,120,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
     LTEXT           "フォルダ(&O)",IDC_STATIC,5,21,38,8
     //COMBOBOX        IDC_COMBO_FOLDER,46,19,246,120,CBS_DROPDOWN | 
     COMBOBOX        IDC_COMBO_FOLDER,46,19,237,120,CBS_DROPDOWN | 
@@ -346,7 +346,7 @@ BEGIN
     DEFPUSHBUTTON   "検索(&F)",IDOK,253,88,49,14,WS_GROUP
     PUSHBUTTON      "キャンセル(&X)",IDCANCEL,253,130,49,14
     PUSHBUTTON      "ヘルプ(&H)",IDC_BUTTON_HELP,253,147,49,14
-#endif  // rei_
+#endif  // cl_
 END
 
 IDD_GREP_REPLACE DIALOGEX 0, 0, 308, 193
@@ -419,11 +419,11 @@ BEGIN
 END
 
 IDD_GREPRUNNING DIALOGEX 0, 0, 293, 79
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
 STYLE DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | WS_SYSMENU
 #else
 STYLE DS_SETFOREGROUND | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-#endif  // rei_
+#endif  // cl_
 CAPTION "Grep実行中"
 FONT 9, "MS Shell Dlg"
 BEGIN
@@ -1094,11 +1094,11 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,117,93,7,
                     12
     LTEXT           "T&AB表示",IDC_STATIC,16,110,56,8,NOT WS_GROUP
-#ifndef REI_MOD_TAB
+#ifndef CL_MOD_TAB
     COMBOBOX        IDC_CHECK_TAB_ARROW,48,108,46,80,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_EDIT_TABVIEWSTRING,102,108,40,12,ES_AUTOHSCROLL
-#endif  // rei_
+#endif  // cl_
     CONTROL         "S&PACEの挿入",IDC_CHECK_INS_SPACE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,70,123,57,10
     COMBOBOX        IDC_COMBO_TSV_MODE,16,123,46,40,CBS_DROPDOWNLIST | 
@@ -3628,14 +3628,14 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_AUTHOR_PAGE         "http://sakura-editor.sourceforge.net/"
-#ifdef REI_MOD_VERDLG
+#ifdef CL_MOD_VERDLG
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n\
 \r\n\
 @ Calette ver.\r\n\
   https://github.com/calette/sakura2201c\r\n"
 #else
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n"
-#endif  // rei_
+#endif  // cl_
 END
 
 STRINGTABLE DISCARDABLE 

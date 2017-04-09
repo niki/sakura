@@ -43,7 +43,7 @@ const DWORD p_helpids[] = {	//12900
 //	From Here Feb. 7, 2002 genta
 // 2006.01.17 Moca COMPILER_VERを追加
 // 2010.04.15 Moca icc/dmcを追加しCPUを分離
-#ifdef REI_MOD_VERDLG
+#ifdef CL_MOD_VERDLG
 #if defined(_M_IA64)
 #  define TARGET_M_SUFFIX "x64(Itanium)"
 #elif defined(_M_AMD64)
@@ -61,7 +61,7 @@ const DWORD p_helpids[] = {	//12900
 #else
 #  define TARGET_M_SUFFIX ""
 #endif
-#endif  // rei_
+#endif  // cl_
 
 #if defined(__BORLANDC__)
 #  define COMPILER_TYPE "B"
@@ -76,7 +76,7 @@ const DWORD p_helpids[] = {	//12900
 #  define COMPILER_TYPE "D"
 #  define COMPILER_VER __DMC__
 #elif defined(_MSC_VER)
-#  ifdef REI_MOD_VERDLG
+#  ifdef CL_MOD_VERDLG
 #    if (_MSC_VER == 1910)
 #      define COMPILER_TYPE "MSVC 2017"
 #    elif (_MSC_VER == 1900)
@@ -132,7 +132,7 @@ const DWORD p_helpids[] = {	//12900
 	#define MY_WIN32_WINNT 0
 #endif
 
-#ifdef REI_MOD_VERDLG
+#ifdef CL_MOD_VERDLG
 #ifdef _MT
 	#ifdef _DLL
 		#ifdef _DEBUG
@@ -150,7 +150,7 @@ const DWORD p_helpids[] = {	//12900
 #else
 		#define MY_RT ""
 #endif
-#endif  // rei_
+#endif  // cl_
 
 //	From Here Nov. 7, 2000 genta
 /*!
@@ -247,7 +247,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// コンパイル情報
 	cmemMsg.AppendString( _T("      Compile Info: ") );
 	int Compiler_ver = COMPILER_VER;
-#ifdef REI_MOD_VERDLG
+#ifdef CL_MOD_VERDLG
 	auto_sprintf( szMsg, _T(COMPILER_TYPE"(%d) ") _T(TARGET_M_SUFFIX" ")
 			_T(MY_RT" ") TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
 		Compiler_ver,
@@ -259,7 +259,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		Compiler_ver,
 		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
 	);
-#endif  // rei_
+#endif  // cl_
 	cmemMsg.AppendString( szMsg );
 
 	// 更新日情報

@@ -509,9 +509,9 @@ void CViewCommander::Command_UNDO( void )
 
 		m_pCommanderView->SetBracketPairPos( true );	// 03/03/07 ai
 
-#ifdef REI_FIX_CURSOR_MOVE_FLICKER
+#ifdef CL_FIX_CURSOR_MOVE_FLICKER
 		GetCaret().ShowEditCaret(); /* キャレットの表示・更新 */
-#endif  // rei_
+#endif  // cl_
 
 		/* 再描画 */
 		// ルーラー再描画の必要があるときは DispRuler() ではなく他の部分と同時に Call_OnPaint() で描画する	// 2010.08.20 ryoji
@@ -764,9 +764,9 @@ void CViewCommander::Command_REDO( void )
 
 		m_pCommanderView->SetBracketPairPos( true );	// 03/03/07 ai
 
-#ifdef REI_FIX_CURSOR_MOVE_FLICKER
+#ifdef CL_FIX_CURSOR_MOVE_FLICKER
 		GetCaret().ShowEditCaret(); /* キャレットの表示・更新 */
-#endif  // rei_
+#endif  // cl_
 
 		/* 再描画 */
 		// ルーラー再描画の必要があるときは DispRuler() ではなく他の部分と同時に Call_OnPaint() で描画する	// 2010.08.20 ryoji

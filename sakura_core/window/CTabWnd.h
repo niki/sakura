@@ -159,13 +159,13 @@ protected:
 		return ::CreateFontIndirect( &ncm.lfMenuFont );
 	}
 
-#ifdef REI_FIX_TABWND
+#ifdef CL_FIX_TABWND
 	// タブ間ダブルクリックを解除する
 	void BreakInterTabDblClkJudgment() {
 		::KillTimer(m_hwndTab, 2);  // タイマーを殺す
 		m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL;
 	}
-#endif  // rei_
+#endif  // cl_
 
 protected:
 	enum DragState { DRAG_NONE, DRAG_CHECK, DRAG_DRAG };

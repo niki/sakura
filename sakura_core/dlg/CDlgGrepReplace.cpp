@@ -160,10 +160,10 @@ void CDlgGrepReplace::SetData( void )
 
 	CDlgGrep::SetData();
 
-#ifdef REI_MOD_DIALOG_POS
+#ifdef CL_MOD_DIALOG_POS
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
-#endif  // rei_
+#endif  // cl_
 }
 
 

@@ -24,9 +24,9 @@
 #include <Windows.h>
 #include "dlg/CDialog.h"
 #include "doc/CEditDoc.h"
-#ifdef REI_MOD_OUTLINEDLG
+#ifdef CL_MOD_OUTLINEDLG
 #include "util/window.h"
-#endif  //rei_
+#endif  //cl_
 
 class CFuncInfo;
 class CFuncInfoArr; // 2002/2/10 aroka
@@ -227,9 +227,9 @@ private:
 	POINT				m_ptDefaultSizeClient;
 	RECT				m_rcItems[12];
 	
-#ifdef REI_MOD_OUTLINEDLG
+#ifdef CL_MOD_OUTLINEDLG
 	CFontAutoDeleter		m_cFontText[2];
-#endif  // rei_
+#endif  // cl_
 };
 
 

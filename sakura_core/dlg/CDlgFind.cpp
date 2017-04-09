@@ -176,10 +176,10 @@ void CDlgFind::SetData( void )
 	/* 先頭（末尾）から再検索 2002.01.26 hor */
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_SEARCHALL, m_pShareData->m_Common.m_sSearch.m_bSearchAll );
 
-#ifdef REI_MOD_DIALOG_POS
+#ifdef CL_MOD_DIALOG_POS
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
-#endif  // rei_
+#endif  // cl_
 
 	return;
 }

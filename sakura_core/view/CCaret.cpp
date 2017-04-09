@@ -174,23 +174,23 @@ CLayoutInt CCaret::MoveCursor(
 		return CLayoutInt(0);
 	}
 
-#ifdef REI_OUTPUT_DEBUG_STRING
+#ifdef CL_OUTPUT_DEBUG_STRING
 	::OutputDebugStringW(L"MoveCursor start.\n");
-#endif  // rei_
+#endif  // cl_
 
 	if( m_pEditView->GetSelectionInfo().IsMouseSelecting() ){	// 範囲選択中
 		nCaretMarginY = 0;
 	}
 	else{
-#ifdef REI_MOD_VERTICAL_SCR
-		nCaretMarginY = REI_MOD_VERTICAL_SCR;
+#ifdef CL_MOD_VERTICAL_SCR
+		nCaretMarginY = CL_MOD_VERTICAL_SCR;
 #else
 		//	2001/10/20 novice
 		nCaretMarginY = (Int)m_pEditView->GetTextArea().m_nViewRowNum / nCaretMarginRate;
 		if( 1 > nCaretMarginY ){
 			nCaretMarginY = 1;
 		}
-#endif  // rei_
+#endif  // cl_
 	}
 	// 2004.04.02 Moca 行だけ有効な座標に修正するのを厳密に処理する
 	GetAdjustCursorPos( &ptWk_CaretPos );
@@ -212,13 +212,13 @@ CLayoutInt CCaret::MoveCursor(
 	
 	// 水平スクロール量（文字数）の算出
 	nScrollColNum = CLayoutInt(0);
-#ifdef REI_MOD_HORIZONTAL_SCR
+#ifdef CL_MOD_HORIZONTAL_SCR
 	nScrollMarginRight = CLayoutInt(1);
 	nScrollMarginLeft = CLayoutInt(1);
 #else
 	nScrollMarginRight = CLayoutInt(SCROLLMARGIN_RIGHT);
 	nScrollMarginLeft = CLayoutInt(SCROLLMARGIN_LEFT);
-#endif  // rei_
+#endif  // cl_
 
 	// 2010.08.24 Moca 幅が狭い場合のマージンの調整
 	{
@@ -235,31 +235,31 @@ CLayoutInt CCaret::MoveCursor(
 		ptWk_CaretPos.GetX() > m_pEditView->GetTextArea().GetViewLeftCol() + m_pEditView->GetTextArea().m_nViewColNum - nScrollMarginRight ){
 		nScrollColNum =
 			( m_pEditView->GetTextArea().GetViewLeftCol() + m_pEditView->GetTextArea().m_nViewColNum - nScrollMarginRight ) - ptWk_CaretPos.GetX2();
-#ifdef REI_MOD_HORIZONTAL_SCR
+#ifdef CL_MOD_HORIZONTAL_SCR
 		if (nScrollColNum != 0) {
-			static const int kSize = REI_MOD_HORIZONTAL_SCR;
+			static const int kSize = CL_MOD_HORIZONTAL_SCR;
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize
 				                    : (nScrollColNum + kSize - 1) / kSize * kSize;
 			}
 		}
-#endif  // rei_
+#endif  // cl_
 	}
 	else if( 0 < m_pEditView->GetTextArea().GetViewLeftCol() &&
 		ptWk_CaretPos.GetX() < m_pEditView->GetTextArea().GetViewLeftCol() + nScrollMarginLeft
 	){
 		nScrollColNum = m_pEditView->GetTextArea().GetViewLeftCol() + nScrollMarginLeft - ptWk_CaretPos.GetX2();
-#ifdef REI_MOD_HORIZONTAL_SCR
+#ifdef CL_MOD_HORIZONTAL_SCR
 		if (nScrollColNum != 0) {
-			static const int kSize = REI_MOD_HORIZONTAL_SCR;
+			static const int kSize = CL_MOD_HORIZONTAL_SCR;
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize
 				                    : (nScrollColNum + kSize - 1) / kSize * kSize;
 			}
 		}
-#endif  // rei_
+#endif  // cl_
 		if( 0 > m_pEditView->GetTextArea().GetViewLeftCol() - nScrollColNum ){
 			nScrollColNum = m_pEditView->GetTextArea().GetViewLeftCol();
 		}
@@ -317,7 +317,7 @@ CLayoutInt CCaret::MoveCursor(
 		}
 	}
 	// 移動先は、画面の最大行数−２より下か？（down キー）
-#ifdef REI_MOD_VERTICAL_SCR
+#ifdef CL_MOD_VERTICAL_SCR
 	else if( ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine() >= m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY - 1 ){
 		CLayoutInt ii = m_pEditDoc->m_cLayoutMgr.GetLineCount();
 		if( ii - ptWk_CaretPos.y < nCaretMarginY + 1 &&
@@ -337,9 +337,9 @@ CLayoutInt CCaret::MoveCursor(
 			nScrollRowNum =
 				-(ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine()) + (m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY - 2);
 		}
-#endif  // rei_
+#endif  // cl_
 	}
-#ifdef REI_FIX_CURSOR_MOVE_FLICKER
+#ifdef CL_FIX_CURSOR_MOVE_FLICKER
 	// 水平・垂直のスクロールがないときは画面内のカーソル移動として描画を行う
 	bool isFinalDraw = false;
 	bool oldDraw = m_pEditView->GetDrawSwitch();
@@ -351,7 +351,7 @@ CLayoutInt CCaret::MoveCursor(
 			m_pEditView->SetDrawSwitch(false);
 		}
 	}
-#endif  // rei_
+#endif  // cl_
 	//	To Here 2007.07.28 じゅうじ
 	if( bScroll ){
 		/* スクロール */
@@ -404,9 +404,9 @@ CLayoutInt CCaret::MoveCursor(
 		m_pEditView->AdjustScrollBars(); // 2001/10/20 novice
 	}
 
-#ifdef REI_FIX_CURSOR_MOVE_FLICKER
+#ifdef CL_FIX_CURSOR_MOVE_FLICKER
 	m_pEditView->SetDrawSwitch(oldDraw);
-#endif  // rei_
+#endif  // cl_
 
 	// 横スクロールが発生したら、ルーラー全体を再描画 2002.02.25 Add By KK
 	if (nScrollColNum != 0 ){
@@ -444,15 +444,15 @@ CLayoutInt CCaret::MoveCursor(
 	m_pEditView->DrawBracketPair( true );
 // 02/09/18 対括弧の強調表示 ai End		03/02/18 ai mod E
 
-#ifdef REI_OUTPUT_DEBUG_STRING
+#ifdef CL_OUTPUT_DEBUG_STRING
 	::OutputDebugStringW(L"MoveCursor finish.\n");
-#endif  // rei_
+#endif  // cl_
 
-#ifdef REI_FIX_CURSOR_MOVE_FLICKER
+#ifdef CL_FIX_CURSOR_MOVE_FLICKER
 	if (isFinalDraw) {
 		m_pEditView->Call_OnPaint(PAINT_LINENUMBER | PAINT_BODY, false);
 	}
-#endif  // rei_
+#endif  // cl_
 
 	return nScrollRowNum;
 
@@ -573,21 +573,21 @@ void CCaret::ShowEditCaret()
 		m_sizeCaret.cx = 0;
 		return;
 	}
-#if 1 // rei_ form 2.2.0.1
+#if 1 // cl_ form 2.2.0.1
 	// 2014.07.02 GetDrawSwitchを見る
 	if( !m_pEditView->GetDrawSwitch() ){
 		return;
 	}
-#endif  // rei_
+#endif  // cl_
 
 	// CalcCaretDrawPosのためにCaretサイズを仮設定
 	int				nCaretWidth = 0;
 	int				nCaretHeight = 0;
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();
-//#ifdef REI_LINE_CENTERING // Caretの高さ
+//#ifdef CL_LINE_CENTERING // Caretの高さ
 //		nCaretHeight += m_pEditView->m_pTypeData->m_nLineSpace;
-//#endif  // rei_
+//#endif  // cl_
 		if( m_pEditView->IsInsMode() ){
 			nCaretWidth = 2;
 		}else{
@@ -616,12 +616,12 @@ void CCaret::ShowEditCaret()
 	// カーソルのタイプ = win
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();					/* キャレットの高さ */
-//#ifdef REI_LINE_CENTERING // Caretの高さ
+//#ifdef CL_LINE_CENTERING // Caretの高さ
 //		nCaretHeight += m_pEditView->m_pTypeData->m_nLineSpace;
-//#endif  // rei_
+//#endif  // cl_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
-#ifdef REI_MOD_CARET
-			int caret_type = RegKey(REI_REGKEY).get(_T("CaretType"), REI_MOD_CARET);
+#ifdef CL_MOD_CARET
+			int caret_type = RegKey(CL_REGKEY).get(_T("CaretType"), CL_MOD_CARET);
 			if (caret_type == 11) {
 				nCaretWidth = 1;
 				
@@ -668,7 +668,7 @@ void CCaret::ShowEditCaret()
 			if( ::SystemParametersInfo(SPI_GETCARETWIDTH, 0, &dwWidth, 0) && 2 < dwWidth){
 				nCaretWidth = t_min((int)dwWidth, GetHankakuDx());
 			}
-#endif  // rei_
+#endif  // cl_
 		}
 		else{
 			nCaretWidth = GetHankakuDx();
@@ -937,11 +937,11 @@ void CCaret::ShowCaretPosInfo()
 				}
 			}
 			else{
-#ifdef REI_MOD_STATUSBAR
+#ifdef CL_MOD_STATUSBAR
 				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName2());
 #else
 				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName());
-#endif  // rei_
+#endif  // cl_
 			}
 		}
 	}
@@ -1005,7 +1005,7 @@ void CCaret::ShowCaretPosInfo()
 	}
 	// ステータスバーに状態を書き出す
 	else{
-#ifdef REI_MOD_STATUSBAR
+#ifdef CL_MOD_STATUSBAR
 		TCHAR	szText_1[64];
 		auto_sprintf( szText_1, _T("  %d:%d"), ptCaret.y, ptCaret.x );
 
@@ -1071,7 +1071,7 @@ void CCaret::ShowCaretPosInfo()
 		::StatusBar_SetText( hwndStatusBar, 4 | 0,             pszCodeName );
 		::StatusBar_SetText( hwndStatusBar, 5 | SBT_OWNERDRAW, _T("") );
 		::StatusBar_SetText( hwndStatusBar, 6 | 0,             szText_6 );
-#endif  // rei_
+#endif  // cl_
 	}
 
 }
@@ -1288,10 +1288,10 @@ POINT CCaret::CalcCaretDrawPos(const CLayoutPoint& ptCaretPos) const
 			+ (Int)(nY) * m_pEditView->GetTextMetrics().GetHankakuDy()
 			+ m_pEditView->GetTextMetrics().GetHankakuHeight() - GetCaretSize().cy; //下寄せ
 	}
-#ifdef REI_LINE_CENTERING
+#ifdef CL_LINE_CENTERING
 	//nPosY += m_pEditView->m_pTypeData->m_nLineSpace;    // 行間隔を含む高さにする場合
 	nPosY += m_pEditView->m_pTypeData->m_nLineSpace / 2;  // 文字の高さにする場合
-#endif  // rei_
+#endif  // cl_
 
 	return CMyPoint(nPosX,nPosY);
 }

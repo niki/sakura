@@ -144,17 +144,17 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	// 2005.09.01 ryoji タブ部のメッセージ処理を個別に関数化し、タブ順序変更の処理を追加
 	switch( uMsg )
 	{
-#ifdef REI_FIX_TABWND
+#ifdef CL_FIX_TABWND
 	case WM_LBUTTONDBLCLK:
 		{  // @todo OnTabLButtonDblClkを作ること
 			BreakInterTabDblClkJudgment();
-			if (!!RegKey(REI_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
+			if (!!RegKey(CL_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
 				return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
 			} else {
 				return 1L;
 			}
 		}
-#endif  // rei_
+#endif  // cl_
 
 	case WM_LBUTTONDOWN:
 		return OnTabLButtonDown( wParam, lParam );
@@ -262,7 +262,7 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 		return 0L;
 	}
 
-#ifdef REI_FIX_TABWND
+#ifdef CL_FIX_TABWND
 	// タブ間のダブルクリックでタブを閉じる処理
 	// 別のタブをクリックすると違うウィンドウのタブウィンドウに切り替わるので
 	// 非アクティブタブに対してダブルクリックができないための暫定対応
@@ -290,7 +290,7 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 			}
 		}
 	}
-#endif  // rei_
+#endif  // cl_
 
 	// マウスドロップ処理
 	switch( m_eDragState )
@@ -309,10 +309,10 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 		break;
 
 	case DRAG_DRAG:
-#ifdef REI_FIX_TABWND
+#ifdef CL_FIX_TABWND
 		// ドラッグ時はタブ間ダブルクリックを解除する
 		BreakInterTabDblClkJudgment();
-#endif  // rei_
+#endif  // cl_
 		if ( 0 > nDstTab )	// タブの外でドロップ
 		{
 			// タブの分離処理
@@ -453,10 +453,10 @@ LRESULT CTabWnd::OnTabMouseMove( WPARAM wParam, LPARAM lParam )
 		// ここに来たらドラッグ開始なので break しないでそのまま DRAG_DRAG 処理に入る
 
 	case DRAG_DRAG:
-#ifdef REI_FIX_TABWND
+#ifdef CL_FIX_TABWND
 		// ドラッグ時はタブ間ダブルクリックを解除する
 		BreakInterTabDblClkJudgment();
-#endif  // rei_
+#endif  // cl_
 		// ドラッグ中のマウスカーソルを表示する
 		HINSTANCE hInstance;
 		LPCTSTR lpCursorName;
@@ -547,14 +547,14 @@ LRESULT CTabWnd::OnTabTimer( WPARAM wParam, LPARAM lParam )
 		if( nDstTab < 0 )
 			::SendMessageAny( m_hwndTab, WM_MOUSEMOVE, 0, MAKELONG( hitinfo.pt.x, hitinfo.pt.y ) );
 	}
-#ifdef REI_FIX_TABWND
+#ifdef CL_FIX_TABWND
 	if (wParam == 2) {
 		//TCHAR szMsg[128];
 		//auto_sprintf(szMsg, L"CTabWnd: ** Timeout, m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL\n"),
 		//OutputDebugStringW(szMsg);
 		BreakInterTabDblClkJudgment();
 	}
-#endif  // rei_
+#endif  // cl_
 
 
 	return 0L;
@@ -1304,8 +1304,8 @@ LRESULT CTabWnd::OnMeasureItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		}
 
 		lpmis->itemHeight = ::GetSystemMetrics( SM_CYMENU );
-#ifdef REI_MOD_WINLIST_POPUP
-		DWORD width = RegKey(REI_REGKEY).get(_T("WinListPopupWidth"), REI_MOD_WINLIST_POPUP_WIDTH);
+#ifdef CL_MOD_WINLIST_POPUP
+		DWORD width = RegKey(CL_REGKEY).get(_T("WinListPopupWidth"), CL_MOD_WINLIST_POPUP_WIDTH);
 		if (width > 0) {
 			lpmis->itemWidth = width;
 		} else {
@@ -1313,7 +1313,7 @@ LRESULT CTabWnd::OnMeasureItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		}
 #else
 		lpmis->itemWidth = (cxIcon + DpiScaleX(8)) + size.cx;
-#endif  // rei_
+#endif  // cl_
 
 		::SelectObject( hdc, hFontOld );
 		::DeleteObject( hFont );
@@ -1492,18 +1492,18 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// テキスト描画
 		COLORREF clrText;
 		clrText = ::GetSysColor(COLOR_MENUTEXT);
-#ifdef REI_MOD_TAB_CAPTION_COLOR
+#ifdef CL_MOD_TAB_CAPTION_COLOR
 		if (clrText == ::GetSysColor(COLOR_MENUTEXT)) {
 			EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
-			clrText = p && p->m_bIsRecMacro ? RegKey(REI_REGKEY).get(_T("TabCaptionRecMacroColor"), REI_MOD_RECMACRO_TAB_CAPTION_COLOR)
+			clrText = p && p->m_bIsRecMacro ? RegKey(CL_REGKEY).get(_T("TabCaptionRecMacroColor"), CL_MOD_RECMACRO_TAB_CAPTION_COLOR)
 			                                : ::GetSysColor(COLOR_MENUTEXT);
 		}
 		if (clrText == ::GetSysColor(COLOR_MENUTEXT)) {
 			EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
-			clrText = p && p->m_bIsModified ? RegKey(REI_REGKEY).get(_T("TabCaptionModifiedColor"), REI_MOD_MODIFIED_TAB_CAPTION_COLOR)
+			clrText = p && p->m_bIsModified ? RegKey(CL_REGKEY).get(_T("TabCaptionModifiedColor"), CL_MOD_MODIFIED_TAB_CAPTION_COLOR)
 			                                : ::GetSysColor(COLOR_MENUTEXT);
 		}
-#endif  // rei_
+#endif  // cl_
 		gr.PushTextForeColor( clrText );
 		gr.SetTextBackTransparent(true);
 		RECT rcText = rcItem;
@@ -2195,16 +2195,16 @@ void CTabWnd::AdjustWindowPlacement( void )
 			SetCarmWindowPlacement( hwnd, &wp );	// 位置を復元する
 			::UpdateWindow( hwnd );	// 強制描画
 			
-#ifdef REI_FIX_TABWND
+#ifdef CL_FIX_TABWND
 			::Sleep(10);  // ウィンドウ切り替え時のちらつき抑制
-#endif  // rei_
+#endif  // cl_
 		}
 	}
 
-#ifdef REI_FIX_TABWND
+#ifdef CL_FIX_TABWND
 	// タブ間ダブルクリック判定タイマー起動
 	::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime(), NULL );
-#endif  // rei_
+#endif  // cl_
 }
 
 /*!	アクティブ化の少ない SetWindowPlacement() を実行する
@@ -2430,9 +2430,9 @@ void CTabWnd::LayoutTab( void )
 	// オーナードロー状態を共通設定に追随させる
 	BOOL bDispTabClose = m_pShareData->m_Common.m_sTabBar.m_bDispTabClose;
 	BOOL bOwnerDraw = bDispTabClose;
-#ifdef REI_MOD_TAB_CAPTION_COLOR
+#ifdef CL_MOD_TAB_CAPTION_COLOR
 	bOwnerDraw = TRUE;
-#endif  // rei_
+#endif  // cl_
 	if( bOwnerDraw && !(lStyle & TCS_OWNERDRAWFIXED) ){
 		lStyle |= TCS_OWNERDRAWFIXED;
 	}else if( !bOwnerDraw && (lStyle & TCS_OWNERDRAWFIXED) ){
@@ -3070,18 +3070,18 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 			::InsertMenu( hMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);	// セパレータ
 		}
 
-#ifdef REI_MOD_WINLIST_POPUP
+#ifdef CL_MOD_WINLIST_POPUP
 		{
 			RECT rc;
 			::GetWindowRect(GetParentHwnd(), &rc);
 
 			// X自動配置
 			if (pt.x == (LONG)-1) {
-				DWORD left = RegKey(REI_REGKEY).get(_T("WinListPopupLeft"), REI_MOD_WINLIST_POPUP_LEFT);
+				DWORD left = RegKey(CL_REGKEY).get(_T("WinListPopupLeft"), CL_MOD_WINLIST_POPUP_LEFT);
 
 				if (left == (DWORD)-1) {
 					// センタリング
-					DWORD width = RegKey(REI_REGKEY).get(_T("WinListPopupWidth"), REI_MOD_WINLIST_POPUP_WIDTH);
+					DWORD width = RegKey(CL_REGKEY).get(_T("WinListPopupWidth"), CL_MOD_WINLIST_POPUP_WIDTH);
 
 					if (width > 0 && m_hIml) {
 						pt.x = rc.left + (rc.right - rc.left) / 2 - width / 2;
@@ -3099,7 +3099,7 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 
 			// Y自動配置
 			if (pt.y == (LONG)-1) {
-				DWORD top = RegKey(REI_REGKEY).get(_T("WinListPopupTop"), REI_MOD_WINLIST_POPUP_TOP);
+				DWORD top = RegKey(CL_REGKEY).get(_T("WinListPopupTop"), CL_MOD_WINLIST_POPUP_TOP);
 
 				if (top == (DWORD)-1) {
 					// センタリング
@@ -3123,7 +3123,7 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 				pt.y = std::max(std::min(pt.y, rc.bottom), rc.top);
 			}
 		}
-#endif  // rei_
+#endif  // cl_
 
 		// メニューを表示する
 		// 2006.04.21 ryoji マルチモニタ対応の修正

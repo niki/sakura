@@ -321,7 +321,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("GREPFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFolders[i] );
 	}
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[*].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders99 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders3 );
@@ -329,7 +329,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Path"), pShare->m_sSearchKeywords.m_szGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Path"), pShare->m_sSearchKeywords.m_szGrepFolders3 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[2].Path"), pShare->m_sSearchKeywords.m_szGrepFolders4 );
-#endif  // rei_
+#endif  // cl_
 }
 
 /*!
@@ -1466,10 +1466,10 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	if( types.m_id < 0 ){
 		types.m_id *= -1;
 	}
-#ifndef REI_MOD_TAB
+#ifndef CL_MOD_TAB
 	cProfile.IOProfileData( pszSecName, LTEXT("szTabViewString"), MakeStringBufferW(types.m_szTabViewString) );
 	cProfile.IOProfileData_WrapInt( pszSecName, LTEXT("bTabArrow")	, types.m_bTabArrow );	//@@@ 2003.03.26 MIK
-#endif  // rei_
+#endif  // cl_
 	cProfile.IOProfileData( pszSecName, LTEXT("bInsSpace")			, types.m_bInsSpace );	// 2001.12.03 hor
 
 	cProfile.IOProfileData( pszSecName, LTEXT("nTextWrapMethod"), types.m_nTextWrapMethod );		// 2008.05.30 nasukoji

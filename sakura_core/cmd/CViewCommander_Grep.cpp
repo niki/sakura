@@ -33,12 +33,12 @@ void CViewCommander::Command_GREP_DIALOG( void )
 	bool bGetHistory = GetEditWindow()->m_cDlgGrep.m_bSetText == false;
 
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
-#ifdef REI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef CL_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg(
       cmemCurText, bGetHistory, m_pCommanderView->m_sCurSearchOption.bRegularExp);
 #else
 	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText, bGetHistory );	// 2006.08.23 ryoji ダイアログ専用関数に変更
-#endif  // rei_
+#endif  // cl_
 
 	if( bSet ){
 		GetEditWindow()->m_cDlgGrep.m_strText = cmemCurText.GetStringPtr();
@@ -66,7 +66,7 @@ void CViewCommander::Command_GREP( void )
 	CNativeW		cmWork4;
 
 	cmWork1.SetString( GetEditWindow()->m_cDlgGrep.m_strText.c_str() );
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
 	int count = 0;
 	CNativeT temp;
 	if (!GetEditWindow()->m_cDlgGrep.m_bFromThisText) {
@@ -107,7 +107,7 @@ void CViewCommander::Command_GREP( void )
 #else
 	cmWork2.SetString( GetEditWindow()->m_cDlgGrep.m_szFile );
 	cmWork3.SetString( GetEditWindow()->m_cDlgGrep.m_szFolder );
-#endif  // rei_
+#endif  // cl_
 
 	/*	今のEditViewにGrep結果を表示する。
 		Grepモードのとき、または未編集で無題かつアウトプットでない場合。
@@ -138,11 +138,11 @@ void CViewCommander::Command_GREP( void )
 			&cmWork2,
 			&cmWork3,
 			false,
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
 			(count > 0) ? GetEditWindow()->m_cDlgGrep.m_bSubFolder : false,
 #else
 			GetEditWindow()->m_cDlgGrep.m_bSubFolder,
-#endif  // rei_
+#endif  // cl_
 			false,
 			true, // Header
 			GetEditWindow()->m_cDlgGrep.m_sSearchOption,

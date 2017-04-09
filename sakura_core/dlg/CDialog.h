@@ -152,9 +152,9 @@ public:
 	DLLSHAREDATA*	m_pShareData;
 	BOOL			m_bInited;
 	HINSTANCE		m_hLangRsrcInstance;		// メッセージリソースDLLのインスタンスハンドル	// 2011.04.10 nasukoji
-#ifdef REI_MOD_DIALOG_POS
+#ifdef CL_MOD_DIALOG_POS
 	HWND			m_hwndPlaceOfWindow;
-#endif  // rei_
+#endif  // cl_
 
 protected:
 	void CreateSizeBox( void );
@@ -163,16 +163,16 @@ protected:
 	HWND GetItemHwnd(int nID){ return ::GetDlgItem( GetHwnd(), nID ); }
 
 	// コントロールに画面のフォントを設定	2012/11/27 Uchi
-#ifdef REI_MOD_SET_MAIN_FONT
+#ifdef CL_MOD_SET_MAIN_FONT
 	HFONT SetMainFont( HWND hTarget, int pt = -9 );
 #else
 	HFONT SetMainFont( HWND hTarget );
-#endif  // rei_
+#endif  // cl_
 
-#ifdef REI_MOD_DIALOG_POS
+#ifdef CL_MOD_DIALOG_POS
 	void SetPlaceOfWindow();
 	void SetPlaceOfWindow(HWND hWnd);
-#endif  // rei_
+#endif  // cl_
 };
 
 

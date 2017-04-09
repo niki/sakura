@@ -827,7 +827,7 @@
 #define IDD_PLUGIN_OPTION               5221
 #define IDD_PROFILEMGR                  5222
 #define IDD_FILETREE                    5223
-#ifdef REI_MOD_GREP
+#ifdef CL_MOD_GREP
 #define IDC_COMBO_FOLDER2               7000
 #define IDC_COMBO_FOLDER3               7001
 #define IDC_COMBO_FOLDER4               7002
@@ -839,7 +839,7 @@
 #define IDC_BUTTON_FOLDER3              7021
 #define IDC_BUTTON_FOLDER4              7022
 #define IDC_CHK_CPP                     7500
-#endif  // rei_
+#endif  // cl_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

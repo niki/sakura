@@ -377,9 +377,9 @@ int CDlgFavorite::GetData( void )
 
 BOOL CDlgFavorite::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
-#ifdef REI_MOD_DIALOG_POS
+#ifdef CL_MOD_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // rei_
+#endif  // cl_
 
 	HWND		hwndList;
 	HWND		hwndBaseList;

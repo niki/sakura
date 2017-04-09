@@ -54,9 +54,9 @@ int CDlgSetCharSet::DoModal( HINSTANCE hInstance, HWND hwndParent, ECodeType* pn
 
 BOOL CDlgSetCharSet::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
-#ifdef REI_MOD_DIALOG_POS
+#ifdef CL_MOD_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // rei_
+#endif  // cl_
 
 	_SetHwnd( hwndDlg );
 	

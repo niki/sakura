@@ -38,11 +38,11 @@ CRecentGrepFile::CRecentGrepFile()
 		GetShareData()->m_sSearchKeywords.m_aGrepFiles.dataPtr(),
 		&GetShareData()->m_sSearchKeywords.m_aGrepFiles._GetSizeRef(),
 		NULL,
-#ifdef REI_CHG_MAXDATA
-		RegKey(REI_REGKEY).get(_T("RecentGrepFileMax"), MAX_GREPFILE),
+#ifdef CL_CHG_MAXDATA
+		RegKey(CL_REGKEY).get(_T("RecentGrepFileMax"), MAX_GREPFILE),
 #else
 		MAX_GREPFILE,
-#endif  // rei_
+#endif  // cl_
 		NULL
 	);
 }
