@@ -24,7 +24,7 @@
 
 #### ・ビルド
 + MSVC2015を使用<br>
-+ 最適化オプションを O2 に設定<br>
++ 最適化オプションを O1 に設定<br>
 + ランタイムライブラリを MD に設定
 + TCMalloc(Copyright (c) 2005, Google Inc.)構成を作成.<br>
   (ビルドするには libtcmalloc_minimal.lib を sakura/ 直下にコピーする必要があります)<br>
