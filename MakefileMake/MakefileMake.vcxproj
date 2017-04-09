@@ -14,7 +14,7 @@
     <ProjectGuid>{5FCD88FF-AF9F-48B7-BDEA-26777E8D1439}</ProjectGuid>
     <RootNamespace>MakefileMake</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -75,6 +75,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)MakefileMake.exe</OutputFile>
