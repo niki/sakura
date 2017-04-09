@@ -132,6 +132,26 @@ const DWORD p_helpids[] = {	//12900
 	#define MY_WIN32_WINNT 0
 #endif
 
+#ifdef REI_MOD_VERDLG
+#ifdef _MT
+	#ifdef _DLL
+		#ifdef _DEBUG
+			#define MY_RT "MDd"
+		#else
+			#define MY_RT "MD"
+		#endif
+	#else
+		#ifdef _DEBUG
+			#define MY_RT "MTd"
+		#else
+			#define MY_RT "MT"
+		#endif
+	#endif
+#else
+		#define MY_RT ""
+#endif
+#endif  // rei_
+
 //	From Here Nov. 7, 2000 genta
 /*!
 	標準以外のメッセージを捕捉する
@@ -229,7 +249,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	int Compiler_ver = COMPILER_VER;
 #ifdef REI_MOD_VERDLG
 	auto_sprintf( szMsg, _T(COMPILER_TYPE"(%d) ") _T(TARGET_M_SUFFIX" ")
-			TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
+			_T(MY_RT" ") TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
 		Compiler_ver,
 		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
 	);
