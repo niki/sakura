@@ -5,11 +5,17 @@
 * バグ?とか気になったところの修正
 * いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ
 * プロポーショナルフォント関連はスルー (個人的に使用していないため)
+
 * 動作環境<br>
   + Windows10 RS1以降で動作します<br>
     (_WIN32_WINNT に 0x0A00 を設定)<br>
     (ターゲットプラットフォームバージョンに 10.0.14393.0 を設定)<br>
   + Visual Studio 2015 の [Visual C++ 再頒布可能パッケージ](https://www.microsoft.com/ja-jp/download/details.aspx?id=48145)が必要<br>
+* ビルド環境<br>
+  + Windows10 RS1以前や Visual Studio 2015以外でビルドする際は適当にいじってください<br>
+  + TCMallocを使用しているので libtcmalloc_minimal.lib が必要です<br>
+    [Google Performance Tools](https://github.com/gperftools/gperftools)をビルドしてください<br>
+    生成した libtcmalloc_minimal.lib は sakura/ へコピーしてください<br>
 
 ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)
 
@@ -26,8 +32,8 @@
 + MSVC2015を使用<br>
 + 最適化オプションを O1 に設定<br>
 + ランタイムライブラリを MD に設定
-+ TCMalloc(Copyright (c) 2005, Google Inc.)構成を作成.<br>
-  (ビルドするには libtcmalloc_minimal.lib を sakura/ 直下にコピーする必要があります)<br>
++ TCMalloc(Copyright (c) 2005, Google Inc.)を使用.<br>
+  (ビルドするには libtcmalloc_minimal.lib を sakura/ 直下にコピーしてください)<br>
 
 #### ・ファイル系
 + 履歴 (検索、置換、Grep)の値を少なめに変更.<br>
