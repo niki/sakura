@@ -20,7 +20,7 @@
 
 ### ● 変更内容
 いくつかの設定はレジストリで変更できます.<br>
-`[HKEY_CURRENT_USER\SOFTWARE\sakura_REI]` を参照してください.<br>
+`[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` を参照してください.<br>
 
 #### ・ビルド
 + MSVC2015を使用<br>
@@ -111,7 +111,7 @@
   この修正がこの改造版のすべてかと思います.<br>
 
 ### ● レジストリ詳細<br>
-[HKEY_CURRENT_USER\SOFTWARE\sakura_REI]<br>
+[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]<br>
 
 + CaretType (dword)<br>
     キャレットのサイズを…<br>
