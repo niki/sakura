@@ -955,11 +955,17 @@ void CViewCommander::Command_WndScrollDown( void )
 {
 	CLayoutInt	nCaretMarginY;
 
+#ifdef CL_MOD_VERTICAL_SCR
+	nCaretMarginY = CL_MOD_VERTICAL_SCR;
+	if( nCaretMarginY < 1 )
+		nCaretMarginY = CLayoutInt(1);
+#else
 	nCaretMarginY = m_pCommanderView->GetTextArea().m_nViewRowNum / _CARETMARGINRATE;
 	if( nCaretMarginY < 1 )
 		nCaretMarginY = CLayoutInt(1);
 
 	nCaretMarginY += 2;
+#endif  // cl_
 
 	bool bCaretOff = false;
 	if( GetCaret().GetCaretLayoutPos().GetY() > m_pCommanderView->GetTextArea().m_nViewRowNum + m_pCommanderView->GetTextArea().GetViewTopLine() - (nCaretMarginY + 1) ){
@@ -997,9 +1003,15 @@ void CViewCommander::Command_WndScrollUp(void)
 {
 	CLayoutInt	nCaretMarginY;
 
+#ifdef CL_MOD_VERTICAL_SCR
+	nCaretMarginY = CL_MOD_VERTICAL_SCR;
+	if( nCaretMarginY < 0 )
+		nCaretMarginY = CLayoutInt(0);
+#else
 	nCaretMarginY = m_pCommanderView->GetTextArea().m_nViewRowNum / _CARETMARGINRATE;
 	if( nCaretMarginY < 1 )
 		nCaretMarginY = 1;
+#endif
 
 	bool bCaretOff = false;
 	if( GetCaret().GetCaretLayoutPos().GetY2() < m_pCommanderView->GetTextArea().GetViewTopLine() + (nCaretMarginY + 1) ){

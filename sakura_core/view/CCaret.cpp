@@ -184,6 +184,8 @@ CLayoutInt CCaret::MoveCursor(
 	else{
 #ifdef CL_MOD_VERTICAL_SCR
 		nCaretMarginY = CL_MOD_VERTICAL_SCR;
+		if( nCaretMarginY < 0 )
+			nCaretMarginY = CLayoutInt(0);
 #else
 		//	2001/10/20 novice
 		nCaretMarginY = (Int)m_pEditView->GetTextArea().m_nViewRowNum / nCaretMarginRate;
