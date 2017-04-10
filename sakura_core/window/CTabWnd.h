@@ -72,6 +72,10 @@ public:
 
 	LRESULT TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 	LRESULT TabListMenu( POINT pt, BOOL bSel = TRUE, BOOL bFull = FALSE, BOOL bOtherGroup = TRUE );	/*!< タブ一覧メニュー作成処理 */	// 2006.03.23 fon
+#ifdef CL_MOD_WINLIST_POPUP
+	void enableTabListSizeFix() { m_bTabListSizeFix = true; }
+	void disableTabListSizeFix() { m_bTabListSizeFix = false; }
+#endif  // cl_
 
 	void SizeBox_ONOFF( bool bSizeBox );
 	HWND GetHwndSizeBox(){
@@ -216,6 +220,10 @@ private:
 
 	HWND		m_hwndSizeBox;
 	bool		m_bSizeBox;
+
+#ifdef CL_MOD_WINLIST_POPUP
+	bool		m_bTabListSizeFix;
+#endif  // cl_
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(CTabWnd);

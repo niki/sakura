@@ -879,6 +879,9 @@ CTabWnd::CTabWnd()
 , m_nTabCloseCapture( -1 )
 ,m_hwndSizeBox(NULL)
 ,m_bSizeBox(false)
+#ifdef CL_MOD_WINLIST_POPUP
+,m_bTabListSizeFix(false)
+#endif  // cl_
 {
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
@@ -1306,7 +1309,7 @@ LRESULT CTabWnd::OnMeasureItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		lpmis->itemHeight = ::GetSystemMetrics( SM_CYMENU );
 #ifdef CL_MOD_WINLIST_POPUP
 		DWORD width = RegKey(CL_REGKEY).get(_T("WinListPopupWidth"), CL_MOD_WINLIST_POPUP_WIDTH);
-		if (width > 0) {
+		if (m_bTabListSizeFix && width > 0) {
 			lpmis->itemWidth = width;
 		} else {
 			lpmis->itemWidth = (cxIcon + DpiScaleX(8)) + size.cx;
@@ -1378,7 +1381,17 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		RECT rcText = rcItem;
 		rcText.left += (cxIcon + DpiScaleX(8));
 
+#ifdef CL_MOD_WINLIST_POPUP
+		TCHAR path[_MAX_PATH] = {};
+		_tcsncpy(path, pData->szText, _MAX_PATH - 1);
+		path[_MAX_PATH - 1] = _T('\0');
+		if (m_bTabListSizeFix) {
+			::PathCompactPath(gr, path, rcText.right - rcText.left);  // パスを縮める
+		}
+		::DrawText( gr, path, -1, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER );
+#else
 		::DrawText( gr, pData->szText, -1, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER );
+#endif  // cl_
 
 		gr.PopTextForeColor();
 		gr.PopMyFont();
@@ -3083,7 +3096,7 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 					// センタリング
 					DWORD width = RegKey(CL_REGKEY).get(_T("WinListPopupWidth"), CL_MOD_WINLIST_POPUP_WIDTH);
 
-					if (width > 0 && m_hIml) {
+					if (m_bTabListSizeFix && width > 0 && m_hIml) {
 						pt.x = rc.left + (rc.right - rc.left) / 2 - width / 2;
 					} else {
 						pt.x = rc.left + 8;

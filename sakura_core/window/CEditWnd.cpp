@@ -4284,6 +4284,7 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 #ifdef CL_MOD_WINLIST_POPUP
 		pt.x = (LONG)-1;
 		pt.y = (LONG)-1;
+		m_cTabWnd.enableTabListSizeFix();
 #else
 		::GetWindowRect( GetActiveView().GetHwnd(), &rc );
 		pt.x = rc.right - 150;
@@ -4296,6 +4297,9 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 	// ウィンドウ一覧メニューをポップアップ表示する
 	if( NULL != m_cTabWnd.GetHwnd() ){
 		m_cTabWnd.TabListMenu( pt );
+#ifdef CL_MOD_WINLIST_POPUP
+		m_cTabWnd.disableTabListSizeFix();
+#endif  // cl_
 	}
 	else{
 		m_cMenuDrawer.ResetContents();	// 2009.06.02 ryoji 追加
@@ -4304,6 +4308,7 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 		int nRowNum = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pEditNodeArr, TRUE );
 		WinListMenu( hMenu, pEditNodeArr, nRowNum, TRUE );
 #ifdef CL_MOD_WINLIST_POPUP
+		m_cTabWnd.disableTabListSizeFix();
 		::GetWindowRect( GetActiveView().GetHwnd(), &rc );
 
 		DWORD left = RegKey(CL_REGKEY).get(_T("WinListPopupLeft"), CL_MOD_WINLIST_POPUP_LEFT);
