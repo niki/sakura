@@ -8,9 +8,7 @@
 * プロポーショナルフォント関連はスルー (個人的に使用していないため)
 
 * 動作環境<br>
-  + Windows10 RS1以降で動作します<br>
-    (_WIN32_WINNT に 0x0A00 を設定)<br>
-    (ターゲットプラットフォームバージョンに 10.0.14393.0 を設定)<br>
+  + Windows10 RS1以降を対象としています (動作チェックができないので)
   + Visual Studio 2015 の [Visual C++ 再頒布可能パッケージ](https://www.microsoft.com/ja-jp/download/details.aspx?id=48145)が必要
 * ビルド環境<br>
   + Windows10 RS1以前や Visual Studio 2015以外でビルドする際は適当にいじってください
@@ -32,11 +30,15 @@
 + MSVC2015を使用
 + 最適化オプションを O1 に設定
 + ランタイムライブラリを MD に設定
++ _WIN32_WINNT に 0x0A00 を設定
++ ターゲットプラットフォームバージョンに 10.0.14393.0 を設定
 + TCMalloc(Copyright (c) 2005, Google Inc.)を使用.<br>
   (ビルドするには libtcmalloc_minimal.lib を sakura/ 直下にコピーしてください)
 
 #### ・ファイル系
 + 履歴 (検索、置換、Grep)の値を少なめに変更.
+
++ 起動時に存在しない履歴を削除する.
 
 + 多重オープンの許可 (Shiftを押しながらファイルのドロップ).
 
@@ -94,8 +96,8 @@
 + アウトライン解析ダイアログのフォントに設定フォントを使用.<br>
   ドッキング時に背景カラーを使用しない (コントロール色のまま).
 
-+ ステータスバーにパスを表示.<br>
-  タブサイズとタイプ名を表示.<br>
++ ステータスバーのカスタマイズ.<br>
+  ちらつき抑制、パスを表示、タブサイズ表示、タイプ名を表示.<br>
   改行コードに主に使われているシステム名を表記.
 
 + Grepフォルダの指定を物理的に4つに増やした (`;` で区切ると履歴管理が面倒…).
@@ -157,6 +159,11 @@
       +--- 分母
 ```
 
++ DeleteHistoryNotExistAtStartup (dword)<br>
+    起動時に存在しない履歴を削除…<br>
+      `0`: 削除しない<br>
+      `1`: 削除する (default)<br>
+
 + RecentSearchKeyMax (dword)<br>
     検索履歴数を変更<br>
       `16`: (default)<br>
@@ -185,12 +192,12 @@
 
 + SelectAreaBlendPer (dword)<br>
     選択範囲カラーのブレンド率を設定<br>
-      `1-8bit`: 背景色ブレンド率 [0-100] default:100<br>
-      `9-16bit`: テキスト色ブレンド率 [0-100] default:0<br>
+      `1-8bit`: 背景色ブレンド率 [0-100] (default:100)<br>
+      `9-16bit`: テキスト色ブレンド率 [0-100] (default:0)<br>
 
 + WhiteSpaceBlendPer (dword)<br>
     空白タブのテキストとのブレンド率を設定<br>
-      `1-8bit`: ブレンド率 [0-100] default:30<br>
+      `1-8bit`: ブレンド率 [0-100] (default:30)<br>
 
 + TabCaptionModifiedColor (dword)<br>
     変更時のタブ名のテキストカラーを設定, 形式は 0x00BBGGRR<br>
