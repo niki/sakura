@@ -955,7 +955,7 @@ void CViewCommander::Command_WndScrollDown( void )
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef CL_MOD_VERTICAL_SCR
+#ifdef CL_MOD_SCROLL
 	nCaretMarginY = CL_MOD_VERTICAL_SCR;
 	if( nCaretMarginY < 1 )
 		nCaretMarginY = CLayoutInt(1);
@@ -1003,7 +1003,7 @@ void CViewCommander::Command_WndScrollUp(void)
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef CL_MOD_VERTICAL_SCR
+#ifdef CL_MOD_SCROLL
 	nCaretMarginY = CL_MOD_VERTICAL_SCR;
 	if( nCaretMarginY < 0 )
 		nCaretMarginY = CLayoutInt(0);

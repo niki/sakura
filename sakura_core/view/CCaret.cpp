@@ -182,7 +182,7 @@ CLayoutInt CCaret::MoveCursor(
 		nCaretMarginY = 0;
 	}
 	else{
-#ifdef CL_MOD_VERTICAL_SCR
+#ifdef CL_MOD_SCROLL
 		nCaretMarginY = CL_MOD_VERTICAL_SCR;
 		if( nCaretMarginY < 0 )
 			nCaretMarginY = CLayoutInt(0);
@@ -214,7 +214,7 @@ CLayoutInt CCaret::MoveCursor(
 	
 	// 水平スクロール量（文字数）の算出
 	nScrollColNum = CLayoutInt(0);
-#ifdef CL_MOD_HORIZONTAL_SCR
+#ifdef CL_MOD_SCROLL
 	nScrollMarginRight = CLayoutInt(1);
 	nScrollMarginLeft = CLayoutInt(1);
 #else
@@ -237,7 +237,7 @@ CLayoutInt CCaret::MoveCursor(
 		ptWk_CaretPos.GetX() > m_pEditView->GetTextArea().GetViewLeftCol() + m_pEditView->GetTextArea().m_nViewColNum - nScrollMarginRight ){
 		nScrollColNum =
 			( m_pEditView->GetTextArea().GetViewLeftCol() + m_pEditView->GetTextArea().m_nViewColNum - nScrollMarginRight ) - ptWk_CaretPos.GetX2();
-#ifdef CL_MOD_HORIZONTAL_SCR
+#ifdef CL_MOD_SCROLL
 		if (nScrollColNum != 0) {
 			static const int kSize = CL_MOD_HORIZONTAL_SCR;
 			if (kSize > 1) {
@@ -252,7 +252,7 @@ CLayoutInt CCaret::MoveCursor(
 		ptWk_CaretPos.GetX() < m_pEditView->GetTextArea().GetViewLeftCol() + nScrollMarginLeft
 	){
 		nScrollColNum = m_pEditView->GetTextArea().GetViewLeftCol() + nScrollMarginLeft - ptWk_CaretPos.GetX2();
-#ifdef CL_MOD_HORIZONTAL_SCR
+#ifdef CL_MOD_SCROLL
 		if (nScrollColNum != 0) {
 			static const int kSize = CL_MOD_HORIZONTAL_SCR;
 			if (kSize > 1) {
@@ -319,7 +319,7 @@ CLayoutInt CCaret::MoveCursor(
 		}
 	}
 	// 移動先は、画面の最大行数−２より下か？（down キー）
-#ifdef CL_MOD_VERTICAL_SCR
+#ifdef CL_MOD_SCROLL
 	else if( ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine() >= m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY - 1 ){
 		CLayoutInt ii = m_pEditDoc->m_cLayoutMgr.GetLineCount();
 		if( ii - ptWk_CaretPos.y < nCaretMarginY + 1 &&
