@@ -1021,20 +1021,19 @@ void CCaret::ShowCaretPosInfo()
 			TCHAR path[_MAX_PATH] = {};
 			const TCHAR *full_path = m_pEditView->GetDocument()->m_cDocFile.GetFilePath();
 			if (full_path) {
-				_tcsncpy(path, full_path, _MAX_PATH - 1);
+				_tcsncpy(path, full_path, _MAX_PATH - 1);  // パスをコピー
 				path[_MAX_PATH - 1] = _T('\0');
 
 				int aWidth[1] = {};
-				::SendMessage(hwndStatusBar, SB_GETPARTS, (WPARAM)1, (LPARAM)aWidth);
+				::SendMessage(hwndStatusBar, SB_GETPARTS, (WPARAM)1, (LPARAM)aWidth);  // 幅
 
 				HDC hdc = ::GetDC(hwndStatusBar);
 				::PathCompactPath(hdc, path, aWidth[0]);  // パスを縮める
 				::ReleaseDC(hwndStatusBar, hdc);
 			}
-			_tcscat(path, szText_1);  // 行番号をくっつける
 			::StatusBar_SetText( hwndStatusBar, 0 | SBT_NOBORDERS, path );
 		}
-		::StatusBar_SetText( hwndStatusBar, 1 | 0,             _T("")/*szText_1*/ );
+		::StatusBar_SetText( hwndStatusBar, 1 | 0,             szText_1 );
 		//	May 12, 2000 genta
 		//	改行コードの表示を追加．後ろの番号を1つずつずらす
 		//	From Here
@@ -1047,7 +1046,7 @@ void CCaret::ShowCaretPosInfo()
 
 		TCHAR	szText_TabSize[16];
 		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
-		auto_sprintf( szText_TabSize, _T("Tab %d%s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T("[SP]") : _T("") );
+		auto_sprintf( szText_TabSize, _T("Tab %d%s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T(" SP") : _T("") );
 		::StatusBar_SetText( hwndStatusBar, 7 | 0,             szText_TabSize );
 		::StatusBar_SetText( hwndStatusBar, 8 | SBT_NOBORDERS, m_pEditView->m_pTypeData->m_szTypeName );
 #else
