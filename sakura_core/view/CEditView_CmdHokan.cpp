@@ -135,11 +135,6 @@ void CEditView::ShowHokanMgr( CNativeW& cmemData, BOOL bAutoDecided )
 		GetTextMetrics().GetHankakuHeight(),
 		GetTextMetrics().GetHankakuDx(),
 		cmemData.GetStringPtr(),
-		m_pTypeData->m_szHokanFile,
-		m_pTypeData->m_bHokanLoHiCase,
-		m_pTypeData->m_bUseHokanByFile, // 2003.06.22 Moca
-		m_pTypeData->m_nHokanType,
-		m_pTypeData->m_bUseHokanByKeyword,
 		pcmemHokanWord
 	);
 	/* 補完候補の数によって動作を変える */
@@ -182,8 +177,10 @@ void CEditView::ShowHokanMgr( CNativeW& cmemData, BOOL bAutoDecided )
 	@date 2008.07.25 nasukoji 大文字小文字を同一視の場合でも候補の振るい落としは完全一致で見る
 	@date 2008.10.11 syat 日本語の補完
 	@date 2010.06.16 Moca ひらがなで続行する場合、直前を漢字に制限
+	@date 2016.04.15 Moca 他のドキュメントから検索
 */
 int CEditView::HokanSearchByFile(
+	HWND hwnd,
 	const wchar_t*	pszKey,			//!< [in]
 	bool			bHokanLoHiCase,	//!< [in] 英大文字小文字を同一視する
 	vector_ex<std::wstring>& 	vKouho,	//!< [in,out] 候補
@@ -199,12 +196,34 @@ int CEditView::HokanSearchByFile(
 	CLogicPoint ptCur = GetCaret().GetCaretLogicPos(); //物理カーソル位置
 	bool bKeyStartWithMark;			//キーが記号で始まるか
 	bool bWordStartWithMark;		//候補が記号で始まるか
+	if( hwnd != NULL ){
+		nLines = INT_MAX;
+	}
 
 	// キーの先頭が記号(#$@\)かどうか判定
 	bKeyStartWithMark = ( wcschr( L"$@#\\", pszKey[0] ) != NULL ? true : false );
+	CNativeW cmemLine;
+	DWORD dwStartTime = ::GetTickCount();
 
 	for( CLogicInt i = CLogicInt(0); i < nLines; i++  ){
-		pszLine = CDocReader(m_pcEditDoc->m_cDocLineMgr).GetLineStrWithoutEOL( i, &nLineLen );
+		if( hwnd == NULL ){
+			pszLine = CDocReader(m_pcEditDoc->m_cDocLineMgr).GetLineStrWithoutEOL( i, &nLineLen );
+		}else{
+			if( GetLineHwnd(hwnd, i, cmemLine) <= 0 ){
+				break; // end loop
+			}
+			pszLine = cmemLine.GetStringPtr();
+			nLineLen = cmemLine.GetStringLength();
+			if( 1 < nLineLen && cmemLine[nLineLen - 1] == WCODE::LF && cmemLine[nLineLen - 2] == WCODE::CR ){
+				nLineLen -= 2;
+			}else if( WCODE::IsLineDelimiter(cmemLine[nLineLen - 1], GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol) ){
+				nLineLen -= 1;
+			}
+			// 3秒以上かかるような場合には中断する
+			if( 3000 < ::GetTickCount() - dwStartTime ){
+				return -1;
+			}
+		}
 
 		for( j = 0; j < nLineLen; j += nCharSize ){
 			nCharSize = CNativeW::GetSizeOfChar( pszLine, nLineLen, j );
@@ -284,9 +303,11 @@ int CEditView::HokanSearchByFile(
 			}
 			if( nRet!=0 )continue;
 
-			// カーソル位置の単語は候補からはずす
-			if( ptCur.y == i && nWordBegin <= ptCur.x && ptCur.x <= nWordBegin + nWordLen ){	// 2010.02.20 syat 修正// 2008.11.09 syat 修正
-				continue;
+			if( hwnd == NULL ){
+				// カーソル位置の単語は候補からはずす
+				if( ptCur.y == i && nWordBegin <= ptCur.x && ptCur.x <= nWordBegin + nWordLen ){	// 2010.02.20 syat 修正// 2008.11.09 syat 修正
+					continue;
+				}
 			}
 
 			// 候補を追加(重複は除く)

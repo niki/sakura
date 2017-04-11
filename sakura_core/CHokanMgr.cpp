@@ -18,7 +18,9 @@
 #include "StdAfx.h"
 #include "CHokanMgr.h"
 #include "env/CShareData.h"
+#include "env/CSakuraEnvironment.h"
 #include "view/CEditView.h"
+#include "window/CEditWnd.h"
 #include "plugin/CJackManager.h"
 #include "plugin/CComplementIfObj.h"
 #include "util/input.h"
@@ -114,15 +116,19 @@ int CHokanMgr::Search(
 	int				nWinHeight,
 	int				nColumnWidth,
 	const wchar_t*	pszCurWord,
-	const TCHAR*	pszHokanFile,
-	bool			bHokanLoHiCase,	// 入力補完機能：英大文字小文字を同一視する 2001/06/19 asa-o
-	bool			bHokanByFile,	// 編集中データから候補を探す 2003.06.23 Moca
-	int				nHokanType,
-	bool			bHokanByKeyword,
 	CNativeW*		pcmemHokanWord	// 2001/06/19 asa-o
 )
 {
 	CEditView* pcEditView = reinterpret_cast<CEditView*>(m_lParam);
+
+	const STypeConfig& type = pcEditView->GetDocument()->m_cDocType.GetDocumentAttribute();
+	const TCHAR* pszHokanFile  = type.m_szHokanFile;
+	const bool bHokanLoHiCase  = type.m_bHokanLoHiCase;
+	const bool bHokanByFile    = type.m_bUseHokanByFile;
+	const int  nHokanType      = type.m_nHokanType;
+	const bool bHokanByKeyword = type.m_bUseHokanByKeyword;
+	const bool bOtherDocs      = type.m_bUseHokanByOtherDocs;
+	const bool bGrepOut        = type.m_bUseHokanByGrepOut;
 
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
@@ -147,12 +153,64 @@ int CHokanMgr::Search(
 	// 2003.05.16 Moca 追加 編集中データ内から候補を探す
 	if( bHokanByFile ){
 		pcEditView->HokanSearchByFile(
+			NULL,
 			pszCurWord,
 			bHokanLoHiCase,
 			m_vKouho,
 			1024 // 編集中データからなので数を制限しておく
 		);
 	}
+	bool bTimeout = false;
+	if( bOtherDocs || bGrepOut ){
+		const DWORD dwStartTime = ::GetTickCount();
+		EditNode* pEditNodeArr = NULL;
+		const int nRowNum = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pEditNodeArr, TRUE );
+		for( int i = 0; i < nRowNum; i++ ){
+			HWND hwnd = pEditNodeArr[i].GetHwnd();
+			if( pcEditView->m_pcEditWnd->GetHwnd() == hwnd ){
+				continue;
+			}
+			if( false == IsSakuraMainWindow(hwnd) ){
+				continue;
+			}
+			// Grep調査兼ハングアップ確認
+			DWORD_PTR dwMsgResult;
+			if( 0 == ::SendMessageTimeout(hwnd, MYWM_GETFILEINFO, 0, 0, SMTO_NORMAL, 5000, &dwMsgResult) ){
+				bTimeout = true;
+				continue;
+			}
+			const EditInfo* editInfo = &m_pShareData->m_sWorkBuffer.m_EditInfo_MYWM_GETFILEINFO;
+			if( editInfo->m_bIsGrep || editInfo->m_bIsDebug ){
+				if( !bGrepOut ){
+					continue;
+				}
+			}else{
+				if( !bOtherDocs ){
+					continue;
+				}
+			}
+			int nRet = pcEditView->HokanSearchByFile(
+				hwnd,
+				pszCurWord,
+				bHokanLoHiCase,
+				m_vKouho,
+				1024 // 編集中データからなので数を制限しておく
+			);
+			if( nRet < 0 ){
+				bTimeout = true;
+			}
+			if( 10000 < ::GetTickCount() - dwStartTime ){
+				// 10秒以上経過。中断する
+				bTimeout = true;
+				break;
+			}
+		}
+		delete [] pEditNodeArr;
+	}
+	if( bTimeout ){
+		pcEditView->SendStatusMessage(LS(STR_COMPLIMENT_TIMEOUT));
+	}
+
 	// 2012.10.13 Moca 強調キーワードから候補を探す
 	if( bHokanByKeyword ){
 		HokanSearchByKeyword(
@@ -166,6 +224,9 @@ int CHokanMgr::Search(
 		int nOption = (
 			  (bHokanLoHiCase ? 0x01 : 0)
 			  | (bHokanByFile ? 0x02 : 0)
+			  | (bHokanByKeyword ? 0x04 : 0)
+			  | (bOtherDocs   ? 0x08 : 0)
+			  | (bGrepOut     ? 0x10 : 0)
 			);
 		
 		CPlug::Array plugs;

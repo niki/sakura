@@ -36,6 +36,8 @@ static const DWORD p_helpids3[] = {	//11500
 	IDC_CHECK_HOKANLOHICASE,		HIDC_CHECK_HOKANLOHICASE,			//入力補完の英大文字小文字
 	IDC_CHECK_HOKANBYFILE,			HIDC_CHECK_HOKANBYFILE,				//現在のファイルから入力補完
 	IDC_CHECK_HOKANBYKEYWORD,		HIDC_CHECK_HOKANBYKEYWORD,			//強調キーワードから入力補完
+	IDC_CHECK_HOKANBYOTHER,			HIDC_CHECK_HOKANBYOTHER,			//他のドキュメントから入力補完
+	IDC_CHECK_HOKANBYGREPOUT,		HIDC_CHECK_HOKANBYGREPOUT,			//Grep/アウトプットから入力補完
 
 	IDC_EDIT_TYPEEXTHELP,			HIDC_EDIT_TYPEEXTHELP,				//外部ヘルプファイル名	// 2006.08.06 ryoji
 	IDC_BUTTON_TYPEOPENHELP,		HIDC_BUTTON_TYPEOPENHELP,			//外部ヘルプファイル参照	// 2006.08.06 ryoji
@@ -193,6 +195,8 @@ void CPropTypesSupport::SetData( HWND hwndDlg )
 	// 2003.06.25 Moca ファイルからの補完機能
 	::CheckDlgButton( hwndDlg, IDC_CHECK_HOKANBYFILE, m_Types.m_bUseHokanByFile ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButtonBool( hwndDlg, IDC_CHECK_HOKANBYKEYWORD, m_Types.m_bUseHokanByKeyword );
+	CheckDlgButtonBool( hwndDlg, IDC_CHECK_HOKANBYOTHER, m_Types.m_bUseHokanByOtherDocs );
+	CheckDlgButtonBool( hwndDlg, IDC_CHECK_HOKANBYGREPOUT, m_Types.m_bUseHokanByGrepOut );
 
 	//@@@ 2002.2.2 YAZAKI
 	::DlgItem_SetText( hwndDlg, IDC_EDIT_TYPEEXTHELP, m_Types.m_szExtHelp );
@@ -216,6 +220,8 @@ int CPropTypesSupport::GetData( HWND hwndDlg )
 
 	m_Types.m_bUseHokanByFile = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_HOKANBYFILE ) != 0;
 	m_Types.m_bUseHokanByKeyword = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_HOKANBYKEYWORD );
+	m_Types.m_bUseHokanByOtherDocs = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_HOKANBYOTHER );
+	m_Types.m_bUseHokanByGrepOut = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_HOKANBYGREPOUT );
 
 	/* 入力補完 単語ファイル */
 	::DlgItem_GetText( hwndDlg, IDC_EDIT_HOKANFILE, m_Types.m_szHokanFile, _countof2( m_Types.m_szHokanFile ));

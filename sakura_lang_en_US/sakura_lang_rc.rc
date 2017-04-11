@@ -1249,21 +1249,32 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,142,31,68,10
     CONTROL         "From &Keyword Set",IDC_CHECK_HOKANBYKEYWORD,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,212,31,80,10
-    GROUPBOX        "Input Auto-complete Support",IDC_STATIC,3,3,295,45,WS_GROUP
-    GROUPBOX        "Externa&l Help Setup",IDC_STATIC,3,55,295,32,WS_GROUP
-    EDITTEXT        IDC_EDIT_TYPEEXTHELP,8,68,264,12,ES_AUTOHSCROLL | 
+    CONTROL         "Other &Document",IDC_CHECK_HOKANBYOTHER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,142,43,68,10
+    CONTROL         "&Grep/Output",IDC_CHECK_HOKANBYGREPOUT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,212,43,80,10
+    GROUPBOX        "Input Auto-complete Support",IDC_STATIC,3,3,295,57,WS_GROUP
+    GROUPBOX        "Externa&l Help Setup",IDC_STATIC,3,67,295,32,WS_GROUP
+    EDITTEXT        IDC_EDIT_TYPEEXTHELP,8,80,264,12,ES_AUTOHSCROLL | 
                     WS_GROUP
-    PUSHBUTTON      "(&2)...",IDC_BUTTON_TYPEOPENHELP,275,67,19,14
-    GROUPBOX        "External HTML Hel&p Setup",IDC_STATIC,3,95,295,45,
+    PUSHBUTTON      "(&2)...",IDC_BUTTON_TYPEOPENHELP,275,79,19,14
+    GROUPBOX        "External HTML Hel&p Setup",IDC_STATIC,3,107,295,45,
                     WS_GROUP
-    EDITTEXT        IDC_EDIT_TYPEEXTHTMLHELP,8,109,264,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_EDIT_TYPEEXTHTMLHELP,8,121,264,12,ES_AUTOHSCROLL | 
                     WS_GROUP
-    PUSHBUTTON      "(&3)...",IDC_BUTTON_TYPEOPENEXTHTMLHELP,275,107,19,14
+    PUSHBUTTON      "(&3)...",IDC_BUTTON_TYPEOPENEXTHTMLHELP,275,119,19,14
     CONTROL         "Do&nt open multiple viewers",
                     IDC_CHECK_TYPEHTMLHELPISSINGLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,125,109,10
+                    WS_TABSTOP,8,137,109,10
     CONTROL         "Ch&eck CR consistence when save",IDC_CHECK_CHKENTERATEND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,145,146,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,157,146,10
+    CONTROL         "Ignore char in strings(&S)",IDC_CHECK_INDENTCPPSTR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,146,10
+    CONTROL         "Ignore char in comments(&C)",IDC_CHECK_INDENTCPPCMT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,183,130,10
+    CONTROL         "When Undo, separate from editing(&U)",IDC_CHECK_INDENTCPPUNDO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,195,146,10
+    GROUPBOX        "C/C++ Indent Settings",IDC_STATIC,3,171,295,40,WS_GROUP
 END
 
 IDD_PROP_REGEX DIALOGEX 0, 0, 302, 244

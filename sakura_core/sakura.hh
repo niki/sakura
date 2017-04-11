@@ -692,6 +692,8 @@
 #define HIDC_CHECK_HOKANBYFILE					11512 //現在のファイルから入力補完		// 2003.06.25 Moca
 #define HIDC_COMBO_HOKAN_TYPE					11513 //入力補完種別
 #define HIDC_CHECK_HOKANBYKEYWORD				11514 //強調キーワードから入力補完
+#define HIDC_CHECK_HOKANBYOTHER					11515 //他のドキュメントから入力補完
+#define HIDC_CHECK_HOKANBYGREPOUT				11516 //Grep/アウトプットから入力補完
 #define HIDC_EDIT_HOKANFILE						11540 //単語ファイル名					//Jul. 05, 2001 JEPRO 共通から移動・変更
 #define HIDC_EDIT_KEYWORDHELPFILE				11541 //辞書ファイル名					//Jul. 05, 2001 JEPRO 共通から移動・変更
 #define HIDC_EDIT_TYPEEXTHELP					11542 //外部ヘルプファイル名	// 2006.08.06 ryoji

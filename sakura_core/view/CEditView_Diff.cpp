@@ -394,6 +394,29 @@ void CEditView::AnalyzeDiffInfo(
 	return;
 }
 
+
+int CEditView::GetLineHwnd(HWND hwnd, CLogicYInt lineNum, CNativeW& cmemLine)
+{
+	const int max_size = (int)GetDllShareData().m_sWorkBuffer.GetWorkBufferCount<const wchar_t>();
+	const WCHAR* pLineData = GetDllShareData().m_sWorkBuffer.GetWorkBuffer<const wchar_t>();
+	int nLineOffset = 0;
+	int nLineLen = 0; //初回用仮値
+	cmemLine.SetStringHoldBuffer(L"", 0);
+	do{
+		// m_sWorkBuffer#m_Workの排他制御。外部コマンド出力/TraceOut/Diffが対象
+		LockGuard<CMutex> guard( CShareData::GetMutexShareWork() );
+		{
+			nLineLen = ::SendMessageAny(hwnd, MYWM_GETLINEDATA, lineNum, nLineOffset);
+			if( nLineLen == 0 ){ break; } // EOF => 正常終了
+			if( nLineLen < 0 ){ return nLineLen; } // 何かエラー
+			cmemLine.AppendString(pLineData, t_min(nLineLen, max_size));
+		}
+		nLineOffset += max_size;
+	}while(max_size < nLineLen);
+	return cmemLine.GetStringLength();
+}
+
+
 static bool MakeDiffTmpFile_core(CTextOutputStream& out, HWND hwnd, CEditView& view, bool bBom)
 {
 	CLogicInt y = CLogicInt(0);
