@@ -267,27 +267,25 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 	// 別のタブをクリックすると違うウィンドウのタブウィンドウに切り替わるので
 	// 非アクティブタブに対してダブルクリックができないための暫定対応
 	{
-		HWND &hwndInterTab = m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment;
-		if (hwndInterTab != (HWND)-1) {  // 閉じてる最中ではない
-			TCITEM	tcitem;
-			tcitem.mask   = TCIF_PARAM;
-			tcitem.lParam = 0;
-			TabCtrl_GetItem( m_hwndTab, nDstTab, &tcitem );
-			
-			if (hwndInterTab != NULL) {    // タブウィンドウが設定されている
-				if (hwndInterTab == (HWND)tcitem.lParam) {  // 同じタブウィンドウ
-					//TCHAR szMsg[128];
-					//auto_sprintf(szMsg, L"CTabWnd: >>> Send WM_LBUTTONDBLCLK %d\n", m_hwndTab);
-					//OutputDebugStringW(szMsg);
-					hwndInterTab = (HWND)-1;   // 閉じてる最中
-					::KillTimer(m_hwndTab, 2);  // タイマーを殺す
-					::SendMessageAny(m_hwndTab, WM_LBUTTONDBLCLK, 0, lParam);
-					return 0L;
+		TCITEM	tcitem;
+		tcitem.mask   = TCIF_PARAM;
+		tcitem.lParam = 0;
+		TabCtrl_GetItem( m_hwndTab, nDstTab, &tcitem );
+		
+		HWND hwndInterTab = m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment;
+		if (hwndInterTab != NULL) {    // タブウィンドウが設定されている
+			BreakInterTabDblClkJudgment();
+			if (hwndInterTab == (HWND)tcitem.lParam) {  // 同じタブウィンドウ
+				//TCHAR szMsg[128];
+				//auto_sprintf(szMsg, L"CTabWnd: >>> Send WM_LBUTTONDBLCLK %d\n", m_hwndTab);
+				//OutputDebugStringW(szMsg);
+				if (!!RegKey(CL_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
+					return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
 				}
-			} else {
-				hwndInterTab = (HWND)tcitem.lParam;
-				::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime(), NULL );
 			}
+		} else {
+			m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = (HWND)tcitem.lParam;
+			::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime(), NULL );
 		}
 	}
 #endif  // cl_
@@ -2443,7 +2441,7 @@ void CTabWnd::LayoutTab( void )
 	// オーナードロー状態を共通設定に追随させる
 	BOOL bDispTabClose = m_pShareData->m_Common.m_sTabBar.m_bDispTabClose;
 	BOOL bOwnerDraw = bDispTabClose;
-#ifdef CL_MOD_TAB_CAPTION_COLOR
+#if defined(CL_MOD_TAB_CAPTION_COLOR) || defined(CL_MOD_WINLIST_POPUP)
 	bOwnerDraw = TRUE;
 #endif  // cl_
 	if( bOwnerDraw && !(lStyle & TCS_OWNERDRAWFIXED) ){
