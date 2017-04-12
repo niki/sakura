@@ -2306,7 +2306,7 @@ void CEditWnd::OnCommand( WORD wNotifyCode, WORD wID , HWND hwndCtl )
 			//「ファイルを開く」ダイアログ
 			SLoadInfo sLoadInfo(_T(""), CODE_AUTODETECT, false);
 			CDocFileOperation& cDocOp = GetDocument()->m_cDocFileOperation;
-			std::vector<std::tstring> files;
+			boost::container::vector<std::tstring> files;
 			if( cDocOp.OpenFileDialog(GetHwnd(), pszFolderPath, &sLoadInfo, files) ){
 				sLoadInfo.cFilePath = files[0].c_str();
 				//開く
@@ -2378,7 +2378,7 @@ void CEditWnd::InitMenu( HMENU hMenu, UINT uPos, BOOL fSystemMenu )
 		int			nIdxStr;
 		int			nIdxEnd;
 		int			nLv;
-		std::vector<HMENU>	hSubMenu;
+		boost::container::vector<HMENU>	hSubMenu;
 		std::wstring tmpMenuName;
 		const wchar_t *pMenuName;
 
@@ -4510,7 +4510,7 @@ bool CEditWnd::CreateEditViewBySplit(int nViewCount )
 		}
 		m_nEditViewCount = nViewCount;
 
-		std::vector<HWND> hWndArr;
+		boost::container::vector<HWND> hWndArr;
 		hWndArr.reserve(nViewCount + 1);
 		for( int i = 0; i < nViewCount; i++ ){
 			hWndArr.push_back( GetView(i).GetHwnd() );

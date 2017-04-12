@@ -178,7 +178,7 @@ int CDlgGrepReplace::GetData( void )
 
 	/* 置換後 */
 	int nBufferSize = ::GetWindowTextLength( GetItemHwnd(IDC_COMBO_TEXT2) ) + 1;
-	std::vector<TCHAR> vText(nBufferSize);
+	boost::container::vector<TCHAR> vText(nBufferSize);
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_TEXT2, &vText[0], nBufferSize);
 	m_strText2 = to_wchar(&vText[0]);
 

@@ -23,7 +23,7 @@
 */
 
 #include "StdAfx.h"
-#include <vector>
+#include <boost/container/vector.hpp>
 #include <limits.h>
 #include "view/CEditView_Paint.h"
 #include "view/CEditView.h"
@@ -67,7 +67,7 @@ void CEditView_Paint::Call_OnPaint(
 	CMyRect rcBody(pView->GetTextArea().GetAreaLeft(),pView->GetTextArea().GetAreaTop(),pView->GetTextArea().GetAreaRight(),pView->GetTextArea().GetAreaBottom());
 
 	//領域を作成 -> rc
-	std::vector<CMyRect> rcs;
+	boost::container::vector<CMyRect> rcs;
 	if(nPaintFlag & PAINT_LINENUMBER)rcs.push_back(rcLineNumber);
 	if(nPaintFlag & PAINT_RULER)rcs.push_back(rcRuler);
 	if(nPaintFlag & PAINT_BODY)rcs.push_back(rcBody);

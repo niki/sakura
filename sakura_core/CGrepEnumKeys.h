@@ -31,14 +31,14 @@
 */
 #pragma once
 
-#include <vector>
+#include <boost/container/vector.hpp>
 #include <windows.h>
 #include <string.h>
 #include <tchar.h>
 #include "util/string_ex.h"
 #include "util/file.h"
 
-typedef std::vector< LPCTSTR > VGrepEnumKeys;
+typedef boost::container::vector< LPCTSTR > VGrepEnumKeys;
 
 class CGrepEnumKeys {
 public:

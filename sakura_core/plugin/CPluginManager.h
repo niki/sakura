@@ -29,7 +29,7 @@
 #define SAKURA_CPLUGINMANAGER_1015EF83_3B11_47FB_BAAF_63ACAFE32FCAD_H_
 
 #include "plugin/CPlugin.h"
-#include <list>
+#include <boost/container/list.hpp>
 #include <string>
 
 class CPluginManager : public TSingleton<CPluginManager>{

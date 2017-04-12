@@ -4,7 +4,7 @@
 	@date 2009.10.29 syat CWSH.cppから切り出し
 
 	@par TODO
-	@li GetIDsOfNamesの最適化 → std::mapを使えば楽そう…しかし私はSTLに疎いので(;_;
+	@li GetIDsOfNamesの最適化 → boost::container::mapを使えば楽そう…しかし私はSTLに疎いので(;_;
 */
 /*
 	Copyright (C) 2002, 鬼, genta

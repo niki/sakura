@@ -88,10 +88,10 @@ public:
 
 	//タイプ別設定(コントロールプロセス専用)
 	void CreateTypeSettings();
-	std::vector<STypeConfig*>& GetTypeSettings();
+	boost::container::vector<STypeConfig*>& GetTypeSettings();
 
 	// 国際化対応のための文字列を変更する(コントロールプロセス専用)
-	void ConvertLangValues(std::vector<std::wstring>& values, bool bSetValues);
+	void ConvertLangValues(boost::container::vector<std::wstring>& values, bool bSetValues);
 
 	static CMutex& GetMutexShareWork();
 
@@ -106,7 +106,7 @@ protected:
 	bool InitKeyAssign(DLLSHAREDATA*); // 2007.11.04 genta 起動中止のため値を返す
 	void RefreshKeyAssignString(DLLSHAREDATA*);
 	void InitToolButtons(DLLSHAREDATA*);
-	void InitTypeConfigs(DLLSHAREDATA*, std::vector<STypeConfig*>&);
+	void InitTypeConfigs(DLLSHAREDATA*, boost::container::vector<STypeConfig*>&);
 	void InitPopupMenu(DLLSHAREDATA*);
 
 public:
@@ -116,7 +116,7 @@ private:
 	CSelectLang m_cSelectLang;			// メッセージリソースDLL読み込み用（プロセスに1個）		// 2011.04.10 nasukoji
 	HANDLE			m_hFileMap;
 	DLLSHAREDATA*	m_pShareData;
-	std::vector<STypeConfig*>* 	m_pvTypeSettings;	//	(コントロールプロセスのみ)
+	boost::container::vector<STypeConfig*>* 	m_pvTypeSettings;	//	(コントロールプロセスのみ)
 	HWND			m_hwndTraceOutSource;	// TraceOutA()起動元ウィンドウ（いちいち起動元を指定しなくてすむように）
 
 };

@@ -65,7 +65,7 @@ private:
 
 	int				m_nCount;
 	FileExtInfoTag	*m_puFileExtInfo;
-	std::vector<TCHAR>	m_vstrFilter;
+	boost::container::vector<TCHAR>	m_vstrFilter;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(CFileExt);

@@ -1,5 +1,5 @@
 ﻿#include "StdAfx.h"
-#include <vector>
+#include <boost/container/vector.hpp>
 #include "StdApi.h"
 #include "charset/charcode.h"
 #include "_os/COsVersionInfo.h"
@@ -225,7 +225,7 @@ namespace ApiWrap{
 		LPSIZE	lpSize
 	)
 	{
-		vector<char> buf;
+	boost::container::vector<char> buf;
 		wcstombs_vector(lpString,cbString,&buf);
 		return GetTextExtentPoint32A(
 			hdc,

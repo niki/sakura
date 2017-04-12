@@ -29,7 +29,7 @@
 #define SAKURA_CJACKMANAGER_6CC7B212_130B_46AF_9C88_05F554CDA34BO_H_
 
 #include "plugin/CPlugin.h"
-#include <list>
+#include <boost/container/list.hpp>
 
 #define PP_COMMAND_STR	L"Command"
 
@@ -88,7 +88,7 @@ private:
 
 	//属性
 public:
-	std::vector<JackDef> GetJackDef() const;	//ジャック定義一覧を返す
+	boost::container::vector<JackDef> GetJackDef() const;	//ジャック定義一覧を返す
 	EFunctionCode GetCommandCode( int index ) const;		//プラグインコマンドの機能コードを返す
 	int GetCommandName( int funccode, WCHAR* buf, int size ) const;	//プラグインコマンドの名前を返す
 	int GetCommandCount() const;	//プラグインコマンドの数を返す
@@ -99,7 +99,7 @@ public:
 	//メンバ変数
 private:
 	DLLSHAREDATA* m_pShareData;
-	std::vector<JackDef> m_Jacks;	//ジャック定義の一覧
+	boost::container::vector<JackDef> m_Jacks;	//ジャック定義の一覧
 };
 
 #endif /* SAKURA_CJACKMANAGER_6CC7B212_130B_46AF_9C88_05F554CDA34BO_H_ */

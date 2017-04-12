@@ -24,7 +24,7 @@
 
 #include "StdAfx.h"
 #include "CommonSetting.h"
-#include <vector>
+#include <boost/container/vector.hpp>
 using namespace std;
 
 //CommonValue管理
@@ -61,8 +61,7 @@ struct CommonValueInfo{
 			}
 		}
 	}
-};
-vector<CommonValueInfo> g_commonvalues;
+};boost::container::vector<CommonValueInfo> g_commonvalues;
 void CommonValue_AllSave()
 {
 	int nSize = (int)g_commonvalues.size();

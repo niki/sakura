@@ -37,7 +37,7 @@ UNICODE版では問題無いが、ANSI版では設定の前にコード変換す
 */
 
 #include "../util/tchar_convert.h"
-#include <vector>
+#include <boost/container/vector.hpp>
 
 namespace ApiWrap{
 
@@ -176,7 +176,7 @@ namespace ApiWrap{
 	UINT DlgItem_GetText(HWND hwndDlg, int nIDDlgItem, WCHAR* str, int nMaxCount);
 	//GetDlgItemText
 
-	bool TreeView_GetItemTextVector(HWND hwndTree, TVITEM& item, std::vector<TCHAR>& vecStr);
+	bool TreeView_GetItemTextVector(HWND hwndTree, TVITEM& item, boost::container::vector<TCHAR>& vecStr);
 	void TreeView_ExpandAll( HWND, bool, int nMaxDepth = 100 );
 }
 using namespace ApiWrap;

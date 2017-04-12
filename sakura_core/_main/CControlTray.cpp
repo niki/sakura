@@ -662,7 +662,7 @@ LRESULT CControlTray::DispatchEvent(
 				{
 					bool bChangeLang = auto_strcmp( GetDllShareData().m_Common.m_sWindow.m_szLanguageDll, m_szLanguageDll ) != 0;
 					auto_strcpy( m_szLanguageDll, GetDllShareData().m_Common.m_sWindow.m_szLanguageDll );
-					std::vector<std::wstring> values;
+					boost::container::vector<std::wstring> values;
 					if( bChangeLang ){
 						CShareData::getInstance()->ConvertLangValues(values, true);
 					}
@@ -744,7 +744,7 @@ LRESULT CControlTray::DispatchEvent(
 				int nInsert = (int)wParam;
 				// "共通"の前には入れない
 				if( 0 < nInsert && nInsert <= m_pShareData->m_nTypesCount && nInsert < MAX_TYPES ){
-					std::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
+					boost::container::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
 					STypeConfig* type = new STypeConfig();
 					*type = *types[0]; // 基本をコピー
 					type->m_nIdx = nInsert;
@@ -784,7 +784,7 @@ LRESULT CControlTray::DispatchEvent(
 				int nDelPos = (int)wParam;
 				if( 0 < nDelPos && nDelPos < m_pShareData->m_nTypesCount && 1 < m_pShareData->m_nTypesCount ){
 					int nTypeSizeOld = m_pShareData->m_nTypesCount;
-					std::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
+					boost::container::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
 					delete types[nDelPos];
 					for(int i = nDelPos; i < nTypeSizeOld - 1; i++ ){
 						types[i] = types[i+1];
@@ -934,7 +934,7 @@ LRESULT CControlTray::DispatchEvent(
 							CMRUFile().GetPathList(),
 							CMRUFolder().GetPathList()	// OPENFOLDERリストのファイルのリスト
 						);
-						std::vector<std::tstring> files;
+						boost::container::vector<std::tstring> files;
 						if( !cDlgOpenFile.DoModalOpenDlg( &sLoadInfo, &files ) ){
 							break;
 						}
@@ -1010,11 +1010,11 @@ LRESULT CControlTray::DispatchEvent(
 					else if( nId - IDM_SELOPENFOLDER  >= 0 && nId - IDM_SELOPENFOLDER  < 999 ){
 						/* MRUリストのファイルのリスト */
 						const CMRUFile cMRU;
-						std::vector<LPCTSTR> vMRU = cMRU.GetPathList();
+						boost::container::vector<LPCTSTR> vMRU = cMRU.GetPathList();
 
 						/* OPENFOLDERリストのファイルのリスト */
 						const CMRUFolder cMRUFolder;
-						std::vector<LPCTSTR> vOPENFOLDER = cMRUFolder.GetPathList();
+						boost::container::vector<LPCTSTR> vOPENFOLDER = cMRUFolder.GetPathList();
 
 						//Stonee, 2001/12/21 UNCであれば接続を試みる
 						NetConnect( cMRUFolder.GetPath( nId - IDM_SELOPENFOLDER ) );
@@ -1030,7 +1030,7 @@ LRESULT CControlTray::DispatchEvent(
 							vOPENFOLDER
 						);
 						SLoadInfo sLoadInfo( _T(""), CODE_AUTODETECT, false);
-						std::vector<std::tstring> files;
+						boost::container::vector<std::tstring> files;
 						if( !cDlgOpenFile.DoModalOpenDlg( &sLoadInfo, &files ) ){
 							break;
 						}

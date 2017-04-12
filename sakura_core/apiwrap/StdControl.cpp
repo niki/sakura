@@ -32,7 +32,7 @@ namespace ApiWrap{
 		return GetDlgItemText(hwndDlg, nIDDlgItem, TcharReceiver<WCHAR>(str,nMaxCount), nMaxCount);
 	}
 
-	bool TreeView_GetItemTextVector(HWND hwndTree, TVITEM& item, std::vector<TCHAR>& vecStr)
+	bool TreeView_GetItemTextVector(HWND hwndTree, TVITEM& item, boost::container::vector<TCHAR>& vecStr)
 	{
 		BOOL ret = FALSE;
 		int nBufferSize = 64;
@@ -71,7 +71,7 @@ namespace ApiWrap{
 			}
 		}
 
-		std::vector<HTREEITEM> tree;
+		boost::container::vector<HTREEITEM> tree;
 		HTREEITEM item = TreeView_GetRoot(hwndTree);
 		while( 0 < tree.size() || item != NULL ){
 			while(item != NULL && (int)tree.size() < nMaxDepth ){

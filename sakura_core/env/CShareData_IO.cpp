@@ -1393,7 +1393,7 @@ void CShareData_IO::ShareData_IO_Types( CDataProfile& cProfile )
 	}
 	SetValueLimit( pShare->m_nTypesCount, 1, MAX_TYPES );
 	// 注：コントロールプロセス専用
-	std::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
+	boost::container::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
 	for( i = GetDllShareData().m_nTypesCount; i < nCountOld; i++ ){
 		delete types[i];
 		types[i] = NULL;
@@ -2158,7 +2158,7 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 	@date 2010/5/15 Uchi
 	@date 2014.11.21 Moca pData追加。データのみのタイプを追加
 */
-void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstring>* pData, CommonSetting_MainMenu& mainmenu, bool bOutCmdName)
+void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vector<std::wstring>* pData, CommonSetting_MainMenu& mainmenu, bool bOutCmdName)
 {
 	const WCHAR*	pszSecName = LTEXT("MainMenu");
 	CMainMenu*		pcMenu;
@@ -2169,7 +2169,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 	WCHAR	szLine[1024];
 	WCHAR*	p = NULL;
 	WCHAR*	pn;
-	std::vector<std::wstring>& data = *pData;
+	boost::container::vector<std::wstring>& data = *pData;
 	int dataNum = 0;
 
 	if (cProfile.IsReadingMode()) {

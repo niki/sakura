@@ -132,7 +132,7 @@ static TCHAR* GetFileTreeLabel( const SFileTreeItem& item )
 void CDlgFileTree::SetData()
 {
 	HWND hwndTree = GetItemHwnd(IDC_TREE_FL);
-	std::vector<HTREEITEM> hParentTree;
+	boost::container::vector<HTREEITEM> hParentTree;
 	hParentTree.push_back(TVI_ROOT);
 	HTREEITEM hSelect = NULL;
 	m_aItemRemoveList.clear();
@@ -258,7 +258,7 @@ int CDlgFileTree::GetData()
 		}
 	}
 	bool bSaveShareData = (m_fileTreeSetting.m_szLoadProjectIni[0] == _T('\0'));
-	std::vector<SFileTreeItem> items;
+	boost::container::vector<SFileTreeItem> items;
 	if( !GetDataTree(items, TreeView_GetRoot(GetItemHwnd(IDC_TREE_FL)), 0, (bSaveShareData ? _countof(pFileTree->m_aItems) : 0) ) ){
 		InfoMessage(GetHwnd(), LS(STR_FILETREE_MAXCOUNT));
 	}
@@ -288,7 +288,7 @@ int CDlgFileTree::GetData()
 	return TRUE;
 }
 
-bool CDlgFileTree::GetDataTree(std::vector<SFileTreeItem>& data, HTREEITEM hItem, int nLevel, int nMaxCount)
+bool CDlgFileTree::GetDataTree(boost::container::vector<SFileTreeItem>& data, HTREEITEM hItem, int nLevel, int nMaxCount)
 {
 	HWND hwndTree = GetItemHwnd(IDC_TREE_FL);
 	for( HTREEITEM s = hItem; s != NULL; s = TreeView_GetNextSibling(hwndTree, s) ){
@@ -548,7 +548,7 @@ BOOL CDlgFileTree::OnBnClicked( int wID )
 				TCHAR szDir[_MAX_PATH];
 				GetInidir(szDir);
 				dlg.Create( G_AppInstance(), hwndDlg, _T("*.*"), szDir,
-					std::vector<LPCTSTR>(), std::vector<LPCTSTR>() );
+					boost::container::vector<LPCTSTR>(), boost::container::vector<LPCTSTR>() );
 				TCHAR szFile[_MAX_PATH];
 				if( dlg.DoModal_GetOpenFileName(szFile) ){
 					CNativeT cmemFile = szFile;
@@ -715,9 +715,9 @@ BOOL CDlgFileTree::OnBnClicked( int wID )
 		{
 			CDlgOpenFile dlg;
 			SLoadInfo sLoadInfo;
-			std::vector<std::tstring> aFileNames;
+			boost::container::vector<std::tstring> aFileNames;
 			dlg.Create( G_AppInstance(), GetHwnd(), _T("*.*"), _T("."),
-				std::vector<LPCTSTR>(), std::vector<LPCTSTR>() );
+				boost::container::vector<LPCTSTR>(), boost::container::vector<LPCTSTR>() );
 			if( dlg.DoModalOpenDlg(&sLoadInfo, &aFileNames, false) ){
 				if( 0 < aFileNames.size() ){
 					HWND hwndTree = GetItemHwnd(IDC_TREE_FL);
@@ -915,7 +915,7 @@ BOOL CDlgFileTree::OnBnClicked( int wID )
 		return TRUE;
 	case IDC_BUTTON_EXPORT:
 		{
-			std::vector<SFileTreeItem> items;
+			boost::container::vector<SFileTreeItem> items;
 			GetDataTree(items, TreeView_GetRoot(GetItemHwnd(IDC_TREE_FL)), 0, 0);
 			CImpExpFileTree cImpExp(items);
 			cImpExp.ExportUI(G_AppInstance(), GetHwnd());

@@ -73,12 +73,12 @@ protected:
 	typedef std::wstring wstring;
 public:
 	/*!
-	  CPlug::Arrayはstd::vectorなので、要素の追加削除（insert/erase）をすると
+	  CPlug::Arrayはboost::container::vectorなので、要素の追加削除（insert/erase）をすると
 	  イテレータが無効になることがある。そのため変数に格納したイテレータを
 	  insert/eraseの第一引数に指定すると、VC2005でビルドエラーが出る。
 	  かわりにbegin/endからの相対位置指定や、インデックス指定を使うこと。
 	*/
-	typedef std::vector<CPlug*> Array;			//プラグのリスト
+	typedef boost::container::vector<CPlug*> Array;			//プラグのリスト
 	typedef Array::const_iterator ArrayIter;	//そのイテレータ
 
 	//コンストラクタ
@@ -170,7 +170,7 @@ public:
 };
 
 // オプション定義	// 2010/3/24 Uchi
-std::vector<std::wstring> wstring_split( std::wstring, wchar_t );
+boost::container::vector<std::wstring> wstring_split( std::wstring, wchar_t );
 
 class CPluginOption
 {
@@ -178,7 +178,7 @@ class CPluginOption
 protected:
 	typedef std::wstring wstring;
 public:
-	typedef std::vector<CPluginOption*> Array;	// オプションのリスト
+	typedef boost::container::vector<CPluginOption*> Array;	// オプションのリスト
 	typedef Array::const_iterator ArrayIter;	// そのイテレータ
 
 	//コンストラクタ
@@ -210,7 +210,7 @@ public:
 	}
 	wstring	GetType( void )		{ return m_sType; }
 	int 	GetIndex( void )	{ return m_index; }
-	std::vector<wstring>	GetSelects()
+	boost::container::vector<wstring>	GetSelects()
 	{
 		return (wstring_split(m_sSelects, L'|'));
 	}
@@ -238,7 +238,7 @@ protected:
 	typedef std::string string;
 
 public:
-	typedef std::list<CPlugin*> List;		//プラグインのリスト
+	typedef boost::container::list<CPlugin*> List;		//プラグインのリスト
 	typedef List::const_iterator ListIter;	//そのイテレータ
 
 	//コンストラクタ
@@ -290,7 +290,7 @@ public:
 	tstring m_sOptionDir;
 	tstring m_sLangName;		//!< 言語名
 	CPluginOption::Array m_options;		// オプション	// 2010/3/24 Uchi
-	std::vector<std::wstring> m_aStrings;	// 文字列
+	boost::container::vector<std::wstring> m_aStrings;	// 文字列
 private:
 	bool m_bLoaded;
 protected:

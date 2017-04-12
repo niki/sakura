@@ -29,16 +29,16 @@
 #ifndef SAKURA_CONTAINER_82819006_7BEE_4D84_82A0_B61B0E0BAFD79_H_
 #define SAKURA_CONTAINER_82819006_7BEE_4D84_82A0_B61B0E0BAFD79_H_
 
-#include <vector>
+#include <boost/container/vector.hpp>
 #include <algorithm> //find
 
 //! vectorにちょっと機能を追加した版
 template <class T>
-class vector_ex : public std::vector<T>{
+class vector_ex : public boost::container::vector<T>{
 public:
-	using std::vector<T>::begin;
-	using std::vector<T>::end;
-	using std::vector<T>::push_back;
+	using boost::container::vector<T>::begin;
+	using boost::container::vector<T>::end;
+	using boost::container::vector<T>::push_back;
 
 public:
 	// -- -- インターフェース -- -- //

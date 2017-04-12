@@ -21,7 +21,7 @@
 #define _CDLGOPENFILE_H_
 
 #include <CommDlg.h>
-#include <vector>
+#include <boost/container/vector.hpp>
 #include "util/design_template.h"
 #include "CEol.h"
 #include "basis/CMyString.h"
@@ -48,14 +48,14 @@ public:
 		HWND						hwndParent,
 		const TCHAR*				pszUserWildCard,
 		const TCHAR*				pszDefaultPath,
-		const std::vector<LPCTSTR>& vMRU			= std::vector<LPCTSTR>(),
-		const std::vector<LPCTSTR>& vOPENFOLDER		= std::vector<LPCTSTR>()
+		const boost::container::vector<LPCTSTR>& vMRU			= boost::container::vector<LPCTSTR>(),
+		const boost::container::vector<LPCTSTR>& vOPENFOLDER		= boost::container::vector<LPCTSTR>()
 	);
 
 	//操作
 	bool DoModal_GetOpenFileName( TCHAR*, bool bSetCurDir = false, bool bAddTextFilter = true );	/* 開くダイアログ モーダルダイアログの表示 */	//2002/08/21 moca	引数追加
 	bool DoModal_GetSaveFileName( TCHAR*, bool bSetCurDir = false );	/* 保存ダイアログ モーダルダイアログの表示 */	//2002/08/21 30,2002 moca	引数追加
-	bool DoModalOpenDlg( SLoadInfo* pLoadInfo, std::vector<std::tstring>*, bool bOptions = true );	/* 開くダイアグ モーダルダイアログの表示 */
+	bool DoModalOpenDlg( SLoadInfo* pLoadInfo, boost::container::vector<std::tstring>*, bool bOptions = true );	/* 開くダイアグ モーダルダイアログの表示 */
 	bool DoModalSaveDlg( SSaveInfo*	pSaveInfo, bool bSimpleMode );	/* 保存ダイアログ モーダルダイアログの表示 */
 
 protected:

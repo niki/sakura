@@ -67,8 +67,8 @@
 #include <io.h>
 #include <time.h>
 #include <string>
-#include <vector>
-#include <map>
+#include <boost/container/vector.hpp>
+#include <boost/container/map.hpp>
 #include <algorithm>
 #include <memory>
 #endif // ifndef SAKURA_PCH_MODE_MIN

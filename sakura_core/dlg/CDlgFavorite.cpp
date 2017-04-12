@@ -862,7 +862,7 @@ int CDlgFavorite::DeleteSelected()
 			GetFavorite( m_nCurrentTab );
 
 			int nLastSelectedItem = -1;
-			std::vector<int> selRecIndexs;
+			boost::container::vector<int> selRecIndexs;
 			{
 				int nLvItem = -1;
 				while( (nLvItem = ListView_GetNextItem(hwndList, nLvItem, LVNI_SELECTED)) != -1 )

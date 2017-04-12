@@ -26,7 +26,7 @@
 
 //2007.08.25 kobake 追加
 
-#include <vector>
+#include <boost/container/vector.hpp>
 
 class CTextMetrics;
 
@@ -62,7 +62,7 @@ public:
 
 	//! 指定した文字列により文字間隔配列を生成する。
 	static const int* GenerateDxArray(
-		std::vector<int>* vResultArray, //!< [out] 文字間隔配列の受け取りコンテナ
+		boost::container::vector<int>* vResultArray, //!< [out] 文字間隔配列の受け取りコンテナ
 		const wchar_t* pText,           //!< [in]  文字列
 		int nLength,                    //!< [in]  文字列長
 		int	nHankakuDx,					//!< [in]  半角文字の文字間隔

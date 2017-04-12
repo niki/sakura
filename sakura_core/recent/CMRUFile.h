@@ -36,7 +36,7 @@
 #define _CMRUFILE_H_
 
 #include <Windows.h> /// BOOL,HMENU // 2002/2/10 aroka
-#include <vector>
+#include <boost/container/vector.hpp>
 #include "recent/CRecentFile.h"
 
 struct EditInfo; // 2004.04.11 genta パラメータ内のstructを削除するため．doxygen対策
@@ -55,7 +55,7 @@ public:
 	BOOL DestroyMenu( HMENU hMenu ) const;
 	
 	//	ファイル名の一覧を教えて
-	std::vector<LPCTSTR> GetPathList() const;
+	boost::container::vector<LPCTSTR> GetPathList() const;
 
 	//	アクセス関数
 	int Length(void) const;	//	アイテムの数。

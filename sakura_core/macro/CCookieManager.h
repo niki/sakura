@@ -29,7 +29,7 @@
 #ifndef SAKURA_CCOOKIE_MANAGER_H_
 #define SAKURA_CCOOKIE_MANAGER_H_
 
-#include <map>
+#include <boost/container/map.hpp>
 #include <string>
 #include "_os/OleTypes.h"
 
@@ -47,11 +47,11 @@ public:
 	int DeleteAll(LPCWSTR scope);
 
 private:
-	std::map<wstring, wstring>* SelectCookieType(LPCWSTR scope) const;
+	boost::container::map<wstring, wstring>* SelectCookieType(LPCWSTR scope) const;
 	bool ValidateCookieName(LPCWSTR cookieName) const;
 
-	std::map<wstring, wstring> m_cookieWindow;
-	std::map<wstring, wstring> m_cookieDocument;
+	boost::container::map<wstring, wstring> m_cookieWindow;
+	boost::container::map<wstring, wstring> m_cookieDocument;
 };
 
 #endif

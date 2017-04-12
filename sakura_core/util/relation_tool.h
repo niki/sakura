@@ -27,7 +27,7 @@
 #ifndef SAKURA_RELATION_TOOL_333B6596_FCE9_45EE_96B8_50BE6BF997779_H_
 #define SAKURA_RELATION_TOOL_333B6596_FCE9_45EE_96B8_50BE6BF997779_H_
 
-#include <vector>
+#include <boost/container/vector.hpp>
 class CSubject;
 class CListener;
 
@@ -48,7 +48,7 @@ public:
 	void _RemoveListener(CListener* pcListener);
 
 private:
-	std::vector<CListener*> m_vListenersRef;
+	boost::container::vector<CListener*> m_vListenersRef;
 };
 
 //! 1つのCSubjectをウォッチする

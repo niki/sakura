@@ -1605,7 +1605,7 @@ LRESULT CMenuDrawer::OnMenuChar( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 
 	// 2011.11.18 vector化
-	std::vector<WorkData> vecAccel;
+	boost::container::vector<WorkData> vecAccel;
 	size_t nAccelSel = 99999;
 	for( i = 0; i < ::GetMenuItemCount( hmenu ); i++ ){
 		TCHAR	szText[1024];

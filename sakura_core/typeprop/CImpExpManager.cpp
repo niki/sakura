@@ -1312,7 +1312,7 @@ bool CImpExpFileTree::Export( const wstring& sFileName, wstring& sErrMsg )
 	return true;
 }
 
-void CImpExpFileTree::IO_FileTreeIni( CDataProfile& cProfile, std::vector<SFileTreeItem>& data )
+void CImpExpFileTree::IO_FileTreeIni( CDataProfile& cProfile, boost::container::vector<SFileTreeItem>& data )
 {
 	const WCHAR* pszSecName = L"FileTree";
 	int nItemCount = (int)data.size();

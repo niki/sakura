@@ -57,13 +57,13 @@ private:
 	void	ChangeEnableItemType();
 	void	ChangeEnableAddInsert();
 	int		GetDataItem( SFileTreeItem& );
-	bool	GetDataTree( std::vector<SFileTreeItem>&, HTREEITEM, int, int );
+	bool	GetDataTree( boost::container::vector<SFileTreeItem>&, HTREEITEM, int, int );
 	HTREEITEM InsertTreeItem( SFileTreeItem&, HTREEITEM, HTREEITEM );
 
 private:
 	CDlgFuncList*		m_pcDlgFuncList;
 	CFileTreeSetting	m_fileTreeSetting;
-	std::vector<int>	m_aItemRemoveList;
+	boost::container::vector<int>	m_aItemRemoveList;
 	int					m_nlParamCount;
 	int					m_nDocType;
 

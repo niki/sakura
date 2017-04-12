@@ -23,7 +23,7 @@
 #define _CLAYOUTMGR_H_
 
 #include <Windows.h>// 2002/2/10 aroka
-#include <vector>
+#include <boost/container/vector.hpp>
 #include "doc/CDocListener.h"
 #include "_main/global.h"// 2002/2/10 aroka
 #include "basis/SakuraBasis.h"

@@ -17,7 +17,7 @@
 
 class CFuncInfo;
 #include <string>
-#include <map>
+#include <boost/container/map.hpp>
 #include "util/design_template.h"
 
 // 標準的な付加情報定数
@@ -58,7 +58,7 @@ public:
 private:
 	int			m_nFuncInfoArrNum;	/*!< 配列要素数 */
 	CFuncInfo**	m_ppcFuncInfoArr;	/*!< 配列 */
-	std::map<int, std::wstring>	m_AppendTextArr;	// 追加文字列のリスト
+	boost::container::map<int, std::wstring>	m_AppendTextArr;	// 追加文字列のリスト
 	int			m_nAppendTextLenMax;
 
 private:

@@ -136,7 +136,7 @@ public:
 		int typeId;
 		int index[MAX_KEYWORDSET_PER_TYPE];
 	};
-	std::vector<SKeywordSetIndex>	m_Types_nKeyWordSetIdx;
+	boost::container::vector<SKeywordSetIndex>	m_Types_nKeyWordSetIdx;
 	TCHAR			m_tempTypeName[MAX_TYPES_NAME];	//!< タイプ属性：名称
 	TCHAR			m_tempTypeExts[MAX_TYPES_EXTS];	//!< タイプ属性：拡張子リスト
 	bool			m_bTrayProc;

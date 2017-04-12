@@ -15,7 +15,7 @@
 #define _CSELECTLANG_H_
 
 #include <windows.h>
-#include <vector>
+#include <boost/container/vector.hpp>
 
 #define MAX_SELLANG_NAME_STR	128		// メッセージリソースの言語名の最大文字列長（サイズは適当）
 
@@ -35,7 +35,7 @@ protected:
 	//static LPTSTR m_szDefaultLang;					// メッセージリソースDLL未読み込み時のデフォルト言語
 	static SSelLangInfo* m_psLangInfo;				// メッセージリソースの情報
 public:
-	typedef std::vector<SSelLangInfo*> PSSelLangInfoList;
+	typedef boost::container::vector<SSelLangInfo*> PSSelLangInfoList;
 	static PSSelLangInfoList m_psLangInfoList;
 
 public:

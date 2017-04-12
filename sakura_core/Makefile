@@ -126,6 +126,7 @@ cmd/CViewCommander_Select.o \
 cmd/CViewCommander_Settings.o \
 cmd/CViewCommander_Support.o \
 cmd/CViewCommander_TagJump.o \
+cmd/CViewCommander_Window - コピー.o \
 cmd/CViewCommander_Window.o \
 convert/CConvert.o \
 convert/CConvert_HaneisuToZeneisu.o \
@@ -404,6 +405,7 @@ window/CMainStatusBar.o \
 window/CMainToolBar.o \
 window/CSplitBoxWnd.o \
 window/CSplitterWnd.o \
+window/CTabWnd - コピー.o \
 window/CTabWnd.o \
 window/CTipWnd.o \
 window/CWnd.o \

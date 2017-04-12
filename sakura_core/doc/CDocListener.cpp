@@ -31,7 +31,7 @@
 		   distribution.
 */
 #include "StdAfx.h"
-#include <map>
+#include <boost/container/map.hpp>
 #include "doc/CDocListener.h"
 #include "doc/CEditDoc.h"
 

@@ -172,7 +172,7 @@ protected:
 };
 
 #include "util/design_template.h"
-#include <vector>
+#include <boost/container/vector.hpp>
 class CColor_LineComment;
 class CColor_BlockComment;
 class CColor_BlockComment;
@@ -215,8 +215,8 @@ public:
 	void SetCurrentView(CEditView* pcView) { m_pcView = pcView; }
 
 private:
-	std::vector<CColorStrategy*>	m_vStrategies;
-	std::vector<CColorStrategy*>	m_vStrategiesDisp;	//!< 色分け表示対象
+	boost::container::vector<CColorStrategy*>	m_vStrategies;
+	boost::container::vector<CColorStrategy*>	m_vStrategiesDisp;	//!< 色分け表示対象
 	CColor_Found*					m_pcFoundStrategy;
 	CColor_Select*					m_pcSelectStrategy;
 

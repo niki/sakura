@@ -32,13 +32,13 @@
 
 #include "dlg/CDialog.h"
 #include <string>
-#include <vector>
+#include <boost/container/vector.hpp>
 
 struct SProfileSettings
 {
 	TCHAR m_szDllLanguage[_MAX_PATH];
 	int	m_nDefaultIndex;
-	std::vector<std::tstring> m_vProfList;
+	boost::container::vector<std::tstring> m_vProfList;
 	bool m_bDefaultSelect;
 };
 

@@ -275,7 +275,7 @@ inline int auto_vsprintf_s(WCHAR* buf, size_t nBufCount, const WCHAR* format, va
 //                      文字コード変換                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-#include <vector>
+#include <boost/container/vector.hpp>
 
 //SJIS→UNICODE。終端にL'\0'を付けてくれる版。
 size_t mbstowcs2(wchar_t* dst,const char* src,size_t dst_count);
@@ -287,14 +287,14 @@ size_t wcstombs2(char* dst,const wchar_t* src,size_t dst_count);
 //SJIS→UNICODE。
 wchar_t*	mbstowcs_new(const char* pszSrc);								//戻り値はnew[]で確保して返す。使い終わったらdelete[]すること。
 wchar_t*	mbstowcs_new(const char* pSrc, int nSrcLen, int* pnDstLen);		//戻り値はnew[]で確保して返す。使い終わったらdelete[]すること。
-void		mbstowcs_vector(const char* src, std::vector<wchar_t>* ret);	//戻り値はvectorとして返す。
-void		mbstowcs_vector(const char* pSrc, int nSrcLen, std::vector<wchar_t>* ret);	//戻り値はvectorとして返す。
+void		mbstowcs_vector(const char* src, boost::container::vector<wchar_t>* ret);	//戻り値はvectorとして返す。
+void		mbstowcs_vector(const char* pSrc, int nSrcLen, boost::container::vector<wchar_t>* ret);	//戻り値はvectorとして返す。
 
 //UNICODE→SJIS
 char*	wcstombs_new(const wchar_t* src); //戻り値はnew[]で確保して返す。
 char*	wcstombs_new(const wchar_t* pSrc,int nSrcLen); //戻り値はnew[]で確保して返す。
-void	wcstombs_vector(const wchar_t* pSrc, std::vector<char>* ret); //戻り値はvectorとして返す。
-void	wcstombs_vector(const wchar_t* pSrc, int nSrcLen, std::vector<char>* ret); //戻り値はvectorとして返す。
+void	wcstombs_vector(const wchar_t* pSrc, boost::container::vector<char>* ret); //戻り値はvectorとして返す。
+void	wcstombs_vector(const wchar_t* pSrc, int nSrcLen, boost::container::vector<char>* ret); //戻り値はvectorとして返す。
 
 //TCHAR
 size_t _tcstowcs(WCHAR* wszDst, const TCHAR* tszSrc, size_t nDstCount);

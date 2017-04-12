@@ -72,7 +72,7 @@ public:
 	ECallbackResult OnBeforeClose();
 	void OnAfterSave(const SSaveInfo& sSaveInfo);
 
-	static void CreateFolders( const TCHAR* pszPath, std::vector<std::tstring>& vPaths );
+	static void CreateFolders( const TCHAR* pszPath, boost::container::vector<std::tstring>& vPaths );
 	static std::tstring ChopYen( const std::tstring& str );
 	static void AddTail( CEditView* pcEditView, const CNativeW& cmem, bool bAddStdout );
 

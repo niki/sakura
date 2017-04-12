@@ -83,8 +83,8 @@ void CDocOutline::MakeFuncList_Java( CFuncInfoArr* pcFuncInfoArr )
 	wchar_t		szClass[1024];
 
 	int			nClassNestArrNum;
-	std::vector<int>	nClassNestArr(0);
-	std::vector<int>	nNestLevel2Arr(0);
+	boost::container::vector<int>	nClassNestArr(0);
+	boost::container::vector<int>	nNestLevel2Arr(0);
 
 	nNestLevel = 0;
 	szWordPrev[0] = L'\0';

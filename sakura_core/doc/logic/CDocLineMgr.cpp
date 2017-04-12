@@ -24,7 +24,7 @@
 // Oct 6, 2000 ao
 #include <stdio.h>
 #include <io.h>
-#include <list>
+#include <boost/container/list.hpp>
 #include "CDocLineMgr.h"
 #include "CDocLine.h"// 2002/2/10 aroka ヘッダ整理
 #include "charset/charcode.h"

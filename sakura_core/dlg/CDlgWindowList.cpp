@@ -87,7 +87,7 @@ BOOL CDlgWindowList::OnBnClicked(int wID)
 }
 
 
-void CDlgWindowList::GetDataListView(std::vector<HWND>& aHwndList)
+void CDlgWindowList::GetDataListView(boost::container::vector<HWND>& aHwndList)
 {
 	HWND hwndList = GetItemHwnd(IDC_LIST_WINDOW);
 	aHwndList.clear();
@@ -110,7 +110,7 @@ void CDlgWindowList::GetDataListView(std::vector<HWND>& aHwndList)
 
 void CDlgWindowList::CommandSave()
 {
-	std::vector<HWND> aHwndList;
+	boost::container::vector<HWND> aHwndList;
 	GetDataListView(aHwndList);
 	for (int i = 0; i < (int)aHwndList.size(); i++) {
 		DWORD dwPid;
@@ -124,7 +124,7 @@ void CDlgWindowList::CommandSave()
 
 void CDlgWindowList::CommandClose()
 {
-	std::vector<HWND> aHwndList;
+	boost::container::vector<HWND> aHwndList;
 	GetDataListView(aHwndList);
 	for (int i = 0; i < (int)aHwndList.size(); i++) {
 		DWORD dwPid;

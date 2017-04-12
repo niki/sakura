@@ -110,7 +110,7 @@ private:
 
 //@@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。
 //2009.11.14 syat プラグインコマンド動的追加のためvector化
-	std::vector<TBBUTTON>	m_tbMyButton;	/* ツールバーのボタン */
+	boost::container::vector<TBBUTTON>	m_tbMyButton;	/* ツールバーのボタン */
 	int				m_nMyButtonNum;
 	int				m_nMyButtonFixSize;	// 固定部分の最大数
 	
@@ -120,7 +120,7 @@ private:
 		int				m_nFuncId;
 		CNativeT		m_cmemLabel;
 	};
-	std::vector<MyMenuItemInfo> m_menuItems;
+	boost::container::vector<MyMenuItemInfo> m_menuItems;
 	int				m_nMenuHeight;
 	int				m_nMenuFontHeight;
 	HFONT			m_hFontMenu;

@@ -24,7 +24,7 @@
 #ifndef SAKURA_CFIGURESTRATEGY_ADBE415F_6FA5_4412_9679_B0045ACE4881_H_
 #define SAKURA_CFIGURESTRATEGY_ADBE415F_6FA5_4412_9679_B0045ACE4881_H_
 
-#include <vector>
+#include <boost/container/vector.hpp>
 #include "view/colors/CColorStrategy.h" //SColorStrategyInfo
 
 

@@ -36,8 +36,8 @@
 #include "StdAfx.h"
 #include "charset.h"
 #include "CCodePage.h"
-#include <vector>
-#include <map>
+#include <boost/container/vector.hpp>
+#include <boost/container/map.hpp>
 
 struct SCodeSet {
 	ECodeType		m_eCodeSet;
@@ -64,10 +64,10 @@ static	SCodeSet	ASCodeSet[] = {
 };
 
 // 文字コードセット
-typedef	std::map<int, SCodeSet>	MSCodeSet;
+typedef	boost::container::map<int, SCodeSet>	MSCodeSet;
 static MSCodeSet				msCodeSet;
 // 表示順
-static std::vector<ECodeType>	vDispIdx;
+static boost::container::vector<ECodeType>	vDispIdx;
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

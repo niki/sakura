@@ -652,7 +652,7 @@ void CViewCommander::Command_SORT(BOOL bAsc)	//bAsc:TRUE=昇順,FALSE=降順
 	const wchar_t*	pLine;
 	CLogicInt		nLineLen;
 	int			j;
-	std::vector<SORTDATA*> sta;
+	boost::container::vector<SORTDATA*> sta;
 
 	if( !m_pCommanderView->GetSelectionInfo().IsTextSelected() ){			/* テキストが選択されているか */
 		return;
@@ -886,7 +886,7 @@ void CViewCommander::Command_MERGE(void)
 	GetDocument()->m_cLayoutMgr.LogicToLayout(sSelectOld, &sSelectOld_Layout);
 
 	// 2010.08.22 NUL対応修正
-	std::vector<CStringRef> lineArr;
+	boost::container::vector<CStringRef> lineArr;
 	pLinew=NULL;
 	int nLineLenw = 0;
 	bool bMerge = false;

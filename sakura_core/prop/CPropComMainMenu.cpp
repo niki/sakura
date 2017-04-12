@@ -74,7 +74,7 @@ struct SMainMenuWork {
 	bool			m_bIsNode;		// ノードか否か（ノードでもm_nFuncがF_NODE(0)でないものがあるため）
 };
 
-static	std::map<int, SMainMenuWork>	msMenu;	// 一時データ
+static	boost::container::map<int, SMainMenuWork>	msMenu;	// 一時データ
 static	int		nMenuCnt = 0;					// 一時データ番号
 
 
@@ -430,7 +430,7 @@ INT_PTR CPropMainMenu::DispatchEvent(
 					// 初期状態に戻す
 					{
 						CDataProfile	cProfile;
-						std::vector<std::wstring> data;
+						boost::container::vector<std::wstring> data;
 						cProfile.SetReadingMode();
 						cProfile.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &data );
 
@@ -1237,8 +1237,8 @@ bool CPropMainMenu::Check_MainMenu_Sub(
 	HTREEITEM		ts;
 	TV_ITEM			tvi;							// 取得用
 	SMainMenuWork*	pFuncWk;						// 機能(work)
-	std::map< WCHAR, HTREEITEM >	mKey;			// 重複エラー検出用
-	std::map< WCHAR, HTREEITEM >::iterator itKey;	// 同上
+	boost::container::map< WCHAR, HTREEITEM >	mKey;			// 重複エラー検出用
+	boost::container::map< WCHAR, HTREEITEM >::iterator itKey;	// 同上
 
 	if (nLevel == 0) {
 		bOptionOk = false;

@@ -32,7 +32,7 @@
 #define SAKURA_CIFOBJ_9DB7E463_B156_4A8D_85C7_44259381BBBF9_H_
 
 #include <string>
-#include <vector>
+#include <boost/container/vector.hpp>
 #include "_os/OleTypes.h"
 class CEditView;
 
@@ -87,7 +87,7 @@ public:
 		ELEMDESC		Arguments[9];
 		int				ID;
 	};
-	typedef std::vector<CMethodInfo> CMethodInfoList;
+	typedef boost::container::vector<CMethodInfo> CMethodInfoList;
 
 	// コンストラクタ・デストラクタ
 	CIfObj(const wchar_t* name, bool isGlobal);

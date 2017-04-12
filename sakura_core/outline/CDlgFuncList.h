@@ -52,7 +52,7 @@ enum EFileTreeSettingFrom{
 
 class CFileTreeSetting{
 public:
-	std::vector<SFileTreeItem>	m_aItems;		//!< ツリーアイテム
+	boost::container::vector<SFileTreeItem>	m_aItems;		//!< ツリーアイテム
 	bool		m_bProject;				//!< プロジェクトファイルモード
 	SFilePath	m_szDefaultProjectIni;	//!< デフォルトiniファイル名
 	SFilePath	m_szLoadProjectIni;		//!< 現在読み込んでいるiniファイル名
@@ -199,7 +199,7 @@ private:
 	int m_nSortType;						//!< ツリービューをソートする基準
 	int m_nTreeItemCount;
 	bool m_bDummyLParamMode;
-	std::vector<int> m_vecDummylParams;
+	boost::container::vector<int> m_vecDummylParams;
 
 	// 選択中の関数情報
 	CFuncInfo* m_cFuncInfo;

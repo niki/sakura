@@ -2420,7 +2420,7 @@ bool CEditView::MyGetClipboardData( CNativeW& cmemBuf, bool* pbColumnSelect, boo
 bool CEditView::MySetClipboardData( const ACHAR* pszText, int nTextLen, bool bColumnSelect, bool bLineSelect /*= false*/ )
 {
 	//WCHARに変換
-	std::vector<wchar_t> buf;
+	boost::container::vector<wchar_t> buf;
 	mbstowcs_vector(pszText,nTextLen,&buf);
 	return MySetClipboardData(&buf[0],buf.size()-1,bColumnSelect,bLineSelect);
 }

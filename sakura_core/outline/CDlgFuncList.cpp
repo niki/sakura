@@ -825,7 +825,7 @@ bool CDlgFuncList::GetTreeFileFullName(HWND hwndTree, HTREEITEM target, std::tst
 /*! LParamからFuncInfoの番号を算出
 	vecにはダミーのLParam番号が入っているのでずれている数を数える
 */
-static int TreeDummylParamToFuncInfoIndex(std::vector<int>& vec, LPARAM lParam)
+static int TreeDummylParamToFuncInfoIndex(boost::container::vector<int>& vec, LPARAM lParam)
 {
 	// vec = { 3,6,7 }
 	// lParam 0,1,2,3,4,5,6,7,8
@@ -939,7 +939,7 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 	TV_ITEM			tvi;
 	int				nClassNest;
 	std::tstring	strLabel;
-	std::vector<std::tstring> vStrClasses;
+	boost::container::vector<std::tstring> vStrClasses;
 
 	::EnableWindow( ::GetDlgItem( GetHwnd() , IDC_BUTTON_COPY ), TRUE );
 	m_bDummyLParamMode = true;
@@ -1058,7 +1058,7 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 					tvi.mask = TVIF_HANDLE | TVIF_TEXT;
 					tvi.hItem = htiClass;
 
-					std::vector<TCHAR> vecStr;
+					boost::container::vector<TCHAR> vecStr;
 					if( TreeView_GetItemTextVector(hwndTree, tvi, vecStr) ){
 						const TCHAR* pszLabel = &vecStr[0];
 						if( 0 == _tcsncmp(vStrClasses[k].c_str(), pszLabel, nClassNameLen) ){
@@ -1682,7 +1682,7 @@ void CDlgFuncList::SetTreeFile()
 	LoadFileTreeSetting( m_fileTreeSetting, IniDirPath );
 	m_pcFuncInfoArr->Empty();
 	int nFuncInfo = 0;
-	std::vector<HTREEITEM> hParentTree;
+	boost::container::vector<HTREEITEM> hParentTree;
 	hParentTree.push_back(TVI_ROOT);
 	for( int i = 0; i < (int)m_fileTreeSetting.m_aItems.size(); i++ ){
 		TCHAR szPath[_MAX_PATH];
@@ -2430,7 +2430,7 @@ static int CALLBACK Compare_by_ItemDataDesc(LPARAM lParam1, LPARAM lParam2, LPAR
 }
 
 struct STreeViewSortData{
-	std::vector<std::tstring> m_vecText;
+	boost::container::vector<std::tstring> m_vecText;
 };
 
 static int CALLBACK Compare_by_ItemText(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
@@ -2540,7 +2540,7 @@ static void SortTree_Sub(HWND hWndTree,HTREEITEM htiParent, STreeViewSortData& d
 			TVITEM item;
 			item.mask = TVIF_HANDLE | TVIF_TEXT | TVIF_PARAM;
 			item.hItem = htiItem;
-			std::vector<TCHAR> vecStr;
+			boost::container::vector<TCHAR> vecStr;
 			if( TreeView_GetItemTextVector(hWndTree, item, vecStr) ){
 				data.m_vecText[item.lParam].assign(&vecStr[0]);
 			}

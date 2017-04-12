@@ -30,7 +30,7 @@
 */
 #pragma once
 
-#include <vector>
+#include <boost/container/vector.hpp>
 #include <windows.h>
 #include <string.h>
 #include <tchar.h>
@@ -39,7 +39,7 @@
 #include "util/string_ex.h"
 
 typedef std::pair< LPTSTR, DWORD > PairGrepEnumItem;
-typedef std::vector< PairGrepEnumItem > VPGrepEnumItem;
+typedef boost::container::vector< PairGrepEnumItem > VPGrepEnumItem;
 
 class CGrepEnumOptions {
 public:
