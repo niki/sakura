@@ -73,7 +73,7 @@ protected:
 	typedef std::wstring wstring;
 public:
 	/*!
-	  CPlug::Arrayはboost::container::vectorなので、要素の追加削除（insert/erase）をすると
+	  CPlug::Arrayはstd::vectorなので、要素の追加削除（insert/erase）をすると
 	  イテレータが無効になることがある。そのため変数に格納したイテレータを
 	  insert/eraseの第一引数に指定すると、VC2005でビルドエラーが出る。
 	  かわりにbegin/endからの相対位置指定や、インデックス指定を使うこと。
