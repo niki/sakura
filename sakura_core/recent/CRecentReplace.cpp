@@ -38,7 +38,7 @@ CRecentReplace::CRecentReplace()
 		GetShareData()->m_sSearchKeywords.m_aReplaceKeys.dataPtr(),
 		&GetShareData()->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef(),
 		NULL,
-#ifdef CL_CHG_MAXDATA
+#ifdef CL_MOD_MAXDATA
 		RegKey(CL_REGKEY).get(_T("RecentReplaceKeyMax"), MAX_REPLACEKEY),
 #else
 		MAX_REPLACEKEY,

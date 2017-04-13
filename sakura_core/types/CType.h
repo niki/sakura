@@ -33,7 +33,7 @@
 #include "CRegexKeyword.h"	// RegexKeywordInfo
 
 
-#ifndef CL_MOD_TAB
+#ifndef CL_MOD_TAB_MARK
 //! タブ表示方法
 enum ETabArrow {
 	TABARROW_STRING = 0,	//!< 文字指定
@@ -141,7 +141,7 @@ struct STypeConfig{
 	int					m_nColumnSpace;					//!< 文字と文字の隙間
 	int					m_nLineSpace;					//!< 行間のすきま
 	CLayoutInt			m_nTabSpace;					//!< TABの文字数
-#ifndef CL_MOD_TAB
+#ifndef CL_MOD_TAB_MARK
 	ETabArrow			m_bTabArrow;					//!< タブ矢印表示		//@@@ 2003.03.26 MIK
 	EDIT_CHAR			m_szTabViewString[8+1];			//!< TAB表示文字列	// 2003.1.26 aroka サイズ拡張	// 2009.02.11 ryoji サイズ戻し(17->8+1)
 #endif  // cl_

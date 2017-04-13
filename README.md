@@ -11,10 +11,21 @@
   + Windows10 RS1以降を対象としています (動作チェックができないので)
   + Visual Studio 2015 の [Visual C++ 再頒布可能パッケージ](https://www.microsoft.com/ja-jp/download/details.aspx?id=48145)が必要
 * ビルド環境<br>
+  + MSVC2015を使用 (/O1 /MD _WIN32_WINNT=0x0A00)
   + Windows10 RS1以前や Visual Studio 2015以外でビルドする際は適当にいじってください
-  + TCMallocを使用しているので libtcmalloc_minimal.lib が必要です<br>
-    [Google Performance Tools](https://github.com/gperftools/gperftools)をビルドしてください<br>
-    生成した libtcmalloc_minimal.lib は sakura/ へコピーしてください
+  + TCMallocを使用しています. libtcmalloc_minimal.lib が必要です<br>
+    libtcmalloc_minimal.lib は sakura/ へコピーしてください<br>
+    [Google Performance Tools](https://github.com/gperftools/gperftools)<br>
+```
+  Copyright (c) 2005, Google Inc.
+```
+  + Boostを使用しています. extlib/ へ boost/ をコピーしてください<br>
+    [Boost C++ Libraries](http://www.boost.org/)<br>
+```
+  Copyright Beman Dawes, David Abrahams, 1998-2005.
+  Copyright Rene Rivera 2004-2007.
+  Distributed under the Boost Software License, Version 1.0.
+```
 
 <img src="https://raw.github.com/wiki/calette/sakura2201c/images/sakura0.gif" width="865px">
 <img src="https://raw.github.com/wiki/calette/sakura2201c/images/sakura1.gif" width="695px">
@@ -25,15 +36,6 @@
 いくつかの設定はレジストリで変更できます.<br>
 `[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` を使用します.<br>
 エントリが存在しない場合は作成してください.<br>
-
-#### ・ビルド
-+ MSVC2015を使用
-+ 最適化オプションを O1 に設定
-+ ランタイムライブラリを MD に設定
-+ _WIN32_WINNT に 0x0A00 を設定
-+ ターゲットプラットフォームバージョンに 10.0.14393.0 を設定
-+ TCMalloc(Copyright (c) 2005, Google Inc.)を使用.<br>
-  (ビルドするには libtcmalloc_minimal.lib を sakura/ 直下にコピーしてください)
 
 #### ・ファイル系
 + 履歴 (検索、置換、Grep)の値を少なめに変更.

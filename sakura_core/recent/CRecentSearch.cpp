@@ -42,7 +42,7 @@ CRecentSearch::CRecentSearch()
 		GetShareData()->m_sSearchKeywords.m_aSearchKeys.dataPtr(),
 		&GetShareData()->m_sSearchKeywords.m_aSearchKeys._GetSizeRef(),
 		NULL,
-#ifdef CL_CHG_MAXDATA
+#ifdef CL_MOD_MAXDATA
 		RegKey(CL_REGKEY).get(_T("RecentSearchKeyMax"), MAX_SEARCHKEY),
 #else
 		MAX_SEARCHKEY,

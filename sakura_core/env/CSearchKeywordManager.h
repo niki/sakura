@@ -47,7 +47,7 @@ struct SShare_SearchKeywords{
 	SFilePath	m_szGrepFolders3;
 	SFilePath	m_szGrepFolders4;
 #endif  // cl_
-#ifdef CL_CHG_MAXDATA
+#ifdef CL_MOD_MAXDATA
 	SShare_SearchKeywords() {
 		m_aSearchKeys.resize(RegKey(CL_REGKEY).get(_T("RecentSearchKeyMax"), MAX_SEARCHKEY));
 		m_aReplaceKeys.resize(RegKey(CL_REGKEY).get(_T("RecentReplaceKeyMax"), MAX_REPLACEKEY));

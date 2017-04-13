@@ -112,7 +112,7 @@ TYPE_NAME_ID<EOutlineType> OlmArr[] = {
 	{ OUTLINE_TEXT,		STR_OUTLINE_TEXT }		//Jul. 08, 2001 JEPRO 常に最後尾におく
 };
 
-#ifndef CL_MOD_TAB
+#ifndef CL_MOD_TAB_MARK
 TYPE_NAME_ID<ETabArrow> TabArrowArr[] = {
 	{ TABARROW_STRING,	STR_TAB_SYMBOL_CHARA },			//_T("文字指定")
 	{ TABARROW_SHORT,	STR_TAB_SYMBOL_SHORT_ARROW },	//_T("短い矢印")
@@ -194,7 +194,7 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 		EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_TYPENAME        ), _countof( m_Types.m_szTypeName      ) - 1 );
 		EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_TYPEEXTS        ), _countof( m_Types.m_szTypeExts      ) - 1 );
 		EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_INDENTCHARS     ), _countof( m_Types.m_szIndentChars   ) - 1 );
-#ifndef CL_MOD_TAB
+#ifndef CL_MOD_TAB_MARK
 		EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_TABVIEWSTRING   ), _countof( m_Types.m_szTabViewString ) - 1 );
 #endif  // cl_
 		EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_OUTLINERULEFILE ), _countof2( m_Types.m_szOutlineRuleFilename ) - 1 );	//	Oct. 5, 2002 genta 画面上でも入力制限
@@ -211,7 +211,7 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 //		hwndCtl		= (HWND) lParam;	/* コントロールのハンドル */
 		switch( wNotifyCode ){
 		case CBN_SELCHANGE:
-#ifndef CL_MOD_TAB
+#ifndef CL_MOD_TAB_MARK
 			switch( wID ){
 			case IDC_CHECK_TAB_ARROW:
 				{
@@ -475,7 +475,7 @@ void CPropTypesScreen::SetData( HWND hwndDlg )
 		::SetDlgItemInt( hwndDlg, IDC_EDIT_CHARSPACE, m_Types.m_nColumnSpace, FALSE );			// 文字の間隔
 		::SetDlgItemInt( hwndDlg, IDC_EDIT_LINESPACE, m_Types.m_nLineSpace, FALSE );			// 行の間隔
 		::SetDlgItemInt( hwndDlg, IDC_EDIT_TABSPACE, (Int)m_Types.m_nTabSpace, FALSE );			// TAB幅	//	Sep. 22, 2002 genta
-#ifndef CL_MOD_TAB
+#ifndef CL_MOD_TAB_MARK
 		::DlgItem_SetText( hwndDlg, IDC_EDIT_TABVIEWSTRING, m_Types.m_szTabViewString );		// TAB表示(8文字)
 		::EnableWindow( ::GetDlgItem( hwndDlg, IDC_EDIT_TABVIEWSTRING ), m_Types.m_bTabArrow == TABARROW_STRING );	// Mar. 31, 2003 genta 矢印表示のON/OFFをTAB文字列設定に連動させる
 
@@ -680,7 +680,7 @@ int CPropTypesScreen::GetData( HWND hwndDlg )
 			m_Types.m_nTabSpace = CLayoutInt(64);
 		}
 
-#ifndef CL_MOD_TAB
+#ifndef CL_MOD_TAB_MARK
 		/* TAB表示文字列 */
 		WIN_CHAR szTab[8+1]; /* +1. happy */
 		::DlgItem_GetText( hwndDlg, IDC_EDIT_TABVIEWSTRING, szTab, _countof( szTab ) );
