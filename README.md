@@ -15,18 +15,18 @@
   + MSVC2015を使用 (/O1 /MD _WIN32_WINNT=0x0A00)
   + Windows10 RS1以前や Visual Studio 2015以外でビルドする際は適当にいじってください
   + TCMallocを使用しています. libtcmalloc_minimal.lib が必要です<br>
-    libtcmalloc_minimal.lib は sakura/ へコピーしてください<br>
-    [Google Performance Tools](https://github.com/gperftools/gperftools)<br>
-```
-  Copyright (c) 2005, Google Inc.
-```
-  + Boostを使用しています. extlib/ へ boost/ をコピーしてください<br>
-    [Boost C++ Libraries](http://www.boost.org/)<br>
-```
-  Copyright Beman Dawes, David Abrahams, 1998-2005.
-  Copyright Rene Rivera 2004-2007.
-  Distributed under the Boost Software License, Version 1.0.
-```
+    libtcmalloc_minimal.lib は sakura/ へコピーしてください
+  + Boostを使用しています. extlib/ へ boost/ をコピーしてください
+
+[Google Performance Tools](https://github.com/gperftools/gperftools)<br>
+> Copyright (c) 2005, Google Inc.
+
+[Boost C++ Libraries](http://www.boost.org/)<br>
+> Copyright Beman Dawes, David Abrahams, 1998-2005.<br>
+> Copyright Rene Rivera 2004-2007.<br>
+> Distributed under the Boost Software License, Version 1.0.
+
+<br>
 
 <img src="https://raw.github.com/wiki/calette/sakura2201c/images/sakura0.gif" width="865px">
 <img src="https://raw.github.com/wiki/calette/sakura2201c/images/sakura1.gif" width="695px">
