@@ -195,20 +195,21 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		pfiWork = &pShare->m_sHistory.m_fiMRUArr[i];
 #ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 		if (!!RegKey(CL_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+			auto_sprintf( szKeyName, LTEXT("MRU[%02d].szPath"), i );
+			cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferT(pfiWork->m_szPath) );
 			//お気に入り	//@@@ 2003.04.08 MIK
 			auto_sprintf( szKeyName, LTEXT("MRU[%02d].bFavorite"), i );
 			cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bMRUArrFavorite[i] );
 
 			if (!pShare->m_sHistory.m_bMRUArrFavorite[i]) {  // お気に入りはパス
-				auto_sprintf( szKeyName, LTEXT("MRU[%02d].szPath"), i );
-				cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferT(pfiWork->m_szPath) );
-
 				if (!fexist(pfiWork->m_szPath)) {
 					continue;
 				}
 			}
 
 			if (i != mru_exist_count) {
+				_tcsncpy(pShare->m_sHistory.m_fiMRUArr[mru_exist_count].m_szPath, pShare->m_sHistory.m_fiMRUArr[i].m_szPath, _MAX_PATH);
+				pShare->m_sHistory.m_fiMRUArr[mru_exist_count].m_szPath[_MAX_PATH - 1] = _T('\0');
 				pShare->m_sHistory.m_bMRUArrFavorite[mru_exist_count] = pShare->m_sHistory.m_bMRUArrFavorite[i];
 				pfiWork = &pShare->m_sHistory.m_fiMRUArr[mru_exist_count];
 			}
@@ -228,8 +229,10 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		cProfile.IOProfileData( pszSecName, szKeyName, pfiWork->m_ptCursor.y );
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nCharCode"), i );
 		cProfile.IOProfileData_WrapInt( pszSecName, szKeyName, pfiWork->m_nCharCode );
+#ifndef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].szPath"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferT(pfiWork->m_szPath) );
+#endif  // cl_
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].szMark2"), i );
 		if( !cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW(pfiWork->m_szMarkLines) ) ){
 			if( cProfile.IsReadingMode() ){
@@ -239,9 +242,11 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		}
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nType"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pfiWork->m_nTypeId );
+#ifndef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 		//お気に入り	//@@@ 2003.04.08 MIK
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].bFavorite"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bMRUArrFavorite[i] );
+#endif  // cl_
 	}
 #ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	pShare->m_sHistory.m_nMRUArrNum = mru_exist_count;
