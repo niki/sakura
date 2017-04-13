@@ -63,6 +63,9 @@ void CViewCommander::Command_JUMP_DIALOG( void )
 /* 指定行ヘジャンプ */
 void CViewCommander::Command_JUMP( void )
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 	const wchar_t*	pLine;
 	int			nMode;
 	int			bValidLine;
@@ -292,6 +295,9 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 //! 次のブックマークを探し，見つかったら移動する
 void CViewCommander::Command_BOOKMARK_NEXT(void)
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
 	BOOL		bRedo	=	TRUE;	// hor
@@ -335,6 +341,9 @@ re_do:;								// hor
 //! 前のブックマークを探し，見つかったら移動する．
 void CViewCommander::Command_BOOKMARK_PREV(void)
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
 	BOOL		bRedo	=	TRUE;	// hor
@@ -406,6 +415,9 @@ void CViewCommander::Command_BOOKMARK_PATTERN( void )
 //! 次の関数リストマークを探し，見つかったら移動する
 void CViewCommander::Command_FUNCLIST_NEXT(void)
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 	CLogicPoint	ptXY(0, GetCaret().GetCaretLogicPos().y);
 	int			nYOld = ptXY.y;
 
@@ -436,6 +448,9 @@ void CViewCommander::Command_FUNCLIST_NEXT(void)
 //! 前のブックマークを探し，見つかったら移動する．
 void CViewCommander::Command_FUNCLIST_PREV(void)
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 
 	CLogicPoint	ptXY(0,GetCaret().GetCaretLogicPos().y);
 	int			nYOld = ptXY.y;

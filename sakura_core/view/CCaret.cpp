@@ -360,14 +360,10 @@ CLayoutInt CCaret::MoveCursor(
 		if( t_abs( nScrollColNum ) >= m_pEditView->GetTextArea().m_nViewColNum ||
 			t_abs( nScrollRowNum ) >= m_pEditView->GetTextArea().m_nViewRowNum ){
 			m_pEditView->GetTextArea().OffsetViewTopLine(-nScrollRowNum);
-			if( m_pEditView->GetDrawSwitch() ){
-				m_pEditView->InvalidateRect( NULL );
-				if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
-					m_pEditView->MiniMapRedraw(true);
-				}
-			}
-			
-#ifdef CL_MOD_CENTERING_CURSOR_MOVE
+
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+			if (RegKey(CL_REGKEY).get(_T("CenteringCursorJump"), 1) &&
+			    RegKey(CL_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid())
 			{  // CViewCommander::Command_CURLINECENTER()
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
@@ -382,9 +378,15 @@ CLayoutInt CCaret::MoveCursor(
 				// sui 02/08/09
 
 				//	Sep. 11, 2004 genta 同期スクロールの関数化
-				m_pEditView->SyncScrollV( nScrollLines );
+				//m_pEditView->SyncScrollV( nScrollLines );
 			}
 #endif  // cl_
+			if( m_pEditView->GetDrawSwitch() ){
+				m_pEditView->InvalidateRect( NULL );
+				if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
+					m_pEditView->MiniMapRedraw(true);
+				}
+			}
 		}
 		else if( nScrollRowNum != 0 || nScrollColNum != 0 ){
 			RECT	rcClip;
@@ -413,6 +415,33 @@ CLayoutInt CCaret::MoveCursor(
 				m_pEditView->GetTextArea().GenerateRightRect(&rcClip2, -nScrollColNum);
 			}
 
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+			if (RegKey(CL_REGKEY).get(_T("CenteringCursorJump"), 1) &&
+			    RegKey(CL_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid())
+			{  // CViewCommander::Command_CURLINECENTER()
+				CLayoutInt		nViewTopLine;
+				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
+
+				// sui 02/08/09
+				if( 0 > nViewTopLine )	nViewTopLine = CLayoutInt(0);
+				
+				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();	//Sep. 11, 2004 genta 同期用に行数を記憶
+				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
+				/* フォーカス移動時の再描画 */
+				//m_pCommanderView->RedrawAll();
+				// sui 02/08/09
+
+				//	Sep. 11, 2004 genta 同期スクロールの関数化
+				//m_pEditView->SyncScrollV( nScrollLines );
+				
+				if( m_pEditView->GetDrawSwitch() ){
+					m_pEditView->InvalidateRect( NULL );
+					if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
+						m_pEditView->MiniMapRedraw(true);
+					}
+				}
+			} else
+#endif  // cl_
 			if( m_pEditView->GetDrawSwitch() ){
 				m_pEditView->ScrollDraw(nScrollRowNum, nScrollColNum, rcScroll, rcClip, rcClip2);
 				if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){

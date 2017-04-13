@@ -177,11 +177,6 @@ BOOL CDlgJump::OnBnClicked( int wID )
 		{	//@@@ 2002.2.2 YAZAKI 指定行へジャンプを、ダイアログを表示するコマンドと、実際にジャンプするコマンドに分離。
 			CEditDoc*		pCEditDoc = (CEditDoc*)m_lParam;
 			pCEditDoc->m_pcEditWnd->GetActiveView().GetCommander().HandleCommand(F_JUMP, true, 0, 0, 0, 0);	//	ジャンプコマンド発行
-#if 0//def CL_MOD_CENTERING_CURSOR_MOVE
-			// ↑Command_JUMP() 内の MoveCursorSelecting -> MoveCursor でキャレット再表示が行われるため
-			//   一瞬移動先でキャレットが表示されてからのセンタリング
-			pCEditDoc->m_pcEditWnd->GetActiveView().GetCommander().HandleCommand(F_CURLINECENTER, true, 0, 0, 0, 0);
-#endif  // cl_
 		}
 		return TRUE;
 	case IDCANCEL:

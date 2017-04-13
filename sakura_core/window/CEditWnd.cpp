@@ -1974,12 +1974,15 @@ LRESULT CEditWnd::DispatchEvent(
 					if( pTmpDocLine->GetLengthWithoutEOL() < ppoCaret->x ) ptCaretPos.x--;
 				}
 			}
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+			ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 			//	2006.07.09 genta 選択範囲を考慮して移動
 			//	MoveCursorの位置調整機能があるので，最終行以降への
 			//	移動指示の調整もMoveCursorにまかせる
 			GetActiveView().MoveCursorSelecting( ptCaretPos, bSelect, _CARETMARGINRATE / 3 );
 			
-#if 0//def CL_MOD_CENTERING_CURSOR_MOVE
+#if 0//def CL_MOD_CENTERING_CURSOR_JUMP
 			GetActiveView().GetCommander().HandleCommand(F_CURLINECENTER, true, 0, 0, 0, 0);
 #endif  // cl_
 		}

@@ -89,6 +89,9 @@ void CViewCommander::Command_SEARCH_NEXT(
 	CLogicRange*	pcSelectLogic		//!< [out] 選択範囲のロジック版。マッチ範囲を返す。すべて置換/高速モードで使用
 )
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 	bool		bSelecting;
 	bool		bFlag1 = false;
 	bool		bSelectingLock_Old = false;
@@ -335,6 +338,9 @@ end_of_func:;
 /* 前を検索 */
 void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 	bool		bSelecting;
 	bool		bSelectingLock_Old = false;
 	bool		bFound = false;

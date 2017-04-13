@@ -360,6 +360,9 @@ can_not_tagjump:;
 /* タグジャンプバック */
 void CViewCommander::Command_TAGJUMPBACK( void )
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 // 2004/06/21 novice タグジャンプ機能追加
 	TagJump tagJump;
 
@@ -633,6 +636,9 @@ bool CViewCommander::Command_TagJumpByTagsFileMsg( bool bMsg )
 */
 bool CViewCommander::Command_TagJumpByTagsFile( bool bClose )
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 	CNativeW	cmemKeyW;
 	m_pCommanderView->GetCurrentTextForSearch( cmemKeyW, true, true );
 	if( 0 == cmemKeyW.GetStringLength() ){
@@ -684,6 +690,9 @@ bool CViewCommander::Command_TagJumpByTagsFile( bool bClose )
 */
 bool CViewCommander::Command_TagJumpByTagsFileKeyword( const wchar_t* keyword )
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
 	CDlgTagJumpList	cDlgTagJumpList(false);
 	TCHAR	fileName[1024];
 	int		fileLine;	// 行番号
