@@ -272,6 +272,10 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 		tcitem.lParam = 0;
 		TabCtrl_GetItem( m_hwndTab, nDstTab, &tcitem );
 		
+		//TCHAR szMsg[128];
+		//auto_sprintf(szMsg, L"CTabWnd::OnTabLButtonUp %d, m_nSrcTab %d, nDstTab %d, nSelfTab %d\n", m_hwndTab, m_nSrcTab, nDstTab, nSelfTab);
+		//OutputDebugStringW(szMsg);
+		
 		HWND hwndInterTab = m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment;
 		if (hwndInterTab != NULL) {    // タブウィンドウが設定されている
 			BreakInterTabDblClkJudgment();
@@ -346,6 +350,22 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 		break;
 
 	default:
+#ifdef CL_FIX_TABWND
+		/*
+		* ウィンドウが非アクティブのときに非アクティブタブをクリックしたときなどに
+		* そのタブをアクティブにしたい
+		*/
+		if ( m_nSrcTab == nDstTab && m_nSrcTab != nSelfTab )
+		{
+			//指定のウインドウをアクティブに
+			TCITEM	tcitem;
+			tcitem.mask   = TCIF_PARAM;
+			tcitem.lParam = 0;
+			TabCtrl_GetItem( m_hwndTab, nDstTab, &tcitem );
+
+			ShowHideWindow( (HWND)tcitem.lParam, TRUE );
+		}
+#endif  // cl_
 		break;
 	}
 
