@@ -366,6 +366,25 @@ CLayoutInt CCaret::MoveCursor(
 					m_pEditView->MiniMapRedraw(true);
 				}
 			}
+			
+#ifdef CL_MOD_CENTERING_CURSOR_MOVE
+			{  // CViewCommander::Command_CURLINECENTER()
+				CLayoutInt		nViewTopLine;
+				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
+
+				// sui 02/08/09
+				if( 0 > nViewTopLine )	nViewTopLine = CLayoutInt(0);
+				
+				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();	//Sep. 11, 2004 genta 同期用に行数を記憶
+				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
+				/* フォーカス移動時の再描画 */
+				//m_pCommanderView->RedrawAll();
+				// sui 02/08/09
+
+				//	Sep. 11, 2004 genta 同期スクロールの関数化
+				m_pEditView->SyncScrollV( nScrollLines );
+			}
+#endif  // cl_
 		}
 		else if( nScrollRowNum != 0 || nScrollColNum != 0 ){
 			RECT	rcClip;
