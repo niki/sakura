@@ -405,7 +405,6 @@ window/CMainStatusBar.o \
 window/CMainToolBar.o \
 window/CSplitBoxWnd.o \
 window/CSplitterWnd.o \
-window/CTabWnd - ÉRÉsÅ[.o \
 window/CTabWnd.o \
 window/CTipWnd.o \
 window/CWnd.o \
