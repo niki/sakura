@@ -395,28 +395,11 @@
 
 //------------------------------------------------------------------
 // 行番号が非表示でブックマークが表示のときブックマークは線で描画する 2017.1.13
-//   -> 大した問題ではないので修正しない 2017.3.28
 //------------------------------------------------------------------
-#if 0
-Index: sakura_core\view\CTextDrawer.cpp
-@@ 615
-	{
-		// 2001.12.03 hor
-		/* とりあえずブックマークに縦線 */
--		if(CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp() )
-+		bool bookmark_line = false;
-+		bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp();
-+		bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !CTypeSupport(pView,COLORIDX_GYOU).IsDisp();
-+		if (bookmark_line)
-		{
-			gr.PushPen(cColorType.GetTextColor(),2);
-			::MoveToEx( gr, 1, y, NULL );
-#endif
-//- #define CL_FIX_DRAW_BOOKMARK_LINE_NOGYOU
+#define CL_FIX_DRAW_BOOKMARK_LINE_NOGYOU
 
 //------------------------------------------------------------------
 // ルーラー非表示時は「ルーラーとテキストの隙間」を無視する 2016.12.28
-//   -> 大した問題ではないので修正しない 2017.3.28
 //------------------------------------------------------------------
 #if 0
 Index: sakura_core\view\CTextArea.h
@@ -456,21 +439,8 @@ void CTextArea::UpdateViewColRowNums()
 
 //------------------------------------------------------------------
 // 行番号縦線を行番号の色で描画する 2016.12.21
-//   -> 大した問題ではないので修正しない 2017.3.28
 //------------------------------------------------------------------
-#if 0
-Index: sakura_core\view\CTextDrawer.cpp
-@@ 596
-			rc.top = y;
-			rc.right = nLineNumAreaWidth - 1;
-			rc.bottom = y + nLineHeight;
--			gr.FillSolidMyRect(rc, fgcolor);
-+			gr.FillSolidMyRect(rc, cGyouType.GetTextColor());
-		}
-
-		gr.PopTextForeColor();
-#endif
-//- #define CL_FIX_LINE_TERM_TYPE
+#define CL_FIX_LINE_TERM_TYPE
 
 //------------------------------------------------------------------
 // カーソル上下移動時に次の条件?のときに画面の更新が間に合わずに描画が崩れる 2015.8.4
