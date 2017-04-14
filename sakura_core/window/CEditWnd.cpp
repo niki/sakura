@@ -1981,10 +1981,6 @@ LRESULT CEditWnd::DispatchEvent(
 			//	MoveCursorの位置調整機能があるので，最終行以降への
 			//	移動指示の調整もMoveCursorにまかせる
 			GetActiveView().MoveCursorSelecting( ptCaretPos, bSelect, _CARETMARGINRATE / 3 );
-			
-#if 0//def CL_MOD_CENTERING_CURSOR_JUMP
-			GetActiveView().GetCommander().HandleCommand(F_CURLINECENTER, true, 0, 0, 0, 0);
-#endif  // cl_
 		}
 		return 0L;
 

@@ -164,18 +164,18 @@ protected:
 	}
 
 #ifdef CL_FIX_TABWND
-	// タブ間ダブルクリックの設定をする
-	void SetInterTabDblClkJudgment(HWND htab) {
-		m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = htab;
+	// タブ間クリックの設定をする
+	void SetInterTabClk(int nTab) {
+		m_pShareData->m_sFlags.m_nInterTabClk = nTab;
 	}
-	// タブ間ダブルクリックを取得をする
-	HWND GetInterTabDblClkJudgment() const {
-		return m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment;
+	// タブ間クリックを取得をする
+	int GetInterTabClk() const {
+		return m_pShareData->m_sFlags.m_nInterTabClk;
 	}
-	// タブ間ダブルクリックを解除する
-	void BreakInterTabDblClkJudgment() {
+	// タブ間クリックを解除する
+	void BreakInterTabClk() {
 		::KillTimer(m_hwndTab, 2);  // タイマーを殺す
-		m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL;
+		m_pShareData->m_sFlags.m_nInterTabClk = 0;
 	}
 #endif  // cl_
 
