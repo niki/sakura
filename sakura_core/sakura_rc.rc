@@ -3635,8 +3635,19 @@ BEGIN
 #ifdef CL_MOD_VERDLG
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n\
 \r\n\
-@ Calette ver.\r\n\
-  https://github.com/calette/sakura2201c\r\n"
+=== Calette ver. ===\r\n\
+https://github.com/calette/sakura2201c\r\n\
+\r\n\
+=== Google Performance Tools ===\r\n\
+https://github.com/gperftools/gperftools\r\n\
+Copyright (c) 2005, Google Inc.\r\n\
+\r\n\
+=== Boost C++ Libraries ===\r\n\
+http://www.boost.org/\r\n\
+Copyright Beman Dawes, David Abrahams, 1998-2005.\r\n\
+Copyright Rene Rivera 2004-2007.\r\n\
+Distributed under the Boost Software License, Version 1.0.
+"
 #else
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n"
 #endif  // cl_
