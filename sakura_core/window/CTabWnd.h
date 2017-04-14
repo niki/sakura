@@ -164,6 +164,14 @@ protected:
 	}
 
 #ifdef CL_FIX_TABWND
+	// タブ間ダブルクリックの設定をする
+	void SetInterTabDblClkJudgment(HWND htab) {
+		m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = htab;
+	}
+	// タブ間ダブルクリックを取得をする
+	HWND GetInterTabDblClkJudgment() const {
+		return m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment;
+	}
 	// タブ間ダブルクリックを解除する
 	void BreakInterTabDblClkJudgment() {
 		::KillTimer(m_hwndTab, 2);  // タイマーを殺す

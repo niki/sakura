@@ -147,12 +147,20 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 #ifdef CL_FIX_TABWND
 	case WM_LBUTTONDBLCLK:
 		{  // @todo OnTabLButtonDblClkを作ること
-			BreakInterTabDblClkJudgment();
-			if (!!RegKey(CL_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
-				return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
-			} else {
-				return 1L;
+			//TCHAR szMsg[128];
+			//auto_sprintf(szMsg, L"CTabWnd::WM_LBUTTONDBLCLK %d, %d\n", m_hwndTab, GetInterTabDblClkJudgment());
+			//OutputDebugStringW(szMsg);
+			if (GetInterTabDblClkJudgment() != NULL) {
+				BreakInterTabDblClkJudgment();
+				if (!!RegKey(CL_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
+					// ダブルクリックでタブを閉じる
+					return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
+				}
 			}
+			
+			// 閉じることができないときは左ボタンダウン扱いにする
+			::SendMessageAny( m_hwndTab, WM_LBUTTONDOWN, 0, lParam );
+			return 0L;
 		}
 #endif  // cl_
 
@@ -211,6 +219,48 @@ LRESULT CTabWnd::OnTabLButtonDown( WPARAM wParam, LPARAM lParam )
 	if( 0 > nSrcTab )
 		return 1L;
 
+#ifdef CL_FIX_TABWND
+	{
+		TCITEM	tcitem;
+		tcitem.mask   = TCIF_PARAM;
+		tcitem.lParam = 0;
+		TabCtrl_GetItem( m_hwndTab, nSrcTab, &tcitem );
+
+		// タブ間のダブルクリックでタブを閉じる処理
+		// 別のタブをクリックすると違うウィンドウのタブウィンドウに切り替わるので
+		// 非アクティブタブに対してダブルクリックができないための暫定対応
+		int nTabNo = nSrcTab;
+		HWND hwndInterTab = (HWND)GetInterTabDblClkJudgment();
+		if (hwndInterTab != NULL) {    // タブウィンドウが設定されている
+			BreakInterTabDblClkJudgment();
+			if (hwndInterTab == (HWND)(nTabNo + 1)) {  // 同じタブ
+				if (!!RegKey(CL_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
+					return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
+				}
+			}
+		} else {
+			SetInterTabDblClkJudgment((HWND)(nTabNo + 1));
+			::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime(), NULL );
+		}
+
+		// タブをマウス押下時点でアクティブにする (体感速度を上げるため)
+		// この処理の影響で非アクティブタブのドラッグができない
+		if ((HWND)tcitem.lParam != GetParentHwnd()) {
+			HWND hTabWnd = ::FindWindowEx((HWND)tcitem.lParam, NULL, _T("CTabWnd"), 0);
+			if (hTabWnd != NULL) {  // 保険
+				HWND hwndTab = ::FindWindowEx(hTabWnd, NULL, WC_TABCONTROL, 0);
+				if (hwndTab != NULL) {  // 保険
+					ShowHideWindow((HWND)tcitem.lParam, TRUE);
+					BreakDrag();	// ドラッグ状態を解除する
+					//BreakInterTabDblClkJudgment();
+					//::SendMessageAny( hwndTab, WM_LBUTTONDOWN, 0, lParam );
+					return 0L;
+				}
+			}
+		}
+	}
+#endif  // cl_
+
 	// タブの閉じるボタン押下処理
 	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabClose ){
 		// 閉じるボタンのチェック
@@ -234,6 +284,12 @@ LRESULT CTabWnd::OnTabLButtonDown( WPARAM wParam, LPARAM lParam )
 	::GetCursorPos( &m_ptSrcCursor );
 
 	::SetCapture( m_hwndTab );
+
+#ifdef CL_FIX_TABWND
+	TCHAR szMsg[128];
+	auto_sprintf(szMsg, L"CTabWnd::OnTabLButtonDown %d\n", m_hwndTab),
+	OutputDebugStringW(szMsg);
+#endif  // cl_
 
 	return 0L;
 }
@@ -262,33 +318,27 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 		return 0L;
 	}
 
-#ifdef CL_FIX_TABWND
-	// タブ間のダブルクリックでタブを閉じる処理
-	// 別のタブをクリックすると違うウィンドウのタブウィンドウに切り替わるので
-	// 非アクティブタブに対してダブルクリックができないための暫定対応
+#if 0//def CL_FIX_TABWND
 	{
 		TCITEM	tcitem;
 		tcitem.mask   = TCIF_PARAM;
 		tcitem.lParam = 0;
 		TabCtrl_GetItem( m_hwndTab, nDstTab, &tcitem );
 		
-		//TCHAR szMsg[128];
-		//auto_sprintf(szMsg, L"CTabWnd::OnTabLButtonUp %d, m_nSrcTab %d, nDstTab %d, nSelfTab %d\n", m_hwndTab, m_nSrcTab, nDstTab, nSelfTab);
-		//OutputDebugStringW(szMsg);
-		
-		HWND hwndInterTab = m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment;
+		// タブ間のダブルクリックでタブを閉じる処理
+		// 別のタブをクリックすると違うウィンドウのタブウィンドウに切り替わるので
+		// 非アクティブタブに対してダブルクリックができないための暫定対応
+		int nTabNo = nDstTab;
+		HWND hwndInterTab = (HWND)GetInterTabDblClkJudgment();
 		if (hwndInterTab != NULL) {    // タブウィンドウが設定されている
 			BreakInterTabDblClkJudgment();
-			if (hwndInterTab == (HWND)tcitem.lParam) {  // 同じタブウィンドウ
-				//TCHAR szMsg[128];
-				//auto_sprintf(szMsg, L"CTabWnd: >>> Send WM_LBUTTONDBLCLK %d\n", m_hwndTab);
-				//OutputDebugStringW(szMsg);
+			if (hwndInterTab == (HWND)(nTabNo + 1)) {  // 同じタブ
 				if (!!RegKey(CL_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
 					return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
 				}
 			}
 		} else {
-			m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = (HWND)tcitem.lParam;
+			SetInterTabDblClkJudgment((HWND)(nTabNo + 1));
 			::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime(), NULL );
 		}
 	}
@@ -298,6 +348,7 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 	switch( m_eDragState )
 	{
 	case DRAG_CHECK:
+#ifndef CL_FIX_TABWND
 		if ( m_nSrcTab == nDstTab && m_nSrcTab != nSelfTab )
 		{
 			//指定のウインドウをアクティブに
@@ -308,6 +359,7 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 
 			ShowHideWindow( (HWND)tcitem.lParam, TRUE );
 		}
+#endif
 		break;
 
 	case DRAG_DRAG:
@@ -350,7 +402,7 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 		break;
 
 	default:
-#ifdef CL_FIX_TABWND
+#if 0//def CL_FIX_TABWND
 		/*
 		* ウィンドウが非アクティブのときに非アクティブタブをクリックしたときなどに
 		* そのタブをアクティブにしたい
@@ -568,7 +620,7 @@ LRESULT CTabWnd::OnTabTimer( WPARAM wParam, LPARAM lParam )
 #ifdef CL_FIX_TABWND
 	if (wParam == 2) {
 		//TCHAR szMsg[128];
-		//auto_sprintf(szMsg, L"CTabWnd: ** Timeout, m_pShareData->m_sFlags.m_hwndInterTabDblClkJudgment = NULL\n"),
+		//auto_sprintf(szMsg, L"CTabWnd: ** Timeout, GetInterTabDblClkJudgment() = NULL\n"),
 		//OutputDebugStringW(szMsg);
 		BreakInterTabDblClkJudgment();
 	}
