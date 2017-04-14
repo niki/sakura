@@ -194,26 +194,29 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	for( i = 0; i < nSize; ++i ){
 		pfiWork = &pShare->m_sHistory.m_fiMRUArr[i];
 #ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-		if (!!RegKey(CL_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
-			auto_sprintf( szKeyName, LTEXT("MRU[%02d].szPath"), i );
-			cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferT(pfiWork->m_szPath) );
-			//お気に入り	//@@@ 2003.04.08 MIK
-			auto_sprintf( szKeyName, LTEXT("MRU[%02d].bFavorite"), i );
-			cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bMRUArrFavorite[i] );
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].szPath"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferT(pfiWork->m_szPath) );
+		//お気に入り	//@@@ 2003.04.08 MIK
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].bFavorite"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bMRUArrFavorite[i] );
 
-			if (!pShare->m_sHistory.m_bMRUArrFavorite[i]) {  // お気に入りはパス
-				if (!fexist(pfiWork->m_szPath)) {
-					continue;
+		if (cProfile.IsReadingMode()) {
+			if (!!RegKey(CL_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+				if (!pShare->m_sHistory.m_bMRUArrFavorite[i]) {  // お気に入りはパス
+					if (!fexist(pfiWork->m_szPath)) {
+						continue;
+					}
+				}
+
+				if (i != mru_exist_count) {
+					_tcsncpy(pShare->m_sHistory.m_fiMRUArr[mru_exist_count].m_szPath, pShare->m_sHistory.m_fiMRUArr[i].m_szPath, _MAX_PATH);
+					pShare->m_sHistory.m_fiMRUArr[mru_exist_count].m_szPath[_MAX_PATH - 1] = _T('\0');
+					pShare->m_sHistory.m_bMRUArrFavorite[mru_exist_count] = pShare->m_sHistory.m_bMRUArrFavorite[i];
+					pfiWork = &pShare->m_sHistory.m_fiMRUArr[mru_exist_count];
 				}
 			}
-
-			if (i != mru_exist_count) {
-				_tcsncpy(pShare->m_sHistory.m_fiMRUArr[mru_exist_count].m_szPath, pShare->m_sHistory.m_fiMRUArr[i].m_szPath, _MAX_PATH);
-				pShare->m_sHistory.m_fiMRUArr[mru_exist_count].m_szPath[_MAX_PATH - 1] = _T('\0');
-				pShare->m_sHistory.m_bMRUArrFavorite[mru_exist_count] = pShare->m_sHistory.m_bMRUArrFavorite[i];
-				pfiWork = &pShare->m_sHistory.m_fiMRUArr[mru_exist_count];
-			}
 		}
+
 		mru_exist_count++;
 #endif  // cl_
 		if( cProfile.IsReadingMode() ){
@@ -275,37 +278,34 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	mru_exist_count = 0;
 #endif  // cl_
 	for( i = 0; i < nSize; ++i ){
-#ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 		auto_sprintf( szKeyName, LTEXT("MRUFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_szOPENFOLDERArr[i] );
 		//お気に入り	//@@@ 2003.04.08 MIK
 		wcscat( szKeyName, LTEXT(".bFavorite") );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] );
 
-		if (!!RegKey(CL_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
-			if (!pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i]) {  // お気に入りはパス
-				if (!fexist(pShare->m_sHistory.m_szOPENFOLDERArr[i])) {
-					continue;
+#ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+		if (cProfile.IsReadingMode()) {
+			if (!!RegKey(CL_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+				if (!pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i]) {  // お気に入りはパス
+					if (!fexist(pShare->m_sHistory.m_szOPENFOLDERArr[i])) {
+						continue;
+					}
 				}
-			}
 
-			if (i != mru_exist_count) {
-				pShare->m_sHistory.m_bOPENFOLDERArrFavorite[mru_exist_count] = pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i];
-				if (::wcslen(pShare->m_sHistory.m_szOPENFOLDERArr[i]) > 0) {
-					::wcsncpy(pShare->m_sHistory.m_szOPENFOLDERArr[mru_exist_count], pShare->m_sHistory.m_szOPENFOLDERArr[i], _MAX_PATH - 1);
-					pShare->m_sHistory.m_szOPENFOLDERArr[mru_exist_count][_MAX_PATH - 1] = L'\0';
-				} else {
-					pShare->m_sHistory.m_szOPENFOLDERArr[mru_exist_count][0] = L'\0';
+				if (i != mru_exist_count) {
+					pShare->m_sHistory.m_bOPENFOLDERArrFavorite[mru_exist_count] = pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i];
+					if (::wcslen(pShare->m_sHistory.m_szOPENFOLDERArr[i]) > 0) {
+						::wcsncpy(pShare->m_sHistory.m_szOPENFOLDERArr[mru_exist_count], pShare->m_sHistory.m_szOPENFOLDERArr[i], _MAX_PATH - 1);
+						pShare->m_sHistory.m_szOPENFOLDERArr[mru_exist_count][_MAX_PATH - 1] = L'\0';
+					} else {
+						pShare->m_sHistory.m_szOPENFOLDERArr[mru_exist_count][0] = L'\0';
+					}
 				}
 			}
 		}
+
 		mru_exist_count++;
-#else
-		auto_sprintf( szKeyName, LTEXT("MRUFOLDER[%02d]"), i );
-		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_szOPENFOLDERArr[i] );
-		//お気に入り	//@@@ 2003.04.08 MIK
-		wcscat( szKeyName, LTEXT(".bFavorite") );
-		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] );
 #endif  // cl_
 	}
 #ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
