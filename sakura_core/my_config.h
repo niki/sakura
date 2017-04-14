@@ -66,13 +66,13 @@
 // アロケートに TCMalloc を使用する
 //  - "Configuration Properties" -> "Linker" -> "Input"
 //    "Force Symbol References" => __tcmalloc
-//  - 生成した libtcmalloc_minimal.lib を <sakura> へコピーしてください
+//  - 生成した libtcmalloc_minimal.lib を </sakura> へコピーしてください
 //------------------------------------------------------------------
 #define CL_USE_TCMALLOC
 
 //------------------------------------------------------------------
 // Boost を使用する
-//  - <exlib> に <boost> を配置してください
+//  - </exlib> に </boost> を配置してください
 //------------------------------------------------------------------
 #define CL_USE_BOOST
 
