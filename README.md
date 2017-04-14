@@ -13,8 +13,8 @@
 * ビルド環境<br>
   + MSVC2015を使用 (/O1 /MT _WIN32_WINNT=0x0601)
   + TCMallocを使用しています. libtcmalloc_minimal.lib が必要です<br>
-    libtcmalloc_minimal.lib は </sakura> へコピーしてください
-  + Boostを使用しています. </extlib> へ </boost> をコピーしてください
+    libtcmalloc_minimal.lib は <\/sakura> へコピーしてください
+  + Boostを使用しています. <\/extlib> へ <\/boost> をコピーしてください
 
 <br>
 
