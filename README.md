@@ -9,22 +9,12 @@
 * 挙動の制御にレジストリを使用しています (読み込み/書き込み)
 
 * 動作環境<br>
-  + Windows10 RS1以降を対象としています (動作チェックができないので)
-  + Visual Studio 2015 の [Visual C++ 再頒布可能パッケージ](https://www.microsoft.com/ja-jp/download/details.aspx?id=48145)が必要
+  + Windows7以上 (Windows10 RS1,RS2で動作確認をしています)
 * ビルド環境<br>
-  + MSVC2015を使用 (/O1 /MD _WIN32_WINNT=0x0A00)
-  + Windows10 RS1以前や Visual Studio 2015以外でビルドする際は適当にいじってください
+  + MSVC2015を使用 (/O1 /MT _WIN32_WINNT=0x0A00)
   + TCMallocを使用しています. libtcmalloc_minimal.lib が必要です<br>
     libtcmalloc_minimal.lib は sakura/ へコピーしてください
   + Boostを使用しています. extlib/ へ boost/ をコピーしてください
-
-[Google Performance Tools](https://github.com/gperftools/gperftools)<br>
-> Copyright (c) 2005, Google Inc.
-
-[Boost C++ Libraries](http://www.boost.org/)<br>
-> Copyright Beman Dawes, David Abrahams, 1998-2005.<br>
-> Copyright Rene Rivera 2004-2007.<br>
-> Distributed under the Boost Software License, Version 1.0.
 
 <br>
 
