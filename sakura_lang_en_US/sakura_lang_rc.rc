@@ -3640,13 +3640,9 @@ https://github.com/calette/sakura2201c\r\n\
 \r\n\
 === Google Performance Tools ===\r\n\
 https://github.com/gperftools/gperftools\r\n\
-Copyright (c) 2005, Google Inc.\r\n\
 \r\n\
 === Boost C++ Libraries ===\r\n\
 http://www.boost.org/\r\n\
-Copyright Beman Dawes, David Abrahams, 1998-2005.\r\n\
-Copyright Rene Rivera 2004-2007.\r\n\
-Distributed under the Boost Software License, Version 1.0.
 "
 #else
     IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n"
