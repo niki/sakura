@@ -126,7 +126,6 @@ cmd/CViewCommander_Select.o \
 cmd/CViewCommander_Settings.o \
 cmd/CViewCommander_Support.o \
 cmd/CViewCommander_TagJump.o \
-cmd/CViewCommander_Window - ÉRÉsÅ[.o \
 cmd/CViewCommander_Window.o \
 convert/CConvert.o \
 convert/CConvert_HaneisuToZeneisu.o \
