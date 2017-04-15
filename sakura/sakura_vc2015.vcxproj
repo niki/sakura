@@ -1170,11 +1170,11 @@
     <Text Include="..\sakura_core\util\ReadMe_util.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HeaderMake\HeaderMake.vcxproj">
+    <ProjectReference Include="..\HeaderMake\HeaderMake_vc2015.vcxproj">
       <Project>{5b80674d-87f3-42b5-96a7-d9d003f3af20}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\MakefileMake\MakefileMake.vcxproj">
+    <ProjectReference Include="..\MakefileMake\MakefileMake_vc2015.vcxproj">
       <Project>{5fcd88ff-af9f-48b7-bdea-26777e8d1439}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
