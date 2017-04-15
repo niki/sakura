@@ -1,19 +1,18 @@
 # サクラエディタ２改造版
-* 2.2.0.1をベースに[ココ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)からマージ. ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)
-* 基本的に元ソースは残しつつの修正
-* 他のテキストエディタでよかったところなどを移植
-* バグ?とか気になったところの修正
-* いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ
-* プロポーショナルフォント関連はスルー (個人的に使用していないため)
-* 挙動の制御にレジストリを使用しています (読み込み/書き込み)
+\- 2.2.0.1をベースに[ココ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)からマージ. ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)  
+\- 基本的に元ソースは残しつつの修正  
+\- 他のテキストエディタでよかったところなどを移植  
+\- バグ?とか気になったところの修正  
+\- いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ  
+\- プロポーショナルフォント関連はスルー (個人的に使用していないため)  
+\- 挙動の制御にレジストリを使用しています (読み込み/書き込み)  
 
-* 動作環境<br>
-  + Windows7以上 (Windows10 RS1,RS2で動作確認をしています)
-* ビルド環境<br>
-  + MSVC2015を使用 (/O1 /MT _WIN32_WINNT=0x0601)
-  + TCMallocを使用しています. libtcmalloc_minimal.lib が必要です<br>
-    libtcmalloc_minimal.lib は <\/sakura> へコピーしてください
-  + Boostを使用しています. <\/extlib> へ <\/boost> をコピーしてください
+\- 動作環境  
+`・Windows7以上 (Windows10 RS1,RS2で動作確認をしています)`  
+\- ビルド環境  
+`・MSVC2015を使用 (/O1 /MT _WIN32_WINNT=0x0601)`  
+`・TCMallocを使用しています`  
+`・Boostを使用しています. </extlib> へ </boost> をコピーしてください`  
 
 <br>
 
