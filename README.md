@@ -1,5 +1,5 @@
-サクラエディタ２改造版
-======================
+サクラエディタ 修正版
+=====================
 - 2.2.0.1をベースに[ココ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)からマージ. ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)  
 - いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ  
 - プロポーショナルフォント関連はスルー (個人的に使用していないため)  
