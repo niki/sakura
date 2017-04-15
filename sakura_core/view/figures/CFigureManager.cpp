@@ -36,6 +36,9 @@ CFigureManager::CFigureManager()
 	m_vFigures.push_back(new CFigure_Tab());
 	m_vFigures.push_back(new CFigure_Comma());
 	m_vFigures.push_back(new CFigure_HanSpace());
+#ifdef CL_MOD_NBSP_DISP
+	m_vFigures.push_back(new CFigure_NBSP());
+#endif  // cl_
 	m_vFigures.push_back(new CFigure_ZenSpace());
 	m_vFigures.push_back(new CFigure_Eol());
 	m_vFigures.push_back(new CFigure_CtrlCode());

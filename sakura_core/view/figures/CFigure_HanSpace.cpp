@@ -52,16 +52,29 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
 		y++; // 少し下め
-		y++; // 少し下め
 //#  ifdef CL_LINE_CENTERING
 //		y += (pcView->m_pTypeData->m_nLineSpace / 2);
 //#  endif  // cl_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // 少し左め
-		::MoveToEx( gr, x, y-2, NULL );
-		::LineTo(   gr, x+2, y-2 );
+#ifdef CL_MOD_NBSP_DISP
+		if (m_nbsp) {
+			::MoveToEx( gr, x-1, y-2, NULL );
+			::LineTo(   gr, x+4, y+3 );
+			::MoveToEx( gr, x+3, y-2, NULL );
+			::LineTo(   gr, x-2, y+3 );
+		} else {
+			::MoveToEx( gr, x, y-1, NULL );
+			::LineTo(   gr, x+2, y-1 );
+			::MoveToEx( gr, x, y, NULL );
+			::LineTo(   gr, x+2, y );
+		}
+#else
 		::MoveToEx( gr, x, y-1, NULL );
 		::LineTo(   gr, x+2, y-1 );
+		::MoveToEx( gr, x, y, NULL );
+		::LineTo(   gr, x+2, y );
+#endif  // cl_
 #else
 		//小文字"o"の下半分を出力
 		CMyRect rcClipBottom=rcClip;
@@ -102,3 +115,18 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 	//位置進める
 	pDispPos->ForwardDrawCol(1);
 }
+
+
+#ifdef  CL_MOD_NBSP_DISP
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+//                     CFigure_NBSP                            //
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+
+bool CFigure_NBSP::Match(const wchar_t* pText, int nTextLen) const
+{
+	if( pText[0] == L' ' ){
+		return true;
+	}
+	return false;
+}
+#endif  // cl_

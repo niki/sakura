@@ -35,7 +35,24 @@ public:
 	//action
 	void DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool trans) const;
 	EColorIndexType GetColorIdx(void) const{ return COLORIDX_SPACE; }
+
+#ifdef CL_MOD_NBSP_DISP
+	CFigure_HanSpace() : CFigureSpace(), m_nbsp(false) {}
+
+protected:
+	bool m_nbsp;
+#endif  // cl_
 };
+
+#ifdef CL_MOD_NBSP_DISP
+class CFigure_NBSP : public CFigure_HanSpace{
+public:
+	CFigure_NBSP() : CFigure_HanSpace() { m_nbsp = true; }
+
+	//traits
+	bool Match(const wchar_t* pText, int nTextLen) const;
+};
+#endif  // cl_
 
 #endif /* SAKURA_CFIGURE_HANSPACE_5C46367B_9CE4_47DF_A1A1_7AF7BB1D5C92_H_ */
 /*[EOF]*/
