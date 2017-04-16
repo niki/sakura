@@ -1505,6 +1505,8 @@ LRESULT CEditWnd::DispatchEvent(
 						GetDocument()->m_cLayoutMgr.CalculateTextWidth();
 					}
 					GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );		// TAB幅が変わったので再描画が必要
+				} else if( mp->dwItemSpec == 8 ){	//	タイプ
+					GetActiveView().GetCommander().HandleCommand( F_TYPE_LIST, true, 0, 0, 0, 0 );
 				}
 #endif  // cl_
 			}
