@@ -8,8 +8,8 @@
 - 動作環境  
   \- Windows7以上 (Windows10 RS1,RS2で動作確認をしています)  
 - ビルド環境  
-  \- MSVC2017でビルド
-  \- TCMallocを使用
+  \- MSVC2017でビルド  
+  \- TCMallocを使用  
   \- Boostを使用. <\/extlib> へ <\/boost> をコピーしてください  
 
 
