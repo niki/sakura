@@ -45,11 +45,11 @@ const DWORD p_helpids[] = {	//12900
 // 2010.04.15 Moca icc/dmcを追加しCPUを分離
 #ifdef CL_MOD_VERDLG
 #if defined(_M_IA64)
-#  define TARGET_M_SUFFIX "x64(Itanium)"
+#  define TARGET_M_SUFFIX "64bit Itanium"
 #elif defined(_M_AMD64)
-#  define TARGET_M_SUFFIX "x64"
+#  define TARGET_M_SUFFIX "64bit"
 #elif defined(_M_IX86)
-#  define TARGET_M_SUFFIX "x86"
+#  define TARGET_M_SUFFIX "32bit"
 #else
 #  define TARGET_M_SUFFIX ""
 #endif
@@ -92,9 +92,8 @@ const DWORD p_helpids[] = {	//12900
 #        define COMPILER_TYPE "MSVC 2015"
 #      endif
 #    else
-#      define COMPILER_TYPE "MSVC"
+#      define COMPILER_TYPE "MSVC (Unknown ver.)"
 #    endif
-//#    define COMPILER_TYPE "V"
 #    define COMPILER_VER _MSC_FULL_VER
 #  else
 #    define COMPILER_TYPE "V"
@@ -133,23 +132,23 @@ const DWORD p_helpids[] = {	//12900
 #endif
 
 #ifdef CL_MOD_VERDLG
-#ifdef _MT
-	#ifdef _DLL
-		#ifdef _DEBUG
-			#define MY_RT "MDd"
-		#else
-			#define MY_RT "MD"
-		#endif
-	#else
-		#ifdef _DEBUG
-			#define MY_RT "MTd"
-		#else
-			#define MY_RT "MT"
-		#endif
-	#endif
-#else
-		#define MY_RT ""
-#endif
+#  ifdef _MT
+#    ifdef _DLL
+#      ifdef _DEBUG
+#        define MY_RT "/MDd"
+#      else
+#        define MY_RT "/MD"
+#      endif
+#    else
+#      ifdef _DEBUG
+#        define MY_RT "/MTd"
+#      else
+#        define MY_RT "/MT"
+#      endif
+#    endif
+#  else
+#    define MY_RT ""
+#  endif
 #endif  // cl_
 
 //	From Here Nov. 7, 2000 genta
@@ -220,12 +219,21 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #if (SVN_REV == 0)
+#ifdef CL_MOD_VERDLG
+	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (") _T(TARGET_M_SUFFIX) _T(")\r\n"),
+		HIWORD( dwVersionMS ),
+		LOWORD( dwVersionMS ),
+		HIWORD( dwVersionLS ),
+		LOWORD( dwVersionLS )
+	);
+#else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		HIWORD( dwVersionLS ),
 		LOWORD( dwVersionLS )
 	);
+#endif  // cl_
 #else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (Rev.") _T(SVN_REV_STR) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
@@ -248,8 +256,8 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	cmemMsg.AppendString( _T("      Compile Info: ") );
 	int Compiler_ver = COMPILER_VER;
 #ifdef CL_MOD_VERDLG
-	auto_sprintf( szMsg, _T(COMPILER_TYPE"(%d) ") _T(TARGET_M_SUFFIX" ")
-			_T(MY_RT" ") TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
+	auto_sprintf( szMsg, _T(COMPILER_TYPE"(%d) ") _T(MY_RT" ")
+			TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
 		Compiler_ver,
 		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
 	);
