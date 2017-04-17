@@ -1,7 +1,6 @@
 先頭に - がついているリビジョンは未適用.
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
-      	Fix: UnicodeをUTF-16表記に変更  [patchunicode:#1102]
       	Imp: 他のドキュメントから入力補完  [patchunicode:#1065]
       	Imp: カラーの文字列にC++11を追加,C/C++はC/C++03に変更しRawを処理しない  [patchunicode:#956]
       	Fix: CProfileの読み込みの高速化  [patchunicode:#908]
@@ -10,6 +9,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
       	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
+ r4178	Fix: UnicodeをUTF-16表記に変更  [patchunicode:#1102] Contributed by Moca
  r4176	New: ウィンドウ一覧ダイアログ [patchunicode:#1072] Contributed by Moca
  r4175	Imp: キーワードヘルプメニューのオプション [patchunicode:#1066] Contributed by Moca
  r4173	Chg: マクロ保存でS_を追加しない  [patchunicode:#943]
