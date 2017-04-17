@@ -1572,6 +1572,41 @@ LRESULT CEditWnd::DispatchEvent(
 				else if( mp->dwItemSpec == 7 ){	//	タブサイズ
 					GetDocument()->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
 					GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );
+				} else if( mp->dwItemSpec == 8 ){	//	タイプ
+					m_cMenuDrawer.ResetContents();
+					HMENU hMenuPopUp = ::CreatePopupMenu();
+					for (int nIdx = 0; nIdx < GetDllShareData().m_nTypesCount; ++nIdx) {
+						const STypeConfigMini* type;
+						CDocTypeManager().GetTypeConfigMini(CTypeConfig(nIdx), &type);
+						int nFlag = MF_BYPOSITION | MF_STRING;
+						if (::_tcscmp(type->m_szTypeName, GetActiveView().m_pTypeData->m_szTypeName) == 0) {
+							nFlag |= MF_CHECKED;
+						}
+						m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, nIdx + 1, type->m_szTypeName, _T(""), FALSE);
+					}
+					//	mp->ptはステータスバー内部の座標なので，スクリーン座標への変換が必要
+					POINT	po = mp->pt;
+					::ClientToScreen( m_cStatusBar.GetStatusHwnd(), &po );
+					int nId = (int)::TrackPopupMenu(
+						hMenuPopUp,
+						TPM_CENTERALIGN
+						| TPM_BOTTOMALIGN
+						| TPM_RETURNCMD
+						| TPM_LEFTBUTTON
+						,
+						po.x,
+						po.y,
+						0,
+						GetHwnd(),
+						NULL
+					);
+					::DestroyMenu( hMenuPopUp );
+					//TCHAR szMsg[128];
+					//auto_sprintf(szMsg, L"CEditWnd::DispatchEvent TypeChangePopup %d\n", nId);
+					//OutputDebugStringW(szMsg);
+					if (nId != 0) {
+						GetActiveView().GetCommander().HandleCommand( F_CHANGETYPE, true, (LPARAM)nId, 0, 0, 0 );
+					}
 				}
 #endif  // cl_
 			}
