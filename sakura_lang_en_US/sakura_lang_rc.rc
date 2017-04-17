@@ -3878,7 +3878,11 @@ BEGIN
 	STR_DLGFLPROP_FILENAME		"Filename  "
 	STR_DLGFLPROP_FILETYPE		"File Type  "
 	STR_DLGFLPROP_ENCODING		"Character Encoding  "
+#ifdef CL_MOD_WITH_BOM_TEXT
+	STR_DLGFLPROP_WITH_BOM		" BOM"
+#else
 	STR_DLGFLPROP_WITH_BOM		" with BOM"
+#endif  // cl_
 	STR_DLGFLPROP_LINE_COUNT	"Total Lines  %d\r\n"
 	STR_DLGFLPROP_LAYOUT_LINE	"Total including wrapped lines  %d\r\n"
 	STR_DLGFLPROP_VIEW_MODE		"Opened in View-Mode mode.\r\n"

@@ -4023,7 +4023,11 @@ BEGIN
 	STR_OUTLINE_ERLANG_SCANARGS	"COutlineErlang::ScanArgs 未知の括弧"
 
 	// Caret.cpp
+#ifdef CL_MOD_WITH_BOM_TEXT
+	STR_CARET_WITHBOM			" BOM"
+#else
 	STR_CARET_WITHBOM			" BOM付"
+#endif  // cl_
 
 	// CEditView.cpp
 	STR_VIEW_TIMER				"CEditView::Create()\nタイマーが起動できません。\nシステムリソースが不足しているのかもしれません。"
@@ -4180,7 +4184,11 @@ BEGIN
 //	STR_ERR_DLGEDITWND20		"99999 行 9999 列"
 	STR_ERR_DLGEDITWND21		"CFLF"
 	STR_ERR_DLGEDITWND22		"0000"
+#ifdef CL_MOD_WITH_BOM_TEXT
+	STR_ERR_DLGEDITWND23		"UTF-16 BOM"
+#else
 	STR_ERR_DLGEDITWND23		"UTF-16 BOM付"
+#endif  // cl_
 	STR_ERR_DLGEDITWND24		"REC"
 	STR_ERR_DLGEDITWND25		"上書"
 	STR_WRAP_WIDTH_FULL			"折り返し桁数: %d 桁（最大）"
