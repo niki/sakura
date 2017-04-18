@@ -94,7 +94,7 @@ const DWORD p_helpids[] = {	//12900
 #    else
 #      define COMPILER_TYPE "MSVC (Unknown ver.)"
 #    endif
-#    define COMPILER_VER _MSC_FULL_VER
+#    define COMPILER_VER (_MSC_FULL_VER % 100000)
 #  else
 #    define COMPILER_TYPE "V"
 #    define COMPILER_VER _MSC_VER
@@ -135,15 +135,15 @@ const DWORD p_helpids[] = {	//12900
 #  ifdef _MT
 #    ifdef _DLL
 #      ifdef _DEBUG
-#        define MY_RT "/MDd"
+#        define MY_RT "RT_Dd"
 #      else
-#        define MY_RT "/MD"
+#        define MY_RT "RT_D"
 #      endif
 #    else
 #      ifdef _DEBUG
-#        define MY_RT "/MTd"
+#        define MY_RT "RT_Td"
 #      else
-#        define MY_RT "/MT"
+#        define MY_RT "RT_T"
 #      endif
 #    endif
 #  else
