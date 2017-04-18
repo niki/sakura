@@ -1464,7 +1464,11 @@ LRESULT CEditWnd::DispatchEvent(
 		//	From Here Feb. 15, 2004 genta 
 		//	ステータスバーのダブルクリックでモード切替ができるようにする
 		if( m_cStatusBar.GetStatusHwnd() && pnmh->hwndFrom == m_cStatusBar.GetStatusHwnd() ){
+#ifdef CL_MOD_STATUSBAR
+			if( pnmh->code == NM_CLICK ){  // 左クリックに変更する
+#else
 			if( pnmh->code == NM_DBLCLK ){
+#endif  // cl_
 				LPNMMOUSE mp = (LPNMMOUSE) lParam;
 				if( mp->dwItemSpec == 6 ){	//	上書き/挿入
 					GetDocument()->HandleCommand( F_CHGMOD_INS );
@@ -1493,12 +1497,9 @@ LRESULT CEditWnd::DispatchEvent(
 					} else if (tab_size == 8) {
 						tab_size = 2;
 					}
-					GetDocument()->m_pcEditWnd->ChangeLayoutParam(
-						false, 
-						CLayoutInt(tab_size),
-						pLayoutMgr->m_tsvInfo.m_nTsvMode,
-						pLayoutMgr->GetMaxLineKetas()
-					);
+					GetDocument()->m_pcEditWnd->ChangeLayoutParam(false, CLayoutInt(tab_size),
+					                                              pLayoutMgr->m_tsvInfo.m_nTsvMode,
+					                                              pLayoutMgr->GetMaxLineKetas());
 					// 2009.08.28 nasukoji	「折り返さない」選択時にTAB幅が変更されたらテキスト最大幅の再算出が必要
 					if( GetDocument()->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP ){
 						// 最大幅の再算出時に各行のレイアウト長の計算も行う
@@ -1506,12 +1507,103 @@ LRESULT CEditWnd::DispatchEvent(
 					}
 					GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );		// TAB幅が変わったので再描画が必要
 				} else if( mp->dwItemSpec == 8 ){	//	タイプ
-					GetActiveView().GetCommander().HandleCommand( F_TYPE_LIST, true, 0, 0, 0, 0 );
+					m_cMenuDrawer.ResetContents();
+					HMENU hMenuPopUp = ::CreatePopupMenu();
+					int type_count = GetDllShareData().m_nTypesCount;
+					for (int nIdx = 0; nIdx < type_count; ++nIdx) {
+						const STypeConfigMini* type;
+						CDocTypeManager().GetTypeConfigMini(CTypeConfig(nIdx), &type);
+						int nFlag = MF_BYPOSITION | MF_STRING;
+						if (::_tcscmp(type->m_szTypeName, GetActiveView().m_pTypeData->m_szTypeName) == 0) {
+							nFlag |= MF_CHECKED;
+						}
+						m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, nIdx + 1, type->m_szTypeName, _T(""), FALSE);
+					}
+					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_SEPARATOR, type_count + 1, _T(""), _T(""), FALSE);
+					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_BYPOSITION | MF_STRING, type_count + 2, LS(F_OPTION_TYPE), _T(""), FALSE);
+					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_BYPOSITION | MF_STRING, type_count + 3, LS(F_TYPE_LIST), _T(""), FALSE);
+					//	mp->ptはステータスバー内部の座標なので，スクリーン座標への変換が必要
+					POINT	po = mp->pt;
+					::ClientToScreen( m_cStatusBar.GetStatusHwnd(), &po );
+					int nId = (int)::TrackPopupMenu(hMenuPopUp,
+						TPM_CENTERALIGN | TPM_BOTTOMALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
+						po.x, po.y,
+						0,
+						GetHwnd(),
+						NULL
+					);
+					::DestroyMenu( hMenuPopUp );
+					//TCHAR szMsg[128];
+					//auto_sprintf(szMsg, L"CEditWnd::DispatchEvent TypeChangePopup %d\n", nId);
+					//OutputDebugStringW(szMsg);
+					if (nId == type_count + 2) {
+						GetActiveView().GetCommander().HandleCommand( F_OPTION_TYPE, true, 0, 0, 0, 0 );
+					} else if (nId == type_count + 3) {
+						GetActiveView().GetCommander().HandleCommand( F_TYPE_LIST, true, 0, 0, 0, 0 );
+					} else if (nId != 0) {
+						GetActiveView().GetCommander().HandleCommand( F_CHANGETYPE, true, (LPARAM)nId, 0, 0, 0 );
+					}
 				}
-#endif  // cl_
+				else if( mp->dwItemSpec == 2 ){	//	入力改行モード
+					enum eEolExts {
+						F_CHGMOD_EOL_NEL = F_CHGMOD_EOL_CR + 1,
+						F_CHGMOD_EOL_PS,
+						F_CHGMOD_EOL_LS,
+					};
+					m_cMenuDrawer.ResetContents();
+					HMENU hMenuPopUp = ::CreatePopupMenu();
+					m_cMenuDrawer.MyAppendMenu( hMenuPopUp, MF_BYPOSITION | MF_STRING, F_CHGMOD_EOL_CRLF, 
+						LS( F_CHGMOD_EOL_CRLF ), _T("C") ); // 入力改行コード指定(CRLF)
+					m_cMenuDrawer.MyAppendMenu( hMenuPopUp, MF_BYPOSITION | MF_STRING, F_CHGMOD_EOL_LF,
+						LS( F_CHGMOD_EOL_LF ), _T("L") ); // 入力改行コード指定(LF)
+					m_cMenuDrawer.MyAppendMenu( hMenuPopUp, MF_BYPOSITION | MF_STRING, F_CHGMOD_EOL_CR,
+						LS( F_CHGMOD_EOL_CR ), _T("R") ); // 入力改行コード指定(CR)
+					// 拡張EOLが有効の時だけ表示
+					if( GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol ){
+						m_cMenuDrawer.MyAppendMenu( hMenuPopUp, MF_BYPOSITION | MF_STRING, F_CHGMOD_EOL_NEL,
+							LS(STR_EDITWND_MENU_NEL), _T(""), TRUE, -2 ); // 入力改行コード指定(NEL)
+						m_cMenuDrawer.MyAppendMenu( hMenuPopUp, MF_BYPOSITION | MF_STRING, F_CHGMOD_EOL_LS,
+							LS(STR_EDITWND_MENU_LS), _T(""), TRUE, -2 ); // 入力改行コード指定(LS)
+						m_cMenuDrawer.MyAppendMenu( hMenuPopUp, MF_BYPOSITION | MF_STRING, F_CHGMOD_EOL_PS,
+							LS(STR_EDITWND_MENU_PS), _T(""), TRUE, -2 ); // 入力改行コード指定(PS)
+					}
+					
+					//	mp->ptはステータスバー内部の座標なので，スクリーン座標への変換が必要
+					POINT	po = mp->pt;
+					::ClientToScreen( m_cStatusBar.GetStatusHwnd(), &po );
+					EFunctionCode nId = (EFunctionCode)::TrackPopupMenu(hMenuPopUp,
+						TPM_CENTERALIGN | TPM_BOTTOMALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
+						po.x, po.y,
+						0,
+						GetHwnd(),
+						NULL
+					);
+					::DestroyMenu( hMenuPopUp );
+					int nEOLCode = 0;
+					switch(nId){
+					case F_CHGMOD_EOL_CRLF: nEOLCode = EOL_CRLF; break;
+					case F_CHGMOD_EOL_CR: nEOLCode = EOL_CR; break;
+					case F_CHGMOD_EOL_LF: nEOLCode = EOL_LF; break;
+					case F_CHGMOD_EOL_NEL: nEOLCode = EOL_NEL; break;
+					case F_CHGMOD_EOL_PS: nEOLCode = EOL_PS; break;
+					case F_CHGMOD_EOL_LS: nEOLCode = EOL_LS; break;
+					default:
+						nEOLCode = -1;
+					}
+					if( nEOLCode != -1 ){
+						GetActiveView().GetCommander().HandleCommand( F_CHGMOD_EOL, true, nEOLCode, 0, 0, 0 );
+					}
+				}
 			}
+#endif  // cl_
 			else if( pnmh->code == NM_RCLICK ){
 				LPNMMOUSE mp = (LPNMMOUSE) lParam;
+#ifdef CL_MOD_STATUSBAR
+				if( mp->dwItemSpec == 7 ){	//	タブサイズ
+					GetDocument()->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
+					GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );
+				}
+#else
 				if( mp->dwItemSpec == 2 ){	//	入力改行モード
 					enum eEolExts {
 						F_CHGMOD_EOL_NEL = F_CHGMOD_EOL_CR + 1,
@@ -1566,46 +1658,6 @@ LRESULT CEditWnd::DispatchEvent(
 					}
 					if( nEOLCode != -1 ){
 						GetActiveView().GetCommander().HandleCommand( F_CHGMOD_EOL, true, nEOLCode, 0, 0, 0 );
-					}
-				}
-#ifdef CL_MOD_STATUSBAR
-				else if( mp->dwItemSpec == 7 ){	//	タブサイズ
-					GetDocument()->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
-					GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );
-				} else if( mp->dwItemSpec == 8 ){	//	タイプ
-					m_cMenuDrawer.ResetContents();
-					HMENU hMenuPopUp = ::CreatePopupMenu();
-					for (int nIdx = 0; nIdx < GetDllShareData().m_nTypesCount; ++nIdx) {
-						const STypeConfigMini* type;
-						CDocTypeManager().GetTypeConfigMini(CTypeConfig(nIdx), &type);
-						int nFlag = MF_BYPOSITION | MF_STRING;
-						if (::_tcscmp(type->m_szTypeName, GetActiveView().m_pTypeData->m_szTypeName) == 0) {
-							nFlag |= MF_CHECKED;
-						}
-						m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, nIdx + 1, type->m_szTypeName, _T(""), FALSE);
-					}
-					//	mp->ptはステータスバー内部の座標なので，スクリーン座標への変換が必要
-					POINT	po = mp->pt;
-					::ClientToScreen( m_cStatusBar.GetStatusHwnd(), &po );
-					int nId = (int)::TrackPopupMenu(
-						hMenuPopUp,
-						TPM_CENTERALIGN
-						| TPM_BOTTOMALIGN
-						| TPM_RETURNCMD
-						| TPM_LEFTBUTTON
-						,
-						po.x,
-						po.y,
-						0,
-						GetHwnd(),
-						NULL
-					);
-					::DestroyMenu( hMenuPopUp );
-					//TCHAR szMsg[128];
-					//auto_sprintf(szMsg, L"CEditWnd::DispatchEvent TypeChangePopup %d\n", nId);
-					//OutputDebugStringW(szMsg);
-					if (nId != 0) {
-						GetActiveView().GetCommander().HandleCommand( F_CHANGETYPE, true, (LPARAM)nId, 0, 0, 0 );
 					}
 				}
 #endif  // cl_
