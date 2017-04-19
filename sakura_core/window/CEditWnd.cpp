@@ -3314,11 +3314,11 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		// ※pszLabel[3]: ステータスバー文字コード表示領域は大きめにとっておく
 #ifdef CL_MOD_STATUSBAR
 		constexpr int	nStArrNum = 9;
-# ifdef SAKURA_LANG_EN_US_EXPORTS
-		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("CRLF(Win)"), _T("AAAAAAAAAAAA"), _T("UTF-16BE BOM"), _T("REC"), _T("INS"), _T("Tab 99 SP"), _T("123456789012") };
-# else
-		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("CRLF(Win)"), _T("AAAAAAAAAAAA"), _T("UTF-16BE BOM"), _T("REC"), _T("上書"), _T("Tab 99 SP"), _T("123456789012") };
-# endif
+	#ifdef SAKURA_LANG_EN_US_EXPORTS
+		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("Unix"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM"), _T("REC"), _T("INS"), _T("Tab: 99 SP"), _T("123456789012") };
+	#else
+		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("Unix"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM"), _T("REC"), _T("上書"), _T("Tab: 99 SP"), _T("123456789012") };
+	#endif
 #else
 		const TCHAR*	pszLabel[7] = { _T(""), _T("99999 行 9999 列"), _T("CRLF"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM付"), _T("REC"), _T("上書") };	//Oct. 30, 2000 JEPRO 千万行も要らん	文字コード枠を広げる 2008/6/21	Uchi
 		int			nStArrNum = 7;

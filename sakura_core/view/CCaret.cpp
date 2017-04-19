@@ -1057,7 +1057,7 @@ void CCaret::ShowCaretPosInfo()
 	else{
 #ifdef CL_MOD_STATUSBAR
 		TCHAR	szText_1[64];
-		auto_sprintf( szText_1, _T("  %d:%d"), ptCaret.y, ptCaret.x );
+		auto_sprintf( szText_1, _T("%d:%d"), ptCaret.y, ptCaret.x );
 
 		TCHAR	szText_6[16];
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
@@ -1079,7 +1079,7 @@ void CCaret::ShowCaretPosInfo()
 				::PathCompactPath(hdc, path, aWidth[0]);  // パスを縮める
 				::ReleaseDC(hwndStatusBar, hdc);
 			}
-			::StatusBar_SetText( hwndStatusBar, 0 | SBT_NOBORDERS, path );
+			::StatusBar_SetText( hwndStatusBar, 0 | 0,           path );
 		}
 		::StatusBar_SetText( hwndStatusBar, 1 | 0,             szText_1 );
 		//	May 12, 2000 genta
@@ -1094,9 +1094,9 @@ void CCaret::ShowCaretPosInfo()
 
 		TCHAR	szText_TabSize[16];
 		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
-		auto_sprintf( szText_TabSize, _T("Tab %d%s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T(" SP") : _T("") );
+		auto_sprintf( szText_TabSize, _T("Tab: %d %s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T("SP") : _T("") );
 		::StatusBar_SetText( hwndStatusBar, 7 | 0,             szText_TabSize );
-		::StatusBar_SetText( hwndStatusBar, 8 | SBT_NOBORDERS, m_pEditView->m_pTypeData->m_szTypeName );
+		::StatusBar_SetText( hwndStatusBar, 8 | 0,             m_pEditView->m_pTypeData->m_szTypeName );
 #else
 		TCHAR	szText_1[64];
 		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), ptCaret.y, ptCaret.x );	//Oct. 30, 2000 JEPRO 千万行も要らん

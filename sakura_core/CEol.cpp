@@ -59,9 +59,9 @@ struct SEolDefinition{
 static const SEolDefinition g_aEolTable[] = {
 	{ _T("改行無"),	L"",			"",			0 },
 #ifdef CL_MOD_STATUSBAR
-	{ _T("CRLF(Win)"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
-	{ _T("LF(Unix)"),		L"\x0a",		"\x0a",		1 },
-	{ _T("CR(Mac)"),		L"\x0d",		"\x0d",		1 },
+	{ _T("Win"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
+	{ _T("Unix"),		L"\x0a",		"\x0a",		1 },
+	{ _T("Mac"),		L"\x0d",		"\x0d",		1 },
 #else
 	{ _T("CRLF"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
 	{ _T("LF"),		L"\x0a",		"\x0a",		1 },
