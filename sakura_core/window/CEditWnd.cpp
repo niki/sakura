@@ -1240,7 +1240,11 @@ LRESULT CEditWnd::DispatchEvent(
 		idCtl = (UINT) wParam;				/* コントロールのID */
 		lpdis = (DRAWITEMSTRUCT*) lParam;	/* 項目描画情報 */
 		if( IDW_STATUSBAR == idCtl ){
+#ifdef CL_MOD_STATUSBAR
+			if( 8 == lpdis->itemID ){
+#else
 			if( 5 == lpdis->itemID ){ // 2003.08.26 Moca idがずれて作画されなかった
+#endif  // cl_
 				int	nColor;
 				if( m_pShareData->m_sFlags.m_bRecordingKeyMacro	/* キーボードマクロの記録中 */
 				 && m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == GetHwnd()	/* キーボードマクロを記録中のウィンドウ */
@@ -1250,16 +1254,29 @@ LRESULT CEditWnd::DispatchEvent(
 					nColor = COLOR_3DSHADOW;
 				}
 				::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
+#ifdef CL_MOD_STATUSBAR
+				if( COLOR_BTNTEXT == nColor ){
+					::SetTextColor( lpdis->hDC, RGB(255, 0, 0) );
+				}
+#endif  // cl_
 				::SetBkMode( lpdis->hDC, TRANSPARENT );
 				
 				// 2003.08.26 Moca 上下中央位置に作画
 				TEXTMETRIC tm;
 				::GetTextMetrics( lpdis->hDC, &tm );
 				int y = ( lpdis->rcItem.bottom - lpdis->rcItem.top - tm.tmHeight + 1 ) / 2 + lpdis->rcItem.top;
+#ifdef CL_MOD_STATUSBAR
+				if( COLOR_BTNTEXT == nColor ){
+					::TextOut( lpdis->hDC, lpdis->rcItem.left, y, _T("●"), _tcslen( _T("●") ) );
+				} else {
+					::TextOut( lpdis->hDC, lpdis->rcItem.left, y, _T("    "), _tcslen( _T("    ") ) );
+				}
+#else
 				::TextOut( lpdis->hDC, lpdis->rcItem.left, y, _T("REC"), _tcslen( _T("REC") ) );
 				if( COLOR_BTNTEXT == nColor ){
 					::TextOut( lpdis->hDC, lpdis->rcItem.left + 1, y, _T("REC"), _tcslen( _T("REC") ) );
 				}
+#endif  // cl_
 			}
 			return 0;
 		}else{
@@ -1466,47 +1483,67 @@ LRESULT CEditWnd::DispatchEvent(
 		if( m_cStatusBar.GetStatusHwnd() && pnmh->hwndFrom == m_cStatusBar.GetStatusHwnd() ){
 #ifdef CL_MOD_STATUSBAR
 			if( pnmh->code == NM_CLICK ){  // 左クリックに変更する
-#else
-			if( pnmh->code == NM_DBLCLK ){
-#endif  // cl_
 				LPNMMOUSE mp = (LPNMMOUSE) lParam;
-				if( mp->dwItemSpec == 6 ){	//	上書き/挿入
+				if( mp->dwItemSpec == 5/*6*/ ){	//	上書き/挿入
 					GetDocument()->HandleCommand( F_CHGMOD_INS );
 				}
-				else if( mp->dwItemSpec == 5 ){	//	マクロの記録開始・終了
+				else if( mp->dwItemSpec == 8/*5*/ ){	//	マクロの記録開始・終了
 					GetDocument()->HandleCommand( F_RECKEYMACRO );
 				}
 				else if( mp->dwItemSpec == 1 ){	//	桁位置→行番号ジャンプ
 					GetDocument()->HandleCommand( F_JUMP_DIALOG );
 				}
-				else if( mp->dwItemSpec == 3 ){	//	文字コード→各種コード
+				else if( mp->dwItemSpec == 2/*3*/ ){	//	文字コード→各種コード
 					ShowCodeBox( GetHwnd(), GetDocument() );
 				}
-				else if( mp->dwItemSpec == 4 ){	//	文字コードセット→文字コードセット指定
+				else if( mp->dwItemSpec == 3/*4*/ ){	//	文字コードセット→文字コードセット指定
 					GetDocument()->HandleCommand( F_CHG_CHARSET );
 				}
-#ifdef CL_MOD_STATUSBAR
-				else if( mp->dwItemSpec == 7 ){	//	タブサイズ
+				else if( mp->dwItemSpec == 6/*7*/ ){	//	タブサイズ
 					const CLayoutMgr *pLayoutMgr = &GetDocument()->m_cLayoutMgr;
-					int tab_size = pLayoutMgr->GetTabSpace();
-					bool change = false;
-					if (tab_size == 2) {
-						tab_size = 4;
-					} else if (tab_size == 4) {
-						tab_size = 8;
-					} else if (tab_size == 8) {
-						tab_size = 2;
+					m_cMenuDrawer.ResetContents();
+					HMENU hMenuPopUp = ::CreatePopupMenu();
+					int nFlag = MF_BYPOSITION | MF_STRING;
+					if (GetDocument()->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace) {
+						nFlag |= MF_CHECKED;
 					}
-					GetDocument()->m_pcEditWnd->ChangeLayoutParam(false, CLayoutInt(tab_size),
-					                                              pLayoutMgr->m_tsvInfo.m_nTsvMode,
-					                                              pLayoutMgr->GetMaxLineKetas());
-					// 2009.08.28 nasukoji	「折り返さない」選択時にTAB幅が変更されたらテキスト最大幅の再算出が必要
-					if( GetDocument()->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP ){
-						// 最大幅の再算出時に各行のレイアウト長の計算も行う
-						GetDocument()->m_cLayoutMgr.CalculateTextWidth();
+					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, 1, _T("Indent Using Spaces"), _T(""), FALSE);
+					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_SEPARATOR, 2, _T(""), _T(""), FALSE);
+					for (int nIdx = 0; nIdx < 8; ++nIdx) {
+						nFlag = MF_BYPOSITION | MF_STRING;
+						if (nIdx + 1 == pLayoutMgr->GetTabSpace()) {
+							nFlag |= MF_CHECKED;
+						}
+						TCHAR szTmp[128];
+						auto_sprintf(szTmp, L"Tab Width: %d", nIdx + 1);
+						m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, 3 + nIdx, szTmp, _T(""), FALSE);
 					}
-					GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );		// TAB幅が変わったので再描画が必要
-				} else if( mp->dwItemSpec == 8 ){	//	タイプ
+					//	mp->ptはステータスバー内部の座標なので，スクリーン座標への変換が必要
+					POINT	po = mp->pt;
+					::ClientToScreen( m_cStatusBar.GetStatusHwnd(), &po );
+					int nId = (int)::TrackPopupMenu(hMenuPopUp,
+						TPM_CENTERALIGN | TPM_BOTTOMALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
+						po.x, po.y,
+						0,
+						GetHwnd(),
+						NULL
+					);
+					::DestroyMenu( hMenuPopUp );
+					if (nId == 1) {
+						GetDocument()->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
+						GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );
+					} else if (nId >= 3) {
+						GetDocument()->m_pcEditWnd->ChangeLayoutParam(false, CLayoutInt(nId - 3 + 1),
+						                                              pLayoutMgr->m_tsvInfo.m_nTsvMode,
+						                                              pLayoutMgr->GetMaxLineKetas());
+						// 2009.08.28 nasukoji	「折り返さない」選択時にTAB幅が変更されたらテキスト最大幅の再算出が必要
+						if( GetDocument()->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP ){
+							// 最大幅の再算出時に各行のレイアウト長の計算も行う
+							GetDocument()->m_cLayoutMgr.CalculateTextWidth();
+						}
+						GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );		// TAB幅が変わったので再描画が必要
+					}
+				} else if( mp->dwItemSpec == 7/*8*/ ){	//	タイプ
 					m_cMenuDrawer.ResetContents();
 					HMENU hMenuPopUp = ::CreatePopupMenu();
 					int type_count = GetDllShareData().m_nTypesCount;
@@ -1544,7 +1581,7 @@ LRESULT CEditWnd::DispatchEvent(
 						GetActiveView().GetCommander().HandleCommand( F_CHANGETYPE, true, (LPARAM)nId, 0, 0, 0 );
 					}
 				}
-				else if( mp->dwItemSpec == 2 ){	//	入力改行モード
+				else if( mp->dwItemSpec == 4/*2*/ ){	//	入力改行モード
 					enum eEolExts {
 						F_CHGMOD_EOL_NEL = F_CHGMOD_EOL_CR + 1,
 						F_CHGMOD_EOL_PS,
@@ -1595,15 +1632,26 @@ LRESULT CEditWnd::DispatchEvent(
 					}
 				}
 			}
-#endif  // cl_
+#else
+			if( pnmh->code == NM_DBLCLK ){
+				LPNMMOUSE mp = (LPNMMOUSE) lParam;
+				if( mp->dwItemSpec == 6 ){	//	上書き/挿入
+					GetDocument()->HandleCommand( F_CHGMOD_INS );
+				}
+				else if( mp->dwItemSpec == 5 ){	//	マクロの記録開始・終了
+					GetDocument()->HandleCommand( F_RECKEYMACRO );
+				}
+				else if( mp->dwItemSpec == 1 ){	//	桁位置→行番号ジャンプ
+					GetDocument()->HandleCommand( F_JUMP_DIALOG );
+				}
+				else if( mp->dwItemSpec == 3 ){	//	文字コード→各種コード
+					ShowCodeBox( GetHwnd(), GetDocument() );
+				}
+				else if( mp->dwItemSpec == 4 ){	//	文字コードセット→文字コードセット指定
+					GetDocument()->HandleCommand( F_CHG_CHARSET );
+				}
 			else if( pnmh->code == NM_RCLICK ){
 				LPNMMOUSE mp = (LPNMMOUSE) lParam;
-#ifdef CL_MOD_STATUSBAR
-				if( mp->dwItemSpec == 7 ){	//	タブサイズ
-					GetDocument()->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
-					GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );
-				}
-#else
 				if( mp->dwItemSpec == 2 ){	//	入力改行モード
 					enum eEolExts {
 						F_CHGMOD_EOL_NEL = F_CHGMOD_EOL_CR + 1,
@@ -1660,8 +1708,8 @@ LRESULT CEditWnd::DispatchEvent(
 						GetActiveView().GetCommander().HandleCommand( F_CHGMOD_EOL, true, nEOLCode, 0, 0, 0 );
 					}
 				}
-#endif  // cl_
 			}
+#endif  // cl_
 			return 0L;
 		}
 		//	To Here Feb. 15, 2004 genta 
@@ -3315,9 +3363,9 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 #ifdef CL_MOD_STATUSBAR
 		constexpr int	nStArrNum = 9;
 	#ifdef SAKURA_LANG_EN_US_EXPORTS
-		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("Unix"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM"), _T("REC"), _T("INS"), _T("Tab: 99 SP"), _T("123456789012") };
+		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM"), _T("Unix"), _T("INS"), _T("Spaces: 9"), _T("123456789012"), _T("●") };
 	#else
-		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("Unix"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM"), _T("REC"), _T("上書"), _T("Tab: 99 SP"), _T("123456789012") };
+		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM"), _T("Unix"), _T("上書"), _T("Spaces: 9"), _T("123456789012"), _T("●") };
 	#endif
 #else
 		const TCHAR*	pszLabel[7] = { _T(""), _T("99999 行 9999 列"), _T("CRLF"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM付"), _T("REC"), _T("上書") };	//Oct. 30, 2000 JEPRO 千万行も要らん	文字コード枠を広げる 2008/6/21	Uchi

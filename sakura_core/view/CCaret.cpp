@@ -1081,22 +1081,22 @@ void CCaret::ShowCaretPosInfo()
 			}
 			::StatusBar_SetText( hwndStatusBar, 0 | 0,           path );
 		}
-		::StatusBar_SetText( hwndStatusBar, 1 | 0,             szText_1 );
-		//	May 12, 2000 genta
-		//	改行コードの表示を追加．後ろの番号を1つずつずらす
-		//	From Here
-		::StatusBar_SetText( hwndStatusBar, 2 | 0,             szEolMode );
-		//	To Here
-		::StatusBar_SetText( hwndStatusBar, 3 | 0,             szCaretChar );
-		::StatusBar_SetText( hwndStatusBar, 4 | 0,             pszCodeName );
-		::StatusBar_SetText( hwndStatusBar, 5 | SBT_OWNERDRAW, _T("") );
-		::StatusBar_SetText( hwndStatusBar, 6 | 0,             szText_6 );
+		::StatusBar_SetText( hwndStatusBar, 1 | 0,             szText_1 );  //	桁位置→行番号ジャンプ
+		::StatusBar_SetText( hwndStatusBar, 2/*3*/ | 0,        szCaretChar );  //	文字コード→各種コード
+		::StatusBar_SetText( hwndStatusBar, 3/*4*/ | 0,        pszCodeName );  //	文字コードセット→文字コードセット指定
+		::StatusBar_SetText( hwndStatusBar, 4/*2*/ | 0,        szEolMode );
+		::StatusBar_SetText( hwndStatusBar, 8/*5*/ | SBT_OWNERDRAW, _T("") );  //	マクロの記録開始・終了
+		::StatusBar_SetText( hwndStatusBar, 5/*6*/ | 0,             szText_6 );  //	上書き/挿入
 
 		TCHAR	szText_TabSize[16];
 		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
-		auto_sprintf( szText_TabSize, _T("Tab: %d %s"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace(), ins_space ? _T("SP") : _T("") );
-		::StatusBar_SetText( hwndStatusBar, 7 | 0,             szText_TabSize );
-		::StatusBar_SetText( hwndStatusBar, 8 | 0,             m_pEditView->m_pTypeData->m_szTypeName );
+		if (ins_space) {
+			auto_sprintf( szText_TabSize, _T("Spaces: %d"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace() );
+		} else {
+			auto_sprintf( szText_TabSize, _T("Tab: %d"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace() );
+		}
+		::StatusBar_SetText( hwndStatusBar, 6/*7*/ | 0,             szText_TabSize );  //	タブサイズ
+		::StatusBar_SetText( hwndStatusBar, 7/*8*/ | 0,             m_pEditView->m_pTypeData->m_szTypeName );  //	タイプ
 #else
 		TCHAR	szText_1[64];
 		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), ptCaret.y, ptCaret.x );	//Oct. 30, 2000 JEPRO 千万行も要らん
