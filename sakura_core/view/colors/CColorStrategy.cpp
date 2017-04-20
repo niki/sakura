@@ -415,7 +415,11 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("RAP"), 0},
 	{_T("VER"), 0},  // 2005.11.08 Moca 指定桁縦線
 #endif  // cl_
+#ifdef CL_MOD_WS_COLOR
+	{_T("EOF"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
+#else
 	{_T("EOF"), 0},
+#endif  // cl_
 	{_T("NUM"), 0},	//@@@ 2001.02.17 by MIK 半角数値の強調
 	{_T("BRC"), 0},	//対括弧	// 02/09/18 ai Add
 #ifdef CL_MOD_SELAREA

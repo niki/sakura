@@ -232,6 +232,36 @@ void _DispEOF(
 	CTypeSupport cTextType(pcView,COLORIDX_TEXT);
 	bool bTrans = pcView->IsBkBitmap() && cEofType.GetBackColor() == cTextType.GetBackColor();
 
+#ifdef CL_MOD_WS_COLOR
+	COLORREF crText = cTextType.GetTextColor();
+	COLORREF crBack = cTextType.GetBackColor();
+	//! 色をマージする
+	//! @param colText テキスト色
+	//! @param colBase ベースとなる色
+	//! @return 合成後の色
+	auto fnMeargeColor = [](COLORREF colText, COLORREF colBase, int blendPer) {
+		COLORREF c1 = colText;
+		COLORREF c2 = colBase;
+		float blendPerN = 1.0f / 100.0f * blendPer;
+		const float r1 = (float)GetRValue(c1);
+		const float g1 = (float)GetGValue(c1);
+		const float b1 = (float)GetBValue(c1);
+		const float r2 = (float)GetRValue(c2);
+		const float g2 = (float)GetGValue(c2);
+		const float b2 = (float)GetBValue(c2);
+		float r = r2 + (r1 - r2) * blendPerN;
+		float g = g2 + (g1 - g2) * blendPerN;
+		float b = b2 + (b1 - b2) * blendPerN;
+		return RGB( (BYTE)r, (BYTE)g, (BYTE)b );
+	};
+	
+	static int nBlendPer = RegKey(CL_REGKEY).get(_T("WhiteSpaceBlendPer"), CL_MOD_WS_BLEND_PER);
+	// 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
+	COLORREF col1 = cTextType.GetTextColor();
+	COLORREF col2 = crBack;	// 合成済みの色を使用する
+	crText = fnMeargeColor(col1, col2, nBlendPer);
+#endif  // cl_
+
 	//必要なインターフェースを取得
 	const CTextMetrics* pMetrics=&pcView->GetTextMetrics();
 	const CTextArea* pArea=&pcView->GetTextArea();
@@ -245,12 +275,20 @@ void _DispEOF(
 	if(pArea->GenerateClipRect(&rcClip,*pDispPos,nEofLen))
 	{
 		//色設定
+#ifdef CL_MOD_WS_COLOR
+		gr.PushTextForeColor(crText);
+		gr.PushTextBackColor(crBack);
+#else
 		cEofType.SetGraphicsState_WhileThisObj(gr);
+#endif  // cl_
 
 		//描画
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
+#ifdef CL_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace / 2) +
+#endif  // cl_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClip,
@@ -258,6 +296,11 @@ void _DispEOF(
 			nEofLen,
 			pMetrics->GetDxArray_AllHankaku()
 		);
+		
+#ifdef CL_MOD_WS_COLOR
+		gr.PopTextForeColor();
+		gr.PopTextBackColor();
+#endif  // cl_
 	}
 
 	//描画位置を進める
