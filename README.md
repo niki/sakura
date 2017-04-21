@@ -1,21 +1,22 @@
-サクラエディタ 修正版
-=====================
+サクラエディタ 修正版  
 
-Introduction  
-- 2.2.0.1をベースに[ココ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)からマージ. ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)  
-- いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ  
-- プロポーショナルフォント関連はスルー (個人的に使用していないため)  
-- 挙動の制御にレジストリを使用しています (読み込み/書き込み)  
-
-- 動作環境  
-  \- Windows7以上 (Windows10 RS1,RS2で動作確認をしています)  
-- ビルド環境  
-  \- MSVC2017でビルド  
-  \- TCMallocを使用  
-  \- Boostを使用. <\/extlib> へ <\/boost> をコピーしてください  
+**Introduction**  
+日々使っていて「こうだったらいいな」を入れ込んでいます.  
+また、いろんなものを試す場としても使うつもりです.  
+MacTypeを使ったときにひどく描画崩れするのがとてもストレスです.  
+いろいろ試してマシにはなりましたがまだストレスです（＝＝.  
 
 
-Changed  
+**Build environment**  
++ 2.2.0.1をベースに[ココ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)からマージ. ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)  
++ いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ  
++ MSVC2017でビルド  
++ TCMallocを使用  
++ Boostを使用. <\/extlib> へ <\/boost> をコピーしてください  
++ 挙動の制御にレジストリを使用しています  
+
+
+**Changed**  
 + いくつかの設定はレジストリで変更できます  
   `[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` を使用します  
   エントリが存在しない場合は作成してください  
@@ -74,7 +75,7 @@ Changed
   - ダイレクトジャンプ一覧の表示カラムを選別  
 
 
-Bugfix  
+**Bugfix**  
 + カーソル移動時に描画が崩れる問題の仮対応  
   キーリピートの時間が速かったり、MacType使ってると負荷がかかってるみたいで描画が崩れたり行番号と本文の描画が同期してなかったりしてます.  
   あんまりいい修正方法ではありませんが受けるストレスのほうが大事なので気にせず修正しました.  
@@ -90,7 +91,7 @@ Bugfix
   行番号非表示時のブックマーク表示がなかったのでブックマークのカラー設定を無効にしている時と同じように表示する
 
 
-Registry  
+**Registry**  
 + `[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` が存在しない場合は作成してください.<br>
 
 + CaretType (dword)  
