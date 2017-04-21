@@ -5,6 +5,9 @@
 #include "util/string_ex2.h"
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
+#ifdef CL_MOD_NUMERIC_COLOR
+#include <regex>
+#endif  // cl_
 
 static int IsNumber( const CStringRef& cStr, int offset );/* 数値ならその長さを返す */	//@@@ 2001.02.17 by MIK
 
@@ -69,6 +72,54 @@ bool CColor_Numeric::EndColor(const CStringRef& cStr, int nPos)
  */
 static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*, int length*/)
 {
+#ifdef CL_MOD_NUMERIC_COLOR
+	register const wchar_t *p = cStr.GetPtr() + offset;
+	register const wchar_t *q = p + cStr.GetLength();
+
+	int i = 0;
+	std::wcmatch match;
+
+	static const wchar_t *re1_trig = L"e";
+	static const wchar_t *re1[] = {
+			L"^[0-9]+\\.[0-9]*([eE][-+][0-9]+)([fF]?)",  // 1e-2
+			L"^(\\.[0-9]+)([eE][-+][0-9]+)([fF]?)",      // .12e+2
+	};
+	static const wchar_t *re2_trig = L"\\.";
+	static const wchar_t *re2[] = {
+			L"^([0-9]+\\.[0-9]*)([fF]?)",                // 1.0f 1.f 1.
+			L"^(\\.[0-9]+)([fF]?)",                      // .1f .1
+	};
+	static const wchar_t *re3[] = {
+			L"^0x[0-9a-fA-F]+",                          // 0x123
+			L"^[0-9]+([uUlL]{0,2})",                     // 123
+	};
+
+	if (std::regex_search(p, q, std::wregex(re1_trig))) {
+		for (auto && elem : re1) {
+			if (std::regex_search(p, q, match, std::wregex(elem))) {
+				i = std::max(match.length(0), i);
+			}
+		}
+		if (i > 0) return i;
+	}
+	
+	if (std::regex_search(p, q, std::wregex(re2_trig))) {
+		for (auto && elem : re2) {
+			if (std::regex_search(p, q, match, std::wregex(elem))) {
+				i = std::max(match.length(0), i);
+			}
+		}
+		if (i > 0) return i;
+	}
+	
+	for (auto && elem : re3) {
+		if (std::regex_search(p, q, match, std::wregex(elem))) {
+			i = std::max(match.length(0), i);
+		}
+	}
+
+	return i;
+#else
 	register const wchar_t* p;
 	register const wchar_t* q;
 	register int i = 0;
@@ -583,5 +634,6 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 
 	/* 数値ではない */
 	return 0;
+#endif  // cl_
 }
 //@@@ 2001.11.07 End by MIK
