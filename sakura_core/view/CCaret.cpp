@@ -1057,7 +1057,7 @@ void CCaret::ShowCaretPosInfo()
 	else{
 #ifdef CL_MOD_STATUSBAR
 		TCHAR	szText_1[64];
-		auto_sprintf( szText_1, _T("%d:%d"), ptCaret.y, ptCaret.x );
+		auto_sprintf( szText_1, _T("%5d:%d"), ptCaret.y, ptCaret.x );
 
 		TCHAR	szText_6[16];
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
