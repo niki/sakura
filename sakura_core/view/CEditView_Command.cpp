@@ -54,6 +54,10 @@ bool CEditView::TagJumpSub(
 	bool*			pbJumpToSelf	//!< [out] オプションNULL可。自分にジャンプしたか
 )
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
+
 	HWND	hwndOwner;
 	POINT	poCaret;
 	// 2004/06/21 novice タグジャンプ機能追加

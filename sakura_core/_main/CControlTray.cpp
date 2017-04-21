@@ -1169,6 +1169,10 @@ bool CControlTray::OpenNewEditor(
 	bool				bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
+
 	/* 共有データ構造体のアドレスを返す */
 	DLLSHAREDATA*	pShareData = &GetDllShareData();
 
@@ -1388,6 +1392,10 @@ bool CControlTray::OpenNewEditor2(
 	bool			bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
+
 	DLLSHAREDATA*	pShareData;
 
 	/* 共有データ構造体のアドレスを返す */

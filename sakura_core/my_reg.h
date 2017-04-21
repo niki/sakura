@@ -105,25 +105,20 @@ inline std::tstring regkey(const std::tstring &prof, const std::tstring &section
 //------------------------------------------------------------------
 class RegKey {
  public:
-  //RegKey() : hKey(0), auto_delete_(false) {}
-  explicit RegKey(const std::tstring &key_name, bool write_ok = false, bool auto_delete = false)
-      : hKey(0), auto_delete_(false), key_name_(key_name) {
+  //RegKey() : hKey(0) {}
+  explicit RegKey(const std::tstring &key_name, bool write_ok = false)
+      : hKey(0), dwDisposition_((DWORD)-1), key_name_(key_name) {
     if (write_ok) {
-      DWORD dwDisposition;  // 新規作成:REG_CREATED_NEW_KEY
-                            // 既存:REG_OPENED_EXISTING_KEY
+      DWORD dwDisposition;
       ::RegCreateKeyEx(HKEY_CURRENT_USER, key_name.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE,
                        KEY_ALL_ACCESS, NULL, &hKey, &dwDisposition);
-
-      if (hKey != 0) setAutoDelete(auto_delete);  // Wモードのときのみ有効
+      dwDisposition_ = dwDisposition;
     } else {
       ::RegOpenKeyEx(HKEY_CURRENT_USER, key_name.c_str(), 0, KEY_ALL_ACCESS, &hKey);
     }
   }
-  ~RegKey() {
+  virtual ~RegKey() {
     if (hKey != 0) {
-      if (auto_delete_) {
-        deleteKey(key_name_);
-      }
       ::RegCloseKey(hKey);
     }
   }
@@ -131,8 +126,6 @@ class RegKey {
   operator HKEY &() { return hKey; }
   HKEY *as_ptr() { return &hKey; }
   bool valid() const { return hKey != 0; }
-
-  void setAutoDelete(bool e) { auto_delete_ = e; }
 
   //! エントリーの種類を取得
   bool getType(const std::tstring &entry, DWORD *pdwType, DWORD *pdwByte) const {
@@ -209,9 +202,9 @@ class RegKey {
     return ::RegDeleteValue(hKey, entry.c_str()) == ERROR_SUCCESS;
   }
 
- private:
+ protected:
   HKEY hKey;
-  bool auto_delete_;
+  DWORD dwDisposition_;  // 新規作成: REG_CREATED_NEW_KEY, 既存: REG_OPENED_EXISTING_KEY
   const std::tstring &key_name_;
 };
 
@@ -221,10 +214,15 @@ class RegKeyRW : public RegKey {
   explicit RegKeyRW(const std::tstring &key_name) : RegKey(key_name, true) {}
 };
 
-//! スコープ内のみで有効なレジストリ
+//! スコープ内のみで有効なレジストリ (スコープから外れるとキーは削除されます)
 class ScopedRegKey : public RegKey {
  public:
-  explicit ScopedRegKey(const std::tstring &key_name) : RegKey(key_name, true, true) {}
+  explicit ScopedRegKey(const std::tstring &key_name) : RegKey(key_name, true) {}
+  ~ScopedRegKey() {
+    if (hKey != 0 && dwDisposition_ == REG_CREATED_NEW_KEY) {  // 作成元のみ削除
+      deleteKey(key_name_);
+    }
+  }
 };
 
 //------------------------------------------------------------------

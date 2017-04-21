@@ -2076,6 +2076,10 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case MYWM_SETCARETPOS:	/* カーソル位置変更通知 */
 		{
+#ifdef CL_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // cl_
+
 			//	2006.07.09 genta LPARAMに新たな意味を追加
 			//	bit 0 (MASK 1): (bit 1==0のとき) 0/選択クリア, 1/選択開始・変更
 			//	bit 1 (MASK 2): 0: bit 0の設定に従う．1:現在の選択ロックs状態を継続
@@ -2111,9 +2115,6 @@ LRESULT CEditWnd::DispatchEvent(
 					if( pTmpDocLine->GetLengthWithoutEOL() < ppoCaret->x ) ptCaretPos.x--;
 				}
 			}
-#ifdef CL_MOD_CENTERING_CURSOR_JUMP
-			ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // cl_
 			//	2006.07.09 genta 選択範囲を考慮して移動
 			//	MoveCursorの位置調整機能があるので，最終行以降への
 			//	移動指示の調整もMoveCursorにまかせる
