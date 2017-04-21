@@ -1,8 +1,7 @@
 サクラエディタ 修正版
 =====================
 
-Introduction
-------------
+Introduction  
 - 2.2.0.1をベースに[ココ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)からマージ. ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)  
 - いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ  
 - プロポーショナルフォント関連はスルー (個人的に使用していないため)  
@@ -16,11 +15,10 @@ Introduction
   \- Boostを使用. <\/extlib> へ <\/boost> をコピーしてください  
 
 
-Changed
--------
-いくつかの設定はレジストリで変更できます.  
-`[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` を使用します.  
-エントリが存在しない場合は作成してください.  
+Changed  
++ いくつかの設定はレジストリで変更できます  
+  `[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` を使用します  
+  エントリが存在しない場合は作成してください  
 
 + ファイル系
   - 履歴 (検索, 置換, Grep)の値を少なめに変更  
@@ -76,50 +74,48 @@ Changed
   - ダイレクトジャンプ一覧の表示カラムを選別  
 
 
-Bugfix
-------
-- カーソル移動時に描画が崩れる問題の仮対応  
+Bugfix  
++ カーソル移動時に描画が崩れる問題の仮対応  
   キーリピートの時間が速かったり、MacType使ってると負荷がかかってるみたいで描画が崩れたり行番号と本文の描画が同期してなかったりしてます.  
   あんまりいい修正方法ではありませんが受けるストレスのほうが大事なので気にせず修正しました.  
   この修正がこの改造版のすべてかと思います
 
-- 検索マーク切り替え, インクリメンタルサーチの際に検索ダイアログの「正規表現」が影響を受けないように  
++ 検索マーク切り替え, インクリメンタルサーチの際に検索ダイアログの「正規表現」が影響を受けないように  
   常時、正規表現で検索しているとコレ結構ストレスたまります  
 
-- 行番号縦線を行番号の色で描画する  
++ 行番号縦線を行番号の色で描画する  
   行番号縦線はその行に変更があった場合, その行だけ変更色で縦線が引かれてしまうので区切りの線としては微妙だったため
 
-- 行番号が非表示でブックマークが表示のときブックマークは線で描画する  
++ 行番号が非表示でブックマークが表示のときブックマークは線で描画する  
   行番号非表示時のブックマーク表示がなかったのでブックマークのカラー設定を無効にしている時と同じように表示する
 
 
-Registry
---------
-`[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` が存在しない場合は作成してください.<br>
+Registry  
++ `[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` が存在しない場合は作成してください.<br>
 
-- CaretType (dword)  
++ CaretType (dword)  
   キャレットのサイズを  
   `0`: 変更なし  
   `1-10`: 指定サイズ (default:2)  
   `11`: カーソル位置の文字が 1バイトコードの時は 1px, 2バイトコードの時は 2px  
   `12`: 半角入力の時は1px、全角入力の時は2px  
 
-- CenteringCursorJump (dword)  
++ CenteringCursorJump (dword)  
   カーソル移動のセンタリングを  
   `0`: しない  
   `1`: する (default)  
 
-- DoubleClickClosesTab (dword)  
++ DoubleClickClosesTab (dword)  
   タブをダブルクリックで  
   `0`: 閉じない  
   `1`: 閉じる (default)  
 
-- NoOutlineDockSystemColor (dword)  
++ NoOutlineDockSystemColor (dword)  
   アウトライン解析ダイアログをドッキングしたときの背景カラーに  
   `0`: システムカラーを使う (default)  
   `1`: システムカラーを使わない  
 
-- PlaceDialogWindowLeft (dword)  
++ PlaceDialogWindowLeft (dword)  
   ダイアログの横表示位置を変更  
   次の場合は編集ウィンドウの横半分 (1/2)の位置に表示される  
 ```
@@ -129,7 +125,7 @@ Registry
     +--- 分母  
 ```
 
-- PlaceDialogWindowTop (dword)  
++ PlaceDialogWindowTop (dword)  
   ダイアログの縦表示位置を変更  
   次の場合は編集ウィンドウの 4/7の位置に表示される  
 ```
@@ -139,63 +135,63 @@ Registry
     +--- 分母  
 ```
 
-- DeleteHistoryNotExistAtStartup (dword)  
++ DeleteHistoryNotExistAtStartup (dword)  
   起動時に存在しない履歴を削除  
   `0`: 削除しない  
   `1`: 削除する (default)  
 
-- RecentSearchKeyMax (dword)  
++ RecentSearchKeyMax (dword)  
   検索履歴数を変更  
   `16`: (default)  
 
-- RecentGrepFileMax (dword)  
++ RecentGrepFileMax (dword)  
   Grep履歴数を変更  
   `8`: (default)  
 
-- RecentGrepFolderMax (dword)  
++ RecentGrepFolderMax (dword)  
   Grepフォルダ履歴数を変更  
   `16`: (default)  
 
-- RecentReplaceKeyMax (dword)  
++ RecentReplaceKeyMax (dword)  
   置換履歴数を変更  
   `16`: (default)  
 
-- RegexpAutoQuote (dword)  
++ RegexpAutoQuote (dword)  
   検索・置換時に「正規表現」を使用する場合、文字列を  
   `0`: クォートしない  
   `1`: クォートする (default)  
 
-- ReplaceTextToText (dword)  
++ ReplaceTextToText (dword)  
   置換時に「置換前」テキストを「置換後」に  
   `0`: 設定しない  
   `1`: 設定する (default)  
 
-- SelectAreaBlendPer (dword)  
++ SelectAreaBlendPer (dword)  
   選択範囲カラーのブレンド率を設定  
   `1-8bit`: 背景色ブレンド率 [0-100] (default:100)  
   `9-16bit`: テキスト色ブレンド率 [0-100] (default:0)  
 
-- WhiteSpaceBlendPer (dword)  
++ WhiteSpaceBlendPer (dword)  
   空白タブのテキストとのブレンド率を設定  
   `1-8bit`: ブレンド率 [0-100] (default:30)  
 
-- TabCaptionModifiedColor (dword)  
++ TabCaptionModifiedColor (dword)  
   変更時のタブ名のテキストカラーを設定, 形式は 0x00BBGGRR  
   `0x00d70000`: (default)  
 
-- TabCaptionRecMacroColor (dword)  
++ TabCaptionRecMacroColor (dword)  
   キーマクロ記録時のタブ名のテキストカラーを設定, 形式は 0x00BBGGRR  
   `0x000000d8`: (default)  
 
-- WinListPopupTop (dword)  
++ WinListPopupTop (dword)  
   ウィンドウ一覧ポップアップの表示位置を変更 (左上基準)  
   `0xffffffff`: センタリング (default)  
 
-- WinListPopupLeft (dword)  
++ WinListPopupLeft (dword)  
   ウィンドウ一覧ポップアップの表示位置を変更 (左上基準)  
   `0xffffffff`: センタリング (default)  
 
-- WinListPopupWidth (dword)  
++ WinListPopupWidth (dword)  
   ウィンドウ一覧ポップアップの表示幅を変更 (タブアイコン表示のときのみ有効)  
   `400`: (default)  
 
