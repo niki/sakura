@@ -159,7 +159,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|Win32'">
     <ClCompile>
-      <Optimization>MinSpace</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>..\sakura_core;..\extlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -172,6 +172,7 @@
       <ForcedIncludeFiles>my.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <AdditionalOptions>/cgthreads8</AdditionalOptions>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;..\extlib\gperftools-2.5\Release\libtcmalloc_minimal.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -196,7 +197,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|x64'">
     <ClCompile>
-      <Optimization>MinSpace</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>..\sakura_core;..\extlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -209,6 +210,7 @@
       <ForcedIncludeFiles>my.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <AdditionalOptions>/cgthreads8</AdditionalOptions>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
