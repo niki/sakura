@@ -27,10 +27,13 @@ void CFigure_CtrlCode::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* p
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
+#ifdef CL_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace / 2) +
+#endif  // cl_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rc,
-			L"・",
+			L"･",
 			1,
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
@@ -67,6 +70,9 @@ void CFigure_HanBinary::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* 
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
+#ifdef CL_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace / 2) +
+#endif  // cl_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rc,
@@ -107,6 +113,9 @@ void CFigure_ZenBinary::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* 
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
+#ifdef CL_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace / 2) +
+#endif  // cl_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rc,

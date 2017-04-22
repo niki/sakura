@@ -145,28 +145,61 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 #ifdef CL_MOD_SELAREA
 	blendColor = pInfo->GetCurrentColor() == COLORIDX_SELECT;  // 選択色
 #endif  // cl_
+#ifdef CL_MOD_WS_COLOR
+	EColorIndexType colorIdx = GetColorIdx();
+	bool bIgnore = false;
+	bIgnore |= (colorIdx == COLORIDX_CTRLCODE);
+	//bIgnore |= (colorIdx == COLORIDX_COMMENT);
+	//bIgnore |= (colorIdx == COLORIDX_BLOCK1);
+	//bIgnore |= (colorIdx == COLORIDX_BLOCK2);
+	//bIgnore |= (colorIdx == COLORIDX_TEXT);
+	//bIgnore |= (colorIdx == COLORIDX_SSTRING);
+	//bIgnore |= (colorIdx == COLORIDX_WSTRING);
+#endif  // cl_
 	if( blendColor ){
 #ifdef CL_MOD_WS_COLOR
-		CTypeSupport& cText = cCurrentType2;
-		CTypeSupport& cBack = cCurrentType3;
+		if (!bIgnore) {
+			CTypeSupport& cText = cCurrentType2;
+			CTypeSupport& cBack = cCurrentType3;
+			crText = pcView->GetTextColorByColorInfo2(cCurrentType.GetColorInfo(), cText.GetColorInfo());
+			crBack = pcView->GetBackColorByColorInfo2(cCurrentType.GetColorInfo(), cBack.GetColorInfo());
+			bBold = cCurrentType2.IsBoldFont();
+		} else {
+			CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType2 : cSpaceType;
+			CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType3 : cSpaceType;
+			crText = pcView->GetTextColorByColorInfo2(cCurrentType.GetColorInfo(), cText.GetColorInfo());
+			crBack = pcView->GetBackColorByColorInfo2(cCurrentType.GetColorInfo(), cBack.GetColorInfo());
+			bBold = cCurrentType2.IsBoldFont();
+		}
 #else
 		CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType2 : cSpaceType;
 		CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType3 : cSpaceType;
-#endif  // cl_
 		crText = pcView->GetTextColorByColorInfo2(cCurrentType.GetColorInfo(), cText.GetColorInfo());
 		crBack = pcView->GetBackColorByColorInfo2(cCurrentType.GetColorInfo(), cBack.GetColorInfo());
 		bBold = cCurrentType2.IsBoldFont();
+#endif  // cl_
 	}else{
 #ifdef CL_MOD_WS_COLOR
-		CTypeSupport& cText = cCurrentType;
-		CTypeSupport& cBack = cCurrentType1;
+		if (!bIgnore) {
+			CTypeSupport& cText = cCurrentType;
+			CTypeSupport& cBack = cCurrentType1;
+			crText = cText.GetTextColor();
+			crBack = cBack.GetBackColor();
+			bBold = cCurrentType.IsBoldFont();
+		} else {
+			CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType : cSpaceType;
+			CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType1 : cSpaceType;
+			crText = cText.GetTextColor();
+			crBack = cBack.GetBackColor();
+			bBold = cCurrentType.IsBoldFont();
+		}
 #else
 		CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType : cSpaceType;
 		CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType1 : cSpaceType;
-#endif  // cl_
 		crText = cText.GetTextColor();
 		crBack = cBack.GetBackColor();
 		bBold = cCurrentType.IsBoldFont();
+#endif  // cl_
 	}
 #ifdef CL_MOD_WS_COLOR
 	//! 色をマージする
@@ -189,21 +222,12 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 		return RGB( (BYTE)r, (BYTE)g, (BYTE)b );
 	};
 	
-	EColorIndexType colorIdx = GetColorIdx();
-	bool bIgnore = false;
-	bIgnore |= (colorIdx == COLORIDX_CTRLCODE);
-	//bIgnore |= (colorIdx == COLORIDX_COMMENT);
-	//bIgnore |= (colorIdx == COLORIDX_BLOCK1);
-	//bIgnore |= (colorIdx == COLORIDX_BLOCK2);
-	//bIgnore |= (colorIdx == COLORIDX_TEXT);
-	//bIgnore |= (colorIdx == COLORIDX_SSTRING);
-	//bIgnore |= (colorIdx == COLORIDX_WSTRING);
 	if (!bIgnore) {
-	  static int nBlendPer = RegKey(CL_REGKEY).get(_T("WhiteSpaceBlendPer"), CL_MOD_WS_BLEND_PER);
-    // 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
-    COLORREF col1 = cCurrentType2.GetTextColor();
-    COLORREF col2 = crBack;	// 合成済みの色を使用する
-    crText = fnMeargeColor(col1, col2, nBlendPer);
+		static int nBlendPer = RegKey(CL_REGKEY).get(_T("WhiteSpaceBlendPer"), CL_MOD_WS_BLEND_PER);
+		// 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
+		COLORREF col1 = cCurrentType2.GetTextColor();
+		COLORREF col2 = crBack;	// 合成済みの色を使用する
+		crText = fnMeargeColor(col1, col2, nBlendPer);
 	}
 #endif  // cl_
 	//cSpaceType.SetGraphicsState_WhileThisObj(pInfo->gr);
