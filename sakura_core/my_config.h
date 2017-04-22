@@ -59,7 +59,7 @@
 //  - 下位を使わせてもらいます（＝ｗ＝
 //------------------------------------------------------------------
 #define CL_MOD_VERDLG
-  #define PR_CL_VER   3
+  #define PR_CL_VER   4
   #define PR_VER      2,201,PR_CL_VER,0
   #define PR_VER_STR "2.201."PR_CL_VER".0"
 
