@@ -10,6 +10,13 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 
 <br>
 
+**Download**  
+<br>
+
+[sakura-c-2.201.4.zip](http://mimix.sakura.ne.jp/release/sakura-c-2.201.4.zip) (886KB)
+
+<br>
+
 **Build environment**  
 + 2.2.0.1をベースに[ココ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)からマージ. ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt)  
 + いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ  
