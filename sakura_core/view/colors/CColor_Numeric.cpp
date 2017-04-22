@@ -77,7 +77,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 {
 #ifdef CL_MOD_NUMERIC_COLOR
 	register const wchar_t *p = cStr.GetPtr() + offset;
-	register const wchar_t *q = p + cStr.GetLength();
+	register const wchar_t *q = cStr.GetPtr() + cStr.GetLength();
 
 	int i = 0;
 	wcmatch match;
@@ -99,7 +99,8 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 
 	if (regex_search(p, q, wregex(re1_trig))) {
 		for (auto && elem : re1) {
-			if (regex_search(p, q, match, wregex(elem))) {
+			wregex re(elem);
+			if (regex_search(p, q, match, re)) {
 				i = std::max(match.length(0), i);
 			}
 		}
@@ -108,7 +109,8 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	
 	if (regex_search(p, q, wregex(re2_trig))) {
 		for (auto && elem : re2) {
-			if (regex_search(p, q, match, wregex(elem))) {
+			wregex re(elem);
+			if (regex_search(p, q, match, re)) {
 				i = std::max(match.length(0), i);
 			}
 		}
@@ -116,7 +118,8 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	}
 	
 	for (auto && elem : re3) {
-		if (regex_search(p, q, match, wregex(elem))) {
+		wregex re(elem);
+		if (regex_search(p, q, match, re)) {
 			i = std::max(match.length(0), i);
 		}
 	}
