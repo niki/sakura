@@ -12,7 +12,6 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 
 **Download**  
 <br>
-
 [sakura-c-2.201.4.zip](http://mimix.sakura.ne.jp/release/sakura-c-2.201.4.zip) (886KB)
 
 <br>
