@@ -15,7 +15,7 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 + いくつかの[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)をマージ  
 + MSVC2017でビルド  
 + TCMallocを使用  
-+ Boostを使用. <\/extlib> へ <\/boost> をコピーしてください  
++ Boostを使用. <\/libs> へコピーしてください  
 + 挙動の制御にレジストリを使用しています  
 
 <br>

@@ -6,7 +6,10 @@
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
 #ifdef CL_MOD_NUMERIC_COLOR
-#include <regex>
+//#include <regex>
+//using namespace std;
+#include <boost/regex.hpp>
+using namespace boost;
 #endif  // cl_
 
 static int IsNumber( const CStringRef& cStr, int offset );/* 数値ならその長さを返す */	//@@@ 2001.02.17 by MIK
@@ -77,7 +80,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	register const wchar_t *q = p + cStr.GetLength();
 
 	int i = 0;
-	std::wcmatch match;
+	wcmatch match;
 
 	static const wchar_t *re1_trig = L"e";
 	static const wchar_t *re1[] = {
@@ -94,18 +97,18 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 			L"^[0-9]+([uUlL]{0,2})",                     // 123
 	};
 
-	if (std::regex_search(p, q, std::wregex(re1_trig))) {
+	if (regex_search(p, q, wregex(re1_trig))) {
 		for (auto && elem : re1) {
-			if (std::regex_search(p, q, match, std::wregex(elem))) {
+			if (regex_search(p, q, match, wregex(elem))) {
 				i = std::max(match.length(0), i);
 			}
 		}
 		if (i > 0) return i;
 	}
 	
-	if (std::regex_search(p, q, std::wregex(re2_trig))) {
+	if (regex_search(p, q, wregex(re2_trig))) {
 		for (auto && elem : re2) {
-			if (std::regex_search(p, q, match, std::wregex(elem))) {
+			if (regex_search(p, q, match, wregex(elem))) {
 				i = std::max(match.length(0), i);
 			}
 		}
@@ -113,7 +116,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	}
 	
 	for (auto && elem : re3) {
-		if (std::regex_search(p, q, match, std::wregex(elem))) {
+		if (regex_search(p, q, match, wregex(elem))) {
 			i = std::max(match.length(0), i);
 		}
 	}

@@ -1,0 +1,27 @@
+**Placement**
+```
+libs
+ +- boost (Original name 'boost_1_64_0')
+    +- boost
+```
+
+
+**Use Boost 1.64**
+1. Run <BoostRoot>/bootstrap.bat  
+2. Run build-boost.bat  
+
+32-bit  
+```
+b2 --build-dir=build\x86 --with-regex --stagedir=x86 --layout=system address-model=32 link=static runtime-link=static variant=release threading=multi
+```
+
+64-bit  
+```
+b2 --build-dir=build\x64 --with-regex --stagedir=x64 --layout=system address-model=64 link=static runtime-link=static variant=release threading=multi
+```
+
+
+**Use gperftools 2.5**
+.  
+
+
