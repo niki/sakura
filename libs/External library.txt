@@ -2,7 +2,7 @@
 ```
 libs
  +- boost (Original name 'boost_1_64_0')
-    +- boost
+ +- gperftools (Original name 'gperftools-2.5')
 ```
 
 
@@ -12,16 +12,17 @@ libs
 
 32-bit  
 ```
-b2 --build-dir=build\x86 --with-regex --stagedir=x86 --layout=system address-model=32 link=static runtime-link=static variant=release threading=multi
+b2 --build-dir=build\x86 --with-regex --stagedir=x86 address-model=32 link=static runtime-link=static variant=release -j3
 ```
 
 64-bit  
 ```
-b2 --build-dir=build\x64 --with-regex --stagedir=x64 --layout=system address-model=64 link=static runtime-link=static variant=release threading=multi
+b2 --build-dir=build\x64 --with-regex --stagedir=x64 address-model=64 link=static runtime-link=static variant=release -j3
 ```
 
 
 **Use gperftools 2.5**
-.  
+1. Open Visual Studio 'gperftools.sln'  
+2. Build 'libtcmalloc_minimal'  
 
 

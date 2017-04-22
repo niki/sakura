@@ -183,7 +183,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
       <ForceSymbolReferences>__tcmalloc</ForceSymbolReferences>
-      <AdditionalLibraryDirectories>..\libs;..\libs\boost\$(PlatformTarget)\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs;..\libs\boost\$(PlatformTarget)\lib;..\libs\gperftools\Release</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
