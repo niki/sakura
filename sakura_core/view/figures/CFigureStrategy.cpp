@@ -163,13 +163,13 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 			CTypeSupport& cBack = cCurrentType3;
 			crText = pcView->GetTextColorByColorInfo2(cCurrentType.GetColorInfo(), cText.GetColorInfo());
 			crBack = pcView->GetBackColorByColorInfo2(cCurrentType.GetColorInfo(), cBack.GetColorInfo());
-			bBold = cCurrentType2.IsBoldFont();
+			bBold = cCurrentTypeBg.IsBoldFont();
 		} else {
 			CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType2 : cSpaceType;
 			CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType3 : cSpaceType;
 			crText = pcView->GetTextColorByColorInfo2(cCurrentType.GetColorInfo(), cText.GetColorInfo());
 			crBack = pcView->GetBackColorByColorInfo2(cCurrentType.GetColorInfo(), cBack.GetColorInfo());
-			bBold = cCurrentType2.IsBoldFont();
+			bBold = cCurrentTypeBg.IsBoldFont();
 		}
 #else
 		CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType2 : cSpaceType;
@@ -185,13 +185,13 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 			CTypeSupport& cBack = cCurrentType1;
 			crText = cText.GetTextColor();
 			crBack = cBack.GetBackColor();
-			bBold = cCurrentType.IsBoldFont();
+			bBold = cCurrentTypeBg.IsBoldFont();
 		} else {
 			CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType : cSpaceType;
 			CTypeSupport& cBack = cSpaceType.GetBackColor() == cTextType.GetBackColor() ? cCurrentType1 : cSpaceType;
 			crText = cText.GetTextColor();
 			crBack = cBack.GetBackColor();
-			bBold = cCurrentType.IsBoldFont();
+			bBold = cCurrentTypeBg.IsBoldFont();
 		}
 #else
 		CTypeSupport& cText = cSpaceType.GetTextColor() == cTextType.GetTextColor() ? cCurrentType : cSpaceType;
