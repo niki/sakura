@@ -144,7 +144,14 @@ protected:
 	HIMAGELIST ImageList_Duplicate( HIMAGELIST himl );	/*!< イメージリストの複製処理 */
 
 	// 2006.02.01 ryoji タブ一覧を追加
+#ifdef CL_FIX_TABWND
+	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted, bool tab = false );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
+	void DrawTabBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted ) {
+		DrawBtnBkgnd(hdc, lprcBtn, bBtnHilighted, true);
+	}
+#else
 	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
+#endif  // cl_
 	void DrawListBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 一覧ボタン描画処理 */
 	void DrawCloseFigure( CGraphics& gr, const RECT &btnRect );			/*!< 閉じるマーク描画処理 */
 	void DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 閉じるボタン描画処理 */		// 2006.10.21 ryoji

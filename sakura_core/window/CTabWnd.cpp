@@ -2757,15 +2757,97 @@ HIMAGELIST CTabWnd::ImageList_Duplicate( HIMAGELIST himl )
 /*! ボタン背景描画処理
 	@date 2006.10.21 ryoji 新規作成
 */
+#ifdef CL_FIX_TABWND
+void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted, bool tab )
+#else
 void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
+#endif  // cl_
 {
+#ifdef CL_FIX_TABWND
+	auto MakeColor2 = [](COLORREF a, COLORREF b, int alpha) {
+		const int ap = alpha;
+		const int bp = 256 - ap;
+		BYTE valR = (BYTE)((GetRValue(a) * ap + GetRValue(b) * bp) / 256);
+		BYTE valG = (BYTE)((GetGValue(a) * ap + GetGValue(b) * bp) / 256);
+		BYTE valB = (BYTE)((GetBValue(a) * ap + GetBValue(b) * bp) / 256);
+		return RGB(valR, valG, valB);
+	};
+
+#endif  // cl_
+
 	if( bBtnHilighted )
 	{
 		CGraphics gr(hdc);
+#ifdef CL_FIX_TABWND
+		if (tab) {
+			static const DWORD tbl[] = {
+				0x853838b5,0xf93838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xf93838b5,0x853838b5,
+				0xfc4242c7,0xff4b4bd7,0xff4b4bd8,0xff4b4bd8,0xff4b4bd8,0xff4b4bd8,0xff4b4bd8,0xff4b4bd8,0xff4b4bd8,0xff4b4bd8,0xff4b4bd7,0xf94242c7,
+				0xff4a4ad7,0xff4a4ad7,0xff8383e4,0xffffffff,0xff5959da,0xff4a4ad7,0xff4a4ad7,0xff5959da,0xffffffff,0xff8383e4,0xff4a4ad7,0xff4a4ad6,
+				0xff4949d6,0xff4949d6,0xfffefeff,0xfffefeff,0xfffefeff,0xff5858d9,0xff5858d9,0xfffefeff,0xfffefeff,0xfffefeff,0xff4949d6,0xff4949d6,
+				0xff4848d5,0xff4848d5,0xff5757d9,0xfffbfbfe,0xfffbfbfe,0xfffbfbfe,0xfffbfbfe,0xfffbfbfe,0xfffbfbfe,0xff5757d8,0xff4848d5,0xff4848d5,
+				0xff4646d4,0xff4646d4,0xff4646d4,0xff5555d7,0xfff8f8fd,0xfff8f8fd,0xfff8f8fd,0xfff8f8fd,0xff5555d7,0xff4646d4,0xff4646d4,0xff4646d4,
+				0xff4545d2,0xff4545d2,0xff4545d2,0xff5454d6,0xfff6f6fd,0xfff6f6fd,0xfff6f6fd,0xfff6f6fd,0xff5454d6,0xff4545d2,0xff4545d2,0xff4545d2,
+				0xff4343d1,0xff4343d1,0xff5252d5,0xfff3f3fc,0xfff3f3fc,0xfff3f3fc,0xfff3f3fc,0xfff3f3fc,0xfff3f3fc,0xff5151d5,0xff4343d1,0xff4343d1,
+				0xff4242d0,0xff4242d0,0xfff0f0fb,0xfff0f0fb,0xfff0f0fb,0xff5050d4,0xff5050d4,0xfff0f0fb,0xfff0f0fb,0xfff0f0fb,0xff4242d0,0xff4242d0,
+				0xff4040cf,0xff4040cf,0xff7777dd,0xffeeeefb,0xff4e4ed3,0xff4040cf,0xff4040cf,0xff4e4ed3,0xffeeeefb,0xff7777dd,0xff4040cf,0xff4040cf,
+				0xfc3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xf93f3fce,
+				0x853e3ecd,0xf93e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xfa3e3ecd,0x853e3ecd,
+			};
+			
+			COLORREF base_color = ::GetSysColor(COLOR_BTNFACE);  // 本当はテーマから
+			
+			for (int i = 0; i < sizeof(tbl)/sizeof(tbl[0]); i++) {
+				DWORD a = (tbl[i] >> 24) & 0xff;
+				if (a == 0) continue;
+				COLORREF c = MakeColor2(tbl[i], base_color, a);
+				int x = 4 + i % 12;
+				int y = 5 + i / 12;
+				::SetPixel(gr, lprcBtn->left + x, lprcBtn->top + y, c);
+			}
+		} else {
+			gr.SetPen( ::GetSysColor(COLOR_HIGHLIGHT) );
+			gr.SetBrushColor( ::GetSysColor(COLOR_MENU) );
+			::Rectangle( gr, lprcBtn->left, lprcBtn->top, lprcBtn->right, lprcBtn->bottom );
+		}
+#else
 		gr.SetPen( ::GetSysColor(COLOR_HIGHLIGHT) );
 		gr.SetBrushColor( ::GetSysColor(COLOR_MENU) );
 		::Rectangle( gr, lprcBtn->left, lprcBtn->top, lprcBtn->right, lprcBtn->bottom );
+#endif  // cl_
 	}
+#ifdef CL_FIX_TABWND
+	else {
+		if (tab) {
+			CGraphics gr(hdc);
+			static const DWORD tbl[] = {
+				0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x284a3724,0x804a3724,0x0b4a3724,0x00000000,0x00000000,0x0b4a3724,0x804a3724,0x284a3724,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x80483623,0x80483623,0x80483623,0x0b483623,0x0b483623,0x80483623,0x80483623,0x80483623,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x1cb5ada7,0x80463322,0x80463322,0x80463322,0x80463322,0x80463322,0x80463322,0x1bb8b1aa,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x01ffffff,0x1bb7b0a9,0x80433220,0x7e443322,0x7e443322,0x80433220,0x1bb7b0a9,0x01ffffff,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x00000000,0x0c564738,0x803f2f1e,0x7e403020,0x7e403020,0x803f2f1e,0x0c564738,0x00000000,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x0b3b2c1d,0x803b2c1d,0x803b2c1d,0x803b2c1d,0x803b2c1d,0x803b2c1d,0x803b2c1d,0x0b3b2c1d,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x8038291b,0x8038291b,0x8038291b,0x1bb3ada7,0x1bb3ada7,0x8038291b,0x8038291b,0x8038291b,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x35655b51,0x8035271a,0x1bb1aca7,0x01ffffff,0x01ffffff,0x1bb1aca7,0x8035271a,0x35655b51,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x06ffffff,0x12ffffff,0x01ffffff,0x00000000,0x00000000,0x01ffffff,0x12ffffff,0x06ffffff,0x00000000,0x00000000,
+				0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,
+			};
+			
+			COLORREF base_color = ::GetSysColor(COLOR_BTNFACE);  // 本当はテーマから
+			
+			for (int i = 0; i < sizeof(tbl)/sizeof(tbl[0]); i++) {
+				DWORD a = (tbl[i] >> 24) & 0xff;
+				if (a == 0) continue;
+				COLORREF c = MakeColor2(tbl[i], base_color, a);
+				int x = 4 + i % 12;
+				int y = 5 + i / 12;
+				::SetPixel(gr, lprcBtn->left + x, lprcBtn->top + y, c);
+			}
+		}
+	}
+#endif  // cl_
 }
 
 /*! 一覧ボタン描画処理
@@ -2898,7 +2980,12 @@ void CTabWnd::DrawTabCloseBtn( CGraphics& gr, const LPRECT lprcClient, bool sele
 	RECT rcBtn;
 	GetTabCloseBtnRect( lprcClient, &rcBtn, selected );
 
+#ifdef CL_FIX_TABWND
+	DrawTabBtnBkgnd( gr, &rcBtn, bHover );
+	return;
+#else
 	DrawBtnBkgnd( gr, &rcBtn, bHover );
+#endif  // cl_
 
 	// 描画イメージを矩形中央にもってくる	// 2009.10.01 ryoji
 	rcBtn.left = rcBtn.left + ((rcBtn.right - rcBtn.left) - (rcBtnBase.right - rcBtnBase.left)) / 2;
