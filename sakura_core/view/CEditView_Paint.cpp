@@ -537,8 +537,7 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 	}
 #endif  // cl_
 #ifdef CL_MOD_SELAREA
-	static int nBlendPer = RegKey(CL_REGKEY).get(_T("SelectAreaBlendPer"), CL_MOD_SELAREA_BLEND_PER);
-	nBlendPer = (nBlendPer >> 8) & 0xff;
+	static int nBlendPer = RegKey(CL_REGKEY).get(_T("SelectAreaTextBlendPer"), CL_MOD_SELAREA_TEXT_BLEND_PER);
 	int alpha = 255 * nBlendPer / 100;
 #else
 	int alpha = 255*30/100; // 30%
@@ -558,9 +557,17 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	}
 #endif  // cl_
 #ifdef CL_MOD_SELAREA
-	static int nBlendPer = RegKey(CL_REGKEY).get(_T("SelectAreaBlendPer"), CL_MOD_SELAREA_BLEND_PER);
-	nBlendPer = nBlendPer & 0xff;
+	static int nBlendPer = RegKey(CL_REGKEY).get(_T("SelectAreaBackBlendPer"), CL_MOD_SELAREA_BACK_BLEND_PER);
 	int alpha = 255 * nBlendPer / 100;
+	if (info.m_nColorIdx == COLORIDX_SELECT &&
+			(info2.m_nColorIdx == COLORIDX_SEARCH ||
+			 info2.m_nColorIdx == COLORIDX_SEARCH2 ||
+			 info2.m_nColorIdx == COLORIDX_SEARCH3 ||
+			 info2.m_nColorIdx == COLORIDX_SEARCH4 ||
+			 info2.m_nColorIdx == COLORIDX_SEARCH5))
+	{
+		alpha /= 2;  // 検索色のときは選択色とブレンドする
+	}
 #else
 	int alpha = 255*30/100; // 30%
 #endif  // cl_
