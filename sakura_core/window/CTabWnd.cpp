@@ -82,7 +82,11 @@
 #define CX_SMICON			DpiScaleX(16)
 #define CY_SMICON			DpiScaleY(16)
 
+#ifdef CL_FIX_TABWND
+static const RECT rcBtnBase = { 0, 0, 14, 16 };
+#else
 static const RECT rcBtnBase = { 0, 0, 16, 16 };
+#endif  // cl_
 
 // 2006.02.01 ryoji タブ一覧メニュー用データ
 typedef struct {
@@ -2773,6 +2777,15 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 		return RGB(valR, valG, valB);
 	};
 
+	COLORREF base_color = ::GetSysColor(COLOR_BTNFACE);
+
+	//if (IsVisualStyle()) {
+	//	CUxTheme &uxTheme = *CUxTheme::getInstance();
+	//	HTHEME hTheme = uxTheme.OpenThemeData(m_hwndTab, L"TAB");
+	//	if (hTheme) {
+	//		base_color = ::GetThemeSysColor(hTheme, COLOR_BTNFACE);
+	//	}
+	//}
 #endif  // cl_
 
 	if( bBtnHilighted )
@@ -2794,8 +2807,6 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 				0xfc3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xff3f3fce,0xf93f3fce,
 				0x853e3ecd,0xf93e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xfa3e3ecd,0x853e3ecd,
 			};
-			
-			COLORREF base_color = ::GetSysColor(COLOR_BTNFACE);  // 本当はテーマから
 			
 			for (int i = 0; i < sizeof(tbl)/sizeof(tbl[0]); i++) {
 				DWORD a = (tbl[i] >> 24) & 0xff;
@@ -2834,8 +2845,6 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 				0x00000000,0x00000000,0x06ffffff,0x12ffffff,0x01ffffff,0x00000000,0x00000000,0x01ffffff,0x12ffffff,0x06ffffff,0x00000000,0x00000000,
 				0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,
 			};
-			
-			COLORREF base_color = ::GetSysColor(COLOR_BTNFACE);  // 本当はテーマから
 			
 			for (int i = 0; i < sizeof(tbl)/sizeof(tbl[0]); i++) {
 				DWORD a = (tbl[i] >> 24) & 0xff;
