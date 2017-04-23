@@ -216,8 +216,10 @@
   // 選択領域のブレンド率[%] 2015.6.5
   // (REG/SelectAreaTextBlendPer:0x00000000)
   // (REG/SelectAreaBackBlendPer:0x00000064)
+  // (REG/SelectAreaBackBlendPer2:0x0000003C)
   #define CL_MOD_SELAREA_TEXT_BLEND_PER (0)
   #define CL_MOD_SELAREA_BACK_BLEND_PER (100)
+  #define CL_MOD_SELAREA_BACK_BLEND_PER2 (60)  // 特定の下地のときの選択範囲のブレンド率
 
 //------------------------------------------------------------------
 // 空白,TAB,改行,EOFのカラーを変更 2015.6.5
