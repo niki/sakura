@@ -1340,7 +1340,11 @@ LRESULT CTabWnd::OnMeasureItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		if (m_bTabListSizeFix && width > 0) {
 			lpmis->itemWidth = width;
 		} else {
-			lpmis->itemWidth = (cxIcon + DpiScaleX(8)) + size.cx;
+			if (m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
+				lpmis->itemWidth = (cxIcon + DpiScaleX(8)) + size.cx;
+			} else {
+				lpmis->itemWidth = DpiScaleX(8) + size.cx;
+			}
 		}
 #else
 		lpmis->itemWidth = (cxIcon + DpiScaleX(8)) + size.cx;
@@ -1391,6 +1395,11 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// アイコン描画
 		int cxIcon = CX_SMICON;
 		int cyIcon = CY_SMICON;
+#if defined(CL_MOD_TAB_CAPTION_COLOR) || defined(CL_MOD_WINLIST_POPUP)
+		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
+			cxIcon = 0;
+		} else
+#endif  // cl_
 		if( NULL != m_hIml )
 		{
 			ImageList_GetIconSize( m_hIml, &cxIcon, &cyIcon );
@@ -1518,6 +1527,11 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// アイコン描画
 		int cxIcon = CX_SMICON;
 		int cyIcon = CY_SMICON;
+#if defined(CL_MOD_TAB_CAPTION_COLOR) || defined(CL_MOD_WINLIST_POPUP)
+		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
+			cxIcon = 0;
+		} else
+#endif  // cl_
 		if( NULL != m_hIml )
 		{
 			ImageList_GetIconSize( m_hIml, &cxIcon, &cyIcon );
@@ -2472,7 +2486,7 @@ void CTabWnd::LayoutTab( void )
 	BOOL bDispTabClose = m_pShareData->m_Common.m_sTabBar.m_bDispTabClose;
 	BOOL bOwnerDraw = bDispTabClose;
 #if defined(CL_MOD_TAB_CAPTION_COLOR) || defined(CL_MOD_WINLIST_POPUP)
-	bOwnerDraw = TRUE;
+	bOwnerDraw = TRUE;  // 強制的にオーナードローにする
 #endif  // cl_
 	if( bOwnerDraw && !(lStyle & TCS_OWNERDRAWFIXED) ){
 		lStyle |= TCS_OWNERDRAWFIXED;
@@ -2557,7 +2571,9 @@ HIMAGELIST CTabWnd::InitImageList( void )
 	HIMAGELIST hImlNew;
 
 	hImlNew = NULL;
+#if !defined(CL_MOD_TAB_CAPTION_COLOR) && !defined(CL_MOD_WINLIST_POPUP)
 	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon )
+#endif  // cl_
 	{
 		// システムイメージリストを取得する
 		// 注：複製後に差し替えて利用するアイコンには事前にアクセスしておかないとイメージが入らない
@@ -2605,6 +2621,11 @@ HIMAGELIST CTabWnd::InitImageList( void )
 
 l_end:
 	// タブに新しいアイコンイメージを設定する
+#if defined(CL_MOD_TAB_CAPTION_COLOR) || defined(CL_MOD_WINLIST_POPUP)
+	if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon)
+		TabCtrl_SetImageList( m_hwndTab, NULL );
+	else
+#endif  // cl_
 	TabCtrl_SetImageList( m_hwndTab, hImlNew );
 
 	// 新しいイメージリストを記憶する
