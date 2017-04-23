@@ -5,6 +5,7 @@
 
 日々使っていて「こうだったらいいな」を入れ込んでいます.  
 また、いろんなものを試す場としても使うつもりです.  
+
 MacTypeを使ったときにひどく描画崩れするのがとてもストレスです.  
 いろいろ試してマシにはなりましたがまだストレスです（＝＝.  
 
@@ -12,7 +13,11 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 
 **Download**  
 <br>
-[sakura-c-2.201.4.zip](http://mimix.sakura.ne.jp/release/sakura-c-2.201.4.zip) (886KB)
+
+変更内容はコミットログを参照してください.  
+
+ ・[sakura-c-2.201.5.zip](http://mimix.sakura.ne.jp/release/sakura-c-2.201.5.zip) (889KB)  
+ ・[sakura-c-2.201.4.zip](http://mimix.sakura.ne.jp/release/sakura-c-2.201.4.zip) (886KB)  
 
 <br>
 
@@ -105,16 +110,6 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
   `11`: カーソル位置の文字が 1バイトコードの時は 1px, 2バイトコードの時は 2px  
   `12`: 半角入力の時は1px、全角入力の時は2px  
 
-+ CenteringCursorJump (dword)  
-  カーソル移動のセンタリングを  
-  `0`: しない  
-  `1`: する (default)  
-
-+ DoubleClickClosesTab (dword)  
-  タブをダブルクリックで  
-  `0`: 閉じない  
-  `1`: 閉じる (default)  
-
 + NoOutlineDockSystemColor (dword)  
   アウトライン解析ダイアログをドッキングしたときの背景カラーに  
   `0`: システムカラーを使う (default)  
@@ -160,25 +155,6 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 + RecentReplaceKeyMax (dword)  
   置換履歴数を変更  
   `16`: (default)  
-
-+ RegexpAutoQuote (dword)  
-  検索・置換時に「正規表現」を使用する場合、文字列を  
-  `0`: クォートしない  
-  `1`: クォートする (default)  
-
-+ ReplaceTextToText (dword)  
-  置換時に「置換前」テキストを「置換後」に  
-  `0`: 設定しない  
-  `1`: 設定する (default)  
-
-+ SelectAreaBlendPer (dword)  
-  選択範囲カラーのブレンド率を設定  
-  `1-8bit`: 背景色ブレンド率 [0-100] (default:100)  
-  `9-16bit`: テキスト色ブレンド率 [0-100] (default:0)  
-
-+ WhiteSpaceBlendPer (dword)  
-  空白タブのテキストとのブレンド率を設定  
-  `1-8bit`: ブレンド率 [0-100] (default:30)  
 
 + TabCaptionModifiedColor (dword)  
   変更時のタブ名のテキストカラーを設定, 形式は 0x00BBGGRR  
