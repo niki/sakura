@@ -250,6 +250,18 @@ LRESULT CTabWnd::OnTabLButtonDown( WPARAM wParam, LPARAM lParam )
 			if (hTabWnd != NULL) {  // 保険
 				HWND hwndTab = ::FindWindowEx(hTabWnd, NULL, WC_TABCONTROL, 0);
 				if (hwndTab != NULL) {  // 保険
+					// タブの閉じるボタン押下処理 (非アクティブタブの閉じるボタン)
+					if (m_pShareData->m_Common.m_sTabBar.m_bDispTabClose) {
+						RECT rcItem;
+						RECT rcClose;
+						TabCtrl_GetItemRect(m_hwndTab, nTabNo, &rcItem);
+						GetTabCloseBtnRect(&rcItem, &rcClose, /*selected=*/ false);
+						if (::PtInRect(&rcClose, hitinfo.pt)) {
+							BreakInterTabClk();
+							return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
+						}
+					}
+					
 					ShowHideWindow((HWND)tcitem.lParam, TRUE);
 					BreakDrag();	// ドラッグ状態を解除する
 					//BreakInterTabClk();
