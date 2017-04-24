@@ -175,7 +175,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;libboost_regex-vc141-mt-s-1_64.lib;libtcmalloc_minimal.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;libboost_regex-vc140-mt-s-1_64.lib;libtcmalloc_minimal.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -183,7 +183,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
       <ForceSymbolReferences>__tcmalloc</ForceSymbolReferences>
-      <AdditionalLibraryDirectories>..\libs;..\libs\boost\$(PlatformTarget)\lib;..\libs\gperftools\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;..\libs\gperftools\Release</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
@@ -214,7 +214,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;libboost_regex-vc141-mt-s-1_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;libboost_regex-vc140-mt-s-1_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -222,7 +222,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ImageHasSafeExceptionHandlers>
       </ImageHasSafeExceptionHandlers>
-      <AdditionalLibraryDirectories>..\libs;..\libs\boost\$(PlatformTarget)\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
