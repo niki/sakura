@@ -82,10 +82,9 @@
 #define CX_SMICON			DpiScaleX(16)
 #define CY_SMICON			DpiScaleY(16)
 
-#ifdef CL_FIX_TABWND
-static const RECT rcBtnBase = { 0, 0, 14, 16 };
-#else
 static const RECT rcBtnBase = { 0, 0, 16, 16 };
+#ifdef CL_FIX_TABWND
+static const RECT rcBtnBaseTab = { 0, 2, 12, 12 };
 #endif  // cl_
 
 // 2006.02.01 ryoji タブ一覧メニュー用データ
@@ -2536,7 +2535,11 @@ void CTabWnd::LayoutTab( void )
 	cx = 6;
 	if( bDispTabClose == DISPTABCLOSE_ALLWAYS ){
 		// 閉じるボタンの分だけパディングを追加して横幅を広げる
+#ifdef CL_FIX_TABWND
+		int nWidth = rcBtnBaseTab.right - rcBtnBaseTab.left;
+#else
 		int nWidth = rcBtnBase.right - rcBtnBase.left;
+#endif  // cl_
 		cx += bDispTabIcon? (nWidth + 2)/3: (nWidth + 1)/2;	// それっぽく調整: ボタン幅の 1/3（アイコン有） or 1/2（アイコン無）
 	}
 	TabCtrl_SetPadding( m_hwndTab, DpiScaleX(cx), DpiScaleY(3) );
@@ -2777,7 +2780,20 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 		return RGB(valR, valG, valB);
 	};
 
-	COLORREF base_color = ::GetSysColor(COLOR_BTNFACE);
+	auto DrawPixel = [MakeColor2, hdc, lprcBtn](const DWORD *map, int size) {
+		CGraphics gr(hdc);
+		for (int i = 0; i < size; i++) {
+			DWORD alpha = (map[i] >> 24) & 0xff;
+			if (alpha == 0) continue;
+			COLORREF base_color = ::GetSysColor(COLOR_BTNFACE);
+			COLORREF c = MakeColor2(map[i], base_color, alpha);
+			int x = i % 12;
+			int y = i / 12;
+			::SetPixel(gr, lprcBtn->left + x, lprcBtn->top + y, c);
+		}
+	};
+
+	//COLORREF base_color = ::GetSysColor(COLOR_BTNFACE);
 
 	//if (IsVisualStyle()) {
 	//	CUxTheme &uxTheme = *CUxTheme::getInstance();
@@ -2808,14 +2824,7 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 				0x853e3ecd,0xf93e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xff3e3ecd,0xfa3e3ecd,0x853e3ecd,
 			};
 			
-			for (int i = 0; i < sizeof(tbl)/sizeof(tbl[0]); i++) {
-				DWORD a = (tbl[i] >> 24) & 0xff;
-				if (a == 0) continue;
-				COLORREF c = MakeColor2(tbl[i], base_color, a);
-				int x = 4 + i % 12;
-				int y = 5 + i / 12;
-				::SetPixel(gr, lprcBtn->left + x, lprcBtn->top + y, c);
-			}
+			DrawPixel(tbl, sizeof(tbl) / sizeof(tbl[0]));
 		} else {
 			gr.SetPen( ::GetSysColor(COLOR_HIGHLIGHT) );
 			gr.SetBrushColor( ::GetSysColor(COLOR_MENU) );
@@ -2830,7 +2839,6 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 #ifdef CL_FIX_TABWND
 	else {
 		if (tab) {
-			CGraphics gr(hdc);
 			static const DWORD tbl[] = {
 				0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,
 				0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,
@@ -2846,14 +2854,7 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 				0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,
 			};
 			
-			for (int i = 0; i < sizeof(tbl)/sizeof(tbl[0]); i++) {
-				DWORD a = (tbl[i] >> 24) & 0xff;
-				if (a == 0) continue;
-				COLORREF c = MakeColor2(tbl[i], base_color, a);
-				int x = 4 + i % 12;
-				int y = 5 + i / 12;
-				::SetPixel(gr, lprcBtn->left + x, lprcBtn->top + y, c);
-			}
+			DrawPixel(tbl, sizeof(tbl) / sizeof(tbl[0]));
 		}
 	}
 #endif  // cl_
@@ -3043,11 +3044,19 @@ void CTabWnd::GetCloseBtnRect( const LPRECT lprcClient, LPRECT lprc )
 */
 void CTabWnd::GetTabCloseBtnRect( const LPRECT lprcTab, LPRECT lprc, bool selected )
 {
+#ifdef CL_FIX_TABWND
+	*lprc = rcBtnBaseTab;
+	DpiScaleRect(lprc);	// 2009.10.01 ryoji 高DPI対応スケーリング
+	::OffsetRect(lprc,
+		(lprcTab->right + (selected ? 0: -2)) - ((DpiScaleX(rcBtnBaseTab.right) - DpiScaleX(rcBtnBaseTab.left)) + DpiScaleX(2)),
+		(lprcTab->top + (selected ? -2: 0)) + DpiScaleY(2) );
+#else
 	*lprc = rcBtnBase;
 	DpiScaleRect(lprc);	// 2009.10.01 ryoji 高DPI対応スケーリング
 	::OffsetRect(lprc,
 		(lprcTab->right + (selected ? 0: -2)) - ((DpiScaleX(rcBtnBase.right) - DpiScaleX(rcBtnBase.left)) + DpiScaleX(2)),
 		(lprcTab->top + (selected ? -2: 0)) + DpiScaleY(2) );
+#endif  // cl_
 }
 
 
