@@ -35,7 +35,9 @@ void CViewCommander::Command_GREP_DIALOG( void )
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 #ifdef CL_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg(
-      cmemCurText, bGetHistory, m_pCommanderView->m_sCurSearchOption.bRegularExp);
+	    cmemCurText,
+	    bGetHistory,
+	    GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp);
 #else
 	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText, bGetHistory );	// 2006.08.23 ryoji ダイアログ専用関数に変更
 #endif  // cl_

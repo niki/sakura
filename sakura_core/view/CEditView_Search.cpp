@@ -352,44 +352,33 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 #ifdef CL_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	// 正規表現文字をクォートする
 	// (PHP 4, PHP 5) string preg_quote ( string $str [, string $delimiter = NULL ] )
-  auto preg_quote = [](const CNativeW &str) {
-    const wchar_t *pStr = str.GetStringPtr();
-    bool bEscape = false;
+	auto preg_quote = [](const CNativeW &str) -> CNativeW {
+		const wchar_t *pStr = str.GetStringPtr();
 
-    CNativeW out = L"";
+		CNativeW out = L"";
 
-    while (L'\0' != *pStr) {
-      if (bEscape) {
-        bEscape = false;
-      } else if (!bEscape && *pStr == L'\\') {
-        bEscape = true;
-      }
-      // 正規表現文字をクォートする . \ + * ? [ ^ ] $ ( ) { } = ! < > | : -
-      else if (*pStr == L'[' || *pStr == L']' || *pStr == L'(' || *pStr == L')' ||
-               *pStr == L'{' || *pStr == L'}' || *pStr == L'<' || *pStr == L'>' ||
-               *pStr == L'+' || *pStr == L'*' || *pStr == L'.' || *pStr == L'?' ||
-               *pStr == L'^' || *pStr == L'$' || *pStr == L'=' ||
-               *pStr == L'\\' || *pStr == L'!' || *pStr == L'|' ||
-               *pStr == L':' || *pStr == L'-') {
-        out += L"\\";
-      }
+		while (L'\0' != *pStr) {
+			if (*pStr == L'.' || *pStr == L'\\' || *pStr == L'+' || *pStr == L'*' ||
+			    *pStr == L'?' || *pStr == L'[' || *pStr == L'^' || *pStr == L']' ||
+			    *pStr == L'$' || *pStr == L'(' || *pStr == L')' || *pStr == L'{' ||
+			    *pStr == L'}' || *pStr == L'=' || *pStr == L'!' || *pStr == L'<' ||
+			    *pStr == L'>' || *pStr == L'|' || *pStr == L':' || *pStr == L'-'
+			){
+				// 正規表現文字をクォートする . \ + * ? [ ^ ] $ ( ) { } = ! < > | : -
+				out += L"\\";
+			}
 
-      out += *pStr;
-      pStr++;
-    }
+			out += *pStr;
+			pStr++;
+		}
 
-    return out;
-  };
+		return out;
+	};
 	
-	{
-    int regexp_auto_quote = !!RegKey(CL_REGKEY).get(_T("RegexpAutoQuote"), 1);
-    
-    if (bRegQuote) {
-      bRegQuote = regexp_auto_quote;
-    }
-  }
+	if (bRegQuote) {
+		bRegQuote = !!RegKey(CL_REGKEY).get(_T("RegexpAutoQuote"), 1);
+	}
 	
-	//if (GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp) {
 	if (bRegQuote) {
 		cmemTopic = preg_quote(cmemTopic);
 	}

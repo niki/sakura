@@ -52,7 +52,9 @@ void CViewCommander::Command_SEARCH_DIALOG( void )
 	CNativeW		cmemCurText;
 #ifdef CL_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	m_pCommanderView->GetCurrentTextForSearchDlg(
-      cmemCurText, false, m_pCommanderView->m_sCurSearchOption.bRegularExp);
+	    cmemCurText,
+	    false,
+	    GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp);
 #else
 	m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText );	// 2006.08.23 ryoji ダイアログ専用関数に変更
 #endif  // cl_
@@ -504,7 +506,9 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 	CNativeW	cmemCurText;
 #ifdef CL_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	m_pCommanderView->GetCurrentTextForSearchDlg(
-      cmemCurText, false, m_pCommanderView->m_sCurSearchOption.bRegularExp);
+	    cmemCurText,
+	    false,
+	    GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp);
 #else
 	m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText );	// 2006.08.23 ryoji ダイアログ専用関数に変更
 #endif  // cl_
