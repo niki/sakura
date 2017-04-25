@@ -1,4 +1,6 @@
 REM éQçl : https://boostjp.github.io/howtobuild.html
+REM vc14.0 C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat
+REM vc14.1 
 
 cd boost
 

@@ -22,14 +22,14 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 **Build environment**  
 + 2.2.0.1をベースに[マージ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2). ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド  
-+ Boost, TCMallocを使用  
++ Boostを使用  
 + 挙動の制御にレジストリを使用しています  
 
 <br>
 
 **Changed**  
 + いくつかの設定はレジストリで変更できます. キーがなくても問題ありません.  
-  変更する場合は `[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` を作成し, エントリを追加してください.  
+  レジストリの詳細は `my_config.h` を参照してください.  
 
 + ファイル系
   - 設定情報の読み書きにレジストリを選択可能にする (デフォルトはini)  
@@ -97,82 +97,6 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
   行番号非表示時のブックマーク表示がなかったのでブックマークのカラー設定を無効にしている時と同じように表示する
 
 <br>
-
-**Registry**  
-+ `[HKEY_CURRENT_USER\SOFTWARE\sakura-calette]` が存在しない場合は作成してください.<br>
-
-+ CaretType (dword)  
-  キャレットのサイズを  
-  `0`: 変更なし  
-  `1-10`: 指定サイズ (default:2)  
-  `11`: カーソル位置の文字が 1バイトコードの時は 1px, 2バイトコードの時は 2px  
-  `12`: 半角入力の時は1px、全角入力の時は2px  
-
-+ NoOutlineDockSystemColor (dword)  
-  アウトライン解析ダイアログをドッキングしたときの背景カラーに  
-  `0`: システムカラーを使う (default)  
-  `1`: システムカラーを使わない  
-
-+ PlaceDialogWindowLeft (dword)  
-  ダイアログの横表示位置を変更  
-  次の場合は編集ウィンドウの横半分 (1/2)の位置に表示される  
-```
-    21 (default)  
-    ||  
-    |+-- 分子  
-    +--- 分母  
-```
-
-+ PlaceDialogWindowTop (dword)  
-  ダイアログの縦表示位置を変更  
-  次の場合は編集ウィンドウの 4/7の位置に表示される  
-```
-    74 (default)  
-    ||  
-    |+-- 分子  
-    +--- 分母  
-```
-
-+ DeleteHistoryNotExistAtStartup (dword)  
-  起動時に存在しない履歴を削除  
-  `0`: 削除しない  
-  `1`: 削除する (default)  
-
-+ RecentSearchKeyMax (dword)  
-  検索履歴数を変更  
-  `16`: (default)  
-
-+ RecentGrepFileMax (dword)  
-  Grep履歴数を変更  
-  `8`: (default)  
-
-+ RecentGrepFolderMax (dword)  
-  Grepフォルダ履歴数を変更  
-  `16`: (default)  
-
-+ RecentReplaceKeyMax (dword)  
-  置換履歴数を変更  
-  `16`: (default)  
-
-+ TabCaptionModifiedColor (dword)  
-  変更時のタブ名のテキストカラーを設定, 形式は 0x00BBGGRR  
-  `0x00d70000`: (default)  
-
-+ TabCaptionRecMacroColor (dword)  
-  キーマクロ記録時のタブ名のテキストカラーを設定, 形式は 0x00BBGGRR  
-  `0x000000d8`: (default)  
-
-+ WinListPopupTop (dword)  
-  ウィンドウ一覧ポップアップの表示位置を変更 (左上基準)  
-  `0xffffffff`: センタリング (default)  
-
-+ WinListPopupLeft (dword)  
-  ウィンドウ一覧ポップアップの表示位置を変更 (左上基準)  
-  `0xffffffff`: センタリング (default)  
-
-+ WinListPopupWidth (dword)  
-  ウィンドウ一覧ポップアップの表示幅を変更 (タブアイコン表示のときのみ有効)  
-  `400`: (default)  
 
 
 (C) 2017 Calette.
