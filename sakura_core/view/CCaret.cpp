@@ -343,13 +343,18 @@ CLayoutInt CCaret::MoveCursor(
 	}
 #ifdef CL_FIX_CURSOR_MOVE_FLICKER
 	// 水平・垂直のスクロールがないときは画面内のカーソル移動として描画を行う
-	bool isFinalDraw = false;
+	int nFinalDrawFlag = 0;
 	bool oldDraw = m_pEditView->GetDrawSwitch();
 	if (oldDraw) {
-		if (nScrollColNum == 0 /* && nScrollRowNum == 0 */) {
-			//m_pEditView->SetDrawSwitch(true);
-		} else {
-			isFinalDraw = true;
+		if (nScrollColNum != 0) {  // 水平スクロール
+			nFinalDrawFlag |= PAINT_BODY;
+		}
+		if (nFinalDrawFlag != 0) {
+			if (nScrollRowNum != 0) {  // 垂直スクロール
+				nFinalDrawFlag |= PAINT_LINENUMBER;
+			}
+		}
+		if (nFinalDrawFlag != 0) {
 			m_pEditView->SetDrawSwitch(false);
 		}
 	}
@@ -374,12 +379,21 @@ CLayoutInt CCaret::MoveCursor(
 				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();	//Sep. 11, 2004 genta 同期用に行数を記憶
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
 				/* フォーカス移動時の再描画 */
-				//m_pCommanderView->RedrawAll();
+				//m_pEditView->RedrawAll();
+				//m_pEditView->RedrawLines(nViewTopLine, m_pEditView->GetTextArea().m_nViewRowNum);
+				//m_pEditView->Redraw();
 				// sui 02/08/09
 
 				//	Sep. 11, 2004 genta 同期スクロールの関数化
 				//m_pEditView->SyncScrollV( nScrollLines );
-			}
+				
+				//if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
+				//	m_pEditView->MiniMapRedraw(true);
+				//}
+				
+				nFinalDrawFlag |= PAINT_ALL;
+				
+			} else
 #endif  // cl_
 			if( m_pEditView->GetDrawSwitch() ){
 				m_pEditView->InvalidateRect( NULL );
@@ -428,18 +442,20 @@ CLayoutInt CCaret::MoveCursor(
 				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();	//Sep. 11, 2004 genta 同期用に行数を記憶
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
 				/* フォーカス移動時の再描画 */
-				//m_pCommanderView->RedrawAll();
+				//m_pEditView->RedrawAll();
+				//m_pEditView->RedrawLines(nViewTopLine, m_pEditView->GetTextArea().m_nViewRowNum);
+				//m_pEditView->Redraw();
 				// sui 02/08/09
 
 				//	Sep. 11, 2004 genta 同期スクロールの関数化
 				//m_pEditView->SyncScrollV( nScrollLines );
 				
-				if( m_pEditView->GetDrawSwitch() ){
-					m_pEditView->InvalidateRect( NULL );
-					if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
-						m_pEditView->MiniMapRedraw(true);
-					}
-				}
+				//if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
+				//	m_pEditView->MiniMapRedraw(true);
+				//}
+				
+				nFinalDrawFlag |= PAINT_ALL;
+				
 			} else
 #endif  // cl_
 			if( m_pEditView->GetDrawSwitch() ){
@@ -453,10 +469,6 @@ CLayoutInt CCaret::MoveCursor(
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars(); // 2001/10/20 novice
 	}
-
-#ifdef CL_FIX_CURSOR_MOVE_FLICKER
-	m_pEditView->SetDrawSwitch(oldDraw);
-#endif  // cl_
 
 	// 横スクロールが発生したら、ルーラー全体を再描画 2002.02.25 Add By KK
 	if (nScrollColNum != 0 ){
@@ -499,8 +511,18 @@ CLayoutInt CCaret::MoveCursor(
 #endif  // cl_
 
 #ifdef CL_FIX_CURSOR_MOVE_FLICKER
-	if (isFinalDraw) {
-		m_pEditView->Call_OnPaint(PAINT_LINENUMBER | PAINT_BODY, false);
+	m_pEditView->SetDrawSwitch(oldDraw);
+
+	if (nFinalDrawFlag != 0) {
+		//m_pEditView->Redraw();
+		m_pEditView->Call_OnPaint(nFinalDrawFlag, false);
+		
+		/* スクロールバーの状態を更新する */
+		m_pEditView->AdjustScrollBars();
+		
+		if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
+			m_pEditView->MiniMapRedraw(true);
+		}
 	}
 #endif  // cl_
 
