@@ -1591,7 +1591,11 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 			rcText.right = rcClose.left;
 		}
 
+#ifdef CL_FIX_TABWND
+		::DrawText( gr, szBuf, -1, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_NOCLIP );
+#else
 		::DrawText( gr, szBuf, -1, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER );
+#endif  // cl_
 
 		gr.PopTextForeColor();
 
