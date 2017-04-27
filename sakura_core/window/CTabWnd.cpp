@@ -66,8 +66,13 @@
 
 // 2006.01.30 ryoji タブのサイズ／位置に関する定義
 // 2009.10.01 ryoji 高DPI対応スケーリング
+#ifdef CL_FIX_TABWND
+#define TAB_MARGIN_TOP		DpiScaleY(0)
+#define TAB_MARGIN_LEFT		DpiScaleX(0)
+#else
 #define TAB_MARGIN_TOP		DpiScaleY(3)
 #define TAB_MARGIN_LEFT		DpiScaleX(1)
+#endif  // cl_
 #define TAB_MARGIN_RIGHT	DpiScaleX(47)
 
 //#define TAB_FONT_HEIGHT		DpiPointsToPixels(9)
@@ -84,7 +89,7 @@
 
 static const RECT rcBtnBase = { 0, 0, 16, 16 };
 #ifdef CL_FIX_TABWND
-static const RECT rcBtnBaseTab = { 0, 2, 12, 12 };
+static const RECT rcBtnBaseTab = { 0, 2, 12, 14 };
 #endif  // cl_
 
 // 2006.02.01 ryoji タブ一覧メニュー用データ
@@ -1755,8 +1760,10 @@ LRESULT CTabWnd::OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 	DrawListBtn( gr, &rc );
 	DrawCloseBtn( gr, &rc );	// 2006.10.21 ryoji 追加
 
+#ifndef CL_FIX_TABWND
 	// 上側に境界線を描画する
 	::DrawEdge(gr, &rc, EDGE_ETCHED, BF_TOP);
+#endif  // cl_
 
 	// Windowsクラシックスタイルの場合はアクティブタブの上部にトップバンドを描画する	// 2006.03.27 ryoji
 	if( !m_bVisualStyle )
@@ -2580,6 +2587,9 @@ void CTabWnd::LayoutTab( void )
 	::SetWindowPos( GetHwnd(), NULL, 0, 0, rcWnd.right - rcWnd.left, nHeight, SWP_NOMOVE | SWP_NOZORDER );
 	int nWidth = (rcWnd.right - rcWnd.left) - (TAB_MARGIN_LEFT + TAB_MARGIN_RIGHT + nSizeBoxWidth);
 	if( (nWidth != rcTab.right - rcTab.left) || (nHeight != rcTab.bottom - rcTab.top) ){
+#ifdef CL_FIX_TABWND
+		nHeight += 2;  // 境界線を消したので
+#endif // cl_
 		::MoveWindow( m_hwndTab, TAB_MARGIN_LEFT, TAB_MARGIN_TOP, nWidth, nHeight, TRUE );
 	}
 }
