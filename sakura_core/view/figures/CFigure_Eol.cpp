@@ -196,6 +196,9 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
+#ifdef CL_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace / 2) +
+#endif  // cl_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClip2,
@@ -332,6 +335,9 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
+#ifdef CL_LINE_CENTERING
+			(pcView->m_pTypeData->m_nLineSpace / 2) +
+#endif  // cl_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClip2,
