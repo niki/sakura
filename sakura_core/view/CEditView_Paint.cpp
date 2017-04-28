@@ -751,6 +751,23 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	}
 	//	To Here Sep. 7, 2001 genta
 
+#ifdef CL_FIX_EDITVIEW
+	// ルーラー非表示の時、ルーラーとテキストの余白部分に境界線を描画する
+	if (!bTransText) {
+		CTypeSupport cRulerType(this, COLORIDX_RULER);
+		if (!cRulerType.IsDisp()) {
+			rc.left = 0;
+			rc.top = 0;
+			rc.right = GetTextArea().GetAreaRight();
+			rc.bottom = 0;
+			gr.PushPen(::GetSysColor(COLOR_ACTIVEBORDER), 0);
+			::MoveToEx(gr, rc.left, rc.top, NULL);
+			::LineTo(gr, rc.right, rc.top);
+			gr.PopPen();
+		}
+	}
+#endif  // cl_
+
 	::SetBkMode( gr, TRANSPARENT );
 
 	cTextType.SetGraphicsState_WhileThisObj(gr);
