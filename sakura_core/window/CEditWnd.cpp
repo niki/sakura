@@ -1509,13 +1509,14 @@ LRESULT CEditWnd::DispatchEvent(
 					}
 					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, 1, _T("Indent Using Spaces"), _T(""), FALSE);
 					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_SEPARATOR, 2, _T(""), _T(""), FALSE);
-					for (int nIdx = 0; nIdx < 8; ++nIdx) {
+					const int width_tbl[] = {2, 3, 4, 5, 6, 8};
+					for (int nIdx = 0; nIdx < sizeof(width_tbl) / sizeof(width_tbl[0]); ++nIdx) {
 						nFlag = MF_BYPOSITION | MF_STRING;
-						if (nIdx + 1 == pLayoutMgr->GetTabSpace()) {
+						if (width_tbl[nIdx] == pLayoutMgr->GetTabSpace()) {
 							nFlag |= MF_CHECKED;
 						}
 						TCHAR szTmp[128];
-						auto_sprintf(szTmp, L"Tab Width: %d", nIdx + 1);
+						auto_sprintf(szTmp, L"Tab Width: %d", width_tbl[nIdx]);
 						m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, 3 + nIdx, szTmp, _T(""), FALSE);
 					}
 					//	mp->ptはステータスバー内部の座標なので，スクリーン座標への変換が必要
@@ -1533,7 +1534,8 @@ LRESULT CEditWnd::DispatchEvent(
 						GetDocument()->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
 						GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );
 					} else if (nId >= 3) {
-						GetDocument()->m_pcEditWnd->ChangeLayoutParam(false, CLayoutInt(nId - 3 + 1),
+					  const int width_tbl[] = {2, 3, 4, 5, 6, 8};
+						GetDocument()->m_pcEditWnd->ChangeLayoutParam(false, CLayoutInt(width_tbl[nId - 3]),
 						                                              pLayoutMgr->m_tsvInfo.m_nTsvMode,
 						                                              pLayoutMgr->GetMaxLineKetas());
 						// 2009.08.28 nasukoji	「折り返さない」選択時にTAB幅が変更されたらテキスト最大幅の再算出が必要
