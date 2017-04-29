@@ -1499,7 +1499,11 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 					if( nTabIndex == nSelIndex - 1 ){
 						rcFullItem.right -= DpiScaleX(1);
 					}else if( nTabIndex == nSelIndex + 1 ){
+#ifdef CL_FIX_TABWND
+						rcFullItem.left += DpiScaleX(2);  // 2でないとエッヂが描画されない
+#else
 						rcFullItem.left += DpiScaleX(1);
+#endif  // cl_
 					}
 				}
 				bool bHotTracked = ::GetTextColor(hdc) == GetSysColor(COLOR_HOTLIGHT);
