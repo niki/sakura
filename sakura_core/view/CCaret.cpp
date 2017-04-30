@@ -348,14 +348,12 @@ CLayoutInt CCaret::MoveCursor(
 	if (oldDraw) {
 		if (nScrollColNum != 0) {  // 水平スクロール
 			nFinalDrawFlag |= PAINT_BODY;
-		}
-		if (nFinalDrawFlag != 0) {
-			if (nScrollRowNum != 0) {  // 垂直スクロール
-				nFinalDrawFlag |= PAINT_LINENUMBER;
-			}
-		}
-		if (nFinalDrawFlag != 0) {
 			m_pEditView->SetDrawSwitch(false);
+		}
+		if (nScrollRowNum != 0) {  // 垂直スクロール
+			nFinalDrawFlag |= PAINT_BODY;
+			nFinalDrawFlag |= PAINT_LINENUMBER;
+			//m_pEditView->SetDrawSwitch(false);
 		}
 	}
 #endif  // MI_
@@ -466,8 +464,10 @@ CLayoutInt CCaret::MoveCursor(
 			}
 		}
 
+#ifndef MI_FIX_CURSOR_MOVE_FLICKER
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars(); // 2001/10/20 novice
+#endif  // MI_
 	}
 
 	// 横スクロールが発生したら、ルーラー全体を再描画 2002.02.25 Add By KK
@@ -493,10 +493,12 @@ CLayoutInt CCaret::MoveCursor(
 		/* キャレットの行桁位置を表示する */
 		ShowCaretPosInfo();
 
+#ifndef MI_FIX_CURSOR_MOVE_FLICKER
 		//	Sep. 11, 2004 genta 同期スクロールの関数化
 		//	bScroll == FALSEの時にはスクロールしないので，実行しない
 		m_pEditView->SyncScrollV( -nScrollRowNum );	//	方向が逆なので符号反転が必要
 		m_pEditView->SyncScrollH( -nScrollColNum );	//	方向が逆なので符号反転が必要
+#endif  // MI_
 
 	}
 
@@ -513,16 +515,37 @@ CLayoutInt CCaret::MoveCursor(
 #ifdef MI_FIX_CURSOR_MOVE_FLICKER
 	m_pEditView->SetDrawSwitch(oldDraw);
 
-	if (nFinalDrawFlag != 0) {
-		//m_pEditView->Redraw();
-		m_pEditView->Call_OnPaint(nFinalDrawFlag, false);
+	if (bScroll) {
+		// ToDo: 同期スクロールを考慮
 		
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars();
+	}
+
+	if (nFinalDrawFlag != 0) {
+#if 1
+		// 画面端の行を早めに再描画する
+		// スクロール処理をしてから描画するまで少しの間時間差があるようで
+		// スクロールした行が残っているように見えてしまうため
+		if (nScrollRowNum > 0) {
+			int top = m_pEditView->GetTextArea().GetViewTopLine();
+			m_pEditView->RedrawLines(top, top + 3);
+		} else if (nScrollRowNum < 0) {
+			int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
+			m_pEditView->RedrawLines(bottom - 3, bottom);
+		}
+#else
+		m_pEditView->Call_OnPaint(nFinalDrawFlag, false);
+#endif
 		
 		if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
 			m_pEditView->MiniMapRedraw(true);
 		}
+	}
+
+	if (bScroll) {
+		//::UpdateWindow(m_pEditView->GetHwnd());
+		//::Sleep(1);
 	}
 #endif  // MI_
 
@@ -1246,11 +1269,18 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 		/* 現在のカーソル位置によって選択範囲を変更 */
 		m_pEditView->GetSelectionInfo().ChangeSelectAreaByCurrentCursor( ptTo );
 	}
+#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+	m_pEditView->m_ignore_update_window = true;
+#endif  // MI_
 	const CLayoutInt nScrollLines = MoveCursor(	ptTo,
 								m_pEditView->GetDrawSwitch() /* TRUE */,
 								_CARETMARGINRATE,
 								false,
 								bVertLineDoNotOFF );
+#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+	m_pEditView->m_ignore_update_window = false;
+	::UpdateWindow(m_pEditView->GetHwnd());
+#endif  // MI_
 	return nScrollLines;
 }
 
