@@ -20,7 +20,7 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 <br>
 
 **Build environment**  
-+ 2.2.0.1をベースに[マージ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2). ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura2201c/blob/master/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
++ 2.2.0.1をベースに[マージ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2). ベースリビジョンからのマージ情報は[こちら](https://github.com/mimix33/sakura2201c/blob/master/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド  
 + Boostを使用  
 + 挙動の制御にレジストリを使用しています  
@@ -100,4 +100,4 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 <br>
 
 
-(C) 2017 Calette.
+(C) 2017 mimix.

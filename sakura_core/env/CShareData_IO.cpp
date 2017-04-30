@@ -88,11 +88,11 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	TCHAR	szIniFileName[_MAX_PATH + 1];
 	CFileNameManager::getInstance()->GetIniFileName( szIniFileName, strProfileName.c_str(), bRead );	// 2007.05.19 ryoji iniファイル名を取得する
 
-#ifdef CL_USE_REGISTRY_FOR_PROFILES
-	if (!RegKey(CL_REGKEY).get(_T("NoReadProfilesFromRegistry"), 1)) {
+#ifdef MI_USE_REGISTRY_FOR_PROFILES
+	if (!RegKey(MI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 1)) {
 		cProfile.SetRegMode(szIniFileName);
 	}
-#endif  // cl_
+#endif  // MI_
 
 //	MYTRACE( _T("Iniファイル処理-1 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
@@ -106,9 +106,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			return false;
 		}
 
-#ifdef CL_USE_REGISTRY_FOR_PROFILES
+#ifdef MI_USE_REGISTRY_FOR_PROFILES
 		if (!cProfile.IsRegMode()) {
-#endif  // cl_
+#endif  // MI_
 		// バージョンアップ時はバックアップファイルを作成する	// 2011.01.28 ryoji
 		TCHAR iniVer[256];
 		DWORD mH, mL, lH, lL;
@@ -126,9 +126,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			::lstrcat(szBkFileName, _T(".bak"));
 			::CopyFile(szIniFileName, szBkFileName, FALSE);
 		}
-#ifdef CL_USE_REGISTRY_FOR_PROFILES
+#ifdef MI_USE_REGISTRY_FOR_PROFILES
 		}
-#endif  // cl_
+#endif  // MI_
 	}
 //	MYTRACE( _T("Iniファイル処理 0 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
@@ -193,19 +193,19 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	int			nSize;
 	EditInfo*	pfiWork;
 	WCHAR		szKeyName[64];
-#ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#ifdef MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	int mru_exist_count = 0;
-#endif  // cl_
+#endif  // MI_
 
 	cProfile.IOProfileData( pszSecName, LTEXT("_MRU_Counts"), pShare->m_sHistory.m_nMRUArrNum );
 	SetValueLimit( pShare->m_sHistory.m_nMRUArrNum, MAX_MRU );
 	nSize = pShare->m_sHistory.m_nMRUArrNum;
-#ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#ifdef MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	mru_exist_count = 0;
-#endif  // cl_
+#endif  // MI_
 	for( i = 0; i < nSize; ++i ){
 		pfiWork = &pShare->m_sHistory.m_fiMRUArr[i];
-#ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#ifdef MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].szPath"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferT(pfiWork->m_szPath) );
 		//お気に入り	//@@@ 2003.04.08 MIK
@@ -213,7 +213,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bMRUArrFavorite[i] );
 
 		if (cProfile.IsReadingMode()) {
-			if (!!RegKey(CL_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+			if (!!RegKey(MI_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
 				if (!pShare->m_sHistory.m_bMRUArrFavorite[i]) {  // お気に入りはパス
 					if (!fexist(pfiWork->m_szPath)) {
 						continue;
@@ -230,7 +230,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		}
 
 		mru_exist_count++;
-#endif  // cl_
+#endif  // MI_
 		if( cProfile.IsReadingMode() ){
 			pfiWork->m_nTypeId = -1;
 		}
@@ -244,10 +244,10 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		cProfile.IOProfileData( pszSecName, szKeyName, pfiWork->m_ptCursor.y );
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nCharCode"), i );
 		cProfile.IOProfileData_WrapInt( pszSecName, szKeyName, pfiWork->m_nCharCode );
-#ifndef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#ifndef MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].szPath"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferT(pfiWork->m_szPath) );
-#endif  // cl_
+#endif  // MI_
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].szMark2"), i );
 		if( !cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW(pfiWork->m_szMarkLines) ) ){
 			if( cProfile.IsReadingMode() ){
@@ -257,16 +257,16 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		}
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nType"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pfiWork->m_nTypeId );
-#ifndef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#ifndef MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 		//お気に入り	//@@@ 2003.04.08 MIK
 		auto_sprintf( szKeyName, LTEXT("MRU[%02d].bFavorite"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bMRUArrFavorite[i] );
-#endif  // cl_
+#endif  // MI_
 	}
-#ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#ifdef MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	pShare->m_sHistory.m_nMRUArrNum = mru_exist_count;
 	i = mru_exist_count;
-#endif  // cl_
+#endif  // MI_
 	//@@@ 2001.12.26 YAZAKI 残りのm_fiMRUArrを初期化。
 	if ( cProfile.IsReadingMode() ){
 		EditInfo	fiInit;
@@ -286,9 +286,9 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("_MRUFOLDER_Counts"), pShare->m_sHistory.m_nOPENFOLDERArrNum );
 	SetValueLimit( pShare->m_sHistory.m_nOPENFOLDERArrNum, MAX_OPENFOLDER );
 	nSize = pShare->m_sHistory.m_nOPENFOLDERArrNum;
-#ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#ifdef MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	mru_exist_count = 0;
-#endif  // cl_
+#endif  // MI_
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("MRUFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_szOPENFOLDERArr[i] );
@@ -296,9 +296,9 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		wcscat( szKeyName, LTEXT(".bFavorite") );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] );
 
-#ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#ifdef MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 		if (cProfile.IsReadingMode()) {
-			if (!!RegKey(CL_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+			if (!!RegKey(MI_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
 				if (!pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i]) {  // お気に入りはパス
 					if (!fexist(pShare->m_sHistory.m_szOPENFOLDERArr[i])) {
 						continue;
@@ -318,12 +318,12 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		}
 
 		mru_exist_count++;
-#endif  // cl_
+#endif  // MI_
 	}
-#ifdef CL_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#ifdef MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	pShare->m_sHistory.m_nOPENFOLDERArrNum = mru_exist_count;
 	i = mru_exist_count;
-#endif // cl_
+#endif // MI_
 	//読み込み時は残りを初期化
 	if ( cProfile.IsReadingMode() ){
 		for (; i< MAX_OPENFOLDER; ++i){
@@ -404,7 +404,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("GREPFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFolders[i] );
 	}
-#ifdef CL_MOD_GREP
+#ifdef MI_MOD_GREP
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[*].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders99 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders3 );
@@ -412,7 +412,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Path"), pShare->m_sSearchKeywords.m_szGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Path"), pShare->m_sSearchKeywords.m_szGrepFolders3 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[2].Path"), pShare->m_sSearchKeywords.m_szGrepFolders4 );
-#endif  // cl_
+#endif  // MI_
 }
 
 /*!
@@ -1549,10 +1549,10 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	if( types.m_id < 0 ){
 		types.m_id *= -1;
 	}
-#ifndef CL_MOD_TAB_MARK
+#ifndef MI_MOD_TAB_MARK
 	cProfile.IOProfileData( pszSecName, LTEXT("szTabViewString"), MakeStringBufferW(types.m_szTabViewString) );
 	cProfile.IOProfileData_WrapInt( pszSecName, LTEXT("bTabArrow")	, types.m_bTabArrow );	//@@@ 2003.03.26 MIK
-#endif  // cl_
+#endif  // MI_
 	cProfile.IOProfileData( pszSecName, LTEXT("bInsSpace")			, types.m_bInsSpace );	// 2001.12.03 hor
 
 	cProfile.IOProfileData( pszSecName, LTEXT("nTextWrapMethod"), types.m_nTextWrapMethod );		// 2008.05.30 nasukoji

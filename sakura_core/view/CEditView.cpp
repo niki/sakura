@@ -160,9 +160,9 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_cHistory(NULL)
 , m_cRegexKeyword(NULL)
 , m_hAtokModule(NULL)
-#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 , m_ignore_update_window(false)
-#endif  // cl_
+#endif  // MI_
 {
 }
 
@@ -333,12 +333,12 @@ BOOL CEditView::Create(
 	/* エディタウィンドウの作成 */
 	SetHwnd(
 		::CreateWindowEx(
-#ifdef CL_FIX_EDITVIEW
+#ifdef MI_FIX_EDITVIEW
 			// 余計な境界はないようにする
 			/*WS_EX_STATICEDGE*/0,		// extended window style
 #else
 			WS_EX_STATICEDGE,		// extended window style
-#endif  // cl_
+#endif  // MI_
 			GSTR_VIEWNAME,			// pointer to registered class name
 			GSTR_VIEWNAME,			// pointer to window name
 			0						// window style
@@ -1416,9 +1416,9 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 	const wchar_t*	pLine;
 	CLogicInt		nLineLen;
 	CLogicInt		nLineLen2;
-#ifndef CL_MOD_WAITCUESOR
+#ifndef MI_MOD_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // cl_
+#endif  // MI_
 
 
 	/* テキストが選択されているか */
@@ -1426,9 +1426,9 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 		return;
 	}
 
-#ifdef CL_MOD_WAITCUESOR
+#ifdef MI_MOD_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // cl_
+#endif  // MI_
 
 	CLogicPoint ptFromLogic;	// 2009.07.18 ryoji Logicで記憶するように変更
 	m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
@@ -2545,9 +2545,9 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 	if( bUnderLine ){
 		nUnderLineY = GetTextArea().GetAreaTop() + (Int)(GetCaret().GetCaretLayoutPos().GetY2() - GetTextArea().GetViewTopLine())
 			 * GetTextMetrics().GetHankakuDy() + GetTextMetrics().GetHankakuHeight();
-#ifdef CL_LINE_CENTERING
+#ifdef MI_LINE_CENTERING
 		nUnderLineY += m_pTypeData->m_nLineSpace / 2;
-#endif  // cl_
+#endif  // MI_
 	}
 	// To Here 2007.09.09 Moca
 
@@ -2572,11 +2572,11 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			gr.SetPen( m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_sColorAttr.m_cTEXT );
 			::MoveToEx(
 				gr,
-#ifdef CL_MOD_CUR_UL
+#ifdef MI_MOD_CUR_UL
 				0,//GetTextArea().GetLeftYohaku(),
 #else
 				GetTextArea().GetAreaLeft(),
-#endif  // cl_
+#endif  // MI_
 				nUnderLineY,
 				NULL
 			);
@@ -2612,35 +2612,35 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				nUnderLineY = -1;
 			}else if( GetTextArea().m_nViewRowNum < nY ){
 				nUnderLineY = GetTextArea().GetAreaBottom() + 1;
-#ifdef CL_LINE_CENTERING
+#ifdef MI_LINE_CENTERING
 				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += m_pTypeData->m_nLineSpace / 2;
 				}
-#endif  // cl_
+#endif  // MI_
 			}else{
 				nUnderLineY = GetTextArea().GetAreaTop() + (Int)(nY) * GetTextMetrics().GetHankakuDy();
-#ifdef CL_LINE_CENTERING
+#ifdef MI_LINE_CENTERING
 				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += m_pTypeData->m_nLineSpace / 2;
 				}
-#endif  // cl_
+#endif  // MI_
 			}
 
 			GetCaret().m_cUnderLine.Lock();
 
 			PAINTSTRUCT ps;
-#ifdef CL_MOD_CUR_UL
+#ifdef MI_MOD_CUR_UL
 			//ps.rcPaint.left = GetTextArea().GetAreaLeft();
 			ps.rcPaint.left = 0;//GetTextArea().GetLeftYohaku();
 #else
 			ps.rcPaint.left = 0;
-#endif  // cl_
+#endif  // MI_
 			ps.rcPaint.right = GetTextArea().GetAreaRight();
 			int height;
 			if( bDrawPaint && m_nOldUnderLineYHeight != 0 ){

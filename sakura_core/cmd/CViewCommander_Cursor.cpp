@@ -97,9 +97,9 @@ int CViewCommander::Command_UP( bool bSelect, bool bRepeat, int lines )
 
 	int		nRepeat = 0;
 
-#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pCommanderView->m_ignore_update_window = true;
-#endif  // cl_
+#endif  // MI_
 	/* キーリピート時のスクロールを滑らかにするか */
 	if( !GetDllShareData().m_Common.m_sGeneral.m_nRepeatedScroll_Smooth ){
 		CLayoutInt i;
@@ -121,10 +121,10 @@ int CViewCommander::Command_UP( bool bSelect, bool bRepeat, int lines )
 			}
 		}
 	}
-#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pCommanderView->m_ignore_update_window = false;
 	::UpdateWindow(m_pCommanderView->GetHwnd());
-#endif  // cl_
+#endif  // MI_
 	return nRepeat;
 }
 
@@ -135,9 +135,9 @@ int CViewCommander::Command_DOWN( bool bSelect, bool bRepeat )
 {
 	int		nRepeat;
 	nRepeat = 0;
-#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pCommanderView->m_ignore_update_window = true;
-#endif  // cl_
+#endif  // MI_
 	/* キーリピート時のスクロールを滑らかにするか */
 	if( !GetDllShareData().m_Common.m_sGeneral.m_nRepeatedScroll_Smooth ){
 		CLayoutInt i;
@@ -159,10 +159,10 @@ int CViewCommander::Command_DOWN( bool bSelect, bool bRepeat )
 			}
 		}
 	}
-#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pCommanderView->m_ignore_update_window = false;
 	::UpdateWindow(m_pCommanderView->GetHwnd());
-#endif  // cl_
+#endif  // MI_
 	return nRepeat;
 }
 
@@ -955,8 +955,8 @@ void CViewCommander::Command_WndScrollDown( void )
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef CL_MOD_SCROLL
-	nCaretMarginY = CL_MOD_VERTICAL_SCR;
+#ifdef MI_MOD_SCROLL
+	nCaretMarginY = MI_MOD_VERTICAL_SCR;
 	if( nCaretMarginY < 1 )
 		nCaretMarginY = CLayoutInt(1);
 #else
@@ -965,7 +965,7 @@ void CViewCommander::Command_WndScrollDown( void )
 		nCaretMarginY = CLayoutInt(1);
 
 	nCaretMarginY += 2;
-#endif  // cl_
+#endif  // MI_
 
 	bool bCaretOff = false;
 	if( GetCaret().GetCaretLayoutPos().GetY() > m_pCommanderView->GetTextArea().m_nViewRowNum + m_pCommanderView->GetTextArea().GetViewTopLine() - (nCaretMarginY + 1) ){
@@ -1003,8 +1003,8 @@ void CViewCommander::Command_WndScrollUp(void)
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef CL_MOD_SCROLL
-	nCaretMarginY = CL_MOD_VERTICAL_SCR;
+#ifdef MI_MOD_SCROLL
+	nCaretMarginY = MI_MOD_VERTICAL_SCR;
 	if( nCaretMarginY < 0 )
 		nCaretMarginY = CLayoutInt(0);
 #else

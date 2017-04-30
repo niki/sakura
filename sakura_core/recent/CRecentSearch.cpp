@@ -42,11 +42,11 @@ CRecentSearch::CRecentSearch()
 		GetShareData()->m_sSearchKeywords.m_aSearchKeys.dataPtr(),
 		&GetShareData()->m_sSearchKeywords.m_aSearchKeys._GetSizeRef(),
 		NULL,
-#ifdef CL_MOD_MAXDATA
-		RegKey(CL_REGKEY).get(_T("RecentSearchKeyMax"), MAX_SEARCHKEY),
+#ifdef MI_MOD_MAXDATA
+		RegKey(MI_REGKEY).get(_T("RecentSearchKeyMax"), MAX_SEARCHKEY),
 #else
 		MAX_SEARCHKEY,
-#endif  // cl_
+#endif  // MI_
 		NULL
 	);
 }

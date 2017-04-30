@@ -79,9 +79,9 @@ CDialog::CDialog(bool bSizable, bool bCheckShareData)
 	m_nWidth = -1;
 	m_nHeight = -1;
 
-#ifdef CL_MOD_DIALOG_POS
+#ifdef MI_MOD_DIALOG_POS
 	m_hwndPlaceOfWindow = NULL;
-#endif  // cl_
+#endif  // MI_
 
 	return;
 
@@ -208,11 +208,11 @@ void CDialog::SetDialogPosSize()
 	}
 #endif
 
-#ifdef CL_MOD_DIALOG_POS
+#ifdef MI_MOD_DIALOG_POS
 	if (m_hwndPlaceOfWindow != NULL) {
 		SetPlaceOfWindow(m_hwndPlaceOfWindow);
 	}
-#endif  // cl_
+#endif  // MI_
 
 	if( -1 != m_xPos && -1 != m_yPos ){
 		/* ウィンドウ位置・サイズを再現 */
@@ -624,7 +624,7 @@ bool CDialog::DirectoryUp( TCHAR* szDir )
 }
 
 // コントロールに画面のフォントを設定	2012/11/27 Uchi
-#ifdef CL_MOD_SET_MAIN_FONT
+#ifdef MI_MOD_SET_MAIN_FONT
 #include "util/window.h"
 HFONT CDialog::SetMainFont( HWND hTarget, int pt )
 {
@@ -700,9 +700,9 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 	}
 	return hFont;
 }
-#endif  // cl_
+#endif  // MI_
 
-#ifdef CL_MOD_DIALOG_POS
+#ifdef MI_MOD_DIALOG_POS
 void CDialog::SetPlaceOfWindow() {
 	m_hwndPlaceOfWindow = m_hwndParent;
 }
@@ -719,7 +719,7 @@ void CDialog::SetPlaceOfWindow(HWND hWnd) {
 	m_xPos = rc.left + (rc.right - rc.left) / 2 - m_nWidth / 2;
 	m_yPos = rc.top + (rc.bottom - rc.top) / 2 - m_nHeight / 2;
 #else
-	int top_place = RegKey(CL_REGKEY).get(_T("PlaceDialogWindowTop"), CL_MOD_DIALOG_PLACE_TOP);
+	int top_place = RegKey(MI_REGKEY).get(_T("PlaceDialogWindowTop"), MI_MOD_DIALOG_PLACE_TOP);
 	int top_molecule = (top_place % 10);
 	int top_denominator = (top_place / 10);
 	if (top_molecule < 1 || 9 < top_molecule || top_denominator < 1 || 9 < top_denominator) {
@@ -730,7 +730,7 @@ void CDialog::SetPlaceOfWindow(HWND hWnd) {
 	m_yPos += (rc.bottom - rc.top) / top_denominator * top_molecule;
 	m_yPos -= m_nHeight / 2;
 	
-	int left_place = RegKey(CL_REGKEY).get(_T("PlaceDialogWindowLeft"), CL_MOD_DIALOG_PLACE_LEFT);
+	int left_place = RegKey(MI_REGKEY).get(_T("PlaceDialogWindowLeft"), MI_MOD_DIALOG_PLACE_LEFT);
 	int left_molecule = (left_place % 10);
 	int left_denominator = (left_place / 10);
 	if (left_molecule < 1 || 9 < left_molecule || left_denominator < 1 || 9 < left_denominator) {
@@ -746,7 +746,7 @@ void CDialog::SetPlaceOfWindow(HWND hWnd) {
 	//OutputDebugStringW(szMsg);
 #endif
 }
-#endif  // cl_
+#endif  // MI_
 
 void CDialog::ResizeItem( HWND hTarget, const POINT& ptDlgDefault, const POINT& ptDlgNew, const RECT& rcItemDefault, EAnchorStyle anchor, bool bUpdate)
 {

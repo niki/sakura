@@ -5,12 +5,12 @@
 #include "util/string_ex2.h"
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
-#ifdef CL_MOD_NUMERIC_COLOR
+#ifdef MI_MOD_NUMERIC_COLOR
 //#include <regex>
 //using namespace std;
 #include <boost/regex.hpp>
 using namespace boost;
-#endif  // cl_
+#endif  // MI_
 
 static int IsNumber( const CStringRef& cStr, int offset );/* 数値ならその長さを返す */	//@@@ 2001.02.17 by MIK
 
@@ -75,7 +75,7 @@ bool CColor_Numeric::EndColor(const CStringRef& cStr, int nPos)
  */
 static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*, int length*/)
 {
-#ifdef CL_MOD_NUMERIC_COLOR
+#ifdef MI_MOD_NUMERIC_COLOR
 	register const wchar_t *p = cStr.GetPtr() + offset;
 	register const wchar_t *q = cStr.GetPtr() + cStr.GetLength();
 
@@ -640,6 +640,6 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 
 	/* 数値ではない */
 	return 0;
-#endif  // cl_
+#endif  // MI_
 }
 //@@@ 2001.11.07 End by MIK

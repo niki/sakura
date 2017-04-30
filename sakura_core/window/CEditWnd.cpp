@@ -1240,11 +1240,11 @@ LRESULT CEditWnd::DispatchEvent(
 		idCtl = (UINT) wParam;				/* コントロールのID */
 		lpdis = (DRAWITEMSTRUCT*) lParam;	/* 項目描画情報 */
 		if( IDW_STATUSBAR == idCtl ){
-#ifdef CL_MOD_STATUSBAR
+#ifdef MI_MOD_STATUSBAR
 			if( 8 == lpdis->itemID ){
 #else
 			if( 5 == lpdis->itemID ){ // 2003.08.26 Moca idがずれて作画されなかった
-#endif  // cl_
+#endif  // MI_
 				int	nColor;
 				if( m_pShareData->m_sFlags.m_bRecordingKeyMacro	/* キーボードマクロの記録中 */
 				 && m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == GetHwnd()	/* キーボードマクロを記録中のウィンドウ */
@@ -1254,18 +1254,18 @@ LRESULT CEditWnd::DispatchEvent(
 					nColor = COLOR_3DSHADOW;
 				}
 				::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
-#ifdef CL_MOD_STATUSBAR
+#ifdef MI_MOD_STATUSBAR
 				if( COLOR_BTNTEXT == nColor ){
 					::SetTextColor( lpdis->hDC, RGB(255, 0, 0) );
 				}
-#endif  // cl_
+#endif  // MI_
 				::SetBkMode( lpdis->hDC, TRANSPARENT );
 				
 				// 2003.08.26 Moca 上下中央位置に作画
 				TEXTMETRIC tm;
 				::GetTextMetrics( lpdis->hDC, &tm );
 				int y = ( lpdis->rcItem.bottom - lpdis->rcItem.top - tm.tmHeight + 1 ) / 2 + lpdis->rcItem.top;
-#ifdef CL_MOD_STATUSBAR
+#ifdef MI_MOD_STATUSBAR
 				if( COLOR_BTNTEXT == nColor ){
 					::TextOut( lpdis->hDC, lpdis->rcItem.left, y, _T("●"), _tcslen( _T("●") ) );
 				} else {
@@ -1276,7 +1276,7 @@ LRESULT CEditWnd::DispatchEvent(
 				if( COLOR_BTNTEXT == nColor ){
 					::TextOut( lpdis->hDC, lpdis->rcItem.left + 1, y, _T("REC"), _tcslen( _T("REC") ) );
 				}
-#endif  // cl_
+#endif  // MI_
 			}
 			return 0;
 		}else{
@@ -1447,11 +1447,11 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case WM_EXITMENULOOP:
 //		MYTRACE( _T("WM_EXITMENULOOP\n") );
-#ifndef CL_MOD_STATUSBAR
+#ifndef MI_MOD_STATUSBAR
 		if( NULL != m_cStatusBar.GetStatusHwnd() ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, _T(""));
 		}
-#endif  // cl_
+#endif  // MI_
 		m_cMenuDrawer.EndDrawMenu();
 		/* メッセージの配送 */
 		return Views_DispatchEvent( hwnd, uMsg, wParam, lParam );
@@ -1481,7 +1481,7 @@ LRESULT CEditWnd::DispatchEvent(
 		//	From Here Feb. 15, 2004 genta 
 		//	ステータスバーのダブルクリックでモード切替ができるようにする
 		if( m_cStatusBar.GetStatusHwnd() && pnmh->hwndFrom == m_cStatusBar.GetStatusHwnd() ){
-#ifdef CL_MOD_STATUSBAR
+#ifdef MI_MOD_STATUSBAR
 			if( pnmh->code == NM_CLICK ){  // 左クリックに変更する
 				LPNMMOUSE mp = (LPNMMOUSE) lParam;
 				if( mp->dwItemSpec == 5/*6*/ ){	//	上書き/挿入
@@ -1711,7 +1711,7 @@ LRESULT CEditWnd::DispatchEvent(
 					}
 				}
 			}
-#endif  // cl_
+#endif  // MI_
 			return 0L;
 		}
 		//	To Here Feb. 15, 2004 genta 
@@ -2078,9 +2078,9 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case MYWM_SETCARETPOS:	/* カーソル位置変更通知 */
 		{
-#ifdef CL_MOD_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // cl_
+#ifdef MI_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(MI_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // MI_
 
 			//	2006.07.09 genta LPARAMに新たな意味を追加
 			//	bit 0 (MASK 1): (bit 1==0のとき) 0/選択クリア, 1/選択開始・変更
@@ -3363,7 +3363,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		// 2004-02-28 yasu 文字列を出力時の書式に合わせる
 		// 幅を変えた場合にはCEditView::ShowCaretPosInfo()での表示方法を見直す必要あり．
 		// ※pszLabel[3]: ステータスバー文字コード表示領域は大きめにとっておく
-#ifdef CL_MOD_STATUSBAR
+#ifdef MI_MOD_STATUSBAR
 		constexpr int	nStArrNum = 9;
 	#ifdef SAKURA_LANG_EN_US_EXPORTS
 		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("U+AAAAAAAA"), _T("UTF-16 BOM"), _T("Unix"), _T("INS"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●") };
@@ -3373,7 +3373,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 #else
 		const TCHAR*	pszLabel[7] = { _T(""), _T("99999 行 9999 列"), _T("CRLF"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM付"), _T("REC"), _T("上書") };	//Oct. 30, 2000 JEPRO 千万行も要らん	文字コード枠を広げる 2008/6/21	Uchi
 		int			nStArrNum = 7;
-#endif  // cl_
+#endif  // MI_
 		//	To Here
 		int			nAllWidth = rc.right - rc.left;
 		int			nSbxWidth = ::GetSystemMetrics(SM_CXVSCROLL) + ::GetSystemMetrics(SM_CXEDGE); // サイズボックスの幅
@@ -3398,7 +3398,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 			nStArr[i - 1] = nStArr[i] - ( sz.cx + nBdrWidth );
 		}
 
-#ifndef CL_MOD_STATUSBAR
+#ifndef MI_MOD_STATUSBAR
 		//	Nov. 8, 2003 genta
 		//	初期状態ではすべての部分が「枠あり」だが，メッセージエリアは枠を描画しないようにしている
 		//	ため，初期化時の枠が変な風に残ってしまう．初期状態で枠を描画させなくするため，
@@ -3406,7 +3406,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		if( bUpdateStatus ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, _T(""));
 		}
-#endif  // cl_
+#endif  // MI_
 
 		StatusBar_SetParts( m_cStatusBar.GetStatusHwnd(), nStArrNum, nStArr );
 		if (hFont != NULL)
@@ -4190,11 +4190,11 @@ void CEditWnd::InitMenubarMessageFont(void)
 	lf.lfClipPrecision	= 0x2;
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
-#ifdef CL_MOD_UI_FONT
+#ifdef MI_MOD_UI_FONT
 	_tcscpy( lf.lfFaceName, _T("MS Shell Dlg") );
 #else
 	_tcscpy( lf.lfFaceName, _T("ＭＳ ゴシック") );
-#endif  // cl_
+#endif  // MI_
 	m_hFontCaretPosInfo = ::CreateFontIndirect( &lf );
 
 	hdc = ::GetDC( ::GetDesktopWindow() );
@@ -4320,12 +4320,12 @@ void CEditWnd::ChangeFileNameNotify( const TCHAR* pszTabCaption, const TCHAR* _p
 
 			p->m_bIsGrep = bIsGrep;
 
-#ifdef CL_MOD_TAB_CAPTION_COLOR
+#ifdef MI_MOD_TAB_CAPTION_COLOR
 			p->m_bIsModified = GetDocument()->m_cDocEditor.IsModified();
 			p->m_bIsRecMacro =
 			    (GetDllShareData().m_sFlags.m_bRecordingKeyMacro &&
 			     GetDllShareData().m_sFlags.m_hwndRecordingKeyMacro == CEditWnd::getInstance()->GetHwnd());
-#endif  // cl_
+#endif  // MI_
 		}
 	}
 	cRecentEditNode.Terminate();
@@ -4428,7 +4428,7 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 		::GetCursorPos( &pt );	// マウスカーソル位置に変更
 	}
 	else {
-#ifdef CL_MOD_WINLIST_POPUP
+#ifdef MI_MOD_WINLIST_POPUP
 		pt.x = (LONG)-1;
 		pt.y = (LONG)-1;
 		m_cTabWnd.enableTabListSizeFix();
@@ -4438,15 +4438,15 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 		if( pt.x < rc.left )
 			pt.x = rc.left;
 		pt.y = rc.top;
-#endif  // cl_
+#endif  // MI_
 	}
 
 	// ウィンドウ一覧メニューをポップアップ表示する
 	if( NULL != m_cTabWnd.GetHwnd() ){
 		m_cTabWnd.TabListMenu( pt );
-#ifdef CL_MOD_WINLIST_POPUP
+#ifdef MI_MOD_WINLIST_POPUP
 		m_cTabWnd.disableTabListSizeFix();
-#endif  // cl_
+#endif  // MI_
 	}
 	else{
 		m_cMenuDrawer.ResetContents();	// 2009.06.02 ryoji 追加
@@ -4454,12 +4454,12 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 		HMENU hMenu = ::CreatePopupMenu();	// 2006.03.23 fon
 		int nRowNum = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pEditNodeArr, TRUE );
 		WinListMenu( hMenu, pEditNodeArr, nRowNum, TRUE );
-#ifdef CL_MOD_WINLIST_POPUP
+#ifdef MI_MOD_WINLIST_POPUP
 		m_cTabWnd.disableTabListSizeFix();
 		::GetWindowRect( GetActiveView().GetHwnd(), &rc );
 
-		DWORD left = RegKey(CL_REGKEY).get(_T("WinListPopupLeft"), CL_MOD_WINLIST_POPUP_LEFT);
-		DWORD top = RegKey(CL_REGKEY).get(_T("WinListPopupTop"), CL_MOD_WINLIST_POPUP_TOP);
+		DWORD left = RegKey(MI_REGKEY).get(_T("WinListPopupLeft"), MI_MOD_WINLIST_POPUP_LEFT);
+		DWORD top = RegKey(MI_REGKEY).get(_T("WinListPopupTop"), MI_MOD_WINLIST_POPUP_TOP);
 
 		if (pt.x == (LONG)-1) {
 			pt.x = rc.left + left;
@@ -4482,7 +4482,7 @@ LRESULT CEditWnd::PopupWinList( bool bMousePos )
 			
 			pt.y = rc.top + (rc.bottom - rc.top) / 2 - menu_height / 2;
 		}
-#endif  // cl_
+#endif  // MI_
 		// メニューを表示する
 		RECT rcWork;
 		GetMonitorWorkRect( pt, &rcWork );	// モニタのワークエリア

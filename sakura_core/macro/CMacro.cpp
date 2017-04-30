@@ -1568,13 +1568,13 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 		{
 			if( ArgSize != 1 ) return false;
 			if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[0]) ), 0, VT_I4) != S_OK) return false;	// VT_I4として解釈
-#ifdef CL_MOD_CHANGE_TAB_WIDTH_MACRO
+#ifdef MI_MOD_CHANGE_TAB_WIDTH_MACRO
 			if (varCopy.Data.iVal < 0) {
 				View->m_pcEditDoc->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
 				View->RedrawAll();
 				return false;
 			}
-#endif  // cl_
+#endif  // MI_
 			int nTab = (Int)View->m_pcEditDoc->m_cLayoutMgr.GetTabSpace();
 			Wrap( &Result )->Receive( nTab );
 			// 2013.04.30 Moca 条件追加。不要な場合はChangeLayoutParamを呼ばない

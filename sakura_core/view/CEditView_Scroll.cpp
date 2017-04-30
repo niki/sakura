@@ -410,9 +410,9 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip2 = {0,0,0,0};
 			ScrollDraw(nScrollRowNum, CLayoutInt(0), rcScrol, rcClip, rcClip2);
-#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 if (!m_ignore_update_window)
-#endif  // cl_
+#endif  // MI_
 			::UpdateWindow( GetHwnd() );
 		}
 	}
@@ -495,9 +495,9 @@ CLayoutInt CEditView::ScrollAtH( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip = {0,0,0,0};
 			ScrollDraw(CLayoutInt(0), nScrollColNum, rcScrol, rcClip, rcClip2);
-#ifdef CL_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 if (!m_ignore_update_window)
-#endif  // cl_
+#endif  // MI_
 			::UpdateWindow( GetHwnd() );
 		}
 	}

@@ -644,9 +644,9 @@ void CViewSelect::PrintSelectionInfoMsg() const
 		}else if( m_bSelectingLock ){
 			pView->m_pcEditWnd->m_cStatusBar.SendStatusMessage2( _T("selecting") );
 		}else{
-#ifndef CL_MOD_STATUSBAR
+#ifndef MI_MOD_STATUSBAR
 			pView->m_pcEditWnd->m_cStatusBar.SendStatusMessage2( _T("") );
-#endif  // cl_
+#endif  // MI_
 		}
 		return;
 	}

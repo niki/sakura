@@ -72,10 +72,10 @@ public:
 
 	LRESULT TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 	LRESULT TabListMenu( POINT pt, BOOL bSel = TRUE, BOOL bFull = FALSE, BOOL bOtherGroup = TRUE );	/*!< タブ一覧メニュー作成処理 */	// 2006.03.23 fon
-#ifdef CL_MOD_WINLIST_POPUP
+#ifdef MI_MOD_WINLIST_POPUP
 	void enableTabListSizeFix() { m_bTabListSizeFix = true; }
 	void disableTabListSizeFix() { m_bTabListSizeFix = false; }
-#endif  // cl_
+#endif  // MI_
 
 	void SizeBox_ONOFF( bool bSizeBox );
 	HWND GetHwndSizeBox(){
@@ -144,14 +144,14 @@ protected:
 	HIMAGELIST ImageList_Duplicate( HIMAGELIST himl );	/*!< イメージリストの複製処理 */
 
 	// 2006.02.01 ryoji タブ一覧を追加
-#ifdef CL_FIX_TABWND
+#ifdef MI_FIX_TABWND
 	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted, bool tab = false );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
 	void DrawTabBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted ) {
 		DrawBtnBkgnd(hdc, lprcBtn, bBtnHilighted, true);
 	}
 #else
 	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
-#endif  // cl_
+#endif  // MI_
 	void DrawListBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 一覧ボタン描画処理 */
 	void DrawCloseFigure( CGraphics& gr, const RECT &btnRect );			/*!< 閉じるマーク描画処理 */
 	void DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 閉じるボタン描画処理 */		// 2006.10.21 ryoji
@@ -170,7 +170,7 @@ protected:
 		return ::CreateFontIndirect( &ncm.lfMenuFont );
 	}
 
-#ifdef CL_FIX_TABWND
+#ifdef MI_FIX_TABWND
 	// タブ間クリックの設定をする
 	void SetInterTabClk(int nTab) {
 		m_pShareData->m_sFlags.m_nInterTabClk = nTab;
@@ -184,7 +184,7 @@ protected:
 		::KillTimer(m_hwndTab, 2);  // タイマーを殺す
 		m_pShareData->m_sFlags.m_nInterTabClk = 0;
 	}
-#endif  // cl_
+#endif  // MI_
 
 protected:
 	enum DragState { DRAG_NONE, DRAG_CHECK, DRAG_DRAG };
@@ -236,9 +236,9 @@ private:
 	HWND		m_hwndSizeBox;
 	bool		m_bSizeBox;
 
-#ifdef CL_MOD_WINLIST_POPUP
+#ifdef MI_MOD_WINLIST_POPUP
 	bool		m_bTabListSizeFix;
-#endif  // cl_
+#endif  // MI_
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(CTabWnd);

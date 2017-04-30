@@ -100,7 +100,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	CNativeT		cmWork2;
 	CNativeT		cmWork3;
 	cmWork1.SetString( cDlgGrep.m_strText.c_str() );
-#ifdef CL_MOD_GREP
+#ifdef MI_MOD_GREP
 	int count = 0;
 	CNativeT temp;
 	if (!cDlgGrep.m_bFromThisText) {
@@ -141,7 +141,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 #else
 	cmWork2.SetString( cDlgGrep.m_szFile );
 	cmWork3.SetString( cDlgGrep.m_szFolder );
-#endif  // cl_
+#endif  // MI_
 	cmWork1.Replace( L"\"", L"\"\"" );
 	cmWork2.Replace( _T("\""), _T("\"\"") );
 	cmWork3.Replace( _T("\""), _T("\"\"") );
@@ -161,11 +161,11 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 
 	//GOPTオプション
 	TCHAR pOpt[64] = _T("");
-#ifdef CL_MOD_GREP
+#ifdef MI_MOD_GREP
 	if( (count > 0) && cDlgGrep.m_bSubFolder )_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
 #else
 	if( cDlgGrep.m_bSubFolder					)_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
-#endif  // cl_
+#endif  // MI_
 	if( cDlgGrep.m_sSearchOption.bLoHiCase		)_tcscat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
 	if( cDlgGrep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// 正規表現
 	if( cDlgGrep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// 行を出力する
@@ -1169,9 +1169,9 @@ bool CControlTray::OpenNewEditor(
 	bool				bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-#ifdef CL_MOD_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // cl_
+#ifdef MI_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(MI_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // MI_
 
 	/* 共有データ構造体のアドレスを返す */
 	DLLSHAREDATA*	pShareData = &GetDllShareData();
@@ -1392,9 +1392,9 @@ bool CControlTray::OpenNewEditor2(
 	bool			bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-#ifdef CL_MOD_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(CL_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // cl_
+#ifdef MI_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(MI_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // MI_
 
 	DLLSHAREDATA*	pShareData;
 

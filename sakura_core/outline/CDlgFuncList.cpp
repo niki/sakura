@@ -1927,11 +1927,11 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 				if( m_nHeight < DOCK_MIN_SIZE ) m_nHeight = DOCK_MIN_SIZE;
 			}
 		}
-#ifdef CL_MOD_DIALOG_POS
+#ifdef MI_MOD_DIALOG_POS
 		else {
 			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
 		}
-#endif  // cl_
+#endif  // MI_
 	}
 
 	if( !m_bInChangeLayout ){	// ChangeLayout() 処理中は設定変更しない
@@ -2035,7 +2035,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
-#ifdef CL_MOD_OUTLINEDLG
+#ifdef MI_MOD_OUTLINEDLG
 	// フォント設定
 	{
 		HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_TREE_FL ), WM_GETFONT, 0, 0 );
@@ -2047,7 +2047,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		HFONT hFont = SetMainFont( GetItemHwnd( IDC_LIST_FL ) );
 		m_cFontText[1].SetFont( hFontOld, hFont, GetItemHwnd( IDC_LIST_FL ) );
 	}
-#endif  // cl_
+#endif  // MI_
 
 	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 }
@@ -2235,10 +2235,10 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 	}
 
 #ifdef DEFINE_SYNCCOLOR
-#ifdef CL_MOD_OUTLINEDLG
-  bool dock_color_sync = !!RegKey(CL_REGKEY).get(_T("NoOutlineDockSystemColor"), 0);
+#ifdef MI_MOD_OUTLINEDLG
+  bool dock_color_sync = !!RegKey(MI_REGKEY).get(_T("NoOutlineDockSystemColor"), 0);
   if (dock_color_sync)
-#endif  // cl_
+#endif  // MI_
 	if( IsDocking() ){
 		if( hwndList == pnmh->hwndFrom || hwndTree == pnmh->hwndFrom ){
 			if( pnmh->code == NM_CUSTOMDRAW ){
@@ -2453,10 +2453,10 @@ static int CALLBACK Compare_by_ItemTextDesc(LPARAM lParam1, LPARAM lParam2, LPAR
 
 BOOL CDlgFuncList::OnDestroy( void )
 {
-#ifdef CL_MOD_OUTLINEDLG
+#ifdef MI_MOD_OUTLINEDLG
 	m_cFontText[0].ReleaseOnDestroy();
 	m_cFontText[1].ReleaseOnDestroy();
-#endif  // cl_
+#endif  // MI_
 	CDialog::OnDestroy();
 
 	/* アウトライン ■位置とサイズを記憶する */ // 20060201 aroka
@@ -2780,10 +2780,10 @@ void CDlgFuncList::SyncColor( void )
 	if( !IsDocking() )
 		return;
 #ifdef DEFINE_SYNCCOLOR
-#ifdef CL_MOD_OUTLINEDLG
-  bool dock_color_sync = !!RegKey(CL_REGKEY).get(_T("NoOutlineDockSystemColor"), 0);
+#ifdef MI_MOD_OUTLINEDLG
+  bool dock_color_sync = !!RegKey(MI_REGKEY).get(_T("NoOutlineDockSystemColor"), 0);
   if (!dock_color_sync) return;
-#endif  // cl_
+#endif  // MI_
 	// テキスト色・背景色をビューと同色にする
 	CEditView* pcEditView = (CEditView*)m_lParam;
 	const STypeConfig	*TypeDataPtr = &(pcEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute());

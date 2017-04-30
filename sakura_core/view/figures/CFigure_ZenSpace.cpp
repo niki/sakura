@@ -34,9 +34,9 @@ void CFigure_ZenSpace::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* p
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#ifdef CL_LINE_CENTERING
+#ifdef MI_LINE_CENTERING
 			(pcView->m_pTypeData->m_nLineSpace / 2) +
-#endif  // cl_
+#endif  // MI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rc,

@@ -689,7 +689,7 @@ bool CShareData::InitShareData()
 			m_pShareData->m_sSearchKeywords.m_aGrepFiles.clear();
 			m_pShareData->m_sSearchKeywords.m_aGrepFiles.push_back(_T("*.*"));
 			m_pShareData->m_sSearchKeywords.m_aGrepFolders.clear();
-#ifdef CL_MOD_GREP
+#ifdef MI_MOD_GREP
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders99 = true;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders2 = false;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders3 = false;
@@ -697,7 +697,7 @@ bool CShareData::InitShareData()
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders2 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders3 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders4 = _T("");
-#endif  // cl_
+#endif  // MI_
 
 			// 2004/06/21 novice タグジャンプ機能追加
 			m_pShareData->m_sTagJump.m_TagJumpNum = 0;
@@ -927,11 +927,11 @@ BOOL CShareData::IsPathOpened( const TCHAR* pszPath, HWND* phwndOwner )
 
 			// 同一パスのファイルが既に開かれているか
 			if( 0 == _tcsicmp( pfi->m_szPath, pszPath ) ){
-#ifdef CL_MULTIPLE_OPEN_FILES
+#ifdef MI_MULTIPLE_OPEN_FILES
 				if (::GetAsyncKeyState(VK_SHIFT)) {
 					return FALSE;
 				}
-#endif  // cl_
+#endif  // MI_
 				*phwndOwner = m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd;
 				return TRUE;
 			}

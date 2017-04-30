@@ -218,10 +218,10 @@ void _DefaultConfig(STypeConfig* pType)
 	for( int i = 0; i < MAX_KEYWORDSET_PER_TYPE; i++ ){
 		pType->m_nKeyWordSetIdx[i] = -1;
 	}
-#ifndef CL_MOD_TAB_MARK
+#ifndef MI_MOD_TAB_MARK
 	wcscpy( pType->m_szTabViewString, _EDITL("^       ") );	/* TAB表示文字列 */
 	pType->m_bTabArrow = TABARROW_STRING;	/* タブ矢印表示 */	// 2001.12.03 hor	// default on 2013/4/11 Uchi
-#endif  // cl_
+#endif  // MI_
 	pType->m_bInsSpace = false;				/* スペースの挿入 */	// 2001.12.03 hor
 	
 	//@@@ 2002.09.22 YAZAKI 以下、m_cLineCommentとm_cBlockCommentsを使うように修正

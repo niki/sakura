@@ -314,7 +314,7 @@ void CDlgTagJumpList::UpdateData( bool bInit )
 		lvi.mask     = LVIF_TEXT;
 		lvi.iItem    = nIndex;
 		lvi.iSubItem = 0;
-#ifdef CL_MOD_TAGJUMP
+#ifdef MI_MOD_TAGJUMP
 		lvi.pszText  = item->filename;
 		ListView_InsertItem( hwndList, &lvi );
 		
@@ -349,7 +349,7 @@ void CDlgTagJumpList::UpdateData( bool bInit )
 		ListView_SetItemText( hwndList, nIndex, 4, item->filename );
 
 		ListView_SetItemText( hwndList, nIndex, 5, item->note );
-#endif  // cl_
+#endif  // MI_
 
 		ListView_SetItemState( hwndList, nIndex, 0, LVIS_SELECTED | LVIS_FOCUSED );
 	}
@@ -441,9 +441,9 @@ int CDlgTagJumpList::GetData( void )
 */
 BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
-#ifdef CL_MOD_DIALOG_POS
+#ifdef MI_MOD_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // cl_
+#endif  // MI_
 
 	HWND		hwndList;
 	LV_COLUMN	col;
@@ -485,7 +485,7 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	
 	int nWidth = (rc.right - rc.left) - ::GetSystemMetrics( SM_CXHSCROLL ) - CTextWidthCalc::WIDTH_MARGIN_SCROLLBER;
 
-#ifdef CL_MOD_TAGJUMP
+#ifdef MI_MOD_TAGJUMP
 	// ファイル
 	col.mask     = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 	col.fmt      = LVCFMT_LEFT;
@@ -556,7 +556,7 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	col.pszText  = const_cast<TCHAR*>(LS(STR_DLGTAGJMP_LIST6));
 	col.iSubItem = 5;
 	ListView_InsertColumn( hwndList, 5, &col );
-#endif  // cl_
+#endif  // MI_
 
 	/* 行選択 */
 	lngStyle = ListView_GetExtendedListViewStyle( hwndList );
