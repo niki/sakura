@@ -14,13 +14,12 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 
 変更内容はコミットログを参照してください.  
 
- ・[sakura-c-2.201.5.zip](http://mimix.sakura.ne.jp/release/sakura-c-2.201.5.zip) (889KB)  
- ・[sakura-c-2.201.4.zip](http://mimix.sakura.ne.jp/release/sakura-c-2.201.4.zip) (886KB)  
+ ・[sakura-mix-2.6.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.6.zip) (889KB)  
 
 <br>
 
 **Build environment**  
-+ 2.2.0.1をベースに[マージ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2). ベースリビジョンからのマージ情報は[こちら](https://github.com/mimix33/sakura2201c/blob/master/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
++ 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2). ベースリビジョンからのマージ情報は[こちら](https://github.com/mimix33/sakura2201c/blob/master/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)の追っかけ  
 + MSVC2017でビルド  
 + Boostを使用  
 + 挙動の制御にレジストリを使用しています  

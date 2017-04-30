@@ -220,11 +220,9 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #if (SVN_REV == 0)
 #ifdef MI_MOD_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (") _T(TARGET_M_SUFFIX) _T(")\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
-		LOWORD( dwVersionMS ),
-		HIWORD( dwVersionLS ),
-		LOWORD( dwVersionLS )
+		LOWORD( dwVersionMS )
 	);
 #else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d\r\n"),
