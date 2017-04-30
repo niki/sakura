@@ -523,20 +523,19 @@ CLayoutInt CCaret::MoveCursor(
 	}
 
 	if (nFinalDrawFlag != 0) {
-#if 1
+		if (nFinalDrawFlag == PAINT_ALL) {
+			m_pEditView->Call_OnPaint(nFinalDrawFlag, false);
+
 		// 画面端の行を早めに再描画する
 		// スクロール処理をしてから描画するまで少しの間時間差があるようで
 		// スクロールした行が残っているように見えてしまうため
-		if (nScrollRowNum > 0) {
+		} else if (nScrollRowNum > 0) {
 			int top = m_pEditView->GetTextArea().GetViewTopLine();
 			m_pEditView->RedrawLines(top, top + 3);
 		} else if (nScrollRowNum < 0) {
 			int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
 			m_pEditView->RedrawLines(bottom - 3, bottom);
 		}
-#else
-		m_pEditView->Call_OnPaint(nFinalDrawFlag, false);
-#endif
 		
 		if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
 			m_pEditView->MiniMapRedraw(true);
