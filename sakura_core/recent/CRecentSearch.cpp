@@ -43,7 +43,7 @@ CRecentSearch::CRecentSearch()
 		&GetShareData()->m_sSearchKeywords.m_aSearchKeys._GetSizeRef(),
 		NULL,
 #ifdef MI_MOD_MAXDATA
-		RegKey(MI_REGKEY).get(_T("RecentSearchKeyMax"), MAX_SEARCHKEY),
+		RegKey(MI_REGKEY).get(_T("RecentSearchKeyMax"), MI_MAX_SEARCHKEY),
 #else
 		MAX_SEARCHKEY,
 #endif  // MI_

@@ -49,6 +49,10 @@
 #include "typeprop/CImpExpManager.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
+#ifdef MI_MOD_OUTLINEDLG
+#include <Uxtheme.h>
+#pragma comment(lib, "uxtheme.lib")
+#endif  // MI_
 
 // 画面ドッキング用の定義	// 2010.06.05 ryoji
 #define DEFINE_SYNCCOLOR
@@ -415,6 +419,14 @@ void CDlgFuncList::SetData()
 	HWND			hwndTree;
 	hwndList = ::GetDlgItem( GetHwnd(), IDC_LIST_FL );
 	hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
+
+#ifdef MI_MOD_OUTLINEDLG
+	SetWindowTheme(hwndList, L"Explorer", NULL);
+	::SetWindowLongPtr(hwndList, GWL_STYLE, ::GetWindowLongPtr(hwndList, GWL_STYLE) & ~TVS_HASLINES);
+	
+	SetWindowTheme(hwndTree, L"Explorer", NULL);
+	::SetWindowLongPtr(hwndTree, GWL_STYLE, ::GetWindowLongPtr(hwndTree, GWL_STYLE) & ~TVS_HASLINES);
+#endif  // MI_
 
 	m_bDummyLParamMode = false;
 	m_vecDummylParams.clear();
@@ -2038,14 +2050,28 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 #ifdef MI_MOD_OUTLINEDLG
 	// フォント設定
 	{
-		HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_TREE_FL ), WM_GETFONT, 0, 0 );
-		HFONT hFont = SetMainFont( GetItemHwnd( IDC_TREE_FL ) );
-		m_cFontText[0].SetFont( hFontOld, hFont, GetItemHwnd( IDC_TREE_FL ) );
+		HFONT hFontOld = (HFONT)::SendMessageAny(GetItemHwnd(IDC_TREE_FL), WM_GETFONT, 0, 0);
+		LOGFONT lf = {0};
+		::GetObject(hFontOld, sizeof(lf), &lf);
+		lf.lfHeight = DpiPointsToPixels(10);
+		HFONT hFont = ::CreateFontIndirect(&lf);
+		if (hFont) {
+			::SendMessage(GetItemHwnd(IDC_TREE_FL), WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
+		}
+		//HFONT hFont = SetMainFont(GetItemHwnd(IDC_TREE_FL));
+		m_cFontText[0].SetFont(hFontOld, hFont, GetItemHwnd(IDC_TREE_FL));
 	}
 	{
-		HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_LIST_FL ), WM_GETFONT, 0, 0 );
-		HFONT hFont = SetMainFont( GetItemHwnd( IDC_LIST_FL ) );
-		m_cFontText[1].SetFont( hFontOld, hFont, GetItemHwnd( IDC_LIST_FL ) );
+		HFONT hFontOld = (HFONT)::SendMessageAny(GetItemHwnd(IDC_LIST_FL), WM_GETFONT, 0, 0);
+		LOGFONT lf = {0};
+		::GetObject(hFontOld, sizeof(lf), &lf);
+		lf.lfHeight = DpiPointsToPixels(10);
+		HFONT hFont = ::CreateFontIndirect(&lf);
+		if (hFont) {
+			::SendMessage(GetItemHwnd(IDC_LIST_FL), WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
+		}
+		//HFONT hFont = SetMainFont(GetItemHwnd(IDC_LIST_FL));
+		m_cFontText[1].SetFont(hFontOld, hFont, GetItemHwnd(IDC_LIST_FL));
 	}
 #endif  // MI_
 

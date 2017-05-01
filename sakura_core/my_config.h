@@ -230,7 +230,7 @@
   // (REG/SelectAreaBackBlendPer:0x00000064)
   // (REG/SelectAreaBackBlendPer2:0x0000003C)
   #define MI_MOD_SELAREA_TEXT_BLEND_PER (0)
-  #define MI_MOD_SELAREA_BACK_BLEND_PER (100)
+  #define MI_MOD_SELAREA_BACK_BLEND_PER (100)  // 選択範囲のブレンド率
   #define MI_MOD_SELAREA_BACK_BLEND_PER2 (60)  // 特定の下地のときの選択範囲のブレンド率
 
 //------------------------------------------------------------------
@@ -311,6 +311,11 @@
 // (REG/RecentGrepFolderMax:16)
 //------------------------------------------------------------------
 #define MI_MOD_MAXDATA
+  #define MI_MAX_SEARCHKEY  (16) // 検索キー
+  #define MI_MAX_REPLACEKEY (16) // 置換キー
+  #define MI_MAX_GREPFILE   (8)  // Grepファイル
+  #define MI_MAX_GREPFOLDER (16) // Grepフォルダ
+
 
 //------------------------------------------------------------------
 // 正規表現検索の際、検索文字列の正規表現記号をクォートする 2015.6.1
@@ -394,6 +399,7 @@
 //  - フォントをメインフォントにする
 //  - ドッキング時、ウィンドウカラーにシステムカラーを使う
 // (REG/NoOutlineDockSystemColor:0)
+//  - アウトライン解析ダイアログツリーのテーマに 'Explorer' を使用する 2017.5.1
 //------------------------------------------------------------------
 #define MI_MOD_OUTLINEDLG
 
@@ -405,10 +411,10 @@
 //    (REG/WinListPopupLeft:0xffffffff)
 //    (REG/WinListPopupWidth:400)
 //------------------------------------------------------------------
-#define MI_MOD_WINLIST_POPUP
-  #define MI_MOD_WINLIST_POPUP_TOP (0xffffffff)
-  #define MI_MOD_WINLIST_POPUP_LEFT (0xffffffff)
-  #define MI_MOD_WINLIST_POPUP_WIDTH (400)
+//#define MI_MOD_WINLIST_POPUP
+//  #define MI_MOD_WINLIST_POPUP_TOP (0xffffffff)
+//  #define MI_MOD_WINLIST_POPUP_LEFT (0xffffffff)
+//  #define MI_MOD_WINLIST_POPUP_WIDTH (400)
 
 //------------------------------------------------------------------
 // ウェイトカーソルを変更 2015.7.9

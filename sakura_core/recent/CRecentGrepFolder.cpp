@@ -39,7 +39,7 @@ CRecentGrepFolder::CRecentGrepFolder()
 		&GetShareData()->m_sSearchKeywords.m_aGrepFolders._GetSizeRef(),
 		NULL,
 #ifdef MI_MOD_MAXDATA
-		RegKey(MI_REGKEY).get(_T("RecentGrepFolderMax"), MAX_GREPFOLDER),
+		RegKey(MI_REGKEY).get(_T("RecentGrepFolderMax"), MI_MAX_GREPFOLDER),
 #else
 		MAX_GREPFOLDER,
 #endif  // MI_
