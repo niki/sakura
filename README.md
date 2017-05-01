@@ -14,7 +14,7 @@ MacTypeを使ったときにひどく描画崩れするのがとてもストレ�
 
 変更内容はコミットログを参照してください.  
 
- ・[sakura-mix-2.6.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.6.zip) (889KB)  
+ ・[sakura-mix-2.7.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.7.zip) (917KB)  
 
 <br>
 
