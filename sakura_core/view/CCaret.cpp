@@ -347,7 +347,8 @@ CLayoutInt CCaret::MoveCursor(
 	bool oldDraw = m_pEditView->GetDrawSwitch();
 	if (oldDraw) {
 		if (nScrollColNum != 0) {  // 水平スクロール
-			nFinalDrawFlag |= PAINT_BODY;
+			//nFinalDrawFlag |= PAINT_BODY;
+			nFinalDrawFlag |= PAINT_ALL;
 			m_pEditView->SetDrawSwitch(false);
 		}
 		if (nScrollRowNum != 0) {  // 垂直スクロール
@@ -371,23 +372,10 @@ CLayoutInt CCaret::MoveCursor(
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 
-				// sui 02/08/09
-				if( 0 > nViewTopLine )	nViewTopLine = CLayoutInt(0);
+				if (0 > nViewTopLine) nViewTopLine = CLayoutInt(0);
 				
-				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();	//Sep. 11, 2004 genta 同期用に行数を記憶
+				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
-				/* フォーカス移動時の再描画 */
-				//m_pEditView->RedrawAll();
-				//m_pEditView->RedrawLines(nViewTopLine, m_pEditView->GetTextArea().m_nViewRowNum);
-				//m_pEditView->Redraw();
-				// sui 02/08/09
-
-				//	Sep. 11, 2004 genta 同期スクロールの関数化
-				//m_pEditView->SyncScrollV( nScrollLines );
-				
-				//if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
-				//	m_pEditView->MiniMapRedraw(true);
-				//}
 				
 				nFinalDrawFlag |= PAINT_ALL;
 				
@@ -434,23 +422,10 @@ CLayoutInt CCaret::MoveCursor(
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 
-				// sui 02/08/09
-				if( 0 > nViewTopLine )	nViewTopLine = CLayoutInt(0);
+				if (0 > nViewTopLine) nViewTopLine = CLayoutInt(0);
 				
-				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();	//Sep. 11, 2004 genta 同期用に行数を記憶
+				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
-				/* フォーカス移動時の再描画 */
-				//m_pEditView->RedrawAll();
-				//m_pEditView->RedrawLines(nViewTopLine, m_pEditView->GetTextArea().m_nViewRowNum);
-				//m_pEditView->Redraw();
-				// sui 02/08/09
-
-				//	Sep. 11, 2004 genta 同期スクロールの関数化
-				//m_pEditView->SyncScrollV( nScrollLines );
-				
-				//if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
-				//	m_pEditView->MiniMapRedraw(true);
-				//}
 				
 				nFinalDrawFlag |= PAINT_ALL;
 				
@@ -476,51 +451,8 @@ CLayoutInt CCaret::MoveCursor(
 		m_pEditView->GetRuler().SetRedrawFlag();
 	}
 
-	/* カーソル行アンダーラインのON */
-	//CaretUnderLineON( bDraw ); //2002.02.27 Del By KK アンダーラインのちらつきを低減
-	if( bScroll ){
-		/* キャレットの表示・更新 */
-		ShowEditCaret();
-
-		/* ルーラの再描画 */
-		HDC		hdc = m_pEditView->GetDC();
-		m_pEditView->GetRuler().DispRuler( hdc );
-		m_pEditView->ReleaseDC( hdc );
-
-		/* アンダーラインの再描画 */
-		m_cUnderLine.CaretUnderLineON(true, bDrawPaint);
-
-		/* キャレットの行桁位置を表示する */
-		ShowCaretPosInfo();
-
-#ifndef MI_FIX_CURSOR_MOVE_FLICKER
-		//	Sep. 11, 2004 genta 同期スクロールの関数化
-		//	bScroll == FALSEの時にはスクロールしないので，実行しない
-		m_pEditView->SyncScrollV( -nScrollRowNum );	//	方向が逆なので符号反転が必要
-		m_pEditView->SyncScrollH( -nScrollColNum );	//	方向が逆なので符号反転が必要
-#endif  // MI_
-
-	}
-
-// 02/09/18 対括弧の強調表示 ai Start	03/02/18 ai mod S
-	m_pEditView->DrawBracketPair( false );
-	m_pEditView->SetBracketPairPos( true );
-	m_pEditView->DrawBracketPair( true );
-// 02/09/18 対括弧の強調表示 ai End		03/02/18 ai mod E
-
-#ifdef MI_OUTPUT_DEBUG_STRING
-	::OutputDebugStringW(L"MoveCursor finish.\n");
-#endif  // MI_
-
 #ifdef MI_FIX_CURSOR_MOVE_FLICKER
 	m_pEditView->SetDrawSwitch(oldDraw);
-
-	if (bScroll) {
-		// ToDo: 同期スクロールを考慮
-		
-		/* スクロールバーの状態を更新する */
-		m_pEditView->AdjustScrollBars();
-	}
 
 	if (nFinalDrawFlag != 0) {
 		if (nFinalDrawFlag == PAINT_ALL) {
@@ -543,9 +475,46 @@ CLayoutInt CCaret::MoveCursor(
 	}
 
 	if (bScroll) {
+		/* スクロールバーの状態を更新する */
+		m_pEditView->AdjustScrollBars();
+		
 		//::UpdateWindow(m_pEditView->GetHwnd());
 		//::Sleep(1);
 	}
+#endif  // MI_
+
+	/* カーソル行アンダーラインのON */
+	//CaretUnderLineON( bDraw ); //2002.02.27 Del By KK アンダーラインのちらつきを低減
+	if( bScroll ){
+		/* キャレットの表示・更新 */
+		ShowEditCaret();
+
+		/* ルーラの再描画 */
+		HDC		hdc = m_pEditView->GetDC();
+		m_pEditView->GetRuler().DispRuler( hdc );
+		m_pEditView->ReleaseDC( hdc );
+
+		/* アンダーラインの再描画 */
+		m_cUnderLine.CaretUnderLineON(true, bDrawPaint);
+
+		/* キャレットの行桁位置を表示する */
+		ShowCaretPosInfo();
+
+		//	Sep. 11, 2004 genta 同期スクロールの関数化
+		//	bScroll == FALSEの時にはスクロールしないので，実行しない
+		m_pEditView->SyncScrollV( -nScrollRowNum );	//	方向が逆なので符号反転が必要
+		m_pEditView->SyncScrollH( -nScrollColNum );	//	方向が逆なので符号反転が必要
+
+	}
+
+// 02/09/18 対括弧の強調表示 ai Start	03/02/18 ai mod S
+	m_pEditView->DrawBracketPair( false );
+	m_pEditView->SetBracketPairPos( true );
+	m_pEditView->DrawBracketPair( true );
+// 02/09/18 対括弧の強調表示 ai End		03/02/18 ai mod E
+
+#ifdef MI_OUTPUT_DEBUG_STRING
+	::OutputDebugStringW(L"MoveCursor finish.\n");
 #endif  // MI_
 
 	return nScrollRowNum;
