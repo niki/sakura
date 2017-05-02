@@ -74,7 +74,6 @@ namespace ut {
 //! @param path パス名
 //------------------------------------------------------------------
 inline std::tstring fname(const std::tstring &path) {
-  std::tstring fname;
   size_t pos = path.rfind('\\');
   if (pos != std::tstring::npos) {
     return path.substr(pos + 1, path.size() - pos - 1);
@@ -85,6 +84,36 @@ inline std::tstring fname(const std::tstring &path) {
     }
   }
   return path;
+}
+
+//------------------------------------------------------------------
+//! ディレクトリ名の取得
+//! @param path パス名
+//------------------------------------------------------------------
+inline std::tstring dirname(const std::tstring &path) {
+  size_t pos = path.rfind('\\');
+  if (pos != std::tstring::npos) {
+    return path.substr(0, pos + 1);
+  } else {
+    pos = path.rfind('/');
+    if (pos != std::tstring::npos) {
+      return path.substr(0, pos + 1);
+    }
+  }
+  return _T("");
+}
+
+//------------------------------------------------------------------
+//! ベース名の取得
+//! @param path パス名
+//------------------------------------------------------------------
+inline std::tstring basename(const std::tstring &path) {
+  std::tstring s = fname(path);
+  size_t pos = s.rfind('.');
+  if (pos != std::tstring::npos) {
+    return s.substr(0, pos);
+  }
+  return _T("");
 }
 
 //------------------------------------------------------------------

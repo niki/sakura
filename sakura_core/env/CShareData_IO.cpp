@@ -142,11 +142,37 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 
 	// Feb. 12, 2006 D.S.Koba
+#ifdef MI_MOD_PROFILES
+	{
+		CDataProfile cProfileRecent;
+
+		if (bRead) {
+			cProfileRecent.SetReadingMode();
+		} else {
+			cProfileRecent.SetWritingMode();
+		}
+
+		std::tstring recent_fname =
+		    ut::dirname(szIniFileName) + ut::basename(szIniFileName) + _T(".recent.ini");
+
+		if (bRead) cProfileRecent.ReadProfile(recent_fname.c_str());
+
+		ShareData_IO_Mru(cProfileRecent);
+		ShareData_IO_Keys(cProfileRecent);
+		ShareData_IO_Grep(cProfileRecent);
+		ShareData_IO_Cmd(cProfileRecent);
+
+		if (!bRead) cProfileRecent.WriteProfile(recent_fname.c_str(), LTEXT(" recent.ini "));
+	}
+#else
 	ShareData_IO_Mru( cProfile );
 	ShareData_IO_Keys( cProfile );
 	ShareData_IO_Grep( cProfile );
+#endif  // MI_
 	ShareData_IO_Folders( cProfile );
+#ifndef MI_MOD_PROFILES
 	ShareData_IO_Cmd( cProfile );
+#endif  // MI_
 	ShareData_IO_Nickname( cProfile );
 	ShareData_IO_Common( cProfile );
 	ShareData_IO_Plugin( cProfile, pcMenuDrawer );		// Move here	2010/6/24 Uchi
