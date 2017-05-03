@@ -3635,7 +3635,7 @@ BEGIN
 #ifdef MI_MOD_VERDLG
     IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n\
 \r\n\
-=== mimix33 ver. <https://github.com/mimix33/sakura_2201>\r\n\
+=== Yu-zuki@mimix33 <https://github.com/mimix33/sakura_2201>\r\n\
 === Boost C++ Libraries <http://www.boost.org/>\r\n\
 "
 #else
