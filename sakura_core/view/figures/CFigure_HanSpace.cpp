@@ -57,7 +57,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //#  endif  // MI_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // 少し左め
-#ifdef MI_MOD_NBSP_DISP
+#ifdef MI_MOD_HAN_SPACE
 		if (m_nbsp) {
 			::MoveToEx( gr, x-1, y-2, NULL );
 			::LineTo(   gr, x+4, y+3 );
@@ -117,7 +117,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 }
 
 
-#ifdef  MI_MOD_NBSP_DISP
+#ifdef  MI_MOD_HAN_SPACE
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                     CFigure_NBSP                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
