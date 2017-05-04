@@ -9,6 +9,8 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
       	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
+--- 2.3.2.0 ---------------------------------------------------------------
+-r4180	update version 2.3.2.0
  r4178	Fix: UnicodeをUTF-16表記に変更  [patchunicode:#1102] Contributed by Moca
  r4176	New: ウィンドウ一覧ダイアログ [patchunicode:#1072] Contributed by Moca
  r4175	Imp: キーワードヘルプメニューのオプション [patchunicode:#1066] Contributed by Moca
