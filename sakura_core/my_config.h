@@ -403,19 +403,6 @@
 #define MI_MOD_OUTLINEDLG
 
 //------------------------------------------------------------------
-// ウィンドウ一覧ポップアップを変更
-//  - 位置を指定可能にする (左上基準) 2017.3.29
-//  - 0xffffffff指定でウィンドウの中央に配置 2017.4.7
-//    (REG/WinListPopupTop:0xffffffff)
-//    (REG/WinListPopupLeft:0xffffffff)
-//    (REG/WinListPopupWidth:400)
-//------------------------------------------------------------------
-//#define MI_MOD_WINLIST_POPUP
-//  #define MI_MOD_WINLIST_POPUP_TOP (0xffffffff)
-//  #define MI_MOD_WINLIST_POPUP_LEFT (0xffffffff)
-//  #define MI_MOD_WINLIST_POPUP_WIDTH (400)
-
-//------------------------------------------------------------------
 // ウェイトカーソルを変更 2015.7.9
 //  - 一部、正しい位置に修正
 //  - 文字列削除時に表示しない（アンドゥのときなど）

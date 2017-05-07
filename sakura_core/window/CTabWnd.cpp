@@ -927,9 +927,6 @@ CTabWnd::CTabWnd()
 , m_nTabCloseCapture( -1 )
 ,m_hwndSizeBox(NULL)
 ,m_bSizeBox(false)
-#ifdef MI_MOD_WINLIST_POPUP
-,m_bTabListSizeFix(false)
-#endif  // MI_
 {
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
@@ -1355,20 +1352,7 @@ LRESULT CTabWnd::OnMeasureItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		}
 
 		lpmis->itemHeight = ::GetSystemMetrics( SM_CYMENU );
-#ifdef MI_MOD_WINLIST_POPUP
-		DWORD width = RegKey(MI_REGKEY).get(_T("WinListPopupWidth"), MI_MOD_WINLIST_POPUP_WIDTH);
-		if (m_bTabListSizeFix && width > 0) {
-			lpmis->itemWidth = width;
-		} else {
-			if (m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
-				lpmis->itemWidth = (cxIcon + DpiScaleX(8)) + size.cx;
-			} else {
-				lpmis->itemWidth = DpiScaleX(8) + size.cx;
-			}
-		}
-#else
 		lpmis->itemWidth = (cxIcon + DpiScaleX(8)) + size.cx;
-#endif  // MI_
 
 		::SelectObject( hdc, hFontOld );
 		::DeleteObject( hFont );
@@ -1415,7 +1399,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// アイコン描画
 		int cxIcon = CX_SMICON;
 		int cyIcon = CY_SMICON;
-#if defined(MI_MOD_TAB_CAPTION_COLOR) || defined(MI_MOD_WINLIST_POPUP)
+#ifdef MI_MOD_TAB_CAPTION_COLOR
 		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 			cxIcon = 0;
 		} else
@@ -1438,17 +1422,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		RECT rcText = rcItem;
 		rcText.left += (cxIcon + DpiScaleX(8));
 
-#ifdef MI_MOD_WINLIST_POPUP
-		TCHAR path[_MAX_PATH] = {};
-		_tcsncpy(path, pData->szText, _MAX_PATH - 1);
-		path[_MAX_PATH - 1] = _T('\0');
-		if (m_bTabListSizeFix) {
-			::PathCompactPath(gr, path, rcText.right - rcText.left);  // パスを縮める
-		}
-		::DrawText( gr, path, -1, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER );
-#else
 		::DrawText( gr, pData->szText, -1, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER );
-#endif  // MI_
 
 		gr.PopTextForeColor();
 		gr.PopMyFont();
@@ -1551,7 +1525,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// アイコン描画
 		int cxIcon = CX_SMICON;
 		int cyIcon = CY_SMICON;
-#if defined(MI_MOD_TAB_CAPTION_COLOR) || defined(MI_MOD_WINLIST_POPUP)
+#ifdef MI_MOD_TAB_CAPTION_COLOR
 		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 			cxIcon = 0;
 		} else
@@ -2515,7 +2489,7 @@ void CTabWnd::LayoutTab( void )
 	// オーナードロー状態を共通設定に追随させる
 	BOOL bDispTabClose = m_pShareData->m_Common.m_sTabBar.m_bDispTabClose;
 	BOOL bOwnerDraw = bDispTabClose;
-#if defined(MI_MOD_TAB_CAPTION_COLOR) || defined(MI_MOD_WINLIST_POPUP)
+#ifdef MI_MOD_TAB_CAPTION_COLOR
 	bOwnerDraw = TRUE;  // 強制的にオーナードローにする
 #endif  // MI_
 	if( bOwnerDraw && !(lStyle & TCS_OWNERDRAWFIXED) ){
@@ -2608,7 +2582,7 @@ HIMAGELIST CTabWnd::InitImageList( void )
 	HIMAGELIST hImlNew;
 
 	hImlNew = NULL;
-#if !defined(MI_MOD_TAB_CAPTION_COLOR) && !defined(MI_MOD_WINLIST_POPUP)
+#ifndef MI_MOD_TAB_CAPTION_COLOR
 	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon )
 #endif  // MI_
 	{
@@ -2658,7 +2632,7 @@ HIMAGELIST CTabWnd::InitImageList( void )
 
 l_end:
 	// タブに新しいアイコンイメージを設定する
-#if defined(MI_MOD_TAB_CAPTION_COLOR) || defined(MI_MOD_WINLIST_POPUP)
+#ifdef MI_MOD_TAB_CAPTION_COLOR
 	if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon)
 		TabCtrl_SetImageList( m_hwndTab, NULL );
 	else
@@ -3266,61 +3240,6 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 			::InsertMenu( hMenu, 0, MF_BYPOSITION | MF_STRING, 100, bFull? LS(STR_TABWND_SHOWTABNAME): LS(STR_TABWND_SHOWPATHNAME) );
 			::InsertMenu( hMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);	// セパレータ
 		}
-
-#ifdef MI_MOD_WINLIST_POPUP
-		{
-			RECT rc;
-			::GetWindowRect(GetParentHwnd(), &rc);
-
-			// X自動配置
-			if (pt.x == (LONG)-1) {
-				DWORD left = RegKey(MI_REGKEY).get(_T("WinListPopupLeft"), MI_MOD_WINLIST_POPUP_LEFT);
-
-				if (left == (DWORD)-1) {
-					// センタリング
-					DWORD width = RegKey(MI_REGKEY).get(_T("WinListPopupWidth"), MI_MOD_WINLIST_POPUP_WIDTH);
-
-					if (m_bTabListSizeFix && width > 0 && m_hIml) {
-						pt.x = rc.left + (rc.right - rc.left) / 2 - width / 2;
-					} else {
-						pt.x = rc.left + 8;
-					}
-
-				} else {
-					// 固定位置
-					pt.x = rc.left + left;
-				}
-
-				pt.x = std::max(std::min(pt.x, rc.right), rc.left);
-			}
-
-			// Y自動配置
-			if (pt.y == (LONG)-1) {
-				DWORD top = RegKey(MI_REGKEY).get(_T("WinListPopupTop"), MI_MOD_WINLIST_POPUP_TOP);
-
-				if (top == (DWORD)-1) {
-					// センタリング
-					int menu_count = ::GetMenuItemCount(hMenu);
-					DWORD menu_height = ::GetSystemMetrics(SM_CYMENU) * menu_count;
-					DWORD menu_width = 0;
-
-					MENUINFO mi;
-					::GetMenuInfo(hMenu, &mi);
-
-					if (mi.cyMax > 0 && menu_height > mi.cyMax)
-						menu_height = mi.cyMax;
-
-					pt.y = rc.top + (rc.bottom - rc.top) / 2 - menu_height / 2;
-
-				} else {
-					// 固定位置
-					pt.y = rc.top + top;
-				}
-
-				pt.y = std::max(std::min(pt.y, rc.bottom), rc.top);
-			}
-		}
-#endif  // MI_
 
 		// メニューを表示する
 		// 2006.04.21 ryoji マルチモニタ対応の修正
