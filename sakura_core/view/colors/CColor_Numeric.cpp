@@ -82,24 +82,23 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	int i = 0;
 	wcmatch match;
 
-	static const wchar_t *re1_trig = L"e";
-	static const wchar_t *re1[] = {
-			L"^[0-9]+\\.[0-9]*([eE][-+][0-9]+)([fF]?)",  // 1e-2
-			L"^(\\.[0-9]+)([eE][-+][0-9]+)([fF]?)",      // .12e+2
+	static const wregex re1_trig(L"e");
+	static const wregex re1[] = {
+			wregex(L"^[0-9]+\\.[0-9]*([eE][-+][0-9]+)([fF]?)"),  // 1e-2
+			wregex(L"^(\\.[0-9]+)([eE][-+][0-9]+)([fF]?)"),      // .12e+2
 	};
-	static const wchar_t *re2_trig = L"\\.";
-	static const wchar_t *re2[] = {
-			L"^([0-9]+\\.[0-9]*)([fF]?)",                // 1.0f 1.f 1.
-			L"^(\\.[0-9]+)([fF]?)",                      // .1f .1
+	static const wregex re2_trig(L"\\.");
+	static const wregex re2[] = {
+			wregex(L"^([0-9]+\\.[0-9]*)([fF]?)"),                // 1.0f 1.f 1.
+			wregex(L"^(\\.[0-9]+)([fF]?)"),                      // .1f .1
 	};
-	static const wchar_t *re3[] = {
-			L"^0x[0-9a-fA-F]+",                          // 0x123
-			L"^[0-9]+([uUlL]{0,2})",                     // 123
+	static const wregex re3[] = {
+			wregex(L"^0x[0-9a-fA-F]+"),                          // 0x123
+			wregex(L"^[0-9]+([uUlL]{0,2})"),                     // 123
 	};
 
-	if (regex_search(p, q, wregex(re1_trig))) {
-		for (auto && elem : re1) {
-			wregex re(elem);
+	if (regex_search(p, q, re1_trig)) {
+		for (auto && re : re1) {
 			if (regex_search(p, q, match, re)) {
 				i = std::max(match.length(0), i);
 			}
@@ -107,9 +106,8 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 		if (i > 0) return i;
 	}
 	
-	if (regex_search(p, q, wregex(re2_trig))) {
-		for (auto && elem : re2) {
-			wregex re(elem);
+	if (regex_search(p, q, re2_trig)) {
+		for (auto && re : re2) {
 			if (regex_search(p, q, match, re)) {
 				i = std::max(match.length(0), i);
 			}
@@ -117,8 +115,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 		if (i > 0) return i;
 	}
 	
-	for (auto && elem : re3) {
-		wregex re(elem);
+	for (auto && re : re3) {
 		if (regex_search(p, q, match, re)) {
 			i = std::max(match.length(0), i);
 		}
