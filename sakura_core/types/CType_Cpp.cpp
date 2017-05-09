@@ -69,7 +69,6 @@ void CType_Cpp::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp = true;			//	Sep. 21, 2002 genta 対括弧の強調をデフォルトONに
 	pType->m_bUseHokanByFile = true;										/*! 入力補完 開いているファイル内から候補を探す */
 	pType->m_bStringLineOnly = true; // 文字列は行内のみ
-	pType->m_nStringType = STRING_LITERAL_CPP11;	// C++11
 }
 
 

@@ -110,12 +110,11 @@ struct SEncodingConfig{
 
 //! 文字列区切り記号エスケープ方法
 enum EStringLiteralType{
-	STRING_LITERAL_CPP,		//!< C/C++03言語風
+	STRING_LITERAL_CPP,		//!< C/C++言語風
 	STRING_LITERAL_PLSQL,	//!< PL/SQL風
 	STRING_LITERAL_HTML,	//!< HTML/XML風
 	STRING_LITERAL_CSHARP,	//!< C#風
 	STRING_LITERAL_PYTHON,	//!< Python風
-	STRING_LITERAL_CPP11,	//!< C++11言語風 Raw String付き
 };
 
 //! 右クリックメニュー表示

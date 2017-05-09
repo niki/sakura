@@ -54,55 +54,39 @@ void CProfile::Init( void )
 	return;
 }
 
-static inline int CNativeWSearchChar( const CNativeW& mem, wchar_t c )
-{
-	const wchar_t* p = mem.c_str();
-	int len = mem.size();
-	for( int i = 0; i < len; i++ ){
-		if( p[i] == c ){
-			return i;
-		}
-	}
-	return -1;
-}
-
 /*!
 	sakura.iniの1行を処理する．
 
 	1行の読み込みが完了するごとに呼ばれる．
 	
 	@param line [in] 読み込んだ行
-	@date 2014.11.21 Moca lineをwstringからCNativeWに変更
 */
 void CProfile::ReadOneline(
-	const CNativeW& line
+	const wstring& line
 )
 {
 	//	空行を読み飛ばす
-	if( line.size() == 0 )
+	if( line.empty() )
 		return;
 
 	//コメント行を読みとばす
-	if( line[0] == L'/' && line[1] == L'/' )
+	if( 0 == line.compare( 0, 2, LTEXT("//") ))
 		return;
 
 	// セクション取得
 	//	Jan. 29, 2004 genta compare使用
-	if( (line[0] == L'[' )
-			&& CNativeWSearchChar(line, L'=') == -1
-			&& CNativeWSearchChar(line, L']') == line.size() - 1 ){
+	if( line.compare( 0, 1, LTEXT("[") ) == 0 
+			&& line.find( LTEXT("=") ) == line.npos
+			&& line.find( LTEXT("]") ) == ( line.size() - 1 ) ) {
 		Section Buffer;
-		Buffer.strSectionName = std::wstring(line.c_str() + 1, line.size() - 1 - 1 );
+		Buffer.strSectionName = line.substr( 1, line.size() - 1 - 1 );
 		m_ProfileData.push_back( Buffer );
 	}
 	// エントリ取得
 	else if( !m_ProfileData.empty() ) {	//最初のセクション以前の行のエントリは無視
-		int idx = CNativeWSearchChar(line, L'=');
-		if( -1 != idx ) {
-			// second部にはNUL文字が含まれることがあるので注意
-			m_ProfileData.back().mapEntries.insert( PAIR_STR_STR(
-				wstring(line.c_str(), idx),
-				wstring(line.c_str() + idx + 1, line.size() - (idx + 1))) );
+		wstring::size_type idx = line.find( LTEXT("=") );
+		if( line.npos != idx ) {
+			m_ProfileData.back().mapEntries.insert( PAIR_STR_STR( line.substr(0,idx), line.substr(idx+1) ) );
 		}
 	}
 }
@@ -140,13 +124,12 @@ bool CProfile::ReadProfile( const TCHAR* pszProfileName )
 	}
 
 	try{
-		CNativeW memLine;
 		while( in ){
 			//1行読込
-			in.ReadLineW(memLine);
+			wstring line=in.ReadLineW();
 
 			//解析
-			ReadOneline(memLine);
+			ReadOneline(line);
 		}
 	}
 	catch( ... ){
@@ -213,12 +196,13 @@ bool CProfile::ReadProfileRes( const TCHAR* pName, const TCHAR* pType, boost::co
 			// UTF-8 -> UNICODE
 			cmLine.SetRawDataHoldBuffer( sLine, lnsz );
 			CUtf8::UTF8ToUnicode( cmLine, &cmLineW );
+			line = cmLineW.GetStringPtr();
 
 			if( pData ){
-				pData->push_back(std::wstring(cmLineW.GetStringPtr()));
+				pData->push_back(line);
 			}else{
 				//解析
-				ReadOneline(cmLineW);
+				ReadOneline(line);
 			}
 		}
 	}
@@ -372,7 +356,7 @@ bool CProfile::GetProfileDataImp(
 	boost::container::vector< Section >::iterator iter;
 	boost::container::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	MAP_STR_STR::iterator mapiter;
-	for( iter = m_ProfileData.begin(); iter != iterEnd; ++iter ) {
+	for( iter = m_ProfileData.begin(); iter != iterEnd; iter++ ) {
 		if( iter->strSectionName == strSectionName ) {
 			mapiter = iter->mapEntries.find( strEntryKey );
 			if( iter->mapEntries.end() != mapiter ) {
@@ -408,7 +392,7 @@ bool CProfile::SetProfileDataImp(
 	boost::container::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	MAP_STR_STR::iterator mapiter;
 	MAP_STR_STR::iterator mapiterEnd;
-	for( iter = m_ProfileData.begin(); iter != iterEnd; ++iter ) {
+	for( iter = m_ProfileData.begin(); iter != iterEnd; iter++ ) {
 		if( iter->strSectionName == strSectionName ) {
 			//既存のセクションの場合
 			mapiter = iter->mapEntries.find( strEntryKey );

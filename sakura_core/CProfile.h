@@ -31,15 +31,13 @@
 		   distribution.
 */
 
-#ifndef SAKURA_CPROFILE_H_
-#define SAKURA_CPROFILE_H_
+#ifndef _CPROFILE_H_
+#define _CPROFILE_H_
 
 #include <Windows.h>
 #include <string>
 #include <boost/container/vector.hpp>
 #include <boost/container/map.hpp>
-
-class CNativeW;
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -89,7 +87,7 @@ public:
 	void DUMP( void );
 
 protected:
-	void ReadOneline( const CNativeW& line );
+	void ReadOneline( const wstring& line );
 	bool _WriteFile( const tstring& strFilename, const boost::container::vector< wstring >& vecLine);
 
 
@@ -113,6 +111,6 @@ protected:
 
 
 ///////////////////////////////////////////////////////////////////////
-#endif /* SAKURA_CPROFILE_H_ */
+#endif /* _CPROFILE_H_ */
 
 

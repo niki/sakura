@@ -376,9 +376,8 @@ DWORD CGrepAgent::DoGrep(
 		if( FALSE == type.m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp ){
 			// 2011.11.28 色指定が無効ならエスケープしない
 		}else
-		// 文字列区切り記号エスケープ方法
 		if( type.m_nStringType == STRING_LITERAL_CPP || type.m_nStringType == STRING_LITERAL_CSHARP
-			|| type.m_nStringType == STRING_LITERAL_PYTHON || type.m_nStringType == STRING_LITERAL_CPP11 ){
+			|| type.m_nStringType == STRING_LITERAL_PYTHON ){	/* 文字列区切り記号エスケープ方法 */
 			cmemWork2.Replace( L"\\", L"\\\\" );
 			cmemWork2.Replace( L"\'", L"\\\'" );
 			cmemWork2.Replace( L"\"", L"\\\"" );
@@ -405,9 +404,8 @@ DWORD CGrepAgent::DoGrep(
 			if( FALSE == type.m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp ){
 				// 2011.11.28 色指定が無効ならエスケープしない
 			}else
-			// 文字列区切り記号エスケープ方法
 			if( type.m_nStringType == STRING_LITERAL_CPP || type.m_nStringType == STRING_LITERAL_CSHARP
-				|| type.m_nStringType == STRING_LITERAL_PYTHON || type.m_nStringType == STRING_LITERAL_CPP11 ){
+				|| type.m_nStringType == STRING_LITERAL_PYTHON ){	/* 文字列区切り記号エスケープ方法 */
 				cmemWork2.Replace( L"\\", L"\\\\" );
 				cmemWork2.Replace( L"\'", L"\\\'" );
 				cmemWork2.Replace( L"\"", L"\\\"" );

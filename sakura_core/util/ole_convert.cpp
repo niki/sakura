@@ -12,18 +12,12 @@ bool variant_to_wstr( VARIANT v, std::wstring& wstr )
 	Variant varCopy;	// VT_BYREFだと困るのでコピー用
 	if(VariantChangeType(&varCopy.Data, &v, 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
 
-	Wrap(&varCopy.Data.bstrVal)->GetW(&wstr);
+	wchar_t *Source;
+	int SourceLength;
+	Wrap(&varCopy.Data.bstrVal)->GetW(&Source, &SourceLength);
 
-	return true;
-}
-
-bool variant_to_astr( VARIANT v, std::string& astr )
-{
-	Variant varCopy;	// VT_BYREFだと困るのでコピー用
-	if(VariantChangeType(&varCopy.Data, &v, 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
-
-	Wrap(&varCopy.Data.bstrVal)->Get(&astr);
-
+	wstr.assign( Source, SourceLength );
+	delete[] Source;
 	return true;
 }
 

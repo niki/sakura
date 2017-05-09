@@ -2,9 +2,6 @@
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
       	Imp: 他のドキュメントから入力補完  [patchunicode:#1065]
-      	Imp: カラーの文字列にC++11を追加,C/C++はC/C++03に変更しRawを処理しない  [patchunicode:#956]
-      	Fix: CProfileの読み込みの高速化  [patchunicode:#908]
-      	Fix: マクロの文字列コピーを減らす  [patchunicode:#830]
       	Imp: タイプ別設定の追加と強調キーワードの外部化  [patchunicode:#720]
       	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------

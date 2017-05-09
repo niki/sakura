@@ -32,7 +32,6 @@ void CColor_Quote::Update(void)
 		STRING_LITERAL_HTML,
 		STRING_LITERAL_CPP,
 		STRING_LITERAL_CPP,
-		STRING_LITERAL_CPP,
 	};
 	m_nEscapeType = nEspaceTypeList[m_nStringType];
 	bool* pbEscapeEndList[] = {
@@ -40,7 +39,6 @@ void CColor_Quote::Update(void)
 		NULL,
 		NULL,
 		NULL,
-		&m_bEscapeEnd,
 		&m_bEscapeEnd,
 	};
 	m_pbEscapeEnd = pbEscapeEndList[m_nStringType];
@@ -118,9 +116,6 @@ bool CColor_Quote::BeginColor(const CStringRef& cStr, int nPos)
 		/* クォーテーション文字列の終端があるか */
 		switch( nStringType ){
 		case STRING_LITERAL_CPP:
-			// 特になし
-			break;
-		case STRING_LITERAL_CPP11:
 			if( IsCppRawString(cStr, nPos) ){
 				for( int i = nPos + 1; i < cStr.GetLength(); i++ ){
 					if( cStr.At(i) == '(' ){

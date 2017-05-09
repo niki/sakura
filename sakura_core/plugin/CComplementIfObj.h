@@ -84,9 +84,11 @@ public:
 			{
 				std::wstring keyword;
 				if( variant_to_wstr( Arguments[0], keyword ) != true) return false;
+				const wchar_t* word = keyword.c_str();
 				int nWordLen = keyword.length();
 				if( nWordLen <= 0 ) return false;
-				if( CHokanMgr::AddKouhoUnique( m_pHokanMgr->m_vKouho, keyword ) ){
+				std::wstring strWord = std::wstring(word, nWordLen);
+				if( CHokanMgr::AddKouhoUnique( m_pHokanMgr->m_vKouho, strWord ) ){
 					Wrap( &Result )->Receive( m_pHokanMgr->m_vKouho.size() );
 				}else{
 					Wrap( &Result )->Receive( -1 );
