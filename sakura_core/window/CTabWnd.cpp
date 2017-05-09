@@ -3203,9 +3203,19 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 		// 2007.02.28 ryoji 表示切替をメニューに追加
 		int iMenuSel = -1;
 		UINT uFlags = MF_BYPOSITION | (m_hIml? MF_OWNERDRAW: MF_STRING);
+#ifdef MI_MOD_TAB_CAPTION_COLOR
+		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
+			uFlags &= ~MF_OWNERDRAW;
+		}
+#endif  // MI_
 		HMENU hMenu = ::CreatePopupMenu();
 		for( i = 0; i < nSelfTab; i++ )
 		{
+#ifdef MI_MOD_TAB_CAPTION_COLOR
+			if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon)
+				::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, pData[i].szText );
+			else
+#endif  // MI_
 			::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, m_hIml? (LPCTSTR)&pData[i]: pData[i].szText );
 			if( pData[i].hwnd == GetParentHwnd() )
 				iMenuSel = i;
@@ -3224,6 +3234,11 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 			{
 				for( i = nSelfTab; i < nTab; i++ )
 				{
+#ifdef MI_MOD_TAB_CAPTION_COLOR
+					if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon)
+						::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, pData[i].szText );
+					else
+#endif  // MI_
 					::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, m_hIml? (LPCTSTR)&pData[i]: pData[i].szText );
 				}
 			}
