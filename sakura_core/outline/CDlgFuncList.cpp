@@ -784,9 +784,13 @@ void CDlgFuncList::SetData()
 		Combo_SetCurSel( hWnd_Combo_Sort , m_nSortType );
 		::ShowWindow( GetDlgItem( GetHwnd(), IDC_STATIC_nSortType ), SW_SHOW );
 		// 2002.11.10 Moca 追加 ソートする
+#ifdef MI_FIX_FUNCLIST_RULEFILE
+		SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
+#else
 		if( SORTTYPE_DEFAULT < m_nSortType ){
 			SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
 		}
+#endif  // MI_
 	}else if( m_nListType == OUTLINE_FILETREE ){
 		::ShowWindow( GetItemHwnd(IDC_COMBO_nSortType), SW_HIDE );
 		::ShowWindow( GetItemHwnd(IDC_STATIC_nSortType), SW_HIDE );
