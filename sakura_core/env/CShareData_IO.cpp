@@ -2439,14 +2439,46 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 		if( pcProfile->IsReadingMode() ){
 			if( pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) ) ){
 				int buf[5];
-				scan_ints( szKeyData, pszForm, buf);
 #ifdef MI_MOD_PROFILES
-				if (!bColorOnly) pColorInfoArr[j].m_bDisp                  = (buf[0]!=0);
-				if (!bColorOnly) pColorInfoArr[j].m_sFontAttr.m_bBoldFont  = (buf[1]!=0);
-				pColorInfoArr[j].m_sColorAttr.m_cTEXT     = buf[2];
-				pColorInfoArr[j].m_sColorAttr.m_cBACK     = buf[3];
-				if (!bColorOnly) pColorInfoArr[j].m_sFontAttr.m_bUnderLine = (buf[4]!=0);
+				ColorInfo *info = &pColorInfoArr[j];
+				//int scan_num = scan_ints( szKeyData, pszForm, buf);
+				WCHAR text[32] = {};
+				WCHAR back[32] = {};
+				int scan_num = ::swscanf(szKeyData, L"%d,%d,%[^,],%[^,],%d", &buf[0], &buf[1], text, back, &buf[4]);
+				if (!bColorOnly) info->m_bDisp = (buf[0]!=0);
+				if (scan_num > 1) {
+					if (!bColorOnly) info->m_sFontAttr.m_bBoldFont  = (buf[1]!=0);
+					COLORREF c;
+					if (_tcscmp(text, _T("fg")) == 0)           { c = pColorInfoArr[0].m_sColorAttr.m_cTEXT;
+					} else if (_tcscmp(text, _T("bg")) == 0)    { c = pColorInfoArr[0].m_sColorAttr.m_cBACK;
+					} else if (_tcscmp(text, _T("white")) == 0) { c = 0xffffff;
+					} else if (_tcscmp(text, _T("black")) == 0) { c = 0x000000;
+					} else if (_tcscmp(text, _T("red")) == 0)   { c = 0x0000ff;
+					} else if (_tcscmp(text, _T("green")) == 0) { c = 0x00ff00;
+					} else if (_tcscmp(text, _T("blue")) == 0)  { c = 0xff0000;
+					} else {
+						int i;
+						::swscanf(text, L"%x", &i);
+						c = i;
+					}
+					info->m_sColorAttr.m_cTEXT = c;
+					if (_tcscmp(back, _T("fg")) == 0)           { c = pColorInfoArr[0].m_sColorAttr.m_cTEXT;
+					} else if (_tcscmp(back, _T("bg")) == 0)    { c = pColorInfoArr[0].m_sColorAttr.m_cBACK;
+					} else if (_tcscmp(back, _T("white")) == 0) { c = 0xffffff;
+					} else if (_tcscmp(back, _T("black")) == 0) { c = 0x000000;
+					} else if (_tcscmp(back, _T("red")) == 0)   { c = 0x0000ff;
+					} else if (_tcscmp(back, _T("green")) == 0) { c = 0x00ff00;
+					} else if (_tcscmp(back, _T("blue")) == 0)  { c = 0xff0000;
+					} else {
+						int i;
+						::swscanf(back, L"%x", &i);
+						c = i;
+					}
+					info->m_sColorAttr.m_cBACK = c;
+					if (!bColorOnly) info->m_sFontAttr.m_bUnderLine = (buf[4]!=0);
+				}
 #else
+				scan_ints( szKeyData, pszForm, buf);
 				pColorInfoArr[j].m_bDisp                  = (buf[0]!=0);
 				pColorInfoArr[j].m_sFontAttr.m_bBoldFont  = (buf[1]!=0);
 				pColorInfoArr[j].m_sColorAttr.m_cTEXT     = buf[2];
@@ -2466,12 +2498,13 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 			unsigned int fAttribute = g_ColorAttributeArr[j].fAttribute;
 #ifdef MI_MOD_PROFILES
 			if (!bColorOnly) {
+				ColorInfo *info = &pColorInfoArr[j];
 				if( 0 != (fAttribute & COLOR_ATTRIB_FORCE_DISP) )
-					pColorInfoArr[j].m_bDisp = true;
+					info->m_bDisp = true;
 				if( 0 != (fAttribute & COLOR_ATTRIB_NO_BOLD) )
-					pColorInfoArr[j].m_sFontAttr.m_bBoldFont = false;
+					info->m_sFontAttr.m_bBoldFont = false;
 				if( 0 != (fAttribute & COLOR_ATTRIB_NO_UNDERLINE) )
-					pColorInfoArr[j].m_sFontAttr.m_bUnderLine = false;
+					info->m_sFontAttr.m_bUnderLine = false;
 			}
 #else
 			if( 0 != (fAttribute & COLOR_ATTRIB_FORCE_DISP) )
@@ -2483,6 +2516,49 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 #endif  // MI_
 		}
 		else{
+#ifdef MI_MOD_PROFILES
+			ColorInfo *info = &pColorInfoArr[j];
+			unsigned int fAttribute = g_ColorAttributeArr[j].fAttribute;
+			if (fAttribute == (COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS)) {
+				auto_sprintf( szKeyData, L"%d,", info->m_bDisp?1:0 );
+			} else {
+				WCHAR text[32] = {};
+				WCHAR back[32] = {};
+				bool no_txt = (j != 0);
+				COLORREF c;
+				c = info->m_sColorAttr.m_cTEXT;
+				if (!no_txt) { auto_sprintf(text, L"%06x", c);
+				} else if (c == pColorInfoArr[0].m_sColorAttr.m_cTEXT) { auto_sprintf(text, L"fg");
+				} else if (c == pColorInfoArr[0].m_sColorAttr.m_cBACK) { auto_sprintf(text, L"bg");
+				} else if (c == 0xffffff) { auto_sprintf(text, L"white");
+				} else if (c == 0x000000) { auto_sprintf(text, L"black");
+				} else if (c == 0x0000ff) { auto_sprintf(text, L"red");
+				} else if (c == 0x00ff00) { auto_sprintf(text, L"green");
+				} else if (c == 0xff0000) { auto_sprintf(text, L"blue");
+				} else {
+					auto_sprintf(text, L"%06x", c);
+				}
+				c = info->m_sColorAttr.m_cBACK;
+				if (!no_txt) { auto_sprintf(back, L"%06x", c);
+				} else if (c == pColorInfoArr[0].m_sColorAttr.m_cTEXT) { auto_sprintf(back, L"fg");
+				} else if (c == pColorInfoArr[0].m_sColorAttr.m_cBACK) { auto_sprintf(back, L"bg");
+				} else if (c == 0xffffff) { auto_sprintf(back, L"white");
+				} else if (c == 0x000000) { auto_sprintf(back, L"black");
+				} else if (c == 0x0000ff) { auto_sprintf(back, L"red");
+				} else if (c == 0x00ff00) { auto_sprintf(back, L"green");
+				} else if (c == 0xff0000) { auto_sprintf(back, L"blue");
+				} else {
+					auto_sprintf(back, L"%06x", c);
+				}
+				auto_sprintf( szKeyData, L"%d,%d,%s,%s,%d",
+					info->m_bDisp?1:0,
+					info->m_sFontAttr.m_bBoldFont?1:0,
+					text,
+					back,
+					info->m_sFontAttr.m_bUnderLine?1:0
+				);
+			}
+#else
 			auto_sprintf( szKeyData, pszForm,
 				pColorInfoArr[j].m_bDisp?1:0,
 				pColorInfoArr[j].m_sFontAttr.m_bBoldFont?1:0,
@@ -2490,6 +2566,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sColorAttr.m_cBACK,
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine?1:0
 			);
+#endif  // MI_
 			pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) );
 		}
 	}
