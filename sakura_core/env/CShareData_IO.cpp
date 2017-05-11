@@ -34,6 +34,9 @@
 #include "plugin/CPlugin.h"
 #include "uiparts/CMenuDrawer.h"
 #include "_main/CCommandLine.h"
+#ifdef MI_MOD_PROFILES
+#include "sakura_rc.h"
+#endif  // MI_
 
 void ShareData_IO_Sub_LogFont( CDataProfile& cProfile, const WCHAR* pszSecName,
 	const WCHAR* pszKeyLf, const WCHAR* pszKeyPointSize, const WCHAR* pszKeyFaceName, LOGFONT& lf, INT& nPointSize );
@@ -131,6 +134,22 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #endif  // MI_
 	}
 //	MYTRACE( _T("Iniファイル処理 0 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
+
+#ifdef MI_MOD_PROFILES
+	CDataProfile cProfileDefault;
+	cProfileDefault.SetReadingMode();
+	cProfile.pcProfileDef_ = nullptr;
+	cProfile.bProfileDef_ = false;
+	if (!bRead) {
+		std::tstring default_fname =
+		    ut::dirname(szIniFileName) + ut::basename(szIniFileName) + _T(".default.ini");
+
+		if (cProfileDefault.ReadProfile(default_fname.c_str())) {
+			cProfile.pcProfileDef_ = &cProfileDefault;
+			cProfile.bProfileDef_ = true;
+		}
+	}
+#endif  // MI_
 
 	CMenuDrawer* pcMenuDrawer = new CMenuDrawer; // 2010/7/4 Uchi
 
@@ -959,7 +978,14 @@ void CShareData_IO::ShareData_IO_Toolbar( CDataProfile& cProfile, CMenuDrawer* p
 
 	cProfile.IOProfileData( pszSecName, LTEXT("bToolBarIsFlat"), toolbar.m_bToolBarIsFlat );
 
+#ifdef MI_MOD_PROFILES
+	bool bOldProfileDef = cProfile.bProfileDef_;
+	cProfile.bProfileDef_ = false;
+#endif  // MI_
 	cProfile.IOProfileData( pszSecName, LTEXT("nToolBarButtonNum"), toolbar.m_nToolBarButtonNum );
+#ifdef MI_MOD_PROFILES
+	cProfile.bProfileDef_ = bOldProfileDef;
+#endif  // MI_
 	SetValueLimit( toolbar.m_nToolBarButtonNum, MAX_TOOLBAR_BUTTON_ITEMS );
 	int	nSize = toolbar.m_nToolBarButtonNum;
 	for( i = 0; i < nSize; ++i ){
@@ -1146,6 +1172,12 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 			sKeyBind.m_nKeyNameArrNum = KEYNAME_SIZE;
 		}
 	}
+
+#ifdef MI_MOD_PROFILES
+	// OldVerの切り捨て
+	bOldVer = false;
+	sKeyBind.m_nKeyNameArrNum = KEYNAME_SIZE;
+#endif  // MI_
 
 	for( i = 0; i < sKeyBind.m_nKeyNameArrNum; ++i ){
 		// 2005.04.07 D.S.Koba
@@ -2215,6 +2247,11 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 	boost::container::vector<std::wstring>& data = *pData;
 	int dataNum = 0;
 
+#ifdef MI_MOD_PROFILES
+	boost::container::vector<std::wstring> default_data;
+	bool bOldProfileDef = cProfile.bProfileDef_;
+	cProfile.bProfileDef_ = false;
+#endif  // MI_
 	if (cProfile.IsReadingMode()) {
 		int menuNum = 0;
 		if( pData ){
@@ -2227,6 +2264,13 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 		}
 		mainmenu.m_nMainMenuNum = menuNum;
 		SetValueLimit( mainmenu.m_nMainMenuNum, MAX_MAINMENU );
+
+#ifdef MI_MOD_PROFILES
+		// デフォルト用にリソースの読み込み
+		CDataProfile cProfileDef;
+		cProfileDef.SetReadingMode();
+		cProfileDef.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &default_data );
+#endif  // MI_
 	}
 	else {
 		cProfile.IOProfileData( pszSecName, LTEXT("nMainMenuNum"), mainmenu.m_nMainMenuNum);
@@ -2236,7 +2280,13 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 		mainmenu.m_bMainMenuKeyParentheses = (_wtoi(data[dataNum++].c_str()) != 0);
 	}else{
 		cProfile.IOProfileData( pszSecName, LTEXT("bKeyParentheses"), mainmenu.m_bMainMenuKeyParentheses );
+#ifdef MI_MOD_PROFILES
+		dataNum++;
+#endif  // MI_
 	}
+#ifdef MI_MOD_PROFILES
+	cProfile.bProfileDef_ = bOldProfileDef;
+#endif  // MI_
 
 	if (cProfile.IsReadingMode()) {
 		// Top Level 初期化
@@ -2262,7 +2312,14 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 			if( pData ){
 				wcscpy(szLine, data[dataNum++].c_str());
 			}else{
+#ifdef MI_MOD_PROFILES
+				if (!cProfile.IOProfileData(pszSecName, szKeyName, MakeStringBufferW(szLine))) {
+					wcscpy(szLine, default_data[dataNum].c_str());  // デフォルト設定
+				}
+				dataNum++;
+#else
 				cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
+#endif  // MI_
 			}
 
 			// レベル

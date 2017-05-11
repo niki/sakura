@@ -214,6 +214,10 @@ protected:
 	//                         入出力部                            //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 public:
+#ifdef MI_MOD_PROFILES
+	CDataProfile *pcProfileDef_;  // ※必ず初期化すること
+	bool bProfileDef_;  // ※必ず初期化すること
+#endif  // MI_
 	// 注意：StringBuffer系はバッファが足りないとabortします
 	template <class T> //T=={bool, int, WORD, wchar_t, char, wstring, StringBufferA, StringBufferW, StaticString}
 	bool IOProfileData( const WCHAR* pszSectionName, const WCHAR* pszEntryKey, T& tEntryValue )
@@ -234,6 +238,16 @@ public:
 			//文字列に変換
 			wstring buf;
 			value_to_profile(tEntryValue, &buf);
+#ifdef MI_MOD_PROFILES
+			if (bProfileDef_ && pcProfileDef_ && (*pcProfileDef_).IsReadingMode()) {
+				TCHAR test[1024];
+				if ((*pcProfileDef_).IOProfileData(pszSectionName, pszEntryKey, MakeStringBufferT(test))) {
+					if (buf == test) {
+						return false;  // 渡された CDataProfile から読み込んだ値を同じ場合は書き込まない
+					}
+				}
+			}
+#endif  // MI_
 			//文字列書き込み
 			return SetProfileDataImp( pszSectionName, pszEntryKey, buf);
 		}
