@@ -16,8 +16,8 @@ MacTypeと併用していて画面崩れがひどかったので対応をしま�
 
 変更内容はコミットログを参照してください.  
 
+ ・[sakura-mix-2.9.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.9.zip) (837KB)  
  ・[sakura-mix-2.8.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.8.zip) (918KB)  
- ・[sakura-mix-2.7.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.7.zip) (917KB)  
 
 <br>
 
