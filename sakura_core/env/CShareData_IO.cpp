@@ -2252,6 +2252,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 	bool bOldProfileDef = cProfile.bProfileDef_;
 	cProfile.bProfileDef_ = false;
 #endif  // MI_
+
 	if (cProfile.IsReadingMode()) {
 		int menuNum = 0;
 		if( pData ){
@@ -2264,18 +2265,20 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 		}
 		mainmenu.m_nMainMenuNum = menuNum;
 		SetValueLimit( mainmenu.m_nMainMenuNum, MAX_MAINMENU );
-
-#ifdef MI_MOD_PROFILES
-		// デフォルト用にリソースの読み込み
-		CDataProfile cProfileDef;
-		cProfileDef.SetReadingMode();
-		cProfileDef.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &default_data );
-#endif  // MI_
 	}
 	else {
 		cProfile.IOProfileData( pszSecName, LTEXT("nMainMenuNum"), mainmenu.m_nMainMenuNum);
 	}
-	
+
+#ifdef MI_MOD_PROFILES
+	{
+		// デフォルト用にリソースの読み込み
+		CDataProfile cProfileDef;
+		cProfileDef.SetReadingMode();
+		cProfileDef.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &default_data );
+	}
+#endif  // MI_
+
 	if( pData ){
 		mainmenu.m_bMainMenuKeyParentheses = (_wtoi(data[dataNum++].c_str()) != 0);
 	}else{
@@ -2284,6 +2287,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 		dataNum++;
 #endif  // MI_
 	}
+
 #ifdef MI_MOD_PROFILES
 	cProfile.bProfileDef_ = bOldProfileDef;
 #endif  // MI_
@@ -2314,7 +2318,9 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 			}else{
 #ifdef MI_MOD_PROFILES
 				if (!cProfile.IOProfileData(pszSecName, szKeyName, MakeStringBufferW(szLine))) {
-					wcscpy(szLine, default_data[dataNum].c_str());  // デフォルト設定
+					if ((int)default_data.size() > dataNum) {
+						wcscpy(szLine, default_data[dataNum].c_str());  // デフォルト設定
+					}
 				}
 				dataNum++;
 #else
@@ -2396,7 +2402,18 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 				szFuncName, 
 				pcMenu->m_sKey, 
 				pcMenu->m_nFunc == F_NODE ? pcMenu->m_sName : L"" );
+#ifdef MI_MOD_PROFILES
+			bool bSkip = false;
+			if ((int)default_data.size() > dataNum) {
+				if (default_data[dataNum] == szLine) {
+					bSkip = true;
+				}
+			}
+			dataNum++;
+			if (!bSkip) cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
+#else
 			cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
+#endif  // MI_
 		}
 
 		if (cProfile.IsReadingMode() && pcMenu->m_nLevel == 0) {
