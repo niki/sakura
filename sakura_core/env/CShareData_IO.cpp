@@ -138,13 +138,12 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #ifdef MI_MOD_PROFILES
 	CDataProfile cProfileDefault;
 	cProfileDefault.SetReadingMode();
-	cProfile.pcProfileDef_ = nullptr;
-	cProfile.bProfileDef_ = false;
-	if (!bRead) {
-		std::tstring default_fname =
+
+	{
+		std::tstring fname =
 		    mix::file::dirname(szIniFileName) + mix::file::basename(szIniFileName) + _T(".default.ini");
 
-		if (cProfileDefault.ReadProfile(default_fname.c_str())) {
+		if (cProfileDefault.ReadProfile(fname.c_str())) {
 			cProfile.pcProfileDef_ = &cProfileDefault;
 			cProfile.bProfileDef_ = true;
 		}
@@ -171,17 +170,17 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			cProfileRecent.SetWritingMode();
 		}
 
-		std::tstring recent_fname =
+		std::tstring fname =
 		    mix::file::dirname(szIniFileName) + mix::file::basename(szIniFileName) + _T(".recent.ini");
 
-		if (bRead) cProfileRecent.ReadProfile(recent_fname.c_str());
+		if (bRead) cProfileRecent.ReadProfile(fname.c_str());
 
 		ShareData_IO_Mru(cProfileRecent);
 		ShareData_IO_Keys(cProfileRecent);
 		ShareData_IO_Grep(cProfileRecent);
 		ShareData_IO_Cmd(cProfileRecent);
 
-		if (!bRead) cProfileRecent.WriteProfile(recent_fname.c_str(), LTEXT(" recent.ini "));
+		if (!bRead) cProfileRecent.WriteProfile(fname.c_str(), LTEXT(" recent.ini "));
 	}
 #else
 	ShareData_IO_Mru( cProfile );
@@ -978,14 +977,7 @@ void CShareData_IO::ShareData_IO_Toolbar( CDataProfile& cProfile, CMenuDrawer* p
 
 	cProfile.IOProfileData( pszSecName, LTEXT("bToolBarIsFlat"), toolbar.m_bToolBarIsFlat );
 
-#ifdef MI_MOD_PROFILES
-	bool bOldProfileDef = cProfile.bProfileDef_;
-	cProfile.bProfileDef_ = false;
-#endif  // MI_
 	cProfile.IOProfileData( pszSecName, LTEXT("nToolBarButtonNum"), toolbar.m_nToolBarButtonNum );
-#ifdef MI_MOD_PROFILES
-	cProfile.bProfileDef_ = bOldProfileDef;
-#endif  // MI_
 	SetValueLimit( toolbar.m_nToolBarButtonNum, MAX_TOOLBAR_BUTTON_ITEMS );
 	int	nSize = toolbar.m_nToolBarButtonNum;
 	for( i = 0; i < nSize; ++i ){
