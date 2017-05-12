@@ -109,7 +109,7 @@ bool CProfile::ReadProfile( const TCHAR* pszProfileName )
 #ifdef MI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
 			!RegKey(MI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 1) &&
-			RegKey(ut::regkey(m_strProfileName)).valid()) {
+			RegKey(mix::reg::genkey(m_strProfileName)).valid()) {
 		return true;
 	}
 	// レジストリキーがない場合はiniを読み込みに行く

@@ -142,7 +142,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	cProfile.bProfileDef_ = false;
 	if (!bRead) {
 		std::tstring default_fname =
-		    ut::dirname(szIniFileName) + ut::basename(szIniFileName) + _T(".default.ini");
+		    mix::file::dirname(szIniFileName) + mix::file::basename(szIniFileName) + _T(".default.ini");
 
 		if (cProfileDefault.ReadProfile(default_fname.c_str())) {
 			cProfile.pcProfileDef_ = &cProfileDefault;
@@ -172,7 +172,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		}
 
 		std::tstring recent_fname =
-		    ut::dirname(szIniFileName) + ut::basename(szIniFileName) + _T(".recent.ini");
+		    mix::file::dirname(szIniFileName) + mix::file::basename(szIniFileName) + _T(".recent.ini");
 
 		if (bRead) cProfileRecent.ReadProfile(recent_fname.c_str());
 

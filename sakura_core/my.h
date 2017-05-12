@@ -19,6 +19,8 @@
 #include <shlwapi.h>
 
 #include "my_config.h"
-#include "my_reg.h"
+
+#include <mix/util.hpp>
+#include <mix/registry.hpp>
 
 #endif /* MY_CONFIG_H */
