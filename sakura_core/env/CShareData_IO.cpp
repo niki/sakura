@@ -105,9 +105,25 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			/* 設定ファイルが存在しない */
 
 			// キーワードファイルのインポート
+#ifdef MI_MOD_PROFILES
+			std::tstring fname =
+			    mix::file::dirname(szIniFileName) + mix::file::basename(szIniFileName) + 
+			    _T(".keywordset.json");
+			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
+#else
 			pcShare->InitKeyword( &GetDllShareData(), true );
+#endif  // MI_
 			return false;
 		}
+#ifdef MI_MOD_PROFILES
+		else {
+			// キーワードファイルのインポート
+			std::tstring fname =
+			    mix::file::dirname(szIniFileName) + mix::file::basename(szIniFileName) + 
+			    _T(".keywordset.json");
+			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
+		}
+#endif  // MI_
 
 #ifdef MI_USE_REGISTRY_FOR_PROFILES
 		if (!cProfile.IsRegMode()) {
@@ -200,7 +216,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_KeyBind( cProfile );
 	ShareData_IO_Print( cProfile );
 	ShareData_IO_Types( cProfile );
+#ifndef MI_MOD_PROFILES
 	ShareData_IO_KeyWords( cProfile );
+#endif  // MI_
 	ShareData_IO_Macro( cProfile );
 	ShareData_IO_Statusbar( cProfile );		// 2008/6/21 Uchi
 	ShareData_IO_MainMenu( cProfile );		// 2010/5/15 Uchi
@@ -1920,6 +1938,7 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 */
 void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 {
+#ifndef MI_MOD_PROFILES
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
 	const WCHAR*		pszSecName = LTEXT("KeyWords");
@@ -1993,6 +2012,7 @@ void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 			delete [] pszMem;
 		}
 	}
+#endif  // MI_
 }
 
 /*!

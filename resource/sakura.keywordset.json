@@ -1,0 +1,145 @@
+{
+	"KeywordSet":
+	[
+		{
+			"type": "C/C++",
+			"case_sensitive": "True",
+			"file": "cpp.kwd"
+		},
+		{
+			"type": "HTML",
+			"case_sensitive": "False",
+			"file": "html5.kwd"
+		},
+		{
+			"type": "PL/SQL",
+			"case_sensitive": "False",
+			"file": "plsql.kwd"
+		},
+		{
+			"type": "COBOL",
+			"case_sensitive": "True",
+			"file": "COBOL.kwd"
+		},
+		{
+			"type": "Java",
+			"case_sensitive": "True",
+			"file": "java.kwd"
+		},
+		{
+			"type": "CORBA IDL",
+			"case_sensitive": "True",
+			"file": "corba.kwd"
+		},
+		{
+			"type": "AWK",
+			"case_sensitive": "True",
+			"file": "awk.kwd"
+		},
+		{
+			"type": "MS-DOS batch",
+			"case_sensitive": "False",
+			"file": "batch.kwd"
+		},
+		{
+			"type": "Pascal",
+			"case_sensitive": "False",
+			"file": "pascal.kwd"
+		},
+		{
+			"type": "TeX",
+			"case_sensitive": "True",
+			"file": "tex1.kwd"
+		},
+		{
+			"type": "TeX2",
+			"case_sensitive": "True",
+			"file": "tex2.kwd"
+		},
+		{
+			"type": "Perl",
+			"case_sensitive": "True",
+			"file": "perl.kwd"
+		},
+		{
+			"type": "Perl2",
+			"case_sensitive": "True",
+			"file": "perlvar.kwd"
+		},
+		{
+			"type": "Visual Basic",
+			"case_sensitive": "False",
+			"file": "vb.kwd"
+		},
+		{
+			"type": "Visual Basic2",
+			"case_sensitive": "False",
+			"file": "vb2.kwd"
+		},
+		{
+			"type": "Rich Text",
+			"case_sensitive": "True",
+			"file": "rtf.kwd"
+		},
+		{
+			"type": "C#",
+			"case_sensitive": "True",
+			"file": "csharp.kwd"
+		},
+		{
+			"type": "C# content",
+			"case_sensitive": "True",
+			"file": "csharp-context.kwd"
+		},
+		{
+			"type": "CSS",
+			"case_sensitive": "True",
+			"file": "css2.1.kwd"
+		},
+		{
+			"type": "JavaScript",
+			"case_sensitive": "True",
+			"file": "ecmascript_sys.kwd"
+		},
+		{
+			"type": "JavaScript2",
+			"case_sensitive": "True",
+			"file": "javascript.kwd"
+		},
+		{
+			"type": "PHP",
+			"case_sensitive": "True",
+			"file": "php_reserved.kwd"
+		},
+		{
+			"type": "PHP2",
+			"case_sensitive": "True",
+			"file": "php.kwd"
+		},
+		{
+			"type": "python",
+			"case_sensitive": "True",
+			"file": "python_2.5.kwd"
+		},
+		{
+			"type": "Ruby1",
+			"case_sensitive": "True",
+			"file": "ruby1.kwd"
+		},
+		{
+			"type": "Ruby2",
+			"case_sensitive": "True",
+			"file": "ruby2.kwd"
+		},
+		{
+			"type": "Ruby3",
+			"case_sensitive": "True",
+			"file": "ruby3.kwd"
+		},
+		{
+			"type": "Ruby4",
+			"case_sensitive": "True",
+			"file": "ruby4.kwd"
+		}
+	]
+}

@@ -30,6 +30,14 @@
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "typeprop/CImpExpManager.h"
+#ifdef MI_MOD_PROFILES
+#include <codecvt>
+#include <locale>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/foreach.hpp>
+#include <boost/optional.hpp>
+#endif  // MI_
 
 void _DefaultConfig(STypeConfig* pType);
 
@@ -122,6 +130,7 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, boost::container::vec
 */
 void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 {
+#ifndef MI_MOD_PROFILES
 	/* 強調キーワードのテストデータ */
 	pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx = 0;
 	CKeyWordSetMgr& cKeyWordSetMgr = pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
@@ -195,8 +204,57 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 #undef PopulateKeyword1
 #undef PopulateKeyword2
 #undef PopulateKeyword
+#endif  // MI_
 }
+#ifdef MI_MOD_PROFILES
+void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstring &fname)
+{
+	/* 強調キーワードのテストデータ */
+	pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx = 0;
+	CKeyWordSetMgr& cKeyWordSetMgr = pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
+	int nSetCount = -1;
+	TCHAR szKeywordDir[_MAX_PATH];
+	GetExedir( szKeywordDir, _T("Keyword\\") );
 
+#define PopulateKeyword(name, case_sensitive, filename) \
+	{ \
+		cKeyWordSetMgr.AddKeyWordSet( (name), (case_sensitive) );	\
+		++nSetCount; \
+		CImpExpKeyWord impKeyword( pShareData->m_Common, nSetCount, case_sensitive ); \
+		std::wstring sKeywordPath; \
+		std::wstring TmpMsg; \
+		sKeywordPath = to_wchar(szKeywordDir); \
+		sKeywordPath += filename; \
+		impKeyword.Import( sKeywordPath, TmpMsg ); \
+	}
+
+	cKeyWordSetMgr.ResetAllKeyWordSet();  // 再設定するため
+
+	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
+	std::string data = cv.to_bytes(fname.c_str());  //wstring→string
+
+	boost::property_tree::wptree pt;
+	boost::property_tree::read_json(data.c_str(), pt);
+
+	BOOST_FOREACH (const boost::property_tree::wptree::value_type& child, pt.get_child(L"KeywordSet")) {
+								 const boost::property_tree::wptree& info = child.second;
+		// type
+		boost::optional<std::wstring> type = info.get_optional<std::wstring>(L"type");
+		// case sensitive
+		boost::optional<std::wstring> case_sensitive = info.get_optional<std::wstring>(L"case_sensitive");
+		// file
+		boost::optional<std::wstring> file = info.get_optional<std::wstring>(L"file");
+		
+		bool b = case_sensitive.get() == L"True" ? true : false;
+		PopulateKeyword(type.get().c_str(), b, file.get().c_str());
+		
+		//OutputDebugStringW(file.get().c_str());
+		//OutputDebugStringW(L"\n");
+	}
+
+#undef PopulateKeyword
+}
+#endif  // MI_
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                        デフォルト                           //
