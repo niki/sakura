@@ -216,43 +216,41 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 	TCHAR szKeywordDir[_MAX_PATH];
 	GetExedir( szKeywordDir, _T("Keyword\\") );
 
-#define PopulateKeyword(name, case_sensitive, filename) \
-	{ \
-		cKeyWordSetMgr.AddKeyWordSet( (name), (case_sensitive) );	\
-		++nSetCount; \
-		CImpExpKeyWord impKeyword( pShareData->m_Common, nSetCount, case_sensitive ); \
-		std::wstring sKeywordPath; \
-		std::wstring TmpMsg; \
-		sKeywordPath = to_wchar(szKeywordDir); \
-		sKeywordPath += filename; \
-		impKeyword.Import( sKeywordPath, TmpMsg ); \
-	}
+	// キーワード定義追加
+	auto fnPopulateKeyword =
+	    [&cKeyWordSetMgr, &nSetCount, pShareData, szKeywordDir]
+	    (const std::tstring &name, bool case_sensitive, const std::tstring &filename)
+	{
+		cKeyWordSetMgr.AddKeyWordSet(name.c_str(), case_sensitive);
+		++nSetCount;
+		CImpExpKeyWord impKeyword(pShareData->m_Common, nSetCount, case_sensitive);
+		std::wstring TmpMsg;
+		impKeyword.Import(std::tstring(szKeywordDir) + filename, TmpMsg);
+	};
 
 	cKeyWordSetMgr.ResetAllKeyWordSet();  // 再設定するため
 
 	using boost::property_tree::ptree;
-	using boost::property_tree::wptree;
 	using boost::property_tree::read_json;
 
-	wptree pt;
+	ptree pt;
 	read_json(mix::util::to_bytes(fname).c_str(), pt);
 
-	BOOST_FOREACH (const wptree::value_type& child, pt.get_child(L"KeywordSet")) {
-								 const wptree& info = child.second;
+	BOOST_FOREACH (const ptree::value_type& child, pt.get_child("KeywordSet")) {
+								 const ptree& info = child.second;
 		// name
-		boost::optional<std::wstring> name = info.get_optional<std::wstring>(L"name");
+		boost::optional<std::string> name = info.get_optional<std::string>("name");
 		// case sensitive
-		boost::optional<std::wstring> case_sensitive = info.get_optional<std::wstring>(L"case_sensitive");
+		boost::optional<std::string> case_sensitive = info.get_optional<std::string>("case_sensitive");
 		// file
-		boost::optional<std::wstring> file = info.get_optional<std::wstring>(L"file");
+		boost::optional<std::string> file = info.get_optional<std::string>("file");
 		
-		bool b = mix::util::to_b(case_sensitive.get());
-		PopulateKeyword(name.get().c_str(), b, file.get().c_str());
+		fnPopulateKeyword(mix::util::from_bytes(name.get()),
+		                  mix::util::to_b(case_sensitive.get()),
+		                  mix::util::from_bytes(file.get()));
 		
 		//mix::logln(file.get().c_str());
 	}
-
-#undef PopulateKeyword
 }
 #endif  // MI_
 

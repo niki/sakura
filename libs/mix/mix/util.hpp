@@ -25,8 +25,11 @@ namespace util {
 //! @param s
 //! @return true/false
 //------------------------------------------------------------------
-MIX_INLINE bool to_b(const std::tstring &s) {
-  return !(s == _T("false") || s == _T("False") || s == _T("0"));
+MIX_INLINE bool to_b(const std::string &s) {
+  return !(s == "false" || s == "False" || s == "0");
+}
+MIX_INLINE bool to_b(const std::wstring &s) {
+  return !(s == L"false" || s == L"False" || s == L"0");
 }
 
 //------------------------------------------------------------------
@@ -35,6 +38,14 @@ MIX_INLINE bool to_b(const std::tstring &s) {
 MIX_INLINE std::string to_bytes(const std::wstring &s) {
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
   return cv.to_bytes(s.c_str());  //wstring→string
+}
+
+//------------------------------------------------------------------
+//! string を wstring に変換
+//------------------------------------------------------------------
+MIX_INLINE std::wstring from_bytes(const std::string &s) {
+  std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
+  return cv.from_bytes(s.c_str());  //string→wstring
 }
 
 //------------------------------------------------------------------
