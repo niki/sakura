@@ -2535,7 +2535,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				if (scan_num > 1) {
 					auto fnNameToColor = [pColorInfoArr](TCHAR *name) {
 						COLORREF c;
-						if (_tcsicmp(name, _T("none")) == 0)           { c = RGB(0, 0, 0);
+						if (_tcsicmp(name, _T("none")) == 0)           { c = pColorInfoArr[0].m_sColorAttr.m_cBACK;
 						} else if (_tcsicmp(name, _T("fg")) == 0)      { c = pColorInfoArr[0].m_sColorAttr.m_cTEXT;
 						} else if (_tcsicmp(name, _T("bg")) == 0)      { c = pColorInfoArr[0].m_sColorAttr.m_cBACK;
 						} else if (_tcsicmp(name, _T("red")) == 0)     { c = RGB(255, 0, 0);
