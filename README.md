@@ -37,6 +37,8 @@ MacTypeと併用していて画面崩れがひどかったので対応をして�
   強調キーワードのリストです. セット名, 大文字小文字の区別, ファイル名を指定します.  
   共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.  
 
++ 最新のキーワードセットはこちら [keyword_pack.zip](https://github.com/mimix33/sakura_2201/raw/master/doc/keyword_pack.zip) (355KB)  
+
 <br>
 
 **Build environment**  
