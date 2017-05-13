@@ -238,15 +238,15 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 
 	BOOST_FOREACH (const boost::property_tree::wptree::value_type& child, pt.get_child(L"KeywordSet")) {
 								 const boost::property_tree::wptree& info = child.second;
-		// type
-		boost::optional<std::wstring> type = info.get_optional<std::wstring>(L"type");
+		// name
+		boost::optional<std::wstring> name = info.get_optional<std::wstring>(L"name");
 		// case sensitive
 		boost::optional<std::wstring> case_sensitive = info.get_optional<std::wstring>(L"case_sensitive");
 		// file
 		boost::optional<std::wstring> file = info.get_optional<std::wstring>(L"file");
 		
 		bool b = case_sensitive.get() == L"True" ? true : false;
-		PopulateKeyword(type.get().c_str(), b, file.get().c_str());
+		PopulateKeyword(name.get().c_str(), b, file.get().c_str());
 		
 		//OutputDebugStringW(file.get().c_str());
 		//OutputDebugStringW(L"\n");
