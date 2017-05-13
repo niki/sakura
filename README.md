@@ -17,8 +17,24 @@ MacTypeと併用していて画面崩れがひどかったので対応をしま�
 
 変更内容はコミットログを参照してください.  
 
+ ・[sakura-mix-2.10.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.10.zip) (926KB)  
  ・[sakura-mix-2.9.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.9.zip) (837KB)  
  ・[sakura-mix-2.8.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.8.zip) (918KB)  
+
+<br>
+
+**Setup**  
+
+ダウンロードしたファイルをすでに使用しているサクラエディタに上書きする形でコピーしてください.  
+`sakura.default.ini`と`sakura.keywordset.json`は実行ファイルと同じ場所に置き, 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
+
++ sakura.default.ini  
+  デフォルト設定値を設定してあるファイルです. ここに初期値を設定することで常にその状態で起動します.  
+  ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.  
+
++ sakura.keywordset.json  
+  強調キーワードのリストです. セット名, 大文字小文字の区別, ファイル名を指定します.  
+  共通設定からの強調キーワード設定は可能ですが保存はされなくなります. 必要に応じてエクスポートしてください.  
 
 <br>
 
