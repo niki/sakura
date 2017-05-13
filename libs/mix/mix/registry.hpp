@@ -8,12 +8,10 @@
 #ifndef MIX_REGISTRY_HPP
 #define MIX_REGISTRY_HPP
 
-#include <memory>
-#include <string>
+#include "basis.h"
 //#include <locale>
 //#include <codecvt>
 //#include <boost/container/vector.hpp>
-#include <tchar.h>
 #include <errno.h>
 
 //*****
@@ -69,7 +67,7 @@ namespace reg {
 //------------------------------------------------------------------
 //! ini形式のキー情報からレジストリキー名作成
 //------------------------------------------------------------------
-inline std::tstring genkey(const std::tstring &prof, const std::tstring &section = _T("")) {
+MIX_INLINE std::tstring genkey(const std::tstring &prof, const std::tstring &section = _T("")) {
   if (section.empty()) {
     return _T("Software\\") + mix::file::fname(prof);
   } else {
@@ -213,8 +211,8 @@ class ScopedRegKey : public RegKey {
 //! @param entry エントリー名
 //! @param data データ
 //------------------------------------------------------------------
-inline bool RegGetProfileString(const std::tstring &prof, const std::tstring &section,
-                                const std::tstring &entry, std::tstring &data) {
+MIX_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstring &section,
+                                   const std::tstring &entry, std::tstring &data) {
   DWORD dwType;
   DWORD dwByte;
 
@@ -258,8 +256,8 @@ inline bool RegGetProfileString(const std::tstring &prof, const std::tstring &se
 //! @param entry エントリー名
 //! @param data データ
 //------------------------------------------------------------------
-inline bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
-                                const std::tstring &entry, const std::tstring &data) {
+MIX_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
+                                    const std::tstring &entry, const std::tstring &data) {
   if (data.empty()) {
     //return RegKeyRW(mix::reg::genkey(prof, section)).deleteEntry(entry);  // 空のときは削除
     return RegKeyRW(mix::reg::genkey(prof, section)).write(entry, _T(""));

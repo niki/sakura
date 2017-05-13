@@ -230,14 +230,15 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 
 	cKeyWordSetMgr.ResetAllKeyWordSet();  // 再設定するため
 
-	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> cv;
-	std::string data = cv.to_bytes(fname.c_str());  //wstring→string
+	using boost::property_tree::ptree;
+	using boost::property_tree::wptree;
+	using boost::property_tree::read_json;
 
-	boost::property_tree::wptree pt;
-	boost::property_tree::read_json(data.c_str(), pt);
+	wptree pt;
+	read_json(mix::util::to_bytes(fname).c_str(), pt);
 
-	BOOST_FOREACH (const boost::property_tree::wptree::value_type& child, pt.get_child(L"KeywordSet")) {
-								 const boost::property_tree::wptree& info = child.second;
+	BOOST_FOREACH (const wptree::value_type& child, pt.get_child(L"KeywordSet")) {
+								 const wptree& info = child.second;
 		// name
 		boost::optional<std::wstring> name = info.get_optional<std::wstring>(L"name");
 		// case sensitive
@@ -245,11 +246,10 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 		// file
 		boost::optional<std::wstring> file = info.get_optional<std::wstring>(L"file");
 		
-		bool b = case_sensitive.get() == L"True" ? true : false;
+		bool b = mix::util::to_b(case_sensitive.get());
 		PopulateKeyword(name.get().c_str(), b, file.get().c_str());
 		
-		//OutputDebugStringW(file.get().c_str());
-		//OutputDebugStringW(L"\n");
+		//mix::logln(file.get().c_str());
 	}
 
 #undef PopulateKeyword

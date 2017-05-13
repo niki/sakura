@@ -20,7 +20,6 @@
 
 #include "my_config.h"
 
-#include <mix/util.hpp>
-#include <mix/registry.hpp>
+#include <mix/mix.h>
 
 #endif /* MY_CONFIG_H */
