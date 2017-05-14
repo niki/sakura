@@ -3637,7 +3637,7 @@ BEGIN
 #ifdef MI_MOD_VERDLG
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n\
 \r\n\
-=== Yu-zuki@mimix33 <https://github.com/mimix33/sakura_2201>\r\n\
+=== mimix <https://github.com/mimix33/sakura_2201>\r\n\
 === Boost C++ Libraries <http://www.boost.org/>\r\n\
 "
 #else
