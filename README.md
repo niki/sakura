@@ -32,7 +32,7 @@ MacTypeと併用していて画面崩れがひどかったので対応をして�
   ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.  
 
 + [sakura.keywordset.json](https://github.com/mimix33/sakura_2201/raw/master/resource/sakura.keywordset.json)  
-  強調キーワードのリストです. セット名, 大文字小文字の区別, ファイル名を指定します.  
+  強調キーワードのセットリストです. セット名, 大文字小文字の区別, ファイル名を指定します.  
   共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.  
 
 + 最新のキーワードセットはこちら [keyword_pack.zip](https://github.com/mimix33/sakura_2201/raw/master/doc/keyword_pack.zip) (355KB)  
@@ -50,9 +50,9 @@ MacTypeと併用していて画面崩れがひどかったので対応をして�
 **Changed**  
 + ファイル系
   - 履歴は別ファイル (sakura.recent.json)で扱う  
-  - 起動時に存在しない履歴を削除する  
+  - ~~起動時に存在しない履歴を削除する~~  
   - デフォルト設定ファイルの使用 (sakura.default.ini)  
-    (sakura.ini > sakura.default.ini > SystemInit)  
+  - 強調キーワード設定はファイルから読み込む (sakura.keywordset.json)  
   - カラー設定のインポートはカラー情報だけを適用させる  
   - 履歴 (検索, 置換, Grep)の値を少なめに変更  
   - 多重オープンの許可 (Shiftを押しながらファイルのドロップ)  
@@ -112,4 +112,4 @@ MacTypeと併用していて画面崩れがひどかったので対応をして�
 <br>
 
 
-(C) 2017 Yu-zuki@mimix.
+(C) 2017 mimix.
