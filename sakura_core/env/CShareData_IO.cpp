@@ -117,8 +117,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			// キーワードファイルのインポート
 #ifdef MI_MOD_PROFILES
 			std::tstring fname =
-			    mix::file::dirname(szIniFileName) + mix::file::basename(szIniFileName) + 
-			    _T(".keywordset.json");
+			    mix::file::dirname(szIniFileName) +
+			    mix::file::basename(szIniFileName) + _T(".keywordset.json");
 			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
 #else
 			pcShare->InitKeyword( &GetDllShareData(), true );
@@ -129,8 +129,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		else {
 			// キーワードファイルのインポート
 			std::tstring fname =
-			    mix::file::dirname(szIniFileName) + mix::file::basename(szIniFileName) + 
-			    _T(".keywordset.json");
+			    mix::file::dirname(szIniFileName) +
+			    mix::file::basename(szIniFileName) + _T(".keywordset.json");
 			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
 		}
 #endif  // MI_
@@ -167,7 +167,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 	{
 		std::tstring fname =
-		    mix::file::dirname(szIniFileName) + mix::file::basename(szIniFileName) + _T(".default.ini");
+		    mix::file::dirname(szIniFileName) +
+		    mix::file::basename(szIniFileName) + _T(".default.ini");
 
 		if (cProfileDefault.ReadProfile(fname.c_str())) {
 			cProfile.pcProfileDef_ = &cProfileDefault;
@@ -289,33 +290,28 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		i = 0;
 		auto mru_num = pt.get_optional<int>("Recent.MRU_num");
 		if (mru_num) {
-			pShare->m_sHistory.m_nMRUArrNum = mru_num.get();
+			pShare->m_sHistory.m_nMRUArrNum = *mru_num;
 
 			BOOST_FOREACH (auto& child, pt.get_child("Recent.MRU")) {
-				const ptree& info = child.second;
 				pfiWork = &pShare->m_sHistory.m_fiMRUArr[i];
+
+				const ptree& info = child.second;
 				
 				auto path = info.get_optional<std::string>("path");
-				auto view_top_line = info.get_optional<int>("view_top_line");
-				auto view_left_col = info.get_optional<int>("view_left_col");
-				auto x = info.get_optional<int>("x");
-				auto y = info.get_optional<int>("y");
-				auto char_code = info.get_optional<std::string>("char_code");
-				auto mark = info.get_optional<std::string>("mark");
-				auto type_id = info.get_optional<int>("type_id");
-				auto favorite = info.get_optional<std::string>("favorite");
-
-				_tcsncpy(pfiWork->m_szPath, mix::util::from_bytes(path.get()).c_str(), _MAX_PATH);
+				_tcsncpy(pfiWork->m_szPath, mix::util::from_bytes(*path).c_str(), _MAX_PATH);
 				pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
-				pfiWork->m_nViewTopLine = view_top_line.get();
-				pfiWork->m_nViewLeftCol = view_left_col.get();
-				pfiWork->m_ptCursor.x = x.get();
-				pfiWork->m_ptCursor.y = y.get();
-				pfiWork->m_nCharCode = static_cast<ECodeType>(std::stoi(char_code.get()));
-				_tcsncpy(pfiWork->m_szMarkLines, mix::util::from_bytes(mark.get()).c_str(), MAX_MARKLINES_LEN + 1);
+				pfiWork->m_nViewTopLine = *info.get_optional<int>("view_top_line");
+				pfiWork->m_nViewLeftCol = *info.get_optional<int>("view_left_col");
+				pfiWork->m_ptCursor.x = *info.get_optional<int>("x");
+				pfiWork->m_ptCursor.y = *info.get_optional<int>("y");
+				auto char_code = info.get_optional<std::string>("char_code");
+				pfiWork->m_nCharCode = static_cast<ECodeType>(std::stoi(*char_code));
+				auto mark = info.get_optional<std::string>("mark");
+				_tcsncpy(pfiWork->m_szMarkLines, mix::util::from_bytes(*mark).c_str(), MAX_MARKLINES_LEN + 1);
 				pfiWork->m_szMarkLines[MAX_MARKLINES_LEN + 1 - 1] = _T('\0');
-				pfiWork->m_nTypeId = type_id.get();
-				pShare->m_sHistory.m_bMRUArrFavorite[i] = mix::util::to_b(favorite.get());
+				pfiWork->m_nTypeId = *info.get_optional<int>("type_id");
+				auto favorite = info.get_optional<std::string>("favorite");
+				pShare->m_sHistory.m_bMRUArrFavorite[i] = mix::util::to_b(*favorite);
 				i++;
 			}
 		}
@@ -364,15 +360,15 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		i = 0;
 		auto folder_num = pt.get_optional<int>("Recent.folder_num");
 		if (folder_num) {
-			pShare->m_sHistory.m_nOPENFOLDERArrNum = folder_num.get();
+			pShare->m_sHistory.m_nOPENFOLDERArrNum = *folder_num;
 
 			BOOST_FOREACH (auto& child, pt.get_child("Recent.folder")) {
 				const ptree& info = child.second;
-				auto dir = info.get_optional<std::string>("dir");
-				auto favorite = info.get_optional<std::string>("favorite");
 				
-				pShare->m_sHistory.m_szOPENFOLDERArr[i].Assign(mix::util::from_bytes(dir.get()).c_str());
-				pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] = mix::util::to_b(favorite.get());
+				auto dir = info.get_optional<std::string>("dir");
+				pShare->m_sHistory.m_szOPENFOLDERArr[i].Assign(mix::util::from_bytes(*dir).c_str());
+				auto favorite = info.get_optional<std::string>("favorite");
+				pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] = mix::util::to_b(*favorite);
 				i++;
 			}
 		}
@@ -405,13 +401,13 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		i = 0;
 		auto except_mru_num = pt.get_optional<int>("Recent.except_MRU_num");
 		if (except_mru_num) {
-			pShare->m_sHistory.m_aExceptMRU._GetSizeRef() = except_mru_num.get();
+			pShare->m_sHistory.m_aExceptMRU._GetSizeRef() = *except_mru_num;
 
 			BOOST_FOREACH (auto& child, pt.get_child("Recent.except_MRU")) {
 				const ptree& info = child.second;
-				auto name = info.get_optional<std::string>("name");
 				
-				pShare->m_sHistory.m_aExceptMRU[i].Assign(mix::util::from_bytes(name.get()).c_str());
+				auto name = info.get_optional<std::string>("name");
+				pShare->m_sHistory.m_aExceptMRU[i].Assign(mix::util::from_bytes(*name).c_str());
 				i++;
 			}
 		}
@@ -606,13 +602,13 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		i = 0;
 		auto search_key_num = pt.get_optional<int>("Recent.search_key_num");
 		if (search_key_num) {
-			pShare->m_sSearchKeywords.m_aSearchKeys._GetSizeRef() = search_key_num.get();
+			pShare->m_sSearchKeywords.m_aSearchKeys._GetSizeRef() = *search_key_num;
 
 			BOOST_FOREACH (auto& child, pt.get_child("Recent.search_key")) {
 				const ptree& info = child.second;
-				auto data = info.get_optional<std::string>("data");
 				
-				pShare->m_sSearchKeywords.m_aSearchKeys[i].Assign(mix::util::from_bytes(data.get()).c_str());
+				auto data = info.get_optional<std::string>("data");
+				pShare->m_sSearchKeywords.m_aSearchKeys[i].Assign(mix::util::from_bytes(*data).c_str());
 				i++;
 			}
 		}
@@ -635,13 +631,13 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		i = 0;
 		auto replace_key_num = pt.get_optional<int>("Recent.replace_key_num");
 		if (replace_key_num) {
-			pShare->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef() = replace_key_num.get();
+			pShare->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef() = *replace_key_num;
 
 			BOOST_FOREACH (auto& child, pt.get_child("Recent.replace_key")) {
 				const ptree& info = child.second;
-				auto data = info.get_optional<std::string>("data");
 				
-				pShare->m_sSearchKeywords.m_aReplaceKeys[i].Assign(mix::util::from_bytes(data.get()).c_str());
+				auto data = info.get_optional<std::string>("data");
+				pShare->m_sSearchKeywords.m_aReplaceKeys[i].Assign(mix::util::from_bytes(*data).c_str());
 				i++;
 			}
 		}
@@ -704,13 +700,13 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		i = 0;
 		auto grep_file_num = pt.get_optional<int>("Recent.grep_file_num");
 		if (grep_file_num) {
-			pShare->m_sSearchKeywords.m_aGrepFiles._GetSizeRef() = grep_file_num.get();
+			pShare->m_sSearchKeywords.m_aGrepFiles._GetSizeRef() = *grep_file_num;
 
 			BOOST_FOREACH (auto& child, pt.get_child("Recent.grep_file")) {
 				const ptree& info = child.second;
-				auto data = info.get_optional<std::string>("data");
 				
-				pShare->m_sSearchKeywords.m_aGrepFiles[i].Assign(mix::util::from_bytes(data.get()).c_str());
+				auto data = info.get_optional<std::string>("data");
+				pShare->m_sSearchKeywords.m_aGrepFiles[i].Assign(mix::util::from_bytes(*data).c_str());
 				i++;
 			}
 		}
@@ -733,13 +729,13 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		i = 0;
 		auto grep_folder_num = pt.get_optional<int>("Recent.grep_folder_num");
 		if (grep_folder_num) {
-			pShare->m_sSearchKeywords.m_aGrepFolders._GetSizeRef() = grep_folder_num.get();
+			pShare->m_sSearchKeywords.m_aGrepFolders._GetSizeRef() = *grep_folder_num;
 
 			BOOST_FOREACH (auto& child, pt.get_child("Recent.grep_folder")) {
 				const ptree& info = child.second;
-				auto data = info.get_optional<std::string>("data");
 
-				pShare->m_sSearchKeywords.m_aGrepFolders[i].Assign(mix::util::from_bytes(data.get()).c_str());
+				auto data = info.get_optional<std::string>("data");
+				pShare->m_sSearchKeywords.m_aGrepFolders[i].Assign(mix::util::from_bytes(*data).c_str());
 				i++;
 			}
 		}
@@ -754,22 +750,22 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		auto grep_folder_ex3_dir = pt.get_optional<std::string>("Recent.grep_folder_ex3_dir");
 		auto grep_folder_ex4_dir = pt.get_optional<std::string>("Recent.grep_folder_ex4_dir");
 
-		pShare->m_sSearchKeywords.m_bGrepFolders99 = mix::util::to_b(grep_folder_ex1.get());
-		pShare->m_sSearchKeywords.m_bGrepFolders2 = mix::util::to_b(grep_folder_ex2.get());
-		pShare->m_sSearchKeywords.m_bGrepFolders3 = mix::util::to_b(grep_folder_ex3.get());
-		pShare->m_sSearchKeywords.m_bGrepFolders4 = mix::util::to_b(grep_folder_ex4.get());
+		pShare->m_sSearchKeywords.m_bGrepFolders99 = mix::util::to_b(*grep_folder_ex1);
+		pShare->m_sSearchKeywords.m_bGrepFolders2 = mix::util::to_b(*grep_folder_ex2);
+		pShare->m_sSearchKeywords.m_bGrepFolders3 = mix::util::to_b(*grep_folder_ex3);
+		pShare->m_sSearchKeywords.m_bGrepFolders4 = mix::util::to_b(*grep_folder_ex4);
 		if (grep_folder_ex2_dir) {
-			pShare->m_sSearchKeywords.m_szGrepFolders2.Assign(mix::util::from_bytes(grep_folder_ex2_dir.get()).c_str());
+			pShare->m_sSearchKeywords.m_szGrepFolders2.Assign(mix::util::from_bytes(*grep_folder_ex2_dir).c_str());
 		} else {
 			pShare->m_sSearchKeywords.m_szGrepFolders2.Assign(L"");
 		}
 		if (grep_folder_ex3_dir) {
-			pShare->m_sSearchKeywords.m_szGrepFolders3.Assign(mix::util::from_bytes(grep_folder_ex3_dir.get()).c_str());
+			pShare->m_sSearchKeywords.m_szGrepFolders3.Assign(mix::util::from_bytes(*grep_folder_ex3_dir).c_str());
 		} else {
 			pShare->m_sSearchKeywords.m_szGrepFolders3.Assign(L"");
 		}
 		if (grep_folder_ex4_dir) {
-			pShare->m_sSearchKeywords.m_szGrepFolders4.Assign(mix::util::from_bytes(grep_folder_ex4_dir.get()).c_str());
+			pShare->m_sSearchKeywords.m_szGrepFolders4.Assign(mix::util::from_bytes(*grep_folder_ex4_dir).c_str());
 		} else {
 			pShare->m_sSearchKeywords.m_szGrepFolders4.Assign(L"");
 		}
@@ -864,13 +860,13 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		i = 0;
 		auto search_key_num = pt.get_optional<int>("Recent.cmd_num");
 		if (search_key_num) {
-			pShare->m_sHistory.m_aCommands._GetSizeRef() = search_key_num.get();
+			pShare->m_sHistory.m_aCommands._GetSizeRef() = *search_key_num;
 
 			BOOST_FOREACH (auto& child, pt.get_child("Recent.cmd")) {
 				const ptree& info = child.second;
-				auto data = info.get_optional<std::string>("data");
 				
-				pShare->m_sHistory.m_aCommands[i].Assign(mix::util::from_bytes(data.get()).c_str());
+				auto data = info.get_optional<std::string>("data");
+				pShare->m_sHistory.m_aCommands[i].Assign(mix::util::from_bytes(*data).c_str());
 				i++;
 			}
 		}
@@ -893,13 +889,13 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		i = 0;
 		auto search_key_num = pt.get_optional<int>("Recent.cmd_cur_dir_num");
 		if (search_key_num) {
-			pShare->m_sHistory.m_aCurDirs._GetSizeRef() = search_key_num.get();
+			pShare->m_sHistory.m_aCurDirs._GetSizeRef() = *search_key_num;
 
 			BOOST_FOREACH (auto& child, pt.get_child("Recent.cmd_cur_dir")) {
 				const ptree& info = child.second;
-				auto data = info.get_optional<std::string>("data");
 				
-				pShare->m_sHistory.m_aCurDirs[i].Assign(mix::util::from_bytes(data.get()).c_str());
+				auto data = info.get_optional<std::string>("data");
+				pShare->m_sHistory.m_aCurDirs[i].Assign(mix::util::from_bytes(*data).c_str());
 				i++;
 			}
 		}

@@ -245,11 +245,11 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 		// file
 		boost::optional<std::string> file = info.get_optional<std::string>("file");
 		
-		fnPopulateKeyword(mix::util::from_bytes(name.get()),
-		                  mix::util::to_b(case_sensitive.get()),
-		                  mix::util::from_bytes(file.get()));
+		fnPopulateKeyword(mix::util::from_bytes(*name),
+		                  mix::util::to_b(*case_sensitive),
+		                  mix::util::from_bytes(*file));
 		
-		//mix::logln(file.get().c_str());
+		//mix::logln((*file).c_str());
 	}
 }
 #endif  // MI_
