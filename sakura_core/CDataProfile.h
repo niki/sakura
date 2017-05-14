@@ -78,6 +78,7 @@ public:
 	CDataProfile() : pcProfileDef_(nullptr), bProfileDef_(false) {}
 	CDataProfile *pcProfileDef_;
 	bool bProfileDef_;
+	void *tag_;
 #endif  // MI_
 private:
 	//専用型
