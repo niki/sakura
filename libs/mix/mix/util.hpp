@@ -36,6 +36,7 @@ MIX_INLINE bool to_b(const std::wstring &s) {
 //! wstring を string に変換
 //------------------------------------------------------------------
 MIX_INLINE std::string to_bytes(const std::wstring &s) {
+  if (s.empty()) return "";
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
   return cv.to_bytes(s.c_str());  //wstring→string
 }
@@ -44,6 +45,7 @@ MIX_INLINE std::string to_bytes(const std::wstring &s) {
 //! string を wstring に変換
 //------------------------------------------------------------------
 MIX_INLINE std::wstring from_bytes(const std::string &s) {
+  if (s.empty()) return L"";
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
   return cv.from_bytes(s.c_str());  //string→wstring
 }

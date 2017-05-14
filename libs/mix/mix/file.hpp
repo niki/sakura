@@ -30,11 +30,11 @@ MIX_INLINE BOOL exist(const std::tstring &path) {
 //! @param path パス名
 //------------------------------------------------------------------
 MIX_INLINE std::tstring fname(const std::tstring &path) {
-  size_t pos = path.rfind('\\');
+  size_t pos = path.rfind(_T('\\'));
   if (pos != std::tstring::npos) {
     return path.substr(pos + 1, path.size() - pos - 1);
   } else {
-    pos = path.rfind('/');
+    pos = path.rfind(_T('/'));
     if (pos != std::tstring::npos) {
       return path.substr(pos + 1, path.size() - pos - 1);
     }
@@ -47,11 +47,11 @@ MIX_INLINE std::tstring fname(const std::tstring &path) {
 //! @param path パス名
 //------------------------------------------------------------------
 MIX_INLINE std::tstring dirname(const std::tstring &path) {
-  size_t pos = path.rfind('\\');
+  size_t pos = path.rfind(_T('\\'));
   if (pos != std::tstring::npos) {
     return path.substr(0, pos + 1);
   } else {
-    pos = path.rfind('/');
+    pos = path.rfind(_T('/'));
     if (pos != std::tstring::npos) {
       return path.substr(0, pos + 1);
     }
@@ -65,7 +65,7 @@ MIX_INLINE std::tstring dirname(const std::tstring &path) {
 //------------------------------------------------------------------
 MIX_INLINE std::tstring basename(const std::tstring &path) {
   std::tstring s = fname(path);
-  size_t pos = s.rfind('.');
+  size_t pos = s.rfind(_T('.'));
   if (pos != std::tstring::npos) {
     return s.substr(0, pos);
   }
@@ -78,7 +78,7 @@ MIX_INLINE std::tstring basename(const std::tstring &path) {
 //------------------------------------------------------------------
 MIX_INLINE std::tstring extname(const std::tstring &path) {
   std::tstring s = fname(path);
-  size_t pos = s.rfind('.');
+  size_t pos = s.rfind(_T('.'));
   if (pos != std::tstring::npos) {
     return s.substr(pos);
   }
