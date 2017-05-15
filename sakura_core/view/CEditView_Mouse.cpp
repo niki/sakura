@@ -61,7 +61,9 @@ void CEditView::OnLBUTTONDOWN( WPARAM fwKeys, int _xPos , int _yPos )
 		AutoScrollExit();
 	}
 	if( m_bMiniMap ){
+#ifndef MI_FIX_MINIMAP_NOFOCUS
 		::SetFocus( GetHwnd() );
+#endif  // MI_
 		::SetCapture( GetHwnd() );
 		m_bMiniMapMouseDown = true;
 		OnMOUSEMOVE( fwKeys, _xPos, _yPos );
@@ -969,6 +971,9 @@ void CEditView::OnMOUSEMOVE( WPARAM fwKeys, int xPos_, int yPos_ )
 	}
 
 	if( m_bMiniMap ){
+#if defined(MI_MOD_CENTERING_CURSOR_JUMP) && defined(MI_MOD_MINIMAP)
+		ScopedRegKey auth_reg(MI_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH"));
+#endif  // MI_
 		POINT		po;
 		::GetCursorPos( &po );
 		// 辞書Tipが起動されている
