@@ -271,36 +271,36 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 #ifdef MI_MOD_PROFILES
 namespace opt {
-static std::string to_string(const ptree &info, const std::string &value) {
+static std::string to_string(const ptree &info, const std::string &value, const std::string &default_value = "") {
 	boost::optional<std::string> v = info.get_optional<std::string>(value);
 	if (v) {
 		return v.get();
 	} else {
-		return "";
+		return default_value;
 	}
 }
-static std::wstring to_wstring(const ptree &info, const std::string &value) {
+static std::wstring to_wstring(const ptree &info, const std::string &value, const std::wstring &default_value = L"") {
 	boost::optional<std::string> v = info.get_optional<std::string>(value);
 	if (v) {
 		return mix::util::from_bytes(v.get());
 	} else {
-		return L"";
+		return default_value;
 	}
 }
-static int to_int(const ptree &info, const std::string &value) {
+static int to_int(const ptree &info, const std::string &value, int default_value = 0) {
 	boost::optional<int> v = info.get_optional<int>(value);
 	if (v) {
 		return v.get();
 	} else {
-		return 0;
+		return default_value;
 	}
 }
-static bool to_bool(const ptree &info, const std::string &value) {
+static bool to_bool(const ptree &info, const std::string &value, bool default_value = false) {
 	boost::optional<std::string> v = info.get_optional<std::string>(value);
 	if (v) {
 		return mix::util::to_b(v.get());
 	} else {
-		return false;
+		return default_value;
 	}
 }
 }
@@ -339,17 +339,17 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				auto path = opt::to_wstring(info, "path");
 				_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
 				pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
-				pfiWork->m_nViewTopLine = opt::to_int(info, "view_top_line");
-				pfiWork->m_nViewLeftCol = opt::to_int(info, "view_left_col");
-				pfiWork->m_ptCursor.x = opt::to_int(info, "x");
-				pfiWork->m_ptCursor.y = opt::to_int(info, "y");
+				pfiWork->m_nViewTopLine = opt::to_int(info, "view_top_line", 0);
+				pfiWork->m_nViewLeftCol = opt::to_int(info, "view_left_col", 0);
+				pfiWork->m_ptCursor.x = opt::to_int(info, "x", 0);
+				pfiWork->m_ptCursor.y = opt::to_int(info, "y", 0);
 				auto char_code = opt::to_string(info, "char_code");
 				pfiWork->m_nCharCode = static_cast<ECodeType>(std::stoi(char_code));
 				auto mark = opt::to_wstring(info, "mark");
 				_tcsncpy(pfiWork->m_szMarkLines, mark.c_str(), MAX_MARKLINES_LEN + 1);
 				pfiWork->m_szMarkLines[MAX_MARKLINES_LEN + 1 - 1] = _T('\0');
 				pfiWork->m_nTypeId = opt::to_int(info, "type_id");
-				hist.m_bMRUArrFavorite[i] = opt::to_bool(info, "favorite");
+				hist.m_bMRUArrFavorite[i] = opt::to_bool(info, "favorite", false);
 				i++;
 			}
 		}
@@ -365,14 +365,14 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			
 			ptree info;
 			info.put("path", mix::util::to_bytes(pfiWork->m_szPath));
-			info.put("view_top_line", pfiWork->m_nViewTopLine);
-			info.put("view_left_col", pfiWork->m_nViewLeftCol);
-			info.put("x", pfiWork->m_ptCursor.x);
-			info.put("y", pfiWork->m_ptCursor.y);
+			if (pfiWork->m_nViewTopLine != 0) info.put("view_top_line", pfiWork->m_nViewTopLine);
+			if (pfiWork->m_nViewLeftCol != 0) info.put("view_left_col", pfiWork->m_nViewLeftCol);
+			if (pfiWork->m_ptCursor.x != 0) info.put("x", pfiWork->m_ptCursor.x);
+			if (pfiWork->m_ptCursor.y != 0) info.put("y", pfiWork->m_ptCursor.y);
 			info.put("char_code", pfiWork->m_nCharCode);
 			info.put("mark", mix::util::to_bytes(pfiWork->m_szMarkLines));
 			info.put("type_id", pfiWork->m_nTypeId);
-			info.put("favorite", hist.m_bMRUArrFavorite[i]);
+			if (hist.m_bMRUArrFavorite[i]) info.put("favorite", true);
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.MRU", child);
@@ -405,7 +405,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				
 				auto dir = opt::to_wstring(info, "dir");
 				hist.m_szOPENFOLDERArr[i].Assign(dir.c_str());
-				hist.m_bOPENFOLDERArrFavorite[i] = opt::to_bool(info, "favorite");
+				hist.m_bOPENFOLDERArrFavorite[i] = opt::to_bool(info, "favorite", false);
 				i++;
 			}
 		}
@@ -419,7 +419,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
 			info.put("dir", mix::util::to_bytes(hist.m_szOPENFOLDERArr[i].c_str()));
-			info.put("favorite", hist.m_bOPENFOLDERArrFavorite[i]);
+			if (hist.m_bOPENFOLDERArrFavorite[i]) info.put("favorite", true);
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.folder", child);
