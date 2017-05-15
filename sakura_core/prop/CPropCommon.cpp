@@ -223,7 +223,9 @@ INT_PTR CPropCommon::DoPropertySheet( int nPageNum, bool bTrayProc )
 	static const ComPropSheetInfo ComPropSheetInfoList[] = {
 		{ STR_PROPCOMMON_GENERAL,	IDD_PROP_GENERAL,	CPropGeneral::DlgProc_page },
 		{ STR_PROPCOMMON_WINDOW,	IDD_PROP_WIN,		CPropWin::DlgProc_page },
+#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
 		{ STR_PROPCOMMON_MAINMENU,	IDD_PROP_MAINMENU,	CPropMainMenu::DlgProc_page },	// 2010/5/8 Uchi
+#endif  // MI_
 		{ STR_PROPCOMMON_TOOLBAR,	IDD_PROP_TOOLBAR,	CPropToolbar::DlgProc_page },
 		{ STR_PROPCOMMON_TABS,		IDD_PROP_TAB,		CPropTab::DlgProc_page },
 		{ STR_PROPCOMMON_STATBAR,	IDD_PROP_STATUSBAR,	CPropStatusbar::DlgProc_page },	// 文字コード表示指定	2008/6/21	Uchi

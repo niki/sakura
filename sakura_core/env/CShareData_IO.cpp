@@ -2575,6 +2575,14 @@ struct SMainMenuAddItemInfo
 
 void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 {
+#ifdef MI_MOD_MAINMENU_FORCE_DEFAULT
+	//CDataProfile	cProfileDefault;
+	//boost::container::vector<std::wstring> data;
+	//cProfileDefault.SetReadingMode();
+	//cProfileDefault.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &data );
+	//
+	//IO_MainMenu( cProfile, &data, GetDllShareData().m_Common.m_sMainMenu, false );
+#else
 	IO_MainMenu( cProfile, GetDllShareData().m_Common.m_sMainMenu, false );		// 2010/5/15 Uchi
 
 	// 2015.02.26 Moca メインメニュー自動更新
@@ -2688,6 +2696,7 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 			}
 		}
 	}
+#endif  // MI_
 }
 
 
@@ -2716,8 +2725,10 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 
 #ifdef MI_MOD_PROFILES
 	boost::container::vector<std::wstring> default_data;
+#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
 	bool bOldProfileDef = cProfile.bProfileDef_;
 	cProfile.bProfileDef_ = false;
+#endif  // MI_MOD_MAINMENU_FORCE_DEFAULT
 #endif  // MI_
 
 	if (cProfile.IsReadingMode()) {
@@ -2737,6 +2748,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 		cProfile.IOProfileData( pszSecName, LTEXT("nMainMenuNum"), mainmenu.m_nMainMenuNum);
 	}
 
+#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
 #ifdef MI_MOD_PROFILES
 	{
 		// デフォルト用にリソースの読み込み
@@ -2745,6 +2757,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 		cProfileDef.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &default_data );
 	}
 #endif  // MI_
+#endif  // MI_MOD_MAINMENU_FORCE_DEFAULT
 
 	if( pData ){
 		mainmenu.m_bMainMenuKeyParentheses = (_wtoi(data[dataNum++].c_str()) != 0);
@@ -2755,9 +2768,11 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 #endif  // MI_
 	}
 
+#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
 #ifdef MI_MOD_PROFILES
 	cProfile.bProfileDef_ = bOldProfileDef;
 #endif  // MI_
+#endif  // MI_MOD_MAINMENU_FORCE_DEFAULT
 
 	if (cProfile.IsReadingMode()) {
 		// Top Level 初期化
@@ -2844,6 +2859,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 			auto_strcpy_s( pcMenu->m_sName, MAX_MAIN_MENU_NAME_LEN+1, p );
 		}
 		else {
+#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
 			if (GetPlugCmdInfoByFuncCode( pcMenu->m_nFunc, szFuncName )) {
 				// Plugin
 			}
@@ -2881,6 +2897,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 #else
 			cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
 #endif  // MI_
+#endif  // MI_MOD_MAINMENU_FORCE_DEFAULT
 		}
 
 		if (cProfile.IsReadingMode() && pcMenu->m_nLevel == 0) {
