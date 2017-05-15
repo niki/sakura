@@ -218,7 +218,7 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 
 	// キーワード定義追加
 	auto fnPopulateKeyword =
-	    [&cKeyWordSetMgr, &nSetCount, pShareData, szKeywordDir]
+	    [&cKeyWordSetMgr, &nSetCount, pShareData, &szKeywordDir]
 	    (const std::tstring &name, bool case_sensitive, const std::tstring &filename)
 	{
 		cKeyWordSetMgr.AddKeyWordSet(name.c_str(), case_sensitive);
