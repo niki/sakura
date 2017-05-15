@@ -326,6 +326,21 @@ void CEditView::AdjustScrollBars()
 		if( !bEnable ){
 			ScrollAtV( CLayoutInt(0) );
 		}
+#ifdef MI_MOD_MINIMAP
+		if (!m_bMiniMap && m_pcEditWnd->GetMiniMap().GetHwnd()) {
+			CEditView &miniMap = m_pcEditWnd->GetMiniMap();
+			CLayoutYInt nViewTop = GetTextArea().GetViewTopLine();
+			CLayoutYInt nViewBottom = nViewTop + GetTextArea().m_nViewRowNum;
+			CLayoutYInt nMiniMapViewTop = miniMap.GetTextArea().GetViewTopLine();
+			CLayoutYInt nMiniMapViewBottom = nMiniMapViewTop + miniMap.GetTextArea().m_nViewRowNum;
+
+			if (nViewTop < nMiniMapViewTop) {
+				miniMap.ScrollAtV(nViewTop);
+			} else if (nViewBottom > nMiniMapViewBottom) {
+				miniMap.ScrollAtV(nViewBottom - miniMap.GetTextArea().m_nViewRowNum);
+			}
+		}
+#endif  // MI_
 	}
 	if( NULL != m_hwndHScrollBar ){
 		/* 水平スクロールバー */
@@ -628,6 +643,10 @@ void CEditView::MiniMapRedraw(bool bUpdateAll)
 				nDrawTopTop = nViewTop;
 				nDrawTopBottom = nViewBottom;
 			}
+#ifndef MI_MOD_MINIMAP
+			//::InvalidateRect( miniMap.GetHwnd(), NULL, FALSE );
+#endif  // MI_
+
 		}else{
 			if( nDiff < 0 ){
 				// 上に移動
