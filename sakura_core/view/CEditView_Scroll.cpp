@@ -42,7 +42,7 @@ BOOL CEditView::CreateScrollBar()
 		0L,									/* no extended styles */
 		_T("SCROLLBAR"),					/* scroll bar control class */
 		NULL,								/* text for window title bar */
-#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE_NPP
+#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE > 0
 		m_bMiniMap ? WS_CHILD | SBS_VERT
 		           : WS_VISIBLE | WS_CHILD | SBS_VERT,	/* scroll bar styles */
 #else
@@ -65,7 +65,7 @@ BOOL CEditView::CreateScrollBar()
 	si.nPos  = 0;
 	si.nTrackPos = 1;
 	::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, TRUE );
-#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE_NPP
+#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE > 0
 	if (!m_bMiniMap)
 		::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
 #else
@@ -346,16 +346,35 @@ void CEditView::AdjustScrollBars()
 #ifdef MI_MOD_MINIMAP
 		if (!m_bMiniMap && m_pcEditWnd->GetMiniMap().GetHwnd()) {
 			CEditView &miniMap = m_pcEditWnd->GetMiniMap();
-			CLayoutYInt nViewTop = GetTextArea().GetViewTopLine();
-			CLayoutYInt nViewBottom = nViewTop + GetTextArea().m_nViewRowNum;
-			CLayoutYInt nMiniMapViewTop = miniMap.GetTextArea().GetViewTopLine();
-			CLayoutYInt nMiniMapViewBottom = nMiniMapViewTop + miniMap.GetTextArea().m_nViewRowNum;
+			
+#if MI_MOD_MINIMAP_TYPE == MI_MOD_MINIMAP_TYPE_NPP
+			// Notepad++の挙動
+			// 画面端まで表示域が移動したのちにスクロール
+			CLayoutInt nViewTop = GetTextArea().GetViewTopLine();
+			CLayoutInt nViewBottom = nViewTop + GetTextArea().m_nViewRowNum;
+			CLayoutInt nMiniMapViewTop = miniMap.GetTextArea().GetViewTopLine();
+			CLayoutInt nMiniMapViewBottom = nMiniMapViewTop + miniMap.GetTextArea().m_nViewRowNum;
 
 			if (nViewTop < nMiniMapViewTop) {
 				miniMap.ScrollAtV(nViewTop);
 			} else if (nViewBottom > nMiniMapViewBottom) {
 				miniMap.ScrollAtV(nViewBottom - miniMap.GetTextArea().m_nViewRowNum);
 			}
+#endif  // MI_MOD_MINIMAP_TYPE_NPP
+
+#if MI_MOD_MINIMAP_TYPE == MI_MOD_MINIMAP_TYPE_ST
+			// Sublime Textの挙動
+			// 先頭行から最終行に移動するまでにミニマップも先頭行から最終行に移動する
+			const CLayout *pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY(GetTextArea().GetViewTopLine());
+			if (pcLayout) {
+				CLayoutInt nLineCount = m_pcEditDoc->m_cDocLineMgr.GetLineCount();
+				CLayoutInt nViewLineNum = nLineCount - GetTextArea().m_nViewRowNum;  // 編集ウィンドウの可動域
+				CLayoutInt nMiniMapLineNum = nLineCount - miniMap.GetTextArea().m_nViewRowNum;  // ミニマップの可動域
+				CLayoutInt nMiniMapTopLine =
+				    (CLayoutInt)((float)pcLayout->GetLogicLineNo() / nViewLineNum * nMiniMapLineNum);
+				miniMap.ScrollAtV(nMiniMapTopLine);
+			}
+#endif  // MI_MOD_MINIMAP_TYPE_ST
 		}
 #endif  // MI_
 	}

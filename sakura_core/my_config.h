@@ -109,13 +109,15 @@
 //  ! ミニマップに「行番号とテキストの隙間」はいらない
 //------------------------------------------------------------------
 #define MI_MOD_MINIMAP
-  #define MI_MOD_MINIMAP_NOLINETIP (1)  // 行TIPSを表示しない
-  #define MI_MOD_MINIMAP_TYPE_NPP  (0)  // Imitate 'Notepad++'
-                                        //   スクロールバー非表示
-                                        //   表示領域の端からスクロール開始
-  #define MI_MOD_MINIMAP_TYPE_ST   (0)  // Imitate 'Sublime Text'
-                                        //   スクロールバー非表示
-                                        //   現在行に対応した位置に自動的にスクロール
+  #define MI_MOD_MINIMAP_NOLINETIP     (1)  // 行TIPSを表示しない
+  #define MI_MOD_MINIMAP_TYPE_DEFAULT  (0)  // 外見を保ったままの修正
+  #define MI_MOD_MINIMAP_TYPE_NPP      (1)  // Imitate 'Notepad++'
+                                            //   スクロールバー非表示
+                                            //   表示領域の端からスクロール開始
+  #define MI_MOD_MINIMAP_TYPE_ST       (2)  // Imitate 'Sublime Text'
+                                            //   スクロールバー非表示
+                                            //   現在行に対応した位置に自動的にスクロール
+  #define MI_MOD_MINIMAP_TYPE MI_MOD_MINIMAP_TYPE_ST
 
 //------------------------------------------------------------------
 // タブ入力文字の切り替え(タブ<->空白)を追加
