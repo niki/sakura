@@ -461,6 +461,7 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("DFC"), 0},	//DIFF変更	//@@@ 2002.06.01 MIK
 	{_T("DFD"), 0},	//DIFF削除	//@@@ 2002.06.01 MIK
 	{_T("MRK"), 0},	//ブックマーク	// 02/10/16 ai Add
+	{_T("PGV"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("LAST"), 0}	// Not Used
 };
 
