@@ -17,8 +17,11 @@ MacTypeと併用していて画面崩れがひどかったので対応をして�
 
 変更内容はコミットログを参照してください.  
 
++ [sakura-mix-2.12.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.12.zip) (944KB)  
+  \- ミニマップの表示, 操作性を Notepad++のようにする  
+  \- メインメニューは常にデフォルトを使用する (カスタマイズの無効化)  
 + [sakura-mix-2.11.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.11.zip) (952KB)  
-  \- 履歴データを ini から json に変更
+  \- 履歴データを ini から json に変更  
 + [sakura-mix-2.10.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.10.zip) (926KB)  
   \- 強調キーワードをファイルから読み込む  
 
@@ -96,6 +99,7 @@ MacTypeと併用していて画面崩れがひどかったので対応をして�
     \- 左クリックでメニューを表示  
   - タグファイル作成時にフォルダの初期位置を `tags`ファイルがあるところまで辿る  
   - ダイレクトジャンプ一覧の表示カラムを選別  
+  - メインメニューは常にデフォルトを使用する (カスタマイズの無効化)  
 
 <br>
 
