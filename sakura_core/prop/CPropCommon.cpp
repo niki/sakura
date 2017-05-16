@@ -128,7 +128,9 @@ CPropCommon::CPropCommon()
 	{
 		assert( sizeof(CPropGeneral)   - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropWin)       - sizeof(CPropCommon) == 0 );
+#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
 		assert( sizeof(CPropMainMenu)  - sizeof(CPropCommon) == 0 );
+#endif  // MI_
 		assert( sizeof(CPropToolbar)   - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropTab)       - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropStatusbar) - sizeof(CPropCommon) == 0 );
