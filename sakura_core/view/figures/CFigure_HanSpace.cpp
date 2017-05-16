@@ -38,7 +38,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //			gr,
 //			pDispPos->GetDrawPos().x,
 //#  ifdef MI_LINE_CENTERING
-//			(pcView->m_pTypeData->m_nLineSpace / 2) +
+//			(pcView->GetLineSpace() / 2) +
 //#  endif  // MI_
 //			pDispPos->GetDrawPos().y,
 //			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -48,12 +48,20 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 //		);
 		
+#ifdef MI_MOD_MINIMAP
+		if (pcView->m_bMiniMap) {
+			//位置進める
+			pDispPos->ForwardDrawCol(1);
+			return;
+		}
+#endif  // MI_
+		
 		// 半角スペースをドットで表現
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
 		y++; // 少し下め
 //#  ifdef MI_LINE_CENTERING
-//		y += (pcView->m_pTypeData->m_nLineSpace / 2);
+//		y += (pcView->GetLineSpace() / 2);
 //#  endif  // MI_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // 少し左め
@@ -83,7 +91,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			gr,
 			pDispPos->GetDrawPos().x,
 #  ifdef MI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace / 2) +
+			(pcView->GetLineSpace() / 2) +
 #  endif  // MI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -100,7 +108,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			gr,
 			pDispPos->GetDrawPos().x,
 #  ifdef MI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace / 2) +
+			(pcView->GetLineSpace() / 2) +
 #  endif  // MI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),

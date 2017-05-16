@@ -30,12 +30,16 @@ void CFigure_ZenSpace::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* p
 	{
 		//描画
 		const wchar_t* szZenSpace =
+#ifdef MI_MOD_MINIMAP
+			(CTypeSupport(pcView,COLORIDX_ZENSPACE).IsDisp() && !pcView->m_bMiniMap)?L"□":L"　";
+#else
 			CTypeSupport(pcView,COLORIDX_ZENSPACE).IsDisp()?L"□":L"　";
+#endif  // MI_
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
 #ifdef MI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace / 2) +
+			(pcView->GetLineSpace() / 2) +
 #endif  // MI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),

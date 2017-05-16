@@ -157,7 +157,11 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 #endif  // MI_
 		EColorIndexType eBgcolorOverwrite = COLORIDX_WRAP;
 		bool bTrans = pcView->IsBkBitmap();
+#ifdef MI_MOD_MINIMAP
+		if( cWrapType.IsDisp() && !pcView->m_bMiniMap ){
+#else
 		if( cWrapType.IsDisp() ){
+#endif  // MI_
 			CEditView& cActiveView = pcView->m_pcEditWnd->GetActiveView();
 			if( cBgLineType.IsDisp() && pcView->GetCaret().GetCaretLayoutPos().GetY2() == nLineNum ){
 				if( bBgcolor ){
@@ -178,7 +182,11 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 
 		//描画文字列と色の決定
 		const wchar_t* szText;
+#ifdef MI_MOD_MINIMAP
+		if( cWrapType.IsDisp() && !pcView->m_bMiniMap )
+#else
 		if( cWrapType.IsDisp() )
+#endif  // MI_
 		{
 			szText = L"<";
 			cWrapType.SetGraphicsState_WhileThisObj(gr);
@@ -197,7 +205,7 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 			gr,
 			pDispPos->GetDrawPos().x,
 #ifdef MI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace / 2) +
+			(pcView->GetLineSpace() / 2) +
 #endif  // MI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -228,6 +236,10 @@ void _DispEOF(
 	const CEditView*	pcView
 )
 {
+#ifdef MI_MOD_MINIMAP
+	if (pcView->m_bMiniMap)
+		return;
+#endif  // MI_
 	// 描画に使う色情報
 	CTypeSupport cEofType(pcView,COLORIDX_EOF);
 	if(!cEofType.IsDisp())
@@ -290,7 +302,7 @@ void _DispEOF(
 			gr,
 			pDispPos->GetDrawPos().x,
 #ifdef MI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace / 2) +
+			(pcView->GetLineSpace() / 2) +
 #endif  // MI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -336,7 +348,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 			gr,
 			pDispPos->GetDrawPos().x,
 #ifdef MI_LINE_CENTERING
-			(pcView->m_pTypeData->m_nLineSpace / 2) +
+			(pcView->GetLineSpace() / 2) +
 #endif  // MI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -347,7 +359,11 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 		);
 
 		// 改行記号の表示
+#ifdef MI_MOD_MINIMAP
+		if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() && !pcView->m_bMiniMap ){
+#else
 		if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() ){
+#endif  // MI_
 			// From Here 2003.08.17 ryoji 改行文字が欠けないように
 
 			// リージョン作成、選択。

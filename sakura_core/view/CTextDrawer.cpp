@@ -147,7 +147,7 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 			hdc,
 			nDrawX,					//X
 #ifdef MI_LINE_CENTERING
-			(m_pEditView->m_pTypeData->m_nLineSpace / 2) +
+			(m_pEditView->GetLineSpace() / 2) +
 #endif  // MI_
 			y,						//Y
 			ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
@@ -505,7 +505,7 @@ void CTextDrawer::DispLineNumber(
       ::ExtTextOutW_AnyBuild( gr,
         drawNumTop,
 #  ifdef MI_LINE_CENTERING
-        (pView->m_pTypeData->m_nLineSpace / 2) +
+        (pView->GetLineSpace() / 2) +
 #  endif  // MI_
         y,
         ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -579,7 +579,7 @@ void CTextDrawer::DispLineNumber(
 		::ExtTextOutW_AnyBuild( gr,
 			drawNumTop,
 #ifdef MI_LINE_CENTERING
-			(pView->m_pTypeData->m_nLineSpace / 2) +
+			(pView->GetLineSpace() / 2) +
 #endif  // MI_
 			y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),

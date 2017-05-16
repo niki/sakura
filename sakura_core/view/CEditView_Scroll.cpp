@@ -42,7 +42,12 @@ BOOL CEditView::CreateScrollBar()
 		0L,									/* no extended styles */
 		_T("SCROLLBAR"),					/* scroll bar control class */
 		NULL,								/* text for window title bar */
+#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE_NPP
+		m_bMiniMap ? WS_CHILD | SBS_VERT
+		           : WS_VISIBLE | WS_CHILD | SBS_VERT,	/* scroll bar styles */
+#else
 		WS_VISIBLE | WS_CHILD | SBS_VERT,	/* scroll bar styles */
+#endif  // MI_
 		0,									/* horizontal position */
 		0,									/* vertical position */
 		200,								/* width of the scroll bar */
@@ -60,7 +65,12 @@ BOOL CEditView::CreateScrollBar()
 	si.nPos  = 0;
 	si.nTrackPos = 1;
 	::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, TRUE );
+#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE_NPP
+	if (!m_bMiniMap)
+		::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
+#else
 	::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
+#endif  // MI_
 
 	/* スクロールバーの作成 */
 	m_hwndHScrollBar = NULL;
@@ -177,6 +187,9 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 		}
 	}
 
+#ifdef MI_MOD_MINIMAP
+	const bool bDrawSwitchOld = SetDrawSwitch(false);
+#endif  // MI_
 	switch( nScrollCode ){
 	case SB_LINEDOWN:
 //		for( i = 0; i < 4; ++i ){
@@ -211,6 +224,10 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 	default:
 		break;
 	}
+#ifdef MI_MOD_MINIMAP
+	SetDrawSwitch(bDrawSwitchOld);
+	RedrawAll();
+#endif  // MI_
 	return nScrollVal;
 }
 
@@ -643,9 +660,6 @@ void CEditView::MiniMapRedraw(bool bUpdateAll)
 				nDrawTopTop = nViewTop;
 				nDrawTopBottom = nViewBottom;
 			}
-#ifndef MI_MOD_MINIMAP
-			//::InvalidateRect( miniMap.GetHwnd(), NULL, FALSE );
-#endif  // MI_
 
 		}else{
 			if( nDiff < 0 ){

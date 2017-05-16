@@ -666,7 +666,7 @@ void CCaret::ShowEditCaret()
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();
 //#ifdef MI_LINE_CENTERING // Caretの高さ
-//		nCaretHeight += m_pEditView->m_pTypeData->m_nLineSpace;
+//		nCaretHeight += m_pEditView->GetLineSpace();
 //#endif  // MI_
 		if( m_pEditView->IsInsMode() ){
 			nCaretWidth = 2;
@@ -697,7 +697,7 @@ void CCaret::ShowEditCaret()
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();					/* キャレットの高さ */
 //#ifdef MI_LINE_CENTERING // Caretの高さ
-//		nCaretHeight += m_pEditView->m_pTypeData->m_nLineSpace;
+//		nCaretHeight += m_pEditView->GetLineSpace();
 //#endif  // MI_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
 #ifdef MI_MOD_CARET
@@ -1375,8 +1375,8 @@ POINT CCaret::CalcCaretDrawPos(const CLayoutPoint& ptCaretPos) const
 			+ m_pEditView->GetTextMetrics().GetHankakuHeight() - GetCaretSize().cy; //下寄せ
 	}
 #ifdef MI_LINE_CENTERING
-	//nPosY += m_pEditView->m_pTypeData->m_nLineSpace;    // 行間隔を含む高さにする場合
-	nPosY += m_pEditView->m_pTypeData->m_nLineSpace / 2;  // 文字の高さにする場合
+	//nPosY += m_pEditView->GetLineSpace();    // 行間隔を含む高さにする場合
+	nPosY += m_pEditView->GetLineSpace() / 2;  // 文字の高さにする場合
 #endif  // MI_
 
 	return CMyPoint(nPosX,nPosY);

@@ -991,7 +991,14 @@ void CEditView::OnSize( int cx, int cy )
 	int nCyHScroll = ::GetSystemMetrics( SM_CYHSCROLL );
 	int nCxVScroll = ::GetSystemMetrics( SM_CXVSCROLL );
 	int nCyVScroll = ::GetSystemMetrics( SM_CYVSCROLL );
-
+#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE_NPP
+	if (m_bMiniMap) {
+		nCxHScroll = 0;
+		nCyHScroll = 0;
+		nCxVScroll = 0;
+		nCyVScroll = 0;
+	} else {
+#endif  // MI_
 	/* 垂直分割ボックス */
 	if( NULL != m_pcsbwVSplitBox ){
 		nVSplitHeight = 7;
@@ -1015,6 +1022,9 @@ void CEditView::OnSize( int cx, int cy )
 	if( NULL != m_hwndSizeBox ){
 		::MoveWindow( m_hwndSizeBox, cx - nCxVScroll, cy - nCyHScroll, nCxHScroll, nCyVScroll, TRUE );
 	}
+#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE_NPP
+	}
+#endif  // MI_
 	int nAreaWidthOld  = GetTextArea().GetAreaWidth();
 	int nAreaHeightOld = GetTextArea().GetAreaHeight();
 
@@ -2546,7 +2556,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 		nUnderLineY = GetTextArea().GetAreaTop() + (Int)(GetCaret().GetCaretLayoutPos().GetY2() - GetTextArea().GetViewTopLine())
 			 * GetTextMetrics().GetHankakuDy() + GetTextMetrics().GetHankakuHeight();
 #ifdef MI_LINE_CENTERING
-		nUnderLineY += m_pTypeData->m_nLineSpace / 2;
+		nUnderLineY += GetLineSpace() / 2;
 #endif  // MI_
 	}
 	// To Here 2007.09.09 Moca
@@ -2617,7 +2627,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
-					nUnderLineY += m_pTypeData->m_nLineSpace / 2;
+					nUnderLineY += GetLineSpace() / 2;
 				}
 #endif  // MI_
 			}else{
@@ -2627,7 +2637,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
-					nUnderLineY += m_pTypeData->m_nLineSpace / 2;
+					nUnderLineY += GetLineSpace() / 2;
 				}
 #endif  // MI_
 			}

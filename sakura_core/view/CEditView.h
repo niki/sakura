@@ -580,6 +580,15 @@ public:
 	void SetUndoBuffer( bool bPaintLineNumber = false );			// アンドゥバッファの処理
 	HWND StartProgress();
 
+#ifdef MI_LINE_CENTERING
+	int GetLineSpace() const { //!< 行間のすきま取得
+		if (!m_bMiniMap && m_pTypeData) {
+			return m_pTypeData->m_nLineSpace;
+		} else {
+			return 0;
+		}
+	}
+#endif  // MI_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         アクセサ                            //
