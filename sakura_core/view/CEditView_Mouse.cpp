@@ -1474,6 +1474,9 @@ LRESULT CEditView::OnMOUSEWHEEL2( WPARAM wParam, LPARAM lParam, bool bHorizontal
 		const int nRollActions = bSmooth ? nRollNum : 1;
 		const CLayoutInt nCount = CLayoutInt(((nScrollCode == SB_LINEUP) ? -1 : 1) * (bSmooth ? 1 : nRollNum) );
 
+#ifdef MI_MOD_MINIMAP
+		const bool bDrawSwitchOld = SetDrawSwitch(false);
+#endif  // MI_
 		for( i = 0; i < nRollActions; ++i ){
 			//	Sep. 11, 2004 genta 同期スクロール行数
 			if( bHorizontal ){
@@ -1482,6 +1485,10 @@ LRESULT CEditView::OnMOUSEWHEEL2( WPARAM wParam, LPARAM lParam, bool bHorizontal
 				SyncScrollV( ScrollAtV( GetTextArea().GetViewTopLine() + nCount ) );
 			}
 		}
+#ifdef MI_MOD_MINIMAP
+		SetDrawSwitch(bDrawSwitchOld);
+		RedrawAll();
+#endif  // MI_
 	}
 	return bHorizontalMsg ? TRUE: 0;
 }
