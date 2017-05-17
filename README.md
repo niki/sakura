@@ -18,16 +18,9 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 **Download**  
 
 変更内容はコミットログを参照してください.  
+細かい内容は [my_config.h](https://github.com/mimix33/sakura_2201/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
 
-+ [sakura-mix-2.13.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.13.zip) (944KB)  
-  \- ミニマップの表示, 操作性を Sublime Textのようにする  
-+ [sakura-mix-2.12.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.12.zip) (944KB)  
-  \- ミニマップの表示, 操作性を Notepad++のようにする  
-  \- メインメニューは常にデフォルトを使用する (カスタマイズの無効化)  
-+ [sakura-mix-2.11.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.11.zip) (952KB)  
-  \- 履歴データを ini から json に変更  
-+ [sakura-mix-2.10.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.10.zip) (926KB)  
-  \- 強調キーワードをファイルから読み込む  
++ [sakura-mix-2.14-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.14-x64.zip) (1.10MB)  
 
 <br>
 
