@@ -100,7 +100,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	if (regex_search(p, q, re1_trig)) {
 		for (auto && re : re1) {
 			if (regex_search(p, q, match, re)) {
-				i = std::max(match.length(0), i);
+				i = std::max<int>(match.length(0), i);
 			}
 		}
 		if (i > 0) return i;
@@ -109,7 +109,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	if (regex_search(p, q, re2_trig)) {
 		for (auto && re : re2) {
 			if (regex_search(p, q, match, re)) {
-				i = std::max(match.length(0), i);
+				i = std::max<int>(match.length(0), i);
 			}
 		}
 		if (i > 0) return i;
@@ -117,7 +117,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	
 	for (auto && re : re3) {
 		if (regex_search(p, q, match, re)) {
-			i = std::max(match.length(0), i);
+			i = std::max<int>(match.length(0), i);
 		}
 	}
 
