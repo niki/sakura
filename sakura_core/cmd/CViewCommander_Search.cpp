@@ -1568,6 +1568,19 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 
 		// 再描画
 		m_pCommanderView->RedrawAll();
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+		if (!m_pCommanderView->m_bMiniMap &&
+		      GetEditWindow()->GetMiniMap().GetHwnd())
+		{
+			CEditView *pView = &GetEditWindow()->GetMiniMap();
+			pView->m_strCurSearchKey = m_pCommanderView->m_strCurSearchKey;
+			pView->m_sCurSearchOption = m_pCommanderView->m_sCurSearchOption;
+			pView->m_nCurSearchKeySequence = m_pCommanderView->m_nCurSearchKeySequence;
+			pView->m_bCurSearchUpdate = true;
+			pView->ChangeCurRegexp(false);
+			pView->RedrawAll();
+		}
+#endif
 		return;
 	}
 // To Here 2001.12.03 hor

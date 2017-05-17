@@ -1184,7 +1184,28 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 #ifdef MI_MOD_COMMENT
 				if (pInfo->m_pStrategyFound) {
 					comment_mode = 0;
-				} else if (pInfo->m_pStrategy) {
+				} else {
+					if (pInfo->m_pStrategy) {
+						switch (pInfo->m_pStrategy->GetStrategyColor()) {
+						case COLORIDX_COMMENT: comment_mode = 1; break;
+						case COLORIDX_BLOCK1:  comment_mode = 2; break;
+						case COLORIDX_BLOCK2:  comment_mode = 0; break;
+						default:
+							if (comment_mode != 1) comment_mode = 0;
+							break;
+						}
+					} else {
+						if (comment_mode != 1) comment_mode = 0;
+					}
+				}
+#endif  // MI_
+			}
+
+#ifdef MI_MOD_COMMENT
+			if (pInfo->m_pStrategyFound) {
+				comment_mode = 0;
+			} else {
+				if (pInfo->m_pStrategy) {
 					switch (pInfo->m_pStrategy->GetStrategyColor()) {
 					case COLORIDX_COMMENT: comment_mode = 1; break;
 					case COLORIDX_BLOCK1:  comment_mode = 2; break;
@@ -1196,29 +1217,13 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				} else {
 					if (comment_mode != 1) comment_mode = 0;
 				}
-#endif  // MI_
-			}
 
-#ifdef MI_MOD_COMMENT
-			if (pInfo->m_pStrategyFound) {
-				comment_mode = 0;
-			} else if (pInfo->m_pStrategy) {
-				switch (pInfo->m_pStrategy->GetStrategyColor()) {
-				case COLORIDX_COMMENT: comment_mode = 1; break;
-				case COLORIDX_BLOCK1:  comment_mode = 2; break;
-				case COLORIDX_BLOCK2:  comment_mode = 0; break;
-				default:
-					if (comment_mode != 1) comment_mode = 0;
-					break;
+				if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
+					pInfo->m_gr.SetTextBackColor(cPageViewBg.GetBackColor());
+					pInfo->m_cIndex.eColorIndex = COLORIDX_PAGEVIEW;
 				}
-			} else {
-				if (comment_mode != 1) comment_mode = 0;
 			}
 
-			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
-				pInfo->m_gr.SetTextBackColor(cPageViewBg.GetBackColor());
-				pInfo->m_cIndex.eColorIndex = COLORIDX_PAGEVIEW;
-			}
 
 			if (comment_mode &&
 				pInfo->m_cIndex.eColorIndex != COLORIDX_SELECT &&
