@@ -20,7 +20,7 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 変更内容はコミットログを参照してください.  
 細かい内容は [my_config.h](https://github.com/mimix33/sakura_2201/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
 
-+ [sakura-mix-2.14-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.14-x64.zip) (1.10MB)  
++ [sakura-mix-2.15-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.15-x64.zip) (1.10MB)  
 
 <br>
 
