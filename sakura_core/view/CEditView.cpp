@@ -1791,7 +1791,11 @@ void CEditView::OnChangeSetting()
 	if( m_pTypeData->m_ColorInfoArr[COLORIDX_RULER].m_bDisp && !m_bMiniMap ){
 		GetTextArea().SetAreaTop(GetTextArea().GetAreaTop() + GetDllShareData().m_Common.m_sWindow.m_nRulerHeight);	/* ルーラー高さ */
 	}
+#ifdef MI_MOD_MINIMAP
+	GetTextArea().SetLeftYohaku( m_bMiniMap ? 0 : GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace );
+#else
 	GetTextArea().SetLeftYohaku( GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace );
+#endif  // MI_
 
 	/* フォントの変更 */
 	SetFont();
