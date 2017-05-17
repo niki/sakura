@@ -270,7 +270,7 @@ void _DispEOF(
 		return RGB( (BYTE)r, (BYTE)g, (BYTE)b );
 	};
 	
-	static int nBlendPer = RegKey(MI_REGKEY).get(_T("WhiteSpaceBlendPer"), MI_MOD_WS_BLEND_PER);
+	static int nBlendPer = RegKey(MI_REGKEY).get(_T("WhiteSpaceBlendPer"), MI_WS_BLEND_PER);
 	// 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
 	COLORREF col1 = cTextType.GetTextColor();
 	COLORREF col2 = crBack;	// 合成済みの色を使用する

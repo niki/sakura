@@ -183,7 +183,7 @@ CLayoutInt CCaret::MoveCursor(
 	}
 	else{
 #ifdef MI_MOD_SCROLL
-		nCaretMarginY = MI_MOD_VERTICAL_SCR;
+		nCaretMarginY = MI_VERTICAL_SCR;
 		if( nCaretMarginY < 0 )
 			nCaretMarginY = CLayoutInt(0);
 #else
@@ -239,7 +239,7 @@ CLayoutInt CCaret::MoveCursor(
 			( m_pEditView->GetTextArea().GetViewLeftCol() + m_pEditView->GetTextArea().m_nViewColNum - nScrollMarginRight ) - ptWk_CaretPos.GetX2();
 #ifdef MI_MOD_SCROLL
 		if (nScrollColNum != 0) {
-			static const int kSize = MI_MOD_HORIZONTAL_SCR;
+			static const int kSize = MI_HORIZONTAL_SCR;
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize
@@ -254,7 +254,7 @@ CLayoutInt CCaret::MoveCursor(
 		nScrollColNum = m_pEditView->GetTextArea().GetViewLeftCol() + nScrollMarginLeft - ptWk_CaretPos.GetX2();
 #ifdef MI_MOD_SCROLL
 		if (nScrollColNum != 0) {
-			static const int kSize = MI_MOD_HORIZONTAL_SCR;
+			static const int kSize = MI_HORIZONTAL_SCR;
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize

@@ -83,10 +83,10 @@
   // 水平スクロールの変更
   //  - スクロール開始マージンを 1 に変更。画面の端でスクロール開始 2014.5.7
   //  - スクロール幅を 16 に設定。一度に大きく移動することで見やすくする (Imitate 'Notepad') 2015.9.2
-  #define MI_MOD_HORIZONTAL_SCR (16)
+  #define MI_HORIZONTAL_SCR (16)
   // 垂直スクロールの変更
   //  - スクロールマージンを 0 に変更 2017.4.9
-  #define MI_MOD_VERTICAL_SCR (0)
+  #define MI_VERTICAL_SCR (0)
 
 //------------------------------------------------------------------
 // カーソルが大きく移動する処理ではカーソル行をセンタリングする 2017.4.13
@@ -109,15 +109,15 @@
 //  ! ミニマップに「行番号とテキストの隙間」はいらない
 //------------------------------------------------------------------
 #define MI_MOD_MINIMAP
-  #define MI_MOD_MINIMAP_NOLINETIP (1)  // 行TIPSを表示しない
-  #define MI_MINIMAP_TYPE_SAKURA   (0)  // 
-  #define MI_MINIMAP_TYPE_NPP      (1)  // Imitate 'Notepad++'
-                                        //   スクロールバー非表示
-                                        //   表示領域の端からスクロール開始
-  #define MI_MINIMAP_TYPE_ST       (2)  // Imitate 'Sublime Text'
-                                        //   スクロールバー非表示
-                                        //   現在行に対応した位置に自動的にスクロール
-  #define MI_MINIMAP_TYPE_DEFAULT  MI_MINIMAP_TYPE_ST
+  #define MI_MINIMAP_NOLINETIP    (1)  // 行TIPSを表示しない
+  #define MI_MINIMAP_TYPE_SAKURA  (0)  // 
+  #define MI_MINIMAP_TYPE_NPP     (1)  // Imitate 'Notepad++'
+                                       //   スクロールバー非表示
+                                       //   表示領域の端からスクロール開始
+  #define MI_MINIMAP_TYPE_ST      (2)  // Imitate 'Sublime Text'
+                                       //   スクロールバー非表示
+                                       //   現在行に対応した位置に自動的にスクロール
+  #define MI_MINIMAP_TYPE_DEFAULT MI_MINIMAP_TYPE_ST
 
 //------------------------------------------------------------------
 // タブ入力文字の切り替え(タブ<->空白)を追加
@@ -149,10 +149,10 @@
 #define MI_MOD_TAB_CAPTION_COLOR
   // 変更ドキュメントタブ名カラー
   // (REG/TabCaptionModifiedColor:0x00BBGGRR)
-  #define MI_MOD_MODIFIED_TAB_CAPTION_COLOR (0x00d70000)
+  #define MI_MODIFIED_TAB_CAPTION_COLOR (0x00d70000)
   // マクロ記録中ドキュメントタブ名カラー
   // (REG/TabCaptionRecMacroColor:0x00BBGGRR)
-  #define MI_MOD_RECMACRO_TAB_CAPTION_COLOR (0x000000d8)
+  #define MI_RECMACRO_TAB_CAPTION_COLOR (0x000000d8)
 
 //------------------------------------------------------------------
 // タブウィンドウ 2015.8.28
@@ -239,9 +239,9 @@
   // (REG/SelectAreaTextBlendPer:0x00000000)
   // (REG/SelectAreaBackBlendPer:0x00000064)
   // (REG/SelectAreaBackBlendPer2:0x0000003C)
-  #define MI_MOD_SELAREA_TEXT_BLEND_PER (0)
-  #define MI_MOD_SELAREA_BACK_BLEND_PER (100)  // 選択範囲のブレンド率
-  #define MI_MOD_SELAREA_BACK_BLEND_PER2 (60)  // 特定の下地のときの選択範囲のブレンド率
+  #define MI_SELAREA_TEXT_BLEND_PER (0)
+  #define MI_SELAREA_BACK_BLEND_PER (100)  // 選択範囲のブレンド率
+  #define MI_SELAREA_BACK_BLEND_PER2 (60)  // 特定の下地のときの選択範囲のブレンド率
 
 //------------------------------------------------------------------
 // 空白,TAB,改行,EOFのカラー (Imitate 'Sublime Text') 2015.6.5
@@ -252,7 +252,7 @@
 #define MI_MOD_WS_COLOR
   // 空白,TAB,改行,EOF 現在のカラーのブレンド率[%] 2015.6.5
   // (REG/WhiteSpaceBlendPer:0x0000001E)
-  #define MI_MOD_WS_BLEND_PER (30)
+  #define MI_WS_BLEND_PER (30)
 //						     
 						     
 
@@ -417,8 +417,8 @@
 // (REG/PlaceDialogWindowLeft:21)
 //------------------------------------------------------------------
 #define MI_MOD_DIALOG_POS
-  #define MI_MOD_DIALOG_PLACE_TOP  (74)
-  #define MI_MOD_DIALOG_PLACE_LEFT (21)
+  #define MI_DIALOG_PLACE_TOP  (74)
+  #define MI_DIALOG_PLACE_LEFT (21)
 
 //------------------------------------------------------------------
 // タグジャンプ一覧

@@ -537,7 +537,7 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 	}
 #endif  // MI_
 #ifdef MI_MOD_SELAREA
-	static int nBlendPer = RegKey(MI_REGKEY).get(_T("SelectAreaTextBlendPer"), MI_MOD_SELAREA_TEXT_BLEND_PER);
+	static int nBlendPer = RegKey(MI_REGKEY).get(_T("SelectAreaTextBlendPer"), MI_SELAREA_TEXT_BLEND_PER);
 	int alpha = 255 * nBlendPer / 100;
 #else
 	int alpha = 255*30/100; // 30%
@@ -557,8 +557,8 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	}
 #endif  // MI_
 #ifdef MI_MOD_SELAREA
-	static int nBlendPer = RegKey(MI_REGKEY).get(_T("SelectAreaBackBlendPer"), MI_MOD_SELAREA_BACK_BLEND_PER);
-	static int nBlendPer2 = RegKey(MI_REGKEY).get(_T("SelectAreaBackBlendPer2"), MI_MOD_SELAREA_BACK_BLEND_PER2);
+	static int nBlendPer = RegKey(MI_REGKEY).get(_T("SelectAreaBackBlendPer"), MI_SELAREA_BACK_BLEND_PER);
+	static int nBlendPer2 = RegKey(MI_REGKEY).get(_T("SelectAreaBackBlendPer2"), MI_SELAREA_BACK_BLEND_PER2);
 	int nBlendPer3 = nBlendPer;
 	if (info.m_nColorIdx == COLORIDX_SELECT &&
 #if 1

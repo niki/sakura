@@ -679,7 +679,7 @@ void CDialog::SetPlaceOfWindow(HWND hWnd) {
 	m_xPos = rc.left + (rc.right - rc.left) / 2 - m_nWidth / 2;
 	m_yPos = rc.top + (rc.bottom - rc.top) / 2 - m_nHeight / 2;
 #else
-	int top_place = RegKey(MI_REGKEY).get(_T("PlaceDialogWindowTop"), MI_MOD_DIALOG_PLACE_TOP);
+	int top_place = RegKey(MI_REGKEY).get(_T("PlaceDialogWindowTop"), MI_DIALOG_PLACE_TOP);
 	int top_molecule = (top_place % 10);
 	int top_denominator = (top_place / 10);
 	if (top_molecule < 1 || 9 < top_molecule || top_denominator < 1 || 9 < top_denominator) {
@@ -690,7 +690,7 @@ void CDialog::SetPlaceOfWindow(HWND hWnd) {
 	m_yPos += (rc.bottom - rc.top) / top_denominator * top_molecule;
 	m_yPos -= m_nHeight / 2;
 	
-	int left_place = RegKey(MI_REGKEY).get(_T("PlaceDialogWindowLeft"), MI_MOD_DIALOG_PLACE_LEFT);
+	int left_place = RegKey(MI_REGKEY).get(_T("PlaceDialogWindowLeft"), MI_DIALOG_PLACE_LEFT);
 	int left_molecule = (left_place % 10);
 	int left_denominator = (left_place / 10);
 	if (left_molecule < 1 || 9 < left_molecule || left_denominator < 1 || 9 < left_denominator) {

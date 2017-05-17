@@ -200,7 +200,7 @@ BOOL CEditView::KeySearchCore( const CNativeW* pcmemCurText )
 
 bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 {
-#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_NOLINETIP
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_NOLINETIP
 	return false;
 #else
 	*pbHide = true;
