@@ -991,8 +991,8 @@ void CEditView::OnSize( int cx, int cy )
 	int nCyHScroll = ::GetSystemMetrics( SM_CYHSCROLL );
 	int nCxVScroll = ::GetSystemMetrics( SM_CXVSCROLL );
 	int nCyVScroll = ::GetSystemMetrics( SM_CYVSCROLL );
-#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE > 0
-	if (m_bMiniMap) {
+#if defined(MI_MOD_MINIMAP)
+	if (m_bMiniMap && RegKey(MI_REGKEY).get(_T("NoMiniMapScrollBar"), 1)) {
 		nCxHScroll = 0;
 		nCyHScroll = 0;
 		nCxVScroll = 0;
@@ -1022,7 +1022,7 @@ void CEditView::OnSize( int cx, int cy )
 	if( NULL != m_hwndSizeBox ){
 		::MoveWindow( m_hwndSizeBox, cx - nCxVScroll, cy - nCyHScroll, nCxHScroll, nCyVScroll, TRUE );
 	}
-#if defined(MI_MOD_MINIMAP) && MI_MOD_MINIMAP_TYPE > 0
+#if defined(MI_MOD_MINIMAP)
 	}
 #endif  // MI_
 	int nAreaWidthOld  = GetTextArea().GetAreaWidth();
