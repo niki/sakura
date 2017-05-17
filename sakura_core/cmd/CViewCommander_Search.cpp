@@ -258,6 +258,19 @@ re_do:;
 			GetCaret().MoveCursorFastMode( pcSelectLogic->GetFrom() );
 		}
 		bFound = TRUE;
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+		if (!m_pCommanderView->m_bMiniMap &&
+		      GetEditWindow()->GetMiniMap().GetHwnd())
+		{
+			CEditView *pView = &GetEditWindow()->GetMiniMap();
+			pView->m_strCurSearchKey = m_pCommanderView->m_strCurSearchKey;
+			pView->m_sCurSearchOption = m_pCommanderView->m_sCurSearchOption;
+			pView->m_nCurSearchKeySequence = m_pCommanderView->m_nCurSearchKeySequence;
+			pView->m_bCurSearchUpdate = true;
+			pView->ChangeCurRegexp(false);
+			pView->RedrawAll();
+		}
+#endif
 	}
 	else{
 		if( bSelecting ){
@@ -441,6 +454,19 @@ re_do:;							//	hor
 		GetCaret().MoveCursor( sRangeA.GetFrom(), bReDraw );
 		GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX2();
 		bFound = TRUE;
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+		if (!m_pCommanderView->m_bMiniMap &&
+		      GetEditWindow()->GetMiniMap().GetHwnd())
+		{
+			CEditView *pView = &GetEditWindow()->GetMiniMap();
+			pView->m_strCurSearchKey = m_pCommanderView->m_strCurSearchKey;
+			pView->m_sCurSearchOption = m_pCommanderView->m_sCurSearchOption;
+			pView->m_nCurSearchKeySequence = m_pCommanderView->m_nCurSearchKeySequence;
+			pView->m_bCurSearchUpdate = true;
+			pView->ChangeCurRegexp(false);
+			pView->RedrawAll();
+		}
+#endif
 	}else{
 		if( bSelecting ){
 			m_pCommanderView->GetSelectionInfo().m_bSelectingLock = bSelectingLock_Old;	/* 選択状態のロック */

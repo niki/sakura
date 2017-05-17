@@ -110,6 +110,7 @@
 //------------------------------------------------------------------
 #define MI_MOD_MINIMAP
   #define MI_MINIMAP_NOLINETIP    (1)  // 行TIPSを表示しない
+  #define MI_MINIMAP_SEARCH_DISP  (1)  // 検索色を表示する
   #define MI_MINIMAP_TYPE_SAKURA  (0)  // 
   #define MI_MINIMAP_TYPE_NPP     (1)  // Imitate 'Notepad++'
                                        //   スクロールバー非表示

@@ -1180,11 +1180,6 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				CColor3Setting cColor;
 				pInfo->DoChangeColor(&cColor);
 				SetCurrentColor(pInfo->m_gr, cColor.eColorIndex, cColor.eColorIndex2, cColor.eColorIndexBg);
-#ifdef MI_MOD_COMMENT
-				if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
-					pInfo->m_gr.SetTextBackColor(cPageViewBg.GetBackColor());
-				}
-#endif  // MI_
 				
 #ifdef MI_MOD_COMMENT
 				if (pInfo->m_pStrategyFound) {
@@ -1218,6 +1213,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				}
 			} else {
 				if (comment_mode != 1) comment_mode = 0;
+			}
+
+			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
+				pInfo->m_gr.SetTextBackColor(cPageViewBg.GetBackColor());
+				pInfo->m_cIndex.eColorIndex = COLORIDX_PAGEVIEW;
 			}
 
 			if (comment_mode &&

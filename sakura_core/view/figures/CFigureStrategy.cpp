@@ -54,19 +54,34 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	bool bTrans = pInfo->m_pcView->IsBkBitmap() && CTypeSupport(pInfo->m_pcView, COLORIDX_TEXT).GetBackColor() == pInfo->m_gr.GetTextBackColor();
 	
 #ifdef MI_MOD_SELAREA
-  bool select = pInfo->GetCurrentColor() != pInfo->GetCurrentColor2();
-  if (select) {
-    CTypeSupport cCurrentType2(
-        pInfo->m_pcView, pInfo->GetCurrentColor2()); // 周辺の色（現在の指定色）
+	bool select = pInfo->GetCurrentColor() != pInfo->GetCurrentColor2();
+	if (select) {
+		CTypeSupport cCurrentType2(
+				pInfo->m_pcView, pInfo->GetCurrentColor2()); // 周辺の色（現在の指定色）
 
-    SFONT sFont;
-    sFont.m_sFontAttr.m_bBoldFont = cCurrentType2.IsBoldFont();
-    sFont.m_sFontAttr.m_bUnderLine = cCurrentType2.HasUnderLine();
-    sFont.m_hFont =
-        pInfo->m_pcView->GetFontset().ChooseFontHandle(sFont.m_sFontAttr);
-    pInfo->m_gr.PushMyFont(sFont);
-  }
-#endif  // MI_
+		SFONT sFont;
+		sFont.m_sFontAttr.m_bBoldFont = cCurrentType2.IsBoldFont();
+		sFont.m_sFontAttr.m_bUnderLine = cCurrentType2.HasUnderLine();
+		sFont.m_hFont =
+				pInfo->m_pcView->GetFontset().ChooseFontHandle(sFont.m_sFontAttr);
+		pInfo->m_gr.PushMyFont(sFont);
+	}
+#endif	// MI_
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+	bool bMiniMapSearch = false;
+	if (pInfo->m_pcView->m_bMiniMap &&
+	      (pInfo->GetCurrentColor() == COLORIDX_SEARCH ||
+	       pInfo->GetCurrentColor() == COLORIDX_SEARCH2 ||
+	       pInfo->GetCurrentColor() == COLORIDX_SEARCH3 ||
+	       pInfo->GetCurrentColor() == COLORIDX_SEARCH4 ||
+	       pInfo->GetCurrentColor() == COLORIDX_SEARCH5))
+	{
+		pInfo->m_gr.PushTextForeColor(pInfo->m_gr.GetCurrentTextForeColor());
+		pInfo->m_gr.PushTextBackColor(pInfo->m_gr.GetCurrentTextForeColor());
+		bTrans = false;
+		bMiniMapSearch = true;
+	}
+#endif	// MI_
 	
 	pInfo->m_pcView->GetTextDrawer().DispText(
 		pInfo->m_gr,
@@ -77,10 +92,16 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	);
 	// pInfo->m_nPosInLogic += nLength; ここでは進めない
 	
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+	if (bMiniMapSearch) {
+		pInfo->m_gr.PopTextForeColor();
+		pInfo->m_gr.PopTextBackColor();
+	}
+#endif	// MI_
 #ifdef MI_MOD_SELAREA
-  if (select) {
-    pInfo->m_gr.PopMyFont();
-  }
+	if (select) {
+		pInfo->m_gr.PopMyFont();
+	}
 #endif  // MI_
 	
 	return true;
@@ -96,9 +117,33 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 bool CFigureSpace::DrawImp(SColorStrategyInfo* pInfo)
 {
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+	COLORREF crMiniMapSearch = pInfo->m_gr.GetCurrentTextForeColor();
+#endif	// MI_
 	bool bTrans = DrawImp_StyleSelect(pInfo);
 	DispPos sPos(*pInfo->m_pDispPos);	// 現在位置を覚えておく
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+	bool bMiniMapSearch = false;
+	if (pInfo->m_pcView->m_bMiniMap &&
+	      (pInfo->GetCurrentColor() == COLORIDX_SEARCH ||
+	       pInfo->GetCurrentColor() == COLORIDX_SEARCH2 ||
+	       pInfo->GetCurrentColor() == COLORIDX_SEARCH3 ||
+	       pInfo->GetCurrentColor() == COLORIDX_SEARCH4 ||
+	       pInfo->GetCurrentColor() == COLORIDX_SEARCH5))
+	{
+		pInfo->m_gr.PushTextForeColor(crMiniMapSearch);
+		pInfo->m_gr.PushTextBackColor(crMiniMapSearch);
+		bTrans = false;
+		bMiniMapSearch = true;
+	}
+#endif	// MI_
 	DispSpace(pInfo->m_gr, pInfo->m_pDispPos,pInfo->m_pcView, bTrans);	// 空白描画
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+	if (bMiniMapSearch) {
+		pInfo->m_gr.PopTextForeColor();
+		pInfo->m_gr.PopTextBackColor();
+	}
+#endif	// MI_
 	DrawImp_StylePop(pInfo);
 	DrawImp_DrawUnderline(pInfo, sPos);
 	// 1文字前提
