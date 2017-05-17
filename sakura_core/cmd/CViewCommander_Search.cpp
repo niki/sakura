@@ -1577,6 +1577,15 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 	m_pCommanderView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 	/* フォーカス移動時の再描画 */
 	m_pCommanderView->RedrawAll();
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+	if (!m_pCommanderView->m_bMiniMap &&
+	      GetEditWindow()->GetMiniMap().GetHwnd())
+	{
+		CEditView *pView = &GetEditWindow()->GetMiniMap();
+		pView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
+		pView->RedrawAll();
+	}
+#endif
 	return;
 }
 
