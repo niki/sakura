@@ -20,7 +20,7 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 変更内容はコミットログを参照してください.  
 細かい内容は [my_config.h](https://github.com/mimix33/sakura_2201/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
 
-+ [sakura-mix-2.15-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.15-x64.zip) (1.10MB)  
++ [sakura-mix-2.16-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.16-x64.zip) (1.10MB)  
 
 <br>
 
@@ -81,7 +81,7 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 |改良版|本家|
 |-|-|
 |ミニマップの表示, 操作性を改良 (Sublime Textを模倣)||
-|ミニマップに検索にヒットした部分をForeカラーで塗りつぶし|表示なし|
+|ミニマップに検索文字列のある行をBackカラーで塗りつぶし|表示なし|
 |垂直, 水平スクロールの挙動をメモ帳の挙動と同じにする<br>垂直マージン１行, 水平マージン１、16文字移動|垂直マージン３行, 水平マージン１,１文字移動|
 |検索, ジャンプなどのカーソルが大きく移動する処理ではジャンプ先のカーソル行をセンタリングする|最近接ジャンプなので画面端にくることが多い|
 |タブ入力文字の切り替え機能 (`S_ChangeTabWidth`マクロを修正, 負の値を設定するとタブと空白を相互に切り替えます)|できない|
