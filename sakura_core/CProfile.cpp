@@ -397,7 +397,7 @@ bool CProfile::SetProfileDataImp(
 			//既存のセクションの場合
 			mapiter = iter->mapEntries.find( strEntryKey );
 			if( iter->mapEntries.end() != mapiter ) {
-#ifdef MI_MOD_PROFILES
+#if 0//def MI_MOD_PROFILES
 				if (strEntryValue.empty()) {
 					iter->mapEntries.erase(mapiter);
 					break;  // 空文字は書き込まない
@@ -409,7 +409,7 @@ bool CProfile::SetProfileDataImp(
 				break;
 			}
 			else {
-#ifdef MI_MOD_PROFILES
+#if 0//def MI_MOD_PROFILES
 				if (strEntryValue.empty()) {
 					break;  // 空文字は書き込まない
 				}
