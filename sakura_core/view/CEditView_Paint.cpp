@@ -1296,15 +1296,32 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
 		if (rcClipRet) {
 			CTypeSupport cSearchType(this, COLORIDX_SEARCH);
-			COLORREF crMiniMapSearch = cSearchType.GetBackColor();
+			COLORREF crMiniMap = cSearchType.GetBackColor();
 			DWORD dwData;
 			if (RegKey(MI_REGKEY).read(_T("MiniMapSearchColor"), &dwData)) {
-				crMiniMapSearch = (COLORREF)dwData;
+				crMiniMap = (COLORREF)dwData;
 			}
-			pInfo->m_gr.PushTextForeColor(crMiniMapSearch);
-			pInfo->m_gr.PushTextBackColor(crMiniMapSearch);
+			pInfo->m_gr.PushTextForeColor(crMiniMap);
+			pInfo->m_gr.PushTextBackColor(crMiniMap);
 
 			cSearchType.FillBack(pInfo->m_gr, rcClip);
+
+			pInfo->m_gr.PopTextForeColor();
+			pInfo->m_gr.PopTextBackColor();
+		}
+	} else 
+#endif  // MI_
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_BOOKMARK_DISP == 1
+	if (m_bMiniMap && pcDocLine && CBookmarkGetter(pcDocLine).IsBookmarked()){
+		// 雑だけど行全体を塗りつぶす
+		rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
+		if (rcClipRet) {
+			CTypeSupport cMarkType(this, COLORIDX_MARK);
+			COLORREF crMiniMap = cMarkType.GetBackColor();
+			pInfo->m_gr.PushTextForeColor(crMiniMap);
+			pInfo->m_gr.PushTextBackColor(crMiniMap);
+
+			cMarkType.FillBack(pInfo->m_gr, rcClip);
 
 			pInfo->m_gr.PopTextForeColor();
 			pInfo->m_gr.PopTextBackColor();
