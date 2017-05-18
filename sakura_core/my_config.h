@@ -107,10 +107,15 @@
 //  - 行TIPSを表示しない 2017.5.16
 //  ! ミニマップのカラー設定OFFのときは枠を描画する
 //  ! ミニマップに「行番号とテキストの隙間」はいらない
+//  ! 検索文字列が見つかった行全体に色を付ける
+//  ! ブックマーク行全体に色を付ける
 //------------------------------------------------------------------
 #define MI_MOD_MINIMAP
   #define MI_MINIMAP_NOLINETIP    (1)  // 行TIPSを表示しない
   #define MI_MINIMAP_SEARCH_DISP  (1)  // 検索色を表示する
+    // ミニマップ上の検索色
+    // (REG/MiniMapSearchColor:0x00BBGGRR)
+    #define MI_MINIMAP_SEARCH_COLOR (0x0000ffff)
   #define MI_MINIMAP_TYPE_SAKURA  (0)  // 
   #define MI_MINIMAP_TYPE_NPP     (1)  // Imitate 'Notepad++'
                                        //   スクロールバー非表示

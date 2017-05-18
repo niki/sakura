@@ -68,6 +68,8 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	}
 #endif	// MI_
 #if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
+	//COLORREF crMiniMapSearch = pInfo->m_gr.GetCurrentTextForeColor();
+	COLORREF crMiniMapSearch = pInfo->m_gr.GetTextBackColor();
 	bool bMiniMapSearch = false;
 	if (pInfo->m_pcView->m_bMiniMap &&
 	      (pInfo->GetCurrentColor() == COLORIDX_SEARCH ||
@@ -76,8 +78,12 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	       pInfo->GetCurrentColor() == COLORIDX_SEARCH4 ||
 	       pInfo->GetCurrentColor() == COLORIDX_SEARCH5))
 	{
-		pInfo->m_gr.PushTextForeColor(pInfo->m_gr.GetCurrentTextForeColor());
-		pInfo->m_gr.PushTextBackColor(pInfo->m_gr.GetCurrentTextForeColor());
+		DWORD dwData;
+		if (RegKey(MI_REGKEY).read(_T("MiniMapSearchColor"), &dwData)) {
+			crMiniMapSearch = (COLORREF)dwData;
+		}
+		pInfo->m_gr.PushTextForeColor(crMiniMapSearch);
+		pInfo->m_gr.PushTextBackColor(crMiniMapSearch);
 		bTrans = false;
 		bMiniMapSearch = true;
 	}
@@ -118,7 +124,8 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 bool CFigureSpace::DrawImp(SColorStrategyInfo* pInfo)
 {
 #if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
-	COLORREF crMiniMapSearch = pInfo->m_gr.GetCurrentTextForeColor();
+	//COLORREF crMiniMapSearch = pInfo->m_gr.GetCurrentTextForeColor();
+	COLORREF crMiniMapSearch = pInfo->m_gr.GetTextBackColor();
 #endif	// MI_
 	bool bTrans = DrawImp_StyleSelect(pInfo);
 	DispPos sPos(*pInfo->m_pDispPos);	// 現在位置を覚えておく
@@ -131,6 +138,10 @@ bool CFigureSpace::DrawImp(SColorStrategyInfo* pInfo)
 	       pInfo->GetCurrentColor() == COLORIDX_SEARCH4 ||
 	       pInfo->GetCurrentColor() == COLORIDX_SEARCH5))
 	{
+		DWORD dwData;
+		if (RegKey(MI_REGKEY).read(_T("MiniMapSearchColor"), &dwData)) {
+			crMiniMapSearch = (COLORREF)dwData;
+		}
 		pInfo->m_gr.PushTextForeColor(crMiniMapSearch);
 		pInfo->m_gr.PushTextBackColor(crMiniMapSearch);
 		bTrans = false;
