@@ -40,12 +40,14 @@ static inline void MiniMapSearchMark(CEditView *pView, bool mark) {
 	CEditView *miniMap = &pView->m_pcEditWnd->GetMiniMap();
 
 	if (mark) {
+		if (miniMap->m_bCurSrchKeyMark) return;
 		miniMap->m_strCurSearchKey = pView->m_strCurSearchKey;
 		miniMap->m_sCurSearchOption = pView->m_sCurSearchOption;
 		miniMap->m_nCurSearchKeySequence = pView->m_nCurSearchKeySequence;
 		miniMap->m_bCurSearchUpdate = true;
 		miniMap->ChangeCurRegexp(false);
 	} else {
+		if (!miniMap->m_bCurSrchKeyMark) return;
 		miniMap->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 	}
 
