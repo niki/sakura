@@ -111,18 +111,19 @@
 //  ! ブックマーク行全体に色を付ける
 //------------------------------------------------------------------
 #define MI_MOD_MINIMAP
-  #define MI_MINIMAP_NOLINETIP    (1)  // 行TIPSを表示しない
-  #define MI_MINIMAP_SEARCH_DISP  (1)  // 検索色を表示する
+  #define MI_MINIMAP_NOLINETIP     (1)  // 行TIPSを表示しない
+  #define MI_MINIMAP_BOOKMARK_DISP (1)  // ブックマーク行を全体表示する
+  #define MI_MINIMAP_SEARCH_DISP   (2)  // 1:検索文字列を表示する, 2:検索文字列行を全体表示する
     // ミニマップ上の検索色
     // (REG/MiniMapSearchColor:0x00BBGGRR)
     #define MI_MINIMAP_SEARCH_COLOR (0x0000ffff)
-  #define MI_MINIMAP_TYPE_SAKURA  (0)  // 
-  #define MI_MINIMAP_TYPE_NPP     (1)  // Imitate 'Notepad++'
-                                       //   スクロールバー非表示
-                                       //   表示領域の端からスクロール開始
-  #define MI_MINIMAP_TYPE_ST      (2)  // Imitate 'Sublime Text'
-                                       //   スクロールバー非表示
-                                       //   現在行に対応した位置に自動的にスクロール
+  #define MI_MINIMAP_TYPE_SAKURA   (0)  // 
+  #define MI_MINIMAP_TYPE_NPP      (1)  // Imitate 'Notepad++'
+                                        //   スクロールバー非表示
+                                        //   表示領域の端からスクロール開始
+  #define MI_MINIMAP_TYPE_ST       (2)  // Imitate 'Sublime Text'
+                                        //   スクロールバー非表示
+                                        //   現在行に対応した位置に自動的にスクロール
   #define MI_MINIMAP_TYPE_DEFAULT MI_MINIMAP_TYPE_ST
 
 //------------------------------------------------------------------

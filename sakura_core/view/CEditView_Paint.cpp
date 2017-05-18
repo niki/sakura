@@ -1142,6 +1142,9 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			bSkipRight = CColorStrategyPool::getInstance()->IsSkipBeforeLayout();
 		}
 	}
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 2
+	bool bMiniMapSearchLine = false;
+#endif  // MI_
 	//行終端または折り返しに達するまでループ
 	if(pcLayout){
 		int nPosBgn = pInfo->m_nPosInLogic; // Logic
@@ -1181,6 +1184,13 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				pInfo->DoChangeColor(&cColor);
 				SetCurrentColor(pInfo->m_gr, cColor.eColorIndex, cColor.eColorIndex2, cColor.eColorIndexBg);
 				
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 2
+				if (pInfo->m_pStrategyFound) {
+					if (m_bMiniMap) {
+						bMiniMapSearchLine = true;
+					}
+				}
+#endif  // MI_
 #ifdef MI_MOD_COMMENT
 				if (pInfo->m_pStrategyFound) {
 					comment_mode = 0;
@@ -1280,6 +1290,27 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	// 行末背景描画
 	RECT rcClip;
 	bool rcClipRet = GetTextArea().GenerateClipRectRight(&rcClip,*pInfo->m_pDispPos);
+#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 2
+	if (bMiniMapSearchLine) {
+		// 雑だけど行全体を塗りつぶす
+		rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
+		if (rcClipRet) {
+			CTypeSupport cSearchType(this, COLORIDX_SEARCH);
+			COLORREF crMiniMapSearch = cSearchType.GetBackColor();
+			DWORD dwData;
+			if (RegKey(MI_REGKEY).read(_T("MiniMapSearchColor"), &dwData)) {
+				crMiniMapSearch = (COLORREF)dwData;
+			}
+			pInfo->m_gr.PushTextForeColor(crMiniMapSearch);
+			pInfo->m_gr.PushTextBackColor(crMiniMapSearch);
+
+			cSearchType.FillBack(pInfo->m_gr, rcClip);
+
+			pInfo->m_gr.PopTextForeColor();
+			pInfo->m_gr.PopTextBackColor();
+		}
+	} else 
+#endif  // MI_
 	if(rcClipRet){
 		if( !bTransText ){
 #ifdef MI_MOD_COMMENT
