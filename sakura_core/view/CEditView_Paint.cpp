@@ -1297,17 +1297,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		if (rcClipRet) {
 			CTypeSupport cSearchType(this, COLORIDX_SEARCH);
 			COLORREF crMiniMap = cSearchType.GetBackColor();
-			DWORD dwData;
-			if (RegKey(MI_REGKEY).read(_T("MiniMapSearchColor"), &dwData)) {
-				crMiniMap = (COLORREF)dwData;
+			TCHAR szData[32];
+			if (RegKey(MI_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
+				crMiniMap = mix::ColorString::ToCOLORREF(szData);
 			}
-			pInfo->m_gr.PushTextForeColor(crMiniMap);
-			pInfo->m_gr.PushTextBackColor(crMiniMap);
-
-			cSearchType.FillBack(pInfo->m_gr, rcClip);
-
-			pInfo->m_gr.PopTextForeColor();
-			pInfo->m_gr.PopTextBackColor();
+			pInfo->m_gr.FillSolidMyRect(rcClip, crMiniMap);
 		}
 	} else 
 #endif  // MI_
@@ -1318,13 +1312,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		if (rcClipRet) {
 			CTypeSupport cMarkType(this, COLORIDX_MARK);
 			COLORREF crMiniMap = cMarkType.GetBackColor();
-			pInfo->m_gr.PushTextForeColor(crMiniMap);
-			pInfo->m_gr.PushTextBackColor(crMiniMap);
-
-			cMarkType.FillBack(pInfo->m_gr, rcClip);
-
-			pInfo->m_gr.PopTextForeColor();
-			pInfo->m_gr.PopTextBackColor();
+			TCHAR szData[32];
+			if (RegKey(MI_REGKEY).read(_T("MiniMapBookmarkColor"), (LPCTSTR)szData)) {
+				crMiniMap = mix::ColorString::ToCOLORREF(szData);
+			}
+			pInfo->m_gr.FillSolidMyRect(rcClip, crMiniMap);
 		}
 	} else 
 #endif  // MI_

@@ -3006,34 +3006,10 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				if (!bColorOnly) info->m_bDisp = (buf[0]!=0);
 				if (scan_num > 1) {
 					auto fnNameToColor = [pColorInfoArr](TCHAR *name) {
-						COLORREF c;
-						if (_tcsicmp(name, _T("none")) == 0)           { c = pColorInfoArr[0].m_sColorAttr.m_cBACK;
-						} else if (_tcsicmp(name, _T("fg")) == 0)      { c = pColorInfoArr[0].m_sColorAttr.m_cTEXT;
-						} else if (_tcsicmp(name, _T("bg")) == 0)      { c = pColorInfoArr[0].m_sColorAttr.m_cBACK;
-						} else if (_tcsicmp(name, _T("red")) == 0)     { c = RGB(255, 0, 0);
-						} else if (_tcsicmp(name, _T("yellow")) == 0)  { c = RGB(255, 255, 0);
-						} else if (_tcsicmp(name, _T("lime")) == 0)    { c = RGB(0, 255, 0);
-						} else if (_tcsicmp(name, _T("aqua")) == 0)    { c = RGB(0, 255, 255);
-						} else if (_tcsicmp(name, _T("blue")) == 0)    { c = RGB(0, 0, 255);
-						} else if (_tcsicmp(name, _T("fuchsia")) == 0) { c = RGB(255, 0, 255);
-						} else if (_tcsicmp(name, _T("maroon")) == 0)  { c = RGB(128, 0, 0);
-						} else if (_tcsicmp(name, _T("olive")) == 0)   { c = RGB(128, 128, 0);
-						} else if (_tcsicmp(name, _T("green")) == 0)   { c = RGB(0, 128, 0);
-						} else if (_tcsicmp(name, _T("teal")) == 0)    { c = RGB(0, 128, 128);
-						} else if (_tcsicmp(name, _T("navy")) == 0)    { c = RGB(0, 0, 128);
-						} else if (_tcsicmp(name, _T("purple")) == 0)  { c = RGB(128, 0, 128);
-						} else if (_tcsicmp(name, _T("black")) == 0)   { c = RGB(0, 0, 0);
-						} else if (_tcsicmp(name, _T("gray")) == 0)    { c = RGB(128, 128, 128);
-						} else if (_tcsicmp(name, _T("silver")) == 0)  { c = RGB(192, 192, 192);
-						} else if (_tcsicmp(name, _T("white")) == 0)   { c = RGB(255, 255, 255);
-						} else if (_tcsicmp(name, _T("orange")) == 0)  { c = RGB(255, 165, 0);
-						} else {
-							int i;
-							::swscanf(name, L"%x", &i);
-							c = i;
-						}
-
-						return c;
+						if (_tcsicmp(name, _T("none")) == 0) return pColorInfoArr[0].m_sColorAttr.m_cBACK;
+						if (_tcsicmp(name, _T("fg")) == 0)   return pColorInfoArr[0].m_sColorAttr.m_cTEXT;
+						if (_tcsicmp(name, _T("bg")) == 0)   return pColorInfoArr[0].m_sColorAttr.m_cBACK;
+						return mix::ColorString::ToCOLORREF(name, mix::ColorString::eENDIAN_BGR);
 					};
 					
 					if (!bColorOnly) info->m_sFontAttr.m_bBoldFont  = (buf[1]!=0);
@@ -3087,36 +3063,11 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				auto_sprintf( szKeyData, L"%d,", info->m_bDisp?1:0 );
 			} else {
 				auto fnColorToName = [pColorInfoArr, j](COLORREF c, int attr) -> std::tstring {
-					bool txt = (j == 0);
-					if (txt) {
-						WCHAR name[32] = {};
-						auto_sprintf(name, L"%06x", c);
-						return name;
-					} else if (attr != 0) { return L"none";
-					} else if (c == pColorInfoArr[0].m_sColorAttr.m_cTEXT) { return L"fg";
-					} else if (c == pColorInfoArr[0].m_sColorAttr.m_cBACK) { return L"bg";
-					} else if (c == RGB(255, 0, 0))     { return L"red";
-					} else if (c == RGB(255, 255, 0))   { return L"yellow";
-					} else if (c == RGB(0, 255, 0))     { return L"lime";
-					} else if (c == RGB(0, 255, 255))   { return L"aqua";
-					} else if (c == RGB(0, 0, 255))     { return L"blue";
-					} else if (c == RGB(255, 0, 255))   { return L"fuchsia";
-					} else if (c == RGB(128, 0, 0))     { return L"maroon";
-					} else if (c == RGB(128, 128, 0))   { return L"olive";
-					} else if (c == RGB(0, 128, 0))     { return L"green";
-					} else if (c == RGB(0, 128, 128))   { return L"teal";
-					} else if (c == RGB(0, 0, 128))     { return L"navy";
-					} else if (c == RGB(128, 0, 128))   { return L"purple";
-					} else if (c == RGB(0, 0, 0))       { return L"black";
-					} else if (c == RGB(128, 128, 128)) { return L"gray";
-					} else if (c == RGB(192, 192, 192)) { return L"silver";
-					} else if (c == RGB(255, 255, 255)) { return L"white";
-					} else if (c == RGB(255, 165, 0))   { return L"orange";
-					} else {
-						WCHAR name[32] = {};
-						auto_sprintf(name, L"%06x", c);
-						return name;
-					}
+					if (j == 0/* txt */) return mix::ColorString::FromCOLORREF(c, true);
+					if (attr != 0)       return L"none";
+					if (c == pColorInfoArr[0].m_sColorAttr.m_cTEXT) return L"fg";
+					if (c == pColorInfoArr[0].m_sColorAttr.m_cBACK) return L"bg";
+					return mix::ColorString::FromCOLORREF(c, true);
 				};
 				
 				auto_sprintf( szKeyData, L"%d,%d,%s,%s,%d",

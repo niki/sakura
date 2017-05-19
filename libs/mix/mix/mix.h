@@ -14,5 +14,6 @@
 #include "util.hpp"
 #include "file.hpp"
 #include "registry.hpp"
+#include "color_string.hpp"
 
 #endif /* MIX_HPP */

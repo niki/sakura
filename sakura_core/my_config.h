@@ -109,14 +109,13 @@
 //  ! ミニマップに「行番号とテキストの隙間」はいらない
 //  ! 検索文字列が見つかった行全体に色を付ける
 //  ! ブックマーク行全体に色を付ける
+//  @ミニマップ上の検索色 (REG/MiniMapSearchColor:#ffff00)
+//  @ミニマップ上のブックマーク色 (REG/MiniMapSearchColor:#ff0000)
 //------------------------------------------------------------------
 #define MI_MOD_MINIMAP
   #define MI_MINIMAP_NOLINETIP     (1)  // 行TIPSを表示しない
   #define MI_MINIMAP_BOOKMARK_DISP (1)  // ブックマーク行を全体表示する
   #define MI_MINIMAP_SEARCH_DISP   (2)  // 1:検索文字列を表示する, 2:検索文字列行を全体表示する
-    // ミニマップ上の検索色
-    // (REG/MiniMapSearchColor:0x00BBGGRR)
-    #define MI_MINIMAP_SEARCH_COLOR (0x0000ffff)
   #define MI_MINIMAP_TYPE_SAKURA   (0)  // 
   #define MI_MINIMAP_TYPE_NPP      (1)  // Imitate 'Notepad++'
                                         //   スクロールバー非表示
@@ -155,11 +154,11 @@
 //------------------------------------------------------------------
 #define MI_MOD_TAB_CAPTION_COLOR
   // 変更ドキュメントタブ名カラー
-  // (REG/TabCaptionModifiedColor:0x00BBGGRR)
-  #define MI_MODIFIED_TAB_CAPTION_COLOR (0x00d70000)
+  // (REG/TabCaptionModifiedColor:#0000d7)
+  #define MI_MODIFIED_TAB_CAPTION_COLOR _T("#0000d7")
   // マクロ記録中ドキュメントタブ名カラー
-  // (REG/TabCaptionRecMacroColor:0x00BBGGRR)
-  #define MI_RECMACRO_TAB_CAPTION_COLOR (0x000000d8)
+  // (REG/TabCaptionRecMacroColor:#d80000)
+  #define MI_RECMACRO_TAB_CAPTION_COLOR _T("#d80000")
 
 //------------------------------------------------------------------
 // タブウィンドウ 2015.8.28

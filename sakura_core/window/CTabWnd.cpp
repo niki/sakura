@@ -1548,13 +1548,25 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 #ifdef MI_MOD_TAB_CAPTION_COLOR
 		if (clrText == ::GetSysColor(COLOR_MENUTEXT)) {
 			EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
-			clrText = p && p->m_bIsRecMacro ? RegKey(MI_REGKEY).get(_T("TabCaptionRecMacroColor"), MI_RECMACRO_TAB_CAPTION_COLOR)
-			                                : ::GetSysColor(COLOR_MENUTEXT);
+			if (p && p->m_bIsRecMacro) {
+				TCHAR szData[32];
+				if (RegKey(MI_REGKEY).read(_T("TabCaptionRecMacroColor"), (LPCTSTR)szData)) {
+					clrText = mix::ColorString::ToCOLORREF(szData);
+				} else {
+					clrText = mix::ColorString::ToCOLORREF(MI_RECMACRO_TAB_CAPTION_COLOR);
+				}
+			}
 		}
 		if (clrText == ::GetSysColor(COLOR_MENUTEXT)) {
 			EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
-			clrText = p && p->m_bIsModified ? RegKey(MI_REGKEY).get(_T("TabCaptionModifiedColor"), MI_MODIFIED_TAB_CAPTION_COLOR)
-			                                : ::GetSysColor(COLOR_MENUTEXT);
+			if (p && p->m_bIsModified) {
+				TCHAR szData[32];
+				if (RegKey(MI_REGKEY).read(_T("TabCaptionModifiedColor"), (LPCTSTR)szData)) {
+					clrText = mix::ColorString::ToCOLORREF(szData);
+				} else {
+					clrText = mix::ColorString::ToCOLORREF(MI_MODIFIED_TAB_CAPTION_COLOR);
+				}
+			}
 		}
 #endif  // MI_
 		gr.PushTextForeColor( clrText );
