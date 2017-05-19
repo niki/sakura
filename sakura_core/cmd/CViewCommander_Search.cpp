@@ -33,11 +33,14 @@
 #include "sakura_rc.h"
 
 #if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
-static inline void MiniMapSearchMark(CEditView *pView, bool mark, bool redraw_all) {
+static inline void MiniMapSearchMark(CEditView *pView, bool mark) {
 	if (pView->m_bMiniMap) return;
 	if (pView->m_pcEditWnd->GetMiniMap().GetHwnd() == NULL) return;
 	
 	CEditView *miniMap = &pView->m_pcEditWnd->GetMiniMap();
+
+	bool bCurSrchKeyMark = miniMap->m_bCurSrchKeyMark;
+	std::tstring strCurSearchKey = miniMap->m_strCurSearchKey;
 
 	if (mark) {
 		miniMap->m_strCurSearchKey = pView->m_strCurSearchKey;
@@ -49,9 +52,10 @@ static inline void MiniMapSearchMark(CEditView *pView, bool mark, bool redraw_al
 		miniMap->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 	}
 
-	if (redraw_all) {
-		miniMap->RedrawAll();
-	} else {
+	if (bCurSrchKeyMark != miniMap->m_bCurSrchKeyMark ||
+	    strCurSearchKey != miniMap->m_strCurSearchKey)
+	{
+		//miniMap->RedrawAll();
 		miniMap->Redraw();
 	}
 }
@@ -327,7 +331,7 @@ end_of_func:;
 	}
 
 #if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
-	MiniMapSearchMark(m_pCommanderView, /*mark=*/true, /*redraw=*/false);
+	MiniMapSearchMark(m_pCommanderView, /*mark=*/true);
 #endif  // MI_
 	if(bFound){
 		if(NULL == pcSelectLogic && ((nLineNumOld > nLineNum)||(nLineNumOld == nLineNum && nIdxOld > nIdx)))
@@ -499,7 +503,7 @@ end_of_func:;
 		}
 	}
 #if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
-	MiniMapSearchMark(m_pCommanderView, /*mark=*/true, /*redraw=*/false);
+	MiniMapSearchMark(m_pCommanderView, /*mark=*/true);
 #endif  // MI_
 	if(bFound){
 		if((nLineNumOld < nLineNum)||(nLineNumOld == nLineNum && nIdxOld < nIdx))
@@ -1573,7 +1577,7 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 		// 再描画
 		m_pCommanderView->RedrawAll();
 #if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
-		MiniMapSearchMark(m_pCommanderView, /*mark=*/true, /*redraw=*/true);
+		MiniMapSearchMark(m_pCommanderView, /*mark=*/true);
 #endif
 		return;
 	}
@@ -1585,7 +1589,7 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 	/* フォーカス移動時の再描画 */
 	m_pCommanderView->RedrawAll();
 #if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP
-	MiniMapSearchMark(m_pCommanderView, /*mark=*/false, /*redraw=*/true);
+	MiniMapSearchMark(m_pCommanderView, /*mark=*/false);
 #endif  // MI_
 	return;
 }
