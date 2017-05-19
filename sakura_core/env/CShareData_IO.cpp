@@ -3005,7 +3005,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				int scan_num = ::swscanf(szKeyData, L"%d,%d,%[^,],%[^,],%d", &buf[0], &buf[1], text, back, &buf[4]);
 				if (!bColorOnly) info->m_bDisp = (buf[0]!=0);
 				if (scan_num > 1) {
-					auto fnNameToColor = [pColorInfoArr](TCHAR *name) {
+					auto fnNameToColor = [pColorInfoArr](TCHAR *name) -> uint32_t {
 						if (_tcsicmp(name, _T("none")) == 0) return pColorInfoArr[0].m_sColorAttr.m_cBACK;
 						if (_tcsicmp(name, _T("fg")) == 0)   return pColorInfoArr[0].m_sColorAttr.m_cTEXT;
 						if (_tcsicmp(name, _T("bg")) == 0)   return pColorInfoArr[0].m_sColorAttr.m_cBACK;
