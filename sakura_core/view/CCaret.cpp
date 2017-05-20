@@ -702,55 +702,12 @@ void CCaret::ShowEditCaret()
 //		nCaretHeight += m_pEditView->GetLineSpace();
 //#endif  // MI_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
-#ifdef MI_MOD_CARET
-			int caret_type = RegKey(MI_REGKEY).get(_T("CaretType"), MI_MOD_CARET);
-			if (caret_type == 11) {
-				nCaretWidth = 1;
-				
-				const wchar_t *pLine;
-				CLogicInt nLineLen;
-				const CLayout *pcLayout;
-				pLine = pLayoutMgr->GetLineStr(GetCaretLayoutPos().GetY2(), &nLineLen, &pcLayout);
-
-				if (pLine) {
-					/* 指定された桁に対応する行のデータ内の位置を調べる */
-					//nIdxFrom = m_pEditView->LineColmnToIndex( pcLayout, GetCaretLayoutPos().GetX2() );
-					nIdxFrom = GetCaretLogicPos().GetX2() - pcLayout->GetLogicOffset();
-					if (pLine[nIdxFrom] == TAB ||
-					    pLine[nIdxFrom] == CR || pLine[nIdxFrom] == LF ||
-					    nIdxFrom >= nLineLen) {
-						nCaretWidth = 1;//GetHankakuDx();
-					} else {
-						CLayoutInt nKeta = CNativeW::GetKetaOfChar(pLine, nLineLen, nIdxFrom);
-						if (0 < nKeta) {
-							nCaretWidth = 1 * (Int)nKeta;//GetHankakuDx() * (Int)nKeta;
-						}
-					}
-				}
-			} else if (caret_type == 12) {
-				if (m_pEditView->IsImeON()) {
-					nCaretWidth = 2;
-				} else {
-					nCaretWidth = 1;
-				}
-			} else if (1 <= caret_type && caret_type <= 10) {
-			  nCaretWidth = caret_type;
-			} else {
-				nCaretWidth = 2; //2px
-				// 2011.12.22 システムの設定に従う(けど2px以上)
-				DWORD dwWidth;
-				if( ::SystemParametersInfo(SPI_GETCARETWIDTH, 0, &dwWidth, 0) && 2 < dwWidth){
-					nCaretWidth = t_min((int)dwWidth, GetHankakuDx());
-				}
-			}
-#else
 			nCaretWidth = 2; //2px
 			// 2011.12.22 システムの設定に従う(けど2px以上)
 			DWORD dwWidth;
 			if( ::SystemParametersInfo(SPI_GETCARETWIDTH, 0, &dwWidth, 0) && 2 < dwWidth){
 				nCaretWidth = t_min((int)dwWidth, GetHankakuDx());
 			}
-#endif  // MI_
 		}
 		else{
 			nCaretWidth = GetHankakuDx();

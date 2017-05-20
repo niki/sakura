@@ -117,18 +117,6 @@ void CRuler::DrawRulerBg(CGraphics& gr)
 	rc.bottom = m_pEditView->GetTextArea().GetAreaTop() - m_pEditView->GetTextArea().GetTopYohaku();
 	cRulerType.FillBack(gr,rc);
 
-#ifdef MI_MOD_RULER
-	{
-		CTypeSupport cGyouType(m_pEditView,COLORIDX_GYOU);
-		RECT rc2;
-		rc2.left = 0;
-		rc2.top = 0;
-		rc2.right = m_pEditView->GetTextArea().GetLineNumberWidth();
-		rc2.bottom = m_pEditView->GetTextArea().GetAreaTop();
-		cGyouType.FillBack(gr,rc2);
-	}
-#endif  // MI_
-
 #ifdef MI_FIX_EDITVIEW
 	{
 		// ルーラーの上部に境界線を描画する
