@@ -474,29 +474,31 @@ CLayoutInt CCaret::MoveCursor(
 	if (nFinalDrawFlag != 0) {
 		if (nFinalDrawFlag == PAINT_ALL) {
 			m_pEditView->Call_OnPaint(nFinalDrawFlag, false);
-
+			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+				m_pEditView->m_pcEditWnd->GetMiniMap().Call_OnPaint(nFinalDrawFlag, false);
+			}
+			
 		// 画面端の行を早めに再描画する
 		// スクロール処理をしてから描画するまで少しの間時間差があるようで
 		// スクロールした行が残っているように見えてしまうため
 		} else if (nScrollRowNum > 0) {
 			int top = m_pEditView->GetTextArea().GetViewTopLine();
 			m_pEditView->RedrawLines(top, top + 3);
+			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+				m_pEditView->MiniMapRedraw(true);
+			}
 		} else if (nScrollRowNum < 0) {
 			int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
 			m_pEditView->RedrawLines(bottom - 3, bottom);
-		}
-		
-		if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
-			m_pEditView->MiniMapRedraw(true);
+			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+				m_pEditView->MiniMapRedraw(true);
+			}
 		}
 	}
 
 	if (bScroll) {
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars();
-		
-		//::UpdateWindow(m_pEditView->GetHwnd());
-		//::Sleep(1);
 	}
 #endif  // MI_
 
@@ -1256,6 +1258,11 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 	}
 #ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pEditView->m_ignore_update_window = true;
+	if (!m_pEditView->m_bMiniMap) {
+		if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+			m_pEditView->m_pcEditWnd->GetMiniMap().m_ignore_update_window = true;
+		}
+	}
 #endif  // MI_
 	const CLayoutInt nScrollLines = MoveCursor(	ptTo,
 								m_pEditView->GetDrawSwitch() /* TRUE */,
@@ -1265,6 +1272,12 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 #ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 	m_pEditView->m_ignore_update_window = false;
 	::UpdateWindow(m_pEditView->GetHwnd());
+	if (!m_pEditView->m_bMiniMap) {
+		if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+			m_pEditView->m_pcEditWnd->GetMiniMap().m_ignore_update_window = false;
+			::UpdateWindow(m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd());
+		}
+	}
 #endif  // MI_
 	return nScrollLines;
 }

@@ -860,6 +860,31 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		}
 	}
 
+#if 0
+	if (m_bMiniMap) {
+		CEditView& cActiveView = m_pcEditWnd->GetActiveView();
+		CLayoutInt nTopViewLine = cActiveView.GetTextArea().GetViewTopLine();
+		CLayoutInt nBottomViewLine = cActiveView.GetTextArea().GetBottomLine();
+		CLayoutInt nMiniMapTopViewLine = GetTextArea().GetViewTopLine();
+		CLayoutInt nMiniMapBottomViewLine = GetTextArea().GetBottomLine();
+		
+		int dy = GetTextMetrics().GetHankakuDy();
+		RECT rcMiniMap;
+		rcMiniMap.left = pPs->rcPaint.left;
+		rcMiniMap.top = GetTextArea().GetAreaTop() + (nTopViewLine - nMiniMapTopViewLine) * dy;
+		rcMiniMap.right = pPs->rcPaint.right;
+		rcMiniMap.bottom = rcMiniMap.top + cActiveView.GetTextArea().m_nViewRowNum * dy;
+		
+		gr.SetPen(RGB(255,0,0));
+		gr.SetBrushColor(-1); //NULL_BRUSH
+		
+		::Rectangle( gr, rcMiniMap.left, rcMiniMap.top + 1, rcMiniMap.right, rcMiniMap.bottom - 1 );
+		
+		//::InvalidateRect(GetHwnd(), &rcMiniMap, FALSE);
+		::UpdateWindow(GetHwnd());
+	}
+#endif
+
 	cTextType.RewindGraphicsState(gr);
 
 
