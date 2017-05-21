@@ -1214,12 +1214,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 		m_pEditView->GetSelectionInfo().ChangeSelectAreaByCurrentCursor( ptTo );
 	}
 #ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
-	m_pEditView->m_ignore_update_window = true;
-	if (!m_pEditView->m_bMiniMap) {
-		if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-			m_pEditView->m_pcEditWnd->GetMiniMap().m_ignore_update_window = true;
-		}
-	}
+	m_pEditView->BeginIgnoreUpdateWindow();
 #endif  // MI_
 	const CLayoutInt nScrollLines = MoveCursor(	ptTo,
 								m_pEditView->GetDrawSwitch() /* TRUE */,
@@ -1227,14 +1222,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 								false,
 								bVertLineDoNotOFF );
 #ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
-	m_pEditView->m_ignore_update_window = false;
-	::UpdateWindow(m_pEditView->GetHwnd());
-	if (!m_pEditView->m_bMiniMap) {
-		if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-			m_pEditView->m_pcEditWnd->GetMiniMap().m_ignore_update_window = false;
-			::UpdateWindow(m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd());
-		}
-	}
+	m_pEditView->EndIgnoreUpdateWindow();
 #endif  // MI_
 	return nScrollLines;
 }

@@ -774,6 +774,8 @@ private:
 	
 #ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 public:
+	void BeginIgnoreUpdateWindow();
+	void EndIgnoreUpdateWindow();
 	bool m_ignore_update_window;  // UpdateWindowを無視する
 #endif  // MI_
 };
