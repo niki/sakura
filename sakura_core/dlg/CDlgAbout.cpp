@@ -45,11 +45,11 @@ const DWORD p_helpids[] = {	//12900
 // 2010.04.15 Moca icc/dmcを追加しCPUを分離
 #ifdef MI_MOD_VERDLG
 #if defined(_M_IA64)
-#  define TARGET_M_SUFFIX "64bit Itanium"
+#  define TARGET_M_SUFFIX "64-bit Itanium"
 #elif defined(_M_AMD64)
-#  define TARGET_M_SUFFIX "64bit"
+#  define TARGET_M_SUFFIX "64-bit"
 #elif defined(_M_IX86)
-#  define TARGET_M_SUFFIX "32bit"
+#  define TARGET_M_SUFFIX "32-bit"
 #else
 #  define TARGET_M_SUFFIX ""
 #endif
@@ -135,15 +135,15 @@ const DWORD p_helpids[] = {	//12900
 #  ifdef _MT
 #    ifdef _DLL
 #      ifdef _DEBUG
-#        define MY_RT "RT_Dd"
+#        define MY_RT "MDd"
 #      else
-#        define MY_RT "RT_D"
+#        define MY_RT "MD"
 #      endif
 #    else
 #      ifdef _DEBUG
-#        define MY_RT "RT_Td"
+#        define MY_RT "MTd"
 #      else
-#        define MY_RT "RT_T"
+#        define MY_RT "MT"
 #      endif
 #    endif
 #  else
@@ -254,7 +254,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	cmemMsg.AppendString( _T("      Compile Info: ") );
 	int Compiler_ver = COMPILER_VER;
 #ifdef MI_MOD_VERDLG
-	auto_sprintf( szMsg, _T(COMPILER_TYPE"(%d) ") _T(MY_RT" ")
+	auto_sprintf( szMsg, _T(COMPILER_TYPE" (%d) ") _T(MY_RT" ")
 			TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
 		Compiler_ver,
 		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
