@@ -160,7 +160,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|Win32'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\boost;..\libs\mix</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\boost;..\libs\lua;..\libs\mix</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -175,14 +175,15 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;libboost_regex-vc141-mt-1_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;libboost_regex-vc141-mt-1_64.lib;lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;..\libs\gperftools\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;..\libs\lua\$(PlatformTarget)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/NODEFAULTLIB:libcmt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
@@ -198,7 +199,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|x64'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\boost;..\libs\mix</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\boost;..\libs\lua;..\libs\mix</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -213,7 +214,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;libboost_regex-vc141-mt-1_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;libboost_regex-vc141-mt-1_64.lib;lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -221,7 +222,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ImageHasSafeExceptionHandlers>
       </ImageHasSafeExceptionHandlers>
-      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;..\libs\lua\$(PlatformTarget);</AdditionalLibraryDirectories>
+      <AdditionalOptions>/NODEFAULTLIB:libcmt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
@@ -605,6 +607,8 @@
     <ClInclude Include="..\sakura_core\macro\CEditorIfObj.h" />
     <ClInclude Include="..\sakura_core\macro\CIfObj.h" />
     <ClInclude Include="..\sakura_core\macro\CKeyMacroMgr.h" />
+    <ClInclude Include="..\sakura_core\macro\CLua.h" />
+    <ClInclude Include="..\sakura_core\macro\CLuaMacroMgr.h" />
     <ClInclude Include="..\sakura_core\macro\CMacro.h" />
     <ClInclude Include="..\sakura_core\macro\CMacroFactory.h" />
     <ClInclude Include="..\sakura_core\macro\CMacroManagerBase.h" />
@@ -960,6 +964,8 @@
     <ClCompile Include="..\sakura_core\macro\CEditorIfObj.cpp" />
     <ClCompile Include="..\sakura_core\macro\CIfObj.cpp" />
     <ClCompile Include="..\sakura_core\macro\CKeyMacroMgr.cpp" />
+    <ClCompile Include="..\sakura_core\macro\CLua.cpp" />
+    <ClCompile Include="..\sakura_core\macro\CLuaMacroMgr.cpp" />
     <ClCompile Include="..\sakura_core\macro\CMacro.cpp" />
     <ClCompile Include="..\sakura_core\macro\CMacroFactory.cpp" />
     <ClCompile Include="..\sakura_core\macro\CMacroManagerBase.cpp" />

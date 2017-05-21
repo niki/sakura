@@ -25,6 +25,9 @@
 #include "StdAfx.h"
 #include "macro/CSMacroMgr.h"
 #include "macro/CPPAMacroMgr.h"
+#ifdef MI_USE_LUA
+#include "macro/CLuaMacroMgr.h"
+#endif  // MI_
 #include "macro/CWSHManager.h"
 #include "macro/CMacroFactory.h"
 #include "env/CShareData.h"
@@ -490,6 +493,9 @@ CSMacroMgr::CSMacroMgr()
 	m_pShareData = &GetDllShareData();
 	
 	CPPAMacroMgr::declare();
+#ifdef MI_USE_LUA
+	CLuaMacroMgr::declare();
+#endif  // MI_
 	CKeyMacroMgr::declare();
 	CWSHMacroManager::declare();
 	

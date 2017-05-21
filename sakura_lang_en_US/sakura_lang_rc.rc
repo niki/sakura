@@ -3636,7 +3636,8 @@ BEGIN
     IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n\
 \r\n\
 === mimix <https://github.com/mimix33/sakura>\r\n\
-=== Boost C++ Libraries <http://www.boost.org/>\r\n\
+=== Boost C++ Libraries <http://www.boost.org/users/license.html>\r\n\
+=== Lua <http://www.lua.org/license.html>\r\n\
 "
 #else
     IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n"

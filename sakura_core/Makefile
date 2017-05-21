@@ -232,6 +232,8 @@ macro/CCookieManager.o \
 macro/CEditorIfObj.o \
 macro/CIfObj.o \
 macro/CKeyMacroMgr.o \
+macro/CLua.o \
+macro/CLuaMacroMgr.o \
 macro/CMacro.o \
 macro/CMacroFactory.o \
 macro/CMacroManagerBase.o \

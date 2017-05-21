@@ -2,10 +2,20 @@
 ```
 libs
  +- boost (Original name 'boost_1_64_0')
+ |   +- boost
+ |       +- version.hpp
+ |            :
+ +- lua
+     +- lua
+     |   +- lua.hpp
+     +- x64
+     |   +- lua53.lib
+     +- x86
+         +- lua53.lib
 ```
 
 
-**Use Boost 1.64**
+**Boost 1.64**
 1. Run <BoostRoot>/bootstrap.bat  
 2. Run build-boost.bat  
 
@@ -18,3 +28,15 @@ b2 --build-dir=build\x86 --with-regex --stagedir=x86 address-model=32 link=stati
 ```
 b2 --build-dir=build\x64 --with-regex --stagedir=x64 address-model=64 link=static runtime-link=static variant=release -j3
 ```
+
+
+***Lua***
+Copyright © 1994–2017 Lua.org, PUC-Rio. 
+Freely available under the terms of the Lua license <http://www.lua.org/license.html>. 
+
+1. Download lib from `http://luabinaries.sourceforge.net/`
+2. Header files to `libs/lua/lua`
+3. x86 library to `libs/lua/x86`
+4. x64 library to `libs/lua/x64`
+
+

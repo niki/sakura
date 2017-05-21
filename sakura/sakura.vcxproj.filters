@@ -1080,6 +1080,12 @@
     </ClInclude>
     <ClInclude Include="..\sakura_core\view\figures\CFigure_Comma.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgWindowList.h" />
+    <ClInclude Include="..\sakura_core\macro\CLuaMacroMgr.h">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\macro\CLua.h">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\sakura_core\Funccode_x.hsrc">
@@ -2247,6 +2253,12 @@
     <ClCompile Include="..\sakura_core\types\CType_Xml.cpp" />
     <ClCompile Include="..\sakura_core\view\figures\CFigure_Comma.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgWindowList.cpp" />
+    <ClCompile Include="..\sakura_core\macro\CLuaMacroMgr.cpp">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\macro\CLua.cpp">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\resource\auto_scroll_center.bmp">
