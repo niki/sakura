@@ -20,7 +20,7 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 変更内容はコミットログを参照してください.  
 細かい内容は [my_config.h](https://github.com/mimix33/sakura_2201/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
 
-+ [sakura-mix-2.17-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.17-x64.zip) (1.11MB)  
++ [sakura-mix-2.18-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.18-x64.zip) (1.08MB)  
 
 <br>
 
@@ -59,6 +59,7 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 |デフォルト設定ファイル (`sakura.default.ini`)の使用||
 |強調キーワード設定は `sakura.keywordset.json`から読み込む<br>(共通設定からの設定不可)|初期化時は内蔵キーワードをインポート, 以後`sakura.ini`に出力|
 |カラー設定のインポートはカラー情報だけを適用させる|表示, カラー, 装飾情報を適用|
+|マクロに使用できる言語に `Lua`を追加中||
 |履歴 (検索, 置換, Grep)の値を少なめに変更||
 |多重オープンの許可 (Shiftを押しながらファイルのドロップ)|１つのみ|
 
