@@ -108,7 +108,7 @@ bool CProfile::ReadProfile( const TCHAR* pszProfileName )
 {
 #ifdef MI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			!RegKey(MI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 1) &&
+			!!RegKey(MI_REGKEY).get(_T("ReadProfilesFromRegistry"), 0) &&
 			RegKey(mix::reg::genkey(m_strProfileName)).valid()) {
 		return true;
 	}
@@ -228,7 +228,7 @@ bool CProfile::WriteProfile(
 {
 #ifdef MI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			!RegKey(MI_REGKEY).get(_T("NoWriteProfilesToRegistry"), 1)) {
+			!!RegKey(MI_REGKEY).get(_T("WriteProfilesToRegistry"), 0)) {
 		return false;
 	}
 #endif  // MI_
@@ -348,7 +348,7 @@ bool CProfile::GetProfileDataImp(
 {
 #ifdef MI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			!RegKey(MI_REGKEY).get(_T("NoReadProfilesFromRegistry"), 1)) {
+			!!RegKey(MI_REGKEY).get(_T("ReadProfilesFromRegistry"), 0)) {
 		return RegGetProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
 	}
 #endif  // MI_
@@ -383,7 +383,7 @@ bool CProfile::SetProfileDataImp(
 {
 #ifdef MI_USE_REGISTRY_FOR_PROFILES
 	if (IsRegMode() &&
-			!RegKey(MI_REGKEY).get(_T("NoWriteProfilesToRegistry"), 1)) {
+			!!RegKey(MI_REGKEY).get(_T("WriteProfilesToRegistry"), 0)) {
 		return RegSetProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
 	}
 #endif  // MI_

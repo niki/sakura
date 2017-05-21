@@ -366,7 +366,7 @@ CLayoutInt CCaret::MoveCursor(
 			m_pEditView->GetTextArea().OffsetViewTopLine(-nScrollRowNum);
 
 #ifdef MI_MOD_CENTERING_CURSOR_JUMP
-			if (RegKey(MI_REGKEY).get(_T("CenteringCursorJump"), 1) &&
+			if (!!RegKey(MI_REGKEY).get(_T("CenteringCursorJump"), 1) &&
 			    (RegKey(MI_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid() ||
 			     RegKey(MI_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH")).valid()))
 			{  // CViewCommander::Command_CURLINECENTER()
@@ -417,7 +417,7 @@ CLayoutInt CCaret::MoveCursor(
 			}
 
 #ifdef MI_MOD_CENTERING_CURSOR_JUMP
-			if (RegKey(MI_REGKEY).get(_T("CenteringCursorJump"), 1) &&
+			if (!!RegKey(MI_REGKEY).get(_T("CenteringCursorJump"), 1) &&
 			    (RegKey(MI_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid() ||
 			     RegKey(MI_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH")).valid()))
 			{  // CViewCommander::Command_CURLINECENTER()
@@ -441,7 +441,7 @@ CLayoutInt CCaret::MoveCursor(
 			}
 		}
 #if defined(MI_MOD_CENTERING_CURSOR_JUMP) && defined(MI_MOD_MINIMAP)
-		else if (RegKey(MI_REGKEY).get(_T("CenteringCursorJump"), 1) &&
+		else if (!!RegKey(MI_REGKEY).get(_T("CenteringCursorJump"), 1) &&
 		         RegKey(MI_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH")).valid())
 		{  // CViewCommander::Command_CURLINECENTER()
 			CLayoutInt		nViewTopLine;
