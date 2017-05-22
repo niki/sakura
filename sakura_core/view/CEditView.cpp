@@ -2957,20 +2957,20 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 #ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 void CEditView::BeginIgnoreUpdateWindow() {
 	m_ignore_update_window = true;
-	if (!m_bMiniMap) {
-		if (m_pcEditWnd->GetMiniMap().GetHwnd()) {
-			m_pcEditWnd->GetMiniMap().m_ignore_update_window = true;
-		}
-	}
+	//if (!m_bMiniMap) {
+	//	if (m_pcEditWnd->GetMiniMap().GetHwnd()) {
+	//		m_pcEditWnd->GetMiniMap().m_ignore_update_window = true;
+	//	}
+	//}
 }
 void CEditView::EndIgnoreUpdateWindow() {
 	m_ignore_update_window = false;
 	::UpdateWindow(GetHwnd());
-	if (!m_bMiniMap) {
-		if (m_pcEditWnd->GetMiniMap().GetHwnd()) {
-			m_pcEditWnd->GetMiniMap().m_ignore_update_window = false;
-			::UpdateWindow(m_pcEditWnd->GetMiniMap().GetHwnd());
-		}
-	}
+	//if (!m_bMiniMap) {
+	//	if (m_pcEditWnd->GetMiniMap().GetHwnd()) {
+	//		m_pcEditWnd->GetMiniMap().m_ignore_update_window = false;
+	//		::UpdateWindow(m_pcEditWnd->GetMiniMap().GetHwnd());
+	//	}
+	//}
 }
 #endif  // MI_

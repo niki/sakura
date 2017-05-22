@@ -56,7 +56,8 @@ static inline void MiniMapSearchMark(CEditView *pView, bool mark) {
 	    strCurSearchKey != miniMap->m_strCurSearchKey)
 	{
 		//miniMap->RedrawAll();
-		miniMap->Redraw();
+		//miniMap->Redraw();
+		miniMap->Call_OnPaint(PAINT_BODY, false);
 	}
 }
 #endif  // MI_
