@@ -20,7 +20,7 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 変更内容はコミットログを参照してください.  
 細かい内容は [my_config.h](https://github.com/mimix33/sakura_2201/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
 
-+ [sakura-mix-2.18-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.18-x64.zip) (1.08MB)  
++ [sakura-mix-2.19-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.19-x64.zip) (1.08MB)  
 
 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
