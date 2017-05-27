@@ -47,8 +47,8 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 **Build environment**  
 + 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/mimix33/sakura_2201/raw/master/doc/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド  
-+ Boostを使用  
-+ Luaを使用  
++ Boostを使用 (各種コンテナ, 正規表現)  
++ Luaを使用 (マクロ)  
 + 挙動の制御 (共有フラグ)としてレジストリを使用しています  
 
 <br>
@@ -63,7 +63,7 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 |デフォルト設定ファイル (`sakura.default.ini`)の使用||
 |強調キーワード設定は `sakura.keywordset.json`から読み込む<br>(共通設定からの設定不可)|初期化時は内蔵キーワードをインポート, 以後`sakura.ini`に出力|
 |カラー設定のインポートはカラー情報だけを適用させる|表示, カラー, 装飾情報を適用|
-|マクロに使用できる言語に `Lua`を追加中||
+|マクロに使用できる言語に `Lua`を追加||
 |履歴 (検索, 置換, Grep)の値を少なめに変更<br>検索キー: `16`<br>置換キー: `16`<br>Grepファイル: `16`<br>Grepフォルダ: `16`|検索キー: `30`<br>置換キー: `30`<br>Grepファイル: `30`<br>Grepフォルダ: `30`|
 |多重オープンの許可 (Shiftを押しながらファイルのドロップ)|１つのみ|
 
