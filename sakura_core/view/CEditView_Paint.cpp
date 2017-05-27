@@ -651,7 +651,11 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		return;
 	}
 #ifdef MI_OUTPUT_DEBUG_STRING
-	::OutputDebugStringW(L"OnPaint2 start.\n");
+	if (m_bMiniMap) {
+	  mix::logln(L"OnPaint2 start minimap");
+	} else {
+	  mix::logln(L"OnPaint2 start");
+	}
 #endif  // MI_
 	if( m_hdcCompatDC && NULL == m_hbmpCompatBMP
 		 || m_nCompatBMPWidth < (pPs->rcPaint.right - pPs->rcPaint.left)
@@ -933,7 +937,11 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		GetCaret().ShowCaret_( this->GetHwnd() ); // 2002/07/22 novice
 	
 #ifdef MI_OUTPUT_DEBUG_STRING
-	::OutputDebugStringW(L"OnPaint2 finish.\n");
+	if (m_bMiniMap) {
+	  mix::logln(L"OnPaint2 finish minimap");
+	} else {
+	  mix::logln(L"OnPaint2 finish");
+	}
 #endif  // MI_
 	return;
 }

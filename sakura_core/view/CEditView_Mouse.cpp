@@ -1005,9 +1005,11 @@ void CEditView::OnMOUSEMOVE( WPARAM fwKeys, int xPos_, int yPos_ )
 					nScrollRow = area.GetViewTopLine();
 				}
 			}
+#ifndef MI_MOD_MINIMAP
 			if( nScrollRow != 0 ){
 				ScrollAtV( area.GetViewTopLine() - nScrollRow );
 			}
+#endif  // MI_
 
 			GetTextArea().ClientToLayout( ptMouse, &ptNew );
 			if( ptNew.y < 0 ){

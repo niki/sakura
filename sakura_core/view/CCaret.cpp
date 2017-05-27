@@ -175,7 +175,7 @@ CLayoutInt CCaret::MoveCursor(
 	}
 
 #ifdef MI_OUTPUT_DEBUG_STRING
-	::OutputDebugStringW(L"MoveCursor start.\n");
+	mix::logln(L"MoveCursor start");
 #endif  // MI_
 
 	if( m_pEditView->GetSelectionInfo().IsMouseSelecting() ){	// 範囲選択中
@@ -456,7 +456,9 @@ CLayoutInt CCaret::MoveCursor(
 		}
 #endif  // MI_
 
-#ifndef MI_FIX_CURSOR_MOVE_FLICKER
+#ifdef MI_FIX_CURSOR_MOVE_FLICKER
+		// 下でまとめて
+#else
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars(); // 2001/10/20 novice
 #endif  // MI_
@@ -475,7 +477,7 @@ CLayoutInt CCaret::MoveCursor(
 		if (nFinalDrawFlag == PAINT_ALL) {
 			m_pEditView->Call_OnPaint(nFinalDrawFlag, false);
 			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-				m_pEditView->m_pcEditWnd->GetMiniMap().Call_OnPaint(nFinalDrawFlag, false);
+				m_pEditView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
 			}
 			
 		// 画面端の行を早めに再描画する
@@ -484,21 +486,18 @@ CLayoutInt CCaret::MoveCursor(
 		} else if (nScrollRowNum > 0) {
 			int top = m_pEditView->GetTextArea().GetViewTopLine();
 			m_pEditView->RedrawLines(top, top + 3);
-			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-				m_pEditView->MiniMapRedraw(true);
-			}
+			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+			//	mix::logln(L"2");
+			//	m_pEditView->MiniMapRedraw(true);
+			//}
 		} else if (nScrollRowNum < 0) {
 			int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
 			m_pEditView->RedrawLines(bottom - 3, bottom);
-			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-				m_pEditView->MiniMapRedraw(true);
-			}
+			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+			//	mix::logln(L"3");
+			//	m_pEditView->MiniMapRedraw(true);
+			//}
 		}
-	}
-
-	if (bScroll) {
-		/* スクロールバーの状態を更新する */
-		m_pEditView->AdjustScrollBars();
 	}
 #endif  // MI_
 
@@ -526,6 +525,13 @@ CLayoutInt CCaret::MoveCursor(
 
 	}
 
+#ifdef MI_FIX_CURSOR_MOVE_FLICKER
+	if (bScroll) {
+		/* スクロールバーの状態を更新する */
+		m_pEditView->AdjustScrollBars();
+	}
+#endif  // MI_
+
 // 02/09/18 対括弧の強調表示 ai Start	03/02/18 ai mod S
 	m_pEditView->DrawBracketPair( false );
 	m_pEditView->SetBracketPairPos( true );
@@ -533,7 +539,7 @@ CLayoutInt CCaret::MoveCursor(
 // 02/09/18 対括弧の強調表示 ai End		03/02/18 ai mod E
 
 #ifdef MI_OUTPUT_DEBUG_STRING
-	::OutputDebugStringW(L"MoveCursor finish.\n");
+	mix::logln(L"MoveCursor finish");
 #endif  // MI_
 
 	return nScrollRowNum;
