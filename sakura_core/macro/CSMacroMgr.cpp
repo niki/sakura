@@ -492,7 +492,9 @@ CSMacroMgr::CSMacroMgr()
 	
 	m_pShareData = &GetDllShareData();
 	
+#ifdef MI_USE_PPA
 	CPPAMacroMgr::declare();
+#endif  // MI_USE_PPA
 #ifdef MI_USE_LUA
 	CLuaMacroMgr::declare();
 #endif  // MI_
