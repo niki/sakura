@@ -6,11 +6,19 @@
 
 Sublime Text や Atom を参考にモダンな感じにしているつもりです.  
 方針としては改造ではなく改良になるような修正を心がけています.  
+思いついたことなど, 試しに修正を入れていることもあるので動作にふらつきがあることもあります.  
 
-また、MacTypeと併用していて画面崩れがひどかったので対応をしています.  
-高速にスクロールとかすると前の描画が残ってしまって見苦しい状態になることが多かったので, 同じような状態に陥っている人には効果があるかもしれません.  
-サクラエディタのソースが初見殺しな感じでカオスなので一時しのぎな対応ですが…  
 
+<br>
+
+**Feature**  
+
++ MacTypeなどの描画負荷の高いソフトを併用した際に起こる描画崩れに対応(したつもり)  
++ Luaをマクロ言語として使用可能  
++ Grepフォルダの指定を4つに拡張  
++ ミニマップに検索結果やブックマークを分かりやすく表示  
++ 半角空白やタブなどの見た目が主張しないように  
++ sakura.iniの中身を精査  
 
 <br>
 
@@ -19,10 +27,10 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 変更内容はコミットログを参照してください.  
 細かい内容は [my_config.h](https://github.com/mimix33/sakura_2201/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
 
+動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
+
 + [sakura-mix-2.20-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.20-x64.zip) (1.08MB)  
   - マクロコマンドをLuaから呼び出せるようにした. 呼び出しは Editorオブジェクト経由で行います  
-
-動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
 <br>
 
