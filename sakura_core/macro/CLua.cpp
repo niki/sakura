@@ -89,15 +89,48 @@ static int l_##_name_(lua_State *L)
 	},
 
 
+//! ログ出力
 LUA_FUNC(log) {
-  const char *s = luaL_checkstring(_L, 1);
+  const char *s = luaL_checkstring(L, 1);
   mix::log(to_wchar(s));
   return 0;
 }
 LUA_FUNC(logln) {
-  const char *s = luaL_checkstring(_L, 1);
+  const char *s = luaL_checkstring(L, 1);
   mix::logln(to_wchar(s));
   return 0;
+}
+//! 文字列をLuaコードとして評価
+LUA_FUNC(eval) {
+  const char *s = luaL_checkstring(L, 1);
+  mix::logln(to_wchar(s));
+
+  // 式にする
+  std::string exp = "num = ";
+  exp = exp + s;
+
+  double num;
+
+  // 別のlua_Stateで評価する
+  {
+    lua_State *L2 = luaL_newstate();
+    int ret = luaL_dostring(L2, exp.c_str());
+    
+    lua_getglobal(L2, "num");
+    num = lua_tonumber(L2, -1);
+
+    lua_close(L2);
+  }
+
+  // 変数の書式化
+  char buf[256] = {};
+  ::snprintf(buf, sizeof(buf) - 1, "%g", num);
+
+  //mix::logln(to_wchar(buf));
+
+  // 戻り値
+  lua_pushstring(L, buf);
+  return 1;
 }
 
 //------------------------------------------------------------------
@@ -686,7 +719,7 @@ CLua::CLua() {
 	luaL_requiref(L, "Editor", luaopen_editor, 1);
 	//LUA_ADD_FUNC(log);
 	//LUA_ADD_FUNC(logln);
-	//LUA_ADD_FUNC(SearchDialog);
+	LUA_ADD_FUNC(eval);
 
 	//LUA_ADD_FUNC(FileNew);
 	//LUA_ADD_FUNC(FileOpen);
