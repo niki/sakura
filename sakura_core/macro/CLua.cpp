@@ -132,22 +132,22 @@ void CLua::DoCommand(EFunctionCode nFuncID) {
 		if (type == VT_BSTR) {
 			const char *s = lua_tostring(L, nArgs + 1);
 			if (s) {
-				mix::logln(to_wchar(s));
+				//mix::logln(to_wchar(s));
 				tmpArguments[nArgs] = mbstowcs_new(s);
 				tmpArgLengths[nArgs] = wcslen(tmpArguments[nArgs]);
 			} else {
-				mix::logln(L"lua_tostring NULL");
+				//mix::logln(L"lua_tostring NULL");
 				tmpArguments[nArgs] = NULL;
 				tmpArgLengths[nArgs] = 0;
 			}
 		} else if (type == VT_I4) {
 			int n = (int)lua_tonumber(L, nArgs + 1);
-			mix::logln(L"lua_tonumber = %d", n);
+			//mix::logln(L"lua_tonumber = %d", n);
 			tmpArguments[nArgs] = mbstowcs_new(std::to_string(n).c_str());
 			tmpArgLengths[nArgs] = wcslen(tmpArguments[nArgs]);
 		} else {
 			//nop
-			mix::logln(L"nop");
+			//mix::logln(L"nop");
 			tmpArguments[nArgs] = NULL;
 			tmpArgLengths[nArgs] = 0;
 		}
@@ -191,15 +191,15 @@ bool CLua::DoFunction(EFunctionCode nFuncID) {
 			const char *s = lua_tostring(L, nArgs + 1);
 			SysString S(s, lstrlenA(s));
 			Wrap(&vtArg[nArgs])->Receive(S);
-			mix::logln(to_wchar(s));
+			//mix::logln(to_wchar(s));
 		} else if (type == VT_I4) {
 			int n = (int)lua_tonumber(L, nArgs + 1);
-			mix::logln(L"lua_tonumber = %d", n);
+			//mix::logln(L"lua_tonumber = %d", n);
 			vtArg[nArgs].vt = VT_I4;
 			vtArg[nArgs].lVal = n;
 		} else {
 			//nop
-			mix::logln(L"nop");
+			//mix::logln(L"nop");
 			::VariantClear(&vtArg[nArgs]);
 		}
 	}
@@ -730,7 +730,11 @@ bool CLua::Execute(CEditView* pcEditView, int flags, const CNativeW &buffer)
 		
 		if (ret != 0) {
 			info.m_bError = true;
-			mix::logln(L" ** Lua script, Failed");
+			
+			// エラー時のメッセージ表示
+			std::string error_message = lua_tostring(L, -1);
+			mix::logln(to_wchar(error_message.c_str()));
+			::MessageBoxW(NULL, to_wchar(error_message.c_str()), L"Lua Script failed!!", MB_OK);
 		}
 	}
 	
