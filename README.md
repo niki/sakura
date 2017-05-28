@@ -26,6 +26,9 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 
 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
++ [sakura-mix-2.21-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.21-x64.zip) (1.09MB)  
+  - 文字列をLuaコードとして評価するLua関数を追加  
+    `local n = eval("(1 + 2 + 3 + 4) * 3.14")`のように使用します  
 + [sakura-mix-2.20-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.20-x64.zip) (1.08MB)  
   - マクロコマンドをLuaから呼び出せるようにした. 呼び出しは Editorオブジェクト経由で行います  
 
