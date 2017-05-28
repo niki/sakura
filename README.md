@@ -6,7 +6,6 @@
 
 Sublime Text や Atom を参考にモダンな感じにしているつもりです.  
 方針としては改造ではなく改良になるような修正を心がけています.  
-また, 修正があまり意味のないものだった場合は削除するようにしています.  
 
 また、MacTypeと併用していて画面崩れがひどかったので対応をしています.  
 高速にスクロールとかすると前の描画が残ってしまって見苦しい状態になることが多かったので, 同じような状態に陥っている人には効果があるかもしれません.  
@@ -20,7 +19,8 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 変更内容はコミットログを参照してください.  
 細かい内容は [my_config.h](https://github.com/mimix33/sakura_2201/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
 
-+ [sakura-mix-2.19-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.19-x64.zip) (1.08MB)  
++ [sakura-mix-2.20-x64.zip](http://mimix.sakura.ne.jp/release/sakura-mix-2.20-x64.zip) (1.08MB)  
+  - マクロコマンドをLuaから呼び出せるようにした. 呼び出しは Editorオブジェクト経由で行います  
 
 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
@@ -128,5 +128,15 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 
 <br>
 
+**Cregit**  
++ Boost C++ Libraries  
+  [Web site](http://www.boost.org/)  
+  [LICENSE_1_0](http://www.boost.org/LICENSE_1_0.txt)  
+
++ Lua  
+  [Web site](http://www.lua.org/)  
+  [Lua: license](http://www.lua.org/license.html)  
+
+<br>
 
 (C) 2017 mimix.
