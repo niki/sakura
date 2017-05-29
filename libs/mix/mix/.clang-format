@@ -1,0 +1,10 @@
+BasedOnStyle: Google
+AccessModifierOffset: -1
+Standard: Cpp03
+AllowShortFunctionsOnASingleLine: Inline
+SortIncludes: false
+KeepEmptyLinesAtTheStartOfBlocks: true
+IndentCaseLabels: false
+ColumnLimit: 100
+BreakConstructorInitializersBeforeComma: true
+CommentPragmas: '^'

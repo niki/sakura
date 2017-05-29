@@ -49,7 +49,7 @@
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 // 拡張用レジストリキー
-#define MI_REGKEY _T("Software\\sakura-calette")
+#define MI_REGKEY _T("Software\\sakura-sayacat")
 
 //------------------------------------------------------------------
 // バージョン情報ダイアログの変更 2017.3.15

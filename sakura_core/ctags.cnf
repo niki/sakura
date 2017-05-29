@@ -1,0 +1,11 @@
+--languages=C,C++,C#
+
+--jcode=utf8
+
+--exclude=.git
+--exclude=.svn
+
+--langmap=C++:+.inc
+--c++-kinds=+px
+--fields=+iaS
+--extra=+q

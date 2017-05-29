@@ -354,7 +354,7 @@ CLayoutInt CCaret::MoveCursor(
 		if (nScrollRowNum != 0) {  // 垂直スクロール
 			nFinalDrawFlag |= PAINT_BODY;
 			nFinalDrawFlag |= PAINT_LINENUMBER;
-			//m_pEditView->SetDrawSwitch(false);
+			m_pEditView->SetDrawSwitch(false);
 		}
 	}
 #endif  // MI_
@@ -431,7 +431,11 @@ CLayoutInt CCaret::MoveCursor(
 				
 				nFinalDrawFlag |= PAINT_ALL;
 				
-			} else
+			} else { // @1
+#endif  // MI_
+#ifdef MI_FIX_CURSOR_MOVE_FLICKER
+			bool oldDraw2 = m_pEditView->GetDrawSwitch();
+			m_pEditView->SetDrawSwitch(oldDraw);
 #endif  // MI_
 			if( m_pEditView->GetDrawSwitch() ){
 				m_pEditView->ScrollDraw(nScrollRowNum, nScrollColNum, rcScroll, rcClip, rcClip2);
@@ -439,6 +443,12 @@ CLayoutInt CCaret::MoveCursor(
 					m_pEditView->MiniMapRedraw(false);
 				}
 			}
+#ifdef MI_FIX_CURSOR_MOVE_FLICKER
+			m_pEditView->SetDrawSwitch(oldDraw2);
+#endif  // MI_
+#ifdef MI_MOD_CENTERING_CURSOR_JUMP
+			} //@1
+#endif  // MI_
 		}
 #if defined(MI_MOD_CENTERING_CURSOR_JUMP) && defined(MI_MOD_MINIMAP)
 		else if (!!RegKey(MI_REGKEY).get(_T("CenteringCursorJump"), 1) &&
@@ -475,7 +485,7 @@ CLayoutInt CCaret::MoveCursor(
 
 	if (nFinalDrawFlag != 0) {
 		if (nFinalDrawFlag == PAINT_ALL) {
-			m_pEditView->Call_OnPaint(nFinalDrawFlag, false);
+			m_pEditView->Call_OnPaint(PAINT_ALL, false);
 			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
 				m_pEditView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
 			}
@@ -485,14 +495,14 @@ CLayoutInt CCaret::MoveCursor(
 		// スクロールした行が残っているように見えてしまうため
 		} else if (nScrollRowNum > 0) {
 			int top = m_pEditView->GetTextArea().GetViewTopLine();
-			m_pEditView->RedrawLines(top, top + 3);
+			m_pEditView->RedrawLines(top, top + nScrollRowNum);
 			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
 			//	mix::logln(L"2");
 			//	m_pEditView->MiniMapRedraw(true);
 			//}
 		} else if (nScrollRowNum < 0) {
 			int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
-			m_pEditView->RedrawLines(bottom - 3, bottom);
+			m_pEditView->RedrawLines(bottom - nScrollRowNum, bottom);
 			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
 			//	mix::logln(L"3");
 			//	m_pEditView->MiniMapRedraw(true);

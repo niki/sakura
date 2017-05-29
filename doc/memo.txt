@@ -1,0 +1,34 @@
+* GetDrawSwitch
+
+MoveCursor()
+	AdjustScrollBars() *
+		ScrollAtV()
+		ScrollAtH()
+
+Command_CUT()
+	Command_CUT_LINE()
+		Command_DELETE_LINE()
+			Command_DELETE()
+				Command_INSTEXT()
+				MoveCursor()
+			MoveCursor()
+
+Command_DUPLICATELINE()
+	Command_GOLINETOP()
+		MoveCursorSelecting()
+			MoveCursor()
+
+Command_UP()
+	Cursor_UPDOWN()
+		MoveCursor()
+
+Command_WndScrollUp()
+	ScrollAtV()
+	RedrawAll()
+	Cursor_UPDOWN()
+
+Command_WHEELUP()
+	OnMOUSEWHEEL2()
+		SyncScrollV()
+
+
