@@ -47,7 +47,12 @@ LuaをC/C++プログラムに組み込む - プログラミングの魔物 <http
 #include "env/DLLSHAREDATA.h"
 #include <lua/lua.hpp>
 
-static lua_State *_L = nullptr;  // 保持
+enum eState {
+  eState_Main = 0,
+  eState_Sub1,
+  eState_Max
+};
+static lua_State *_L[eState_Max] = {};  // 保持
 
 //! 関数定義マクロ
 #define LUA_FUNC(_name_) \
@@ -62,8 +67,8 @@ static int l_##_name_(lua_State *L)
 
 //! 関数登録
 #define LUA_ADD_FUNC(_name_) \
-	lua_pushcfunction(_L, l_##_name_); \
-	lua_setglobal(_L, #_name_);
+	lua_pushcfunction(_L[eState_Main], l_##_name_); \
+	lua_setglobal(_L[eState_Main], #_name_);
 
 //! サクラ用ライブラリ関数(コマンド)定義マクロ
 #define LUA_SAKURA_FUNC_C(_funcid_, _name_)       \
@@ -113,13 +118,13 @@ LUA_FUNC(eval) {
 
   // 別のlua_Stateで評価する
   {
-    lua_State *L2 = luaL_newstate();
+    lua_State *L2 = _L[eState_Sub1];
     int ret = luaL_dostring(L2, exp.c_str());
     
     lua_getglobal(L2, "num");
     num = lua_tonumber(L2, -1);
-
-    lua_close(L2);
+    
+    lua_settop(L2, 0);  // スタックをすべて削除
   }
 
   // 変数の書式化
@@ -137,7 +142,7 @@ LUA_FUNC(eval) {
 //! コマンドの実行
 //------------------------------------------------------------------
 void CLua::DoCommand(EFunctionCode nFuncID) {
-	lua_State *L = _L;
+	lua_State *L = _L[eState_Main];
 	CEditView *pcEditView = m_CurInstance->m_pcEditView;
 
 	const WCHAR** tmpArguments = new const WCHAR*[16];
@@ -196,7 +201,7 @@ void CLua::DoCommand(EFunctionCode nFuncID) {
 //! ファンクションの実行
 //------------------------------------------------------------------
 bool CLua::DoFunction(EFunctionCode nFuncID) {
-	lua_State *L = _L;
+	lua_State *L = _L[eState_Main];
 	CEditView *pcEditView = m_CurInstance->m_pcEditView;
 
 	const int maxArgSize = 8;
@@ -269,8 +274,8 @@ bool CLua::DoFunction(EFunctionCode nFuncID) {
 //! mixlib関数群
 static int luaopen_mixlib(lua_State* L) {
 	static const struct luaL_Reg mixlib[] = {
-		{"log", [](lua_State *L)->int{mix::log(to_wchar(luaL_checkstring(_L, 1))); return 0;}},
-		{"logln", [](lua_State *L)->int{mix::logln(to_wchar(luaL_checkstring(_L, 1))); return 0;}},
+		{"log", [](lua_State *L)->int{mix::log(to_wchar(luaL_checkstring(_L[eState_Main], 1))); return 0;}},
+		{"logln", [](lua_State *L)->int{mix::logln(to_wchar(luaL_checkstring(_L[eState_Main], 1))); return 0;}},
 		{NULL, NULL}
 	};
 
@@ -710,12 +715,14 @@ bool CLua::m_bIsRunning = false;
 CLua::CLua() {
 	lua_State *L;
 	int ret;
-	
-	L = luaL_newstate();
-	
-	luaL_openlibs(L);
-	
-	_L = L;
+
+	//
+	for (int i = 0; i < eState_Max; i++) {
+		_L[i] = luaL_newstate();
+		luaL_openlibs(_L[i]);
+	}
+
+	L = _L[eState_Main];
 
 	// test
 	//luaL_register(L, "mix", mixlib);
@@ -734,8 +741,13 @@ CLua::CLua() {
 }
 
 CLua::~CLua() {
-	lua_State *L = _L;
-	lua_close(L);
+	//
+	for (int i = 0; i < eState_Max; i++) {
+		if (_L[i]) {
+			lua_close(_L[i]);
+			_L[i] = 0;
+		}
+	}
 }
 
 bool CLua::Execute(CEditView* pcEditView, int flags, const CNativeW &buffer)
@@ -759,7 +771,7 @@ bool CLua::Execute(CEditView* pcEditView, int flags, const CNativeW &buffer)
 	m_CurInstance = &info;
 	
 	{
-		lua_State *L = _L;
+		lua_State *L = _L[eState_Main];
 		int ret;
 		
 		//mix::logln(buffer.GetStringPtr());
@@ -773,6 +785,8 @@ bool CLua::Execute(CEditView* pcEditView, int flags, const CNativeW &buffer)
 			mix::logln(to_wchar(error_message.c_str()));
 			::MessageBoxW(NULL, to_wchar(error_message.c_str()), L"Lua Script failed!!", MB_OK);
 		}
+		
+		lua_settop(L, 0);  // スタックをすべて削除
 	}
 	
 	//	マクロ実行完了後はここに戻ってくる
