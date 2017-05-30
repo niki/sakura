@@ -10,6 +10,8 @@ Command_CUT()
 		Command_DELETE_LINE()
 			Command_DELETE()
 				Command_INSTEXT()
+					MoveCursor()
+					MoveCursor()
 				MoveCursor()
 			MoveCursor()
 
