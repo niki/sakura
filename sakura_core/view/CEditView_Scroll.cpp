@@ -474,10 +474,13 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip2 = {0,0,0,0};
 			ScrollDraw(nScrollRowNum, CLayoutInt(0), rcScrol, rcClip, rcClip2);
-#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
-if (!m_ignore_update_window)
-#endif  // SC_
+#ifdef SC_FIX_FLICKER
+			if (!m_ignore_update_window) {
+				::UpdateWindow( GetHwnd() );
+			}
+#else
 			::UpdateWindow( GetHwnd() );
+#endif  // SC_
 		}
 	}
 
@@ -559,10 +562,13 @@ CLayoutInt CEditView::ScrollAtH( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip = {0,0,0,0};
 			ScrollDraw(CLayoutInt(0), nScrollColNum, rcScrol, rcClip, rcClip2);
-#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
-if (!m_ignore_update_window)
-#endif  // SC_
+#ifdef SC_FIX_FLICKER
+			if (!m_ignore_update_window) {
+				::UpdateWindow( GetHwnd() );
+			}
+#else
 			::UpdateWindow( GetHwnd() );
+#endif  // SC_
 		}
 	}
 	//	2006.1.28 aroka 判定条件誤り修正 (バーが消えてもスクロールしない)

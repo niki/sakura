@@ -509,7 +509,7 @@ void CViewCommander::Command_UNDO( void )
 
 		m_pCommanderView->SetBracketPairPos( true );	// 03/03/07 ai
 
-#ifdef SC_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_FLICKER
 		GetCaret().ShowEditCaret(); /* キャレットの表示・更新 */
 #endif  // SC_
 
@@ -764,7 +764,7 @@ void CViewCommander::Command_REDO( void )
 
 		m_pCommanderView->SetBracketPairPos( true );	// 03/03/07 ai
 
-#ifdef SC_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_FLICKER
 		GetCaret().ShowEditCaret(); /* キャレットの表示・更新 */
 #endif  // SC_
 

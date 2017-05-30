@@ -160,7 +160,7 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_cHistory(NULL)
 , m_cRegexKeyword(NULL)
 , m_hAtokModule(NULL)
-#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef SC_FIX_FLICKER
 , m_ignore_update_window(false)
 #endif  // SC_
 {
@@ -1426,7 +1426,7 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 	const wchar_t*	pLine;
 	CLogicInt		nLineLen;
 	CLogicInt		nLineLen2;
-#ifndef SC_MOD_WAITCUESOR
+#ifndef SC_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
 #endif  // SC_
 
@@ -1436,7 +1436,7 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 		return;
 	}
 
-#ifdef SC_MOD_WAITCUESOR
+#ifdef SC_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
 #endif  // SC_
 
@@ -2954,7 +2954,7 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 	}
 }
 
-#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef SC_FIX_FLICKER
 void CEditView::BeginIgnoreUpdateWindow() {
 	m_ignore_update_window = true;
 	//if (!m_bMiniMap) {

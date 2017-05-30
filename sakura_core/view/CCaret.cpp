@@ -341,7 +341,7 @@ CLayoutInt CCaret::MoveCursor(
 		}
 #endif  // SC_
 	}
-#ifdef SC_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_FLICKER
 	// 水平・垂直のスクロールがないときは画面内のカーソル移動として描画を行う
 	int nFinalDrawFlag = 0;
 	bool oldDraw = m_pEditView->GetDrawSwitch();
@@ -433,7 +433,7 @@ CLayoutInt CCaret::MoveCursor(
 				
 			} else { // @1
 #endif  // SC_
-#ifdef SC_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_FLICKER
 			bool oldDraw2 = m_pEditView->GetDrawSwitch();
 			m_pEditView->SetDrawSwitch(oldDraw);
 #endif  // SC_
@@ -443,7 +443,7 @@ CLayoutInt CCaret::MoveCursor(
 					m_pEditView->MiniMapRedraw(false);
 				}
 			}
-#ifdef SC_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_FLICKER
 			m_pEditView->SetDrawSwitch(oldDraw2);
 #endif  // SC_
 #ifdef SC_MOD_CENTERING_CURSOR_JUMP
@@ -466,7 +466,7 @@ CLayoutInt CCaret::MoveCursor(
 		}
 #endif  // SC_
 
-#ifdef SC_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_FLICKER
 		// 下でまとめて
 #else
 		/* スクロールバーの状態を更新する */
@@ -480,7 +480,7 @@ CLayoutInt CCaret::MoveCursor(
 		m_pEditView->GetRuler().SetRedrawFlag();
 	}
 
-#ifdef SC_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_FLICKER
 	m_pEditView->SetDrawSwitch(oldDraw);
 
 	if (nFinalDrawFlag != 0) {
@@ -535,7 +535,7 @@ CLayoutInt CCaret::MoveCursor(
 
 	}
 
-#ifdef SC_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_FLICKER
 	if (bScroll) {
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars();
@@ -1229,7 +1229,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 		/* 現在のカーソル位置によって選択範囲を変更 */
 		m_pEditView->GetSelectionInfo().ChangeSelectAreaByCurrentCursor( ptTo );
 	}
-#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef SC_FIX_FLICKER
 	m_pEditView->BeginIgnoreUpdateWindow();
 #endif  // SC_
 	const CLayoutInt nScrollLines = MoveCursor(	ptTo,
@@ -1237,7 +1237,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 								_CARETMARGINRATE,
 								false,
 								bVertLineDoNotOFF );
-#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef SC_FIX_FLICKER
 	m_pEditView->EndIgnoreUpdateWindow();
 #endif  // SC_
 	return nScrollLines;

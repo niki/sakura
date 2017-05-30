@@ -772,7 +772,7 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(CEditView);
 	
-#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef SC_FIX_FLICKER
 public:
 	void BeginIgnoreUpdateWindow();
 	void EndIgnoreUpdateWindow();

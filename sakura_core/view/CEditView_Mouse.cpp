@@ -61,7 +61,7 @@ void CEditView::OnLBUTTONDOWN( WPARAM fwKeys, int _xPos , int _yPos )
 		AutoScrollExit();
 	}
 	if( m_bMiniMap ){
-#ifndef SC_FIX_MINIMAP_NOFOCUS
+#ifndef SC_MOD_MINIMAP
 		::SetFocus( GetHwnd() );
 #endif  // SC_
 		::SetCapture( GetHwnd() );
