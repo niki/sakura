@@ -491,9 +491,9 @@ void CEditView::DeleteData(
 
 	/* テキストが選択されているか */
 	if( GetSelectionInfo().IsTextSelected() ){
-#ifndef MI_MOD_WAITCUESOR
+#ifndef SC_MOD_WAITCUESOR
 		CWaitCursor cWaitCursor( this->GetHwnd() );  // 2002.02.05 hor
-#endif  // MI_
+#endif  // SC_
 		if( !m_bDoing_UndoRedo ){	/* アンドゥ・リドゥの実行中か */
 			/* 操作の追加 */
 			m_cCommander.GetOpeBlk()->AppendOpe(

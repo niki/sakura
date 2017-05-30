@@ -33,7 +33,7 @@
 */
 
 #include "StdAfx.h"
-#ifdef MI_USE_PPA
+#ifdef SC_USE_PPA
 #include "CPPA.h"
 #include "view/CEditView.h"
 #include "func/Funccode.h"
@@ -607,4 +607,4 @@ void __stdcall CPPA::stdFinishProc()
 #endif
 
 
-#endif  // MI_USE_PPA
+#endif  // SC_USE_PPA

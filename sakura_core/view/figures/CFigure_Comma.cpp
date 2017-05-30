@@ -59,9 +59,9 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 			::ExtTextOutW_AnyBuild(
 				gr,
 				sPos.GetDrawPos().x,
-#ifdef MI_LINE_CENTERING
+#ifdef SC_LINE_CENTERING
 				(pcView->GetLineSpace() / 2) +
-#endif  // MI_
+#endif  // SC_
 				sPos.GetDrawPos().y,
 				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 				&rcClip2,

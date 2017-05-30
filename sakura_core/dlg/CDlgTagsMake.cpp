@@ -66,17 +66,17 @@ int CDlgTagsMake::DoModal(
 	const TCHAR*	pszPath		//パス
 )
 {
-#ifdef MI_MOD_TAGMAKEDLG
+#ifdef SC_MOD_TAGMAKEDLG
 	auto fnSearchTags = [](const std::tstring &path, const std::tstring &name) -> std::tstring {
 		std::tstring s(path);
 		while (1) {
-			s = mix::util::rtrim(s, _T('\\'));
+			s = sc::util::rtrim(s, _T('\\'));
 			if (s.empty() || s.back() == _T(':')) {  // ドライブ文字まで来てしまった
 				break;
-			} else if (mix::file::exist(s + _T("\\") + name)) {  // タグファイルが見つかった
+			} else if (sc::file::exist(s + _T("\\") + name)) {  // タグファイルが見つかった
 				return s.c_str();
 			} else {
-				s = mix::file::dirname(s);
+				s = sc::file::dirname(s);
 			}
 		}
 		return path;
@@ -91,7 +91,7 @@ int CDlgTagsMake::DoModal(
 	_tcscpy( m_szPath, path.c_str() );
 #else
 	_tcscpy( m_szPath, pszPath );
-#endif  // MI_
+#endif  // SC_
 
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_TAG_MAKE, lParam );
 }

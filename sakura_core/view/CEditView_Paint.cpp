@@ -527,7 +527,7 @@ inline COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha)
 
 COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorInfo& info2)
 {
-#if !defined(MI_MOD_SELAREA) && !defined(MI_MOD_WS_COLOR)
+#if !defined(SC_MOD_SELAREA) && !defined(SC_MOD_WS_COLOR)
 	if( info.m_sColorAttr.m_cTEXT != info.m_sColorAttr.m_cBACK ){
 		return info.m_sColorAttr.m_cTEXT;
 	}
@@ -535,19 +535,19 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 	if( info.m_sColorAttr.m_cBACK == m_crBack ){
 		return  info2.m_sColorAttr.m_cTEXT ^ 0x00FFFFFF;
 	}
-#endif  // MI_
-#ifdef MI_MOD_SELAREA
-	static int nBlendPer = RegKey(MI_REGKEY).get(_T("SelectAreaTextBlendPer"), MI_SELAREA_TEXT_BLEND_PER);
+#endif  // SC_
+#ifdef SC_MOD_SELAREA
+	static int nBlendPer = RegKey(SC_REGKEY).get(_T("SelectAreaTextBlendPer"), SC_SELAREA_TEXT_BLEND_PER);
 	int alpha = 255 * nBlendPer / 100;
 #else
 	int alpha = 255*30/100; // 30%
-#endif  // MI_
+#endif  // SC_
 	return MakeColor2(info.m_sColorAttr.m_cTEXT, info2.m_sColorAttr.m_cTEXT, alpha);
 }
 
 COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorInfo& info2)
 {
-#if !defined(MI_MOD_SELAREA) && !defined(MI_MOD_WS_COLOR)
+#if !defined(SC_MOD_SELAREA) && !defined(SC_MOD_WS_COLOR)
 	if( info.m_sColorAttr.m_cTEXT != info.m_sColorAttr.m_cBACK ){
 		return info.m_sColorAttr.m_cBACK;
 	}
@@ -555,10 +555,10 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	if( info.m_sColorAttr.m_cBACK == m_crBack ){
 		return  info2.m_sColorAttr.m_cBACK ^ 0x00FFFFFF;
 	}
-#endif  // MI_
-#ifdef MI_MOD_SELAREA
-	static int nBlendPer = RegKey(MI_REGKEY).get(_T("SelectAreaBackBlendPer"), MI_SELAREA_BACK_BLEND_PER);
-	static int nBlendPer2 = RegKey(MI_REGKEY).get(_T("SelectAreaBackBlendPer2"), MI_SELAREA_BACK_BLEND_PER2);
+#endif  // SC_
+#ifdef SC_MOD_SELAREA
+	static int nBlendPer = RegKey(SC_REGKEY).get(_T("SelectAreaBackBlendPer"), SC_SELAREA_BACK_BLEND_PER);
+	static int nBlendPer2 = RegKey(SC_REGKEY).get(_T("SelectAreaBackBlendPer2"), SC_SELAREA_BACK_BLEND_PER2);
 	int nBlendPer3 = nBlendPer;
 	if (info.m_nColorIdx == COLORIDX_SELECT &&
 #if 1
@@ -576,7 +576,7 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	int alpha = 255 * nBlendPer3 / 100;
 #else
 	int alpha = 255*30/100; // 30%
-#endif  // MI_
+#endif  // SC_
 	return MakeColor2(info.m_sColorAttr.m_cBACK, info2.m_sColorAttr.m_cBACK, alpha);
 }
 
@@ -650,13 +650,13 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		}
 		return;
 	}
-#ifdef MI_OUTPUT_DEBUG_STRING
+#ifdef SC_OUTPUT_DEBUG_STRING
 	if (m_bMiniMap) {
-	  mix::logln(L"OnPaint2 start minimap");
+	  sc::logln(L"OnPaint2 start minimap");
 	} else {
-	  mix::logln(L"OnPaint2 start");
+	  sc::logln(L"OnPaint2 start");
 	}
-#endif  // MI_
+#endif  // SC_
 	if( m_hdcCompatDC && NULL == m_hbmpCompatBMP
 		 || m_nCompatBMPWidth < (pPs->rcPaint.right - pPs->rcPaint.left)
 		 || m_nCompatBMPHeight < (pPs->rcPaint.bottom - pPs->rcPaint.top) ){
@@ -755,7 +755,7 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	}
 	//	To Here Sep. 7, 2001 genta
 
-#ifdef MI_FIX_EDITVIEW
+#ifdef SC_FIX_EDITVIEW
 	// ルーラー非表示の時、ルーラーとテキストの余白部分に境界線を描画する
 	if (!bTransText) {
 		CTypeSupport cRulerType(this, COLORIDX_RULER);
@@ -770,7 +770,7 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 			gr.PopPen();
 		}
 	}
-#endif  // MI_
+#endif  // SC_
 
 	::SetBkMode( gr, TRANSPARENT );
 
@@ -936,13 +936,13 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	if( bCaretShowFlag_Old )	// 2008.06.09 ryoji
 		GetCaret().ShowCaret_( this->GetHwnd() ); // 2002/07/22 novice
 	
-#ifdef MI_OUTPUT_DEBUG_STRING
+#ifdef SC_OUTPUT_DEBUG_STRING
 	if (m_bMiniMap) {
-	  mix::logln(L"OnPaint2 finish minimap");
+	  sc::logln(L"OnPaint2 finish minimap");
 	} else {
-	  mix::logln(L"OnPaint2 finish");
+	  sc::logln(L"OnPaint2 finish");
 	}
-#endif  // MI_
+#endif  // SC_
 	return;
 }
 
@@ -1097,10 +1097,10 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	CTypeSupport	cCaretLineBg(this, COLORIDX_CARETLINEBG);
 	CTypeSupport	cEvenLineBg(this, COLORIDX_EVENLINEBG);
 	CTypeSupport	cPageViewBg(this, COLORIDX_PAGEVIEW);
-#ifdef MI_MOD_COMMENT
+#ifdef SC_MOD_COMMENT
 	int comment_mode = 0;
 	CTypeSupport cComment(this, COLORIDX_COMMENT);
-#endif  // MI_
+#endif  // SC_
 	CEditView& cActiveView = m_pcEditWnd->GetActiveView();
 	CTypeSupport&	cBackType = (cCaretLineBg.IsDisp() &&
 		GetCaret().GetCaretLayoutPos().GetY() == pInfo->m_pDispPos->GetLayoutLineRef() && !m_bMiniMap
@@ -1117,7 +1117,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		bTransText = cBackType.GetBackColor() == cTextType.GetBackColor();
 	}
 
-#if 0//def MI_MOD_WS_COLOR
+#if 0//def SC_MOD_WS_COLOR
 	// 行背景描画
 	{
 		RECT rcClip;
@@ -1128,7 +1128,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			}
 		}
 	}
-#endif  // MI_
+#endif  // SC_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                        行番号描画                           //
@@ -1175,9 +1175,9 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			bSkipRight = CColorStrategyPool::getInstance()->IsSkipBeforeLayout();
 		}
 	}
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 2
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
 	bool bMiniMapSearchLine = false;
-#endif  // MI_
+#endif  // SC_
 	//行終端または折り返しに達するまでループ
 	if(pcLayout){
 		int nPosBgn = pInfo->m_nPosInLogic; // Logic
@@ -1217,14 +1217,14 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				pInfo->DoChangeColor(&cColor);
 				SetCurrentColor(pInfo->m_gr, cColor.eColorIndex, cColor.eColorIndex2, cColor.eColorIndexBg);
 				
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 2
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
 				if (pInfo->m_pStrategyFound) {
 					if (m_bMiniMap) {
 						bMiniMapSearchLine = true;
 					}
 				}
-#endif  // MI_
-#ifdef MI_MOD_COMMENT
+#endif  // SC_
+#ifdef SC_MOD_COMMENT
 				if (pInfo->m_pStrategyFound) {
 					comment_mode = 0;
 				} else {
@@ -1241,10 +1241,10 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 						if (comment_mode != 1) comment_mode = 0;
 					}
 				}
-#endif  // MI_
+#endif  // SC_
 			}
 
-#ifdef MI_MOD_COMMENT
+#ifdef SC_MOD_COMMENT
 			if (pInfo->m_pStrategyFound) {
 				comment_mode = 0;
 			} else {
@@ -1274,7 +1274,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			{
 				pInfo->m_cIndex.eColorIndex = COLORIDX_COMMENT;
 			}
-#endif  // MI_
+#endif  // SC_
 
 			//1文字描画
 			if( !cFigure.IsFigureText() ){
@@ -1323,7 +1323,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	// 行末背景描画
 	RECT rcClip;
 	bool rcClipRet = GetTextArea().GenerateClipRectRight(&rcClip,*pInfo->m_pDispPos);
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 2
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
 	if (bMiniMapSearchLine) {
 		// 雑だけど行全体を塗りつぶす
 		rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
@@ -1331,14 +1331,14 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			CTypeSupport cSearchType(this, COLORIDX_SEARCH);
 			COLORREF crMiniMap = cSearchType.GetBackColor();
 			TCHAR szData[32];
-			if (RegKey(MI_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
-				crMiniMap = mix::ColorString::ToCOLORREF(szData);
+			if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
+				crMiniMap = sc::ColorString::ToCOLORREF(szData);
 			}
 			pInfo->m_gr.FillSolidMyRect(rcClip, crMiniMap);
 		}
 	} else 
-#endif  // MI_
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_BOOKMARK_DISP == 1
+#endif  // SC_
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_BOOKMARK_DISP == 1
 	if (m_bMiniMap && pcDocLine && CBookmarkGetter(pcDocLine).IsBookmarked()){
 		// 雑だけど行全体を塗りつぶす
 		rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
@@ -1346,22 +1346,22 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			CTypeSupport cMarkType(this, COLORIDX_MARK);
 			COLORREF crMiniMap = cMarkType.GetBackColor();
 			TCHAR szData[32];
-			if (RegKey(MI_REGKEY).read(_T("MiniMapBookmarkColor"), (LPCTSTR)szData)) {
-				crMiniMap = mix::ColorString::ToCOLORREF(szData);
+			if (RegKey(SC_REGKEY).read(_T("MiniMapBookmarkColor"), (LPCTSTR)szData)) {
+				crMiniMap = sc::ColorString::ToCOLORREF(szData);
 			}
 			pInfo->m_gr.FillSolidMyRect(rcClip, crMiniMap);
 		}
 	} else 
-#endif  // MI_
+#endif  // SC_
 	if(rcClipRet){
 		if( !bTransText ){
-#ifdef MI_MOD_COMMENT
+#ifdef SC_MOD_COMMENT
 			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
 				cBackType.FillBack(pInfo->m_gr,rcClip);
 			} else if (comment_mode) {
 				cComment.FillBack(pInfo->m_gr,rcClip);
 			} else
-#endif  // MI_
+#endif  // SC_
 			cBackType.FillBack(pInfo->m_gr,rcClip);
 		}
 		CTypeSupport cSelectType(this, COLORIDX_SELECT);

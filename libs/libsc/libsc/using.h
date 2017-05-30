@@ -3,11 +3,11 @@
 //! @file  using.h
 //! @brief using定義
 //!
-//! @author (C) koma.
+//! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef MIX_USING_H
-#define MIX_USING_H
+#ifndef SC_USING_H
+#define SC_USING_H
 
 
 
-#endif /* MIX_USING_H */
+#endif /* SC_USING_H */

@@ -20,6 +20,6 @@
 
 #include "my_config.h"
 
-#include <mix/mix.h>
+#include <libsc/sc.h>
 
 #endif /* MY_CONFIG_H */

@@ -3,10 +3,10 @@
 //! @file  log.hpp
 //! @brief ログ
 //!
-//! @author (C) koma.
+//! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef MIX_LOG_HPP
-#define MIX_LOG_HPP
+#ifndef SC_LOG_HPP
+#define SC_LOG_HPP
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -18,12 +18,12 @@
 //  return first + isum(rest...);
 //}
 
-namespace mix {
+namespace sc {
 
 //------------------------------------------------------------------
 //! 出力
 //------------------------------------------------------------------
-MIX_INLINE void log(const TCHAR *fmt, ...) {
+SC_INLINE void log(const TCHAR *fmt, ...) {
   TCHAR buf[1024];
 
   va_list arg;
@@ -41,7 +41,7 @@ MIX_INLINE void log(const TCHAR *fmt, ...) {
 //------------------------------------------------------------------
 //! 出力 (改行つき)
 //------------------------------------------------------------------
-MIX_INLINE void logln(const TCHAR *fmt, ...) {
+SC_INLINE void logln(const TCHAR *fmt, ...) {
   TCHAR buf[1024];
 
   va_list arg;
@@ -58,6 +58,6 @@ MIX_INLINE void logln(const TCHAR *fmt, ...) {
 #endif
 }
 
-} /* namespace of mix */
+} /* namespace of sc */
 
-#endif /* MIX_LOG_HPP */
+#endif /* SC_LOG_HPP */

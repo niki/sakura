@@ -3,14 +3,14 @@
 //! @file  file.hpp
 //! @brief ファイル
 //!
-//! @author (C) koma.
+//! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef MIX_FILE_HPP
-#define MIX_FILE_HPP
+#ifndef SC_FILE_HPP
+#define SC_FILE_HPP
 
 #include "basis.h"
 
-namespace mix {
+namespace sc {
 
 //==================================================================
 // file
@@ -21,7 +21,7 @@ namespace file {
 //! 指定のファイルパスが存在するか
 //! @param path パス名
 //------------------------------------------------------------------
-MIX_INLINE BOOL exist(const std::tstring &path) {
+SC_INLINE BOOL exist(const std::tstring &path) {
   return ::PathFileExists(path.c_str());
 }
 
@@ -29,7 +29,7 @@ MIX_INLINE BOOL exist(const std::tstring &path) {
 //! ファイル名の取得 (e.g. C:\Windows\System32\calc.exe => calc.exe)
 //! @param path パス名
 //------------------------------------------------------------------
-MIX_INLINE std::tstring fname(const std::tstring &path) {
+SC_INLINE std::tstring fname(const std::tstring &path) {
   size_t pos = path.rfind(_T('\\'));
   if (pos != std::tstring::npos) {
     return path.substr(pos + 1, path.size() - pos - 1);
@@ -46,7 +46,7 @@ MIX_INLINE std::tstring fname(const std::tstring &path) {
 //! ディレクトリ名の取得 (e.g. C:\Windows\System32\calc.exe => C:\Windows\System32\)
 //! @param path パス名
 //------------------------------------------------------------------
-MIX_INLINE std::tstring dirname(const std::tstring &path) {
+SC_INLINE std::tstring dirname(const std::tstring &path) {
   size_t pos = path.rfind(_T('\\'));
   if (pos != std::tstring::npos) {
     return path.substr(0, pos + 1);
@@ -63,7 +63,7 @@ MIX_INLINE std::tstring dirname(const std::tstring &path) {
 //! ベース名の取得 (e.g. C:\Windows\System32\calc.exe => C:\Windows\System32\calc)
 //! @param path パス名
 //------------------------------------------------------------------
-MIX_INLINE std::tstring basename(const std::tstring &path) {
+SC_INLINE std::tstring basename(const std::tstring &path) {
   std::tstring s = fname(path);
   size_t pos = s.rfind(_T('.'));
   if (pos != std::tstring::npos) {
@@ -76,7 +76,7 @@ MIX_INLINE std::tstring basename(const std::tstring &path) {
 //! 拡張子名の取得 (e.g. C:\Windows\System32\calc.exe => .exe)
 //! @param path パス名
 //------------------------------------------------------------------
-MIX_INLINE std::tstring extname(const std::tstring &path) {
+SC_INLINE std::tstring extname(const std::tstring &path) {
   std::tstring s = fname(path);
   size_t pos = s.rfind(_T('.'));
   if (pos != std::tstring::npos) {
@@ -87,6 +87,6 @@ MIX_INLINE std::tstring extname(const std::tstring &path) {
 
 }  // namespace of file
 
-} /* namespace of mix */
+} /* namespace of sc */
 
-#endif /* MIX_FILE_HPP */
+#endif /* SC_FILE_HPP */

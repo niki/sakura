@@ -3,10 +3,10 @@
 //! @file  basis.h
 //! @brief 基本
 //!
-//! @author (C) koma.
+//! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef MIX_BASIS_H
-#define MIX_BASIS_H
+#ifndef SC_BASIS_H
+#define SC_BASIS_H
 
 #include <memory>
 #include <string>
@@ -20,6 +20,6 @@
   #endif
 #endif
 
-#define MIX_INLINE static inline
+#define SC_INLINE static inline
 
-#endif /* MIX_BASIS_H */
+#endif /* SC_BASIS_H */

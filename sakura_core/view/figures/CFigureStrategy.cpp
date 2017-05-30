@@ -53,7 +53,7 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	int nIdx = nPos;
 	bool bTrans = pInfo->m_pcView->IsBkBitmap() && CTypeSupport(pInfo->m_pcView, COLORIDX_TEXT).GetBackColor() == pInfo->m_gr.GetTextBackColor();
 	
-#ifdef MI_MOD_SELAREA
+#ifdef SC_MOD_SELAREA
 	bool select = pInfo->GetCurrentColor() != pInfo->GetCurrentColor2();
 	if (select) {
 		CTypeSupport cCurrentType2(
@@ -66,8 +66,8 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 				pInfo->m_pcView->GetFontset().ChooseFontHandle(sFont.m_sFontAttr);
 		pInfo->m_gr.PushMyFont(sFont);
 	}
-#endif	// MI_
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 1
+#endif	// SC_
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	//COLORREF crMiniMap = pInfo->m_gr.GetCurrentTextForeColor();
 	COLORREF crMiniMap = pInfo->m_gr.GetTextBackColor();
 	bool bMiniMapSearch = false;
@@ -79,15 +79,15 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	       pInfo->GetCurrentColor() == COLORIDX_SEARCH5))
 	{
 		TCHAR szData[32];
-		if (RegKey(MI_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
-			crMiniMap = mix::ColorString::ToCOLORREF(szData);
+		if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
+			crMiniMap = sc::ColorString::ToCOLORREF(szData);
 		}
 		pInfo->m_gr.PushTextForeColor(crMiniMap);
 		pInfo->m_gr.PushTextBackColor(crMiniMap);
 		bTrans = false;
 		bMiniMapSearch = true;
 	}
-#endif	// MI_
+#endif	// SC_
 	
 	pInfo->m_pcView->GetTextDrawer().DispText(
 		pInfo->m_gr,
@@ -98,17 +98,17 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	);
 	// pInfo->m_nPosInLogic += nLength; ここでは進めない
 	
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 1
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	if (bMiniMapSearch) {
 		pInfo->m_gr.PopTextForeColor();
 		pInfo->m_gr.PopTextBackColor();
 	}
-#endif	// MI_
-#ifdef MI_MOD_SELAREA
+#endif	// SC_
+#ifdef SC_MOD_SELAREA
 	if (select) {
 		pInfo->m_gr.PopMyFont();
 	}
-#endif  // MI_
+#endif  // SC_
 	
 	return true;
 }
@@ -123,13 +123,13 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 bool CFigureSpace::DrawImp(SColorStrategyInfo* pInfo)
 {
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 1
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	//COLORREF crMiniMap = pInfo->m_gr.GetCurrentTextForeColor();
 	COLORREF crMiniMap = pInfo->m_gr.GetTextBackColor();
-#endif	// MI_
+#endif	// SC_
 	bool bTrans = DrawImp_StyleSelect(pInfo);
 	DispPos sPos(*pInfo->m_pDispPos);	// 現在位置を覚えておく
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 1
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	bool bMiniMapSearch = false;
 	if (pInfo->m_pcView->m_bMiniMap &&
 	      (pInfo->GetCurrentColor() == COLORIDX_SEARCH ||
@@ -139,22 +139,22 @@ bool CFigureSpace::DrawImp(SColorStrategyInfo* pInfo)
 	       pInfo->GetCurrentColor() == COLORIDX_SEARCH5))
 	{
 		TCHAR szData[32];
-		if (RegKey(MI_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
-			crMiniMap = mix::ColorString::ToCOLORREF(szData);
+		if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
+			crMiniMap = sc::ColorString::ToCOLORREF(szData);
 		}
 		pInfo->m_gr.PushTextForeColor(crMiniMap);
 		pInfo->m_gr.PushTextBackColor(crMiniMap);
 		bTrans = false;
 		bMiniMapSearch = true;
 	}
-#endif	// MI_
+#endif	// SC_
 	DispSpace(pInfo->m_gr, pInfo->m_pDispPos,pInfo->m_pcView, bTrans);	// 空白描画
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_SEARCH_DISP == 1
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	if (bMiniMapSearch) {
 		pInfo->m_gr.PopTextForeColor();
 		pInfo->m_gr.PopTextBackColor();
 	}
-#endif	// MI_
+#endif	// SC_
 	DrawImp_StylePop(pInfo);
 	DrawImp_DrawUnderline(pInfo, sPos);
 	// 1文字前提
@@ -198,10 +198,10 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	COLORREF crBack;
 	bool blendColor = pInfo->GetCurrentColor() != pInfo->GetCurrentColor2() && cCurrentType.GetTextColor() == cCurrentType.GetBackColor(); // 選択混合色
 	bool bBold;
-#ifdef MI_MOD_SELAREA
+#ifdef SC_MOD_SELAREA
 	blendColor = pInfo->GetCurrentColor() == COLORIDX_SELECT;  // 選択色
-#endif  // MI_
-#ifdef MI_MOD_WS_COLOR
+#endif  // SC_
+#ifdef SC_MOD_WS_COLOR
 	EColorIndexType colorIdx = GetColorIdx();
 	bool bIgnore = false;
 	bIgnore |= (colorIdx == COLORIDX_CTRLCODE);
@@ -211,9 +211,9 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	//bIgnore |= (colorIdx == COLORIDX_TEXT);
 	//bIgnore |= (colorIdx == COLORIDX_SSTRING);
 	//bIgnore |= (colorIdx == COLORIDX_WSTRING);
-#endif  // MI_
+#endif  // SC_
 	if( blendColor ){
-#ifdef MI_MOD_WS_COLOR
+#ifdef SC_MOD_WS_COLOR
 		if (!bIgnore) {
 			CTypeSupport& cText = cCurrentType2;
 			CTypeSupport& cBack = cCurrentType3;
@@ -233,9 +233,9 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 		crText = pcView->GetTextColorByColorInfo2(cCurrentType.GetColorInfo(), cText.GetColorInfo());
 		crBack = pcView->GetBackColorByColorInfo2(cCurrentType.GetColorInfo(), cBack.GetColorInfo());
 		bBold = cCurrentType2.IsBoldFont();
-#endif  // MI_
+#endif  // SC_
 	}else{
-#ifdef MI_MOD_WS_COLOR
+#ifdef SC_MOD_WS_COLOR
 		if (!bIgnore) {
 			CTypeSupport& cText = cCurrentType;
 			CTypeSupport& cBack = cCurrentType1;
@@ -255,9 +255,9 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 		crText = cText.GetTextColor();
 		crBack = cBack.GetBackColor();
 		bBold = cCurrentType.IsBoldFont();
-#endif  // MI_
+#endif  // SC_
 	}
-#ifdef MI_MOD_WS_COLOR
+#ifdef SC_MOD_WS_COLOR
 	//! 色をマージする
 	//! @param colText テキスト色
 	//! @param colBase ベースとなる色
@@ -279,13 +279,13 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	};
 	
 	if (!bIgnore) {
-		static int nBlendPer = RegKey(MI_REGKEY).get(_T("WhiteSpaceBlendPer"), MI_WS_BLEND_PER);
+		static int nBlendPer = RegKey(SC_REGKEY).get(_T("WhiteSpaceBlendPer"), SC_WS_BLEND_PER);
 		// 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
 		COLORREF col1 = cCurrentType2.GetTextColor();
 		COLORREF col2 = crBack;	// 合成済みの色を使用する
 		crText = fnMeargeColor(col1, col2, nBlendPer);
 	}
-#endif  // MI_
+#endif  // SC_
 	//cSpaceType.SetGraphicsState_WhileThisObj(pInfo->gr);
 
 	pInfo->m_gr.PushTextForeColor(crText);

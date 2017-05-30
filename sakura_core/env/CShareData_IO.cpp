@@ -34,11 +34,11 @@
 #include "plugin/CPlugin.h"
 #include "uiparts/CMenuDrawer.h"
 #include "_main/CCommandLine.h"
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 #include "sakura_rc.h"
-#endif  // MI_
+#endif  // SC_
 
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
@@ -46,7 +46,7 @@
   using boost::property_tree::ptree;
   using boost::property_tree::read_json;
   using boost::property_tree::write_json;
-#endif  // MI_
+#endif  // SC_
 
 void ShareData_IO_Sub_LogFont( CDataProfile& cProfile, const WCHAR* pszSecName,
 	const WCHAR* pszKeyLf, const WCHAR* pszKeyPointSize, const WCHAR* pszKeyFaceName, LOGFONT& lf, INT& nPointSize );
@@ -109,25 +109,25 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			/* 設定ファイルが存在しない */
 
 			// キーワードファイルのインポート
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 			std::tstring fname =
-			    mix::file::dirname(szIniFileName) +
-			    mix::file::basename(szIniFileName) + _T(".keywordset.json");
+			    sc::file::dirname(szIniFileName) +
+			    sc::file::basename(szIniFileName) + _T(".keywordset.json");
 			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
 #else
 			pcShare->InitKeyword( &GetDllShareData(), true );
-#endif  // MI_
+#endif  // SC_
 			return false;
 		}
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 		else {
 			// キーワードファイルのインポート
 			std::tstring fname =
-			    mix::file::dirname(szIniFileName) +
-			    mix::file::basename(szIniFileName) + _T(".keywordset.json");
+			    sc::file::dirname(szIniFileName) +
+			    sc::file::basename(szIniFileName) + _T(".keywordset.json");
 			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
 		}
-#endif  // MI_
+#endif  // SC_
 
 		// バージョンアップ時はバックアップファイルを作成する	// 2011.01.28 ryoji
 		TCHAR iniVer[256];
@@ -149,21 +149,21 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 //	MYTRACE( _T("Iniファイル処理 0 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 	CDataProfile cProfileDefault;
 	cProfileDefault.SetReadingMode();
 
 	{
 		std::tstring fname =
-		    mix::file::dirname(szIniFileName) +
-		    mix::file::basename(szIniFileName) + _T(".default.ini");
+		    sc::file::dirname(szIniFileName) +
+		    sc::file::basename(szIniFileName) + _T(".default.ini");
 
 		if (cProfileDefault.ReadProfile(fname.c_str())) {
 			cProfile.pcProfileDef_ = &cProfileDefault;
 			cProfile.bProfileDef_ = true;
 		}
 	}
-#endif  // MI_
+#endif  // SC_
 
 	CMenuDrawer* pcMenuDrawer = new CMenuDrawer; // 2010/7/4 Uchi
 
@@ -175,7 +175,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 
 	// Feb. 12, 2006 D.S.Koba
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 	do {
 		CDataProfile cProfileRecent;
 
@@ -186,13 +186,13 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		}
 
 		std::tstring fname =
-		    mix::file::dirname(szIniFileName) +
-		    mix::file::basename(szIniFileName) + _T(".recent.json");
+		    sc::file::dirname(szIniFileName) +
+		    sc::file::basename(szIniFileName) + _T(".recent.json");
 
 		ptree pt;
 		
 		if (bRead) {
-			if (!mix::file::exist(fname)) {
+			if (!sc::file::exist(fname)) {
 				DLLSHAREDATA* pShare = &GetDllShareData();
 				pShare->m_sHistory.m_nMRUArrNum = 0;
 				pShare->m_sHistory.m_nOPENFOLDERArrNum = 0;
@@ -201,7 +201,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 				break;
 			}
 			
-			read_json(mix::util::to_bytes(fname).c_str(), pt);
+			read_json(sc::util::to_bytes(fname).c_str(), pt);
 		}
 		
 		cProfileRecent.tag_ = &pt;
@@ -212,18 +212,18 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		ShareData_IO_Cmd(cProfileRecent);
 
 		if (!bRead) {
-			write_json(mix::util::to_bytes(fname).c_str(), pt);
+			write_json(sc::util::to_bytes(fname).c_str(), pt);
 		}
 	} while (0);
 #else
 	ShareData_IO_Mru( cProfile );
 	ShareData_IO_Keys( cProfile );
 	ShareData_IO_Grep( cProfile );
-#endif  // MI_
+#endif  // SC_
 	ShareData_IO_Folders( cProfile );
-#ifndef MI_MOD_PROFILES
+#ifndef SC_MOD_PROFILES
 	ShareData_IO_Cmd( cProfile );
-#endif  // MI_
+#endif  // SC_
 	ShareData_IO_Nickname( cProfile );
 	ShareData_IO_Common( cProfile );
 	ShareData_IO_Plugin( cProfile, pcMenuDrawer );		// Move here	2010/6/24 Uchi
@@ -233,9 +233,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_KeyBind( cProfile );
 	ShareData_IO_Print( cProfile );
 	ShareData_IO_Types( cProfile );
-#ifndef MI_MOD_PROFILES
+#ifndef SC_MOD_PROFILES
 	ShareData_IO_KeyWords( cProfile );
-#endif  // MI_
+#endif  // SC_
 	ShareData_IO_Macro( cProfile );
 	ShareData_IO_Statusbar( cProfile );		// 2008/6/21 Uchi
 	ShareData_IO_MainMenu( cProfile );		// 2010/5/15 Uchi
@@ -257,7 +257,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	return true;
 }
 
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 namespace opt {
 static std::string to_string(const ptree &info, const std::string &value, const std::string &default_value = "") {
 	boost::optional<std::string> v = info.get_optional<std::string>(value);
@@ -270,7 +270,7 @@ static std::string to_string(const ptree &info, const std::string &value, const 
 static std::wstring to_wstring(const ptree &info, const std::string &value, const std::wstring &default_value = L"") {
 	boost::optional<std::string> v = info.get_optional<std::string>(value);
 	if (v) {
-		return mix::util::from_bytes(v.get());
+		return sc::util::from_bytes(v.get());
 	} else {
 		return default_value;
 	}
@@ -286,13 +286,13 @@ static int to_int(const ptree &info, const std::string &value, int default_value
 static bool to_bool(const ptree &info, const std::string &value, bool default_value = false) {
 	boost::optional<std::string> v = info.get_optional<std::string>(value);
 	if (v) {
-		return mix::util::to_b(v.get());
+		return sc::util::to_b(v.get());
 	} else {
 		return default_value;
 	}
 }
 }
-#endif  // MI_
+#endif  // SC_
 
 /*!
 	@brief 共有データのMruセクションの入出力
@@ -304,7 +304,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 	SShare_History &hist = pShare->m_sHistory;
 
 	int			i;
@@ -324,13 +324,13 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 
 				auto path = opt::to_wstring(info, "path");
 
-#if MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!!RegKey(MI_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+#if SC_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+				if (!!RegKey(SC_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
 					if (!fexist(path.c_str())) {
 						continue;
 					}
 				}
-#endif  // MI_
+#endif  // SC_
 
 				pfiWork = &hist.m_fiMRUArr[i];
 				_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
@@ -360,13 +360,13 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			pfiWork = &hist.m_fiMRUArr[i];
 			
 			ptree info;
-			info.put("path", mix::util::to_bytes(pfiWork->m_szPath));
+			info.put("path", sc::util::to_bytes(pfiWork->m_szPath));
 			if (pfiWork->m_nViewTopLine != 0) info.put("view_top_line", pfiWork->m_nViewTopLine);
 			if (pfiWork->m_nViewLeftCol != 0) info.put("view_left_col", pfiWork->m_nViewLeftCol);
 			if (pfiWork->m_ptCursor.x != 0) info.put("x", pfiWork->m_ptCursor.x);
 			if (pfiWork->m_ptCursor.y != 0) info.put("y", pfiWork->m_ptCursor.y);
 			info.put("char_code", pfiWork->m_nCharCode);
-			info.put("mark", mix::util::to_bytes(pfiWork->m_szMarkLines));
+			info.put("mark", sc::util::to_bytes(pfiWork->m_szMarkLines));
 			info.put("type_id", pfiWork->m_nTypeId);
 			if (hist.m_bMRUArrFavorite[i]) info.put("favorite", true);
 			child.push_back(std::make_pair("", info));
@@ -401,13 +401,13 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				
 				auto dir = opt::to_wstring(info, "dir");
 
-#if MI_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!!RegKey(MI_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+#if SC_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+				if (!!RegKey(SC_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
 					if (!fexist(dir.c_str())) {
 						continue;
 					}
 				}
-#endif  // MI_
+#endif  // SC_
 
 				hist.m_szOPENFOLDERArr[i].Assign(dir.c_str());
 				hist.m_bOPENFOLDERArrFavorite[i] = opt::to_bool(info, "favorite", false);
@@ -423,7 +423,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("dir", mix::util::to_bytes(hist.m_szOPENFOLDERArr[i].c_str()));
+			info.put("dir", sc::util::to_bytes(hist.m_szOPENFOLDERArr[i].c_str()));
 			if (hist.m_bOPENFOLDERArrFavorite[i]) info.put("favorite", true);
 			child.push_back(std::make_pair("", info));
 		}
@@ -462,7 +462,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("name", mix::util::to_bytes(hist.m_aExceptMRU[i].c_str()));
+			info.put("name", sc::util::to_bytes(hist.m_aExceptMRU[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.except_MRU", child);
@@ -551,7 +551,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("ExceptMRU[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aExceptMRU[i] );
 	}
-#endif  // MI_
+#endif  // SC_
 }
 
 /*!
@@ -564,7 +564,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
 	int			i;
@@ -595,7 +595,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", mix::util::to_bytes(skwd.m_aSearchKeys[i].c_str()));
+			info.put("data", sc::util::to_bytes(skwd.m_aSearchKeys[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.search_key", child);
@@ -624,7 +624,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", mix::util::to_bytes(skwd.m_aReplaceKeys[i].c_str()));
+			info.put("data", sc::util::to_bytes(skwd.m_aReplaceKeys[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.replace_key", child);
@@ -651,7 +651,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("REPLACEKEY[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aReplaceKeys[i] );
 	}
-#endif  // MI_
+#endif  // SC_
 }
 
 /*!
@@ -664,7 +664,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
 	int			i;
@@ -695,7 +695,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", mix::util::to_bytes(skwd.m_aGrepFiles[i].c_str()));
+			info.put("data", sc::util::to_bytes(skwd.m_aGrepFiles[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.grep_file", child);
@@ -726,22 +726,22 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		auto grep_folder_ex3_dir = pt.get_optional<std::string>("Recent.grep_folder_ex3_dir");
 		auto grep_folder_ex4_dir = pt.get_optional<std::string>("Recent.grep_folder_ex4_dir");
 
-		skwd.m_bGrepFolders99 = mix::util::to_b(*grep_folder_ex1);
-		skwd.m_bGrepFolders2 = mix::util::to_b(*grep_folder_ex2);
-		skwd.m_bGrepFolders3 = mix::util::to_b(*grep_folder_ex3);
-		skwd.m_bGrepFolders4 = mix::util::to_b(*grep_folder_ex4);
+		skwd.m_bGrepFolders99 = sc::util::to_b(*grep_folder_ex1);
+		skwd.m_bGrepFolders2 = sc::util::to_b(*grep_folder_ex2);
+		skwd.m_bGrepFolders3 = sc::util::to_b(*grep_folder_ex3);
+		skwd.m_bGrepFolders4 = sc::util::to_b(*grep_folder_ex4);
 		if (grep_folder_ex2_dir) {
-			skwd.m_szGrepFolders2.Assign(mix::util::from_bytes(*grep_folder_ex2_dir).c_str());
+			skwd.m_szGrepFolders2.Assign(sc::util::from_bytes(*grep_folder_ex2_dir).c_str());
 		} else {
 			skwd.m_szGrepFolders2.Assign(L"");
 		}
 		if (grep_folder_ex3_dir) {
-			skwd.m_szGrepFolders3.Assign(mix::util::from_bytes(*grep_folder_ex3_dir).c_str());
+			skwd.m_szGrepFolders3.Assign(sc::util::from_bytes(*grep_folder_ex3_dir).c_str());
 		} else {
 			skwd.m_szGrepFolders3.Assign(L"");
 		}
 		if (grep_folder_ex4_dir) {
-			skwd.m_szGrepFolders4.Assign(mix::util::from_bytes(*grep_folder_ex4_dir).c_str());
+			skwd.m_szGrepFolders4.Assign(sc::util::from_bytes(*grep_folder_ex4_dir).c_str());
 		} else {
 			skwd.m_szGrepFolders4.Assign(L"");
 		}
@@ -752,7 +752,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", mix::util::to_bytes(skwd.m_aGrepFolders[i].c_str()));
+			info.put("data", sc::util::to_bytes(skwd.m_aGrepFolders[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.grep_folder", child);
@@ -761,9 +761,9 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		pt.put("Recent.grep_folder_ex2", skwd.m_bGrepFolders2);
 		pt.put("Recent.grep_folder_ex3", skwd.m_bGrepFolders3);
 		pt.put("Recent.grep_folder_ex4", skwd.m_bGrepFolders4);
-		pt.put("Recent.grep_folder_ex2_dir", mix::util::to_bytes(skwd.m_szGrepFolders2.c_str()));
-		pt.put("Recent.grep_folder_ex3_dir", mix::util::to_bytes(skwd.m_szGrepFolders3.c_str()));
-		pt.put("Recent.grep_folder_ex4_dir", mix::util::to_bytes(skwd.m_szGrepFolders4.c_str()));
+		pt.put("Recent.grep_folder_ex2_dir", sc::util::to_bytes(skwd.m_szGrepFolders2.c_str()));
+		pt.put("Recent.grep_folder_ex3_dir", sc::util::to_bytes(skwd.m_szGrepFolders3.c_str()));
+		pt.put("Recent.grep_folder_ex4_dir", sc::util::to_bytes(skwd.m_szGrepFolders4.c_str()));
 	}
 
 #else
@@ -787,7 +787,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("GREPFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFolders[i] );
 	}
-#ifdef MI_MOD_GREP
+#ifdef SC_MOD_GREP
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[*].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders99 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders3 );
@@ -795,8 +795,8 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Path"), pShare->m_sSearchKeywords.m_szGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Path"), pShare->m_sSearchKeywords.m_szGrepFolders3 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[2].Path"), pShare->m_sSearchKeywords.m_szGrepFolders4 );
-#endif  // MI_
-#endif  // MI_
+#endif  // SC_
+#endif  // SC_
 }
 
 /*!
@@ -826,7 +826,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 	SShare_History &hist = pShare->m_sHistory;
 
 	int			i;
@@ -857,7 +857,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", mix::util::to_bytes(hist.m_aCommands[i].c_str()));
+			info.put("data", sc::util::to_bytes(hist.m_aCommands[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.cmd", child);
@@ -886,7 +886,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", mix::util::to_bytes(hist.m_aCurDirs[i].c_str()));
+			info.put("data", sc::util::to_bytes(hist.m_aCurDirs[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.cmd_cur_dir", child);
@@ -912,7 +912,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("szCurDirArr[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aCurDirs[i] );
 	}
-#endif  // MI_
+#endif  // SC_
 }
 
 /*!
@@ -1573,11 +1573,11 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 		}
 	}
 
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 	// OldVerの切り捨て
 	bOldVer = false;
 	sKeyBind.m_nKeyNameArrNum = KEYNAME_SIZE;
-#endif  // MI_
+#endif  // SC_
 
 	for( i = 0; i < sKeyBind.m_nKeyNameArrNum; ++i ){
 		// 2005.04.07 D.S.Koba
@@ -2007,10 +2007,10 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	if( types.m_id < 0 ){
 		types.m_id *= -1;
 	}
-#ifndef MI_MOD_TAB_MARK
+#ifndef SC_MOD_TAB_MARK
 	cProfile.IOProfileData( pszSecName, LTEXT("szTabViewString"), MakeStringBufferW(types.m_szTabViewString) );
 	cProfile.IOProfileData_WrapInt( pszSecName, LTEXT("bTabArrow")	, types.m_bTabArrow );	//@@@ 2003.03.26 MIK
-#endif  // MI_
+#endif  // SC_
 	cProfile.IOProfileData( pszSecName, LTEXT("bInsSpace")			, types.m_bInsSpace );	// 2001.12.03 hor
 
 	cProfile.IOProfileData( pszSecName, LTEXT("nTextWrapMethod"), types.m_nTextWrapMethod );		// 2008.05.30 nasukoji
@@ -2328,7 +2328,7 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 */
 void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 {
-#ifndef MI_MOD_PROFILES
+#ifndef SC_MOD_PROFILES
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
 	const WCHAR*		pszSecName = LTEXT("KeyWords");
@@ -2402,7 +2402,7 @@ void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 			delete [] pszMem;
 		}
 	}
-#endif  // MI_
+#endif  // SC_
 }
 
 /*!
@@ -2510,7 +2510,7 @@ struct SMainMenuAddItemInfo
 
 void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 {
-#ifdef MI_MOD_MAINMENU_FORCE_DEFAULT
+#ifdef SC_MOD_MAINMENU_FORCE_DEFAULT
 	//CDataProfile	cProfileDefault;
 	//boost::container::vector<std::wstring> data;
 	//cProfileDefault.SetReadingMode();
@@ -2631,7 +2631,7 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 			}
 		}
 	}
-#endif  // MI_
+#endif  // SC_
 }
 
 
@@ -2658,13 +2658,13 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 	boost::container::vector<std::wstring>& data = *pData;
 	int dataNum = 0;
 
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 	boost::container::vector<std::wstring> default_data;
-#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
 	bool bOldProfileDef = cProfile.bProfileDef_;
 	cProfile.bProfileDef_ = false;
-#endif  // MI_MOD_MAINMENU_FORCE_DEFAULT
-#endif  // MI_
+#endif  // SC_MOD_MAINMENU_FORCE_DEFAULT
+#endif  // SC_
 
 	if (cProfile.IsReadingMode()) {
 		int menuNum = 0;
@@ -2683,31 +2683,31 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 		cProfile.IOProfileData( pszSecName, LTEXT("nMainMenuNum"), mainmenu.m_nMainMenuNum);
 	}
 
-#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
-#ifdef MI_MOD_PROFILES
+#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifdef SC_MOD_PROFILES
 	{
 		// デフォルト用にリソースの読み込み
 		CDataProfile cProfileDef;
 		cProfileDef.SetReadingMode();
 		cProfileDef.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &default_data );
 	}
-#endif  // MI_
-#endif  // MI_MOD_MAINMENU_FORCE_DEFAULT
+#endif  // SC_
+#endif  // SC_MOD_MAINMENU_FORCE_DEFAULT
 
 	if( pData ){
 		mainmenu.m_bMainMenuKeyParentheses = (_wtoi(data[dataNum++].c_str()) != 0);
 	}else{
 		cProfile.IOProfileData( pszSecName, LTEXT("bKeyParentheses"), mainmenu.m_bMainMenuKeyParentheses );
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 		dataNum++;
-#endif  // MI_
+#endif  // SC_
 	}
 
-#ifdef MI_MOD_PROFILES
-#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
+#ifdef SC_MOD_PROFILES
+#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
 	cProfile.bProfileDef_ = bOldProfileDef;
-#endif  // MI_MOD_MAINMENU_FORCE_DEFAULT
-#endif  // MI_
+#endif  // SC_MOD_MAINMENU_FORCE_DEFAULT
+#endif  // SC_
 
 	if (cProfile.IsReadingMode()) {
 		// Top Level 初期化
@@ -2733,7 +2733,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 			if( pData ){
 				wcscpy(szLine, data[dataNum++].c_str());
 			}else{
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 				if (!cProfile.IOProfileData(pszSecName, szKeyName, MakeStringBufferW(szLine))) {
 					if ((int)default_data.size() > dataNum) {
 						wcscpy(szLine, default_data[dataNum].c_str());  // デフォルト設定
@@ -2742,7 +2742,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 				dataNum++;
 #else
 				cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
-#endif  // MI_
+#endif  // SC_
 			}
 
 			// レベル
@@ -2794,7 +2794,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 			auto_strcpy_s( pcMenu->m_sName, MAX_MAIN_MENU_NAME_LEN+1, p );
 		}
 		else {
-#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
 			if (GetPlugCmdInfoByFuncCode( pcMenu->m_nFunc, szFuncName )) {
 				// Plugin
 			}
@@ -2820,7 +2820,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 				szFuncName, 
 				pcMenu->m_sKey, 
 				pcMenu->m_nFunc == F_NODE ? pcMenu->m_sName : L"" );
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 			bool bSkip = false;
 			if ((int)default_data.size() > dataNum) {
 				if (default_data[dataNum] == szLine) {
@@ -2831,8 +2831,8 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 			if (!bSkip) cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
 #else
 			cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
-#endif  // MI_
-#endif  // MI_MOD_MAINMENU_FORCE_DEFAULT
+#endif  // SC_
+#endif  // SC_MOD_MAINMENU_FORCE_DEFAULT
 		}
 
 		if (cProfile.IsReadingMode() && pcMenu->m_nLevel == 0) {
@@ -2917,11 +2917,11 @@ void CShareData_IO::ShareData_IO_Other( CDataProfile& cProfile )
 	@param[in]		pszSecName		セクション名
 	@param[in,out]	pColorInfoArr	書き出し、読み込み対象の色設定へのポインタ (入出力方向はbReadに依存)
 */
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr, bool bColorOnly )
 #else
 void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr )
-#endif  // MI_
+#endif  // SC_
 {
 	WCHAR	szKeyName[256];
 	WCHAR	szKeyData[1024];
@@ -2932,7 +2932,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 		if( pcProfile->IsReadingMode() ){
 			if( pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) ) ){
 				int buf[5];
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 				ColorInfo *info = &pColorInfoArr[j];
 				//int scan_num = scan_ints( szKeyData, pszForm, buf);
 				WCHAR text[32] = {};
@@ -2944,7 +2944,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 						if (_tcsicmp(name, _T("none")) == 0) return pColorInfoArr[0].m_sColorAttr.m_cBACK;
 						if (_tcsicmp(name, _T("fg")) == 0)   return pColorInfoArr[0].m_sColorAttr.m_cTEXT;
 						if (_tcsicmp(name, _T("bg")) == 0)   return pColorInfoArr[0].m_sColorAttr.m_cBACK;
-						return mix::ColorString::ToCOLORREF(name, mix::ColorString::eENDIAN_BGR);
+						return sc::ColorString::ToCOLORREF(name, sc::ColorString::eENDIAN_BGR);
 					};
 					
 					if (!bColorOnly) info->m_sFontAttr.m_bBoldFont  = (buf[1]!=0);
@@ -2959,7 +2959,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sColorAttr.m_cTEXT     = buf[2];
 				pColorInfoArr[j].m_sColorAttr.m_cBACK     = buf[3];
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine = (buf[4]!=0);
-#endif  // MI_
+#endif  // SC_
 			}
 			else{
 				// 2006.12.07 ryoji
@@ -2971,7 +2971,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 			// 2006.12.18 ryoji
 			// 矛盾設定があれば修復する
 			unsigned int fAttribute = g_ColorAttributeArr[j].fAttribute;
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 			if (!bColorOnly) {
 				ColorInfo *info = &pColorInfoArr[j];
 				if( 0 != (fAttribute & COLOR_ATTRIB_FORCE_DISP) )
@@ -2988,21 +2988,21 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sFontAttr.m_bBoldFont = false;
 			if( 0 != (fAttribute & COLOR_ATTRIB_NO_UNDERLINE) )
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine = false;
-#endif  // MI_
+#endif  // SC_
 		}
 		else{
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 			ColorInfo *info = &pColorInfoArr[j];
 			unsigned int fAttribute = g_ColorAttributeArr[j].fAttribute;
 			if (fAttribute == (COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS)) {
 				auto_sprintf( szKeyData, L"%d,", info->m_bDisp?1:0 );
 			} else {
 				auto fnColorToName = [pColorInfoArr, j](COLORREF c, int attr) -> std::tstring {
-					if (j == 0/* txt */) return mix::ColorString::FromCOLORREF(c, true);
+					if (j == 0/* txt */) return sc::ColorString::FromCOLORREF(c, true);
 					if (attr != 0)       return L"none";
 					if (c == pColorInfoArr[0].m_sColorAttr.m_cTEXT) return L"fg";
 					if (c == pColorInfoArr[0].m_sColorAttr.m_cBACK) return L"bg";
-					return mix::ColorString::FromCOLORREF(c, true);
+					return sc::ColorString::FromCOLORREF(c, true);
 				};
 				
 				auto_sprintf( szKeyData, L"%d,%d,%s,%s,%d",
@@ -3021,7 +3021,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sColorAttr.m_cBACK,
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine?1:0
 			);
-#endif  // MI_
+#endif  // SC_
 			pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) );
 		}
 	}

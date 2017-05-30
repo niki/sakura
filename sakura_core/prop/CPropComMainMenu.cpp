@@ -28,7 +28,7 @@
 */
 
 #include "StdAfx.h"
-#ifndef MI_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
 #include "prop/CPropCommon.h"
 #include "env/CShareData.h"
 #include "env/cShareData_IO.h"
@@ -1382,4 +1382,4 @@ bool CPropMainMenu::Check_MainMenu_Sub(
 	}
 	return bRet;
 }
-#endif  // MI_
+#endif  // SC_

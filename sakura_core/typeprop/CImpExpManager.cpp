@@ -581,11 +581,11 @@ bool CImpExpColors::Import( const wstring& sFileName, wstring& sErrMsg )
 	}
 
 	/* 色設定 I/O */
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 	CShareData_IO::IO_ColorSet( &cProfile, szSecColor, m_ColorInfoArr, true );
 #else
 	CShareData_IO::IO_ColorSet( &cProfile, szSecColor, m_ColorInfoArr );
-#endif  // MI_
+#endif  // SC_
 
 	return true;
 }

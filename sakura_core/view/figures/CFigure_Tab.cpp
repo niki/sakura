@@ -63,39 +63,39 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
 
 	if( pArea->IsRectIntersected(rcClip2) ){
-#ifdef MI_MOD_TAB_MARK
+#ifdef SC_MOD_TAB_MARK
 		// 塗りつぶしで消去
 		gr.SetBrushColor(gr.GetTextBackColor());
 		::FillRect(gr, &rcClip2, gr.GetCurrentBrush());
 		
-#  ifdef MI_MOD_MINIMAP
+#  ifdef SC_MOD_MINIMAP
 		if( cTabType.IsDisp() && !pcView->m_bMiniMap ){
 #  else
 		if( cTabType.IsDisp() ){
-#  endif  // MI_
+#  endif  // SC_
 			int	nPosLeft = rcClip2.left > sPos.GetDrawPos().x ? rcClip2.left : sPos.GetDrawPos().x;
 			_DrawTabArrow(
 				gr,
 				nPosLeft,
-//#ifdef MI_LINE_CENTERING
+//#ifdef SC_LINE_CENTERING
 //			(pcView->GetLineSpace() / 2) +
-//#endif  // MI_
+//#endif  // SC_
 				sPos.GetDrawPos().y,
 				nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
-#  ifdef MI_LINE_CENTERING
+#  ifdef SC_LINE_CENTERING
 				pcView->GetLineSpace() +
-#  endif  // MI_
+#  endif  // SC_
 				pMetrics->GetHankakuHeight(),
 				gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 				gr.GetCurrentTextForeColor()
 			);
 		}
 #else
-#  ifdef MI_MOD_MINIMAP
+#  ifdef SC_MOD_MINIMAP
 		if( cTabType.IsDisp() && !pcView->m_bMiniMap && TABARROW_STRING == m_pTypeData->m_bTabArrow ){	//タブ通常表示	//@@@ 2003.03.26 MIK
 #  else
 		if( cTabType.IsDisp() && TABARROW_STRING == m_pTypeData->m_bTabArrow ){	//タブ通常表示	//@@@ 2003.03.26 MIK
-#  endif  // MI_
+#  endif  // SC_
 			//@@@ 2001.03.16 by MIK
 			::ExtTextOutW_AnyBuild(
 				gr,
@@ -121,11 +121,11 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 			);
 
 			//タブ矢印表示
-#  ifdef MI_MOD_MINIMAP
+#  ifdef SC_MOD_MINIMAP
 			if( cTabType.IsDisp() && !pcView->m_bMiniMap ){
 #  else
 			if( cTabType.IsDisp() ){
-#  endif  // MI_
+#  endif  // SC_
 				// 文字色や太字かどうかを現在の DC から調べる	// 2009.05.29 ryoji 
 				// （検索マッチ等の状況に柔軟に対応するため、ここは記号の色指定には決め打ちしない）
 				//	太字かどうか設定も見る様にする 2013/4/11 Uchi
@@ -136,14 +136,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 						_DrawTabArrow(
 							gr,
 							sPos.GetDrawPos().x,
-//#ifdef MI_LINE_CENTERING
+//#ifdef SC_LINE_CENTERING
 //							(pcView->GetLineSpace() / 2) +
-//#endif  // MI_
+//#endif  // SC_
 							sPos.GetDrawPos().y,
 							pMetrics->GetHankakuWidth(),
-#  ifdef MI_LINE_CENTERING
+#  ifdef SC_LINE_CENTERING
 							pcView->GetLineSpace() +
-#  endif  // MI_
+#  endif  // SC_
 							pMetrics->GetHankakuHeight(),
 							gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 							gr.GetCurrentTextForeColor()
@@ -154,14 +154,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 					_DrawTabArrow(
 						gr,
 						nPosLeft,
-//#ifdef MI_LINE_CENTERING
+//#ifdef SC_LINE_CENTERING
 //						(pcView->GetLineSpace() / 2) +
-//#endif  // MI_
+//#endif  // SC_
 						sPos.GetDrawPos().y,
 						nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
-#  ifdef MI_LINE_CENTERING
+#  ifdef SC_LINE_CENTERING
 						pcView->GetLineSpace() +
-#  endif  // MI_
+#  endif  // SC_
 						pMetrics->GetHankakuHeight(),
 						gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 						gr.GetCurrentTextForeColor()
@@ -169,7 +169,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				}
 			}
 		}
-#endif  // MI_
+#endif  // SC_
 	}
 
 	//Xを進める
@@ -199,7 +199,7 @@ void _DrawTabArrow(
 	int sy = nPosY + ( nHeight / 2 );
 	int sa = nHeight / 4;								// 鏃のsize
 
-#ifdef MI_MOD_TAB_MARK
+#ifdef SC_MOD_TAB_MARK
 	sy++; // 少し下め
 	
 	::MoveToEx( gr, nPosX+1, sy, NULL );
@@ -232,7 +232,7 @@ void _DrawTabArrow(
 		pt[4].y += 1;
 		::PolyPolyline( gr, pt, pp, _countof(pp));
 	}
-#endif  // MI_
+#endif  // SC_
 
 	gr.PopPen();
 }

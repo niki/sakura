@@ -60,12 +60,12 @@ BOOL CEditView::CreateScrollBar()
 	si.nPos  = 0;
 	si.nTrackPos = 1;
 	::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, TRUE );
-#ifdef MI_MOD_MINIMAP
+#ifdef SC_MOD_MINIMAP
 	if (m_bMiniMap) {
-		DWORD miniMapType = RegKey(MI_REGKEY).get(_T("MiniMapType"), MI_MINIMAP_TYPE_DEFAULT);
-		if (miniMapType == MI_MINIMAP_TYPE_NPP) {
+		DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
+		if (miniMapType == SC_MINIMAP_TYPE_NPP) {
 			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
-		} else if (miniMapType == MI_MINIMAP_TYPE_ST) {
+		} else if (miniMapType == SC_MINIMAP_TYPE_ST) {
 			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
 		} else {
 			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, TRUE);
@@ -75,7 +75,7 @@ BOOL CEditView::CreateScrollBar()
 	}
 #else
 	::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
-#endif  // MI_
+#endif  // SC_
 
 	/* スクロールバーの作成 */
 	m_hwndHScrollBar = NULL;
@@ -192,9 +192,9 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 		}
 	}
 
-#ifdef MI_MOD_MINIMAP
+#ifdef SC_MOD_MINIMAP
 	const bool bDrawSwitchOld = SetDrawSwitch(false);
-#endif  // MI_
+#endif  // SC_
 	switch( nScrollCode ){
 	case SB_LINEDOWN:
 //		for( i = 0; i < 4; ++i ){
@@ -229,10 +229,10 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 	default:
 		break;
 	}
-#ifdef MI_MOD_MINIMAP
+#ifdef SC_MOD_MINIMAP
 	SetDrawSwitch(bDrawSwitchOld);
 	RedrawAll();
-#endif  // MI_
+#endif  // SC_
 	return nScrollVal;
 }
 
@@ -348,12 +348,12 @@ void CEditView::AdjustScrollBars()
 		if( !bEnable ){
 			ScrollAtV( CLayoutInt(0) );
 		}
-#ifdef MI_MOD_MINIMAP
+#ifdef SC_MOD_MINIMAP
 		if (m_pcEditWnd->GetMiniMap().GetHwnd()) {
-			DWORD miniMapType = RegKey(MI_REGKEY).get(_T("MiniMapType"), MI_MINIMAP_TYPE_DEFAULT);
+			DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
 			CEditView &miniMap = m_pcEditWnd->GetMiniMap();
 			if (!m_bMiniMap) {
-				if (miniMapType == MI_MINIMAP_TYPE_NPP) {
+				if (miniMapType == SC_MINIMAP_TYPE_NPP) {
 					// Notepad++の挙動
 					// 画面端まで表示域が移動したのちにスクロール
 					CLayoutInt nViewTop = GetTextArea().GetViewTopLine();
@@ -366,7 +366,7 @@ void CEditView::AdjustScrollBars()
 					} else if (nViewBottom > nMiniMapViewBottom) {
 						miniMap.ScrollAtV(nViewBottom - miniMap.GetTextArea().m_nViewRowNum);
 					}
-				} else if (miniMapType == MI_MINIMAP_TYPE_ST) {
+				} else if (miniMapType == SC_MINIMAP_TYPE_ST) {
 					// Sublime Textの挙動
 					// 先頭行から最終行に移動するまでにミニマップも先頭行から最終行に移動する
 					const CLayout *pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY(GetTextArea().GetViewTopLine());
@@ -380,16 +380,16 @@ void CEditView::AdjustScrollBars()
 					}
 				}
 			} else {
-				if (miniMapType == MI_MINIMAP_TYPE_NPP) {
+				if (miniMapType == SC_MINIMAP_TYPE_NPP) {
 					::ShowScrollBar(miniMap.m_hwndVScrollBar, SB_CTL, FALSE);
-				} else if (miniMapType == MI_MINIMAP_TYPE_ST) {
+				} else if (miniMapType == SC_MINIMAP_TYPE_ST) {
 					::ShowScrollBar(miniMap.m_hwndVScrollBar, SB_CTL, FALSE);
 				} else {
 					::ShowScrollBar(miniMap.m_hwndVScrollBar, SB_CTL, TRUE);
 				}
 			}
 		}
-#endif  // MI_
+#endif  // SC_
 	}
 	if( NULL != m_hwndHScrollBar ){
 		/* 水平スクロールバー */
@@ -474,9 +474,9 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip2 = {0,0,0,0};
 			ScrollDraw(nScrollRowNum, CLayoutInt(0), rcScrol, rcClip, rcClip2);
-#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 if (!m_ignore_update_window)
-#endif  // MI_
+#endif  // SC_
 			::UpdateWindow( GetHwnd() );
 		}
 	}
@@ -559,9 +559,9 @@ CLayoutInt CEditView::ScrollAtH( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip = {0,0,0,0};
 			ScrollDraw(CLayoutInt(0), nScrollColNum, rcScrol, rcClip, rcClip2);
-#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 if (!m_ignore_update_window)
-#endif  // MI_
+#endif  // SC_
 			::UpdateWindow( GetHwnd() );
 		}
 	}

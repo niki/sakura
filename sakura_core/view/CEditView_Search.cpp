@@ -200,7 +200,7 @@ BOOL CEditView::KeySearchCore( const CNativeW* pcmemCurText )
 
 bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 {
-#if defined(MI_MOD_MINIMAP) && MI_MINIMAP_NOLINETIP
+#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_NOLINETIP
 	return false;
 #else
 	*pbHide = true;
@@ -289,15 +289,15 @@ bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 	m_dwTipTimer = 0;		// 辞書Tipを表示している */
 	m_poTipCurPos = *po;	// 現在のマウスカーソル位置 */
 	return true;			// ここまで来ていればヒット・ワード
-#endif  // MI_
+#endif  // SC_
 }
 
 /* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
-#ifdef MI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SC_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */, bool bRegQuote /* = false */ )
 #else
 void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */ )
-#endif  // MI_
+#endif  // SC_
 {
 
 	int				i;
@@ -353,7 +353,7 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 		}
 	}
 
-#ifdef MI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SC_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	// 正規表現文字をクォートする
 	// (PHP 4, PHP 5) string preg_quote ( string $str [, string $delimiter = NULL ] )
 	auto preg_quote = [](const CNativeW &str) -> CNativeW {
@@ -380,13 +380,13 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 	};
 	
 	if (bRegQuote) {
-		bRegQuote = !!RegKey(MI_REGKEY).get(_T("RegexpAutoQuote"), 1);
+		bRegQuote = !!RegKey(SC_REGKEY).get(_T("RegexpAutoQuote"), 1);
 	}
 	
 	if (bRegQuote) {
 		cmemTopic = preg_quote(cmemTopic);
 	}
-#endif  // MI_
+#endif  // SC_
 
 	wchar_t *pTopic2 = cmemTopic.GetStringPtr();
 	if( bTrimSpaceTab ){
@@ -424,30 +424,30 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 	@date 2006.08.23 ryoji 新規作成
 	@date 2014.07.01 Moca bGetHistory追加、戻り値をboolに変更
 */
-#ifdef MI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SC_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHistory, bool bRegQuote /* = false */ )
 #else
 bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHistory )
-#endif  // MI_
+#endif  // SC_
 {
 	bool bStripMaxPath = false;
 	cmemCurText.SetString(L"");
 
 	if( GetSelectionInfo().IsTextSelected() ){	// テキストが選択されている
-#ifdef MI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SC_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 		GetCurrentTextForSearch( cmemCurText, bStripMaxPath, false, bRegQuote );
 #else
 		GetCurrentTextForSearch( cmemCurText, bStripMaxPath );
-#endif  // MI_
+#endif  // SC_
 	}
 	else{	// テキストが選択されていない
 		bool bGet = false;
 		if( GetDllShareData().m_Common.m_sSearch.m_bCaretTextForSearch ){
-#ifdef MI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SC_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 			GetCurrentTextForSearch( cmemCurText, bStripMaxPath, false, bRegQuote );	// カーソル位置単語を取得
 #else
 			GetCurrentTextForSearch( cmemCurText, bStripMaxPath );	// カーソル位置単語を取得
-#endif  // MI_
+#endif  // SC_
 			if( cmemCurText.GetStringLength() == 0 && bGetHistory ){
 				bGet = true;
 			}

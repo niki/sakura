@@ -54,9 +54,9 @@ bool CEditView::TagJumpSub(
 	bool*			pbJumpToSelf	//!< [out] オプションNULL可。自分にジャンプしたか
 )
 {
-#ifdef MI_MOD_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(MI_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // MI_
+#ifdef SC_MOD_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // SC_
 
 	HWND	hwndOwner;
 	POINT	poCaret;

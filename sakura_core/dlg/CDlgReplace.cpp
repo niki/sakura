@@ -184,10 +184,10 @@ void CDlgReplace::SetData( void )
 	}
 	// To Here 2001.12.03 hor
 
-#ifdef MI_MOD_DIALOG_POS
+#ifdef SC_MOD_DIALOG_POS
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
-#endif  // MI_
+#endif  // SC_
 
 	return;
 }

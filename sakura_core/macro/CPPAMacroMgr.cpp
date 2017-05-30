@@ -12,7 +12,7 @@
 	Please contact the copyright holder to use this code for other purpose.
 */
 #include "StdAfx.h"
-#ifdef MI_USE_PPA
+#ifdef SC_USE_PPA
 #include "CPPAMacroMgr.h"
 #include "mem/CMemory.h"
 #include "CMacroFactory.h"
@@ -113,4 +113,4 @@ void CPPAMacroMgr::declare (void)
 //	To Here Apr. 29, 2002 genta
 
 
-#endif  // MI_USE_PPA
+#endif  // SC_USE_PPA

@@ -54,9 +54,9 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 	if( 0 >= nLength ){
 		return;
 	}
-#ifdef MI_OUTPUT_DEBUG_STRING
-	//mix::logln(L"DispText");
-#endif  // MI_
+#ifdef SC_OUTPUT_DEBUG_STRING
+	//sc::logln(L"DispText");
+#endif  // SC_
 	int x=pDispPos->GetDrawPos().x;
 	int y=pDispPos->GetDrawPos().y;
 
@@ -146,9 +146,9 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 		::ExtTextOutW_AnyBuild(
 			hdc,
 			nDrawX,					//X
-#ifdef MI_LINE_CENTERING
+#ifdef SC_LINE_CENTERING
 			(m_pEditView->GetLineSpace() / 2) +
-#endif  // MI_
+#endif  // SC_
 			y,						//Y
 			ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
 			&rcClip,
@@ -368,9 +368,9 @@ void CTextDrawer::DispLineNumber(
 	int				y
 ) const
 {
-#ifdef MI_OUTPUT_DEBUG_STRING
-	//mix::logln(L"DispLineNumber(%d)\n", nLineNum+1);
-#endif  // MI_
+#ifdef SC_OUTPUT_DEBUG_STRING
+	//sc::logln(L"DispLineNumber(%d)\n", nLineNum+1);
+#endif  // SC_
 	//$$ 高速化：SearchLineByLayoutYにキャッシュを持たせる
 	const CLayout*	pcLayout = CEditDoc::GetInstance(0)->m_cLayoutMgr.SearchLineByLayoutY( nLineNum );
 
@@ -469,7 +469,7 @@ void CTextDrawer::DispLineNumber(
 		}
 		bDispLineNumTrans = true;
 
-#ifdef MI_MOD_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
+#ifdef SC_MOD_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
     bool disp = false;
     CLayoutMgr &layout_mgr = CEditDoc::GetInstance(0)->m_cLayoutMgr;
     CLayoutInt line_count = layout_mgr.GetLineCount();
@@ -502,9 +502,9 @@ void CTextDrawer::DispLineNumber(
       int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
       ::ExtTextOutW_AnyBuild( gr,
         drawNumTop,
-#  ifdef MI_LINE_CENTERING
+#  ifdef SC_LINE_CENTERING
         (pView->GetLineSpace() / 2) +
-#  endif  // MI_
+#  endif  // SC_
         y,
         ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
         &rcLineNum,
@@ -519,7 +519,7 @@ void CTextDrawer::DispLineNumber(
       
       bDispLineNumTrans = false;
     }
-#endif  // MI_
+#endif  // SC_
 	}
 	else if( CTypeSupport(pView,COLORIDX_GYOU).IsDisp() ){ /* 行番号表示／非表示 */
 		SFONT sFont = cColorType.GetTypeFont();
@@ -576,9 +576,9 @@ void CTextDrawer::DispLineNumber(
 		int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
 		::ExtTextOutW_AnyBuild( gr,
 			drawNumTop,
-#ifdef MI_LINE_CENTERING
+#ifdef SC_LINE_CENTERING
 			(pView->GetLineSpace() / 2) +
-#endif  // MI_
+#endif  // SC_
 			y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcLineNum,
@@ -594,11 +594,11 @@ void CTextDrawer::DispLineNumber(
 			rc.top = y;
 			rc.right = nLineNumAreaWidth - 1;
 			rc.bottom = y + nLineHeight;
-#ifdef MI_FIX_LINE_TERM_TYPE
+#ifdef SC_FIX_LINE_TERM_TYPE
 			gr.FillSolidMyRect(rc, cGyouType.GetTextColor());
 #else
 			gr.FillSolidMyRect(rc, fgcolor);
-#endif  // MI_
+#endif  // SC_
 		}
 
 		gr.PopTextForeColor();
@@ -618,14 +618,14 @@ void CTextDrawer::DispLineNumber(
 	{
 		// 2001.12.03 hor
 		/* とりあえずブックマークに縦線 */
-#ifdef MI_FIX_DRAW_BOOKMARK_LINE_NOGYOU
+#ifdef SC_FIX_DRAW_BOOKMARK_LINE_NOGYOU
 		bool bookmark_line = false;
 		bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp();
 		bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !CTypeSupport(pView,COLORIDX_GYOU).IsDisp();
 		if (bookmark_line)
 #else
 		if(CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp() )
-#endif  // MI_
+#endif  // SC_
 		{
 			gr.PushPen(cColorType.GetTextColor(),2);
 			::MoveToEx( gr, 1, y, NULL );

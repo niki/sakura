@@ -43,7 +43,7 @@ const DWORD p_helpids[] = {	//12900
 //	From Here Feb. 7, 2002 genta
 // 2006.01.17 Moca COMPILER_VERを追加
 // 2010.04.15 Moca icc/dmcを追加しCPUを分離
-#ifdef MI_MOD_VERDLG
+#ifdef SC_MOD_VERDLG
 #if defined(_M_IA64)
 #  define TARGET_M_SUFFIX "64-bit Itanium"
 #elif defined(_M_AMD64)
@@ -61,7 +61,7 @@ const DWORD p_helpids[] = {	//12900
 #else
 #  define TARGET_M_SUFFIX ""
 #endif
-#endif  // MI_
+#endif  // SC_
 
 #if defined(__BORLANDC__)
 #  define COMPILER_TYPE "B"
@@ -76,7 +76,7 @@ const DWORD p_helpids[] = {	//12900
 #  define COMPILER_TYPE "D"
 #  define COMPILER_VER __DMC__
 #elif defined(_MSC_VER)
-#  ifdef MI_MOD_VERDLG
+#  ifdef SC_MOD_VERDLG
 #    if (_MSC_VER == 1910)
 #      define COMPILER_TYPE "MSVC 2017"
 #    elif (_MSC_VER == 1900)
@@ -131,7 +131,7 @@ const DWORD p_helpids[] = {	//12900
 	#define MY_WIN32_WINNT 0
 #endif
 
-#ifdef MI_MOD_VERDLG
+#ifdef SC_MOD_VERDLG
 #  ifdef _MT
 #    ifdef _DLL
 #      ifdef _DEBUG
@@ -149,7 +149,7 @@ const DWORD p_helpids[] = {	//12900
 #  else
 #    define MY_RT ""
 #  endif
-#endif  // MI_
+#endif  // SC_
 
 //	From Here Nov. 7, 2000 genta
 /*!
@@ -219,7 +219,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #if (SVN_REV == 0)
-#ifdef MI_MOD_VERDLG
+#ifdef SC_MOD_VERDLG
 	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS )
@@ -231,7 +231,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		HIWORD( dwVersionLS ),
 		LOWORD( dwVersionLS )
 	);
-#endif  // MI_
+#endif  // SC_
 #else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (Rev.") _T(SVN_REV_STR) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
@@ -253,7 +253,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// コンパイル情報
 	cmemMsg.AppendString( _T("      Compile Info: ") );
 	int Compiler_ver = COMPILER_VER;
-#ifdef MI_MOD_VERDLG
+#ifdef SC_MOD_VERDLG
 	auto_sprintf( szMsg, _T(COMPILER_TYPE" (%d) ") _T(MY_RT" ")
 			TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
 		Compiler_ver,
@@ -265,7 +265,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		Compiler_ver,
 		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
 	);
-#endif  // MI_
+#endif  // SC_
 	cmemMsg.AppendString( szMsg );
 
 	// 更新日情報

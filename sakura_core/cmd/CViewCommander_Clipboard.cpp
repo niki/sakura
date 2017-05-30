@@ -608,11 +608,11 @@ void CViewCommander::Command_INSTEXT(
 				);
 			}
 		}
-#ifdef MI_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_CURSOR_MOVE_FLICKER
 		if (bRedraw) {
 			m_pCommanderView->Redraw();
 		}
-#endif  // MI_
+#endif  // SC_
 	}
 
 end_of_func:

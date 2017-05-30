@@ -366,23 +366,23 @@ bool CProfile::SetProfileDataImp(
 			//既存のセクションの場合
 			mapiter = iter->mapEntries.find( strEntryKey );
 			if( iter->mapEntries.end() != mapiter ) {
-#if 0//def MI_MOD_PROFILES
+#if 0//def SC_MOD_PROFILES
 				if (strEntryValue.empty()) {
 					iter->mapEntries.erase(mapiter);
 					break;  // 空文字は書き込まない
 				}
-#endif  // MI_
+#endif  // SC_
 
 				//既存のエントリの場合は値を上書き
 				mapiter->second = strEntryValue;
 				break;
 			}
 			else {
-#if 0//def MI_MOD_PROFILES
+#if 0//def SC_MOD_PROFILES
 				if (strEntryValue.empty()) {
 					break;  // 空文字は書き込まない
 				}
-#endif  // MI_
+#endif  // SC_
 
 				//既存のエントリが見つからない場合は追加
 				iter->mapEntries.insert( PAIR_STR_STR( strEntryKey, strEntryValue ) );

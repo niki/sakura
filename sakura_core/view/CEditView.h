@@ -471,13 +471,13 @@ public:
 
 	int IsSearchString( const CStringRef& cStr, CLogicInt, CLogicInt*, CLogicInt* ) const;	/* 現在位置が検索文字列に該当するか */	//2002.02.08 hor 引数追加
 
-#ifdef MI_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SC_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false, bool bRegQuote = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false, bool bRegQuote = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
 #else
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
-#endif  // MI_
+#endif  // SC_
 
 private:
 	/* インクリメンタルサーチ */ 
@@ -580,7 +580,7 @@ public:
 	void SetUndoBuffer( bool bPaintLineNumber = false );			// アンドゥバッファの処理
 	HWND StartProgress();
 
-#ifdef MI_LINE_CENTERING
+#ifdef SC_LINE_CENTERING
 	int GetLineSpace() const { //!< 行間のすきま取得
 		if (!m_bMiniMap && m_pTypeData) {
 			return m_pTypeData->m_nLineSpace;
@@ -588,7 +588,7 @@ public:
 			return 0;
 		}
 	}
-#endif  // MI_
+#endif  // SC_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         アクセサ                            //
@@ -772,12 +772,12 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(CEditView);
 	
-#ifdef MI_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
+#ifdef SC_FIX_CALL_CURSOR_MOVE_UPDATEWINDOW
 public:
 	void BeginIgnoreUpdateWindow();
 	void EndIgnoreUpdateWindow();
 	bool m_ignore_update_window;  // UpdateWindowを無視する
-#endif  // MI_
+#endif  // SC_
 };
 
 

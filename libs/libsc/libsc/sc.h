@@ -1,12 +1,12 @@
 ﻿// -*- mode:c++; coding:utf-8-ws -*-
 //====================================================================
-//! @file  mix.h
-//! @brief libmix
+//! @file  sc.h
+//! @brief libsc
 //!
-//! @author (C) koma.
+//! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef MIX_H
-#define MIX_H
+#ifndef SC_H
+#define SC_H
 
 #include "basis.h"
 #include "using.h"
@@ -16,4 +16,4 @@
 #include "registry.hpp"
 #include "color_string.hpp"
 
-#endif /* MIX_HPP */
+#endif /* SC_H */

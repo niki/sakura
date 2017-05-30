@@ -30,14 +30,14 @@
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "typeprop/CImpExpManager.h"
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 #include <codecvt>
 #include <locale>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
-#endif  // MI_
+#endif  // SC_
 
 void _DefaultConfig(STypeConfig* pType);
 
@@ -130,7 +130,7 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, boost::container::vec
 */
 void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 {
-#ifndef MI_MOD_PROFILES
+#ifndef SC_MOD_PROFILES
 	/* 強調キーワードのテストデータ */
 	pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx = 0;
 	CKeyWordSetMgr& cKeyWordSetMgr = pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
@@ -204,9 +204,9 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 #undef PopulateKeyword1
 #undef PopulateKeyword2
 #undef PopulateKeyword
-#endif  // MI_
+#endif  // SC_
 }
-#ifdef MI_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
 void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstring &fname)
 {
 	/* 強調キーワードのテストデータ */
@@ -234,7 +234,7 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 	using boost::property_tree::read_json;
 
 	ptree pt;
-	read_json(mix::util::to_bytes(fname).c_str(), pt);
+	read_json(sc::util::to_bytes(fname).c_str(), pt);
 
 	BOOST_FOREACH (const ptree::value_type& child, pt.get_child("KeywordSet")) {
 								 const ptree& info = child.second;
@@ -245,14 +245,14 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 		// file
 		boost::optional<std::string> file = info.get_optional<std::string>("file");
 		
-		fnPopulateKeyword(mix::util::from_bytes(*name),
-		                  mix::util::to_b(*case_sensitive),
-		                  mix::util::from_bytes(*file));
+		fnPopulateKeyword(sc::util::from_bytes(*name),
+		                  sc::util::to_b(*case_sensitive),
+		                  sc::util::from_bytes(*file));
 		
-		//mix::logln((*file).c_str());
+		//sc::logln((*file).c_str());
 	}
 }
-#endif  // MI_
+#endif  // SC_
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                        デフォルト                           //
@@ -274,10 +274,10 @@ void _DefaultConfig(STypeConfig* pType)
 	for( int i = 0; i < MAX_KEYWORDSET_PER_TYPE; i++ ){
 		pType->m_nKeyWordSetIdx[i] = -1;
 	}
-#ifndef MI_MOD_TAB_MARK
+#ifndef SC_MOD_TAB_MARK
 	wcscpy( pType->m_szTabViewString, _EDITL("^       ") );	/* TAB表示文字列 */
 	pType->m_bTabArrow = TABARROW_STRING;	/* タブ矢印表示 */	// 2001.12.03 hor	// default on 2013/4/11 Uchi
-#endif  // MI_
+#endif  // SC_
 	pType->m_bInsSpace = false;				/* スペースの挿入 */	// 2001.12.03 hor
 	
 	//@@@ 2002.09.22 YAZAKI 以下、m_cLineCommentとm_cBlockCommentsを使うように修正

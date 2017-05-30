@@ -105,12 +105,12 @@ static int l_##_name_(lua_State *L)
 //! ログ出力
 LUA_FUNC(log) {
   const char *s = luaL_checkstring(L, 1);
-  mix::log(to_wchar(s));
+  sc::log(to_wchar(s));
   return 0;
 }
 LUA_FUNC(logln) {
   const char *s = luaL_checkstring(L, 1);
-  mix::logln(to_wchar(s));
+  sc::logln(to_wchar(s));
   return 0;
 }
 
@@ -121,7 +121,7 @@ LUA_FUNC(logln) {
 //------------------------------------------------------------------
 static int _eval(lua_State *L, lua_State *L2) {
   const char *s = luaL_checkstring(L, 1);
-  mix::logln(to_wchar(s));
+  sc::logln(to_wchar(s));
 
   // 式にする
   std::string exp = "num = ";
@@ -136,7 +136,7 @@ static int _eval(lua_State *L, lua_State *L2) {
     if (ret != 0) {
       // エラー時のメッセージ表示
       std::string error_message = lua_tostring(L, -1);
-      mix::logln(to_wchar(error_message.c_str()));
+      sc::logln(to_wchar(error_message.c_str()));
       ::MessageBoxW(NULL, to_wchar(error_message.c_str()), L"eval failed!!", MB_OK);
     }
     
@@ -250,15 +250,15 @@ bool CLua::DoFunction(EFunctionCode nFuncID) {
 			const char *s = lua_tostring(L, nArgs + 1);
 			SysString S(s, lstrlenA(s));
 			Wrap(&vtArg[nArgs])->Receive(S);
-			//mix::logln(to_wchar(s));
+			//sc::logln(to_wchar(s));
 		} else if (type == VT_I4) {
 			int n = (int)lua_tonumber(L, nArgs + 1);
-			//mix::logln(L"lua_tonumber = %d", n);
+			//sc::logln(L"lua_tonumber = %d", n);
 			vtArg[nArgs].vt = VT_I4;
 			vtArg[nArgs].lVal = n;
 		} else {
 			//nop
-			//mix::logln(L"nop");
+			//sc::logln(L"nop");
 			::VariantClear(&vtArg[nArgs]);
 		}
 	}
@@ -292,15 +292,15 @@ bool CLua::DoFunction(EFunctionCode nFuncID) {
 	return bSuccess;
 }
 
-//! mixlib関数群
-static int luaopen_mixlib(lua_State* L) {
-	static const struct luaL_Reg mixlib[] = {
-		{"log", [](lua_State *L)->int{mix::log(to_wchar(luaL_checkstring(s_lsi[eState_Main].L, 1))); return 0;}},
-		{"logln", [](lua_State *L)->int{mix::logln(to_wchar(luaL_checkstring(s_lsi[eState_Main].L, 1))); return 0;}},
+//! libsc関数群
+static int luaopen_libsc(lua_State* L) {
+	static const struct luaL_Reg libsc[] = {
+		{"log", [](lua_State *L)->int{sc::log(to_wchar(luaL_checkstring(s_lsi[eState_Main].L, 1))); return 0;}},
+		{"logln", [](lua_State *L)->int{sc::logln(to_wchar(luaL_checkstring(s_lsi[eState_Main].L, 1))); return 0;}},
 		{NULL, NULL}
 	};
 
-	luaL_newlib(L, mixlib);
+	luaL_newlib(L, libsc);
 	return 1;
 }
 
@@ -748,8 +748,8 @@ CLua::CLua() {
 	L = s_lsi[eState_Main].L;
 
 	// test
-	//luaL_register(L, "mix", mixlib);
-	luaL_requiref(L, "mix", luaopen_mixlib, 1);
+	//luaL_register(L, "sc", libsc);
+	luaL_requiref(L, "sc", luaopen_libsc, 1);
 	luaL_requiref(L, "Editor", luaopen_editor, 1);
 	//LUA_ADD_FUNC(log);
 	//LUA_ADD_FUNC(logln);
@@ -798,7 +798,7 @@ bool CLua::Execute(CEditView* pcEditView, int flags, const CNativeW &buffer)
 		lua_State *L = s_lsi[eState_Main].L;
 		int ret;
 		
-		//mix::logln(buffer.GetStringPtr());
+		//sc::logln(buffer.GetStringPtr());
 		ret = luaL_dostring(L, to_achar(buffer.GetStringPtr()));
 		
 		if (ret != 0) {
@@ -806,7 +806,7 @@ bool CLua::Execute(CEditView* pcEditView, int flags, const CNativeW &buffer)
 			
 			// エラー時のメッセージ表示
 			std::string error_message = lua_tostring(L, -1);
-			mix::logln(to_wchar(error_message.c_str()));
+			sc::logln(to_wchar(error_message.c_str()));
 			::MessageBoxW(NULL, to_wchar(error_message.c_str()), L"Lua Script failed!!", MB_OK);
 		}
 		

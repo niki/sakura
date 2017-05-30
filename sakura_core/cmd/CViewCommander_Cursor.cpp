@@ -810,9 +810,9 @@ void CViewCommander::Command_1PageDown( bool bSelect, CLayoutYInt nScrollNum )
 /* ファイルの先頭に移動 */
 void CViewCommander::Command_GOFILETOP( bool bSelect )
 {
-#ifdef MI_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_CURSOR_MOVE_FLICKER
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
-#endif  // MI_
+#endif  // SC_
 	/* 先頭へカーソルを移動 */
 	//	Sep. 8, 2000 genta
 	m_pCommanderView->AddCurrentLineToHistory();
@@ -823,13 +823,13 @@ void CViewCommander::Command_GOFILETOP( bool bSelect )
 		CLayoutInt(0)
 	);
 	m_pCommanderView->MoveCursorSelecting( pt, bSelect );	//	通常は、(0, 0)へ移動。ボックス選択中は、(GetCaret().GetCaretLayoutPos().GetX2(), 0)へ移動
-#ifdef MI_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_CURSOR_MOVE_FLICKER
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
 	if (m_pCommanderView->m_pcEditWnd->GetMiniMap().GetHwnd() != NULL) {
 		m_pCommanderView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
 	}
-#endif  // MI_
+#endif  // SC_
 }
 
 
@@ -837,9 +837,9 @@ void CViewCommander::Command_GOFILETOP( bool bSelect )
 /* ファイルの最後に移動 */
 void CViewCommander::Command_GOFILEEND( bool bSelect )
 {
-#ifdef MI_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_CURSOR_MOVE_FLICKER
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
-#endif  // MI_
+#endif  // SC_
 // 2001.12.13 hor BOX選択中にファイルの最後にジャンプすると[EOF]の行が反転したままになるの修正
 	if( !bSelect ){
 		if( m_pCommanderView->GetSelectionInfo().IsTextSelected() ){
@@ -866,13 +866,13 @@ void CViewCommander::Command_GOFILEEND( bool bSelect )
 	if( bSelect ){
 		m_pCommanderView->GetSelectionInfo().PrintSelectionInfoMsg();
 	}
-#ifdef MI_FIX_CURSOR_MOVE_FLICKER
+#ifdef SC_FIX_CURSOR_MOVE_FLICKER
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
 	if (m_pCommanderView->m_pcEditWnd->GetMiniMap().GetHwnd() != NULL) {
 		m_pCommanderView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
 	}
-#endif  // MI_
+#endif  // SC_
 }
 
 
@@ -961,8 +961,8 @@ void CViewCommander::Command_WndScrollDown( void )
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef MI_MOD_SCROLL
-	nCaretMarginY = MI_VERTICAL_SCR;
+#ifdef SC_MOD_SCROLL
+	nCaretMarginY = SC_VERTICAL_SCR;
 	if( nCaretMarginY < 1 )
 		nCaretMarginY = CLayoutInt(1);
 #else
@@ -971,23 +971,23 @@ void CViewCommander::Command_WndScrollDown( void )
 		nCaretMarginY = CLayoutInt(1);
 
 	nCaretMarginY += 2;
-#endif  // MI_
+#endif  // SC_
 
 	bool bCaretOff = false;
 	if( GetCaret().GetCaretLayoutPos().GetY() > m_pCommanderView->GetTextArea().m_nViewRowNum + m_pCommanderView->GetTextArea().GetViewTopLine() - (nCaretMarginY + 1) ){
 		bCaretOff = true;
 	}
 
-#ifdef MI_MOD_MINIMAP
+#ifdef SC_MOD_MINIMAP
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
-#endif  // MI_
+#endif  // SC_
 	//	Sep. 11, 2004 genta 同期用に行数を記憶
 	//	Sep. 11, 2004 genta 同期スクロールの関数化
 	m_pCommanderView->SyncScrollV( m_pCommanderView->ScrollAtV(m_pCommanderView->GetTextArea().GetViewTopLine() - CLayoutInt(1)));
-#ifdef MI_MOD_MINIMAP
+#ifdef SC_MOD_MINIMAP
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
-#endif  // MI_
+#endif  // SC_
 
 	// テキストが選択されていない
 	if( !m_pCommanderView->GetSelectionInfo().IsTextSelected() )
@@ -1016,8 +1016,8 @@ void CViewCommander::Command_WndScrollUp(void)
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef MI_MOD_SCROLL
-	nCaretMarginY = MI_VERTICAL_SCR;
+#ifdef SC_MOD_SCROLL
+	nCaretMarginY = SC_VERTICAL_SCR;
 	if( nCaretMarginY < 0 )
 		nCaretMarginY = CLayoutInt(0);
 #else
@@ -1031,16 +1031,16 @@ void CViewCommander::Command_WndScrollUp(void)
 		bCaretOff = true;
 	}
 
-#ifdef MI_MOD_MINIMAP
+#ifdef SC_MOD_MINIMAP
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
-#endif  // MI_
+#endif  // SC_
 	//	Sep. 11, 2004 genta 同期用に行数を記憶
 	//	Sep. 11, 2004 genta 同期スクロールの関数化
 	m_pCommanderView->SyncScrollV( m_pCommanderView->ScrollAtV( m_pCommanderView->GetTextArea().GetViewTopLine() + CLayoutInt(1) ));
-#ifdef MI_MOD_MINIMAP
+#ifdef SC_MOD_MINIMAP
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
-#endif  // MI_
+#endif  // SC_
 
 	// テキストが選択されていない
 	if( !m_pCommanderView->GetSelectionInfo().IsTextSelected() )
