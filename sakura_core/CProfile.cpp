@@ -106,16 +106,6 @@ void CProfile::ReadOneline(
 */
 bool CProfile::ReadProfile( const TCHAR* pszProfileName )
 {
-#ifdef MI_USE_REGISTRY_FOR_PROFILES
-	if (IsRegMode() &&
-			!!RegKey(MI_REGKEY).get(_T("ReadProfilesFromRegistry"), 0) &&
-			RegKey(mix::reg::genkey(m_strProfileName)).valid()) {
-		return true;
-	}
-	// レジストリキーがない場合はiniを読み込みに行く
-	ResetRegMode();
-#endif  // MI_
-
 	m_strProfileName = pszProfileName;
 
 	CTextInputStream in(m_strProfileName.c_str());
@@ -226,13 +216,6 @@ bool CProfile::WriteProfile(
 	const WCHAR* pszComment
 )
 {
-#ifdef MI_USE_REGISTRY_FOR_PROFILES
-	if (IsRegMode() &&
-			!!RegKey(MI_REGKEY).get(_T("WriteProfilesToRegistry"), 0)) {
-		return false;
-	}
-#endif  // MI_
-
 	if( pszProfileName!=NULL ) {
 		m_strProfileName = pszProfileName;
 	}
@@ -346,13 +329,6 @@ bool CProfile::GetProfileDataImp(
 	wstring&		strEntryValue	//!< [out] エントリ値
 )
 {
-#ifdef MI_USE_REGISTRY_FOR_PROFILES
-	if (IsRegMode() &&
-			!!RegKey(MI_REGKEY).get(_T("ReadProfilesFromRegistry"), 0)) {
-		return RegGetProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
-	}
-#endif  // MI_
-
 	boost::container::vector< Section >::iterator iter;
 	boost::container::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	MAP_STR_STR::iterator mapiter;
@@ -381,13 +357,6 @@ bool CProfile::SetProfileDataImp(
 	const wstring&	strEntryValue	//!< [in] エントリ値
 )
 {
-#ifdef MI_USE_REGISTRY_FOR_PROFILES
-	if (IsRegMode() &&
-			!!RegKey(MI_REGKEY).get(_T("WriteProfilesToRegistry"), 0)) {
-		return RegSetProfileString(m_strProfileName, strSectionName, strEntryKey, strEntryValue);
-	}
-#endif  // MI_
-
 	boost::container::vector< Section >::iterator iter;
 	boost::container::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	MAP_STR_STR::iterator mapiter;
