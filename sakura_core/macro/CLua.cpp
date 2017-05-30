@@ -4,7 +4,7 @@
 	@date 2017.5.21
 */
 /*
-	Copyright (C) 2017, 
+	Copyright (C) 2017, sayacat
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -49,10 +49,18 @@ LuaをC/C++プログラムに組み込む - プログラミングの魔物 <http
 
 enum eState {
   eState_Main = 0,
-  eState_Sub1,
+  eState_Eval,
+  eState_LightEval,
   eState_Max
 };
-static lua_State *_L[eState_Max] = {};  // 保持
+static struct stLuaStateInfo {
+        lua_State  *L;
+  const bool        bUseLib;
+} s_lsi[eState_Max] = {
+  {nullptr, true},   // eState_Main
+  {nullptr, true},   // eState_Eval
+  {nullptr, false},  // eState_LightEval
+};
 
 //! 関数定義マクロ
 #define LUA_FUNC(_name_) \
@@ -67,8 +75,8 @@ static int l_##_name_(lua_State *L)
 
 //! 関数登録
 #define LUA_ADD_FUNC(_name_) \
-	lua_pushcfunction(_L[eState_Main], l_##_name_); \
-	lua_setglobal(_L[eState_Main], #_name_);
+	lua_pushcfunction(s_lsi[eState_Main].L, l_##_name_); \
+	lua_setglobal(s_lsi[eState_Main].L, #_name_);
 
 //! サクラ用ライブラリ関数(コマンド)定義マクロ
 #define LUA_SAKURA_FUNC_C(_funcid_, _name_)       \
@@ -105,8 +113,13 @@ LUA_FUNC(logln) {
   mix::logln(to_wchar(s));
   return 0;
 }
+
+//------------------------------------------------------------------
 //! 文字列をLuaコードとして評価
-LUA_FUNC(eval) {
+//! @param L メインで動いている lua_State
+//! @param L2 コード中から呼び出す lua_State
+//------------------------------------------------------------------
+static int _eval(lua_State *L, lua_State *L2) {
   const char *s = luaL_checkstring(L, 1);
   mix::logln(to_wchar(s));
 
@@ -118,8 +131,14 @@ LUA_FUNC(eval) {
 
   // 別のlua_Stateで評価する
   {
-    lua_State *L2 = _L[eState_Sub1];
     int ret = luaL_dostring(L2, exp.c_str());
+    
+    if (ret != 0) {
+      // エラー時のメッセージ表示
+      std::string error_message = lua_tostring(L, -1);
+      mix::logln(to_wchar(error_message.c_str()));
+      ::MessageBoxW(NULL, to_wchar(error_message.c_str()), L"eval failed!!", MB_OK);
+    }
     
     lua_getglobal(L2, "num");
     num = lua_tonumber(L2, -1);
@@ -131,18 +150,24 @@ LUA_FUNC(eval) {
   char buf[256] = {};
   ::snprintf(buf, sizeof(buf) - 1, "%g", num);
 
-  //mix::logln(to_wchar(buf));
-
   // 戻り値
   lua_pushstring(L, buf);
   return 1;
+}
+//! 文字列をLuaコードとして評価
+LUA_FUNC(eval) {
+  return _eval(L, s_lsi[eState_Eval].L);
+}
+//! 文字列をLuaコードとして評価 (軽量版)
+LUA_FUNC(leval) {
+  return _eval(L, s_lsi[eState_LightEval].L);
 }
 
 //------------------------------------------------------------------
 //! コマンドの実行
 //------------------------------------------------------------------
 void CLua::DoCommand(EFunctionCode nFuncID) {
-	lua_State *L = _L[eState_Main];
+	lua_State *L = s_lsi[eState_Main].L;
 	CEditView *pcEditView = m_CurInstance->m_pcEditView;
 
 	const WCHAR** tmpArguments = new const WCHAR*[16];
@@ -170,22 +195,18 @@ void CLua::DoCommand(EFunctionCode nFuncID) {
 		if (type == VT_BSTR) {
 			const char *s = lua_tostring(L, nArgs + 1);
 			if (s) {
-				//mix::logln(to_wchar(s));
 				tmpArguments[nArgs] = mbstowcs_new(s);
 				tmpArgLengths[nArgs] = wcslen(tmpArguments[nArgs]);
 			} else {
-				//mix::logln(L"lua_tostring NULL");
 				tmpArguments[nArgs] = NULL;
 				tmpArgLengths[nArgs] = 0;
 			}
 		} else if (type == VT_I4) {
 			int n = (int)lua_tonumber(L, nArgs + 1);
-			//mix::logln(L"lua_tonumber = %d", n);
 			tmpArguments[nArgs] = mbstowcs_new(std::to_string(n).c_str());
 			tmpArgLengths[nArgs] = wcslen(tmpArguments[nArgs]);
 		} else {
 			//nop
-			//mix::logln(L"nop");
 			tmpArguments[nArgs] = NULL;
 			tmpArgLengths[nArgs] = 0;
 		}
@@ -201,7 +222,7 @@ void CLua::DoCommand(EFunctionCode nFuncID) {
 //! ファンクションの実行
 //------------------------------------------------------------------
 bool CLua::DoFunction(EFunctionCode nFuncID) {
-	lua_State *L = _L[eState_Main];
+	lua_State *L = s_lsi[eState_Main].L;
 	CEditView *pcEditView = m_CurInstance->m_pcEditView;
 
 	const int maxArgSize = 8;
@@ -274,8 +295,8 @@ bool CLua::DoFunction(EFunctionCode nFuncID) {
 //! mixlib関数群
 static int luaopen_mixlib(lua_State* L) {
 	static const struct luaL_Reg mixlib[] = {
-		{"log", [](lua_State *L)->int{mix::log(to_wchar(luaL_checkstring(_L[eState_Main], 1))); return 0;}},
-		{"logln", [](lua_State *L)->int{mix::logln(to_wchar(luaL_checkstring(_L[eState_Main], 1))); return 0;}},
+		{"log", [](lua_State *L)->int{mix::log(to_wchar(luaL_checkstring(s_lsi[eState_Main].L, 1))); return 0;}},
+		{"logln", [](lua_State *L)->int{mix::logln(to_wchar(luaL_checkstring(s_lsi[eState_Main].L, 1))); return 0;}},
 		{NULL, NULL}
 	};
 
@@ -718,11 +739,13 @@ CLua::CLua() {
 
 	//
 	for (int i = 0; i < eState_Max; i++) {
-		_L[i] = luaL_newstate();
-		luaL_openlibs(_L[i]);
+		s_lsi[i].L = luaL_newstate();
+		if (s_lsi[i].bUseLib) {
+			luaL_openlibs(s_lsi[i].L);
+		}
 	}
 
-	L = _L[eState_Main];
+	L = s_lsi[eState_Main].L;
 
 	// test
 	//luaL_register(L, "mix", mixlib);
@@ -731,6 +754,7 @@ CLua::CLua() {
 	//LUA_ADD_FUNC(log);
 	//LUA_ADD_FUNC(logln);
 	LUA_ADD_FUNC(eval);
+	LUA_ADD_FUNC(leval);
 
 	//LUA_ADD_FUNC(FileNew);
 	//LUA_ADD_FUNC(FileOpen);
@@ -743,9 +767,9 @@ CLua::CLua() {
 CLua::~CLua() {
 	//
 	for (int i = 0; i < eState_Max; i++) {
-		if (_L[i]) {
-			lua_close(_L[i]);
-			_L[i] = 0;
+		if (s_lsi[i].L) {
+			lua_close(s_lsi[i].L);
+			s_lsi[i].L = 0;
 		}
 	}
 }
@@ -771,7 +795,7 @@ bool CLua::Execute(CEditView* pcEditView, int flags, const CNativeW &buffer)
 	m_CurInstance = &info;
 	
 	{
-		lua_State *L = _L[eState_Main];
+		lua_State *L = s_lsi[eState_Main].L;
 		int ret;
 		
 		//mix::logln(buffer.GetStringPtr());
