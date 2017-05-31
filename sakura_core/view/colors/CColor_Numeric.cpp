@@ -6,10 +6,18 @@
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
 #ifdef SC_MOD_NUMERIC_COLOR
-//#include <regex>
-//using namespace std;
-#include <boost/regex.hpp>
-using namespace boost;
+#define REGEX_MODE (2)  // 0:std::regex, 1:boost::regex, 2:re2
+#if REGEX_MODE == 0
+  #include <regex>
+  using namespace std;
+#elif REGEX_MODE == 1
+  #pragma comment(lib, "libboost_regex-vc141-mt-1_64.lib")
+  #include <boost/regex.hpp>
+  using namespace boost;
+#elif REGEX_MODE == 2
+  #pragma comment(lib, "re2.lib")
+  #include <re2/re2.h>
+#endif
 #endif  // SC_
 
 static int IsNumber( const CStringRef& cStr, int offset );/* 数値ならその長さを返す */	//@@@ 2001.02.17 by MIK
@@ -79,36 +87,83 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	register const wchar_t *p = cStr.GetPtr() + offset;
 	register const wchar_t *q = cStr.GetPtr() + cStr.GetLength();
 
+#if REGEX_MODE == 2
+	using _regex = re2::RE2;
+	using _cmatch = re2::StringPiece;
+	#define _regex_search re2::RE2::PartialMatch
+	#define REGSTR(x) x
+	#define REGEX(x) REGSTR(x)
+#else
+	using _regex = wregex;
+	using _cmatch = wcmatch;
+	#define _regex_search regex_search
+	#define REGSTR(x) L##x
+	#define REGEX(x) _regex(REGSTR(x))
+#endif
+
 	int i = 0;
-	wcmatch match;
+	_cmatch match;
 
-	static const wregex re1_trig(L"e");
-	static const wregex re1[] = {
-			wregex(L"^[0-9]+\\.[0-9]*([eE][-+][0-9]+)([fF]?)"),  // 1e-2
-			wregex(L"^(\\.[0-9]+)([eE][-+][0-9]+)([fF]?)"),      // .12e+2
+	static const _regex re1_enter(REGSTR("e"));
+	static const _regex re1[] = {
+			REGEX("^[0-9]+\\.[0-9]*([eE][-+][0-9]+)([fF]?)"),  // 1e-2
+			REGEX("^(\\.[0-9]+)([eE][-+][0-9]+)([fF]?)"),      // .12e+2
 	};
-	static const wregex re2_trig(L"\\.");
-	static const wregex re2[] = {
-			wregex(L"^([0-9]+\\.[0-9]*)([fF]?)"),                // 1.0f 1.f 1.
-			wregex(L"^(\\.[0-9]+)([fF]?)"),                      // .1f .1
+	static const _regex re2_enter(REGSTR("\\."));
+	static const _regex re2[] = {
+			REGEX("^([0-9]+\\.[0-9]*)([fF]?)"),                // 1.0f 1.f 1.
+			REGEX("^(\\.[0-9]+)([fF]?)"),                      // .1f .1
 	};
-	static const wregex re3[] = {
-			wregex(L"^0x[0-9a-fA-F]+"),                          // 0x123
-			wregex(L"^[0-9]+([uUlL]{0,2})"),                     // 123
+	static const _regex re3[] = {
+			REGEX("^0x[0-9a-fA-F]+"),                          // 0x123
+			REGEX("^[0-9]+([uUlL]{0,2})"),                     // 123
 	};
 
-	if (regex_search(p, q, re1_trig)) {
+#if REGEX_MODE == 2
+//------------------------------------------------------------------
+// re2
+//------------------------------------------------------------------
+	std::string str(to_achar(p));
+
+	if (_regex_search(str, re1_enter, &match)) {
 		for (auto && re : re1) {
-			if (regex_search(p, q, match, re)) {
+			if (_regex_search(str, re, &match)) {
+				i = std::max<int>(match.data() - str.data(), i);
+			}
+		}
+		if (i > 0) return i;
+	}
+	
+	if (_regex_search(str, re2_enter, &match)) {
+		for (auto && re : re2) {
+			if (_regex_search(str, re, &match)) {
+				i = std::max<int>(match.data() - str.data(), i);
+			}
+		}
+		if (i > 0) return i;
+	}
+	
+	for (auto && re : re3) {
+		if (_regex_search(str, re, &match)) {
+			i = std::max<int>(match.data() - str.data(), i);
+		}
+	}
+#else
+//------------------------------------------------------------------
+// Boost
+//------------------------------------------------------------------
+	if (_regex_search(p, q, re1_enter)) {
+		for (auto && re : re1) {
+			if (_regex_search(p, q, match, re)) {
 				i = std::max<int>(match.length(0), i);
 			}
 		}
 		if (i > 0) return i;
 	}
 	
-	if (regex_search(p, q, re2_trig)) {
+	if (_regex_search(p, q, re2_enter)) {
 		for (auto && re : re2) {
-			if (regex_search(p, q, match, re)) {
+			if (_regex_search(p, q, match, re)) {
 				i = std::max<int>(match.length(0), i);
 			}
 		}
@@ -116,10 +171,11 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	}
 	
 	for (auto && re : re3) {
-		if (regex_search(p, q, match, re)) {
+		if (_regex_search(p, q, match, re)) {
 			i = std::max<int>(match.length(0), i);
 		}
 	}
+#endif
 
 	return i;
 #else

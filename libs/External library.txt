@@ -6,12 +6,17 @@ libs
  |       +- version.hpp
  |            :
  +- lua
-     +- lua
-     |   +- lua.hpp
-     +- x64
-     |   +- lua53.lib
+ |   +- lua
+ |   |   +- lua.hpp
+ |   +- x64
+ |   |   +- lua53.lib
+ |   +- x86
+ |       +- lua53.lib
+ +- re2
+     +- re2
+     |   +- re2.h
      +- x86
-         +- lua53.lib
+         +- re2.lib
 ```
 
 
@@ -39,4 +44,11 @@ Freely available under the terms of the Lua license <http://www.lua.org/license.
 3. x86 library to `libs/lua/x86`
 4. x64 library to `libs/lua/x64`
 
+
+***re2***
+Copyright (c) 2009 The RE2 Authors. All rights reserved.
+https://github.com/google/re2/blob/master/LICENSE
+
+Google Code Archive - Long-term storage for Google Code Project Hosting.
+https://code.google.com/archive/p/re2win/
 
