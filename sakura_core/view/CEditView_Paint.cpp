@@ -1334,6 +1334,10 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
 				crMiniMap = sc::ColorString::ToCOLORREF(szData);
 			}
+			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
+				COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha);
+				crMiniMap = MakeColor2(crMiniMap, cBackType.GetBackColor(), 128);
+			}
 			pInfo->m_gr.FillSolidMyRect(rcClip, crMiniMap);
 		}
 	} else 
@@ -1348,6 +1352,10 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			TCHAR szData[32];
 			if (RegKey(SC_REGKEY).read(_T("MiniMapBookmarkColor"), (LPCTSTR)szData)) {
 				crMiniMap = sc::ColorString::ToCOLORREF(szData);
+			}
+			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
+				COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha);
+				crMiniMap = MakeColor2(crMiniMap, cBackType.GetBackColor(), 128);
 			}
 			pInfo->m_gr.FillSolidMyRect(rcClip, crMiniMap);
 		}
