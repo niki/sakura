@@ -26,7 +26,7 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 
 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
-+ [sakura-cat-2.23.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.23.zip) (1.08MB)  
++ [sakura-cat-2.24.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.24.zip) (958KB)  
 
 <br>
 
