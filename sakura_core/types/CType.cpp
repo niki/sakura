@@ -130,7 +130,6 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, boost::container::vec
 */
 void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 {
-#ifndef SC_MOD_PROFILES
 	/* 強調キーワードのテストデータ */
 	pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx = 0;
 	CKeyWordSetMgr& cKeyWordSetMgr = pShareData->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
@@ -204,7 +203,6 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 #undef PopulateKeyword1
 #undef PopulateKeyword2
 #undef PopulateKeyword
-#endif  // SC_
 }
 #ifdef SC_MOD_PROFILES
 void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstring &fname)

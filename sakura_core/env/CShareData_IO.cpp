@@ -103,6 +103,11 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 //	MYTRACE( _T("Iniファイル処理-1 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
+#ifdef SC_MOD_PROFILES
+	std::tstring keywordset_fname =
+	    mn::file::dirname(szIniFileName) +
+	    mn::file::basename(szIniFileName) + _T(".keywordset.json");
+#endif
 
 	if( bRead ){
 		if( !cProfile.ReadProfile( szIniFileName ) ){
@@ -110,10 +115,11 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 			// キーワードファイルのインポート
 #ifdef SC_MOD_PROFILES
-			std::tstring fname =
-			    mn::file::dirname(szIniFileName) +
-			    mn::file::basename(szIniFileName) + _T(".keywordset.json");
-			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
+			if (mn::file::exist(keywordset_fname)) {
+				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
+			} else {
+				pcShare->InitKeyword( &GetDllShareData(), true );
+			}
 #else
 			pcShare->InitKeyword( &GetDllShareData(), true );
 #endif  // SC_
@@ -122,10 +128,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #ifdef SC_MOD_PROFILES
 		else {
 			// キーワードファイルのインポート
-			std::tstring fname =
-			    mn::file::dirname(szIniFileName) +
-			    mn::file::basename(szIniFileName) + _T(".keywordset.json");
-			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
+			if (mn::file::exist(keywordset_fname)) {
+				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
+			}
 		}
 #endif  // SC_
 
@@ -233,7 +238,11 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_KeyBind( cProfile );
 	ShareData_IO_Print( cProfile );
 	ShareData_IO_Types( cProfile );
-#ifndef SC_MOD_PROFILES
+#ifdef SC_MOD_PROFILES
+	if (!mn::file::exist(keywordset_fname)) {
+		ShareData_IO_KeyWords( cProfile );
+	}
+#else
 	ShareData_IO_KeyWords( cProfile );
 #endif  // SC_
 	ShareData_IO_Macro( cProfile );
@@ -2328,7 +2337,6 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 */
 void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 {
-#ifndef SC_MOD_PROFILES
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
 	const WCHAR*		pszSecName = LTEXT("KeyWords");
@@ -2402,7 +2410,6 @@ void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 			delete [] pszMem;
 		}
 	}
-#endif  // SC_
 }
 
 /*!
