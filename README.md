@@ -35,21 +35,21 @@ Sublime Text や Atom を参考にモダンな感じにしているつもりで�
 ダウンロードしたファイルをすでに使用しているサクラエディタに上書きコピーしてください.  
 `sakura.default.ini`と`sakura.keywordset.json`は実行ファイルと同じ場所に置き, 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
 
-+ [sakura.default.ini](https://github.com/mimix33/sakura_2201/raw/master/resource/sakura.default.ini)  
++ [sakura.default.ini](https://github.com/sayacat/sakura/raw/master/Publish/sakura.default.ini)  
   デフォルト設定値を設定してあるファイルです. ここに初期値を設定することで常にその状態で起動します.  
   ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.  
 
-+ [sakura.keywordset.json](https://github.com/mimix33/sakura_2201/raw/master/resource/sakura.keywordset.json)  
++ [sakura.keywordset.json](https://github.com/sayacat/sakura/raw/master/Publish/sakura.keywordset.json)  
   強調キーワードのセットリストです. セット名, 大文字小文字の区別, ファイル名を指定します.  
   共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.  
   また, `sakura.ini`には出力されなくなります.  
 
-+ 最新のキーワードセットはこちら [keyword_pack.zip](https://github.com/mimix33/sakura_2201/raw/master/doc/keyword_pack.zip) (355KB)  
++ 最新のキーワードセットはこちら [keyword_pack.zip](https://github.com/sayacat/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
 <br>
 
 **Build environment**  
-+ 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/mimix33/sakura_2201/raw/master/doc/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
++ 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/sayacat/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド  
 + [Boost](http://www.boost.org/)を使用 (各種コンテナ)  
 + [re2](https://github.com/google/re2/)を使用 (正規表現)  
