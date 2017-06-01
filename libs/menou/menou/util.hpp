@@ -5,15 +5,15 @@
 //!
 //! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef SC_UTIL_HPP
-#define SC_UTIL_HPP
+#ifndef MENOU_UTIL_HPP
+#define MENOU_UTIL_HPP
 
 #include "basis.h"
 
 #include <codecvt>
 #include <locale>
 
-namespace sc {
+namespace mn {
 
 //==================================================================
 // util
@@ -25,17 +25,17 @@ namespace util {
 //! @param s
 //! @return true/false
 //------------------------------------------------------------------
-SC_INLINE bool to_b(const std::string &s) {
+MENOU_INLINE bool to_b(const std::string &s) {
   return !(s == "false" || s == "False" || s == "0");
 }
-SC_INLINE bool to_b(const std::wstring &s) {
+MENOU_INLINE bool to_b(const std::wstring &s) {
   return !(s == L"false" || s == L"False" || s == L"0");
 }
 
 //------------------------------------------------------------------
 //! wstring を string に変換
 //------------------------------------------------------------------
-SC_INLINE std::string to_bytes(const std::wstring &s) {
+MENOU_INLINE std::string to_bytes(const std::wstring &s) {
   if (s.empty()) return "";
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
   return cv.to_bytes(s.c_str());  //wstring→string
@@ -44,7 +44,7 @@ SC_INLINE std::string to_bytes(const std::wstring &s) {
 //------------------------------------------------------------------
 //! string を wstring に変換
 //------------------------------------------------------------------
-SC_INLINE std::wstring from_bytes(const std::string &s) {
+MENOU_INLINE std::wstring from_bytes(const std::string &s) {
   if (s.empty()) return L"";
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
   return cv.from_bytes(s.c_str());  //string→wstring
@@ -55,7 +55,7 @@ SC_INLINE std::wstring from_bytes(const std::string &s) {
 //! @param s
 //! @param c
 //------------------------------------------------------------------
-SC_INLINE std::tstring ltrim(const std::tstring &s, const TCHAR c) {
+MENOU_INLINE std::tstring ltrim(const std::tstring &s, const TCHAR c) {
   const TCHAR *p = s.c_str();
   while (*p == c) {
     p++;
@@ -68,7 +68,7 @@ SC_INLINE std::tstring ltrim(const std::tstring &s, const TCHAR c) {
 //! @param s
 //! @param c
 //------------------------------------------------------------------
-SC_INLINE std::tstring rtrim(const std::tstring &s, const TCHAR c) {
+MENOU_INLINE std::tstring rtrim(const std::tstring &s, const TCHAR c) {
   const TCHAR *p = s.c_str() + s.length() - 1;
   while (*p == c) {
     p--;
@@ -78,6 +78,6 @@ SC_INLINE std::tstring rtrim(const std::tstring &s, const TCHAR c) {
 
 } /* namespace of util */
 
-} /* namespace of sc */
+} /* namespace of mn */
 
-#endif /* SC_UTIL_HPP */
+#endif /* MENOU_UTIL_HPP */

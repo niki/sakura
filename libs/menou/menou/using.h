@@ -5,9 +5,9 @@
 //!
 //! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef SC_USING_H
-#define SC_USING_H
+#ifndef MENOU_USING_H
+#define MENOU_USING_H
 
 
 
-#endif /* SC_USING_H */
+#endif /* MENOU_USING_H */

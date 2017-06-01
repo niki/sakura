@@ -55,7 +55,7 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 		return;
 	}
 #ifdef SC_OUTPUT_DEBUG_STRING
-	//sc::logln(L"DispText");
+	//mn::logln(L"DispText");
 #endif  // SC_
 	int x=pDispPos->GetDrawPos().x;
 	int y=pDispPos->GetDrawPos().y;
@@ -373,7 +373,7 @@ void CTextDrawer::DispLineNumber(
 ) const
 {
 #ifdef SC_OUTPUT_DEBUG_STRING
-	//sc::logln(L"DispLineNumber(%d)\n", nLineNum+1);
+	//mn::logln(L"DispLineNumber(%d)\n", nLineNum+1);
 #endif  // SC_
 	//$$ 高速化：SearchLineByLayoutYにキャッシュを持たせる
 	const CLayout*	pcLayout = CEditDoc::GetInstance(0)->m_cLayoutMgr.SearchLineByLayoutY( nLineNum );

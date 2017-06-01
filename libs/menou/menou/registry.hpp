@@ -5,8 +5,8 @@
 //!
 //! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef SC_REGISTRY_HPP
-#define SC_REGISTRY_HPP
+#ifndef MENOU_REGISTRY_HPP
+#define MENOU_REGISTRY_HPP
 
 #include "basis.h"
 //#include <locale>
@@ -57,7 +57,7 @@
 //    DWORD cbData         // レジストリエントリのデータのサイズ
 //  );
 
-namespace sc {
+namespace mn {
 
 //==================================================================
 // reg
@@ -67,17 +67,17 @@ namespace reg {
 //------------------------------------------------------------------
 //! ini形式のキー情報からレジストリキー名作成
 //------------------------------------------------------------------
-SC_INLINE std::tstring genkey(const std::tstring &prof, const std::tstring &section = _T("")) {
+MENOU_INLINE std::tstring genkey(const std::tstring &prof, const std::tstring &section = _T("")) {
   if (section.empty()) {
-    return _T("Software\\") + sc::file::fname(prof);
+    return _T("Software\\") + mn::file::fname(prof);
   } else {
-    return _T("Software\\") + sc::file::fname(prof) + _T("\\") + section;
+    return _T("Software\\") + mn::file::fname(prof) + _T("\\") + section;
   }
 }
 
 }  // namespace of reg
 
-}  // namespace of sc
+}  // namespace of mn
 
 //------------------------------------------------------------------
 //! レジストリクラス
@@ -211,14 +211,14 @@ class ScopedRegKey : public RegKey {
 //! @param entry エントリー名
 //! @param data データ
 //------------------------------------------------------------------
-SC_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstring &section,
+MENOU_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstring &section,
                                    const std::tstring &entry, std::tstring &data) {
   DWORD dwType;
   DWORD dwByte;
 
   data = _T("");
 
-  RegKey hKey(sc::reg::genkey(prof, section));
+  RegKey hKey(mn::reg::genkey(prof, section));
   if (!hKey.getType(entry, &dwType, &dwByte)) return false;
 
   if (dwType == REG_DWORD) {
@@ -256,11 +256,11 @@ SC_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstring 
 //! @param entry エントリー名
 //! @param data データ
 //------------------------------------------------------------------
-SC_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
+MENOU_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
                                     const std::tstring &entry, const std::tstring &data) {
   if (data.empty()) {
-    //return RegKeyRW(sc::reg::genkey(prof, section)).deleteEntry(entry);  // 空のときは削除
-    return RegKeyRW(sc::reg::genkey(prof, section)).write(entry, _T(""));
+    //return RegKeyRW(mn::reg::genkey(prof, section)).deleteEntry(entry);  // 空のときは削除
+    return RegKeyRW(mn::reg::genkey(prof, section)).write(entry, _T(""));
   } else {
     int i = 0;
     bool is_num = false;
@@ -272,11 +272,11 @@ SC_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstring 
     is_num = !(*endptr != L'\0' || (i == INT_MAX && errno == ERANGE));
 
     if (is_num) {
-      return RegKeyRW(sc::reg::genkey(prof, section)).write(entry, (DWORD)i);
+      return RegKeyRW(mn::reg::genkey(prof, section)).write(entry, (DWORD)i);
     } else {
-      return RegKeyRW(sc::reg::genkey(prof, section)).write(entry, data);
+      return RegKeyRW(mn::reg::genkey(prof, section)).write(entry, data);
     }
   }
 }
 
-#endif /* SC_REGISTRY_HPP */
+#endif /* MENOU_REGISTRY_HPP */

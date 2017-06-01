@@ -234,7 +234,7 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 	using boost::property_tree::read_json;
 
 	ptree pt;
-	read_json(sc::util::to_bytes(fname).c_str(), pt);
+	read_json(mn::util::to_bytes(fname).c_str(), pt);
 
 	BOOST_FOREACH (const ptree::value_type& child, pt.get_child("KeywordSet")) {
 								 const ptree& info = child.second;
@@ -245,11 +245,11 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 		// file
 		boost::optional<std::string> file = info.get_optional<std::string>("file");
 		
-		fnPopulateKeyword(sc::util::from_bytes(*name),
-		                  sc::util::to_b(*case_sensitive),
-		                  sc::util::from_bytes(*file));
+		fnPopulateKeyword(mn::util::from_bytes(*name),
+		                  mn::util::to_b(*case_sensitive),
+		                  mn::util::from_bytes(*file));
 		
-		//sc::logln((*file).c_str());
+		//mn::logln((*file).c_str());
 	}
 }
 #endif  // SC_

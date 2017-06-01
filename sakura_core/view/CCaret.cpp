@@ -175,7 +175,7 @@ CLayoutInt CCaret::MoveCursor(
 	}
 
 #ifdef SC_OUTPUT_DEBUG_STRING
-	sc::logln(L"MoveCursor start");
+	mn::logln(L"MoveCursor start");
 #endif  // SC_
 
 	if( m_pEditView->GetSelectionInfo().IsMouseSelecting() ){	// 範囲選択中
@@ -497,14 +497,14 @@ CLayoutInt CCaret::MoveCursor(
 			int top = m_pEditView->GetTextArea().GetViewTopLine();
 			m_pEditView->RedrawLines(top, top + nScrollRowNum);
 			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-			//	sc::logln(L"2");
+			//	mn::logln(L"2");
 			//	m_pEditView->MiniMapRedraw(true);
 			//}
 		} else if (nScrollRowNum < 0) {
 			int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
 			m_pEditView->RedrawLines(bottom - nScrollRowNum, bottom);
 			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-			//	sc::logln(L"3");
+			//	mn::logln(L"3");
 			//	m_pEditView->MiniMapRedraw(true);
 			//}
 		}
@@ -549,7 +549,7 @@ CLayoutInt CCaret::MoveCursor(
 // 02/09/18 対括弧の強調表示 ai End		03/02/18 ai mod E
 
 #ifdef SC_OUTPUT_DEBUG_STRING
-	sc::logln(L"MoveCursor finish");
+	mn::logln(L"MoveCursor finish");
 #endif  // SC_
 
 	return nScrollRowNum;

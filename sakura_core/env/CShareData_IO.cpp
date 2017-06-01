@@ -111,8 +111,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			// キーワードファイルのインポート
 #ifdef SC_MOD_PROFILES
 			std::tstring fname =
-			    sc::file::dirname(szIniFileName) +
-			    sc::file::basename(szIniFileName) + _T(".keywordset.json");
+			    mn::file::dirname(szIniFileName) +
+			    mn::file::basename(szIniFileName) + _T(".keywordset.json");
 			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
 #else
 			pcShare->InitKeyword( &GetDllShareData(), true );
@@ -123,8 +123,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		else {
 			// キーワードファイルのインポート
 			std::tstring fname =
-			    sc::file::dirname(szIniFileName) +
-			    sc::file::basename(szIniFileName) + _T(".keywordset.json");
+			    mn::file::dirname(szIniFileName) +
+			    mn::file::basename(szIniFileName) + _T(".keywordset.json");
 			pcShare->InitKeywordFromList(&GetDllShareData(), fname);
 		}
 #endif  // SC_
@@ -155,8 +155,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 	{
 		std::tstring fname =
-		    sc::file::dirname(szIniFileName) +
-		    sc::file::basename(szIniFileName) + _T(".default.ini");
+		    mn::file::dirname(szIniFileName) +
+		    mn::file::basename(szIniFileName) + _T(".default.ini");
 
 		if (cProfileDefault.ReadProfile(fname.c_str())) {
 			cProfile.pcProfileDef_ = &cProfileDefault;
@@ -186,13 +186,13 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		}
 
 		std::tstring fname =
-		    sc::file::dirname(szIniFileName) +
-		    sc::file::basename(szIniFileName) + _T(".recent.json");
+		    mn::file::dirname(szIniFileName) +
+		    mn::file::basename(szIniFileName) + _T(".recent.json");
 
 		ptree pt;
 		
 		if (bRead) {
-			if (!sc::file::exist(fname)) {
+			if (!mn::file::exist(fname)) {
 				DLLSHAREDATA* pShare = &GetDllShareData();
 				pShare->m_sHistory.m_nMRUArrNum = 0;
 				pShare->m_sHistory.m_nOPENFOLDERArrNum = 0;
@@ -201,7 +201,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 				break;
 			}
 			
-			read_json(sc::util::to_bytes(fname).c_str(), pt);
+			read_json(mn::util::to_bytes(fname).c_str(), pt);
 		}
 		
 		cProfileRecent.tag_ = &pt;
@@ -212,7 +212,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		ShareData_IO_Cmd(cProfileRecent);
 
 		if (!bRead) {
-			write_json(sc::util::to_bytes(fname).c_str(), pt);
+			write_json(mn::util::to_bytes(fname).c_str(), pt);
 		}
 	} while (0);
 #else
@@ -270,7 +270,7 @@ static std::string to_string(const ptree &info, const std::string &value, const 
 static std::wstring to_wstring(const ptree &info, const std::string &value, const std::wstring &default_value = L"") {
 	boost::optional<std::string> v = info.get_optional<std::string>(value);
 	if (v) {
-		return sc::util::from_bytes(v.get());
+		return mn::util::from_bytes(v.get());
 	} else {
 		return default_value;
 	}
@@ -286,7 +286,7 @@ static int to_int(const ptree &info, const std::string &value, int default_value
 static bool to_bool(const ptree &info, const std::string &value, bool default_value = false) {
 	boost::optional<std::string> v = info.get_optional<std::string>(value);
 	if (v) {
-		return sc::util::to_b(v.get());
+		return mn::util::to_b(v.get());
 	} else {
 		return default_value;
 	}
@@ -360,13 +360,13 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			pfiWork = &hist.m_fiMRUArr[i];
 			
 			ptree info;
-			info.put("path", sc::util::to_bytes(pfiWork->m_szPath));
+			info.put("path", mn::util::to_bytes(pfiWork->m_szPath));
 			if (pfiWork->m_nViewTopLine != 0) info.put("view_top_line", pfiWork->m_nViewTopLine);
 			if (pfiWork->m_nViewLeftCol != 0) info.put("view_left_col", pfiWork->m_nViewLeftCol);
 			if (pfiWork->m_ptCursor.x != 0) info.put("x", pfiWork->m_ptCursor.x);
 			if (pfiWork->m_ptCursor.y != 0) info.put("y", pfiWork->m_ptCursor.y);
 			info.put("char_code", pfiWork->m_nCharCode);
-			info.put("mark", sc::util::to_bytes(pfiWork->m_szMarkLines));
+			info.put("mark", mn::util::to_bytes(pfiWork->m_szMarkLines));
 			info.put("type_id", pfiWork->m_nTypeId);
 			if (hist.m_bMRUArrFavorite[i]) info.put("favorite", true);
 			child.push_back(std::make_pair("", info));
@@ -423,7 +423,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("dir", sc::util::to_bytes(hist.m_szOPENFOLDERArr[i].c_str()));
+			info.put("dir", mn::util::to_bytes(hist.m_szOPENFOLDERArr[i].c_str()));
 			if (hist.m_bOPENFOLDERArrFavorite[i]) info.put("favorite", true);
 			child.push_back(std::make_pair("", info));
 		}
@@ -462,7 +462,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("name", sc::util::to_bytes(hist.m_aExceptMRU[i].c_str()));
+			info.put("name", mn::util::to_bytes(hist.m_aExceptMRU[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.except_MRU", child);
@@ -595,7 +595,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", sc::util::to_bytes(skwd.m_aSearchKeys[i].c_str()));
+			info.put("data", mn::util::to_bytes(skwd.m_aSearchKeys[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.search_key", child);
@@ -624,7 +624,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", sc::util::to_bytes(skwd.m_aReplaceKeys[i].c_str()));
+			info.put("data", mn::util::to_bytes(skwd.m_aReplaceKeys[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.replace_key", child);
@@ -695,7 +695,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", sc::util::to_bytes(skwd.m_aGrepFiles[i].c_str()));
+			info.put("data", mn::util::to_bytes(skwd.m_aGrepFiles[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.grep_file", child);
@@ -726,22 +726,22 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		auto grep_folder_ex3_dir = pt.get_optional<std::string>("Recent.grep_folder_ex3_dir");
 		auto grep_folder_ex4_dir = pt.get_optional<std::string>("Recent.grep_folder_ex4_dir");
 
-		skwd.m_bGrepFolders99 = sc::util::to_b(*grep_folder_ex1);
-		skwd.m_bGrepFolders2 = sc::util::to_b(*grep_folder_ex2);
-		skwd.m_bGrepFolders3 = sc::util::to_b(*grep_folder_ex3);
-		skwd.m_bGrepFolders4 = sc::util::to_b(*grep_folder_ex4);
+		skwd.m_bGrepFolders99 = mn::util::to_b(*grep_folder_ex1);
+		skwd.m_bGrepFolders2 = mn::util::to_b(*grep_folder_ex2);
+		skwd.m_bGrepFolders3 = mn::util::to_b(*grep_folder_ex3);
+		skwd.m_bGrepFolders4 = mn::util::to_b(*grep_folder_ex4);
 		if (grep_folder_ex2_dir) {
-			skwd.m_szGrepFolders2.Assign(sc::util::from_bytes(*grep_folder_ex2_dir).c_str());
+			skwd.m_szGrepFolders2.Assign(mn::util::from_bytes(*grep_folder_ex2_dir).c_str());
 		} else {
 			skwd.m_szGrepFolders2.Assign(L"");
 		}
 		if (grep_folder_ex3_dir) {
-			skwd.m_szGrepFolders3.Assign(sc::util::from_bytes(*grep_folder_ex3_dir).c_str());
+			skwd.m_szGrepFolders3.Assign(mn::util::from_bytes(*grep_folder_ex3_dir).c_str());
 		} else {
 			skwd.m_szGrepFolders3.Assign(L"");
 		}
 		if (grep_folder_ex4_dir) {
-			skwd.m_szGrepFolders4.Assign(sc::util::from_bytes(*grep_folder_ex4_dir).c_str());
+			skwd.m_szGrepFolders4.Assign(mn::util::from_bytes(*grep_folder_ex4_dir).c_str());
 		} else {
 			skwd.m_szGrepFolders4.Assign(L"");
 		}
@@ -752,7 +752,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", sc::util::to_bytes(skwd.m_aGrepFolders[i].c_str()));
+			info.put("data", mn::util::to_bytes(skwd.m_aGrepFolders[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.grep_folder", child);
@@ -761,9 +761,9 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		pt.put("Recent.grep_folder_ex2", skwd.m_bGrepFolders2);
 		pt.put("Recent.grep_folder_ex3", skwd.m_bGrepFolders3);
 		pt.put("Recent.grep_folder_ex4", skwd.m_bGrepFolders4);
-		pt.put("Recent.grep_folder_ex2_dir", sc::util::to_bytes(skwd.m_szGrepFolders2.c_str()));
-		pt.put("Recent.grep_folder_ex3_dir", sc::util::to_bytes(skwd.m_szGrepFolders3.c_str()));
-		pt.put("Recent.grep_folder_ex4_dir", sc::util::to_bytes(skwd.m_szGrepFolders4.c_str()));
+		pt.put("Recent.grep_folder_ex2_dir", mn::util::to_bytes(skwd.m_szGrepFolders2.c_str()));
+		pt.put("Recent.grep_folder_ex3_dir", mn::util::to_bytes(skwd.m_szGrepFolders3.c_str()));
+		pt.put("Recent.grep_folder_ex4_dir", mn::util::to_bytes(skwd.m_szGrepFolders4.c_str()));
 	}
 
 #else
@@ -857,7 +857,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", sc::util::to_bytes(hist.m_aCommands[i].c_str()));
+			info.put("data", mn::util::to_bytes(hist.m_aCommands[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.cmd", child);
@@ -886,7 +886,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		ptree child;
 		for( i = 0; i < nSize; ++i ){
 			ptree info;
-			info.put("data", sc::util::to_bytes(hist.m_aCurDirs[i].c_str()));
+			info.put("data", mn::util::to_bytes(hist.m_aCurDirs[i].c_str()));
 			child.push_back(std::make_pair("", info));
 		}
 		pt.add_child("Recent.cmd_cur_dir", child);
@@ -2944,7 +2944,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 						if (_tcsicmp(name, _T("none")) == 0) return pColorInfoArr[0].m_sColorAttr.m_cBACK;
 						if (_tcsicmp(name, _T("fg")) == 0)   return pColorInfoArr[0].m_sColorAttr.m_cTEXT;
 						if (_tcsicmp(name, _T("bg")) == 0)   return pColorInfoArr[0].m_sColorAttr.m_cBACK;
-						return sc::ColorString::ToCOLORREF(name, sc::ColorString::eENDIAN_BGR);
+						return mn::ColorString::ToCOLORREF(name, mn::ColorString::eENDIAN_BGR);
 					};
 					
 					if (!bColorOnly) info->m_sFontAttr.m_bBoldFont  = (buf[1]!=0);
@@ -2998,11 +2998,11 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				auto_sprintf( szKeyData, L"%d,", info->m_bDisp?1:0 );
 			} else {
 				auto fnColorToName = [pColorInfoArr, j](COLORREF c, int attr) -> std::tstring {
-					if (j == 0/* txt */) return sc::ColorString::FromCOLORREF(c, true);
+					if (j == 0/* txt */) return mn::ColorString::FromCOLORREF(c, true);
 					if (attr != 0)       return L"none";
 					if (c == pColorInfoArr[0].m_sColorAttr.m_cTEXT) return L"fg";
 					if (c == pColorInfoArr[0].m_sColorAttr.m_cBACK) return L"bg";
-					return sc::ColorString::FromCOLORREF(c, true);
+					return mn::ColorString::FromCOLORREF(c, true);
 				};
 				
 				auto_sprintf( szKeyData, L"%d,%d,%s,%s,%d",

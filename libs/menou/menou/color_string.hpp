@@ -5,15 +5,15 @@
 //!
 //! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef SC_COLOR_STRING_HPP
-#define SC_COLOR_STRING_HPP
+#ifndef MENOU_COLOR_STRING_HPP
+#define MENOU_COLOR_STRING_HPP
 
 #include "basis.h"
 
 #define _RGB(r, g, b) (uint32_t)((((r)&0xff) << 16) | (((g & 0xff)) << 8) | (b & 0xff))
 #define _BGR(r, g, b) (uint32_t)((((b)&0xff) << 16) | (((g & 0xff)) << 8) | (r & 0xff))
 
-namespace sc {
+namespace mn {
 
 class ColorString {
  public:
@@ -111,6 +111,6 @@ class ColorString {
   std::tstring color_code_;
 };
 
-} /* namespace of sc */
+} /* namespace of mn */
 
-#endif /* SC_COLOR_STRING_HPP */
+#endif /* MENOU_COLOR_STRING_HPP */

@@ -80,7 +80,7 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	{
 		TCHAR szData[32];
 		if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
-			crMiniMap = sc::ColorString::ToCOLORREF(szData);
+			crMiniMap = mn::ColorString::ToCOLORREF(szData);
 		}
 		pInfo->m_gr.PushTextForeColor(crMiniMap);
 		pInfo->m_gr.PushTextBackColor(crMiniMap);
@@ -140,7 +140,7 @@ bool CFigureSpace::DrawImp(SColorStrategyInfo* pInfo)
 	{
 		TCHAR szData[32];
 		if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
-			crMiniMap = sc::ColorString::ToCOLORREF(szData);
+			crMiniMap = mn::ColorString::ToCOLORREF(szData);
 		}
 		pInfo->m_gr.PushTextForeColor(crMiniMap);
 		pInfo->m_gr.PushTextBackColor(crMiniMap);

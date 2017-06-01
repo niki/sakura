@@ -652,9 +652,9 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	}
 #ifdef SC_OUTPUT_DEBUG_STRING
 	if (m_bMiniMap) {
-	  sc::logln(L"OnPaint2 start minimap");
+	  mn::logln(L"OnPaint2 start minimap");
 	} else {
-	  sc::logln(L"OnPaint2 start");
+	  mn::logln(L"OnPaint2 start");
 	}
 #endif  // SC_
 	if( m_hdcCompatDC && NULL == m_hbmpCompatBMP
@@ -938,9 +938,9 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	
 #ifdef SC_OUTPUT_DEBUG_STRING
 	if (m_bMiniMap) {
-	  sc::logln(L"OnPaint2 finish minimap");
+	  mn::logln(L"OnPaint2 finish minimap");
 	} else {
-	  sc::logln(L"OnPaint2 finish");
+	  mn::logln(L"OnPaint2 finish");
 	}
 #endif  // SC_
 	return;
@@ -1332,7 +1332,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			COLORREF crMiniMap = cSearchType.GetBackColor();
 			TCHAR szData[32];
 			if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
-				crMiniMap = sc::ColorString::ToCOLORREF(szData);
+				crMiniMap = mn::ColorString::ToCOLORREF(szData);
 			}
 			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
 				COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha);
@@ -1351,7 +1351,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			COLORREF crMiniMap = cMarkType.GetBackColor();
 			TCHAR szData[32];
 			if (RegKey(SC_REGKEY).read(_T("MiniMapBookmarkColor"), (LPCTSTR)szData)) {
-				crMiniMap = sc::ColorString::ToCOLORREF(szData);
+				crMiniMap = mn::ColorString::ToCOLORREF(szData);
 			}
 			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
 				COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha);

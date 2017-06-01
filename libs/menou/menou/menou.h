@@ -1,12 +1,12 @@
 ﻿// -*- mode:c++; coding:utf-8-ws -*-
 //====================================================================
-//! @file  sc.h
+//! @file  menou.h
 //! @brief libsc
 //!
 //! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef SC_H
-#define SC_H
+#ifndef MENOU_H
+#define MENOU_H
 
 #include "basis.h"
 #include "using.h"
@@ -16,4 +16,4 @@
 #include "registry.hpp"
 #include "color_string.hpp"
 
-#endif /* SC_H */
+#endif /* MENOU_H */

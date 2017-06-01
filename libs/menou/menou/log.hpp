@@ -5,8 +5,8 @@
 //!
 //! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef SC_LOG_HPP
-#define SC_LOG_HPP
+#ifndef MENOU_LOG_HPP
+#define MENOU_LOG_HPP
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -18,12 +18,12 @@
 //  return first + isum(rest...);
 //}
 
-namespace sc {
+namespace mn {
 
 //------------------------------------------------------------------
 //! 出力
 //------------------------------------------------------------------
-SC_INLINE void log(const TCHAR *fmt, ...) {
+MENOU_INLINE void log(const TCHAR *fmt, ...) {
   TCHAR buf[1024];
 
   va_list arg;
@@ -41,7 +41,7 @@ SC_INLINE void log(const TCHAR *fmt, ...) {
 //------------------------------------------------------------------
 //! 出力 (改行つき)
 //------------------------------------------------------------------
-SC_INLINE void logln(const TCHAR *fmt, ...) {
+MENOU_INLINE void logln(const TCHAR *fmt, ...) {
   TCHAR buf[1024];
 
   va_list arg;
@@ -58,6 +58,6 @@ SC_INLINE void logln(const TCHAR *fmt, ...) {
 #endif
 }
 
-} /* namespace of sc */
+} /* namespace of mn */
 
-#endif /* SC_LOG_HPP */
+#endif /* MENOU_LOG_HPP */

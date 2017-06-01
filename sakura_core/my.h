@@ -20,6 +20,6 @@
 
 #include "my_config.h"
 
-#include <libsc/sc.h>
+#include <menou/menou.h>
 
 #endif /* MY_CONFIG_H */

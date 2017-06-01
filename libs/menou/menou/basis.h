@@ -5,8 +5,8 @@
 //!
 //! @author (C) 2017, sayacat.
 //====================================================================
-#ifndef SC_BASIS_H
-#define SC_BASIS_H
+#ifndef MENOU_BASIS_H
+#define MENOU_BASIS_H
 
 #include <memory>
 #include <string>
@@ -20,6 +20,6 @@
   #endif
 #endif
 
-#define SC_INLINE static inline
+#define MENOU_INLINE static inline
 
-#endif /* SC_BASIS_H */
+#endif /* MENOU_BASIS_H */
