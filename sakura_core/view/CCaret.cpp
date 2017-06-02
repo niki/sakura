@@ -495,14 +495,14 @@ CLayoutInt CCaret::MoveCursor(
 		// スクロールした行が残っているように見えてしまうため
 		} else if (nScrollRowNum > 0) {
 			int top = m_pEditView->GetTextArea().GetViewTopLine();
-			m_pEditView->RedrawLines(top, top + nScrollRowNum);
+			m_pEditView->RedrawLines(top, top + nScrollRowNum + 2);
 			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
 			//	mn::logln(L"2");
 			//	m_pEditView->MiniMapRedraw(true);
 			//}
 		} else if (nScrollRowNum < 0) {
 			int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
-			m_pEditView->RedrawLines(bottom - nScrollRowNum, bottom);
+			m_pEditView->RedrawLines(bottom - nScrollRowNum - 2, bottom);
 			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
 			//	mn::logln(L"3");
 			//	m_pEditView->MiniMapRedraw(true);
