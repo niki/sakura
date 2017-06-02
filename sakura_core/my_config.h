@@ -48,6 +48,10 @@
 //
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
+// 修正者
+#define SC_AMENDER "sayacat"
+#define SC_URL     "https://github.com/sayacat/sakura"
+
 // 拡張用レジストリキー
 #define SC_REGKEY _T("Software\\sakura-sayacat")
 

@@ -3635,10 +3635,12 @@ BEGIN
 #ifdef SC_MOD_VERDLG
     IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n\
 \r\n\
-* sayacat <https://github.com/sayacat/sakura>\r\n\
-* Boost C++ Libraries <http://www.boost.org/users/license.html>\r\n\
-* re2 <https://github.com/google/re2/blob/master/LICENSE>\r\n\
-* Lua <http://www.lua.org/license.html>\r\n\
+* Amender : %ts (%ts)\r\n\
+* Build : %ts (%d)\r\n\
+* Platform : %ts\r\n\
+* RTL : %ts\r\n\
+* %ts\r\n\
+* %ts\r\n\
 "
 #else
     IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n"

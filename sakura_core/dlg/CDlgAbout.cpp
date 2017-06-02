@@ -27,6 +27,10 @@
 #include "svnrev.h"
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "sakura.hh"
+#ifdef SC_MOD_VERDLG
+  #include <boost/version.hpp>
+  #include <lua/lua.h>
+#endif  // SC_
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//12900
@@ -43,23 +47,23 @@ const DWORD p_helpids[] = {	//12900
 //	From Here Feb. 7, 2002 genta
 // 2006.01.17 Moca COMPILER_VERを追加
 // 2010.04.15 Moca icc/dmcを追加しCPUを分離
-#ifdef SC_MOD_VERDLG
-#if defined(_M_IA64)
-#  define TARGET_M_SUFFIX "64-bit Itanium"
-#elif defined(_M_AMD64)
-#  define TARGET_M_SUFFIX "64-bit"
-#elif defined(_M_IX86)
-#  define TARGET_M_SUFFIX "32-bit"
-#else
-#  define TARGET_M_SUFFIX ""
-#endif
-#else
 #if defined(_M_IA64)
 #  define TARGET_M_SUFFIX "_I64"
 #elif defined(_M_AMD64)
 #  define TARGET_M_SUFFIX "_A64"
 #else
 #  define TARGET_M_SUFFIX ""
+#endif
+
+#ifdef SC_MOD_VERDLG
+#if defined(_M_IA64)
+#  define TARGET_M_SUFFIX2 "64bit Itanium"
+#elif defined(_M_AMD64)
+#  define TARGET_M_SUFFIX2 "64bit"
+#elif defined(_M_IX86)
+#  define TARGET_M_SUFFIX2 "32bit"
+#else
+#  define TARGET_M_SUFFIX2 ""
 #endif
 #endif  // SC_
 
@@ -78,27 +82,26 @@ const DWORD p_helpids[] = {	//12900
 #elif defined(_MSC_VER)
 #  ifdef SC_MOD_VERDLG
 #    if (_MSC_VER == 1910)
-#      define COMPILER_TYPE "MSVC 2017"
+#      define COMPILER_TYPE2 "MSVC 2017"
 #    elif (_MSC_VER == 1900)
 #      if (_MSC_FULL_VER >= 190024210)
-#        define COMPILER_TYPE "MSVC 2015 Update 3"
+#        define COMPILER_TYPE2 "MSVC 2015 Update 3"
 #      elif (_MSC_FULL_VER == 190023918)
-#        define COMPILER_TYPE "MSVC 2015 Update 2"
+#        define COMPILER_TYPE2 "MSVC 2015 Update 2"
 #      elif (_MSC_FULL_VER == 190023506)
-#        define COMPILER_TYPE "MSVC 2015 Update 1"
+#        define COMPILER_TYPE2 "MSVC 2015 Update 1"
 #      elif (_MSC_FULL_VER == 190023026)
-#        define COMPILER_TYPE "MSVC 2015"
+#        define COMPILER_TYPE2 "MSVC 2015"
 #      else
-#        define COMPILER_TYPE "MSVC 2015"
+#        define COMPILER_TYPE2 "MSVC 2015"
 #      endif
 #    else
-#      define COMPILER_TYPE "MSVC (Unknown ver.)"
+#      define COMPILER_TYPE2 "MSVC (Unknown ver.)"
 #    endif
-#    define COMPILER_VER (_MSC_FULL_VER % 100000)
-#  else
-#    define COMPILER_TYPE "V"
-#    define COMPILER_VER _MSC_VER
-#  endif  // rei?
+#    define COMPILER_VER2 _MSC_FULL_VER
+#  endif  // SC_MOD_VERDLG
+#  define COMPILER_TYPE "V"
+#  define COMPILER_VER _MSC_VER
 #else
 #  define COMPILER_TYPE "U"
 #  define COMPILER_VER 0
@@ -135,19 +138,19 @@ const DWORD p_helpids[] = {	//12900
 #  ifdef _MT
 #    ifdef _DLL
 #      ifdef _DEBUG
-#        define MY_RT "MDd"
+#        define MY_RTL "MT DLL debug"
 #      else
-#        define MY_RT "MD"
+#        define MY_RTL "MT DLL"
 #      endif
 #    else
 #      ifdef _DEBUG
-#        define MY_RT "MTd"
+#        define MY_RTL "MT debug"
 #      else
-#        define MY_RT "MT"
+#        define MY_RTL "MT"
 #      endif
 #    endif
 #  else
-#    define MY_RT ""
+#    define MY_RTL ""
 #  endif
 #endif  // SC_
 
@@ -220,7 +223,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #if (SVN_REV == 0)
 #ifdef SC_MOD_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX) _T(")\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX2) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS )
 	);
@@ -253,19 +256,11 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// コンパイル情報
 	cmemMsg.AppendString( _T("      Compile Info: ") );
 	int Compiler_ver = COMPILER_VER;
-#ifdef SC_MOD_VERDLG
-	auto_sprintf( szMsg, _T(COMPILER_TYPE" (%d) ") _T(MY_RT" ")
-			TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
-		Compiler_ver,
-		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
-	);
-#else
 	auto_sprintf( szMsg, _T(COMPILER_TYPE) _T(TARGET_M_SUFFIX) _T("%d ")
 			TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
 		Compiler_ver,
 		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
 	);
-#endif  // SC_
 	cmemMsg.AppendString( szMsg );
 
 	// 更新日情報
@@ -297,7 +292,18 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// 2011.06.01 nasukoji	各国語メッセージリソース対応
 	LPCTSTR pszDesc = LS( IDS_ABOUT_DESCRIPTION );
 	if( _tcslen(pszDesc) > 0 ){
+#ifdef SC_MOD_VERDLG
+		auto_sprintf( szMsg, pszDesc,
+			_T(SC_AMENDER), _T(SC_URL),
+			_T(COMPILER_TYPE2), COMPILER_VER2,
+			TARGET_M_SUFFIX[0] ? _T("x64") : _T("x86"),
+			_T(MY_RTL),
+			_T("Boost C++ Libraries v" BOOST_LIB_VERSION),
+			_T(LUA_RELEASE)
+		);
+#else
 		_tcsncpy( szMsg, pszDesc, _countof(szMsg) - 1 );
+#endif  // SC_
 		szMsg[_countof(szMsg) - 1] = 0;
 		::DlgItem_SetText( GetHwnd(), IDC_EDIT_ABOUT, szMsg );
 	}
