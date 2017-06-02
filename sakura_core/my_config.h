@@ -394,15 +394,15 @@
 //  - 文字コードの指定
 //  - 履歴とお気に入りの管理
 //  - 更新通知及び確認
-// 53         編集ウィンドウの表示位置、この場合は5分の3の位置に表示
+// 21         編集ウィンドウの表示位置、この場合は2分の1の位置に表示
 // ||         指定できる値は1-9
 // |+-- 分子
 // +--- 分母
-// (REG/PlaceDialogWindowTop:74)
+// (REG/PlaceDialogWindowTop:21)
 // (REG/PlaceDialogWindowLeft:21)
 //------------------------------------------------------------------
 #define SC_MOD_DIALOG_POS
-  #define SC_DIALOG_PLACE_TOP  (74)
+  #define SC_DIALOG_PLACE_TOP  (21)
   #define SC_DIALOG_PLACE_LEFT (21)
 
 //------------------------------------------------------------------
