@@ -256,6 +256,7 @@ outline/CFuncInfoArr.o \
 parse/CWordParse.o \
 plugin/CDllPlugin.o \
 plugin/CJackManager.o \
+plugin/CLuaPlugin.o \
 plugin/CPlugin.o \
 plugin/CPluginManager.o \
 plugin/CWSHPlugin.o \

@@ -432,6 +432,7 @@
     <ClInclude Include="..\sakura_core\plugin\CComplementIfObj.h" />
     <ClInclude Include="..\sakura_core\plugin\CDllPlugin.h" />
     <ClInclude Include="..\sakura_core\plugin\CJackManager.h" />
+    <ClInclude Include="..\sakura_core\plugin\CLuaPlugin.h" />
     <ClInclude Include="..\sakura_core\plugin\COutlineIfObj.h" />
     <ClInclude Include="..\sakura_core\plugin\CPlugin.h" />
     <ClInclude Include="..\sakura_core\plugin\CPluginIfObj.h" />
@@ -786,6 +787,7 @@
     <ClCompile Include="..\sakura_core\parse\CWordParse.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CDllPlugin.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CJackManager.cpp" />
+    <ClCompile Include="..\sakura_core\plugin\CLuaPlugin.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CPlugin.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CPluginManager.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CWSHPlugin.cpp" />

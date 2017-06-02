@@ -1086,6 +1086,9 @@
     <ClInclude Include="..\sakura_core\macro\CLua.h">
       <Filter>Cpp Source Files\macro</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\plugin\CLuaPlugin.h">
+      <Filter>Cpp Source Files\plugin</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\sakura_core\Funccode_x.hsrc">
@@ -2258,6 +2261,9 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\macro\CLua.cpp">
       <Filter>Cpp Source Files\macro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\plugin\CLuaPlugin.cpp">
+      <Filter>Cpp Source Files\plugin</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
