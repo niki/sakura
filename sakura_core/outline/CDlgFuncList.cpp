@@ -422,10 +422,10 @@ void CDlgFuncList::SetData()
 
 #ifdef SC_MOD_OUTLINEDLG
 	SetWindowTheme(hwndList, L"Explorer", NULL);
-	::SetWindowLongPtr(hwndList, GWL_STYLE, ::GetWindowLongPtr(hwndList, GWL_STYLE) & ~TVS_HASLINES);
+	//::SetWindowLongPtr(hwndList, GWL_STYLE, ::GetWindowLongPtr(hwndList, GWL_STYLE) & ~TVS_HASLINES);
 	
 	SetWindowTheme(hwndTree, L"Explorer", NULL);
-	::SetWindowLongPtr(hwndTree, GWL_STYLE, ::GetWindowLongPtr(hwndTree, GWL_STYLE) & ~TVS_HASLINES);
+	//::SetWindowLongPtr(hwndTree, GWL_STYLE, ::GetWindowLongPtr(hwndTree, GWL_STYLE) & ~TVS_HASLINES);
 #endif  // SC_
 
 	m_bDummyLParamMode = false;
@@ -1767,6 +1767,13 @@ void CDlgFuncList::SetTreeFile()
 			hParentTree.push_back(hParent);
 		}
 	}
+#ifdef SC_MOD_OUTLINEDLG
+	HTREEITEM		htiClass = TreeView_GetFirstVisible( hwndTree );
+	while( NULL != htiClass ){
+		TreeView_Expand( hwndTree, htiClass, TVE_EXPAND );
+		htiClass = TreeView_GetNextSibling( hwndTree, htiClass );
+	}
+#endif  // SC_
 }
 
 
