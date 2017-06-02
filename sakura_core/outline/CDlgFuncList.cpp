@@ -1545,7 +1545,16 @@ void CDlgFuncList::SetTree(bool tagjump, bool nolabel)
 		// 2016.04.24 TVI_LASTは要素数が多いとすごく遅い。TVI_FIRSTを使い後でソートしなおす
 		cTVInsertStruct.hInsertAfter = TVI_FIRST;
 		cTVInsertStruct.item.mask = TVIF_TEXT | TVIF_PARAM;
+#ifdef SC_FIX_OUTLINEDLG
+		// 先頭の空白は無視する
+		TCHAR *funcName = pcFuncInfo->m_cmemFuncName.GetStringPtr();
+		while (!(*funcName != _T(' ') && *funcName != _T('\t'))) {
+			funcName++;
+		}
+		cTVInsertStruct.item.pszText = funcName;
+#else
 		cTVInsertStruct.item.pszText = pcFuncInfo->m_cmemFuncName.GetStringPtr();
+#endif  // SC_
 		cTVInsertStruct.item.lParam = i;	//	あとでこの数値（＝m_pcFuncInfoArrの何番目のアイテムか）を見て、目的地にジャンプするぜ!!。
 
 		/*	親子関係をチェック
