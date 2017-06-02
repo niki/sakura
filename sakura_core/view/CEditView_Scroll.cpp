@@ -60,7 +60,7 @@ BOOL CEditView::CreateScrollBar()
 	si.nPos  = 0;
 	si.nTrackPos = 1;
 	::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, TRUE );
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	if (m_bMiniMap) {
 		DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
 		if (miniMapType == SC_MINIMAP_TYPE_NPP) {
@@ -192,7 +192,7 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 		}
 	}
 
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	const bool bDrawSwitchOld = SetDrawSwitch(false);
 #endif  // SC_
 	switch( nScrollCode ){
@@ -229,7 +229,7 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 	default:
 		break;
 	}
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	SetDrawSwitch(bDrawSwitchOld);
 	RedrawAll();
 #endif  // SC_
@@ -348,7 +348,7 @@ void CEditView::AdjustScrollBars()
 		if( !bEnable ){
 			ScrollAtV( CLayoutInt(0) );
 		}
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 		if (m_pcEditWnd->GetMiniMap().GetHwnd()) {
 			DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
 			CEditView &miniMap = m_pcEditWnd->GetMiniMap();

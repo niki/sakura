@@ -1399,7 +1399,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// アイコン描画
 		int cxIcon = CX_SMICON;
 		int cyIcon = CY_SMICON;
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 			cxIcon = 0;
 		} else
@@ -1525,7 +1525,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// アイコン描画
 		int cxIcon = CX_SMICON;
 		int cyIcon = CY_SMICON;
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 			cxIcon = 0;
 		} else
@@ -1545,7 +1545,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// テキスト描画
 		COLORREF clrText;
 		clrText = ::GetSysColor(COLOR_MENUTEXT);
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 		if (clrText == ::GetSysColor(COLOR_MENUTEXT)) {
 			EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
 			if (p && p->m_bIsRecMacro) {
@@ -2501,7 +2501,7 @@ void CTabWnd::LayoutTab( void )
 	// オーナードロー状態を共通設定に追随させる
 	BOOL bDispTabClose = m_pShareData->m_Common.m_sTabBar.m_bDispTabClose;
 	BOOL bOwnerDraw = bDispTabClose;
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 	bOwnerDraw = TRUE;  // 強制的にオーナードローにする
 #endif  // SC_
 	if( bOwnerDraw && !(lStyle & TCS_OWNERDRAWFIXED) ){
@@ -2594,7 +2594,7 @@ HIMAGELIST CTabWnd::InitImageList( void )
 	HIMAGELIST hImlNew;
 
 	hImlNew = NULL;
-#ifndef SC_MOD_TAB_CAPTION_COLOR
+#ifndef SC_FIX_TAB_CAPTION_COLOR
 	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon )
 #endif  // SC_
 	{
@@ -2644,7 +2644,7 @@ HIMAGELIST CTabWnd::InitImageList( void )
 
 l_end:
 	// タブに新しいアイコンイメージを設定する
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 	if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon)
 		TabCtrl_SetImageList( m_hwndTab, NULL );
 	else
@@ -3215,7 +3215,7 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 		// 2007.02.28 ryoji 表示切替をメニューに追加
 		int iMenuSel = -1;
 		UINT uFlags = MF_BYPOSITION | (m_hIml? MF_OWNERDRAW: MF_STRING);
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 			uFlags &= ~MF_OWNERDRAW;
 		}
@@ -3223,7 +3223,7 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 		HMENU hMenu = ::CreatePopupMenu();
 		for( i = 0; i < nSelfTab; i++ )
 		{
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 			if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon)
 				::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, pData[i].szText );
 			else
@@ -3246,7 +3246,7 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 			{
 				for( i = nSelfTab; i < nTab; i++ )
 				{
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 					if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon)
 						::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, pData[i].szText );
 					else

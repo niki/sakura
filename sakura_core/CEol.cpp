@@ -58,7 +58,7 @@ struct SEolDefinition{
 };
 static const SEolDefinition g_aEolTable[] = {
 	{ _T("改行無"),	L"",			"",			0 },
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 	{ _T("Win"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
 	{ _T("Unix"),		L"\x0a",		"\x0a",		1 },
 	{ _T("Mac"),		L"\x0d",		"\x0d",		1 },
@@ -72,7 +72,7 @@ static const SEolDefinition g_aEolTable[] = {
 	{ _T("PS"),		L"\u2029",		"",			1 },
 };
 
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 static const SEolDefinition g_aEolTable2[] = {
 	{ _T("改行無"),				L"",					"",			0 },
 	{ _T("0D0A(CRLF)"),		L"\x0d\x0a",	"\x0d\x0a",	2 },
@@ -166,7 +166,7 @@ const TCHAR* CEol::GetName() const
 {
 	return g_aEolTable[ m_eEolType ].m_szName;
 }
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 const TCHAR* CEol::GetName2() const
 {
 	return g_aEolTable2[ m_eEolType ].m_szName;

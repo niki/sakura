@@ -527,7 +527,7 @@ inline COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha)
 
 COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorInfo& info2)
 {
-#if !defined(SC_MOD_SELAREA) && !defined(SC_MOD_WS_COLOR)
+#if !defined(SC_FIX_SELAREA) && !defined(SC_FIX_WS_COLOR)
 	if( info.m_sColorAttr.m_cTEXT != info.m_sColorAttr.m_cBACK ){
 		return info.m_sColorAttr.m_cTEXT;
 	}
@@ -536,7 +536,7 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 		return  info2.m_sColorAttr.m_cTEXT ^ 0x00FFFFFF;
 	}
 #endif  // SC_
-#ifdef SC_MOD_SELAREA
+#ifdef SC_FIX_SELAREA
 	static int nBlendPer = RegKey(SC_REGKEY).get(_T("SelectAreaTextBlendPer"), SC_SELAREA_TEXT_BLEND_PER);
 	int alpha = 255 * nBlendPer / 100;
 #else
@@ -547,7 +547,7 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 
 COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorInfo& info2)
 {
-#if !defined(SC_MOD_SELAREA) && !defined(SC_MOD_WS_COLOR)
+#if !defined(SC_FIX_SELAREA) && !defined(SC_FIX_WS_COLOR)
 	if( info.m_sColorAttr.m_cTEXT != info.m_sColorAttr.m_cBACK ){
 		return info.m_sColorAttr.m_cBACK;
 	}
@@ -556,7 +556,7 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 		return  info2.m_sColorAttr.m_cBACK ^ 0x00FFFFFF;
 	}
 #endif  // SC_
-#ifdef SC_MOD_SELAREA
+#ifdef SC_FIX_SELAREA
 	static int nBlendPer = RegKey(SC_REGKEY).get(_T("SelectAreaBackBlendPer"), SC_SELAREA_BACK_BLEND_PER);
 	static int nBlendPer2 = RegKey(SC_REGKEY).get(_T("SelectAreaBackBlendPer2"), SC_SELAREA_BACK_BLEND_PER2);
 	int nBlendPer3 = nBlendPer;
@@ -1097,7 +1097,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	CTypeSupport	cCaretLineBg(this, COLORIDX_CARETLINEBG);
 	CTypeSupport	cEvenLineBg(this, COLORIDX_EVENLINEBG);
 	CTypeSupport	cPageViewBg(this, COLORIDX_PAGEVIEW);
-#ifdef SC_MOD_COMMENT
+#ifdef SC_FIX_COMMENT
 	int comment_mode = 0;
 	CTypeSupport cComment(this, COLORIDX_COMMENT);
 #endif  // SC_
@@ -1117,7 +1117,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		bTransText = cBackType.GetBackColor() == cTextType.GetBackColor();
 	}
 
-#if 0//def SC_MOD_WS_COLOR
+#if 0//def SC_FIX_WS_COLOR
 	// 行背景描画
 	{
 		RECT rcClip;
@@ -1175,7 +1175,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			bSkipRight = CColorStrategyPool::getInstance()->IsSkipBeforeLayout();
 		}
 	}
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
 	bool bMiniMapSearchLine = false;
 #endif  // SC_
 	//行終端または折り返しに達するまでループ
@@ -1217,14 +1217,14 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				pInfo->DoChangeColor(&cColor);
 				SetCurrentColor(pInfo->m_gr, cColor.eColorIndex, cColor.eColorIndex2, cColor.eColorIndexBg);
 				
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
 				if (pInfo->m_pStrategyFound) {
 					if (m_bMiniMap) {
 						bMiniMapSearchLine = true;
 					}
 				}
 #endif  // SC_
-#ifdef SC_MOD_COMMENT
+#ifdef SC_FIX_COMMENT
 				if (pInfo->m_pStrategyFound) {
 					comment_mode = 0;
 				} else {
@@ -1244,7 +1244,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 #endif  // SC_
 			}
 
-#ifdef SC_MOD_COMMENT
+#ifdef SC_FIX_COMMENT
 			if (pInfo->m_pStrategyFound) {
 				comment_mode = 0;
 			} else {
@@ -1323,7 +1323,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	// 行末背景描画
 	RECT rcClip;
 	bool rcClipRet = GetTextArea().GenerateClipRectRight(&rcClip,*pInfo->m_pDispPos);
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
 	if (bMiniMapSearchLine) {
 		// 雑だけど行全体を塗りつぶす
 		rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
@@ -1342,7 +1342,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 		}
 	} else 
 #endif  // SC_
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_BOOKMARK_DISP == 1
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_BOOKMARK_DISP == 1
 	if (m_bMiniMap && pcDocLine && CBookmarkGetter(pcDocLine).IsBookmarked()){
 		// 雑だけど行全体を塗りつぶす
 		rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
@@ -1363,7 +1363,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 #endif  // SC_
 	if(rcClipRet){
 		if( !bTransText ){
-#ifdef SC_MOD_COMMENT
+#ifdef SC_FIX_COMMENT
 			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
 				cBackType.FillBack(pInfo->m_gr,rcClip);
 			} else if (comment_mode) {

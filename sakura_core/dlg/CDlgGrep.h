@@ -55,7 +55,7 @@ public:
 	bool			m_bSetText;				//!< 検索文字列を設定したか
 	SFilePath	m_szFile;					/*!< 検索ファイル */
 	SFilePath	m_szFolder;					/*!< 検索フォルダ */
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 	bool		m_bFolder99;
 	bool		m_bFolder2;
 	bool		m_bFolder3;

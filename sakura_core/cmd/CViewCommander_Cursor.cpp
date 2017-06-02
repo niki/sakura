@@ -961,7 +961,7 @@ void CViewCommander::Command_WndScrollDown( void )
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef SC_MOD_SCROLL
+#ifdef SC_FIX_SCROLL
 	nCaretMarginY = SC_VERTICAL_SCR;
 	if( nCaretMarginY < 1 )
 		nCaretMarginY = CLayoutInt(1);
@@ -978,13 +978,13 @@ void CViewCommander::Command_WndScrollDown( void )
 		bCaretOff = true;
 	}
 
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
 #endif  // SC_
 	//	Sep. 11, 2004 genta 同期用に行数を記憶
 	//	Sep. 11, 2004 genta 同期スクロールの関数化
 	m_pCommanderView->SyncScrollV( m_pCommanderView->ScrollAtV(m_pCommanderView->GetTextArea().GetViewTopLine() - CLayoutInt(1)));
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
 #endif  // SC_
@@ -1016,7 +1016,7 @@ void CViewCommander::Command_WndScrollUp(void)
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef SC_MOD_SCROLL
+#ifdef SC_FIX_SCROLL
 	nCaretMarginY = SC_VERTICAL_SCR;
 	if( nCaretMarginY < 0 )
 		nCaretMarginY = CLayoutInt(0);
@@ -1031,13 +1031,13 @@ void CViewCommander::Command_WndScrollUp(void)
 		bCaretOff = true;
 	}
 
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
 #endif  // SC_
 	//	Sep. 11, 2004 genta 同期用に行数を記憶
 	//	Sep. 11, 2004 genta 同期スクロールの関数化
 	m_pCommanderView->SyncScrollV( m_pCommanderView->ScrollAtV( m_pCommanderView->GetTextArea().GetViewTopLine() + CLayoutInt(1) ));
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
 #endif  // SC_

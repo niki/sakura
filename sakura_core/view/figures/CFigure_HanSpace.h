@@ -36,7 +36,7 @@ public:
 	void DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool trans) const;
 	EColorIndexType GetColorIdx(void) const{ return COLORIDX_SPACE; }
 
-#ifdef SC_MOD_HAN_SPACE
+#ifdef SC_FIX_HAN_SPACE
 	CFigure_HanSpace() : CFigureSpace(), m_nbsp(false) {}
 
 protected:
@@ -44,7 +44,7 @@ protected:
 #endif  // SC_
 };
 
-#ifdef SC_MOD_HAN_SPACE
+#ifdef SC_FIX_HAN_SPACE
 class CFigure_NBSP : public CFigure_HanSpace{
 public:
 	CFigure_NBSP() : CFigure_HanSpace() { m_nbsp = true; }

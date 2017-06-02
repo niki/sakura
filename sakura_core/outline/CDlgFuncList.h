@@ -24,7 +24,7 @@
 #include <Windows.h>
 #include "dlg/CDialog.h"
 #include "doc/CEditDoc.h"
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
 #include "util/window.h"
 #endif  //SC_
 
@@ -227,7 +227,7 @@ private:
 	POINT				m_ptDefaultSizeClient;
 	RECT				m_rcItems[12];
 	
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
 	CFontAutoDeleter		m_cFontText[2];
 #endif  // SC_
 };

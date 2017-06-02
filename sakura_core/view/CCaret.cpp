@@ -182,7 +182,7 @@ CLayoutInt CCaret::MoveCursor(
 		nCaretMarginY = 0;
 	}
 	else{
-#ifdef SC_MOD_SCROLL
+#ifdef SC_FIX_SCROLL
 		nCaretMarginY = SC_VERTICAL_SCR;
 		if( nCaretMarginY < 0 )
 			nCaretMarginY = CLayoutInt(0);
@@ -214,7 +214,7 @@ CLayoutInt CCaret::MoveCursor(
 	
 	// 水平スクロール量（文字数）の算出
 	nScrollColNum = CLayoutInt(0);
-#ifdef SC_MOD_SCROLL
+#ifdef SC_FIX_SCROLL
 	nScrollMarginRight = CLayoutInt(1);
 	nScrollMarginLeft = CLayoutInt(1);
 #else
@@ -237,7 +237,7 @@ CLayoutInt CCaret::MoveCursor(
 		ptWk_CaretPos.GetX() > m_pEditView->GetTextArea().GetViewLeftCol() + m_pEditView->GetTextArea().m_nViewColNum - nScrollMarginRight ){
 		nScrollColNum =
 			( m_pEditView->GetTextArea().GetViewLeftCol() + m_pEditView->GetTextArea().m_nViewColNum - nScrollMarginRight ) - ptWk_CaretPos.GetX2();
-#ifdef SC_MOD_SCROLL
+#ifdef SC_FIX_SCROLL
 		if (nScrollColNum != 0) {
 			static const int kSize = SC_HORIZONTAL_SCR;
 			if (kSize > 1) {
@@ -252,7 +252,7 @@ CLayoutInt CCaret::MoveCursor(
 		ptWk_CaretPos.GetX() < m_pEditView->GetTextArea().GetViewLeftCol() + nScrollMarginLeft
 	){
 		nScrollColNum = m_pEditView->GetTextArea().GetViewLeftCol() + nScrollMarginLeft - ptWk_CaretPos.GetX2();
-#ifdef SC_MOD_SCROLL
+#ifdef SC_FIX_SCROLL
 		if (nScrollColNum != 0) {
 			static const int kSize = SC_HORIZONTAL_SCR;
 			if (kSize > 1) {
@@ -319,7 +319,7 @@ CLayoutInt CCaret::MoveCursor(
 		}
 	}
 	// 移動先は、画面の最大行数−２より下か？（down キー）
-#ifdef SC_MOD_SCROLL
+#ifdef SC_FIX_SCROLL
 	else if( ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine() >= m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY - 1 ){
 		CLayoutInt ii = m_pEditDoc->m_cLayoutMgr.GetLineCount();
 		if( ii - ptWk_CaretPos.y < nCaretMarginY + 1 &&
@@ -365,7 +365,7 @@ CLayoutInt CCaret::MoveCursor(
 			t_abs( nScrollRowNum ) >= m_pEditView->GetTextArea().m_nViewRowNum ){
 			m_pEditView->GetTextArea().OffsetViewTopLine(-nScrollRowNum);
 
-#ifdef SC_MOD_CENTERING_CURSOR_JUMP
+#ifdef SC_FIX_CENTERING_CURSOR_JUMP
 			if (!!RegKey(SC_REGKEY).get(_T("CenteringCursorJump"), 1) &&
 			    (RegKey(SC_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid() ||
 			     RegKey(SC_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH")).valid()))
@@ -416,7 +416,7 @@ CLayoutInt CCaret::MoveCursor(
 				m_pEditView->GetTextArea().GenerateRightRect(&rcClip2, -nScrollColNum);
 			}
 
-#ifdef SC_MOD_CENTERING_CURSOR_JUMP
+#ifdef SC_FIX_CENTERING_CURSOR_JUMP
 			if (!!RegKey(SC_REGKEY).get(_T("CenteringCursorJump"), 1) &&
 			    (RegKey(SC_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid() ||
 			     RegKey(SC_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH")).valid()))
@@ -446,11 +446,11 @@ CLayoutInt CCaret::MoveCursor(
 #ifdef SC_FIX_FLICKER
 			m_pEditView->SetDrawSwitch(oldDraw2);
 #endif  // SC_
-#ifdef SC_MOD_CENTERING_CURSOR_JUMP
+#ifdef SC_FIX_CENTERING_CURSOR_JUMP
 			} //@1
 #endif  // SC_
 		}
-#if defined(SC_MOD_CENTERING_CURSOR_JUMP) && defined(SC_MOD_MINIMAP)
+#if defined(SC_FIX_CENTERING_CURSOR_JUMP) && defined(SC_FIX_MINIMAP)
 		else if (!!RegKey(SC_REGKEY).get(_T("CenteringCursorJump"), 1) &&
 		         RegKey(SC_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH")).valid())
 		{  // CViewCommander::Command_CURLINECENTER()
@@ -992,7 +992,7 @@ void CCaret::ShowCaretPosInfo()
 				}
 			}
 			else{
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName2());
 #else
 				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName());
@@ -1060,7 +1060,7 @@ void CCaret::ShowCaretPosInfo()
 	}
 	// ステータスバーに状態を書き出す
 	else{
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 		TCHAR	szText_1[64];
 		auto_sprintf( szText_1, _T("%5d:%d"), ptCaret.y, ptCaret.x );
 

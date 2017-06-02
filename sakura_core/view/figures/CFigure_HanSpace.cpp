@@ -28,7 +28,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 	CMyRect rcClip;
 	if(pcView->GetTextArea().GenerateClipRect(&rcClip,*pDispPos,1))
 	{
-#ifdef SC_MOD_HAN_SPACE
+#ifdef SC_FIX_HAN_SPACE
 		// 塗りつぶしで消去
 		gr.SetBrushColor(gr.GetTextBackColor());
 		::FillRect(gr, &rcClip, gr.GetCurrentBrush());
@@ -48,7 +48,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 //		);
 		
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 		if (pcView->m_bMiniMap) {
 			//位置進める
 			pDispPos->ForwardDrawCol(1);
@@ -65,7 +65,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //#  endif  // SC_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // 少し左め
-#ifdef SC_MOD_HAN_SPACE
+#ifdef SC_FIX_HAN_SPACE
 		if (m_nbsp) {
 			::MoveToEx( gr, x-1, y-2, NULL );
 			::LineTo(   gr, x+4, y+3 );
@@ -125,7 +125,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 }
 
 
-#ifdef  SC_MOD_HAN_SPACE
+#ifdef  SC_FIX_HAN_SPACE
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                     CFigure_NBSP                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

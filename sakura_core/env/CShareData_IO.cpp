@@ -34,11 +34,11 @@
 #include "plugin/CPlugin.h"
 #include "uiparts/CMenuDrawer.h"
 #include "_main/CCommandLine.h"
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 #include "sakura_rc.h"
 #endif  // SC_
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
@@ -103,7 +103,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 //	MYTRACE( _T("Iniファイル処理-1 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	std::tstring keywordset_fname =
 	    mn::file::dirname(szIniFileName) +
 	    mn::file::basename(szIniFileName) + _T(".keywordset.json");
@@ -114,7 +114,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			/* 設定ファイルが存在しない */
 
 			// キーワードファイルのインポート
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 			if (mn::file::exist(keywordset_fname)) {
 				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
 			} else {
@@ -125,7 +125,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #endif  // SC_
 			return false;
 		}
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 		else {
 			// キーワードファイルのインポート
 			if (mn::file::exist(keywordset_fname)) {
@@ -154,7 +154,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 //	MYTRACE( _T("Iniファイル処理 0 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	CDataProfile cProfileDefault;
 	cProfileDefault.SetReadingMode();
 
@@ -180,7 +180,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 
 	// Feb. 12, 2006 D.S.Koba
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	do {
 		CDataProfile cProfileRecent;
 
@@ -226,7 +226,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_Grep( cProfile );
 #endif  // SC_
 	ShareData_IO_Folders( cProfile );
-#ifndef SC_MOD_PROFILES
+#ifndef SC_FIX_PROFILES
 	ShareData_IO_Cmd( cProfile );
 #endif  // SC_
 	ShareData_IO_Nickname( cProfile );
@@ -238,7 +238,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_KeyBind( cProfile );
 	ShareData_IO_Print( cProfile );
 	ShareData_IO_Types( cProfile );
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	if (!mn::file::exist(keywordset_fname)) {
 		ShareData_IO_KeyWords( cProfile );
 	}
@@ -266,7 +266,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	return true;
 }
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 namespace opt {
 static std::string to_string(const ptree &info, const std::string &value, const std::string &default_value = "") {
 	boost::optional<std::string> v = info.get_optional<std::string>(value);
@@ -313,7 +313,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	SShare_History &hist = pShare->m_sHistory;
 
 	int			i;
@@ -573,7 +573,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
 	int			i;
@@ -673,7 +673,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
 	int			i;
@@ -796,7 +796,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("GREPFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFolders[i] );
 	}
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[*].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders99 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders3 );
@@ -835,7 +835,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	SShare_History &hist = pShare->m_sHistory;
 
 	int			i;
@@ -1582,7 +1582,7 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 		}
 	}
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	// OldVerの切り捨て
 	bOldVer = false;
 	sKeyBind.m_nKeyNameArrNum = KEYNAME_SIZE;
@@ -2016,7 +2016,7 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	if( types.m_id < 0 ){
 		types.m_id *= -1;
 	}
-#ifndef SC_MOD_TAB_MARK
+#ifndef SC_FIX_TAB_MARK
 	cProfile.IOProfileData( pszSecName, LTEXT("szTabViewString"), MakeStringBufferW(types.m_szTabViewString) );
 	cProfile.IOProfileData_WrapInt( pszSecName, LTEXT("bTabArrow")	, types.m_bTabArrow );	//@@@ 2003.03.26 MIK
 #endif  // SC_
@@ -2517,7 +2517,7 @@ struct SMainMenuAddItemInfo
 
 void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 {
-#ifdef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifdef SC_FIX_MAINMENU_FORCE_DEFAULT
 	//CDataProfile	cProfileDefault;
 	//boost::container::vector<std::wstring> data;
 	//cProfileDefault.SetReadingMode();
@@ -2665,12 +2665,12 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 	boost::container::vector<std::wstring>& data = *pData;
 	int dataNum = 0;
 
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	boost::container::vector<std::wstring> default_data;
-#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
 	bool bOldProfileDef = cProfile.bProfileDef_;
 	cProfile.bProfileDef_ = false;
-#endif  // SC_MOD_MAINMENU_FORCE_DEFAULT
+#endif  // SC_FIX_MAINMENU_FORCE_DEFAULT
 #endif  // SC_
 
 	if (cProfile.IsReadingMode()) {
@@ -2690,8 +2690,8 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 		cProfile.IOProfileData( pszSecName, LTEXT("nMainMenuNum"), mainmenu.m_nMainMenuNum);
 	}
 
-#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
-#ifdef SC_MOD_PROFILES
+#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
+#ifdef SC_FIX_PROFILES
 	{
 		// デフォルト用にリソースの読み込み
 		CDataProfile cProfileDef;
@@ -2699,21 +2699,21 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 		cProfileDef.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &default_data );
 	}
 #endif  // SC_
-#endif  // SC_MOD_MAINMENU_FORCE_DEFAULT
+#endif  // SC_FIX_MAINMENU_FORCE_DEFAULT
 
 	if( pData ){
 		mainmenu.m_bMainMenuKeyParentheses = (_wtoi(data[dataNum++].c_str()) != 0);
 	}else{
 		cProfile.IOProfileData( pszSecName, LTEXT("bKeyParentheses"), mainmenu.m_bMainMenuKeyParentheses );
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 		dataNum++;
 #endif  // SC_
 	}
 
-#ifdef SC_MOD_PROFILES
-#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifdef SC_FIX_PROFILES
+#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
 	cProfile.bProfileDef_ = bOldProfileDef;
-#endif  // SC_MOD_MAINMENU_FORCE_DEFAULT
+#endif  // SC_FIX_MAINMENU_FORCE_DEFAULT
 #endif  // SC_
 
 	if (cProfile.IsReadingMode()) {
@@ -2740,7 +2740,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 			if( pData ){
 				wcscpy(szLine, data[dataNum++].c_str());
 			}else{
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 				if (!cProfile.IOProfileData(pszSecName, szKeyName, MakeStringBufferW(szLine))) {
 					if ((int)default_data.size() > dataNum) {
 						wcscpy(szLine, default_data[dataNum].c_str());  // デフォルト設定
@@ -2801,7 +2801,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 			auto_strcpy_s( pcMenu->m_sName, MAX_MAIN_MENU_NAME_LEN+1, p );
 		}
 		else {
-#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
 			if (GetPlugCmdInfoByFuncCode( pcMenu->m_nFunc, szFuncName )) {
 				// Plugin
 			}
@@ -2827,7 +2827,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 				szFuncName, 
 				pcMenu->m_sKey, 
 				pcMenu->m_nFunc == F_NODE ? pcMenu->m_sName : L"" );
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 			bool bSkip = false;
 			if ((int)default_data.size() > dataNum) {
 				if (default_data[dataNum] == szLine) {
@@ -2839,7 +2839,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, boost::container::vecto
 #else
 			cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
 #endif  // SC_
-#endif  // SC_MOD_MAINMENU_FORCE_DEFAULT
+#endif  // SC_FIX_MAINMENU_FORCE_DEFAULT
 		}
 
 		if (cProfile.IsReadingMode() && pcMenu->m_nLevel == 0) {
@@ -2924,7 +2924,7 @@ void CShareData_IO::ShareData_IO_Other( CDataProfile& cProfile )
 	@param[in]		pszSecName		セクション名
 	@param[in,out]	pColorInfoArr	書き出し、読み込み対象の色設定へのポインタ (入出力方向はbReadに依存)
 */
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr, bool bColorOnly )
 #else
 void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr )
@@ -2939,7 +2939,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 		if( pcProfile->IsReadingMode() ){
 			if( pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) ) ){
 				int buf[5];
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 				ColorInfo *info = &pColorInfoArr[j];
 				//int scan_num = scan_ints( szKeyData, pszForm, buf);
 				WCHAR text[32] = {};
@@ -2978,7 +2978,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 			// 2006.12.18 ryoji
 			// 矛盾設定があれば修復する
 			unsigned int fAttribute = g_ColorAttributeArr[j].fAttribute;
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 			if (!bColorOnly) {
 				ColorInfo *info = &pColorInfoArr[j];
 				if( 0 != (fAttribute & COLOR_ATTRIB_FORCE_DISP) )
@@ -2998,7 +2998,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 #endif  // SC_
 		}
 		else{
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 			ColorInfo *info = &pColorInfoArr[j];
 			unsigned int fAttribute = g_ColorAttributeArr[j].fAttribute;
 			if (fAttribute == (COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS)) {

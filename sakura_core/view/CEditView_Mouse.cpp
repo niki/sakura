@@ -61,7 +61,7 @@ void CEditView::OnLBUTTONDOWN( WPARAM fwKeys, int _xPos , int _yPos )
 		AutoScrollExit();
 	}
 	if( m_bMiniMap ){
-#ifndef SC_MOD_MINIMAP
+#ifndef SC_FIX_MINIMAP
 		::SetFocus( GetHwnd() );
 #endif  // SC_
 		::SetCapture( GetHwnd() );
@@ -971,7 +971,7 @@ void CEditView::OnMOUSEMOVE( WPARAM fwKeys, int xPos_, int yPos_ )
 	}
 
 	if( m_bMiniMap ){
-#if defined(SC_MOD_CENTERING_CURSOR_JUMP) && defined(SC_MOD_MINIMAP)
+#if defined(SC_FIX_CENTERING_CURSOR_JUMP) && defined(SC_FIX_MINIMAP)
 		ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH"));
 #endif  // SC_
 		POINT		po;
@@ -1005,7 +1005,7 @@ void CEditView::OnMOUSEMOVE( WPARAM fwKeys, int xPos_, int yPos_ )
 					nScrollRow = area.GetViewTopLine();
 				}
 			}
-#ifndef SC_MOD_MINIMAP
+#ifndef SC_FIX_MINIMAP
 			if( nScrollRow != 0 ){
 				ScrollAtV( area.GetViewTopLine() - nScrollRow );
 			}
@@ -1476,7 +1476,7 @@ LRESULT CEditView::OnMOUSEWHEEL2( WPARAM wParam, LPARAM lParam, bool bHorizontal
 		const int nRollActions = bSmooth ? nRollNum : 1;
 		const CLayoutInt nCount = CLayoutInt(((nScrollCode == SB_LINEUP) ? -1 : 1) * (bSmooth ? 1 : nRollNum) );
 
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 		const bool bDrawSwitchOld = SetDrawSwitch(false);
 #endif  // SC_
 		for( i = 0; i < nRollActions; ++i ){
@@ -1487,7 +1487,7 @@ LRESULT CEditView::OnMOUSEWHEEL2( WPARAM wParam, LPARAM lParam, bool bHorizontal
 				SyncScrollV( ScrollAtV( GetTextArea().GetViewTopLine() + nCount ) );
 			}
 		}
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 		SetDrawSwitch(bDrawSwitchOld);
 		RedrawAll();
 #endif  // SC_

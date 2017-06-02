@@ -54,7 +54,7 @@ class CMenuDrawer;// 2002/2/10 aroka to here
 enum PropComSheetOrder {
 	ID_PROPCOM_PAGENUM_GENERAL = 0,		//!< 全般
 	ID_PROPCOM_PAGENUM_WIN,				//!< ウィンドウ
-#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
 	ID_PROPCOM_PAGENUM_MAINMENU,		//!< メインメニュー
 #endif  // SC_
 	ID_PROPCOM_PAGENUM_TOOLBAR,			//!< ツールバー
@@ -523,7 +523,7 @@ private:
 	void EnablePluginPropInput(HWND hwndDlg);
 };
 
-#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
 //==============================================================
 //!	メインメニューページ
 class CPropMainMenu : CPropCommon

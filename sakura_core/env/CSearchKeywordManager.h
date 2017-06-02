@@ -38,7 +38,7 @@ struct SShare_SearchKeywords{
 	StaticVector< StaticString<WCHAR, _MAX_PATH>, MAX_REPLACEKEY, const WCHAR*>	m_aReplaceKeys;
 	StaticVector< StaticString<TCHAR, _MAX_PATH>, MAX_GREPFILE,   const TCHAR*>	m_aGrepFiles;
 	StaticVector< StaticString<TCHAR, _MAX_PATH>, MAX_GREPFOLDER, const TCHAR*>	m_aGrepFolders;
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 	bool		m_bGrepFolders99;
 	bool		m_bGrepFolders2;
 	bool		m_bGrepFolders3;
@@ -47,7 +47,7 @@ struct SShare_SearchKeywords{
 	SFilePath	m_szGrepFolders3;
 	SFilePath	m_szGrepFolders4;
 #endif  // SC_
-#ifdef SC_MOD_MAXDATA
+#ifdef SC_FIX_MAXDATA
 	SShare_SearchKeywords() {
 		m_aSearchKeys.resize(RegKey(SC_REGKEY).get(_T("RecentSearchKeyMax"), SC_MAX_SEARCHKEY));
 		m_aReplaceKeys.resize(RegKey(SC_REGKEY).get(_T("RecentReplaceKeyMax"), SC_MAX_REPLACEKEY));

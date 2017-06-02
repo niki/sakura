@@ -31,7 +31,7 @@ namespace ApiWrap
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      ステータスバー                         //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 	inline LRESULT StatusBar_GetText(HWND hwndStatus, WPARAM opt, TCHAR* str)
 	{
 		if (0 < ::SendMessage(hwndStatus, SB_GETTEXTLENGTH, opt & 0xFF, (LPARAM)str)) {
@@ -44,7 +44,7 @@ namespace ApiWrap
 #endif  // SC_
 	inline LRESULT StatusBar_SetText(HWND hwndStatus, WPARAM opt, const TCHAR* str)
 	{
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 		if (hwndStatus == NULL) return 0L;
 		if (str && (opt & SBT_OWNERDRAW) == 0) {
 			TCHAR	temp[256] = {};

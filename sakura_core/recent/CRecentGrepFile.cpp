@@ -38,7 +38,7 @@ CRecentGrepFile::CRecentGrepFile()
 		GetShareData()->m_sSearchKeywords.m_aGrepFiles.dataPtr(),
 		&GetShareData()->m_sSearchKeywords.m_aGrepFiles._GetSizeRef(),
 		NULL,
-#ifdef SC_MOD_MAXDATA
+#ifdef SC_FIX_MAXDATA
 		RegKey(SC_REGKEY).get(_T("RecentGrepFileMax"), SC_MAX_GREPFILE),
 #else
 		MAX_GREPFILE,

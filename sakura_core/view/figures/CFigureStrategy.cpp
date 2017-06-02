@@ -53,7 +53,7 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	int nIdx = nPos;
 	bool bTrans = pInfo->m_pcView->IsBkBitmap() && CTypeSupport(pInfo->m_pcView, COLORIDX_TEXT).GetBackColor() == pInfo->m_gr.GetTextBackColor();
 	
-#ifdef SC_MOD_SELAREA
+#ifdef SC_FIX_SELAREA
 	bool select = pInfo->GetCurrentColor() != pInfo->GetCurrentColor2();
 	if (select) {
 		CTypeSupport cCurrentType2(
@@ -67,7 +67,7 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 		pInfo->m_gr.PushMyFont(sFont);
 	}
 #endif	// SC_
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	//COLORREF crMiniMap = pInfo->m_gr.GetCurrentTextForeColor();
 	COLORREF crMiniMap = pInfo->m_gr.GetTextBackColor();
 	bool bMiniMapSearch = false;
@@ -98,13 +98,13 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	);
 	// pInfo->m_nPosInLogic += nLength; ここでは進めない
 	
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	if (bMiniMapSearch) {
 		pInfo->m_gr.PopTextForeColor();
 		pInfo->m_gr.PopTextBackColor();
 	}
 #endif	// SC_
-#ifdef SC_MOD_SELAREA
+#ifdef SC_FIX_SELAREA
 	if (select) {
 		pInfo->m_gr.PopMyFont();
 	}
@@ -123,13 +123,13 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 bool CFigureSpace::DrawImp(SColorStrategyInfo* pInfo)
 {
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	//COLORREF crMiniMap = pInfo->m_gr.GetCurrentTextForeColor();
 	COLORREF crMiniMap = pInfo->m_gr.GetTextBackColor();
 #endif	// SC_
 	bool bTrans = DrawImp_StyleSelect(pInfo);
 	DispPos sPos(*pInfo->m_pDispPos);	// 現在位置を覚えておく
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	bool bMiniMapSearch = false;
 	if (pInfo->m_pcView->m_bMiniMap &&
 	      (pInfo->GetCurrentColor() == COLORIDX_SEARCH ||
@@ -149,7 +149,7 @@ bool CFigureSpace::DrawImp(SColorStrategyInfo* pInfo)
 	}
 #endif	// SC_
 	DispSpace(pInfo->m_gr, pInfo->m_pDispPos,pInfo->m_pcView, bTrans);	// 空白描画
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
 	if (bMiniMapSearch) {
 		pInfo->m_gr.PopTextForeColor();
 		pInfo->m_gr.PopTextBackColor();
@@ -198,10 +198,10 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	COLORREF crBack;
 	bool blendColor = pInfo->GetCurrentColor() != pInfo->GetCurrentColor2() && cCurrentType.GetTextColor() == cCurrentType.GetBackColor(); // 選択混合色
 	bool bBold;
-#ifdef SC_MOD_SELAREA
+#ifdef SC_FIX_SELAREA
 	blendColor = pInfo->GetCurrentColor() == COLORIDX_SELECT;  // 選択色
 #endif  // SC_
-#ifdef SC_MOD_WS_COLOR
+#ifdef SC_FIX_WS_COLOR
 	EColorIndexType colorIdx = GetColorIdx();
 	bool bIgnore = false;
 	bIgnore |= (colorIdx == COLORIDX_CTRLCODE);
@@ -213,7 +213,7 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 	//bIgnore |= (colorIdx == COLORIDX_WSTRING);
 #endif  // SC_
 	if( blendColor ){
-#ifdef SC_MOD_WS_COLOR
+#ifdef SC_FIX_WS_COLOR
 		if (!bIgnore) {
 			CTypeSupport& cText = cCurrentType2;
 			CTypeSupport& cBack = cCurrentType3;
@@ -235,7 +235,7 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 		bBold = cCurrentType2.IsBoldFont();
 #endif  // SC_
 	}else{
-#ifdef SC_MOD_WS_COLOR
+#ifdef SC_FIX_WS_COLOR
 		if (!bIgnore) {
 			CTypeSupport& cText = cCurrentType;
 			CTypeSupport& cBack = cCurrentType1;
@@ -257,7 +257,7 @@ bool CFigureSpace::DrawImp_StyleSelect(SColorStrategyInfo* pInfo)
 		bBold = cCurrentType.IsBoldFont();
 #endif  // SC_
 	}
-#ifdef SC_MOD_WS_COLOR
+#ifdef SC_FIX_WS_COLOR
 	//! 色をマージする
 	//! @param colText テキスト色
 	//! @param colBase ベースとなる色

@@ -192,7 +192,7 @@ BOOL CDlgJump::OnBnClicked( int wID )
 /* ダイアログデータの設定 */
 void CDlgJump::SetData( void )
 {
-#ifdef SC_MOD_DIALOG_POS
+#ifdef SC_FIX_DIALOG_POS
 	SetPlaceOfWindow();
 #endif  // SC_
 

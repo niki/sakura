@@ -829,7 +829,7 @@
 #define IDD_PLUGIN_OPTION               5221
 #define IDD_PROFILEMGR                  5222
 #define IDD_FILETREE                    5223
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 #define IDC_COMBO_FOLDER2               7000
 #define IDC_COMBO_FOLDER3               7001
 #define IDC_COMBO_FOLDER4               7002

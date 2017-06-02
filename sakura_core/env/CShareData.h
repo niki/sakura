@@ -96,7 +96,7 @@ public:
 	static CMutex& GetMutexShareWork();
 
 	void InitKeyword(DLLSHAREDATA*, bool);
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 	void InitKeywordFromList(DLLSHAREDATA*, const std::tstring&);
 #endif  // SC_
 

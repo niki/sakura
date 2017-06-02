@@ -79,7 +79,7 @@ CDialog::CDialog(bool bSizable, bool bCheckShareData)
 	m_nWidth = -1;
 	m_nHeight = -1;
 
-#ifdef SC_MOD_DIALOG_POS
+#ifdef SC_FIX_DIALOG_POS
 	m_hwndPlaceOfWindow = NULL;
 #endif  // SC_
 
@@ -208,7 +208,7 @@ void CDialog::SetDialogPosSize()
 	}
 #endif
 
-#ifdef SC_MOD_DIALOG_POS
+#ifdef SC_FIX_DIALOG_POS
 	if (m_hwndPlaceOfWindow != NULL) {
 		SetPlaceOfWindow(m_hwndPlaceOfWindow);
 	}
@@ -662,7 +662,7 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 	return hFont;
 }
 
-#ifdef SC_MOD_DIALOG_POS
+#ifdef SC_FIX_DIALOG_POS
 void CDialog::SetPlaceOfWindow() {
 	m_hwndPlaceOfWindow = m_hwndParent;
 }

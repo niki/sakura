@@ -73,7 +73,7 @@ typedef const StringBufferW_ StringBufferW;
 //2007.09.24 kobake データ変換部を子クラスに分離
 //!各種データ変換付きCProfile
 class CDataProfile : public CProfile{
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 public:
 	CDataProfile() : pcProfileDef_(nullptr), bProfileDef_(false) {}
 	CDataProfile *pcProfileDef_;
@@ -234,7 +234,7 @@ public:
 				//Tに変換
 				profile_to_value(buf, &tEntryValue);
 			}
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 			if (!ret) {
 				// 読み込みに失敗した場合はデフォルトを参照する
 				if (bProfileDef_ && pcProfileDef_ && (*pcProfileDef_).IsReadingMode()) {
@@ -252,7 +252,7 @@ public:
 			//文字列に変換
 			wstring buf;
 			value_to_profile(tEntryValue, &buf);
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 			if (bProfileDef_ && pcProfileDef_ && (*pcProfileDef_).IsReadingMode()) {
 				TCHAR test[1024];
 				if ((*pcProfileDef_).IOProfileData(pszSectionName, pszEntryKey, MakeStringBufferT(test))) {

@@ -30,7 +30,7 @@
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "typeprop/CImpExpManager.h"
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 #include <codecvt>
 #include <locale>
 #include <boost/property_tree/ptree.hpp>
@@ -204,7 +204,7 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 #undef PopulateKeyword2
 #undef PopulateKeyword
 }
-#ifdef SC_MOD_PROFILES
+#ifdef SC_FIX_PROFILES
 void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstring &fname)
 {
 	/* 強調キーワードのテストデータ */
@@ -272,7 +272,7 @@ void _DefaultConfig(STypeConfig* pType)
 	for( int i = 0; i < MAX_KEYWORDSET_PER_TYPE; i++ ){
 		pType->m_nKeyWordSetIdx[i] = -1;
 	}
-#ifndef SC_MOD_TAB_MARK
+#ifndef SC_FIX_TAB_MARK
 	wcscpy( pType->m_szTabViewString, _EDITL("^       ") );	/* TAB表示文字列 */
 	pType->m_bTabArrow = TABARROW_STRING;	/* タブ矢印表示 */	// 2001.12.03 hor	// default on 2013/4/11 Uchi
 #endif  // SC_

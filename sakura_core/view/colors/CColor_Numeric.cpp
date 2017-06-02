@@ -5,7 +5,7 @@
 #include "util/string_ex2.h"
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
-#ifdef SC_MOD_NUMERIC_COLOR
+#ifdef SC_FIX_NUMERIC_COLOR
 #define REGEX_MODE (1)  // 0:std::regex, 1:boost::regex, 2:re2
 #if REGEX_MODE == 0
   #include <regex>
@@ -83,7 +83,7 @@ bool CColor_Numeric::EndColor(const CStringRef& cStr, int nPos)
  */
 static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*, int length*/)
 {
-#ifdef SC_MOD_NUMERIC_COLOR
+#ifdef SC_FIX_NUMERIC_COLOR
 	register const wchar_t *p = cStr.GetPtr() + offset;
 	register const wchar_t *q = cStr.GetPtr() + cStr.GetLength();
 

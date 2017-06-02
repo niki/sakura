@@ -27,7 +27,7 @@ CTextArea::CTextArea(CEditView* pEditView)
 	m_nViewTopLine = CLayoutInt(0);			/* 表示域の一番上の行 */
 	m_nViewLeftCol = CLayoutInt(0);			/* 表示域の一番左の桁 */
 	SetTopYohaku( pShareData->m_Common.m_sWindow.m_nRulerBottomSpace ); 	/* ルーラーとテキストの隙間 */
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	SetLeftYohaku( pEditView->m_bMiniMap ? 0
 	                                     : pShareData->m_Common.m_sWindow.m_nLineNumRightSpace );
 #else
@@ -170,7 +170,7 @@ bool CTextArea::DetectWidthOfLineNumberArea( bool bRedraw )
 		nViewAlignLeftNew = pView->GetTextMetrics().GetHankakuDx() * (i + 1);	/* 表示域の左端座標 */
 		m_nViewAlignLeftCols = i + 1;
 	}else if( pView->m_bMiniMap ){
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 		nViewAlignLeftNew = pView->m_bMiniMap ? 1 : 4;
 #else
 		nViewAlignLeftNew = 4;
@@ -182,7 +182,7 @@ bool CTextArea::DetectWidthOfLineNumberArea( bool bRedraw )
 	}
 
 	//	Sep 18, 2002 genta
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	nViewAlignLeftNew += (pView->m_bMiniMap ? 0
 	                                        : GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace);
 #else

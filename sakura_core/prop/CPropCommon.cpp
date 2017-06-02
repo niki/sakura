@@ -128,7 +128,7 @@ CPropCommon::CPropCommon()
 	{
 		assert( sizeof(CPropGeneral)   - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropWin)       - sizeof(CPropCommon) == 0 );
-#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
 		assert( sizeof(CPropMainMenu)  - sizeof(CPropCommon) == 0 );
 #endif  // SC_
 		assert( sizeof(CPropToolbar)   - sizeof(CPropCommon) == 0 );
@@ -225,7 +225,7 @@ INT_PTR CPropCommon::DoPropertySheet( int nPageNum, bool bTrayProc )
 	static const ComPropSheetInfo ComPropSheetInfoList[] = {
 		{ STR_PROPCOMMON_GENERAL,	IDD_PROP_GENERAL,	CPropGeneral::DlgProc_page },
 		{ STR_PROPCOMMON_WINDOW,	IDD_PROP_WIN,		CPropWin::DlgProc_page },
-#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
 		{ STR_PROPCOMMON_MAINMENU,	IDD_PROP_MAINMENU,	CPropMainMenu::DlgProc_page },	// 2010/5/8 Uchi
 #endif  // SC_
 		{ STR_PROPCOMMON_TOOLBAR,	IDD_PROP_TOOLBAR,	CPropToolbar::DlgProc_page },

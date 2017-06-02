@@ -1573,7 +1573,7 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 		{
 			if( ArgSize != 1 ) return false;
 			if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[0]) ), 0, VT_I4) != S_OK) return false;	// VT_I4として解釈
-#ifdef SC_MOD_CHANGE_TAB_WIDTH_MACRO
+#ifdef SC_FIX_CHANGE_TAB_WIDTH_MACRO
 			if (varCopy.Data.iVal < 0) {
 				View->m_pcEditDoc->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
 				View->RedrawAll();

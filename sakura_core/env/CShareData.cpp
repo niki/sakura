@@ -293,7 +293,7 @@ bool CShareData::InitShareData()
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
 
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 			_tcscpy( sWindow.m_szWindowCaptionActive, 
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
 				_T(" $A ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
@@ -320,7 +320,7 @@ bool CShareData::InitShareData()
 			sTabBar.m_bDispTabWndMultiWin = FALSE;	//タブウインドウ表示	//@@@ 2003.05.31 MIK
 			wcscpy(	//@@@ 2003.06.13 MIK
 				sTabBar.m_szTabWndCaption,
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 				L"${w?【Grep】$h$:【アウトプット】$:$f$}${R?(ビューモード)$:(上書き禁止)$}"
 #else
 				L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
@@ -702,7 +702,7 @@ bool CShareData::InitShareData()
 			m_pShareData->m_sSearchKeywords.m_aGrepFiles.clear();
 			m_pShareData->m_sSearchKeywords.m_aGrepFiles.push_back(_T("*.*"));
 			m_pShareData->m_sSearchKeywords.m_aGrepFolders.clear();
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders99 = true;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders2 = false;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders3 = false;

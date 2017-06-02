@@ -1240,7 +1240,7 @@ LRESULT CEditWnd::DispatchEvent(
 		idCtl = (UINT) wParam;				/* コントロールのID */
 		lpdis = (DRAWITEMSTRUCT*) lParam;	/* 項目描画情報 */
 		if( IDW_STATUSBAR == idCtl ){
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 			if( 8 == lpdis->itemID ){
 #else
 			if( 5 == lpdis->itemID ){ // 2003.08.26 Moca idがずれて作画されなかった
@@ -1254,7 +1254,7 @@ LRESULT CEditWnd::DispatchEvent(
 					nColor = COLOR_3DSHADOW;
 				}
 				::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 				if( COLOR_BTNTEXT == nColor ){
 					::SetTextColor( lpdis->hDC, RGB(255, 0, 0) );
 				}
@@ -1265,7 +1265,7 @@ LRESULT CEditWnd::DispatchEvent(
 				TEXTMETRIC tm;
 				::GetTextMetrics( lpdis->hDC, &tm );
 				int y = ( lpdis->rcItem.bottom - lpdis->rcItem.top - tm.tmHeight + 1 ) / 2 + lpdis->rcItem.top;
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 				if( COLOR_BTNTEXT == nColor ){
 					::TextOut( lpdis->hDC, lpdis->rcItem.left, y, _T("●"), _tcslen( _T("●") ) );
 				} else {
@@ -1447,7 +1447,7 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case WM_EXITMENULOOP:
 //		MYTRACE( _T("WM_EXITMENULOOP\n") );
-#ifndef SC_MOD_STATUSBAR
+#ifndef SC_FIX_STATUSBAR
 		if( NULL != m_cStatusBar.GetStatusHwnd() ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, _T(""));
 		}
@@ -1481,7 +1481,7 @@ LRESULT CEditWnd::DispatchEvent(
 		//	From Here Feb. 15, 2004 genta 
 		//	ステータスバーのダブルクリックでモード切替ができるようにする
 		if( m_cStatusBar.GetStatusHwnd() && pnmh->hwndFrom == m_cStatusBar.GetStatusHwnd() ){
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 			if( pnmh->code == NM_CLICK ){  // 左クリックに変更する
 				LPNMMOUSE mp = (LPNMMOUSE) lParam;
 				if( mp->dwItemSpec == 5/*6*/ ){	//	上書き/挿入
@@ -2078,7 +2078,7 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case MYWM_SETCARETPOS:	/* カーソル位置変更通知 */
 		{
-#ifdef SC_MOD_CENTERING_CURSOR_JUMP
+#ifdef SC_FIX_CENTERING_CURSOR_JUMP
 	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
 #endif  // SC_
 
@@ -3363,7 +3363,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		// 2004-02-28 yasu 文字列を出力時の書式に合わせる
 		// 幅を変えた場合にはCEditView::ShowCaretPosInfo()での表示方法を見直す必要あり．
 		// ※pszLabel[3]: ステータスバー文字コード表示領域は大きめにとっておく
-#ifdef SC_MOD_STATUSBAR
+#ifdef SC_FIX_STATUSBAR
 		constexpr int	nStArrNum = 9;
 	#ifdef SAKURA_LANG_EN_US_EXPORTS
 		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("(99999:999)"), _T("U+AAAAAAAA"), _T("UTF-16 BOM"), _T("Unix"), _T("INS"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●") };
@@ -3398,7 +3398,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 			nStArr[i - 1] = nStArr[i] - ( sz.cx + nBdrWidth );
 		}
 
-#ifndef SC_MOD_STATUSBAR
+#ifndef SC_FIX_STATUSBAR
 		//	Nov. 8, 2003 genta
 		//	初期状態ではすべての部分が「枠あり」だが，メッセージエリアは枠を描画しないようにしている
 		//	ため，初期化時の枠が変な風に残ってしまう．初期状態で枠を描画させなくするため，
@@ -4190,7 +4190,7 @@ void CEditWnd::InitMenubarMessageFont(void)
 	lf.lfClipPrecision	= 0x2;
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
-#ifdef SC_MOD_UI_FONT
+#ifdef SC_FIX_UI_FONT
 	_tcscpy( lf.lfFaceName, _T("MS Shell Dlg") );
 #else
 	_tcscpy( lf.lfFaceName, _T("ＭＳ ゴシック") );
@@ -4320,7 +4320,7 @@ void CEditWnd::ChangeFileNameNotify( const TCHAR* pszTabCaption, const TCHAR* _p
 
 			p->m_bIsGrep = bIsGrep;
 
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 			p->m_bIsModified = GetDocument()->m_cDocEditor.IsModified();
 			p->m_bIsRecMacro =
 			    (GetDllShareData().m_sFlags.m_bRecordingKeyMacro &&

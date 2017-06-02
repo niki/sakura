@@ -314,7 +314,7 @@ void CDlgTagJumpList::UpdateData( bool bInit )
 		lvi.mask     = LVIF_TEXT;
 		lvi.iItem    = nIndex;
 		lvi.iSubItem = 0;
-#ifdef SC_MOD_TAGJUMP
+#ifdef SC_FIX_TAGJUMP
 		lvi.pszText  = item->filename;
 		ListView_InsertItem( hwndList, &lvi );
 		
@@ -441,7 +441,7 @@ int CDlgTagJumpList::GetData( void )
 */
 BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
-#ifdef SC_MOD_DIALOG_POS
+#ifdef SC_FIX_DIALOG_POS
 	SetPlaceOfWindow();
 #endif  // SC_
 
@@ -485,7 +485,7 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	
 	int nWidth = (rc.right - rc.left) - ::GetSystemMetrics( SM_CXHSCROLL ) - CTextWidthCalc::WIDTH_MARGIN_SCROLLBER;
 
-#ifdef SC_MOD_TAGJUMP
+#ifdef SC_FIX_TAGJUMP
 	// ファイル
 	col.mask     = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 	col.fmt      = LVCFMT_LEFT;

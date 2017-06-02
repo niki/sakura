@@ -100,7 +100,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	CNativeT		cmWork2;
 	CNativeT		cmWork3;
 	cmWork1.SetString( cDlgGrep.m_strText.c_str() );
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 	int count = 0;
 	CNativeT temp;
 	if (!cDlgGrep.m_bFromThisText) {
@@ -161,7 +161,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 
 	//GOPTオプション
 	TCHAR pOpt[64] = _T("");
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 	if( (count > 0) && cDlgGrep.m_bSubFolder )_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
 #else
 	if( cDlgGrep.m_bSubFolder					)_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
@@ -1169,7 +1169,7 @@ bool CControlTray::OpenNewEditor(
 	bool				bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-#ifdef SC_MOD_CENTERING_CURSOR_JUMP
+#ifdef SC_FIX_CENTERING_CURSOR_JUMP
 	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
 #endif  // SC_
 
@@ -1392,7 +1392,7 @@ bool CControlTray::OpenNewEditor2(
 	bool			bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-#ifdef SC_MOD_CENTERING_CURSOR_JUMP
+#ifdef SC_FIX_CENTERING_CURSOR_JUMP
 	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
 #endif  // SC_
 

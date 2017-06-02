@@ -49,7 +49,7 @@
 #include "typeprop/CImpExpManager.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
 #include <Uxtheme.h>
 #pragma comment(lib, "uxtheme.lib")
 #endif  // SC_
@@ -420,7 +420,7 @@ void CDlgFuncList::SetData()
 	hwndList = ::GetDlgItem( GetHwnd(), IDC_LIST_FL );
 	hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
 
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
 	SetWindowTheme(hwndList, L"Explorer", NULL);
 	//::SetWindowLongPtr(hwndList, GWL_STYLE, ::GetWindowLongPtr(hwndList, GWL_STYLE) & ~TVS_HASLINES);
 	
@@ -784,7 +784,7 @@ void CDlgFuncList::SetData()
 		Combo_SetCurSel( hWnd_Combo_Sort , m_nSortType );
 		::ShowWindow( GetDlgItem( GetHwnd(), IDC_STATIC_nSortType ), SW_SHOW );
 		// 2002.11.10 Moca 追加 ソートする
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
 		SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
 #else
 		if( SORTTYPE_DEFAULT < m_nSortType ){
@@ -1767,7 +1767,7 @@ void CDlgFuncList::SetTreeFile()
 			hParentTree.push_back(hParent);
 		}
 	}
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
 	HTREEITEM		htiClass = TreeView_GetFirstVisible( hwndTree );
 	while( NULL != htiClass ){
 		TreeView_Expand( hwndTree, htiClass, TVE_EXPAND );
@@ -1950,7 +1950,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 				if( m_nHeight < DOCK_MIN_SIZE ) m_nHeight = DOCK_MIN_SIZE;
 			}
 		}
-#ifdef SC_MOD_DIALOG_POS
+#ifdef SC_FIX_DIALOG_POS
 		else {
 			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
 		}
@@ -2058,7 +2058,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
 	// フォント設定
 	{
 		HFONT hFontOld = (HFONT)::SendMessageAny(GetItemHwnd(IDC_TREE_FL), WM_GETFONT, 0, 0);
@@ -2272,7 +2272,7 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 	}
 
 #ifdef DEFINE_SYNCCOLOR
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
   bool dock_color_sync = !!RegKey(SC_REGKEY).get(_T("OutlineDockSystemColor"), 1);
   if (dock_color_sync)
 #endif  // SC_
@@ -2490,7 +2490,7 @@ static int CALLBACK Compare_by_ItemTextDesc(LPARAM lParam1, LPARAM lParam2, LPAR
 
 BOOL CDlgFuncList::OnDestroy( void )
 {
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
 	m_cFontText[0].ReleaseOnDestroy();
 	m_cFontText[1].ReleaseOnDestroy();
 #endif  // SC_
@@ -2817,7 +2817,7 @@ void CDlgFuncList::SyncColor( void )
 	if( !IsDocking() )
 		return;
 #ifdef DEFINE_SYNCCOLOR
-#ifdef SC_MOD_OUTLINEDLG
+#ifdef SC_FIX_OUTLINEDLG
   bool dock_color_sync = !!RegKey(SC_REGKEY).get(_T("OutlineDockSystemColor"), 1);
   if (!dock_color_sync) return;
 #endif  // SC_

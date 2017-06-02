@@ -38,7 +38,7 @@ struct EditNode {
 	WIN_CHAR		m_szTabCaption[_MAX_PATH];	//!< タブウインドウ用：キャプション名		//@@@ 2003.05.31 MIK
 	SFilePath		m_szFilePath;				//!< タブウインドウ用：ファイル名			//@@@ 2006.01.28 ryoji
 	bool			m_bIsGrep;					//!< Grepのウィンドウか						//@@@ 2006.01.28 ryoji
-#ifdef SC_MOD_TAB_CAPTION_COLOR
+#ifdef SC_FIX_TAB_CAPTION_COLOR
 	bool m_bIsModified;  // 変更したか
 	bool m_bIsRecMacro;  // キーマクロ記録中か
 #endif  // SC_

@@ -35,7 +35,7 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 #endif //_WIN32
 
 #define	S_COPYRIGHT	"Copyright (C) 1998-2015  by Norio Nakatani & Collaborators"
-#ifndef SC_MOD_VERDLG
+#ifndef SC_FIX_VERDLG
 #define PR_VER		2,2,0,1
 #define PR_VER_STR	"2.2.0.1"
 #endif  // SC_
@@ -197,7 +197,7 @@ BEGIN
                     CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 IDD_GREP DIALOGEX 0, 0, 308, 216
 #else
 IDD_GREP DIALOGEX 0, 0, 308, 171
@@ -210,7 +210,7 @@ BEGIN
     LTEXT           "条件(&N)",IDC_STATIC,5,6,26,8
     COMBOBOX        IDC_COMBO_TEXT,46,4,257,120,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
     LTEXT           "フォルダ(&O)",IDC_STATIC,5,21,38,8
     //COMBOBOX        IDC_COMBO_FOLDER,46,19,246,120,CBS_DROPDOWN | 
     COMBOBOX        IDC_COMBO_FOLDER,46,19,237,120,CBS_DROPDOWN | 
@@ -421,7 +421,7 @@ BEGIN
 END
 
 IDD_GREPRUNNING DIALOGEX 0, 0, 293, 79
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 STYLE DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | WS_SYSMENU
 #else
 STYLE DS_SETFOREGROUND | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -1096,7 +1096,7 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,117,93,7,
                     12
     LTEXT           "T&AB表示",IDC_STATIC,16,110,56,8,NOT WS_GROUP
-#ifndef SC_MOD_TAB_MARK
+#ifndef SC_FIX_TAB_MARK
     COMBOBOX        IDC_CHECK_TAB_ARROW,48,108,46,80,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_EDIT_TABVIEWSTRING,102,108,40,12,ES_AUTOHSCROLL
@@ -3634,7 +3634,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_AUTHOR_PAGE         "http://sakura-editor.sourceforge.net/"
-#ifdef SC_MOD_VERDLG
+#ifdef SC_FIX_VERDLG
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n\
 \r\n\
 * Amender : %ts (%ts)\r\n\
@@ -4021,7 +4021,7 @@ BEGIN
 	STR_OUTLINE_ERLANG_SCANARGS	"COutlineErlang::ScanArgs 未知の括弧"
 
 	// Caret.cpp
-#ifdef SC_MOD_WITH_BOM_TEXT
+#ifdef SC_FIX_WITH_BOM_TEXT
 	STR_CARET_WITHBOM			" BOM"
 #else
 	STR_CARET_WITHBOM			" BOM付"
@@ -4182,7 +4182,7 @@ BEGIN
 //	STR_ERR_DLGEDITWND20		"99999 行 9999 列"
 	STR_ERR_DLGEDITWND21		"CFLF"
 	STR_ERR_DLGEDITWND22		"0000"
-#ifdef SC_MOD_WITH_BOM_TEXT
+#ifdef SC_FIX_WITH_BOM_TEXT
 	STR_ERR_DLGEDITWND23		"UTF-16 BOM"
 #else
 	STR_ERR_DLGEDITWND23		"UTF-16 BOM付"

@@ -33,7 +33,7 @@ void CViewCommander::Command_GREP_DIALOG( void )
 	bool bGetHistory = GetEditWindow()->m_cDlgGrep.m_bSetText == false;
 
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
-#ifdef SC_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SC_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg(
 	    cmemCurText,
 	    bGetHistory,
@@ -68,7 +68,7 @@ void CViewCommander::Command_GREP( void )
 	CNativeW		cmWork4;
 
 	cmWork1.SetString( GetEditWindow()->m_cDlgGrep.m_strText.c_str() );
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 	int count = 0;
 	CNativeT temp;
 	if (!GetEditWindow()->m_cDlgGrep.m_bFromThisText) {
@@ -140,7 +140,7 @@ void CViewCommander::Command_GREP( void )
 			&cmWork2,
 			&cmWork3,
 			false,
-#ifdef SC_MOD_GREP
+#ifdef SC_FIX_GREP
 			(count > 0) ? GetEditWindow()->m_cDlgGrep.m_bSubFolder : false,
 #else
 			GetEditWindow()->m_cDlgGrep.m_bSubFolder,

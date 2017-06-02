@@ -69,7 +69,7 @@ bool CFigure_Eol::DrawImp(SColorStrategyInfo* pInfo)
 	const CLayout* pcLayout = pInfo->m_pDispPos->GetLayoutRef();
 	CEol cEol = pcLayout->GetLayoutEol();
 	if(cEol.GetLen()){
-#ifdef SC_MOD_WS_COLOR
+#ifdef SC_FIX_WS_COLOR
 		bool bTrans = DrawImp_StyleSelect(pInfo);
 #else
 		// CFigureSpace::DrawImp_StyleSelectもどき。選択・検索色を優先する
@@ -86,7 +86,7 @@ bool CFigure_Eol::DrawImp(SColorStrategyInfo* pInfo)
 		bool blendColor = bSelecting && cCurrentType.GetTextColor() == cCurrentType.GetBackColor(); // 選択混合色
 		CTypeSupport& currentStyle = blendColor ? cCurrentType2 : cCurrentType;
 		CTypeSupport *pcText, *pcBack;
-#  ifdef SC_MOD_SELAREA
+#  ifdef SC_FIX_SELAREA
 		blendColor = true;
 #  endif  // SC_
 		if( bSelecting && !blendColor ){
@@ -150,14 +150,14 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 		CTypeSupport cBgLineType(pcView,COLORIDX_CARETLINEBG);
 		CTypeSupport cEvenBgLineType(pcView,COLORIDX_EVENLINEBG);
 		CTypeSupport cPageViewBgLineType(pcView,COLORIDX_PAGEVIEW);
-#ifdef SC_MOD_COMMENT
+#ifdef SC_FIX_COMMENT
 		bool bBgcolor = true;
 #else
 		bool bBgcolor = cWrapType.GetBackColor() == cTextType.GetBackColor();
 #endif  // SC_
 		EColorIndexType eBgcolorOverwrite = COLORIDX_WRAP;
 		bool bTrans = pcView->IsBkBitmap();
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 		if( cWrapType.IsDisp() && !pcView->m_bMiniMap ){
 #else
 		if( cWrapType.IsDisp() ){
@@ -182,7 +182,7 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 
 		//描画文字列と色の決定
 		const wchar_t* szText;
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 		if( cWrapType.IsDisp() && !pcView->m_bMiniMap )
 #else
 		if( cWrapType.IsDisp() )
@@ -236,7 +236,7 @@ void _DispEOF(
 	const CEditView*	pcView
 )
 {
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	if (pcView->m_bMiniMap)
 		return;
 #endif  // SC_
@@ -247,7 +247,7 @@ void _DispEOF(
 	CTypeSupport cTextType(pcView,COLORIDX_TEXT);
 	bool bTrans = pcView->IsBkBitmap() && cEofType.GetBackColor() == cTextType.GetBackColor();
 
-#ifdef SC_MOD_WS_COLOR
+#ifdef SC_FIX_WS_COLOR
 	COLORREF crText = cTextType.GetTextColor();
 	COLORREF crBack = cTextType.GetBackColor();
 	//! 色をマージする
@@ -290,7 +290,7 @@ void _DispEOF(
 	if(pArea->GenerateClipRect(&rcClip,*pDispPos,nEofLen))
 	{
 		//色設定
-#ifdef SC_MOD_WS_COLOR
+#ifdef SC_FIX_WS_COLOR
 		gr.PushTextForeColor(crText);
 		gr.PushTextBackColor(crBack);
 #else
@@ -312,7 +312,7 @@ void _DispEOF(
 			pMetrics->GetDxArray_AllHankaku()
 		);
 		
-#ifdef SC_MOD_WS_COLOR
+#ifdef SC_FIX_WS_COLOR
 		gr.PopTextForeColor();
 		gr.PopTextBackColor();
 #endif  // SC_
@@ -359,7 +359,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 		);
 
 		// 改行記号の表示
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 		if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() && !pcView->m_bMiniMap ){
 #else
 		if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() ){

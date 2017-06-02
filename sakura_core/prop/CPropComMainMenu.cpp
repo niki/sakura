@@ -28,7 +28,7 @@
 */
 
 #include "StdAfx.h"
-#ifndef SC_MOD_MAINMENU_FORCE_DEFAULT
+#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
 #include "prop/CPropCommon.h"
 #include "env/CShareData.h"
 #include "env/cShareData_IO.h"

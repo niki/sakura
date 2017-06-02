@@ -473,7 +473,7 @@ void CTextDrawer::DispLineNumber(
 		}
 		bDispLineNumTrans = true;
 
-#ifdef SC_MOD_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
+#ifdef SC_FIX_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
     bool disp = false;
     CLayoutMgr &layout_mgr = CEditDoc::GetInstance(0)->m_cLayoutMgr;
     CLayoutInt line_count = layout_mgr.GetLineCount();

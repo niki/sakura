@@ -27,7 +27,7 @@
 #include "svnrev.h"
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "sakura.hh"
-#ifdef SC_MOD_VERDLG
+#ifdef SC_FIX_VERDLG
   #include <boost/version.hpp>
   #include <lua/lua.h>
 #endif  // SC_
@@ -55,7 +55,7 @@ const DWORD p_helpids[] = {	//12900
 #  define TARGET_M_SUFFIX ""
 #endif
 
-#ifdef SC_MOD_VERDLG
+#ifdef SC_FIX_VERDLG
 #if defined(_M_IA64)
 #  define TARGET_M_SUFFIX2 "64bit Itanium"
 #elif defined(_M_AMD64)
@@ -80,7 +80,7 @@ const DWORD p_helpids[] = {	//12900
 #  define COMPILER_TYPE "D"
 #  define COMPILER_VER __DMC__
 #elif defined(_MSC_VER)
-#  ifdef SC_MOD_VERDLG
+#  ifdef SC_FIX_VERDLG
 #    if (_MSC_VER == 1910)
 #      define COMPILER_TYPE2 "MSVC 2017"
 #    elif (_MSC_VER == 1900)
@@ -99,7 +99,7 @@ const DWORD p_helpids[] = {	//12900
 #      define COMPILER_TYPE2 "MSVC (Unknown ver.)"
 #    endif
 #    define COMPILER_VER2 _MSC_FULL_VER
-#  endif  // SC_MOD_VERDLG
+#  endif  // SC_FIX_VERDLG
 #  define COMPILER_TYPE "V"
 #  define COMPILER_VER _MSC_VER
 #else
@@ -134,7 +134,7 @@ const DWORD p_helpids[] = {	//12900
 	#define MY_WIN32_WINNT 0
 #endif
 
-#ifdef SC_MOD_VERDLG
+#ifdef SC_FIX_VERDLG
 #  ifdef _MT
 #    ifdef _DLL
 #      ifdef _DEBUG
@@ -222,7 +222,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #if (SVN_REV == 0)
-#ifdef SC_MOD_VERDLG
+#ifdef SC_FIX_VERDLG
 	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX2) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS )
@@ -292,7 +292,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// 2011.06.01 nasukoji	各国語メッセージリソース対応
 	LPCTSTR pszDesc = LS( IDS_ABOUT_DESCRIPTION );
 	if( _tcslen(pszDesc) > 0 ){
-#ifdef SC_MOD_VERDLG
+#ifdef SC_FIX_VERDLG
 		auto_sprintf( szMsg, pszDesc,
 			_T(SC_AMENDER), _T(SC_URL),
 			_T(COMPILER_TYPE2), COMPILER_VER2,

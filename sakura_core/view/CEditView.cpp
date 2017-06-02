@@ -991,7 +991,7 @@ void CEditView::OnSize( int cx, int cy )
 	int nCyHScroll = ::GetSystemMetrics( SM_CYHSCROLL );
 	int nCxVScroll = ::GetSystemMetrics( SM_CXVSCROLL );
 	int nCyVScroll = ::GetSystemMetrics( SM_CYVSCROLL );
-#if defined(SC_MOD_MINIMAP)
+#if defined(SC_FIX_MINIMAP)
 	if (m_bMiniMap && RegKey(SC_REGKEY).get(_T("NoMiniMapScrollBar"), 1)) {
 		nCxHScroll = 0;
 		nCyHScroll = 0;
@@ -1022,7 +1022,7 @@ void CEditView::OnSize( int cx, int cy )
 	if( NULL != m_hwndSizeBox ){
 		::MoveWindow( m_hwndSizeBox, cx - nCxVScroll, cy - nCyHScroll, nCxHScroll, nCyVScroll, TRUE );
 	}
-#if defined(SC_MOD_MINIMAP)
+#if defined(SC_FIX_MINIMAP)
 	}
 #endif  // SC_
 	int nAreaWidthOld  = GetTextArea().GetAreaWidth();
@@ -1791,7 +1791,7 @@ void CEditView::OnChangeSetting()
 	if( m_pTypeData->m_ColorInfoArr[COLORIDX_RULER].m_bDisp && !m_bMiniMap ){
 		GetTextArea().SetAreaTop(GetTextArea().GetAreaTop() + GetDllShareData().m_Common.m_sWindow.m_nRulerHeight);	/* ルーラー高さ */
 	}
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 	GetTextArea().SetLeftYohaku( m_bMiniMap ? 0 : GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace );
 #else
 	GetTextArea().SetLeftYohaku( GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace );
@@ -2586,7 +2586,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			gr.SetPen( m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_sColorAttr.m_cTEXT );
 			::MoveToEx(
 				gr,
-#ifdef SC_MOD_CUR_UL
+#ifdef SC_FIX_CUR_UL
 				0,//GetTextArea().GetLeftYohaku(),
 #else
 				GetTextArea().GetAreaLeft(),
@@ -2649,7 +2649,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 			GetCaret().m_cUnderLine.Lock();
 
 			PAINTSTRUCT ps;
-#ifdef SC_MOD_CUR_UL
+#ifdef SC_FIX_CUR_UL
 			//ps.rcPaint.left = GetTextArea().GetAreaLeft();
 			ps.rcPaint.left = 0;//GetTextArea().GetLeftYohaku();
 #else

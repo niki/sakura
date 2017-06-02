@@ -63,12 +63,12 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
 
 	if( pArea->IsRectIntersected(rcClip2) ){
-#ifdef SC_MOD_TAB_MARK
+#ifdef SC_FIX_TAB_MARK
 		// 塗りつぶしで消去
 		gr.SetBrushColor(gr.GetTextBackColor());
 		::FillRect(gr, &rcClip2, gr.GetCurrentBrush());
 		
-#  ifdef SC_MOD_MINIMAP
+#  ifdef SC_FIX_MINIMAP
 		if( cTabType.IsDisp() && !pcView->m_bMiniMap ){
 #  else
 		if( cTabType.IsDisp() ){
@@ -91,7 +91,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 			);
 		}
 #else
-#  ifdef SC_MOD_MINIMAP
+#  ifdef SC_FIX_MINIMAP
 		if( cTabType.IsDisp() && !pcView->m_bMiniMap && TABARROW_STRING == m_pTypeData->m_bTabArrow ){	//タブ通常表示	//@@@ 2003.03.26 MIK
 #  else
 		if( cTabType.IsDisp() && TABARROW_STRING == m_pTypeData->m_bTabArrow ){	//タブ通常表示	//@@@ 2003.03.26 MIK
@@ -121,7 +121,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 			);
 
 			//タブ矢印表示
-#  ifdef SC_MOD_MINIMAP
+#  ifdef SC_FIX_MINIMAP
 			if( cTabType.IsDisp() && !pcView->m_bMiniMap ){
 #  else
 			if( cTabType.IsDisp() ){
@@ -199,7 +199,7 @@ void _DrawTabArrow(
 	int sy = nPosY + ( nHeight / 2 );
 	int sa = nHeight / 4;								// 鏃のsize
 
-#ifdef SC_MOD_TAB_MARK
+#ifdef SC_FIX_TAB_MARK
 	sy++; // 少し下め
 	
 	::MoveToEx( gr, nPosX+1, sy, NULL );

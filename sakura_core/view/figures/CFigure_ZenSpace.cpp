@@ -30,7 +30,7 @@ void CFigure_ZenSpace::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* p
 	{
 		//描画
 		const wchar_t* szZenSpace =
-#ifdef SC_MOD_MINIMAP
+#ifdef SC_FIX_MINIMAP
 			(CTypeSupport(pcView,COLORIDX_ZENSPACE).IsDisp() && !pcView->m_bMiniMap)?L"□":L"　";
 #else
 			CTypeSupport(pcView,COLORIDX_ZENSPACE).IsDisp()?L"□":L"　";

@@ -32,7 +32,7 @@
 #include <limits.h>
 #include "sakura_rc.h"
 
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
 static inline void MiniMapSearchMark(CEditView *pView, bool mark) {
 	if (pView->m_bMiniMap) return;
 	if (pView->m_pcEditWnd->GetMiniMap().GetHwnd() == NULL) return;
@@ -79,7 +79,7 @@ void CViewCommander::Command_SEARCH_DIALOG( void )
 {
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	CNativeW		cmemCurText;
-#ifdef SC_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SC_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	m_pCommanderView->GetCurrentTextForSearchDlg(
 	    cmemCurText,
 	    false,
@@ -120,7 +120,7 @@ void CViewCommander::Command_SEARCH_NEXT(
 	CLogicRange*	pcSelectLogic		//!< [out] 選択範囲のロジック版。マッチ範囲を返す。すべて置換/高速モードで使用
 )
 {
-#ifdef SC_MOD_CENTERING_CURSOR_JUMP
+#ifdef SC_FIX_CENTERING_CURSOR_JUMP
 	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
 #endif  // SC_
 	bool		bSelecting;
@@ -331,7 +331,7 @@ end_of_func:;
 		}
 	}
 
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
 	MiniMapSearchMark(m_pCommanderView, /*mark=*/true);
 #endif  // SC_
 	if(bFound){
@@ -372,7 +372,7 @@ end_of_func:;
 /* 前を検索 */
 void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
 {
-#ifdef SC_MOD_CENTERING_CURSOR_JUMP
+#ifdef SC_FIX_CENTERING_CURSOR_JUMP
 	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
 #endif  // SC_
 	bool		bSelecting;
@@ -503,7 +503,7 @@ end_of_func:;
 			goto re_do;	// 末尾から再検索
 		}
 	}
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
 	MiniMapSearchMark(m_pCommanderView, /*mark=*/true);
 #endif  // SC_
 	if(bFound){
@@ -539,7 +539,7 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	CNativeW	cmemCurText;
-#ifdef SC_MOD_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SC_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	m_pCommanderView->GetCurrentTextForSearchDlg(
 	    cmemCurText,
 	    false,
@@ -552,7 +552,7 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 	if( 0 < cmemCurText.GetStringLength() ){
 		GetEditWindow()->m_cDlgReplace.m_strText = cmemCurText.GetStringPtr();
 	}
-#ifdef SC_MOD_REPLACE
+#ifdef SC_FIX_REPLACE
   {
     bool replace_text_to_text = !!RegKey(SC_REGKEY).get(_T("ReplaceTextToText"), 1);
     if (replace_text_to_text) {
@@ -1577,7 +1577,7 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 
 		// 再描画
 		m_pCommanderView->RedrawAll();
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
 		MiniMapSearchMark(m_pCommanderView, /*mark=*/true);
 #endif
 		return;
@@ -1589,7 +1589,7 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 	m_pCommanderView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 	/* フォーカス移動時の再描画 */
 	m_pCommanderView->RedrawAll();
-#if defined(SC_MOD_MINIMAP) && SC_MINIMAP_SEARCH_DISP
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
 	MiniMapSearchMark(m_pCommanderView, /*mark=*/false);
 #endif  // SC_
 	return;
