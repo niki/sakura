@@ -6,12 +6,12 @@
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
 #ifdef SC_MOD_NUMERIC_COLOR
-#define REGEX_MODE (2)  // 0:std::regex, 1:boost::regex, 2:re2
+#define REGEX_MODE (1)  // 0:std::regex, 1:boost::regex, 2:re2
 #if REGEX_MODE == 0
   #include <regex>
   using namespace std;
 #elif REGEX_MODE == 1
-  #pragma comment(lib, "libboost_regex-vc141-mt-1_64.lib")
+  #pragma comment(lib, "libboost_regex.lib")
   #include <boost/regex.hpp>
   using namespace boost;
 #elif REGEX_MODE == 2
