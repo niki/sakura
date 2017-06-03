@@ -40,6 +40,10 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 		lf.lfHeight = miniSize;
 		lf.lfQuality = quality;
 		lf.lfOutPrecision = outPrec;
+#ifdef SC_FIX_MINIMAP
+		::_tcsncpy(lf.lfFaceName, _T("Courier"), LF_FACESIZE);
+		lf.lfFaceName[LF_FACESIZE - 1] = _T('\0');
+#endif  // SC_
 	}
 	m_hFont_HAN = CreateFontIndirect( &lf );
 	m_LogFont = lf;
@@ -50,6 +54,10 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 		lf.lfHeight = miniSize;
 		lf.lfQuality = quality;
 		lf.lfOutPrecision = outPrec;
+#ifdef SC_FIX_MINIMAP
+		::_tcsncpy(lf.lfFaceName, _T("Courier"), LF_FACESIZE);
+		lf.lfFaceName[LF_FACESIZE - 1] = _T('\0');
+#endif  // SC_
 	}
 	lf.lfWeight += 300;
 	if( 1000 < lf.lfWeight ){
@@ -63,6 +71,10 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 		lf.lfHeight = miniSize;
 		lf.lfQuality = quality;
 		lf.lfOutPrecision = outPrec;
+#ifdef SC_FIX_MINIMAP
+		::_tcsncpy(lf.lfFaceName, _T("Courier"), LF_FACESIZE);
+		lf.lfFaceName[LF_FACESIZE - 1] = _T('\0');
+#endif  // SC_
 	}
 	
 	lf.lfUnderline = TRUE;
@@ -74,6 +86,10 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 		lf.lfHeight = miniSize;
 		lf.lfQuality = quality;
 		lf.lfOutPrecision = outPrec;
+#ifdef SC_FIX_MINIMAP
+		::_tcsncpy(lf.lfFaceName, _T("Courier"), LF_FACESIZE);
+		lf.lfFaceName[LF_FACESIZE - 1] = _T('\0');
+#endif  // SC_
 	}
 	lf.lfUnderline = TRUE;
 	lf.lfWeight += 300;
