@@ -6,6 +6,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
       	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
+ r4190	Keep: CViewCommanderクラス整理 [patchunicode:#1106]
  r4189	Fix: 未定義のコマンドがある場合にバッファが未初期化になる [patchunicode:#1101] Contributed by Moca
  r4186	Keep: CDlgTagJumpListクラス整理  [patchunicode:#1105]
 -r4180	update version 2.3.2.0
