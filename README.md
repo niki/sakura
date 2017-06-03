@@ -23,7 +23,7 @@ Download
 
 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
-+ [sakura-cat-2.24.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.24.zip) (958KB)  
++ [sakura-cat-2.25-x64.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.25-x64.zip) (1.09MB)  
 
 
 Setup  
@@ -50,7 +50,7 @@ Build environment
 -----------------
 + 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/sayacat/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド  
-+ [Boost](http://www.boost.org/)を使用 (各種コンテナ, 正規表現)  
++ [Boost](http://www.boost.org/)を使用 (JSON)  
 + [Lua](https://www.lua.org/)を使用 (マクロ, プラグイン)  
 + 挙動の制御 (共有フラグ)としてレジストリを使用しています  
 
