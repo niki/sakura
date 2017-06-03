@@ -65,8 +65,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 	if( pArea->IsRectIntersected(rcClip2) ){
 #ifdef SC_FIX_TAB_MARK
 		// 塗りつぶしで消去
-		gr.SetBrushColor(gr.GetTextBackColor());
-		::FillRect(gr, &rcClip2, gr.GetCurrentBrush());
+		gr.FillSolidMyRect(rcClip2, gr.GetTextBackColor());
 		
 #  ifdef SC_FIX_MINIMAP
 		if( cTabType.IsDisp() && !pcView->m_bMiniMap ){

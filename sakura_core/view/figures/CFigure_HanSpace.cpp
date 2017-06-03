@@ -30,8 +30,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 	{
 #ifdef SC_FIX_HAN_SPACE
 		// 塗りつぶしで消去
-		gr.SetBrushColor(gr.GetTextBackColor());
-		::FillRect(gr, &rcClip, gr.GetCurrentBrush());
+		gr.FillSolidMyRect(rcClip, gr.GetTextBackColor());
 //		// 空白で消去
 //		CMyRect rcClipBottom=rcClip;
 //		::ExtTextOutW_AnyBuild(
