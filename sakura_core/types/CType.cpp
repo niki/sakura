@@ -75,7 +75,7 @@ void CType::InitTypeConfig(int nIdx, STypeConfig& type)
 
 	@date 2005.01.30 genta CShareData::Init()から分離．
 */
-void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, boost::container::vector<STypeConfig*>& types )
+void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConfig*>& types )
 {
 	CType* table[] = {
 		new CType_Basis(),	//基本

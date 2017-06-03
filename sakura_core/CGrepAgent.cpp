@@ -19,7 +19,7 @@
 #include "util/module.h"
 #include "util/other_util.h"
 #include "debug/CRunningTimer.h"
-#include <boost/container/deque.hpp>
+#include <deque>
 #include "sakura_rc.h"
 
 CGrepAgent::CGrepAgent()
@@ -53,7 +53,7 @@ void CGrepAgent::OnAfterSave(const SSaveInfo& sSaveInfo)
 /*!
 	@date 2014.03.09 novice 最後の\\を取り除くのをやめる(d:\\ -> d:になる)
 */
-void CGrepAgent::CreateFolders( const TCHAR* pszPath, boost::container::vector<std::tstring>& vPaths )
+void CGrepAgent::CreateFolders( const TCHAR* pszPath, std::vector<std::tstring>& vPaths )
 {
 	const int nPathLen = auto_strlen( pszPath );
 	auto_array_ptr<TCHAR> szPath(new TCHAR[nPathLen + 1]);
@@ -361,7 +361,7 @@ DWORD CGrepAgent::DoGrep(
 	}
 
 
-	boost::container::vector<std::tstring> vPaths;
+	std::vector<std::tstring> vPaths;
 	CreateFolders( pcmGrepFolder->GetStringPtr(), vPaths );
 
 	nWork = pcmGrepKey->GetStringLength(); // 2003.06.10 Moca あらかじめ長さを計算しておく
@@ -1191,7 +1191,7 @@ int CGrepAgent::DoGrepFile(
 	/* 検索条件が長さゼロの場合はファイル名だけ返す */
 	// 2002/08/29 ファイルオープンの手前へ移動
 	
-	boost::container::vector<std::pair<const wchar_t*, CLogicInt> > searchWords;
+	std::vector<std::pair<const wchar_t*, CLogicInt> > searchWords;
 	if( sSearchOption.bWordOnly ){
 		CSearchAgent::CreateWordList( searchWords, pszKey, nKeyLen );
 	}
@@ -1500,7 +1500,7 @@ public:
 				Output(buffer[i]);
 			}
 			buffer.clear();
-			boost::container::deque<CNativeW>().swap(buffer);
+			std::deque<CNativeW>().swap(buffer);
 		}
 	}
 	void Output(const CNativeW& strLine)
@@ -1578,7 +1578,7 @@ private:
 	bool bBom;
 	bool bOldSave;
 	size_t bufferSize;
-	boost::container::deque<CNativeW> buffer;
+	std::deque<CNativeW> buffer;
 	CBinaryOutputStream* out;
 	std::auto_ptr<CCodeBase> pcCodeBase;
 	CNativeW&	memMessage;
@@ -1654,7 +1654,7 @@ int CGrepAgent::DoGrepReplaceFile(
 	}
 	int nOutputHitCount = 0;
 
-	boost::container::vector<std::pair<const wchar_t*, CLogicInt> > searchWords;
+	std::vector<std::pair<const wchar_t*, CLogicInt> > searchWords;
 	if( sSearchOption.bWordOnly ){
 		CSearchAgent::CreateWordList( searchWords, pszKey, nKeyLen );
 	}

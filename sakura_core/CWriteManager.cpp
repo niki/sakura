@@ -1,6 +1,6 @@
 ﻿#include "StdAfx.h"
 #include "CWriteManager.h"
-#include <boost/container/list.hpp>
+#include <list>
 #include "doc/logic/CDocLineMgr.h"
 #include "doc/logic/CDocLine.h"
 #include "CEditApp.h" // CAppExitException

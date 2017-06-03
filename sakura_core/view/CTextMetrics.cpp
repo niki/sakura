@@ -22,7 +22,7 @@
 		   distribution.
 */
 #include "StdAfx.h"
-#include <boost/container/vector.hpp>
+#include <vector>
 #include "CTextMetrics.h"
 #include "charset/codechecker.h"
 
@@ -110,7 +110,7 @@ void CTextMetrics::SetHankakuDy(int nDyBasis)
 
 //! 指定した文字列により文字間隔配列を生成する。
 const int* CTextMetrics::GenerateDxArray(
-	boost::container::vector<int>* vResultArray, //!< [out] 文字間隔配列の受け取りコンテナ
+	std::vector<int>* vResultArray, //!< [out] 文字間隔配列の受け取りコンテナ
 	const wchar_t* pText,           //!< [in]  文字列
 	int nLength,                    //!< [in]  文字列長
 	int	nHankakuDx,					//!< [in]  半角文字の文字間隔
@@ -210,7 +210,7 @@ int CTextMetrics::CalcTextWidth2(
 )
 {
 	//文字間隔配列を生成
-boost::container::vector<int> vDxArray;
+std::vector<int> vDxArray;
 	const int* pDxArray = CTextMetrics::GenerateDxArray(
 		&vDxArray,
 		pText,

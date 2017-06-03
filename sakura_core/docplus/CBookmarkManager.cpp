@@ -234,7 +234,7 @@ void CBookmarkManager::MarkSearchWord(
 		const wchar_t*	pszPattern = pattern.GetKey();
 		const int	nPatternLen = pattern.GetLen();
 		// 検索語を単語に分割して searchWordsに格納する。
-		boost::container::vector<std::pair<const wchar_t*, CLogicInt> > searchWords; // 単語の開始位置と長さの配列。
+		std::vector<std::pair<const wchar_t*, CLogicInt> > searchWords; // 単語の開始位置と長さの配列。
 		CSearchAgent::CreateWordList(searchWords, pszPattern, nPatternLen);
 
 		pDocLine = m_pcDocLineMgr->GetLine( CLogicInt(0) );

@@ -26,7 +26,7 @@
 		   distribution.
 */
 #include "StdAfx.h"
-#include <boost/container/vector.hpp>		// wstring_split用 2010/4/4 Uchi
+#include <vector>		// wstring_split用 2010/4/4 Uchi
 #include "CPlugin.h"
 #include "CJackManager.h"
 
@@ -89,7 +89,7 @@ bool CPlugin::ReadPluginDefCommon( CDataProfile *cProfile, CDataProfile *cProfil
 bool CPlugin::ReadPluginDefPlug( CDataProfile *cProfile, CDataProfile *cProfileMlang )
 {
 	unsigned int i;
-	boost::container::vector<JackDef> jacks = CJackManager::getInstance()->GetJackDef();
+	std::vector<JackDef> jacks = CJackManager::getInstance()->GetJackDef();
 	wchar_t szIndex[8];
 
 	for( i=0; i<jacks.size(); i++ ){
@@ -254,9 +254,9 @@ int CPlugin::AddCommand( const WCHAR* handler, const WCHAR* label, const WCHAR* 
 
 // 文字列分割	2010/4/4 Uchi
 //	独立させたほうがいいのだが
-boost::container::vector<std::wstring> wstring_split( std::wstring sTrg, wchar_t cSep )
+std::vector<std::wstring> wstring_split( std::wstring sTrg, wchar_t cSep )
 {
-    boost::container::vector<std::wstring>	splitVec;
+    std::vector<std::wstring>	splitVec;
     int 	idx;
 
     while ((idx = sTrg.find( cSep )) != std::wstring::npos) {

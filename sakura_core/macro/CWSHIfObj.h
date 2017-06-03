@@ -30,7 +30,7 @@
 */
 #ifndef SAKURA_CWSHIFOBJ_EAA6C3E3_1442_4940_B8A3_2AAB324D8788D_H_
 #define SAKURA_CWSHIFOBJ_EAA6C3E3_1442_4940_B8A3_2AAB324D8788D_H_
-#include <boost/container/list.hpp>
+#include <list>
 #include <ActivScp.h>
 #include "_os/OleTypes.h"
 #include "macro/CIfObj.h"
@@ -51,7 +51,7 @@ class CWSHIfObj
 {
 public:
 	// 型定義
-	typedef boost::container::list<CWSHIfObj*> List;
+	typedef std::list<CWSHIfObj*> List;
 	typedef List::const_iterator ListIter;
 
 	// コンストラクタ

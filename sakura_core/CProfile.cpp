@@ -142,7 +142,7 @@ bool CProfile::ReadProfile( const TCHAR* pszProfileName )
 
 	1行300文字までに制限
 */
-bool CProfile::ReadProfileRes( const TCHAR* pName, const TCHAR* pType, boost::container::vector<std::wstring>* pData )
+bool CProfile::ReadProfileRes( const TCHAR* pName, const TCHAR* pType, std::vector<std::wstring>* pData )
 {
 	static const BYTE UTF8_BOM[]={0xEF,0xBB,0xBF};
 	HRSRC		hRsrc;
@@ -220,13 +220,13 @@ bool CProfile::WriteProfile(
 		m_strProfileName = pszProfileName;
 	}
     
-	boost::container::vector< wstring > vecLine;
+	std::vector< wstring > vecLine;
 	if( NULL != pszComment ) {
 		vecLine.push_back( LTEXT(";") + wstring( pszComment ) );		// //->;	2008/5/24 Uchi
 		vecLine.push_back( LTEXT("") );
 	}
-	boost::container::vector< Section >::iterator iter;
-	boost::container::vector< Section >::iterator iterEnd = m_ProfileData.end();
+	std::vector< Section >::iterator iter;
+	std::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	MAP_STR_STR::iterator mapiter;
 	MAP_STR_STR::iterator mapiterEnd;
 	for( iter = m_ProfileData.begin(); iter != iterEnd; iter++ ) {
@@ -290,7 +290,7 @@ bool CProfile::WriteProfile(
 */
 bool CProfile::_WriteFile(
 	const tstring&			strFilename,	//!< [in]  ファイル名
-	const boost::container::vector<wstring>&	vecLine			//!< [out] 文字列格納先
+	const std::vector<wstring>&	vecLine			//!< [out] 文字列格納先
 )
 {
 	CTextOutputStream out(strFilename.c_str());
@@ -329,8 +329,8 @@ bool CProfile::GetProfileDataImp(
 	wstring&		strEntryValue	//!< [out] エントリ値
 )
 {
-	boost::container::vector< Section >::iterator iter;
-	boost::container::vector< Section >::iterator iterEnd = m_ProfileData.end();
+	std::vector< Section >::iterator iter;
+	std::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	MAP_STR_STR::iterator mapiter;
 	for( iter = m_ProfileData.begin(); iter != iterEnd; iter++ ) {
 		if( iter->strSectionName == strSectionName ) {
@@ -357,8 +357,8 @@ bool CProfile::SetProfileDataImp(
 	const wstring&	strEntryValue	//!< [in] エントリ値
 )
 {
-	boost::container::vector< Section >::iterator iter;
-	boost::container::vector< Section >::iterator iterEnd = m_ProfileData.end();
+	std::vector< Section >::iterator iter;
+	std::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	MAP_STR_STR::iterator mapiter;
 	MAP_STR_STR::iterator mapiterEnd;
 	for( iter = m_ProfileData.begin(); iter != iterEnd; iter++ ) {
@@ -392,8 +392,8 @@ bool CProfile::SetProfileDataImp(
 void CProfile::DUMP( void )
 {
 #ifdef _DEBUG
-	boost::container::vector< Section >::iterator iter;
-	boost::container::vector< Section >::iterator iterEnd = m_ProfileData.end();
+	std::vector< Section >::iterator iter;
+	std::vector< Section >::iterator iterEnd = m_ProfileData.end();
 	//	2006.02.20 ryoji: MAP_STR_STR_ITER削除時の修正漏れによるコンパイルエラー修正
 	MAP_STR_STR::iterator mapiter;
 	MAP_STR_STR::iterator mapiterEnd;

@@ -52,7 +52,7 @@ public:
 	BOOL DestroyMenu( HMENU hMenu ) const;
 	
 	//	フォルダ名の一覧を教えて
-	boost::container::vector<LPCTSTR> GetPathList() const;
+	std::vector<LPCTSTR> GetPathList() const;
 
 	//	アクセス関数
 	int Length() const;	//	アイテムの数。

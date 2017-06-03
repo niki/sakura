@@ -1006,7 +1006,7 @@ void CEditDoc::SetCurDirNotitle()
 	const TCHAR* pszDir = NULL;
 	if( eOpenDialogDir == OPENDIALOGDIR_MRU ){
 		const CMRUFolder cMRU;
-		boost::container::vector<LPCTSTR> vMRU = cMRU.GetPathList();
+		std::vector<LPCTSTR> vMRU = cMRU.GetPathList();
 		int nCount = cMRU.Length();
 		for( int i = 0; i < nCount ; i++ ){
 			DWORD attr = ::GetFileAttributes( vMRU[i] );

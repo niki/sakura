@@ -76,7 +76,7 @@ public:
 	static void IO_MainMenu( CDataProfile& c, CommonSetting_MainMenu& s, bool b ){		// 2010/5/15 Uchi
 		IO_MainMenu(c, NULL, s, b);
 	}
-	static void IO_MainMenu( CDataProfile& cProfile, boost::container::vector<std::wstring>* pData,
+	static void IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstring>* pData,
 		CommonSetting_MainMenu& mainmenu, bool bOutCmdName);
 #ifdef SC_FIX_PROFILES
 	static void IO_ColorSet( CDataProfile* , const WCHAR* , ColorInfo*, bool bColorOnly = false );	/* 色設定 I/O */ // Feb. 12, 2006 D.S.Koba

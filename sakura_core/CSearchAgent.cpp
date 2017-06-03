@@ -1,6 +1,6 @@
 ﻿#include "StdAfx.h"
 
-#include <boost/container/vector.hpp>
+#include <vector>
 #include <utility>
 #include "CSearchAgent.h"
 #include "doc/logic/CDocLineMgr.h"
@@ -288,7 +288,7 @@ void CSearchAgent::CreateCharCharsArr(
 /*!	単語単位の単語リスト作成
 */
 void CSearchAgent::CreateWordList(
-	boost::container::vector<std::pair<const wchar_t*, CLogicInt> >&	searchWords,
+	std::vector<std::pair<const wchar_t*, CLogicInt> >&	searchWords,
 	const wchar_t*	pszPattern,
 	int	nPatternLen
 )
@@ -316,7 +316,7 @@ const wchar_t* CSearchAgent::SearchStringWord(
 	const wchar_t*	pLine,
 	int				nLineLen,
 	int				nIdxPos,
-	const boost::container::vector<std::pair<const wchar_t*, CLogicInt> >& searchWords,
+	const std::vector<std::pair<const wchar_t*, CLogicInt> >& searchWords,
 	bool	bLoHiCase,
 	int*	pnMatchLen
 )
@@ -586,7 +586,7 @@ int CSearchAgent::SearchWord(
 		// 検索語を単語に分割して searchWordsに格納する。
 		const wchar_t* pszPattern = pattern.GetKey();
 		const int	nPatternLen = pattern.GetLen();
-		boost::container::vector<std::pair<const wchar_t*, CLogicInt> > searchWords; // 単語の開始位置と長さの配列。
+		std::vector<std::pair<const wchar_t*, CLogicInt> > searchWords; // 単語の開始位置と長さの配列。
 		CreateWordList( searchWords, pszPattern, nPatternLen );
 		/*
 			2001/06/23 Norio Nakatani

@@ -32,8 +32,8 @@
 #ifndef __CMACROTYPEMGR_H_
 #define __CMACROTYPEMGR_H_
 
-#include <boost/container/map.hpp>
-#include <boost/container/list.hpp>
+#include <map>
+#include <list>
 #include <string>
 #include "util/design_template.h"
 
@@ -73,8 +73,8 @@ private:
 
 	// Jan. 31, 2004 genta
 	// バイナリサイズ削減のため拡張子保持用mapを削除
-	//	typedef boost::container::map<std::string, Creator> MacroTypeRep;
-	typedef boost::container::list<Creator> MacroEngineRep;
+	//	typedef std::map<std::string, Creator> MacroTypeRep;
+	typedef std::list<Creator> MacroEngineRep;
 
 	// Jan. 31, 2004 genta
 	// バイナリサイズ削減のため

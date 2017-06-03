@@ -1260,7 +1260,7 @@ struct SCommentBlock{
 	int nFirst;
 	int nLast;
 };
-static bool IsCommentBlock( boost::container::vector<SCommentBlock>& arr, int pos )
+static bool IsCommentBlock( std::vector<SCommentBlock>& arr, int pos )
 {
 	int size = (int)arr.size();
 	for(int i = 0; i < size; i++){
@@ -1406,7 +1406,7 @@ void CEditView::SmartIndent_CPP( wchar_t wcChar )
 
 			// コメント・文字列検索
 			bool bCommentStringCheck = m_pTypeData->m_bIndentCppStringIgnore || m_pTypeData->m_bIndentCppCommentIgnore;
-			boost::container::vector<SCommentBlock> arrCommentBlock;
+			std::vector<SCommentBlock> arrCommentBlock;
 			if( bCommentStringCheck ){
 				int nMode = 0;
 				int nBegin = -1;

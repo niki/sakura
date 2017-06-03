@@ -1519,7 +1519,7 @@ CColorStrategy* CPrintPreview::DrawPageText(
 				const int nLineCols = wcslen( szLineNum );
 
 				//文字間隔配列を生成
-			boost::container::vector<int> vDxArray;
+			std::vector<int> vDxArray;
 				const int* pDxArray = CTextMetrics::GenerateDxArray(&vDxArray, szLineNum, nLineCols, m_pPrintSetting->m_nPrintFontWidth);
 
 				ApiWrap::ExtTextOutW_AnyBuild(
@@ -1681,7 +1681,7 @@ CColorStrategy* CPrintPreview::Print_DrawLine(
 	CLayoutInt nTabSpace = m_pParentWnd->GetDocument()->m_cLayoutMgr.GetTabSpace(); //	Sep. 23, 2002 genta LayoutMgrの値を使う
 
 	//文字間隔配列を生成
-boost::container::vector<int> vDxArray;
+std::vector<int> vDxArray;
 	const int* pDxArray = CTextMetrics::GenerateDxArray(
 		&vDxArray,
 		pLine + nLineStart,

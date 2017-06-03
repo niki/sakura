@@ -29,7 +29,7 @@
 */
 
 #include <Windows.h>
-#include <boost/container/vector.hpp>
+#include <vector>
 
 //! オリジナル値保存クラス
 template <class T>
@@ -229,22 +229,22 @@ private:
 	HDC					m_hdc;
 
 	//クリッピング
-	boost::container::vector<HRGN>		m_vClippingRgns;
+	std::vector<HRGN>		m_vClippingRgns;
 
 	//テキスト
-	boost::container::vector<COLORREF>	m_vTextForeColors;
-	boost::container::vector<COLORREF>	m_vTextBackColors;
-	boost::container::vector<SFONT>		m_vFonts;
+	std::vector<COLORREF>	m_vTextForeColors;
+	std::vector<COLORREF>	m_vTextBackColors;
+	std::vector<SFONT>		m_vFonts;
 
 	//テキスト
 	COrgInt				m_nTextModeOrg;
 
 	//ペン
 	HPEN				m_hpnOrg;
-	boost::container::vector<HPEN>	m_vPens;
+	std::vector<HPEN>	m_vPens;
 
 	//ブラシ
-	boost::container::vector<HBRUSH>	m_vBrushes;
+	std::vector<HBRUSH>	m_vBrushes;
 	HBRUSH				m_hbrOrg;
 	HBRUSH				m_hbrCurrent;
 	bool				m_bDynamicBrush;	//m_hbrCurrentを動的に作成した場合はtrue

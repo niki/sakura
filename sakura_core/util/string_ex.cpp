@@ -459,13 +459,13 @@ char* wcstombs_new(const wchar_t* pSrc,int nSrcLen)
 }
 
 //SJIS→UNICODE。戻り値はvectorとして返す。
-void mbstowcs_vector(const char* src, boost::container::vector<wchar_t>* ret)
+void mbstowcs_vector(const char* src, std::vector<wchar_t>* ret)
 {
 	mbstowcs_vector(src,strlen(src),ret);
 }
 
 //※戻り値retにおいて、ret->size()が文字列長ではないことに注意。正しくは、(ret->size()-1)が文字列長となる。
-void mbstowcs_vector(const char* pSrc, int nSrcLen, boost::container::vector<wchar_t>* ret)
+void mbstowcs_vector(const char* pSrc, int nSrcLen, std::vector<wchar_t>* ret)
 {
 	//必要な容量
 	int nNewLen = MultiByteToWideChar(
@@ -494,11 +494,11 @@ void mbstowcs_vector(const char* pSrc, int nSrcLen, boost::container::vector<wch
 
 
 //UNICODE→SJIS。戻り値はvectorとして返す。
-void wcstombs_vector(const wchar_t* src, boost::container::vector<char>* ret)
+void wcstombs_vector(const wchar_t* src, std::vector<char>* ret)
 {
 	wcstombs_vector(src,wcslen(src),ret);
 }
-void wcstombs_vector(const wchar_t* pSrc, int nSrcLen, boost::container::vector<char>* ret)
+void wcstombs_vector(const wchar_t* pSrc, int nSrcLen, std::vector<char>* ret)
 {
 	//必要な容量
 	int nNewLen = WideCharToMultiByte(

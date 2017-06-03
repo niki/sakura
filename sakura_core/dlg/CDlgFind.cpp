@@ -199,7 +199,7 @@ void CDlgFind::SetCombosList( void )
 		Combo_DeleteString( hwndCombo, 0);
 	}
 	int nBufferSize = ::GetWindowTextLength( GetItemHwnd(IDC_COMBO_TEXT) ) + 1;
-	boost::container::vector<TCHAR> vText(nBufferSize);
+	std::vector<TCHAR> vText(nBufferSize);
 	Combo_GetText( hwndCombo, &vText[0], nBufferSize );
 	if (auto_strcmp( to_wchar(&vText[0]), m_strText.c_str() ) != 0) {
 		::DlgItem_SetText( GetHwnd(), IDC_COMBO_TEXT, m_strText.c_str() );
@@ -230,7 +230,7 @@ int CDlgFind::GetData( void )
 
 	/* 検索文字列 */
 	int nBufferSize = ::GetWindowTextLength( GetItemHwnd(IDC_COMBO_TEXT) ) + 1;
-	boost::container::vector<TCHAR> vText(nBufferSize);
+	std::vector<TCHAR> vText(nBufferSize);
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_TEXT, &vText[0], nBufferSize);
 	m_strText = to_wchar(&vText[0]);
 

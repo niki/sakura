@@ -27,7 +27,7 @@
 #ifndef SAKURA_CTSVMODEINFO_BC141F5B_325B_4C02_9CC7_633B39FE482E1_H_
 #define SAKURA_CTSVMODEINFO_BC141F5B_325B_4C02_9CC7_633B39FE482E1_H_
 
-#include <boost/container/vector.hpp>
+#include <vector>
 #include "basis/SakuraBasis.h"
 
 // TSVモード
@@ -48,7 +48,7 @@ public:
 	int m_nTsvMode;
 
 private:
-	boost::container::vector<int> m_tabLength;
+	std::vector<int> m_tabLength;
 };
 #endif /* SAKURA_CTSVMODEINFO_BC141F5B_325B_4C02_9CC7_633B39FE482E1_H_ */
 /*[EOF]*/

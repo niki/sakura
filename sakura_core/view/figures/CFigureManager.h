@@ -24,7 +24,7 @@
 #ifndef SAKURA_CFIGUREMANAGER_470D38ED_45D5_4E64_8D29_FFEA361C59E4_H_
 #define SAKURA_CFIGUREMANAGER_470D38ED_45D5_4E64_8D29_FFEA361C59E4_H_
 
-#include <boost/container/vector.hpp>
+#include <vector>
 #include "util/design_template.h"
 #include "CFigureStrategy.h"
 
@@ -46,8 +46,8 @@ public:
 	void OnChangeSetting(void);
 
 private:
-	boost::container::vector<CFigure*>	m_vFigures;
-	boost::container::vector<CFigure*>	m_vFiguresDisp;	//!< 色分け表示対象
+	std::vector<CFigure*>	m_vFigures;
+	std::vector<CFigure*>	m_vFiguresDisp;	//!< 色分け表示対象
 	CFigure_Text*	m_cTextFigure;
 };
 

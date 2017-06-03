@@ -88,8 +88,8 @@ public:
 	SFilePath		m_szDefaultWildCard;	/* 「開く」での最初のワイルドカード（保存時の拡張子補完でも使用される） */
 	SFilePath		m_szInitialDir;			/* 「開く」での初期ディレクトリ */
 
-	boost::container::vector<LPCTSTR>	m_vMRU;
-	boost::container::vector<LPCTSTR>	m_vOPENFOLDER;
+	std::vector<LPCTSTR>	m_vMRU;
+	std::vector<LPCTSTR>	m_vOPENFOLDER;
 };
 
 class CDlgOpenFileData{
@@ -712,8 +712,8 @@ void CDlgOpenFile::Create(
 	HWND						hwndParent,
 	const TCHAR*				pszUserWildCard,
 	const TCHAR*				pszDefaultPath,
-	const boost::container::vector<LPCTSTR>& vMRU,
-	const boost::container::vector<LPCTSTR>& vOPENFOLDER
+	const std::vector<LPCTSTR>& vMRU,
+	const std::vector<LPCTSTR>& vOPENFOLDER
 )
 {
 	m_mem->m_hInstance = hInstance;
@@ -893,7 +893,7 @@ bool CDlgOpenFile::DoModal_GetSaveFileName( TCHAR* pszPath, bool bSetCurDir )
 		拡張子フィルタの管理をCFileExtクラスで行う。
 	@date 2005.02.20 novice 拡張子を省略したら補完する
 */
-bool CDlgOpenFile::DoModalOpenDlg( SLoadInfo* pLoadInfo, boost::container::vector<std::tstring>* pFileNames, bool bOptions )
+bool CDlgOpenFile::DoModalOpenDlg( SLoadInfo* pLoadInfo, std::vector<std::tstring>* pFileNames, bool bOptions )
 {
 	std::auto_ptr<CDlgOpenFileData> pData( new CDlgOpenFileData() );
 	pData->m_bIsSaveDialog = FALSE;	/* 保存のダイアログか */

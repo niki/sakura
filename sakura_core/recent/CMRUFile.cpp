@@ -116,9 +116,9 @@ BOOL CMRUFile::DestroyMenu( HMENU hMenuPopUp ) const
 	最後の要素の次にはNULLが入る．
 	予め呼び出す側で最大値+1の領域を確保しておくこと．
 */
-boost::container::vector<LPCTSTR> CMRUFile::GetPathList() const
+std::vector<LPCTSTR> CMRUFile::GetPathList() const
 {
-	boost::container::vector<LPCTSTR> ret;
+	std::vector<LPCTSTR> ret;
 	for( int i = 0; i < m_cRecentFile.GetItemCount(); ++i ){
 		//	「共通設定」→「全般」→「ファイルの履歴MAX」を反映
 		if ( i >= m_cRecentFile.GetViewCount() ) break;

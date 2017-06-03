@@ -83,7 +83,7 @@ T* TSingleInstance<T>::gm_instance = NULL;
 
 
 //記録もする
-#include <boost/container/vector.hpp>
+#include <vector>
 template <class T> class TInstanceHolder{
 public:
 	TInstanceHolder()
@@ -110,9 +110,9 @@ public:
 	}
 
 private:
-	static boost::container::vector<T*> gm_table;
+	static std::vector<T*> gm_table;
 };
-template <class T> boost::container::vector<T*> TInstanceHolder<T>::gm_table;
+template <class T> std::vector<T*> TInstanceHolder<T>::gm_table;
 
 #endif /* SAKURA_DESIGN_TEMPLATE_8F7F7545_B66E_47C3_AE3A_0E406B3A0B0B_H_ */
 /*[EOF]*/

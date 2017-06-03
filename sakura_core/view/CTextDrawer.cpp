@@ -24,7 +24,7 @@
 
 #include "StdAfx.h"
 #include "CTextDrawer.h"
-#include <boost/container/vector.hpp>
+#include <vector>
 #include "CTextMetrics.h"
 #include "CTextArea.h"
 #include "CViewFont.h"
@@ -65,7 +65,7 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 	const CTextArea* pArea=GetTextArea();
 
 	//文字間隔配列を生成
-	static boost::container::vector<int> vDxArray(302);
+	static std::vector<int> vDxArray(302);
 	const int* pDxArray=pMetrics->GenerateDxArray(&vDxArray,pData,nLength,this->m_pEditView->GetTextMetrics().GetHankakuDx());
 
 	//文字列のピクセル幅

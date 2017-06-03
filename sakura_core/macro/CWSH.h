@@ -35,7 +35,7 @@ class CWSHClient : IWSHClient
 {
 public:
 	// 型定義
-	typedef boost::container::vector<CIfObj*> List;      // 所有しているインタフェースオブジェクトのリスト
+	typedef std::vector<CIfObj*> List;      // 所有しているインタフェースオブジェクトのリスト
 	typedef List::const_iterator ListIter;	// そのイテレータ
 
 	// コンストラクタ・デストラクタ

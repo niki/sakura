@@ -82,7 +82,7 @@ bool CDocFileOperation::OpenFileDialog(
 	HWND				hwndParent,		//!< [in]
 	const TCHAR*		pszOpenFolder,	//!< [in]     NULL以外を指定すると初期フォルダを指定できる
 	SLoadInfo*			pLoadInfo,		//!< [in,out] ロード情報
-	boost::container::vector<std::tstring>&	files
+	std::vector<std::tstring>&	files
 )
 {
 	/* アクティブにする */
@@ -553,7 +553,7 @@ void CDocFileOperation::FileCloseOpen( const SLoadInfo& _sLoadInfo )
 	//ファイル名指定が無い場合はダイアログで入力させる
 	SLoadInfo sLoadInfo = _sLoadInfo;
 	if( sLoadInfo.cFilePath.Length()==0 ){
-		boost::container::vector<std::tstring> files;
+		std::vector<std::tstring> files;
 		if( !OpenFileDialog( CEditWnd::getInstance()->GetHwnd(), NULL, &sLoadInfo, files ) ){
 			return;
 		}

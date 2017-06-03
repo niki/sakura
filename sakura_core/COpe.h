@@ -43,7 +43,7 @@ template <>
 	}
 }
 
-typedef boost::container::vector<CLineData> COpeLineData;
+typedef std::vector<CLineData> COpeLineData;
 
 /*!
 	編集操作要素

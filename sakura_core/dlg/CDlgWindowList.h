@@ -51,7 +51,7 @@ protected:
 	void SetData();
 	int  GetData();
 
-	void GetDataListView(boost::container::vector<HWND>&);
+	void GetDataListView(std::vector<HWND>&);
 	void CommandClose();
 	void CommandSave();
 private:

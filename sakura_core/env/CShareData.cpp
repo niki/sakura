@@ -665,7 +665,7 @@ bool CShareData::InitShareData()
 		// [メインメニュー]タブ
 		{
 			CDataProfile	cProfile;
-			boost::container::vector<std::wstring> data;
+			std::vector<std::wstring> data;
 			cProfile.SetReadingMode();
 			cProfile.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &data );
 
@@ -791,7 +791,7 @@ static void ConvertLangString( char* pBuf, size_t chBufSize, std::wstring& org, 
 	pBuf[chBufSize - 1] = '\0';
 }
 
-static void ConvertLangValueImpl( wchar_t* pBuf, size_t chBufSize, int nStrId, boost::container::vector<std::wstring>& values, int& index, bool setValues, bool bUpdate )
+static void ConvertLangValueImpl( wchar_t* pBuf, size_t chBufSize, int nStrId, std::vector<std::wstring>& values, int& index, bool setValues, bool bUpdate )
 {
 	if( setValues ){
 		if( bUpdate ){
@@ -804,7 +804,7 @@ static void ConvertLangValueImpl( wchar_t* pBuf, size_t chBufSize, int nStrId, b
 	index++;
 }
 
-static void ConvertLangValueImpl( char* pBuf, size_t chBufSize, int nStrId, boost::container::vector<std::wstring>& values, int& index, bool setValues, bool bUpdate )
+static void ConvertLangValueImpl( char* pBuf, size_t chBufSize, int nStrId, std::vector<std::wstring>& values, int& index, bool setValues, bool bUpdate )
 {
 	if( setValues ){
 		if( bUpdate ){
@@ -830,7 +830,7 @@ static void ConvertLangValueImpl( char* pBuf, size_t chBufSize, int nStrId, boos
 	2. SelectLang呼び出し
 	3. 2回目呼び出し、valuesを使って新設定の言語に書き換え
 */
-void CShareData::ConvertLangValues(boost::container::vector<std::wstring>& values, bool bSetValues)
+void CShareData::ConvertLangValues(std::vector<std::wstring>& values, bool bSetValues)
 {
 	DLLSHAREDATA&	shareData = *m_pShareData;
 	int i;
@@ -1496,11 +1496,11 @@ void CShareData::RefreshString()
 void CShareData::CreateTypeSettings()
 {
 	if( NULL == m_pvTypeSettings ){
-		m_pvTypeSettings = new boost::container::vector<STypeConfig*>();
+		m_pvTypeSettings = new std::vector<STypeConfig*>();
 	}
 }
 
-boost::container::vector<STypeConfig*>& CShareData::GetTypeSettings()
+std::vector<STypeConfig*>& CShareData::GetTypeSettings()
 {
 	return *m_pvTypeSettings;
 }

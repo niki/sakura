@@ -777,7 +777,7 @@ static void DeleteItem(HWND hwnd, CRecent* pRecent)
 {
 	int nIndex = Combo_GetCurSel(hwnd);
 	if( 0 <= nIndex ){
-		boost::container::vector<TCHAR> szText;
+		std::vector<TCHAR> szText;
 		szText.resize(Combo_GetLBTextLen(hwnd, nIndex) + 1);
 		Combo_GetLBText(hwnd, nIndex, &szText[0]);
 		Combo_DeleteString(hwnd, nIndex);

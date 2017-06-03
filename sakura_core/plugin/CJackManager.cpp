@@ -74,7 +74,7 @@ CJackManager::CJackManager()
 }
 
 //ジャック定義一覧を返す
-boost::container::vector<JackDef> CJackManager::GetJackDef() const
+std::vector<JackDef> CJackManager::GetJackDef() const
 {
 	return m_Jacks;
 }

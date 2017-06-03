@@ -17,7 +17,7 @@ class COpeBuf;
 #define _COPEBUF_H_
 
 
-#include <boost/container/vector.hpp>
+#include <vector>
 #include "_main/global.h"
 class COpeBlk;/// 2002/2/10 aroka
 
@@ -56,7 +56,7 @@ public:
 	void DUMP();								//!< 編集操作要素ブロックのダンプ
 
 private:
-	boost::container::vector<COpeBlk*>	m_vCOpeBlkArr;		//!< 操作ブロックの配列
+	std::vector<COpeBlk*>	m_vCOpeBlkArr;		//!< 操作ブロックの配列
 	int						m_nCurrentPointer;	//!< 現在位置
 	int						m_nNoModifiedIndex;	//!< 無変更な状態になった位置
 };

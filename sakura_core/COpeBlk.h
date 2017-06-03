@@ -17,7 +17,7 @@ class COpeBlk;
 #define _COPEBLK_H_
 
 #include "COpe.h"
-#include <boost/container/vector.hpp>
+#include <vector>
 
 
 
@@ -49,7 +49,7 @@ public:
 
 private:
 	//メンバ変数
-	boost::container::vector<COpe*>	m_ppCOpeArr;	//!< 操作の配列
+	std::vector<COpe*>	m_ppCOpeArr;	//!< 操作の配列
 
 	//参照カウンタ
 	//　HandleCommand内から再帰的にHandleCommandが呼ばれる場合、

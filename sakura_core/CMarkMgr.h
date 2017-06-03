@@ -32,7 +32,7 @@
 #ifndef __CMARKMGR_H_
 #define __CMARKMGR_H_
 
-#include <boost/container/vector.hpp>
+#include <vector>
 
 
 /*!
@@ -77,8 +77,8 @@ public:
 	// GENERATE_FACTORY(CMark,CMarkFactory);	//	CMark用Factory class
 
 	//	型宣言
-	typedef boost::container::vector<CMark> CMarkChain;
-	typedef boost::container::vector<CMark>::const_iterator	CMarkIterator;
+	typedef std::vector<CMark> CMarkChain;
+	typedef std::vector<CMark>::const_iterator	CMarkIterator;
 
 	//	Interface
 	//	constructor

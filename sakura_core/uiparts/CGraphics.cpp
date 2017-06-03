@@ -26,7 +26,7 @@ public:
 		return false;
 	}
 protected:
-	boost::container::vector<HGDIOBJ> m_vObjects;
+	std::vector<HGDIOBJ> m_vObjects;
 };
 
 static CGDIStock s_cGDIStock;	// 唯一の CGDIStock オブジェクト

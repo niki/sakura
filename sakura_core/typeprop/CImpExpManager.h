@@ -315,7 +315,7 @@ class CImpExpFileTree : public CImpExpManager
 {
 public:
 	// Constructor
-	CImpExpFileTree( boost::container::vector<SFileTreeItem>& items )
+	CImpExpFileTree( std::vector<SFileTreeItem>& items )
 		: m_aFileTreeItems( items )
 	{
 	}
@@ -323,7 +323,7 @@ public:
 public:
 	bool Import( const wstring&, wstring& );
 	bool Export( const wstring&, wstring& );
-	static void IO_FileTreeIni( CDataProfile&, boost::container::vector<SFileTreeItem>& );
+	static void IO_FileTreeIni( CDataProfile&, std::vector<SFileTreeItem>& );
 
 public:
 	// デフォルト拡張子の取得
@@ -331,7 +331,7 @@ public:
 	const wchar_t* GetOriginExtension()	{ return L"ini"; }
 
 private:
-	boost::container::vector<SFileTreeItem>&		m_aFileTreeItems;
+	std::vector<SFileTreeItem>&		m_aFileTreeItems;
 };
 
 

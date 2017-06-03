@@ -59,9 +59,9 @@ struct SHokanMethod{
 	std::wstring name;
 };
 
-static boost::container::vector<SHokanMethod>* GetHokanMethodList()
+static std::vector<SHokanMethod>* GetHokanMethodList()
 {
-	static boost::container::vector<SHokanMethod> methodList;
+	static std::vector<SHokanMethod> methodList;
 	return &methodList;
 }
 
@@ -176,7 +176,7 @@ void CPropTypesSupport::SetData( HWND hwndDlg )
 
 	{
 		HWND hCombo = ::GetDlgItem( hwndDlg, IDC_COMBO_HOKAN_TYPE );
-		boost::container::vector<SHokanMethod>* pMedothList = GetHokanMethodList();
+		std::vector<SHokanMethod>* pMedothList = GetHokanMethodList();
 		ApiWrap::Combo_AddString( hCombo, LS(STR_SMART_INDENT_NONE) );
 		Combo_SetCurSel( hCombo, 0 );
 		size_t nSize = pMedothList->size();

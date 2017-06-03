@@ -346,7 +346,7 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 			HWND hwnd = GetItemHwnd( IDC_COMBO_FOLDER );
 			TCHAR szFolder[_MAX_PATH];
 			::GetWindowText( hwnd, szFolder, _countof(szFolder) );
-			boost::container::vector<std::tstring> vPaths;
+			std::vector<std::tstring> vPaths;
 			CGrepAgent::CreateFolders( szFolder, vPaths );
 			if( 0 < vPaths.size() ){
 				// 最後のパスが操作対象
@@ -797,7 +797,7 @@ int CDlgGrep::GetData( void )
 
 	/* 検索文字列 */
 	int nBufferSize = ::GetWindowTextLength( GetItemHwnd(IDC_COMBO_TEXT) ) + 1;
-	boost::container::vector<TCHAR> vText(nBufferSize);
+	std::vector<TCHAR> vText(nBufferSize);
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_TEXT, &vText[0], nBufferSize);
 	m_strText = to_wchar(&vText[0]);
 	m_bSetText = true;
@@ -863,7 +863,7 @@ int CDlgGrep::GetData( void )
 		CCurrentDirectoryBackupPoint cCurDirBackup;
 
 		// 2011.11.24 Moca 複数フォルダ指定
-		boost::container::vector<std::tstring> vPaths;
+		std::vector<std::tstring> vPaths;
 		CGrepAgent::CreateFolders( m_szFolder, vPaths );
 		int nFolderLen = 0;
 		TCHAR szFolder[_MAX_PATH];

@@ -36,8 +36,8 @@
 
 #include <Windows.h>
 #include <string>
-#include <boost/container/vector.hpp>
-#include <boost/container/map.hpp>
+#include <vector>
+#include <map>
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -52,7 +52,7 @@ class CProfile
 	typedef std::string string;
 
 	typedef std::pair< wstring, wstring > PAIR_STR_STR;
-	typedef boost::container::map< wstring, wstring > MAP_STR_STR;
+	typedef std::map< wstring, wstring > MAP_STR_STR;
 	struct Section
 	{
 		wstring     strSectionName;
@@ -67,7 +67,7 @@ public:
 	void SetReadingMode( void ) { m_bRead = true; }
 	void SetWritingMode( void ) { m_bRead = false; }
 	bool ReadProfile( const TCHAR* );
-	bool ReadProfileRes( const TCHAR*, const TCHAR*, boost::container::vector<std::wstring>* = NULL );				// 200/5/19 Uchi
+	bool ReadProfileRes( const TCHAR*, const TCHAR*, std::vector<std::wstring>* = NULL );				// 200/5/19 Uchi
 	bool WriteProfile( const TCHAR*, const WCHAR* pszComment);
 
 
@@ -76,7 +76,7 @@ public:
 
 protected:
 	void ReadOneline( const wstring& line );
-	bool _WriteFile( const tstring& strFilename, const boost::container::vector< wstring >& vecLine);
+	bool _WriteFile( const tstring& strFilename, const std::vector< wstring >& vecLine);
 
 
 	bool GetProfileDataImp( const wstring& strSectionName, const wstring& strEntryKey, wstring& strEntryValue);
@@ -86,7 +86,7 @@ protected:
 protected:
 	// メンバ変数
 	tstring					m_strProfileName;	//!< 最後に読み書きしたファイル名
-	boost::container::vector< Section >	m_ProfileData;
+	std::vector< Section >	m_ProfileData;
 	bool					m_bRead;			//!< モード(true=読み込み/false=書き出し)
 };
 

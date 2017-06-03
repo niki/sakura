@@ -93,9 +93,9 @@ HMENU CMRUFolder::CreateMenu( HMENU	hMenuPopUp, CMenuDrawer* pCMenuDrawer ) cons
 	return hMenuPopUp;
 }
 
-boost::container::vector<LPCTSTR> CMRUFolder::GetPathList() const
+std::vector<LPCTSTR> CMRUFolder::GetPathList() const
 {
-	boost::container::vector<LPCTSTR> ret;
+	std::vector<LPCTSTR> ret;
 	for( int i = 0; i < m_cRecentFolder.GetItemCount(); ++i ){
 		//	「共通設定」→「全般」→「フォルダの履歴MAX」を反映
 		if ( i >= m_cRecentFolder.GetViewCount() ) break;

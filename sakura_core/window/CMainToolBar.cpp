@@ -563,7 +563,7 @@ int CMainToolBar::GetSearchKey(std::wstring& strText)
 {
 	if( m_hwndSearchBox ){
 		int nBufferSize = ::GetWindowTextLength( m_hwndSearchBox ) + 1;
-		boost::container::vector<TCHAR> vText(nBufferSize);
+		std::vector<TCHAR> vText(nBufferSize);
 
 		::GetWindowText( m_hwndSearchBox, &vText[0], vText.size() );
 		strText = to_wchar(&vText[0]);

@@ -106,7 +106,7 @@ void CViewCommander::Command_FILEOPEN( const WCHAR* filename, ECodeType nCharCod
 	}
 	//ロード情報
 	SLoadInfo sLoadInfo(filename?to_tchar(filename):_T(""), nCharCode, bViewMode);
-	boost::container::vector<std::tstring> files;
+	std::vector<std::tstring> files;
 	std::tstring defName = (defaultName?to_tchar(defaultName):_T(""));
 
 	//必要であれば「ファイルを開く」ダイアログ
