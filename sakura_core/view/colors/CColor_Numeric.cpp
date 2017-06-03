@@ -90,11 +90,11 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 {
 #ifdef SC_FIX_NUMERIC_COLOR
 #if REGEX_MODE == 2
-	register const std::string p(to_achar(cStr.GetPtr() + offset));
-	register const wchar_t *q = nullptr;
+	register const std::string p2(to_achar(cStr.GetPtr() + offset));
+	register const wchar_t *q2 = nullptr;
 #else
-	register const wchar_t *p = cStr.GetPtr() + offset;
-	register const wchar_t *q = cStr.GetPtr() + cStr.GetLength();
+	register const wchar_t *p2 = cStr.GetPtr() + offset;
+	register const wchar_t *q2 = cStr.GetPtr() + cStr.GetLength();
 #endif
 
 #if REGEX_MODE == 3  // BREGEXP
@@ -146,16 +146,11 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	#define REGEX(x)           _regex(REGSTR(x))
 #endif
 
-	int i = 0;
-	wchar_t szMsg[80] = {}; //!< エラーメッセージ
-	_match match;
-	_re_init(match);
-
 	static const struct {
 		wchar_t enter; // 最低条件
 		bool    term;  // 検索グループの終端
 		_regex  exp;   // 式
-	} pattern[] = {
+	} sPattern[] = {
 		{L'e', false, REGEX("^[0-9]+\\.[0-9]*([eE][-+][0-9]+)([fF]?)")},  // 1e-2
 		{L'e', true,  REGEX("^(\\.[0-9]+)([eE][-+][0-9]+)([fF]?)")},      // .12e+2
 		
@@ -167,24 +162,30 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	};
 
 	if (_re_is_available()) {
-		for (auto && re : pattern) {
-			if (_re_entry(p, re.enter)) {
-				if (_re_search(re.exp, p, q, match, szMsg)) {
-					i = std::max<int>(_re_endp(match) - _re_startp(p), i);
+		int pos = 0;
+		wchar_t szMsg[80] = {}; //!< エラーメッセージ
+		_match match;
+		_re_init(match);
+
+		for (auto && re : sPattern) {
+			if (_re_entry(p2, re.enter)) {
+				if (_re_search(re.exp, p2, q2, match, szMsg)) {
+					pos = std::max<int>(_re_endp(match) - _re_startp(p2), pos);
 				}
 				if (re.term) {
-					if (i > 0) goto end;
+					if (pos > 0) break;
 				}
 			}
 		}
+
+		_re_free(match);
+		return pos;
 	} else {
 		// 正規表現ライブラリが読み込まれていない
+		// そのまま通常の方法で判定する
 	}
+#endif  // SC_
 
-end:
-	_re_free(match);
-	return i;
-#else
 	register const wchar_t* p;
 	register const wchar_t* q;
 	register int i = 0;
@@ -699,6 +700,5 @@ end:
 
 	/* 数値ではない */
 	return 0;
-#endif  // SC_
 }
 //@@@ 2001.11.07 End by MIK
