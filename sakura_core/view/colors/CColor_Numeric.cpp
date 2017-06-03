@@ -6,7 +6,10 @@
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
 #ifdef SC_FIX_NUMERIC_COLOR
-#define REGEX_MODE (1)  // 0:std::regex, 1:boost::regex, 2:re2
+#define REGEX_MODE (3)  // 0:std::regex
+                        // 1:boost::regex
+                        // 2:RE2
+                        // 3:BREGEXP
 #if REGEX_MODE == 0
   #include <regex>
   using namespace std;
@@ -17,6 +20,8 @@
 #elif REGEX_MODE == 2
   #pragma comment(lib, "re2.lib")
   #include <re2/re2.h>
+#elif REGEX_MODE == 3
+  #include "window/CEditWnd.h"
 #endif
 #endif  // SC_
 
@@ -84,99 +89,100 @@ bool CColor_Numeric::EndColor(const CStringRef& cStr, int nPos)
 static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*, int length*/)
 {
 #ifdef SC_FIX_NUMERIC_COLOR
+#if REGEX_MODE == 2
+	register const std::string p(to_achar(cStr.GetPtr() + offset));
+	register const wchar_t *q = nullptr;
+#else
 	register const wchar_t *p = cStr.GetPtr() + offset;
 	register const wchar_t *q = cStr.GetPtr() + cStr.GetLength();
+#endif
 
-#if REGEX_MODE == 2
+#if REGEX_MODE == 3  // BREGEXP
+	const CEditDoc *pcEditDoc = CEditDoc::GetInstance(0);
+	const CEditView *pView = &pcEditDoc->m_pcEditWnd->GetActiveView();
+	using _regex = std::wstring;
+	using _match = BREGEXP_W*;
+	#define _re_is_available() pView->m_CurRegexp.IsAvailable()
+	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))
+	#define _re_search(pt, p, q, match, msg) \
+	                           pView->m_CurRegexp.BMatch(pt.c_str(), p, q, &(match), msg)
+	#define _re_startp(p)      p
+	#define _re_endp(match)    match->endp[0]
+	#define _re_init(p)        p = nullptr
+	#define _re_free(p)        if (p) { pView->m_CurRegexp.BRegfree(p); }
+	#define PREFIX             "/"
+	#define SUFIX              "/k"
+	#define REGSTR(x)          L"" PREFIX ##x SUFIX
+	#define REGEX(x)           _regex(REGSTR(x))
+#elif REGEX_MODE == 2  // RE2
 	using _regex = re2::RE2;
-	using _cmatch = re2::StringPiece;
-	#define _regex_search re2::RE2::PartialMatch
-	#define REGSTR(x) x
-	#define REGEX(x) REGSTR(x)
-#else
+	using _match = re2::StringPiece;
+	#define _re_is_available() (1)
+	#define _re_entry(p, c)    (c == 0 || ::wcschr(p.c_str(), c))
+	#define _re_search(pt, p, q, match, msg) \
+	                           re2::RE2::PartialMatch(p, pt, &(match))
+	#define _re_startp(p)      p.data()
+	#define _re_endp(match)    match.data()
+	#define _re_init(p)        
+	#define _re_free(p)        
+	#define PREFIX             ""
+	#define SUFIX              ""
+	#define REGSTR(x)          x
+	#define REGEX(x)           REGSTR(x)
+#else  // std::regex, boost::regex
 	using _regex = wregex;
-	using _cmatch = wcmatch;
-	#define _regex_search regex_search
-	#define REGSTR(x) L##x
-	#define REGEX(x) _regex(REGSTR(x))
+	using _match = wcmatch;
+	#define _re_is_available() (1)
+	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))
+	#define _re_search(pt, p, q, match, msg) \
+	                           regex_search(p, q, match, pt)
+	#define _re_startp(p)      (0)
+	#define _re_endp(match)    match.length(0)
+	#define _re_init(p)        
+	#define _re_free(p)        
+	#define PREFIX             ""
+	#define SUFIX              ""
+	#define REGSTR(x)          L##x
+	#define REGEX(x)           _regex(REGSTR(x))
 #endif
 
 	int i = 0;
-	_cmatch match;
+	wchar_t szMsg[80] = {}; //!< エラーメッセージ
+	_match match;
+	_re_init(match);
 
-	static const _regex re1_enter(REGSTR("e"));
-	static const _regex re1[] = {
-			REGEX("^[0-9]+\\.[0-9]*([eE][-+][0-9]+)([fF]?)"),  // 1e-2
-			REGEX("^(\\.[0-9]+)([eE][-+][0-9]+)([fF]?)"),      // .12e+2
+	static const struct {
+		wchar_t enter; // 最低条件
+		bool    term;  // 検索グループの終端
+		_regex  exp;   // 式
+	} pattern[] = {
+		{L'e', false, REGEX("^[0-9]+\\.[0-9]*([eE][-+][0-9]+)([fF]?)")},  // 1e-2
+		{L'e', true,  REGEX("^(\\.[0-9]+)([eE][-+][0-9]+)([fF]?)")},      // .12e+2
+		
+		{L'.', false, REGEX("^([0-9]+\\.[0-9]*)([fF]?)")},                // 1.0f 1.f 1.
+		{L'.', true,  REGEX("^(\\.[0-9]+)([fF]?)")},                      // .1f .1
+		
+		{0,    false, REGEX("^0x[0-9a-fA-F]+")},                          // 0x123
+		{0,    true,  REGEX("^[0-9]+([uUlL]{0,2})")},                     // 123
 	};
-	static const _regex re2_enter(REGSTR("\\."));
-	static const _regex re2[] = {
-			REGEX("^([0-9]+\\.[0-9]*)([fF]?)"),                // 1.0f 1.f 1.
-			REGEX("^(\\.[0-9]+)([fF]?)"),                      // .1f .1
-	};
-	static const _regex re3[] = {
-			REGEX("^0x[0-9a-fA-F]+"),                          // 0x123
-			REGEX("^[0-9]+([uUlL]{0,2})"),                     // 123
-	};
 
-#if REGEX_MODE == 2
-//------------------------------------------------------------------
-// re2
-//------------------------------------------------------------------
-	std::string str(to_achar(p));
+	if (_re_is_available()) {
+		for (auto && re : pattern) {
+			if (_re_entry(p, re.enter)) {
+				if (_re_search(re.exp, p, q, match, szMsg)) {
+					i = std::max<int>(_re_endp(match) - _re_startp(p), i);
+				}
+				if (re.term) {
+					if (i > 0) goto end;
+				}
+			}
+		}
+	} else {
+		// 正規表現ライブラリが読み込まれていない
+	}
 
-	if (_regex_search(str, re1_enter, &match)) {
-		for (auto && re : re1) {
-			if (_regex_search(str, re, &match)) {
-				i = std::max<int>(match.data() - str.data(), i);
-			}
-		}
-		if (i > 0) return i;
-	}
-	
-	if (_regex_search(str, re2_enter, &match)) {
-		for (auto && re : re2) {
-			if (_regex_search(str, re, &match)) {
-				i = std::max<int>(match.data() - str.data(), i);
-			}
-		}
-		if (i > 0) return i;
-	}
-	
-	for (auto && re : re3) {
-		if (_regex_search(str, re, &match)) {
-			i = std::max<int>(match.data() - str.data(), i);
-		}
-	}
-#else
-//------------------------------------------------------------------
-// Boost
-//------------------------------------------------------------------
-	if (_regex_search(p, q, re1_enter)) {
-		for (auto && re : re1) {
-			if (_regex_search(p, q, match, re)) {
-				i = std::max<int>(match.length(0), i);
-			}
-		}
-		if (i > 0) return i;
-	}
-	
-	if (_regex_search(p, q, re2_enter)) {
-		for (auto && re : re2) {
-			if (_regex_search(p, q, match, re)) {
-				i = std::max<int>(match.length(0), i);
-			}
-		}
-		if (i > 0) return i;
-	}
-	
-	for (auto && re : re3) {
-		if (_regex_search(p, q, match, re)) {
-			i = std::max<int>(match.length(0), i);
-		}
-	}
-#endif
-
+end:
+	_re_free(match);
 	return i;
 #else
 	register const wchar_t* p;
