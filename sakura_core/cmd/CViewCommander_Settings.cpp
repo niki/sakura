@@ -372,7 +372,25 @@ void CViewCommander::Command_WRAPWINDOWWIDTH( void )	//	Oct. 7, 2000 JEPRO WRAPW
 	CLayoutInt newKetas;
 	
 	nWrapMode = m_pCommanderView->GetWrapMode( &newKetas );
+#ifdef SC_FIX_WRAP_MODE
+	// GetWrapMode()はトグルになる次のモードが返ってくることに注意
+	// 現在の折り返しモードでないなら NextWrapMode()とかのほうがいいのではないか
+	switch( nWrapMode ){
+	case CEditView::TGWRAP_FULL:		// 折り返さない
+		GetDocument()->m_nTextWrapMethodCur = WRAP_NO_TEXT_WRAP;
+		break;
+
+	case CEditView::TGWRAP_PROP:	// 指定桁で折り返す
+		GetDocument()->m_nTextWrapMethodCur = WRAP_SETTING_WIDTH;
+		break;
+
+	case CEditView::TGWRAP_WINDOW:		// 右端で折り返す
+		GetDocument()->m_nTextWrapMethodCur = WRAP_WINDOW_WIDTH;
+		break;
+	}
+#else
 	GetDocument()->m_nTextWrapMethodCur = WRAP_SETTING_WIDTH;
+#endif  // SC_
 	GetDocument()->m_bTextWrapMethodCurTemp = !( GetDocument()->m_nTextWrapMethodCur == m_pCommanderView->m_pTypeData->m_nTextWrapMethod );
 	if( nWrapMode == CEditView::TGWRAP_NONE ){
 		return;	// 折り返し桁は元のまま
@@ -386,6 +404,23 @@ void CViewCommander::Command_WRAPWINDOWWIDTH( void )	//	Oct. 7, 2000 JEPRO WRAPW
 
 //	2013.12.30 左隅に移動しないように
 //	m_pCommanderView->GetTextArea().SetViewLeftCol( CLayoutInt(0) );		/* 表示域の一番左の桁(0開始) */
+
+#ifdef SC_FIX_WRAP_MODE
+	switch( nWrapMode ){
+	case CEditView::TGWRAP_FULL:		// 折り返さない
+		GetDocument()->m_cLayoutMgr.CalculateTextWidth();		// テキスト最大幅を算出する
+		GetEditWindow()->RedrawAllViews( NULL );		// スクロールバーの更新が必要なので再表示を実行する
+		break;
+
+	case CEditView::TGWRAP_PROP:	// 指定桁で折り返す
+		GetDocument()->m_cLayoutMgr.ClearLayoutLineWidth();		// 各行のレイアウト行長の記憶をクリアする
+		break;
+
+	case CEditView::TGWRAP_WINDOW:		// 右端で折り返す
+		GetDocument()->m_cLayoutMgr.ClearLayoutLineWidth();		// 各行のレイアウト行長の記憶をクリアする
+		break;
+	}
+#endif
 
 	/* フォーカス移動時の再描画 */
 	m_pCommanderView->RedrawAll();
