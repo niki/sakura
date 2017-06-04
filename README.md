@@ -2,19 +2,19 @@ Introduction
 ------------
 
 サクラエディタ 修正版  
+プロポーショナルフォントは未マージ (ベースを新しくするときに対応予定)  
+気になったライブラリなどの試験場  
 
 
 Feature  
 -------
 
-+ MacTypeなどの描画負荷の高いソフトを併用した際に起こる描画崩れを軽減(したつもり)  
-+ Luaをマクロ言語として使用可能  
-+ ミニマップに検索対象やブックマークを分かりやすく表示  
-+ Grepフォルダの指定を４つに拡張  
-+ 半角空白やタブなどの見た目をすっきりさせる (Sublime Textを模倣)  
-+ sakura.iniの精査 (肥大化対策)  
-+ プロポーショナルフォントは未マージ (ベースを新しくするときに対応予定)  
-+ 気になったライブラリなどの試験場  
+<details><summary>MacTypeなどの描画負荷の高いソフトを併用した際に起こる描画崩れを軽減(したつもり)</summary></details>  
+<details><summary>Luaをマクロ言語として組み込み</summary><img src="https://raw.github.com/wiki/sayacat/sakura/images/sakura_201706041845.png" width="50%"></details>  
+<details><summary>ミニマップに検索対象やブックマークを分かりやすく表示</summary><img src="https://raw.github.com/wiki/sayacat/sakura/images/sakura_201706041838.png" width="75%"></details>  
+<details><summary>Grepフォルダの指定を４つに拡張</summary><img src="https://raw.github.com/wiki/sayacat/sakura/images/sakura_201706041815.png" width="50%"></details>  
+<details><summary>半角空白やタブなどの見た目をすっきりさせる (Sublime Textを模倣)</summary></details>  
+<details><summary>sakura.iniの精査 (肥大化対策)</summary></details>  
 
 
 Download  
@@ -27,25 +27,14 @@ Download
 
 + [sakura-cat-2.26-x64.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.26-x64.zip) (1.11MB)  
 
++ 最新のキーワードセット [keyword_pack.zip](https://github.com/sayacat/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
+
 
 Setup  
 -----
 
 ダウンロードしたファイルをすでに使用しているサクラエディタに上書きしてください.  
 `sakura.default.ini`と`sakura.keywordset.json`は実行ファイルと同じ場所に置きます. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
-
-+ [sakura.default.ini](https://github.com/sayacat/sakura/raw/master/Publish/sakura.default.ini)  
-  デフォルト設定値を設定してあるファイルです. ここに初期値を設定することで常にその状態で起動します.  
-  ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.  
-  ファイルがない場合は今まで通りの動作になります.  
-
-+ [sakura.keywordset.json](https://github.com/sayacat/sakura/raw/master/Publish/sakura.keywordset.json)  
-  強調キーワードのセットリストです. セット名, 大文字小文字の区別, ファイル名を指定します.  
-  共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.  
-  また, `sakura.ini`には出力されなくなります.  
-  ファイルがない場合は今まで通りの動作になります.  
-
-+ 最新のキーワードセットはこちら [keyword_pack.zip](https://github.com/sayacat/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
 
 Build environment  
@@ -65,9 +54,9 @@ Changed
 
 |修正版|公式|
 |-|-|
+|[sakura.default.ini](https://github.com/sayacat/sakura/raw/master/Publish/sakura.default.ini)<details><summary>デフォルト設定ファイルの使用</summary>デフォルト設定値を設定してあるファイルです.<br>ここに初期値を設定することで常にその状態で起動します.<br>ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>||
+|[sakura.keywordset.json](https://github.com/sayacat/sakura/raw/master/Publish/sakura.keywordset.json)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
 |履歴を別ファイル (`sakura.recent.json`)に出力|`sakura.ini`に出力|
-|<details><summary>デフォルト設定ファイル (`sakura.default.ini`)の使用</summary>デフォルト設定ファイルの内容と同じ項目は`sakura.ini`には出力しなくなります (肥大化対策).<br>起動中に変更をしてエディタを終了させると値が違う影響で出力されてしまうので注意が必要です.</details>||
-|<details><summary>強調キーワード設定は `sakura.keywordset.json`から読み込む</summary>セットはこのファイルから参照されるので共通設定からの設定ができなくなります.<br>ファイルがない場合は今までの動作になりますが, その分iniファイルも大きくなります.</details>|初期化時は内蔵キーワードをインポート, 以後`sakura.ini`に出力|
 |起動時に存在しないファイル・フォルダ履歴を削除する||
 |カラー設定のインポートはカラー情報だけを適用させる|すべての情報を適用|
 |<details><summary>マクロ・プラグインに使用できる言語に `Lua`を追加</summary>文字列をLuaコードとして評価する `eval`関数があります.<br>e.g. `local n = eval("(1 + 2 + 3 + 4) * 3.14")`<br>今後はActiveXが使用できるようにしたいです.</details>||
