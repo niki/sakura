@@ -25,7 +25,7 @@ Download
 
 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
-+ [sakura-cat-2.25-x64.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.25-x64.zip) (1.09MB)  
++ [sakura-cat-2.26-x64.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.26-x64.zip) (1.11MB)  
 
 
 Setup  
@@ -137,9 +137,5 @@ Cregit
 + [Lua](http://www.lua.org/)  
   Copyright © 1994–2017 Lua.org, PUC-Rio.  
   [Lua: license](http://www.lua.org/license.html)  
-
-+ [Lua Binaries](http://luabinaries.sourceforge.net/index.html)  
-  Copyright © 2005-2016 Tecgraf/PUC-Rio and the Kepler Project.  
-  [License](http://luabinaries.sourceforge.net/license.html)  
 
 (C) 2017, sayacat.
