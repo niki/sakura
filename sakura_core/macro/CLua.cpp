@@ -45,7 +45,7 @@ LuaをC/C++プログラムに組み込む - プログラミングの魔物 <http
 #include "macro/CSMacroMgr.h"// 2002/2/10 aroka
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
-#include <lua/lua.hpp>
+#include <lua.hpp>
 
 enum eState {
   eState_Main = 0,

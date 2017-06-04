@@ -5,13 +5,10 @@ libs
  |   +- boost
  |       +- version.hpp
  |            :
- +- lua
-     +- lua
-     |   +- lua.hpp
-     +- x64
-     |   +- lua53.lib
-     +- x86
-         +- lua53.lib
+ +- lua (Original name 'lua-5.3.4')
+     +- doc
+     +- src
+         +- lua.hpp
 ```
 
 

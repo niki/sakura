@@ -29,7 +29,7 @@
 #include "sakura.hh"
 #ifdef SC_FIX_VERDLG
   #include <boost/version.hpp>
-  #include <lua/lua.h>
+  #include <lua.hpp>
 #endif  // SC_
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
