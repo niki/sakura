@@ -52,8 +52,8 @@ static inline void MiniMapSearchMark(CEditView *pView, bool mark) {
 		miniMap->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 	}
 
-	if (bCurSrchKeyMark != miniMap->m_bCurSrchKeyMark ||
-	    strCurSearchKey != miniMap->m_strCurSearchKey)
+	if (bCurSrchKeyMark != miniMap->m_bCurSrchKeyMark ||  // 検索マークの状態
+	    strCurSearchKey != miniMap->m_strCurSearchKey)    // 検索文字列の状態
 	{
 		//miniMap->RedrawAll();
 		//miniMap->Redraw();

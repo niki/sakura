@@ -517,6 +517,17 @@ CLayoutInt CCaret::MoveCursor(
 		/* キャレットの表示・更新 */
 		ShowEditCaret();
 
+#ifdef SC_FIX_FLICKER
+		if (nFinalDrawFlag != PAINT_ALL) {
+			/* ルーラの再描画 */
+			HDC		hdc = m_pEditView->GetDC();
+			m_pEditView->GetRuler().DispRuler( hdc );
+			m_pEditView->ReleaseDC( hdc );
+
+			/* アンダーラインの再描画 */
+			m_cUnderLine.CaretUnderLineON(true, bDrawPaint);
+		}
+#else
 		/* ルーラの再描画 */
 		HDC		hdc = m_pEditView->GetDC();
 		m_pEditView->GetRuler().DispRuler( hdc );
@@ -524,6 +535,7 @@ CLayoutInt CCaret::MoveCursor(
 
 		/* アンダーラインの再描画 */
 		m_cUnderLine.CaretUnderLineON(true, bDrawPaint);
+#endif  // SC_
 
 		/* キャレットの行桁位置を表示する */
 		ShowCaretPosInfo();
@@ -543,9 +555,17 @@ CLayoutInt CCaret::MoveCursor(
 #endif  // SC_
 
 // 02/09/18 対括弧の強調表示 ai Start	03/02/18 ai mod S
+#ifdef SC_FIX_FLICKER
+	if (nFinalDrawFlag != PAINT_ALL) {
+		m_pEditView->DrawBracketPair( false );
+		m_pEditView->SetBracketPairPos( true );
+		m_pEditView->DrawBracketPair( true );
+	}
+#else
 	m_pEditView->DrawBracketPair( false );
 	m_pEditView->SetBracketPairPos( true );
 	m_pEditView->DrawBracketPair( true );
+#endif  // SC_
 // 02/09/18 対括弧の強調表示 ai End		03/02/18 ai mod E
 
 #ifdef SC_OUTPUT_DEBUG_STRING
