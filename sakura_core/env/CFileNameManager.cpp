@@ -374,12 +374,20 @@ static void GetAccessKeyLabelByIndex(TCHAR* pszLabel, bool bEspaceAmp, int index
 		if( bEspaceAmp ){
 			pszLabel[0] = _T('&');
 			pszLabel[1] = c;
+#ifdef SC_FIX_RECENT_FILE_DISP_NAME
+			pszLabel[2] = _T('\0');
+#else
 			pszLabel[2] = _T(' ');
 			pszLabel[3] = _T('\0');
+#endif  // SC_
 		}else{
 			pszLabel[0] = c;
+#ifdef SC_FIX_RECENT_FILE_DISP_NAME
+			pszLabel[1] = _T('\0');
+#else
 			pszLabel[1] = _T(' ');
 			pszLabel[2] = _T('\0');
+#endif  // SC_
 		}
 	}else{
 		pszLabel[0] = _T('\0');
@@ -455,6 +463,12 @@ bool CFileNameManager::GetMenuFullLabel(
 	if( pszFile[0] ){
 		this->GetTransformFileNameFast( pszFile, szFileName, _MAX_PATH, hDC );
 
+#ifdef SC_FIX_RECENT_FILE_DISP_NAME
+		std::tstring dir = mn::file::dirname(szFileName);
+		std::tstring fname = mn::file::fname(szFileName);
+		wsprintf( szFileName, _T("%s - %s"), fname.c_str(), dir.c_str());
+#endif  // SC_
+
 		// szFileName → szMenu2
 		//	Jan. 19, 2002 genta
 		//	メニュー文字列の&を考慮
@@ -481,10 +495,17 @@ bool CFileNameManager::GetMenuFullLabel(
 		pszCharset = szCodePageName;
 	}
 	
+#ifdef SC_FIX_RECENT_FILE_DISP_NAME
+	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts%ts  %ts(%ts)"),
+		(bFavorite ? _T("★ ") : _T("")), pszName,
+		(bModified ? _T("*"):_T(" ")), szAccKey
+	);
+#else
 	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts%ts%ts %ts%ts"),
 		szAccKey, (bFavorite ? _T("★ ") : _T("")), pszName,
 		(bModified ? _T("*"):_T(" ")), pszCharset
 	);
+#endif  // SC_
 	return 0 < ret;
 }
 

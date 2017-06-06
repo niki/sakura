@@ -335,6 +335,27 @@
   #define SC_MAX_GREPFOLDER (16) // Grepフォルダ
 
 //------------------------------------------------------------------
+// メニューバー
+//  - ビットマップメニュー
+//      ::InsertMenuItem( hMenu, 0xFFFFFFFF, TRUE, &mii );
+//      http://home.a00.itscom.net/hatada/windows/introduction/menu01.html
+//      http://eternalwindows.jp/winbase/menu/menu10.html
+//------------------------------------------------------------------
+#define SC_FIX_MENUBAR
+
+//------------------------------------------------------------------
+// 最近使ったファイル
+//  - <フォルダ名>/<ファイル名> を <ファイル名> - <フォルダ名> にする 2017.6.6
+// \sakura_core\env\CFileNameManager.cpp
+//   bool CFileNameManager::GetMenuFullLabel(
+// \sakura_core\recent\CMRUFile.cpp
+//   HMENU CMRUFile::CreateMenu( HMENU	hMenuPopUp, CMenuDrawer* pCMenuDrawer ) const
+// \sakura_core\window\CEditWnd.cpp
+//   cMRU.CreateMenu( hMenu, &m_cMenuDrawer );	//	ファイルメニュー
+//------------------------------------------------------------------
+#define SC_FIX_RECENT_FILE_DISP_NAME
+
+//------------------------------------------------------------------
 // 正規表現検索の際、検索文字列の正規表現記号をクォートする 2015.6.1
 // PHPの preg_quote みたいなもの
 // (REG/RegexpAutoQuote:1)
