@@ -43,22 +43,26 @@ static inline void MiniMapSearchMark(CEditView *pView, bool mark) {
 	std::tstring strCurSearchKey = miniMap->m_strCurSearchKey;
 
 	if (mark) {
+		if (bCurSrchKeyMark && strCurSearchKey == pView->m_strCurSearchKey) {
+			return;  // マークされている状態で同じ文字列をマークしようとした場合は処理しない
+		}
+
 		miniMap->m_strCurSearchKey = pView->m_strCurSearchKey;
 		miniMap->m_sCurSearchOption = pView->m_sCurSearchOption;
 		miniMap->m_nCurSearchKeySequence = pView->m_nCurSearchKeySequence;
 		miniMap->m_bCurSearchUpdate = true;
 		miniMap->ChangeCurRegexp(false);
 	} else {
+		if (!bCurSrchKeyMark) {
+			return;  // マークされていない状態でマークを外そうとした場合は処理しない
+		}
+
 		miniMap->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 	}
 
-	if (bCurSrchKeyMark != miniMap->m_bCurSrchKeyMark ||
-	    strCurSearchKey != miniMap->m_strCurSearchKey)
-	{
-		//miniMap->RedrawAll();
-		//miniMap->Redraw();
-		miniMap->Call_OnPaint(PAINT_BODY, false);
-	}
+	//miniMap->RedrawAll();
+	//miniMap->Redraw();
+	miniMap->Call_OnPaint(PAINT_BODY, false);
 }
 #endif  // SC_
 

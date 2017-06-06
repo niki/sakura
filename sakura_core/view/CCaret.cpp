@@ -486,27 +486,25 @@ CLayoutInt CCaret::MoveCursor(
 	if (nFinalDrawFlag != 0) {
 		if (nFinalDrawFlag == PAINT_ALL) {
 			m_pEditView->Call_OnPaint(PAINT_ALL, false);
-			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-				m_pEditView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
+			if (nScrollRowNum != 0) {
+				if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+					m_pEditView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
+				}
 			}
-			
-		// 画面端の行を早めに再描画する
-		// スクロール処理をしてから描画するまで少しの間時間差があるようで
-		// スクロールした行が残っているように見えてしまうため
-		} else if (nScrollRowNum > 0) {
-			int top = m_pEditView->GetTextArea().GetViewTopLine();
-			m_pEditView->RedrawLines(top, top + nScrollRowNum + 2);
-			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-			//	mn::logln(L"2");
-			//	m_pEditView->MiniMapRedraw(true);
-			//}
-		} else if (nScrollRowNum < 0) {
-			int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
-			m_pEditView->RedrawLines(bottom - nScrollRowNum - 2, bottom);
-			//if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-			//	mn::logln(L"3");
-			//	m_pEditView->MiniMapRedraw(true);
-			//}
+		} else {
+			// 画面端の行を早めに再描画する
+			// スクロール処理をしてから描画するまで少しの間時間差があるようで
+			// スクロールした行が残っているように見えてしまうため
+			if (nScrollRowNum > 0) {
+				int top = m_pEditView->GetTextArea().GetViewTopLine();
+				m_pEditView->RedrawLines(top, top + nScrollRowNum + 1);
+			} else if (nScrollRowNum < 0) {
+				int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
+				m_pEditView->RedrawLines(bottom - nScrollRowNum - 2, bottom);
+			}
+			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+				m_pEditView->MiniMapRedraw(true);
+			}
 		}
 	}
 #endif  // SC_
@@ -517,6 +515,17 @@ CLayoutInt CCaret::MoveCursor(
 		/* キャレットの表示・更新 */
 		ShowEditCaret();
 
+#ifdef SC_FIX_FLICKER
+		if (nFinalDrawFlag != PAINT_ALL) {
+			/* ルーラの再描画 */
+			HDC		hdc = m_pEditView->GetDC();
+			m_pEditView->GetRuler().DispRuler( hdc );
+			m_pEditView->ReleaseDC( hdc );
+
+			/* アンダーラインの再描画 */
+			m_cUnderLine.CaretUnderLineON(true, bDrawPaint);
+		}
+#else
 		/* ルーラの再描画 */
 		HDC		hdc = m_pEditView->GetDC();
 		m_pEditView->GetRuler().DispRuler( hdc );
@@ -524,6 +533,7 @@ CLayoutInt CCaret::MoveCursor(
 
 		/* アンダーラインの再描画 */
 		m_cUnderLine.CaretUnderLineON(true, bDrawPaint);
+#endif  // SC_
 
 		/* キャレットの行桁位置を表示する */
 		ShowCaretPosInfo();
@@ -543,9 +553,17 @@ CLayoutInt CCaret::MoveCursor(
 #endif  // SC_
 
 // 02/09/18 対括弧の強調表示 ai Start	03/02/18 ai mod S
+#ifdef SC_FIX_FLICKER
+	if (nFinalDrawFlag != PAINT_ALL) {
+		m_pEditView->DrawBracketPair( false );
+		m_pEditView->SetBracketPairPos( true );
+		m_pEditView->DrawBracketPair( true );
+	}
+#else
 	m_pEditView->DrawBracketPair( false );
 	m_pEditView->SetBracketPairPos( true );
 	m_pEditView->DrawBracketPair( true );
+#endif  // SC_
 // 02/09/18 対括弧の強調表示 ai End		03/02/18 ai mod E
 
 #ifdef SC_OUTPUT_DEBUG_STRING

@@ -161,7 +161,7 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_cRegexKeyword(NULL)
 , m_hAtokModule(NULL)
 #ifdef SC_FIX_FLICKER
-, m_ignore_update_window(false)
+, m_ignore_update_window(0)
 #endif  // SC_
 {
 }
@@ -2956,21 +2956,12 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 
 #ifdef SC_FIX_FLICKER
 void CEditView::BeginIgnoreUpdateWindow() {
-	m_ignore_update_window = true;
-	//if (!m_bMiniMap) {
-	//	if (m_pcEditWnd->GetMiniMap().GetHwnd()) {
-	//		m_pcEditWnd->GetMiniMap().m_ignore_update_window = true;
-	//	}
-	//}
+	m_ignore_update_window++;
 }
-void CEditView::EndIgnoreUpdateWindow() {
-	m_ignore_update_window = false;
-	::UpdateWindow(GetHwnd());
-	//if (!m_bMiniMap) {
-	//	if (m_pcEditWnd->GetMiniMap().GetHwnd()) {
-	//		m_pcEditWnd->GetMiniMap().m_ignore_update_window = false;
-	//		::UpdateWindow(m_pcEditWnd->GetMiniMap().GetHwnd());
-	//	}
-	//}
+void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
+	m_ignore_update_window--;
+	if (m_ignore_update_window == 0 && bUpdate) {
+		::UpdateWindow(GetHwnd());
+	}
 }
 #endif  // SC_

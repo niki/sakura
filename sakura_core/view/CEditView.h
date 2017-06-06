@@ -775,8 +775,8 @@ private:
 #ifdef SC_FIX_FLICKER
 public:
 	void BeginIgnoreUpdateWindow();
-	void EndIgnoreUpdateWindow();
-	bool m_ignore_update_window;  // UpdateWindowを無視する
+	void EndIgnoreUpdateWindow(bool bUpdate = true);
+	int m_ignore_update_window;  // UpdateWindowを無視する
 #endif  // SC_
 };
 

@@ -112,11 +112,13 @@
   #define SC_MINIMAP_TYPE_SAKURA   (0)  // default
   #define SC_MINIMAP_TYPE_NPP      (1)  // Imitate 'Notepad++'
                                         //   スクロールバー非表示
-                                        //   表示領域の端からスクロール開始
+                                        //   表示領域の端で自動的にスクロール
   #define SC_MINIMAP_TYPE_ST       (2)  // Imitate 'Sublime Text'
                                         //   スクロールバー非表示
                                         //   現在行に対応した位置に自動的にスクロール
-  #define SC_MINIMAP_TYPE_DEFAULT SC_MINIMAP_TYPE_ST
+                                        //    > 全体のスクロールが発生するため再描画が頻発, 重い
+                                        //    > 現状のミニマップの処理の使用だと使い物にならない
+  #define SC_MINIMAP_TYPE_DEFAULT SC_MINIMAP_TYPE_NPP
 
 //------------------------------------------------------------------
 // タブ入力文字の切り替え(タブ<->空白)を追加

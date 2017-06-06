@@ -70,6 +70,7 @@ BOOL CEditView::CreateScrollBar()
 		} else {
 			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, TRUE);
 		}
+		return TRUE;
 	} else {
 		::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
 	}

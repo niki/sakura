@@ -608,7 +608,7 @@ void CViewCommander::Command_INSTEXT(
 				);
 			}
 		}
-#ifdef SC_FIX_FLICKER
+#if 0//-//def SC_FIX_FLICKER
 		if (bRedraw) {
 			m_pCommanderView->Redraw();
 		}
