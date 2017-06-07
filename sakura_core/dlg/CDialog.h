@@ -167,7 +167,7 @@ protected:
 
 #ifdef SC_FIX_DIALOG_POS
 	void SetPlaceOfWindow();
-	void SetPlaceOfWindow(HWND hWnd, int viewWidth = -1);
+	void SetPlaceOfWindow(HWND hWnd, const RECT *prcView = nullptr);
 #endif  // SC_
 };
 

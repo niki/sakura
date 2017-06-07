@@ -1963,7 +1963,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		else {
 			RECT rcView;
 			::GetWindowRect(pcEditView->GetHwnd(), &rcView);
-			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), rcView.right - rcView.left);
+			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
 		}
 #endif  // SC_
 	}

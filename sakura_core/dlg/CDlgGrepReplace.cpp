@@ -164,7 +164,7 @@ void CDlgGrepReplace::SetData( void )
 	RECT rcView;
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	::GetWindowRect(pcEditView->GetHwnd(), &rcView);
-	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), rcView.right - rcView.left);
+	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
 #endif  // SC_
 }
 
