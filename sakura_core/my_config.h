@@ -34,6 +34,9 @@
 
 - [ ] 2017.5.13
   せっかくいろいろなデフォルトタイプがあるのだから任意のタイプを追加できるようにしたい
+
+- [ ] 2017.6.7
+  #RRGGBB を色付け
 */
 
 // ● フォント
@@ -335,13 +338,15 @@
   #define SC_MAX_GREPFOLDER (16) // Grepフォルダ
 
 //------------------------------------------------------------------
-// メニューバー
+// メニューアイコン
 //  - ビットマップメニュー
 //      ::InsertMenuItem( hMenu, 0xFFFFFFFF, TRUE, &mii );
 //      http://home.a00.itscom.net/hatada/windows/introduction/menu01.html
 //      http://eternalwindows.jp/winbase/menu/menu10.html
+//    起動時にアイコンの数だけHBITMAPを生成する
+//      \sakura_core\uiparts\CImageListMgr.cpp
 //------------------------------------------------------------------
-#define SC_FIX_MENUBAR
+#define SC_FIX_MENUICON
 
 //------------------------------------------------------------------
 // 最近使ったファイル
