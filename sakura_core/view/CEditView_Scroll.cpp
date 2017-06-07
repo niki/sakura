@@ -364,30 +364,32 @@ void CEditView::AdjustScrollBars()
 		} else {
 			CEditView &miniMap = m_pcEditWnd->GetMiniMap();
 			
-			if (miniMapType == SC_MINIMAP_TYPE_NPP) {
-				// Notepad++の挙動
-				// 画面端まで表示域が移動したのちにスクロール
-				CLayoutInt nViewTop = GetTextArea().GetViewTopLine();
-				CLayoutInt nViewBottom = nViewTop + GetTextArea().m_nViewRowNum;
-				CLayoutInt nMiniMapViewTop = miniMap.GetTextArea().GetViewTopLine();
-				CLayoutInt nMiniMapViewBottom = nMiniMapViewTop + miniMap.GetTextArea().m_nViewRowNum;
+			if (miniMap.GetHwnd() != NULL) {
+				if (miniMapType == SC_MINIMAP_TYPE_NPP) {
+					// Notepad++の挙動
+					// 画面端まで表示域が移動したのちにスクロール
+					CLayoutInt nViewTop = GetTextArea().GetViewTopLine();
+					CLayoutInt nViewBottom = nViewTop + GetTextArea().m_nViewRowNum;
+					CLayoutInt nMiniMapViewTop = miniMap.GetTextArea().GetViewTopLine();
+					CLayoutInt nMiniMapViewBottom = nMiniMapViewTop + miniMap.GetTextArea().m_nViewRowNum;
 
-				if (nViewTop < nMiniMapViewTop) {
-					miniMap.ScrollAtV(nViewTop);
-				} else if (nViewBottom > nMiniMapViewBottom) {
-					miniMap.ScrollAtV(nViewBottom - miniMap.GetTextArea().m_nViewRowNum);
-				}
-			} else if (miniMapType == SC_MINIMAP_TYPE_ST) {
-				// Sublime Textの挙動
-				// 先頭行から最終行に移動するまでにミニマップも先頭行から最終行に移動する
-				const CLayout *pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY(GetTextArea().GetViewTopLine());
-				if (pcLayout) {
-					CLayoutInt nLineCount = m_pcEditDoc->m_cDocLineMgr.GetLineCount();
-					CLayoutInt nViewLineNum = nLineCount - GetTextArea().m_nViewRowNum;  // 編集ウィンドウの可動域
-					CLayoutInt nMiniMapLineNum = nLineCount - miniMap.GetTextArea().m_nViewRowNum;  // ミニマップの可動域
-					CLayoutInt nMiniMapTopLine =
-					    (CLayoutInt)((float)pcLayout->GetLogicLineNo() / nViewLineNum * nMiniMapLineNum);
-					miniMap.ScrollAtV(nMiniMapTopLine);
+					if (nViewTop < nMiniMapViewTop) {
+						miniMap.ScrollAtV(nViewTop);
+					} else if (nViewBottom > nMiniMapViewBottom) {
+						miniMap.ScrollAtV(nViewBottom - miniMap.GetTextArea().m_nViewRowNum);
+					}
+				} else if (miniMapType == SC_MINIMAP_TYPE_ST) {
+					// Sublime Textの挙動
+					// 先頭行から最終行に移動するまでにミニマップも先頭行から最終行に移動する
+					const CLayout *pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY(GetTextArea().GetViewTopLine());
+					if (pcLayout) {
+						CLayoutInt nLineCount = m_pcEditDoc->m_cDocLineMgr.GetLineCount();
+						CLayoutInt nViewLineNum = nLineCount - GetTextArea().m_nViewRowNum;  // 編集ウィンドウの可動域
+						CLayoutInt nMiniMapLineNum = nLineCount - miniMap.GetTextArea().m_nViewRowNum;  // ミニマップの可動域
+						CLayoutInt nMiniMapTopLine =
+						    (CLayoutInt)((float)pcLayout->GetLogicLineNo() / nViewLineNum * nMiniMapLineNum);
+						miniMap.ScrollAtV(nMiniMapTopLine);
+					}
 				}
 			}
 		}
