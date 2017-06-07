@@ -666,7 +666,7 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 void CDialog::SetPlaceOfWindow() {
 	m_hwndPlaceOfWindow = m_hwndParent;
 }
-void CDialog::SetPlaceOfWindow(HWND hWnd) {
+void CDialog::SetPlaceOfWindow(HWND hWnd, int viewWidth) {
 	RECT rc;
 	::GetWindowRect(GetHwnd(), &rc);
 
@@ -675,9 +675,14 @@ void CDialog::SetPlaceOfWindow(HWND hWnd) {
 
 	::GetWindowRect(::GetParent(hWnd /*pcEditView->GetHwnd()*/), &rc);
 
+	if (viewWidth == -1) {
+		viewWidth = rc.right - rc.left;
+	}
+	int viewHeight = rc.bottom - rc.top;
+
 #if 0
-	m_xPos = rc.left + (rc.right - rc.left) / 2 - m_nWidth / 2;
-	m_yPos = rc.top + (rc.bottom - rc.top) / 2 - m_nHeight / 2;
+	m_xPos = rc.left + viewWidth / 2 - m_nWidth / 2;
+	m_yPos = rc.top + viewHeight / 2 - m_nHeight / 2;
 #else
 	int top_place = RegKey(SC_REGKEY).get(_T("PlaceDialogWindowTop"), SC_DIALOG_PLACE_TOP);
 	int top_molecule = (top_place % 10);
@@ -698,7 +703,7 @@ void CDialog::SetPlaceOfWindow(HWND hWnd) {
 		left_denominator = 2;
 	}
 	m_xPos = rc.left;
-	m_xPos += (rc.right - rc.left) / left_denominator * left_molecule;
+	m_xPos += viewWidth / left_denominator * left_molecule;
 	m_xPos -= m_nWidth / 2;
 	
 	//TCHAR szMsg[128];

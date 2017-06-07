@@ -179,8 +179,10 @@ void CDlgFind::SetData( void )
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_SEARCHALL, m_pShareData->m_Common.m_sSearch.m_bSearchAll );
 
 #ifdef SC_FIX_DIALOG_POS
+	RECT rcView;
 	CEditView* pcEditView=(CEditView*)m_lParam;
-	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
+	::GetWindowRect(pcEditView->GetHwnd(), &rcView);
+	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), rcView.right - rcView.left);
 #endif  // SC_
 
 	return;

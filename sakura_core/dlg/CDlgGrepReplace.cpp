@@ -161,8 +161,10 @@ void CDlgGrepReplace::SetData( void )
 	CDlgGrep::SetData();
 
 #ifdef SC_FIX_DIALOG_POS
+	RECT rcView;
 	CEditView* pcEditView=(CEditView*)m_lParam;
-	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
+	::GetWindowRect(pcEditView->GetHwnd(), &rcView);
+	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), rcView.right - rcView.left);
 #endif  // SC_
 }
 

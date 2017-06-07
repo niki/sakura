@@ -1961,7 +1961,9 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 #ifdef SC_FIX_DIALOG_POS
 		else {
-			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()));
+			RECT rcView;
+			::GetWindowRect(pcEditView->GetHwnd(), &rcView);
+			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), rcView.right - rcView.left);
 		}
 #endif  // SC_
 	}
