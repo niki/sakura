@@ -2284,7 +2284,7 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 
 #ifdef DEFINE_SYNCCOLOR
 #ifdef SC_FIX_OUTLINEDLG
-  bool dock_color_sync = !!RegKey(SC_REGKEY).get(_T("OutlineDockSystemColor"), 1);
+  bool dock_color_sync = !RegKey(SC_REGKEY).get(_T("OutlineDockSystemColor"), 1);
   if (dock_color_sync)
 #endif  // SC_
 	if( IsDocking() ){
@@ -2829,7 +2829,7 @@ void CDlgFuncList::SyncColor( void )
 		return;
 #ifdef DEFINE_SYNCCOLOR
 #ifdef SC_FIX_OUTLINEDLG
-  bool dock_color_sync = !!RegKey(SC_REGKEY).get(_T("OutlineDockSystemColor"), 1);
+  bool dock_color_sync = !RegKey(SC_REGKEY).get(_T("OutlineDockSystemColor"), 1);
   if (!dock_color_sync) return;
 #endif  // SC_
 	// テキスト色・背景色をビューと同色にする
