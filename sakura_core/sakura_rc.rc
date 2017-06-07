@@ -172,12 +172,21 @@ STYLE DS_MODALFRAME | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX |
 CAPTION "x"
 FONT 9, "MS Shell Dlg"
 BEGIN
+#ifdef SC_FIX_OUTLINEDLG
+    CONTROL         "Tree1",IDC_TREE_FL,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | 
+                    /*WS_BORDER |*/ WS_TABSTOP,0,17,234,235
+    CONTROL         "List1",IDC_LIST_FL,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_ALIGNLEFT | /*WS_BORDER |*/ WS_TABSTOP,0,
+                    0,234,252
+#else
     CONTROL         "Tree1",IDC_TREE_FL,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | 
                     WS_BORDER | WS_TABSTOP,0,17,234,235
     CONTROL         "List1",IDC_LIST_FL,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,0,
                     0,234,252
+#endif  // SC_
     PUSHBUTTON      "Å•",IDC_BUTTON_MENU,1,255,10,14,NOT WS_TABSTOP
     CONTROL         "Å°",IDC_BUTTON_WINSIZE,"Button",BS_AUTOCHECKBOX | 
                     BS_PUSHLIKE,12,255,10,14
