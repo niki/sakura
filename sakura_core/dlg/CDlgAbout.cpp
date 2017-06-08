@@ -221,20 +221,19 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// バージョン&リビジョン情報
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
-#if (SVN_REV == 0)
 #ifdef SC_FIX_VERDLG
 	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX2) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS )
 	);
 #else
+#if (SVN_REV == 0)
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		HIWORD( dwVersionLS ),
 		LOWORD( dwVersionLS )
 	);
-#endif  // SC_
 #else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (Rev.") _T(SVN_REV_STR) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
@@ -243,6 +242,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		LOWORD( dwVersionLS )
 	);
 #endif
+#endif  // SC_
 	cmemMsg.AppendString( szMsg );
 
 	cmemMsg.AppendString( _T("\r\n") );
