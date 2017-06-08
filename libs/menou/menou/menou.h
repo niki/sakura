@@ -1,7 +1,7 @@
 ﻿// -*- mode:c++; coding:utf-8-ws -*-
 //====================================================================
 //! @file  menou.h
-//! @brief libsc
+//! @brief menou library
 //!
 //! @author (C) 2017, sayacat.
 //====================================================================
@@ -15,5 +15,7 @@
 #include "file.hpp"
 #include "registry.hpp"
 #include "color_string.hpp"
+
+#include "win32.hpp"
 
 #endif /* MENOU_H */
