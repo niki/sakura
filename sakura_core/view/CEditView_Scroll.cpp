@@ -67,6 +67,8 @@ BOOL CEditView::CreateScrollBar()
 			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
 		} else if (miniMapType == SC_MINIMAP_TYPE_ST) {
 			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
+		} else if (miniMapType == SC_MINIMAP_TYPE_CUSTOM) {
+			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
 		} else {
 			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, TRUE);
 		}
@@ -74,7 +76,6 @@ BOOL CEditView::CreateScrollBar()
 	} else {
 		::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
 	}
-	return TRUE;
 #else
 	::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
 #endif  // SC_
@@ -194,7 +195,7 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 		}
 	}
 
-#ifdef SC_FIX_MINIMAP
+#if 0//def SC_FIX_MINIMAP
 	const bool bDrawSwitchOld = SetDrawSwitch(false);
 #endif  // SC_
 	switch( nScrollCode ){
@@ -231,7 +232,7 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 	default:
 		break;
 	}
-#ifdef SC_FIX_MINIMAP
+#if 0//def SC_FIX_MINIMAP
 	SetDrawSwitch(bDrawSwitchOld);
 	RedrawAll();
 #endif  // SC_
@@ -355,7 +356,8 @@ void CEditView::AdjustScrollBars()
 
 		if (m_bMiniMap) {
 			if (miniMapType == SC_MINIMAP_TYPE_NPP ||
-			    miniMapType == SC_MINIMAP_TYPE_ST
+			    miniMapType == SC_MINIMAP_TYPE_ST ||
+			    miniMapType == SC_MINIMAP_TYPE_CUSTOM
 			) {
 				::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
 			} else {
@@ -379,6 +381,18 @@ void CEditView::AdjustScrollBars()
 						miniMap.ScrollAtV(nViewBottom - miniMap.GetTextArea().m_nViewRowNum);
 					}
 				} else if (miniMapType == SC_MINIMAP_TYPE_ST) {
+					// Sublime Textの挙動
+					// 先頭行から最終行に移動するまでにミニマップも先頭行から最終行に移動する
+					const CLayout *pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY(GetTextArea().GetViewTopLine());
+					if (pcLayout) {
+						CLayoutInt nLineCount = m_pcEditDoc->m_cDocLineMgr.GetLineCount();
+						CLayoutInt nViewLineNum = nLineCount - GetTextArea().m_nViewRowNum;  // 編集ウィンドウの可動域
+						CLayoutInt nMiniMapLineNum = nLineCount - miniMap.GetTextArea().m_nViewRowNum;  // ミニマップの可動域
+						CLayoutInt nMiniMapTopLine =
+						    (CLayoutInt)((float)pcLayout->GetLogicLineNo() / nViewLineNum * nMiniMapLineNum);
+						miniMap.ScrollAtV(nMiniMapTopLine);
+					}
+				} else if (miniMapType == SC_MINIMAP_TYPE_CUSTOM) {
 					// Sublime Textの挙動
 					// 先頭行から最終行に移動するまでにミニマップも先頭行から最終行に移動する
 					const CLayout *pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY(GetTextArea().GetViewTopLine());

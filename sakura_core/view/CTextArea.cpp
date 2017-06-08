@@ -74,7 +74,11 @@ void CTextArea::UpdateAreaMetrics(HDC hdc)
 		pView->GetTextMetrics().SetHankakuDx( pView->GetTextMetrics().GetHankakuWidth() );
 
 		// 行間隔
+#ifdef SC_FIX_MINIMAP
+		pView->GetTextMetrics().SetHankakuDy( pView->GetTextMetrics().GetHankakuHeight() / 2 );
+#else
 		pView->GetTextMetrics().SetHankakuDy( pView->GetTextMetrics().GetHankakuHeight() );
+#endif  // SC_
 	}else{
 		// 文字間隔
 		pView->GetTextMetrics().SetHankakuDx( pView->GetTextMetrics().GetHankakuWidth() + pView->m_pTypeData->m_nColumnSpace );

@@ -42,6 +42,9 @@ public:
 	CTypeSupport(const CEditView* pEditView, EColorIndexType eColorIdx)
 	: m_pFontset(&pEditView->GetFontset())
 	, m_nColorIdx(ToColorInfoArrIndex(eColorIdx))
+#ifdef SC_FIX_MINIMAP
+	, m_pColorInfoArrTemp(nullptr)
+#endif  // SC_
 	{
 		assert(0 <= m_nColorIdx);
 		m_pTypes = &pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute();
@@ -49,8 +52,32 @@ public:
 
 		m_gr = NULL;
 	}
+#ifdef SC_FIX_MINIMAP
+	// 一時的に表示状態を変更できる補助コンストラクタ (作りはよくない)
+	CTypeSupport(CEditView* pEditView, EColorIndexType eColorIdx, bool dispTemp)
+	: m_pFontset(&pEditView->GetFontset())
+	, m_nColorIdx(ToColorInfoArrIndex(eColorIdx))
+	, m_pColorInfoArrTemp(dispTemp
+	                        ? pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttributeWrite().m_ColorInfoArr
+	                        : nullptr)
+	{
+		assert(0 <= m_nColorIdx);
+		m_pTypes = &pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute();
+		m_pColorInfoArr = &m_pTypes->m_ColorInfoArr[m_nColorIdx];
+
+		m_gr = NULL;
+		
+		// 表示状態を保存
+		m_bDispOld = m_pColorInfoArrTemp[m_nColorIdx].m_bDisp;
+	}
+#endif  // SC_
 	virtual ~CTypeSupport()
 	{
+#ifdef SC_FIX_MINIMAP
+		if (m_pColorInfoArrTemp) {
+			m_pColorInfoArrTemp[m_nColorIdx].m_bDisp = m_bDispOld;
+		}
+#endif  // SC_
 		if(m_gr){
 			RewindGraphicsState(*m_gr);
 		}
@@ -138,6 +165,22 @@ public:
 			m_gr = NULL;
 		}
 	}
+#ifdef SC_FIX_MINIMAP
+	// 一時的に表示にする
+	void Visible() {
+		if (m_pColorInfoArrTemp) {
+			m_bDispOld = m_pColorInfoArrTemp[m_nColorIdx].m_bDisp;
+			m_pColorInfoArrTemp[m_nColorIdx].m_bDisp = false;
+		}
+	}
+	// 一時的に非表示にする
+	void Invisible() {
+		if (m_pColorInfoArrTemp) {
+			m_bDispOld = m_pColorInfoArrTemp[m_nColorIdx].m_bDisp;
+			m_pColorInfoArrTemp[m_nColorIdx].m_bDisp = false;
+		}
+	}
+#endif  // SC_
 
 private:
 	const CViewFont*		m_pFontset;
@@ -146,6 +189,11 @@ private:
 	const ColorInfo*		m_pColorInfoArr;
 
 	CGraphics* m_gr;        //設定を変更したHDC
+
+#ifdef SC_FIX_MINIMAP
+	ColorInfo* m_pColorInfoArrTemp;
+	bool m_bDispOld;
+#endif  // SC_
 };
 
 #endif /* SAKURA_CTYPESUPPORT_21FC7075_96B4_4572_BA60_A6550E11AC0B9_H_ */

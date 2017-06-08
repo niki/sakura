@@ -3564,7 +3564,18 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 	// ミニマップ
 	int nMiniMapWidth = 0;
 	if( GetMiniMap().GetHwnd() ){
+#ifdef SC_FIX_MINIMAP
+		DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
+		
+		if (miniMapType == SC_MINIMAP_TYPE_CUSTOM) {
+			int nSbxWidth = ::GetSystemMetrics(SM_CXVSCROLL) + ::GetSystemMetrics(SM_CXEDGE);
+			nMiniMapWidth = nSbxWidth * 2;
+		} else {
+			nMiniMapWidth = GetDllShareData().m_Common.m_sWindow.m_nMiniMapWidth;
+		}
+#else
 		nMiniMapWidth = GetDllShareData().m_Common.m_sWindow.m_nMiniMapWidth;
+#endif  // SC_
 		::MoveWindow( m_pcEditViewMiniMap->GetHwnd(), 
 			(eDockSideFL == DOCKSIDE_RIGHT)? cx - nFuncListWidth - nMiniMapWidth: cx - nMiniMapWidth,
 			(eDockSideFL == DOCKSIDE_TOP)? nTop + nFuncListHeight: nTop,

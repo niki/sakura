@@ -121,7 +121,12 @@
                                         //   現在行に対応した位置に自動的にスクロール
                                         //    > 全体のスクロールが発生するため再描画が頻発, 重い
                                         //    > 現状のミニマップの処理の使用だと使い物にならない
-  #define SC_MINIMAP_TYPE_DEFAULT SC_MINIMAP_TYPE_NPP
+  #define SC_MINIMAP_TYPE_CUSTOM   (3)  // Custom version
+                                        //   スクロールバー非表示
+                                        //   スクロールバーと同じ幅
+                                        //   全体を表示 (予定)
+                                        //   検索文字列, ブックマーク表示を最優先
+  #define SC_MINIMAP_TYPE_DEFAULT (SC_MINIMAP_TYPE_CUSTOM)
 
 //------------------------------------------------------------------
 // タブ入力文字の切り替え(タブ<->空白)を追加

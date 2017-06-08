@@ -1052,6 +1052,17 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 {
 	bool bDispEOF = false;
 	CTypeSupport cTextType(this,COLORIDX_TEXT);
+#ifdef SC_FIX_MINIMAP
+	CTypeSupport cSpaceType(this, COLORIDX_SPACE, true);
+	CTypeSupport cTabType(this, COLORIDX_TAB, true);
+	
+	if (m_bMiniMap) {
+		// ミニマップのときは一時的にカラー設定を無効にする
+		cSpaceType.Invisible();
+		cTabType.Invisible();
+	}
+#endif  // SC_
+
 
 	const CLayout* pcLayout = pInfo->m_pDispPos->GetLayoutRef(); //m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY( pInfo->pDispPos->GetLayoutLineRef() );
 
@@ -1285,6 +1296,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				nDrawX += pcFigureManager->GetTextFigure().GetDrawSize(pInfo);
 				pcFigureManager->GetTextFigure().FowardChars(pInfo);
 			}
+#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
+			if (m_bMiniMap) {
+				// ミニマップのときは全部
+			} else
+#endif  // SC_
 			if( bSkipRight && GetTextArea().GetRightCol() < nDrawX ){
 				if( 0 < pInfo->GetPosInLogic() - nPosBgn ){
 					pcFigureManager->GetTextFigure().DrawImp(pInfo, nPosBgn, pInfo->GetPosInLogic() - nPosBgn);
