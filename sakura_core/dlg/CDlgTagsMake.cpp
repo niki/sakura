@@ -164,6 +164,10 @@ void CDlgTagsMake::SelectFolder( HWND hwndDlg )
 /* ダイアログデータの設定 */
 void CDlgTagsMake::SetData( void )
 {
+#ifdef SC_FIX_DIALOG_POS
+	SetPlaceOfWindow();
+#endif  // SC_
+
 	//作成フォルダ
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_EDIT_TAG_MAKE_FOLDER ), _countof( m_szPath ) );
 	::DlgItem_SetText( GetHwnd(), IDC_EDIT_TAG_MAKE_FOLDER, m_szPath );
