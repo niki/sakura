@@ -67,27 +67,6 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 		pInfo->m_gr.PushMyFont(sFont);
 	}
 #endif	// SC_
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
-	//COLORREF crMiniMap = pInfo->m_gr.GetCurrentTextForeColor();
-	COLORREF crMiniMap = pInfo->m_gr.GetTextBackColor();
-	bool bMiniMapSearch = false;
-	if (pInfo->m_pcView->m_bMiniMap &&
-	      (pInfo->GetCurrentColor() == COLORIDX_SEARCH ||
-	       pInfo->GetCurrentColor() == COLORIDX_SEARCH2 ||
-	       pInfo->GetCurrentColor() == COLORIDX_SEARCH3 ||
-	       pInfo->GetCurrentColor() == COLORIDX_SEARCH4 ||
-	       pInfo->GetCurrentColor() == COLORIDX_SEARCH5))
-	{
-		TCHAR szData[32];
-		if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
-			crMiniMap = mn::ColorString::ToCOLORREF(szData);
-		}
-		pInfo->m_gr.PushTextForeColor(crMiniMap);
-		pInfo->m_gr.PushTextBackColor(crMiniMap);
-		bTrans = false;
-		bMiniMapSearch = true;
-	}
-#endif	// SC_
 	
 	pInfo->m_pcView->GetTextDrawer().DispText(
 		pInfo->m_gr,
@@ -98,12 +77,6 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 	);
 	// pInfo->m_nPosInLogic += nLength; ここでは進めない
 	
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
-	if (bMiniMapSearch) {
-		pInfo->m_gr.PopTextForeColor();
-		pInfo->m_gr.PopTextBackColor();
-	}
-#endif	// SC_
 #ifdef SC_FIX_SELAREA
 	if (select) {
 		pInfo->m_gr.PopMyFont();
@@ -123,38 +96,9 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength)
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 bool CFigureSpace::DrawImp(SColorStrategyInfo* pInfo)
 {
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
-	//COLORREF crMiniMap = pInfo->m_gr.GetCurrentTextForeColor();
-	COLORREF crMiniMap = pInfo->m_gr.GetTextBackColor();
-#endif	// SC_
 	bool bTrans = DrawImp_StyleSelect(pInfo);
 	DispPos sPos(*pInfo->m_pDispPos);	// 現在位置を覚えておく
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
-	bool bMiniMapSearch = false;
-	if (pInfo->m_pcView->m_bMiniMap &&
-	      (pInfo->GetCurrentColor() == COLORIDX_SEARCH ||
-	       pInfo->GetCurrentColor() == COLORIDX_SEARCH2 ||
-	       pInfo->GetCurrentColor() == COLORIDX_SEARCH3 ||
-	       pInfo->GetCurrentColor() == COLORIDX_SEARCH4 ||
-	       pInfo->GetCurrentColor() == COLORIDX_SEARCH5))
-	{
-		TCHAR szData[32];
-		if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
-			crMiniMap = mn::ColorString::ToCOLORREF(szData);
-		}
-		pInfo->m_gr.PushTextForeColor(crMiniMap);
-		pInfo->m_gr.PushTextBackColor(crMiniMap);
-		bTrans = false;
-		bMiniMapSearch = true;
-	}
-#endif	// SC_
 	DispSpace(pInfo->m_gr, pInfo->m_pDispPos,pInfo->m_pcView, bTrans);	// 空白描画
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 1
-	if (bMiniMapSearch) {
-		pInfo->m_gr.PopTextForeColor();
-		pInfo->m_gr.PopTextBackColor();
-	}
-#endif	// SC_
 	DrawImp_StylePop(pInfo);
 	DrawImp_DrawUnderline(pInfo, sPos);
 	// 1文字前提

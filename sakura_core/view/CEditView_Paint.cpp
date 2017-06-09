@@ -1057,16 +1057,6 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 {
 	bool bDispEOF = false;
 	CTypeSupport cTextType(this,COLORIDX_TEXT);
-#ifdef SC_FIX_MINIMAP
-	CTypeSupport cSpaceType(this, COLORIDX_SPACE, true);
-	CTypeSupport cTabType(this, COLORIDX_TAB, true);
-	
-	if (m_bMiniMap) {
-		// ミニマップのときは一時的にカラー設定を無効にする
-		cSpaceType.Invisible();
-		cTabType.Invisible();
-	}
-#endif  // SC_
 
 
 	const CLayout* pcLayout = pInfo->m_pDispPos->GetLayoutRef(); //m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY( pInfo->pDispPos->GetLayoutLineRef() );
@@ -1191,9 +1181,6 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			bSkipRight = CColorStrategyPool::getInstance()->IsSkipBeforeLayout();
 		}
 	}
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
-	bool bMiniMapSearchLine = false;
-#endif  // SC_
 	//行終端または折り返しに達するまでループ
 	if(pcLayout){
 		int nPosBgn = pInfo->m_nPosInLogic; // Logic
@@ -1233,13 +1220,6 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				pInfo->DoChangeColor(&cColor);
 				SetCurrentColor(pInfo->m_gr, cColor.eColorIndex, cColor.eColorIndex2, cColor.eColorIndexBg);
 				
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
-				if (pInfo->m_pStrategyFound) {
-					if (m_bMiniMap) {
-						bMiniMapSearchLine = true;
-					}
-				}
-#endif  // SC_
 #ifdef SC_FIX_COMMENT
 				if (pInfo->m_pStrategyFound) {
 					comment_mode = 0;
@@ -1301,11 +1281,6 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				nDrawX += pcFigureManager->GetTextFigure().GetDrawSize(pInfo);
 				pcFigureManager->GetTextFigure().FowardChars(pInfo);
 			}
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
-			if (m_bMiniMap) {
-				// ミニマップのときは全部
-			} else
-#endif  // SC_
 			if( bSkipRight && GetTextArea().GetRightCol() < nDrawX ){
 				if( 0 < pInfo->GetPosInLogic() - nPosBgn ){
 					pcFigureManager->GetTextFigure().DrawImp(pInfo, nPosBgn, pInfo->GetPosInLogic() - nPosBgn);
@@ -1344,44 +1319,6 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	// 行末背景描画
 	RECT rcClip;
 	bool rcClipRet = GetTextArea().GenerateClipRectRight(&rcClip,*pInfo->m_pDispPos);
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
-	if (bMiniMapSearchLine) {
-		// 雑だけど行全体を塗りつぶす
-		rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
-		if (rcClipRet) {
-			CTypeSupport cSearchType(this, COLORIDX_SEARCH);
-			COLORREF crMiniMap = cSearchType.GetBackColor();
-			TCHAR szData[32];
-			if (RegKey(SC_REGKEY).read(_T("MiniMapSearchColor"), (LPCTSTR)szData)) {
-				crMiniMap = mn::ColorString::ToCOLORREF(szData);
-			}
-			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
-				COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha);
-				crMiniMap = MakeColor2(crMiniMap, cBackType.GetBackColor(), 128);
-			}
-			pInfo->m_gr.FillSolidMyRect(rcClip, crMiniMap);
-		}
-	} else 
-#endif  // SC_
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_BOOKMARK_DISP == 1
-	if (m_bMiniMap && pcDocLine && CBookmarkGetter(pcDocLine).IsBookmarked()){
-		// 雑だけど行全体を塗りつぶす
-		rcClipRet = GetTextArea().GenerateClipRectLine(&rcClip,*pInfo->m_pDispPos);
-		if (rcClipRet) {
-			CTypeSupport cMarkType(this, COLORIDX_MARK);
-			COLORREF crMiniMap = cMarkType.GetBackColor();
-			TCHAR szData[32];
-			if (RegKey(SC_REGKEY).read(_T("MiniMapBookmarkColor"), (LPCTSTR)szData)) {
-				crMiniMap = mn::ColorString::ToCOLORREF(szData);
-			}
-			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
-				COLORREF MakeColor2(COLORREF a, COLORREF b, int alpha);
-				crMiniMap = MakeColor2(crMiniMap, cBackType.GetBackColor(), 128);
-			}
-			pInfo->m_gr.FillSolidMyRect(rcClip, crMiniMap);
-		}
-	} else 
-#endif  // SC_
 	if(rcClipRet){
 		if( !bTransText ){
 #ifdef SC_FIX_COMMENT

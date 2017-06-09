@@ -67,11 +67,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 		// 塗りつぶしで消去
 		gr.FillSolidMyRect(rcClip2, gr.GetTextBackColor());
 		
-#  ifdef SC_FIX_MINIMAP
-		if( cTabType.IsDisp() && !pcView->m_bMiniMap ){
-#  else
 		if( cTabType.IsDisp() ){
-#  endif  // SC_
 			int	nPosLeft = rcClip2.left > sPos.GetDrawPos().x ? rcClip2.left : sPos.GetDrawPos().x;
 			_DrawTabArrow(
 				gr,
@@ -90,11 +86,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 			);
 		}
 #else
-#  ifdef SC_FIX_MINIMAP
-		if( cTabType.IsDisp() && !pcView->m_bMiniMap && TABARROW_STRING == m_pTypeData->m_bTabArrow ){	//タブ通常表示	//@@@ 2003.03.26 MIK
-#  else
 		if( cTabType.IsDisp() && TABARROW_STRING == m_pTypeData->m_bTabArrow ){	//タブ通常表示	//@@@ 2003.03.26 MIK
-#  endif  // SC_
 			//@@@ 2001.03.16 by MIK
 			::ExtTextOutW_AnyBuild(
 				gr,
@@ -120,11 +112,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 			);
 
 			//タブ矢印表示
-#  ifdef SC_FIX_MINIMAP
-			if( cTabType.IsDisp() && !pcView->m_bMiniMap ){
-#  else
 			if( cTabType.IsDisp() ){
-#  endif  // SC_
 				// 文字色や太字かどうかを現在の DC から調べる	// 2009.05.29 ryoji 
 				// （検索マッチ等の状況に柔軟に対応するため、ここは記号の色指定には決め打ちしない）
 				//	太字かどうか設定も見る様にする 2013/4/11 Uchi

@@ -978,16 +978,9 @@ void CViewCommander::Command_WndScrollDown( void )
 		bCaretOff = true;
 	}
 
-#ifdef SC_FIX_MINIMAP
-	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
-#endif  // SC_
 	//	Sep. 11, 2004 genta 同期用に行数を記憶
 	//	Sep. 11, 2004 genta 同期スクロールの関数化
 	m_pCommanderView->SyncScrollV( m_pCommanderView->ScrollAtV(m_pCommanderView->GetTextArea().GetViewTopLine() - CLayoutInt(1)));
-#ifdef SC_FIX_MINIMAP
-	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
-	m_pCommanderView->RedrawAll();
-#endif  // SC_
 
 	// テキストが選択されていない
 	if( !m_pCommanderView->GetSelectionInfo().IsTextSelected() )
@@ -1031,16 +1024,9 @@ void CViewCommander::Command_WndScrollUp(void)
 		bCaretOff = true;
 	}
 
-#ifdef SC_FIX_MINIMAP
-	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
-#endif  // SC_
 	//	Sep. 11, 2004 genta 同期用に行数を記憶
 	//	Sep. 11, 2004 genta 同期スクロールの関数化
 	m_pCommanderView->SyncScrollV( m_pCommanderView->ScrollAtV( m_pCommanderView->GetTextArea().GetViewTopLine() + CLayoutInt(1) ));
-#ifdef SC_FIX_MINIMAP
-	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
-	m_pCommanderView->RedrawAll();
-#endif  // SC_
 
 	// テキストが選択されていない
 	if( !m_pCommanderView->GetSelectionInfo().IsTextSelected() )

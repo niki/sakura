@@ -157,11 +157,7 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 #endif  // SC_
 		EColorIndexType eBgcolorOverwrite = COLORIDX_WRAP;
 		bool bTrans = pcView->IsBkBitmap();
-#ifdef SC_FIX_MINIMAP
-		if( cWrapType.IsDisp() && !pcView->m_bMiniMap ){
-#else
 		if( cWrapType.IsDisp() ){
-#endif  // SC_
 			CEditView& cActiveView = pcView->m_pcEditWnd->GetActiveView();
 			if( cBgLineType.IsDisp() && pcView->GetCaret().GetCaretLayoutPos().GetY2() == nLineNum ){
 				if( bBgcolor ){
@@ -182,11 +178,7 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 
 		//描画文字列と色の決定
 		const wchar_t* szText;
-#ifdef SC_FIX_MINIMAP
-		if( cWrapType.IsDisp() && !pcView->m_bMiniMap )
-#else
 		if( cWrapType.IsDisp() )
-#endif  // SC_
 		{
 			szText = L"<";
 			cWrapType.SetGraphicsState_WhileThisObj(gr);
@@ -236,10 +228,6 @@ void _DispEOF(
 	const CEditView*	pcView
 )
 {
-#ifdef SC_FIX_MINIMAP
-	if (pcView->m_bMiniMap)
-		return;
-#endif  // SC_
 	// 描画に使う色情報
 	CTypeSupport cEofType(pcView,COLORIDX_EOF);
 	if(!cEofType.IsDisp())
@@ -359,11 +347,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 		);
 
 		// 改行記号の表示
-#ifdef SC_FIX_MINIMAP
-		if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() && !pcView->m_bMiniMap ){
-#else
 		if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() ){
-#endif  // SC_
 			// From Here 2003.08.17 ryoji 改行文字が欠けないように
 
 			// リージョン作成、選択。

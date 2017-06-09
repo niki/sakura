@@ -47,14 +47,6 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 //		);
 		
-#ifdef SC_FIX_MINIMAP
-		if (pcView->m_bMiniMap) {
-			//位置進める
-			pDispPos->ForwardDrawCol(1);
-			return;
-		}
-#endif  // SC_
-		
 		// 半角スペースをドットで表現
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;

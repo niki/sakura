@@ -200,9 +200,6 @@ BOOL CEditView::KeySearchCore( const CNativeW* pcmemCurText )
 
 bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 {
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_NOLINETIP
-	return false;
-#else
 	*pbHide = true;
 	if( !m_bMiniMap ){
 		return false;
@@ -289,7 +286,6 @@ bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 	m_dwTipTimer = 0;		// 辞書Tipを表示している */
 	m_poTipCurPos = *po;	// 現在のマウスカーソル位置 */
 	return true;			// ここまで来ていればヒット・ワード
-#endif  // SC_
 }
 
 /* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */

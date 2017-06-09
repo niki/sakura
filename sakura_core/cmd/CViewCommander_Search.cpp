@@ -32,39 +32,6 @@
 #include <limits.h>
 #include "sakura_rc.h"
 
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
-static inline void MiniMapSearchMark(CEditView *pView, bool mark) {
-	if (pView->m_bMiniMap) return;
-	if (pView->m_pcEditWnd->GetMiniMap().GetHwnd() == NULL) return;
-	
-	CEditView *miniMap = &pView->m_pcEditWnd->GetMiniMap();
-
-	bool bCurSrchKeyMark = miniMap->m_bCurSrchKeyMark;
-	std::tstring strCurSearchKey = miniMap->m_strCurSearchKey;
-
-	if (mark) {
-		if (bCurSrchKeyMark && strCurSearchKey == pView->m_strCurSearchKey) {
-			return;  // マークされている状態で同じ文字列をマークしようとした場合は処理しない
-		}
-
-		miniMap->m_strCurSearchKey = pView->m_strCurSearchKey;
-		miniMap->m_sCurSearchOption = pView->m_sCurSearchOption;
-		miniMap->m_nCurSearchKeySequence = pView->m_nCurSearchKeySequence;
-		miniMap->m_bCurSearchUpdate = true;
-		miniMap->ChangeCurRegexp(false);
-	} else {
-		if (!bCurSrchKeyMark) {
-			return;  // マークされていない状態でマークを外そうとした場合は処理しない
-		}
-
-		miniMap->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
-	}
-
-	//miniMap->RedrawAll();
-	//miniMap->Redraw();
-	miniMap->Call_OnPaint(PAINT_BODY, false);
-}
-#endif  // SC_
 
 /*!
 検索(ボックス)コマンド実行.
@@ -335,9 +302,6 @@ end_of_func:;
 		}
 	}
 
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
-	MiniMapSearchMark(m_pCommanderView, /*mark=*/true);
-#endif  // SC_
 	if(bFound){
 		if(NULL == pcSelectLogic && ((nLineNumOld > nLineNum)||(nLineNumOld == nLineNum && nIdxOld > nIdx)))
 			m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRNEXT1));
@@ -507,9 +471,6 @@ end_of_func:;
 			goto re_do;	// 末尾から再検索
 		}
 	}
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
-	MiniMapSearchMark(m_pCommanderView, /*mark=*/true);
-#endif  // SC_
 	if(bFound){
 		if((nLineNumOld < nLineNum)||(nLineNumOld == nLineNum && nIdxOld < nIdx))
 			m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRPREV1));
@@ -1581,9 +1542,6 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 
 		// 再描画
 		m_pCommanderView->RedrawAll();
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
-		MiniMapSearchMark(m_pCommanderView, /*mark=*/true);
-#endif
 		return;
 	}
 // To Here 2001.12.03 hor
@@ -1593,9 +1551,6 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 	m_pCommanderView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 	/* フォーカス移動時の再描画 */
 	m_pCommanderView->RedrawAll();
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP
-	MiniMapSearchMark(m_pCommanderView, /*mark=*/false);
-#endif  // SC_
 	return;
 }
 

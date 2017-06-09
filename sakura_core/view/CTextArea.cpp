@@ -27,12 +27,7 @@ CTextArea::CTextArea(CEditView* pEditView)
 	m_nViewTopLine = CLayoutInt(0);			/* 表示域の一番上の行 */
 	m_nViewLeftCol = CLayoutInt(0);			/* 表示域の一番左の桁 */
 	SetTopYohaku( pShareData->m_Common.m_sWindow.m_nRulerBottomSpace ); 	/* ルーラーとテキストの隙間 */
-#ifdef SC_FIX_MINIMAP
-	SetLeftYohaku( pEditView->m_bMiniMap ? 0
-	                                     : pShareData->m_Common.m_sWindow.m_nLineNumRightSpace );
-#else
 	SetLeftYohaku( pShareData->m_Common.m_sWindow.m_nLineNumRightSpace );
-#endif  // SC_
 	m_nViewAlignTop = GetTopYohaku();		/* 表示域の上端座標 */
 }
 
@@ -70,27 +65,11 @@ void CTextArea::UpdateAreaMetrics(HDC hdc)
 
 
 	if( pView->m_bMiniMap ){
-#ifdef SC_FIX_MINIMAP
-		DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
-#endif  // SC_
-
 		// 文字間隔
-#ifdef SC_FIX_MINIMAP
-		pView->GetTextMetrics().SetHankakuDx((miniMapType == SC_MINIMAP_TYPE_CUSTOM)
-		                                         ? 1
-		                                         : pView->GetTextMetrics().GetHankakuWidth());
-#else
 		pView->GetTextMetrics().SetHankakuDx( pView->GetTextMetrics().GetHankakuWidth() );
-#endif  // SC_
 
 		// 行間隔
-#ifdef SC_FIX_MINIMAP
-		pView->GetTextMetrics().SetHankakuDy((miniMapType == SC_MINIMAP_TYPE_CUSTOM)
-		                                         ? 1
-		                                         : pView->GetTextMetrics().GetHankakuHeight());
-#else
 		pView->GetTextMetrics().SetHankakuDy( pView->GetTextMetrics().GetHankakuHeight() );
-#endif  // SC_
 	}else{
 		// 文字間隔
 		pView->GetTextMetrics().SetHankakuDx( pView->GetTextMetrics().GetHankakuWidth() + pView->m_pTypeData->m_nColumnSpace );
@@ -186,11 +165,7 @@ bool CTextArea::DetectWidthOfLineNumberArea( bool bRedraw )
 		nViewAlignLeftNew = pView->GetTextMetrics().GetHankakuDx() * (i + 1);	/* 表示域の左端座標 */
 		m_nViewAlignLeftCols = i + 1;
 	}else if( pView->m_bMiniMap ){
-#ifdef SC_FIX_MINIMAP
-		nViewAlignLeftNew = pView->m_bMiniMap ? 1 : 4;
-#else
 		nViewAlignLeftNew = 4;
-#endif  // SC_
 		m_nViewAlignLeftCols = 0;
 	}else{
 		nViewAlignLeftNew = 8;
@@ -198,12 +173,7 @@ bool CTextArea::DetectWidthOfLineNumberArea( bool bRedraw )
 	}
 
 	//	Sep 18, 2002 genta
-#ifdef SC_FIX_MINIMAP
-	nViewAlignLeftNew += (pView->m_bMiniMap ? 0
-	                                        : GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace);
-#else
 	nViewAlignLeftNew += GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace;
-#endif  // SC_
 	if( nViewAlignLeftNew != GetAreaLeft() ){
 		CMyRect			rc;
 		SetAreaLeft(nViewAlignLeftNew);

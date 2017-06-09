@@ -367,8 +367,7 @@ CLayoutInt CCaret::MoveCursor(
 
 #ifdef SC_FIX_CENTERING_CURSOR_JUMP
 			if (!!RegKey(SC_REGKEY).get(_T("CenteringCursorJump"), 1) &&
-			    (RegKey(SC_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid() ||
-			     RegKey(SC_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH")).valid()))
+			    RegKey(SC_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid())
 			{  // CViewCommander::Command_CURLINECENTER()
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
@@ -419,8 +418,7 @@ CLayoutInt CCaret::MoveCursor(
 
 #ifdef SC_FIX_CENTERING_CURSOR_JUMP
 			if (!!RegKey(SC_REGKEY).get(_T("CenteringCursorJump"), 1) &&
-			    (RegKey(SC_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid() ||
-			     RegKey(SC_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH")).valid()))
+			    RegKey(SC_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid())
 			{  // CViewCommander::Command_CURLINECENTER()
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
@@ -452,22 +450,6 @@ CLayoutInt CCaret::MoveCursor(
 			} //@1
 #endif  // SC_
 		}
-#if defined(SC_FIX_CENTERING_CURSOR_JUMP) && defined(SC_FIX_MINIMAP)
-		else if (!!RegKey(SC_REGKEY).get(_T("CenteringCursorJump"), 1) &&
-		         RegKey(SC_REGKEY _T("\\CURSOR_FORCEJUMP_AUTH")).valid())
-		{  // CViewCommander::Command_CURLINECENTER()
-			CLayoutInt		nViewTopLine;
-			nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
-
-			if (0 > nViewTopLine) nViewTopLine = CLayoutInt(0);
-			
-			CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
-			m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
-			
-			m_pEditView->SetDrawSwitch(false);
-			nFinalDrawFlag |= PAINT_ALL;
-		}
-#endif  // SC_
 
 #ifdef SC_FIX_FLICKER
 		// 下でまとめて

@@ -59,22 +59,14 @@ bool SColorStrategyInfo::CheckChangeColor(const CStringRef& cLineStr)
 	bool bChange = false;
 
 	//選択範囲色終了
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
-	if(m_pStrategySelect && !m_pcView->m_bMiniMap){
-#else
 	if(m_pStrategySelect){
-#endif  // SC_
 		if(m_pStrategySelect->EndColor(cLineStr,this->GetPosInLogic())){
 			m_pStrategySelect = NULL;
 			bChange = true;
 		}
 	}
 	//選択範囲色開始
-#if defined(SC_FIX_MINIMAP) && SC_MINIMAP_SEARCH_DISP == 2
-	if(!m_pStrategySelect && !m_pcView->m_bMiniMap){
-#else
 	if(!m_pStrategySelect){
-#endif  // SC_
 		if(pcSelect->BeginColorEx(cLineStr,this->GetPosInLogic(), m_pDispPos->GetLayoutLineRef(), this->GetLayout())){
 			m_pStrategySelect = pcSelect;
 			bChange = true;

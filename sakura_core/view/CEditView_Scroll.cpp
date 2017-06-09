@@ -65,25 +65,7 @@ BOOL CEditView::CreateScrollBar()
 	si.nPos  = 0;
 	si.nTrackPos = 1;
 	::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, TRUE );
-#ifdef SC_FIX_MINIMAP
-	if (m_bMiniMap) {
-		DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
-		if (miniMapType == SC_MINIMAP_TYPE_NPP) {
-			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
-		} else if (miniMapType == SC_MINIMAP_TYPE_ST) {
-			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
-		} else if (miniMapType == SC_MINIMAP_TYPE_CUSTOM) {
-			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
-		} else {
-			::ShowScrollBar(m_hwndVScrollBar, SB_CTL, TRUE);
-		}
-		return TRUE;
-	} else {
-		::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
-	}
-#else
 	::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
-#endif  // SC_
 
 	/* スクロールバーの作成 */
 	m_hwndHScrollBar = NULL;
@@ -200,9 +182,6 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 		}
 	}
 
-#if 0//def SC_FIX_MINIMAP
-	const bool bDrawSwitchOld = SetDrawSwitch(false);
-#endif  // SC_
 	switch( nScrollCode ){
 	case SB_LINEDOWN:
 //		for( i = 0; i < 4; ++i ){
@@ -237,10 +216,6 @@ CLayoutInt CEditView::OnVScroll( int nScrollCode, int nPos )
 	default:
 		break;
 	}
-#if 0//def SC_FIX_MINIMAP
-	SetDrawSwitch(bDrawSwitchOld);
-	RedrawAll();
-#endif  // SC_
 	return nScrollVal;
 }
 
@@ -440,64 +415,6 @@ void CEditView::AdjustScrollBars()
 			::ReleaseDC(m_hwndVScrollBar, hdc);
 			
 			::UpdateWindow(m_hwndVScrollBar);
-		}
-#endif  // SC_
-
-#ifdef SC_FIX_MINIMAP
-		DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
-
-		if (m_bMiniMap) {
-			if (miniMapType == SC_MINIMAP_TYPE_NPP ||
-			    miniMapType == SC_MINIMAP_TYPE_ST ||
-			    miniMapType == SC_MINIMAP_TYPE_CUSTOM
-			) {
-				::ShowScrollBar(m_hwndVScrollBar, SB_CTL, FALSE);
-			} else {
-				::ShowScrollBar(m_hwndVScrollBar, SB_CTL, TRUE);
-			}
-		} else {
-			CEditView &miniMap = m_pcEditWnd->GetMiniMap();
-			
-			if (miniMap.GetHwnd() != NULL) {
-				if (miniMapType == SC_MINIMAP_TYPE_NPP) {
-					// Notepad++の挙動
-					// 画面端まで表示域が移動したのちにスクロール
-					CLayoutInt nViewTop = GetTextArea().GetViewTopLine();
-					CLayoutInt nViewBottom = nViewTop + GetTextArea().m_nViewRowNum;
-					CLayoutInt nMiniMapViewTop = miniMap.GetTextArea().GetViewTopLine();
-					CLayoutInt nMiniMapViewBottom = nMiniMapViewTop + miniMap.GetTextArea().m_nViewRowNum;
-
-					if (nViewTop < nMiniMapViewTop) {
-						miniMap.ScrollAtV(nViewTop);
-					} else if (nViewBottom > nMiniMapViewBottom) {
-						miniMap.ScrollAtV(nViewBottom - miniMap.GetTextArea().m_nViewRowNum);
-					}
-				} else if (miniMapType == SC_MINIMAP_TYPE_ST) {
-					// Sublime Textの挙動
-					// 先頭行から最終行に移動するまでにミニマップも先頭行から最終行に移動する
-					const CLayout *pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY(GetTextArea().GetViewTopLine());
-					if (pcLayout) {
-						CLayoutInt nLineCount = m_pcEditDoc->m_cDocLineMgr.GetLineCount();
-						CLayoutInt nViewLineNum = nLineCount - GetTextArea().m_nViewRowNum;  // 編集ウィンドウの可動域
-						CLayoutInt nMiniMapLineNum = nLineCount - miniMap.GetTextArea().m_nViewRowNum;  // ミニマップの可動域
-						CLayoutInt nMiniMapTopLine =
-						    (CLayoutInt)((float)pcLayout->GetLogicLineNo() / nViewLineNum * nMiniMapLineNum);
-						miniMap.ScrollAtV(nMiniMapTopLine);
-					}
-				} else if (miniMapType == SC_MINIMAP_TYPE_CUSTOM) {
-					// Sublime Textの挙動
-					// 先頭行から最終行に移動するまでにミニマップも先頭行から最終行に移動する
-					const CLayout *pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY(GetTextArea().GetViewTopLine());
-					if (pcLayout) {
-						CLayoutInt nLineCount = m_pcEditDoc->m_cDocLineMgr.GetLineCount();
-						CLayoutInt nViewLineNum = nLineCount - GetTextArea().m_nViewRowNum;  // 編集ウィンドウの可動域
-						CLayoutInt nMiniMapLineNum = nLineCount - miniMap.GetTextArea().m_nViewRowNum;  // ミニマップの可動域
-						CLayoutInt nMiniMapTopLine =
-						    (CLayoutInt)((float)pcLayout->GetLogicLineNo() / nViewLineNum * nMiniMapLineNum);
-						miniMap.ScrollAtV(nMiniMapTopLine);
-					}
-				}
-			}
 		}
 #endif  // SC_
 	}
