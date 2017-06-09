@@ -10,9 +10,9 @@ Feature
 -------
 
 <details><summary>MacTypeなどの描画負荷の高いソフトを併用した際に起こる描画崩れを軽減(したつもり)</summary></details>  
-<details><summary>Luaをマクロ言語として組み込み</summary><img src="https://raw.github.com/wiki/sayacat/sakura/images/sakura_201706041845.png" width="50%"></details>  
-<details><summary>ミニマップに検索対象やブックマークを分かりやすく表示</summary><img src="https://raw.github.com/wiki/sayacat/sakura/images/sakura_201706041838.png" width="75%"></details>  
-<details><summary>Grepフォルダの指定を４つに拡張</summary><img src="https://raw.github.com/wiki/sayacat/sakura/images/sakura_201706041815.png" width="50%"></details>  
+<details><summary>Luaをマクロ言語として組み込み</summary><img src="https://raw.github.com/wiki/calette/sakura/images/sakura_201706041845.png" width="50%"></details>  
+<details><summary>スクロールバーに検索結果やブックマークを表示</summary><img src="https://raw.github.com/wiki/calette/sakura/images/sakura_201706092354.png" width="50%"></details>  
+<details><summary>Grepフォルダの指定を４つに拡張</summary><img src="https://raw.github.com/wiki/calette/sakura/images/sakura_201706041815.png" width="50%"></details>  
 <details><summary>半角空白やタブなどの見た目をすっきりさせる (Sublime Textを模倣)</summary></details>  
 <details><summary>sakura.iniの精査 (肥大化対策)</summary></details>  
 
@@ -21,13 +21,13 @@ Download
 --------
 
 変更内容はコミットログを参照してください.  
-細かい内容は [my_config.h](https://github.com/sayacat/sakura/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
+細かい内容は [my_config.h](https://github.com/calette/sakura/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
 
 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
-+ [sakura-cat-2.26-x64.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.26-x64.zip) (1.11MB)  
++ [sakura-cat-2.27-x86.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.27-x86.zip) (908KB)  
 
-+ 最新のキーワードセット [keyword_pack.zip](https://github.com/sayacat/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
++ 最新のキーワードセット [keyword_pack.zip](https://github.com/calette/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
 
 Setup  
@@ -39,10 +39,10 @@ Setup
 
 Build environment  
 -----------------
-+ 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/sayacat/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
++ 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド  
-+ [Boost](http://www.boost.org/)を使用 (JSON)  
-+ [Lua](https://www.lua.org/)を使用 (マクロ, プラグイン)  
++ Boostを使用 (JSON)  
++ Luaを使用 (マクロ, プラグイン)  
 + 挙動の制御 (共有フラグ)としてレジストリを使用しています  
 
 
@@ -54,8 +54,8 @@ Changed
 
 |修正版|公式|
 |-|-|
-|[sakura.default.ini](https://github.com/sayacat/sakura/raw/master/Publish/sakura.default.ini)<details><summary>デフォルト設定ファイルの使用</summary>デフォルト設定値を設定してあるファイルです.<br>ここに初期値を設定することで常にその状態で起動します.<br>ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>||
-|[sakura.keywordset.json](https://github.com/sayacat/sakura/raw/master/Publish/sakura.keywordset.json)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
+|[sakura.default.ini](https://github.com/calette/sakura/raw/master/Publish/sakura.default.ini)<details><summary>デフォルト設定ファイルの使用</summary>デフォルト設定値を設定してあるファイルです.<br>ここに初期値を設定することで常にその状態で起動します.<br>ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>||
+|[sakura.keywordset.json](https://github.com/calette/sakura/raw/master/Publish/sakura.keywordset.json)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
 |履歴を別ファイル (`sakura.recent.json`)に出力|`sakura.ini`に出力|
 |起動時に存在しないファイル・フォルダ履歴を削除する||
 |カラー設定のインポートはカラー情報だけを適用させる|すべての情報を適用|
@@ -67,11 +67,12 @@ Changed
 
 |修正版|公式|
 |-|-|
-|EOFのみの行 (起動時とか)にも行番号を表示|なし|
+|スクロールバーに検索結果とブックマークを表示||
 |行を中央揃えにする (行の間隔を上下に配分)|上揃え|
 |半角スペースを `･`で表示|`o`の下半分を表示|
 |NBSPも半角スペースとして `×`で表示|なし|
 |タブ文字を線のみで描画 (Sublime Textみたいな)|矢印, または任意の文字|
+|EOFのみの行 (起動時とか)にも行番号を表示|なし|
 |コメント行の背景カラーを改行以降もその色で描画|なし|
 |空白, タブ, 改行, EOFのカラーは現在のテキストカラーから自動で設定|個別にカラー設定|
 |数値の色付け判定を正規表現で行う (表現力の向上)<br>正規表現が使用できない場合は通常処理|文字列解析|
@@ -87,8 +88,6 @@ Changed
 
 |修正版|公式|
 |-|-|
-|<details><summary>ミニマップの表示, 操作性の向上</summary>行TIPSを表示しない.<br>ブックマーク行を行表示する.<br>検索文字列行を行表示する.<br>スクロールバー非表示.<br>現在行に対応した位置に自動的にスクロール (Sublime Text).</details>|||
-|ミニマップ上をクリックしたときにフォーカスを移さずに入力に支障が出ないように修正:bug:||
 |垂直, 水平スクロールの挙動をメモ帳の挙動と同じにする<br>垂直スクロールマージン１行.<br>水平スクロールマージン１, １６文字移動.|垂直スクロールマージン３行.<br>水平スクロールマージン１, １文字移動.|
 |検索時に画面外へ移動するときカーソル行を中央表示|一番近い位置にカーソルが表示される|
 |タブ入力文字の切り替え機能<br>(`S_ChangeTabWidth`マクロを修正, 負の値を設定するとタブと空白を相互に切り替えます)|できない|
@@ -127,4 +126,4 @@ Cregit
   Copyright © 1994–2017 Lua.org, PUC-Rio.  
   [Lua: license](http://www.lua.org/license.html)  
 
-(C) 2017, sayacat.
+(C) 2017, Calette.
