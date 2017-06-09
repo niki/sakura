@@ -347,15 +347,15 @@ CLayoutInt CCaret::MoveCursor(
 	bool oldDraw = m_pEditView->GetDrawSwitch();
 	if (oldDraw) {
 		if (nScrollColNum != 0) {  // 水平スクロール
+			m_pEditView->SetDrawSwitch(false);
 			//nFinalDrawFlag |= PAINT_BODY;
 			nFinalDrawFlag |= PAINT_ALL;
-			m_pEditView->SetDrawSwitch(false);
 		}
-		if (nScrollRowNum != 0) {  // 垂直スクロール
-			nFinalDrawFlag |= PAINT_BODY;
-			nFinalDrawFlag |= PAINT_LINENUMBER;
-			m_pEditView->SetDrawSwitch(false);
-		}
+//2017.6.9 		if (nScrollRowNum != 0) {  // 垂直スクロール
+//2017.6.9 			m_pEditView->SetDrawSwitch(false);
+//2017.6.9 			nFinalDrawFlag |= PAINT_BODY;
+//2017.6.9 			nFinalDrawFlag |= PAINT_LINENUMBER;
+//2017.6.9 		}
 	}
 #endif  // SC_
 	//	To Here 2007.07.28 じゅうじ
@@ -378,6 +378,7 @@ CLayoutInt CCaret::MoveCursor(
 				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
 				
+				m_pEditView->SetDrawSwitch(false);
 				nFinalDrawFlag |= PAINT_ALL;
 				
 			} else
@@ -429,11 +430,12 @@ CLayoutInt CCaret::MoveCursor(
 				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
 				
+				m_pEditView->SetDrawSwitch(false);
 				nFinalDrawFlag |= PAINT_ALL;
 				
 			} else { // @1
 #endif  // SC_
-#ifdef SC_FIX_FLICKER
+#if 0//2017.6.9 def SC_FIX_FLICKER
 			bool oldDraw2 = m_pEditView->GetDrawSwitch();
 			m_pEditView->SetDrawSwitch(oldDraw);
 #endif  // SC_
@@ -443,7 +445,7 @@ CLayoutInt CCaret::MoveCursor(
 					m_pEditView->MiniMapRedraw(false);
 				}
 			}
-#ifdef SC_FIX_FLICKER
+#if 0//2017.6.9 def SC_FIX_FLICKER
 			m_pEditView->SetDrawSwitch(oldDraw2);
 #endif  // SC_
 #ifdef SC_FIX_CENTERING_CURSOR_JUMP
@@ -462,11 +464,12 @@ CLayoutInt CCaret::MoveCursor(
 			CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
 			m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
 			
+			m_pEditView->SetDrawSwitch(false);
 			nFinalDrawFlag |= PAINT_ALL;
 		}
 #endif  // SC_
 
-#ifdef SC_FIX_FLICKER
+#if 0//2017.6.9 def SC_FIX_FLICKER
 		// 下でまとめて
 #else
 		/* スクロールバーの状態を更新する */
@@ -492,19 +495,19 @@ CLayoutInt CCaret::MoveCursor(
 				}
 			}
 		} else {
-			// 画面端の行を早めに再描画する
-			// スクロール処理をしてから描画するまで少しの間時間差があるようで
-			// スクロールした行が残っているように見えてしまうため
-			if (nScrollRowNum > 0) {
-				int top = m_pEditView->GetTextArea().GetViewTopLine();
-				m_pEditView->RedrawLines(top, top + nScrollRowNum + 1);
-			} else if (nScrollRowNum < 0) {
-				int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
-				m_pEditView->RedrawLines(bottom - nScrollRowNum - 2, bottom);
-			}
-			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-				m_pEditView->MiniMapRedraw(true);
-			}
+//2017.6.9 			// 画面端の行を早めに再描画する
+//2017.6.9 			// スクロール処理をしてから描画するまで少しの間時間差があるようで
+//2017.6.9 			// スクロールした行が残っているように見えてしまうため
+//2017.6.9 			if (nScrollRowNum > 0) {
+//2017.6.9 				int top = m_pEditView->GetTextArea().GetViewTopLine();
+//2017.6.9 				m_pEditView->RedrawLines(top, top + nScrollRowNum + 1);
+//2017.6.9 			} else if (nScrollRowNum < 0) {
+//2017.6.9 				int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
+//2017.6.9 				m_pEditView->RedrawLines(bottom - nScrollRowNum - 2, bottom);
+//2017.6.9 			}
+//2017.6.9 			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
+//2017.6.9 				m_pEditView->MiniMapRedraw(true);
+//2017.6.9 			}
 		}
 	}
 #endif  // SC_
@@ -515,7 +518,7 @@ CLayoutInt CCaret::MoveCursor(
 		/* キャレットの表示・更新 */
 		ShowEditCaret();
 
-#ifdef SC_FIX_FLICKER
+#if 0//2017.6.9 def SC_FIX_FLICKER
 		if (nFinalDrawFlag != PAINT_ALL) {
 			/* ルーラの再描画 */
 			HDC		hdc = m_pEditView->GetDC();
@@ -545,7 +548,7 @@ CLayoutInt CCaret::MoveCursor(
 
 	}
 
-#ifdef SC_FIX_FLICKER
+#if 0//2017.6.9 def SC_FIX_FLICKER
 	if (bScroll) {
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars();
@@ -553,7 +556,7 @@ CLayoutInt CCaret::MoveCursor(
 #endif  // SC_
 
 // 02/09/18 対括弧の強調表示 ai Start	03/02/18 ai mod S
-#ifdef SC_FIX_FLICKER
+#if 0//2017.6.9 def SC_FIX_FLICKER
 	if (nFinalDrawFlag != PAINT_ALL) {
 		m_pEditView->DrawBracketPair( false );
 		m_pEditView->SetBracketPairPos( true );
