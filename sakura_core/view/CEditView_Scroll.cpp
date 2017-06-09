@@ -29,6 +29,11 @@
 #include "window/CEditWnd.h"
 #include "types/CTypeSupport.h"
 #include <limits.h>
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+#include "_main/CAppMode.h"
+#include "CEditApp.h"
+#include "CGrepAgent.h" // use CEditApp.h
+#endif  // SC_
 
 /*! スクロールバー作成
 	@date 2006.12.19 ryoji 新規作成（CEditView::Createから分離）
@@ -351,6 +356,93 @@ void CEditView::AdjustScrollBars()
 		if( !bEnable ){
 			ScrollAtV( CLayoutInt(0) );
 		}
+
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+		if (!m_bMiniMap && !CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) {
+			SCROLLBARINFO sbi;
+			sbi.cbSize = sizeof(sbi);
+			::GetScrollBarInfo(m_hwndVScrollBar, OBJID_CLIENT, &sbi);
+			
+			int nCxVScroll = ::GetSystemMetrics(SM_CXVSCROLL);
+			
+			//int top = sbi.xyThumbTop;
+			//int height = sbi.xyThumbBottom - sbi.xyThumbTop;
+			int top = sbi.dxyLineButton;
+			int height = sbi.rcScrollBar.bottom - sbi.rcScrollBar.top - (sbi.dxyLineButton * 2);
+			
+			HDC hdc = ::GetDC(m_hwndVScrollBar);
+			
+			CGraphics gr(hdc);
+			COLORREF clrSearch, clrMark;
+			
+			TCHAR szData[32];
+			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarFoundColor"), (LPCTSTR)szData)) {
+				clrSearch = mn::ColorString::ToCOLORREF(szData);
+			} else {
+				clrSearch = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_FOUND_COLOR);
+				//clrSearch = CTypeSupport(this, COLORIDX_SEARCH).GetBackColor();
+			}
+			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarMarkColor"), (LPCTSTR)szData)) {
+				clrMark = mn::ColorString::ToCOLORREF(szData);
+			} else {
+				clrMark = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_MARK_COLOR);
+				//clrMark = CTypeSupport(this, COLORIDX_MARK).GetBackColor();
+			}
+			
+			const CDocLine *pCDocLine;
+			CLogicInt nLinePos = CLogicInt(0);
+			CLayoutInt nLineHint = nLinePos;
+			pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(nLinePos);
+
+			while (pCDocLine) {
+				// レイアウト行
+				CLogicPoint ptXY = {0, nLinePos};
+				CLayoutPoint ptLayout;
+				m_pcEditDoc->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLineHint);
+				nLineHint = ptLayout.y;
+
+				int x = 1;
+				int y;
+
+				if (bEnable) {
+					y = top + (int)( (float)ptLayout.y / nAllLines * height );
+				} else {
+					y = top + (int)( (float)ptLayout.y / GetTextArea().m_nViewRowNum * height );
+				}
+
+				// 検索文字列のある行
+				if (m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
+					int nSearchStart, nSearchEnd;
+					int nResult = IsSearchString(
+					                  CStringRef(pCDocLine->GetPtr(), pCDocLine->GetLengthWithoutEOL()),
+					                  CLogicInt(0), &nSearchStart, &nSearchEnd);
+					
+					if (nResult) {
+						const int w = std::max(DpiScaleY(1), nCxVScroll);
+						const int h = std::max(DpiScaleY(1), DpiScaleY(1));
+						RECT rc = {x, y, x + w, y + h};
+						gr.FillSolidMyRect(rc, clrSearch);
+					}
+				}
+
+				// ブックマーク
+				if (CBookmarkGetter(pCDocLine).IsBookmarked()) {
+					const int w = std::max(DpiScaleY(1), nCxVScroll / 4);
+					const int h = std::max(DpiScaleY(1), nCxVScroll / 4);
+					RECT rc = {x, y, x + w, y + h};
+					gr.FillSolidMyRect(rc, clrMark);
+				}
+
+				nLinePos++;
+				pCDocLine = pCDocLine->GetNextLine();
+			}
+			
+			::ReleaseDC(m_hwndVScrollBar, hdc);
+			
+			::UpdateWindow(m_hwndVScrollBar);
+		}
+#endif  // SC_
+
 #ifdef SC_FIX_MINIMAP
 		DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
 

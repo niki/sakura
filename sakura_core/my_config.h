@@ -94,7 +94,7 @@
 #define SC_FIX_CENTERING_CURSOR_JUMP
 
 //------------------------------------------------------------------
-// ミニマップ
+// ミニマップ -> ミニマップの改良は諦める 2017.6.9 
 //  - ミニマップをクリックしたときにフォーカスが移らないようにする 2017.5.15
 //  - フォントサイズと表示幅を見やすい値に調整 (sakura.default.ini)
 //  - クリックした位置が中央になるようにする 2017.5.15
@@ -108,25 +108,40 @@
 //  @ミニマップ上の検索色 (REG/MiniMapSearchColor:#ffff00)
 //  @ミニマップ上のブックマーク色 (REG/MiniMapSearchColor:#ff0000)
 //------------------------------------------------------------------
-#define SC_FIX_MINIMAP
-  #define SC_MINIMAP_NOLINETIP     (1)  // 行TIPSを表示しない
-  #define SC_MINIMAP_BOOKMARK_DISP (1)  // ブックマーク行を全体表示する
-  #define SC_MINIMAP_SEARCH_DISP   (2)  // 1:検索文字列を表示する, 2:検索文字列行を全体表示する
-  #define SC_MINIMAP_TYPE_SAKURA   (0)  // default
-  #define SC_MINIMAP_TYPE_NPP      (1)  // Imitate 'Notepad++'
-                                        //   スクロールバー非表示
-                                        //   表示領域の端で自動的にスクロール
-  #define SC_MINIMAP_TYPE_ST       (2)  // Imitate 'Sublime Text'
-                                        //   スクロールバー非表示
-                                        //   現在行に対応した位置に自動的にスクロール
-                                        //    > 全体のスクロールが発生するため再描画が頻発, 重い
-                                        //    > 現状のミニマップの処理の使用だと使い物にならない
-  #define SC_MINIMAP_TYPE_CUSTOM   (3)  // Custom version
-                                        //   スクロールバー非表示
-                                        //   スクロールバーと同じ幅
-                                        //   全体を表示 (予定)
-                                        //   検索文字列, ブックマーク表示を最優先
-  #define SC_MINIMAP_TYPE_DEFAULT (SC_MINIMAP_TYPE_CUSTOM)
+//#define SC_FIX_MINIMAP
+//  #define SC_MINIMAP_NOLINETIP     (1)  // 行TIPSを表示しない
+//  #define SC_MINIMAP_BOOKMARK_DISP (1)  // ブックマーク行を全体表示する
+//  #define SC_MINIMAP_SEARCH_DISP   (2)  // 1:検索文字列を表示する, 2:検索文字列行を全体表示する
+//  #define SC_MINIMAP_TYPE_SAKURA   (0)  // default
+//  #define SC_MINIMAP_TYPE_NPP      (1)  // Imitate 'Notepad++'
+//                                        //   スクロールバー非表示
+//                                        //   表示領域の端で自動的にスクロール
+//  #define SC_MINIMAP_TYPE_ST       (2)  // Imitate 'Sublime Text'
+//                                        //   スクロールバー非表示
+//                                        //   現在行に対応した位置に自動的にスクロール
+//                                        //    > 全体のスクロールが発生するため再描画が頻発, 重い
+//                                        //    > 現状のミニマップの処理の使用だと使い物にならない
+//  #define SC_MINIMAP_TYPE_CUSTOM   (3)  // Custom version
+//                                        //   スクロールバー非表示
+//                                        //   スクロールバーと同じ幅
+//                                        //   全体を表示 (予定)
+//                                        //   検索文字列, ブックマーク表示を最優先
+//  #define SC_MINIMAP_TYPE_DEFAULT (SC_MINIMAP_TYPE_NPP)
+
+//------------------------------------------------------------------
+// エディット画面 スクロールバー
+//  - スクロールバーに検索結果を表示 2017.6.9 
+//  - スクロールバーにブックマークを表示 2017.6.9 
+//  ? スクロールバーのつまみがないとき
+//  ? 更新がいまいち, タブ切り替え時, バーにカーソルを乗せた時
+//------------------------------------------------------------------
+#define SC_FIX_EDITVIEW_SCRBAR
+  // 検索文字列のある行の色
+  // (REG/EditViewScrBarFoundColor:#0000d7)
+  #define SC_EDITVIEW_SCRBAR_FOUND_COLOR _T("#0000d7")
+  // ブックマークのある行の色
+  // (REG/EditViewScrBarMarkColor:#d80000)
+  #define SC_EDITVIEW_SCRBAR_MARK_COLOR _T("#d80000")
 
 //------------------------------------------------------------------
 // タブ入力文字の切り替え(タブ<->空白)を追加

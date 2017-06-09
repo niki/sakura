@@ -1141,6 +1141,11 @@ void CEditView::OnSetFocus( void )
 			MiniMapRedraw(true);
 		}
 	}
+
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	// スクロールバーの状態を更新する
+	AdjustScrollBars();
+#endif  // SC_
 }
 
 

@@ -142,6 +142,11 @@ void CEditView::Redraw()
 	OnPaint( hdc, &ps, FALSE );
 
 	::ReleaseDC( GetHwnd(), hdc );
+	
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	// スクロールバーの状態を更新する
+	AdjustScrollBars();
+#endif  // SC_
 }
 // 2001/06/21 End
 
