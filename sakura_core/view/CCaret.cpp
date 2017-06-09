@@ -435,7 +435,7 @@ CLayoutInt CCaret::MoveCursor(
 				
 			} else { // @1
 #endif  // SC_
-#if 0//2017.6.9 def SC_FIX_FLICKER
+#ifdef SC_FIX_FLICKER
 			bool oldDraw2 = m_pEditView->GetDrawSwitch();
 			m_pEditView->SetDrawSwitch(oldDraw);
 #endif  // SC_
@@ -445,7 +445,7 @@ CLayoutInt CCaret::MoveCursor(
 					m_pEditView->MiniMapRedraw(false);
 				}
 			}
-#if 0//2017.6.9 def SC_FIX_FLICKER
+#ifdef SC_FIX_FLICKER
 			m_pEditView->SetDrawSwitch(oldDraw2);
 #endif  // SC_
 #ifdef SC_FIX_CENTERING_CURSOR_JUMP
@@ -469,7 +469,7 @@ CLayoutInt CCaret::MoveCursor(
 		}
 #endif  // SC_
 
-#if 0//2017.6.9 def SC_FIX_FLICKER
+#ifdef SC_FIX_FLICKER
 		// 下でまとめて
 #else
 		/* スクロールバーの状態を更新する */
@@ -518,7 +518,7 @@ CLayoutInt CCaret::MoveCursor(
 		/* キャレットの表示・更新 */
 		ShowEditCaret();
 
-#if 0//2017.6.9 def SC_FIX_FLICKER
+#ifdef SC_FIX_FLICKER
 		if (nFinalDrawFlag != PAINT_ALL) {
 			/* ルーラの再描画 */
 			HDC		hdc = m_pEditView->GetDC();
@@ -548,7 +548,7 @@ CLayoutInt CCaret::MoveCursor(
 
 	}
 
-#if 0//2017.6.9 def SC_FIX_FLICKER
+#ifdef SC_FIX_FLICKER
 	if (bScroll) {
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars();
@@ -556,7 +556,7 @@ CLayoutInt CCaret::MoveCursor(
 #endif  // SC_
 
 // 02/09/18 対括弧の強調表示 ai Start	03/02/18 ai mod S
-#if 0//2017.6.9 def SC_FIX_FLICKER
+#ifdef SC_FIX_FLICKER
 	if (nFinalDrawFlag != PAINT_ALL) {
 		m_pEditView->DrawBracketPair( false );
 		m_pEditView->SetBracketPairPos( true );
