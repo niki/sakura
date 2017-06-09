@@ -68,6 +68,10 @@ HWND CDlgCancel::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTempl
 
 BOOL CDlgCancel::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+#ifdef SC_FIX_DIALOG_POS
+	SetPlaceOfWindow();
+#endif  // SC_
+
 	_SetHwnd( hwndDlg );
 	HICON	hIcon;
 	hIcon = ::LoadIcon( NULL, IDI_ASTERISK );
