@@ -3,7 +3,7 @@
 //! @file  registry.hpp
 //! @brief レジストリ
 //!
-//! @author (C) 2017, sayacat.
+//! @author (C) 2017, Calette.
 //====================================================================
 #ifndef MENOU_REGISTRY_HPP
 #define MENOU_REGISTRY_HPP

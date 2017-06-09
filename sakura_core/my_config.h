@@ -46,11 +46,11 @@
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 // 修正者
-#define SC_AMENDER "sayacat"
-#define SC_URL     "https://github.com/sayacat/sakura"
+#define SC_AMENDER "Calette"
+#define SC_URL     "https://github.com/calette/sakura"
 
 // 拡張用レジストリキー
-#define SC_REGKEY _T("Software\\sakura-sayacat")
+#define SC_REGKEY _T("Software\\sakura-calette")
 
 //------------------------------------------------------------------
 // バージョン情報ダイアログの変更 2017.3.15

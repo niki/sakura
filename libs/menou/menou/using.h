@@ -3,7 +3,7 @@
 //! @file  using.h
 //! @brief using定義
 //!
-//! @author (C) 2017, sayacat.
+//! @author (C) 2017, Calette.
 //====================================================================
 #ifndef MENOU_USING_H
 #define MENOU_USING_H

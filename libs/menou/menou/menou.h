@@ -3,7 +3,7 @@
 //! @file  menou.h
 //! @brief menou library
 //!
-//! @author (C) 2017, sayacat.
+//! @author (C) 2017, Calette.
 //====================================================================
 #ifndef MENOU_H
 #define MENOU_H

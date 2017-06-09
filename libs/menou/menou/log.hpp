@@ -3,7 +3,7 @@
 //! @file  log.hpp
 //! @brief ログ
 //!
-//! @author (C) 2017, sayacat.
+//! @author (C) 2017, Calette.
 //====================================================================
 #ifndef MENOU_LOG_HPP
 #define MENOU_LOG_HPP

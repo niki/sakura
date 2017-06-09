@@ -3,7 +3,7 @@
 //! @file  util.hpp
 //! @brief ユーティリティ
 //!
-//! @author (C) 2017, sayacat.
+//! @author (C) 2017, Calette.
 //====================================================================
 #ifndef MENOU_UTIL_HPP
 #define MENOU_UTIL_HPP

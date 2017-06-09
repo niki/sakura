@@ -25,7 +25,7 @@ Download
 
 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
-+ [sakura-cat-2.27-x86.zip](http://mimix.sakura.ne.jp/release/sakura-cat-2.27-x86.zip) (908KB)  
++ [sakura-calette-2.27-x86.zip](http://mimix.sakura.ne.jp/release/sakura-calette-2.27-x86.zip) (908KB)  
 
 + 最新のキーワードセット [keyword_pack.zip](https://github.com/calette/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
