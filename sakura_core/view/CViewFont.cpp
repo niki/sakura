@@ -34,7 +34,7 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 #ifdef SC_FIX_MINIMAP
 		DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
 		if (miniMapType == SC_MINIMAP_TYPE_CUSTOM) {
-			miniSize = 3;
+			miniSize = 1;
 		}
 #endif  // SC_
 	int quality = GetDllShareData().m_Common.m_sWindow.m_nMiniMapQuality;

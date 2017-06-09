@@ -70,12 +70,24 @@ void CTextArea::UpdateAreaMetrics(HDC hdc)
 
 
 	if( pView->m_bMiniMap ){
+#ifdef SC_FIX_MINIMAP
+		DWORD miniMapType = RegKey(SC_REGKEY).get(_T("MiniMapType"), SC_MINIMAP_TYPE_DEFAULT);
+#endif  // SC_
+
 		// 文字間隔
+#ifdef SC_FIX_MINIMAP
+		pView->GetTextMetrics().SetHankakuDx((miniMapType == SC_MINIMAP_TYPE_CUSTOM)
+		                                         ? 1
+		                                         : pView->GetTextMetrics().GetHankakuWidth());
+#else
 		pView->GetTextMetrics().SetHankakuDx( pView->GetTextMetrics().GetHankakuWidth() );
+#endif  // SC_
 
 		// 行間隔
 #ifdef SC_FIX_MINIMAP
-		pView->GetTextMetrics().SetHankakuDy( pView->GetTextMetrics().GetHankakuHeight() / 2 );
+		pView->GetTextMetrics().SetHankakuDy((miniMapType == SC_MINIMAP_TYPE_CUSTOM)
+		                                         ? 1
+		                                         : pView->GetTextMetrics().GetHankakuHeight());
 #else
 		pView->GetTextMetrics().SetHankakuDy( pView->GetTextMetrics().GetHankakuHeight() );
 #endif  // SC_
