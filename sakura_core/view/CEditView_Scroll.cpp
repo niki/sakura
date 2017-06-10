@@ -340,15 +340,15 @@ void CEditView::AdjustScrollBars()
 			
 			int nCxVScroll = ::GetSystemMetrics(SM_CXVSCROLL);
 			
-			//int top = sbi.xyThumbTop;
-			//int height = sbi.xyThumbBottom - sbi.xyThumbTop;
-			int top = sbi.dxyLineButton;
-			int height = sbi.rcScrollBar.bottom - sbi.rcScrollBar.top - (sbi.dxyLineButton * 2);
+			//int nBarTop = sbi.xyThumbTop;
+			//int nBarHeight = sbi.xyThumbBottom - sbi.xyThumbTop;
+			int nBarTop = sbi.dxyLineButton;
+			int nBarHeight = sbi.rcScrollBar.bottom - sbi.rcScrollBar.top - (sbi.dxyLineButton * 2);
 			
 			HDC hdc = ::GetDC(m_hwndVScrollBar);
 			
 			CGraphics gr(hdc);
-			COLORREF clrSearch, clrMark;
+			COLORREF clrSearch, clrMark, clrCursor;
 			
 			TCHAR szData[32];
 			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarFoundColor"), (LPCTSTR)szData)) {
@@ -363,6 +363,12 @@ void CEditView::AdjustScrollBars()
 				clrMark = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_MARK_COLOR);
 				//clrMark = CTypeSupport(this, COLORIDX_MARK).GetBackColor();
 			}
+			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarCursorColor"), (LPCTSTR)szData)) {
+				clrCursor = mn::ColorString::ToCOLORREF(szData);
+			} else {
+				clrCursor = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_CURSOR_COLOR);
+				//clrCursor = CTypeSupport(this, COLORIDX_UNDERLINE).GetBackColor();
+			}
 			
 			// 行数が変わっていたら強制更新
 			if (m_sMarkCache.nLastLineCount != nAllLines) {
@@ -370,6 +376,14 @@ void CEditView::AdjustScrollBars()
 				m_sMarkCache.Refresh();
 			}
 			
+			// 
+			auto fnCalcY = [this, bEnable, nAllLines, nBarHeight](int ln) {
+				if (bEnable) {
+					return (int)( (float)ln / nAllLines * nBarHeight );
+				} else {
+					return (int)( (float)ln / this->GetTextArea().m_nViewRowNum * nBarHeight );
+				}
+			};
 			// 検索印を描画
 			auto fnFoundDraw = [&gr, nCxVScroll, clrSearch](int x, int y) {
 				const int w = std::max(DpiScaleY(1), nCxVScroll);
@@ -383,6 +397,13 @@ void CEditView::AdjustScrollBars()
 				const int h = std::max(DpiScaleY(1), nCxVScroll / 4);
 				RECT rc = {x, y, x + w, y + h};
 				gr.FillSolidMyRect(rc, clrMark);
+			};
+			// カーソル印を描画
+			auto fnCursorDraw = [&gr, nCxVScroll, clrCursor](int x, int y) {
+				const int w = std::max(DpiScaleY(1), nCxVScroll);
+				const int h = std::max(DpiScaleY(1), DpiScaleY(1));
+				RECT rc = {x, y, x + w, y + h};
+				gr.FillSolidMyRect(rc, clrCursor);
 			};
 			
 			if (m_sMarkCache.vLines.empty()) {
@@ -401,13 +422,7 @@ void CEditView::AdjustScrollBars()
 					nLineHint = ptLayout.y;
 
 					int x = 1;
-					int y;
-
-					if (bEnable) {
-						y = top + (int)( (float)ptLayout.y / nAllLines * height );
-					} else {
-						y = top + (int)( (float)ptLayout.y / GetTextArea().m_nViewRowNum * height );
-					}
+					int y = nBarTop + fnCalcY(ptLayout.y);
 
 					// 検索文字列のある行
 					if (m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
@@ -438,20 +453,22 @@ void CEditView::AdjustScrollBars()
 				// キャッシュを使用して描画
 				for (uint32_t ln : m_sMarkCache.vLines) {
 					int x = 1;
-					int y;
+					int y = nBarTop + fnCalcY(ln & SC_SCRBAR_LINEN_MASK);
 
-					if (bEnable) {
-						y = top + (int)( (float)(ln & SC_SCRBAR_LINEN_MASK) / nAllLines * height );
-					} else {
-						y = top + (int)( (float)(ln & SC_SCRBAR_LINEN_MASK) / GetTextArea().m_nViewRowNum * height );
-					}
-					
 					if (ln & SC_SCRBAR_FOUND_MAGIC) {
 						fnFoundDraw(x, y);
 					} else if (ln & SC_SCRBAR_MARK_MAGIC) {
 						fnMarkDraw(x, y);
   				}
 				}
+			}
+			
+			// カーソル行
+			{
+				int x = 1;
+				int y = nBarTop + fnCalcY(GetCaret().GetCaretLayoutPos().GetY2());
+
+				fnCursorDraw(x, y);
 			}
 			
 			::ReleaseDC(m_hwndVScrollBar, hdc);
