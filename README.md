@@ -20,12 +20,11 @@ Feature
 Download  
 --------
 
-変更内容はコミットログを参照してください.  
-細かい内容は [my_config.h](https://github.com/calette/sakura/raw/master/sakura_core/my_config.h) を見るとわかるかと思います.  
+変更内容はコミットログを参照してください. 細かい内容は [my_config.h](https://github.com/calette/sakura/raw/master/sakura_core/my_config.h) を見てね.  
 
-動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
++ [sakura-calette-2.28-x86.zip](http://mimix.sakura.ne.jp/release/sakura-calette-2.28-x86.zip) (908KB)  
 
-+ [sakura-calette-2.27-x86.zip](http://mimix.sakura.ne.jp/release/sakura-calette-2.27-x86.zip) (908KB)  
+※ 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
 + 最新のキーワードセット [keyword_pack.zip](https://github.com/calette/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
@@ -108,7 +107,7 @@ Changed
 |置換ダイアログの置換後テキストに置換前テキストを設定|前回のテキスト|
 |正規表現検索のときに正規表現記号をクォート (`^abc$`を検索する場合 `\^abc\$`にする)||
 |アウトライン解析ダイアログのドッキング時はコントロールカラーのままにする|背景カラーが使用される|
-|<details><summary>ステータスバーのカスタマイズ</summary>カーソル移動時のちらつき抑制:bug:.<br>カラムの並べ替え.<br>左クリックでメニューを表示.<br>編集中のファイル名を表示.<br>「? 行 ? 桁」→「?:?」に変更.<br>タイプ名を表示.<br>タブサイズを表示.<br>入力改行コードを主に使われているシステム名で表記.</details>||
+|<details><summary>ステータスバーのカスタマイズ</summary>カーソル移動時のちらつき抑制:bug:.<br>カラムの並べ替え.<br>左クリックでメニューを表示.<br>「? 行 ? 桁」→「Line ?, Column ?」に変更.<br>タイプ名を表示.<br>タブサイズを表示.<br>入力改行コードを主に使われているシステム名で表記.</details>||
 |タグファイル作成時にフォルダの初期値を `tags`, `ctags.cnf`ファイルがあるところまで辿る|カレントフォルダ|
 |ダイレクトジャンプ一覧の表示カラムを選別||
 |フォルダ選択ダイアログを今風にする||
@@ -118,12 +117,12 @@ Changed
 
 Cregit  
 ------
-+ [Boost C++ Libraries](http://www.boost.org/)  
++ [Boost C++ Libraries](http://www.boost.org/) [LICENSE_1_0](http://www.boost.org/LICENSE_1_0.txt)  
   Distributed under the Boost Software License, Version 1.0.  
-  [LICENSE_1_0](http://www.boost.org/LICENSE_1_0.txt)  
+  
 
-+ [Lua](http://www.lua.org/)  
++ [Lua](http://www.lua.org/) [Lua: license](http://www.lua.org/license.html)  
   Copyright © 1994–2017 Lua.org, PUC-Rio.  
-  [Lua: license](http://www.lua.org/license.html)  
+  
 
 (C) 2017, Calette.
