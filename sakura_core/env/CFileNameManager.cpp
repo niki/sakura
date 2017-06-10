@@ -456,6 +456,9 @@ bool CFileNameManager::GetMenuFullLabel(
 ){
 	TCHAR szAccKey[4];
 	TCHAR szFileName[_MAX_PATH];
+#ifdef SC_FIX_RECENT_FILE_DISP_NAME
+	TCHAR szDirName[_MAX_PATH];
+#endif  // SC_
 	TCHAR szMenu2[_MAX_PATH * 2];
 	const TCHAR* pszName;
 
@@ -466,7 +469,8 @@ bool CFileNameManager::GetMenuFullLabel(
 #ifdef SC_FIX_RECENT_FILE_DISP_NAME
 		std::tstring dir = mn::file::dirname(szFileName);
 		std::tstring fname = mn::file::fname(szFileName);
-		wsprintf( szFileName, _T("%s  [%s]"), fname.c_str(), dir.c_str());
+		wsprintf( szFileName, _T("%s "), fname.c_str());
+		wsprintf( szDirName, _T("[%s]"), dir.c_str());
 #endif  // SC_
 
 		// szFileName → szMenu2
@@ -496,9 +500,9 @@ bool CFileNameManager::GetMenuFullLabel(
 	}
 	
 #ifdef SC_FIX_RECENT_FILE_DISP_NAME
-	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts%ts %ts(%ts)"),
+	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts%ts %ts(%ts)\t%ts"),
 		(bFavorite ? _T("★ ") : _T("")), pszName,
-		(bModified ? _T("*"):_T("")), szAccKey
+		(bModified ? _T("*"):_T("")), szAccKey, szDirName
 	);
 #else
 	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts%ts%ts %ts%ts"),
