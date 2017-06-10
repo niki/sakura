@@ -270,10 +270,8 @@ void CEditView::ISearchExit()
 	GetCursorPos(&point1);
 	OnMOUSEMOVE(0,point1.x,point1.y);
 
-#ifndef SC_FIX_STATUSBAR
 	//ステータス表示エリアをクリア
 	SendStatusMessage(_T(""));
-#endif  // SC_
 
 }
 

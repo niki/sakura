@@ -1074,6 +1074,11 @@ void CCaret::ShowCaretPosInfo()
 			_tcscpy( szText_6, LS( STR_INS_MODE_OVR ) );	// "上書"
 		}
 		if (!m_pEditView->GetSelectionInfo().IsTextSelected()) {
+#if 1
+			if( m_bClearStatus ){
+				::StatusBar_SetText( hwndStatusBar, 0 | SBT_NOBORDERS, _T("") );
+			}
+#else
 			TCHAR path[_MAX_PATH] = {};
 			const TCHAR *full_path = m_pEditView->GetDocument()->m_cDocFile.GetFilePath();
 			if (full_path) {
@@ -1088,6 +1093,7 @@ void CCaret::ShowCaretPosInfo()
 				::ReleaseDC(hwndStatusBar, hdc);
 			}
 			::StatusBar_SetText( hwndStatusBar, 0 | 0,           path );
+#endif
 		}
 		::StatusBar_SetText( hwndStatusBar, 1 | 0,             szText_1 );  //	桁位置→行番号ジャンプ
 		::StatusBar_SetText( hwndStatusBar, 2/*3*/ | 0,        szCaretChar );  //	文字コード→各種コード
