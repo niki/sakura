@@ -364,52 +364,94 @@ void CEditView::AdjustScrollBars()
 				//clrMark = CTypeSupport(this, COLORIDX_MARK).GetBackColor();
 			}
 			
-			const CDocLine *pCDocLine;
-			CLogicInt nLinePos = CLogicInt(0);
-			CLayoutInt nLineHint = nLinePos;
-			pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(nLinePos);
+			// 行数が変わっていたら強制更新
+			if (m_sMarkCache.nLastLineCount != nAllLines) {
+				m_sMarkCache.nLastLineCount = nAllLines;
+				m_sMarkCache.Refresh();
+			}
+			
+			// 検索印を描画
+			auto fnFoundDraw = [&gr, nCxVScroll, clrSearch](int x, int y) {
+				const int w = std::max(DpiScaleY(1), nCxVScroll);
+				const int h = std::max(DpiScaleY(1), DpiScaleY(1));
+				RECT rc = {x, y, x + w, y + h};
+				gr.FillSolidMyRect(rc, clrSearch);
+			};
+			// ブックマーク印を描画
+			auto fnMarkDraw = [&gr, nCxVScroll, clrMark](int x, int y) {
+				const int w = std::max(DpiScaleY(1), nCxVScroll / 4);
+				const int h = std::max(DpiScaleY(1), nCxVScroll / 4);
+				RECT rc = {x, y, x + w, y + h};
+				gr.FillSolidMyRect(rc, clrMark);
+			};
+			
+			if (m_sMarkCache.vLines.empty()) {
+				// 更新・描画
+				const CDocLine *pCDocLine;
+				CLogicInt nLinePos = CLogicInt(0);
+				CLayoutInt nLineHint = nLinePos;
+				pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(nLinePos);
 
-			while (pCDocLine) {
-				// レイアウト行
-				CLogicPoint ptXY = {0, nLinePos};
-				CLayoutPoint ptLayout;
-				m_pcEditDoc->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLineHint);
-				nLineHint = ptLayout.y;
+				while (pCDocLine) {
+					// レイアウト行
+					CLogicInt nLogicY = nLinePos;
+					CLogicPoint ptXY = {0, nLogicY};
+					CLayoutPoint ptLayout;
+					m_pcEditDoc->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLineHint);
+					nLineHint = ptLayout.y;
 
-				int x = 1;
-				int y;
+					int x = 1;
+					int y;
 
-				if (bEnable) {
-					y = top + (int)( (float)ptLayout.y / nAllLines * height );
-				} else {
-					y = top + (int)( (float)ptLayout.y / GetTextArea().m_nViewRowNum * height );
-				}
-
-				// 検索文字列のある行
-				if (m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
-					int nSearchStart, nSearchEnd;
-					int nResult = IsSearchString(
-					                  CStringRef(pCDocLine->GetPtr(), pCDocLine->GetLengthWithoutEOL()),
-					                  CLogicInt(0), &nSearchStart, &nSearchEnd);
-					
-					if (nResult) {
-						const int w = std::max(DpiScaleY(1), nCxVScroll);
-						const int h = std::max(DpiScaleY(1), DpiScaleY(1));
-						RECT rc = {x, y, x + w, y + h};
-						gr.FillSolidMyRect(rc, clrSearch);
+					if (bEnable) {
+						y = top + (int)( (float)ptLayout.y / nAllLines * height );
+					} else {
+						y = top + (int)( (float)ptLayout.y / GetTextArea().m_nViewRowNum * height );
 					}
-				}
 
-				// ブックマーク
-				if (CBookmarkGetter(pCDocLine).IsBookmarked()) {
-					const int w = std::max(DpiScaleY(1), nCxVScroll / 4);
-					const int h = std::max(DpiScaleY(1), nCxVScroll / 4);
-					RECT rc = {x, y, x + w, y + h};
-					gr.FillSolidMyRect(rc, clrMark);
-				}
+					// 検索文字列のある行
+					if (m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
+						int nSearchStart, nSearchEnd;
+						int nResult = IsSearchString(
+						                  CStringRef(pCDocLine->GetPtr(), pCDocLine->GetLengthWithoutEOL()),
+						                  CLogicInt(0), &nSearchStart, &nSearchEnd);
+						
+						if (nResult) {
+							fnFoundDraw(x, y);
+							// キャッシュに登録
+							m_sMarkCache.Add(ptLayout.y, SC_SCRBAR_FOUND_MAGIC);
+						}
+					}
 
-				nLinePos++;
-				pCDocLine = pCDocLine->GetNextLine();
+					// ブックマーク
+					if (CBookmarkGetter(pCDocLine).IsBookmarked()) {
+						fnMarkDraw(x, y);
+						// キャッシュに登録
+						m_sMarkCache.Add(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+					}
+
+					nLinePos++;
+					pCDocLine = pCDocLine->GetNextLine();
+				}
+				
+			} else {
+				// キャッシュを使用して描画
+				for (uint32_t ln : m_sMarkCache.vLines) {
+					int x = 1;
+					int y;
+
+					if (bEnable) {
+						y = top + (int)( (float)(ln & SC_SCRBAR_LINEN_MASK) / nAllLines * height );
+					} else {
+						y = top + (int)( (float)(ln & SC_SCRBAR_LINEN_MASK) / GetTextArea().m_nViewRowNum * height );
+					}
+					
+					if (ln & SC_SCRBAR_FOUND_MAGIC) {
+						fnFoundDraw(x, y);
+					} else if (ln & SC_SCRBAR_MARK_MAGIC) {
+						fnMarkDraw(x, y);
+  				}
+				}
 			}
 			
 			::ReleaseDC(m_hwndVScrollBar, hdc);

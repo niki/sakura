@@ -97,10 +97,13 @@
 // エディット画面 スクロールバー
 //  - スクロールバーに検索結果を表示 2017.6.9 
 //  - スクロールバーにブックマークを表示 2017.6.9 
-//  ? スクロールバーのつまみがないとき
-//  ? 更新がいまいち, タブ切り替え時, バーにカーソルを乗せた時
+//  ? 更新がいまいち, バーにカーソルを乗せた時
 //------------------------------------------------------------------
 #define SC_FIX_EDITVIEW_SCRBAR
+  #define SC_SCRBAR_FOUND_MAGIC (0x10000000)
+  #define SC_SCRBAR_MARK_MAGIC  (0x20000000)
+  #define SC_SCRBAR_MAGIC_MASK  (0xf0000000)
+  #define SC_SCRBAR_LINEN_MASK  (0x0fffffff)
   // 検索文字列のある行の色
   // (REG/EditViewScrBarFoundColor:#0000d7)
   #define SC_EDITVIEW_SCRBAR_FOUND_COLOR _T("#0000d7")

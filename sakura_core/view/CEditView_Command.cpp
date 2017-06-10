@@ -398,6 +398,9 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 				m_bCurSrchKeyMark = false;
 				return FALSE;
 		}
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+		m_sMarkCache.Refresh();
+#endif  // SC_
 		m_bCurSrchKeyMark = true;
 		if( bRedrawIfChanged ){
 			Redraw();
@@ -406,6 +409,9 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 		return TRUE;
 	}
 	if( ! m_bCurSrchKeyMark ){
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+		m_sMarkCache.Refresh();
+#endif  // SC_
 		m_bCurSrchKeyMark = true;
 		// 検索文字列のマークだけ設定
 		if( bRedrawIfChanged ){

@@ -121,6 +121,12 @@ void CViewCommander::Command_SEARCH_NEXT(
 		pcSelectLogic->Clear(-1);
 	}
 
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	if (!m_pCommanderView->m_bCurSrchKeyMark) {
+		m_pCommanderView->m_sMarkCache.Refresh();
+	}
+#endif  // SC_
+
 	bSelecting = false;
 	// 2002.01.16 hor
 	// 共通部分のくくりだし
@@ -359,6 +365,12 @@ void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
 
 	CLayoutRange sSelectBgn_Old;
 	CLayoutRange sSelect_Old;
+
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	if (!m_pCommanderView->m_bCurSrchKeyMark) {
+		m_pCommanderView->m_sMarkCache.Refresh();
+	}
+#endif  // SC_
 
 	bSelecting = false;
 	// 2002.01.16 hor
@@ -1510,6 +1522,9 @@ void CViewCommander::Command_REPLACE_ALL()
 void CViewCommander::Command_SEARCH_CLEARMARK( void )
 {
 // From Here 2001.12.03 hor
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	m_pCommanderView->m_sMarkCache.Refresh();
+#endif  // SC_
 
 	//検索マークのセット
 

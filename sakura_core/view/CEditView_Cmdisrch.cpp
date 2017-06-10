@@ -447,6 +447,9 @@ void CEditView::ISearchExec(bool bNext)
 		m_sISearchHistory[m_nISearchHistoryCount] = sMatchRange;
 	}
 
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	m_sMarkCache.Refresh();
+#endif  // SC_
 	m_bCurSrchKeyMark = true;
 
 	Redraw();	

@@ -277,13 +277,53 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			pCDocLine=GetDocument()->m_cDocLineMgr.GetLine( nY );
 			CBookmarkSetter cBookmark(pCDocLine);
 			if(pCDocLine)cBookmark.SetBookmark(!cBookmark.IsBookmarked());
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+			if (pCDocLine) {
+				// レイアウト行
+				CLogicInt nLogicY = nY;
+				CLogicPoint ptXY = {0, nLogicY};
+				CLayoutPoint ptLayout;
+				GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLogicY);
+				
+				if (cBookmark.IsBookmarked()) {
+					// 登録
+					m_pCommanderView->m_sMarkCache.Add(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+				} else {
+					// 削除
+					m_pCommanderView->m_sMarkCache.Del(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+				}
+				//m_pCommanderView->m_sMarkCache.Refresh();
+			}
+#endif  // SC_
 		}
 	}
 	else{
 		pCDocLine=GetDocument()->m_cDocLineMgr.GetLine( GetCaret().GetCaretLogicPos().GetY2() );
 		CBookmarkSetter cBookmark(pCDocLine);
 		if(pCDocLine)cBookmark.SetBookmark(!cBookmark.IsBookmarked());
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+		if (pCDocLine) {
+			// レイアウト行
+			CLogicInt nLogicY = GetCaret().GetCaretLogicPos().GetY2();
+			CLogicPoint ptXY = {0, nLogicY};
+			CLayoutPoint ptLayout;
+			GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLogicY);
+			
+			if (cBookmark.IsBookmarked()) {
+				// 登録
+				m_pCommanderView->m_sMarkCache.Add(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+			} else {
+				// 削除
+				m_pCommanderView->m_sMarkCache.Del(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+			}
+			//m_pCommanderView->m_sMarkCache.Refresh();
+		}
+#endif  // SC_
 	}
+
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	//m_pCommanderView->m_sMarkCache.Refresh();
+#endif  // SC_
 
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();
@@ -389,6 +429,9 @@ re_do:;								// hor
 void CViewCommander::Command_BOOKMARK_RESET(void)
 {
 	CBookmarkManager(&GetDocument()->m_cDocLineMgr).ResetAllBookMark();
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	m_pCommanderView->m_sMarkCache.Refresh();
+#endif  // SC_
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();
 }
