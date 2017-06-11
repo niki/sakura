@@ -127,12 +127,8 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	if (count > 0) {
 		if (temp.GetStringLength() == 0) return;
 		cmWork2.SetString( cDlgGrep.m_szFile );
-		wchar_t pattern[256] = {};
-		if (RegKey(SC_REGKEY).read(_T("GrepPattern_CPP"), pattern)) {
-			cmWork2.Replace(_T("$cpp"), pattern);
-		} else {
-			cmWork2.Replace(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp"));
-		}
+		cmWork2.Replace(_T("$cpp"), RegKey(SC_REGKEY).get_s(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp")));
+		cmWork2.Replace(_T("$make"), RegKey(SC_REGKEY).get_s(_T("$make"), _T("makefile *.mak *.om OMakefile OMakeRoot")));
 		cmWork3.SetString( temp.GetStringPtr() );
 	} else {
 		TCHAR	szWorkFolder[MAX_PATH];
