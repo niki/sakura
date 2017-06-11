@@ -147,8 +147,20 @@ class RegKey {
     if (!data) return (rc == ERROR_SUCCESS);
 
     rc = ::RegQueryValueEx(hKey, entry.c_str(), NULL, &dwType, (LPBYTE)data, &dwByte);
+    if (rc != ERROR_SUCCESS) return false;
     ((LPBYTE)data)[dwByte] = '\0';
+
     return (rc == ERROR_SUCCESS);
+  }
+
+  //! 文字列の読み込み
+  LPCTSTR get_s(const std::tstring &entry, LPCTSTR pszDefault) const {
+    static TCHAR tempBuff[512] = {};
+    if (read(entry, tempBuff)) {
+      return tempBuff;
+    } else {
+      return pszDefault;
+    }
   }
 
   //! DWORDの書き込み
@@ -235,6 +247,7 @@ MENOU_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstri
     return ret;
   } else if (dwByte > 0) {
     TCHAR *buffer = new TCHAR[dwByte + 1];
+    buffer[0] = L'\0';
 
     bool ret = hKey.read(entry, (LPCTSTR)buffer);
     if (ret) {
