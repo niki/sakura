@@ -95,6 +95,12 @@ void CViewCommander::Command_GREP( void )
 	if (count > 0) {
 		if (temp.GetStringLength() == 0) return;
 		cmWork2.SetString( GetEditWindow()->m_cDlgGrep.m_szFile );
+		wchar_t pattern[256] = {};
+		if (RegKey(SC_REGKEY).read(_T("GrepPattern_CPP"), pattern)) {
+			cmWork2.Replace(_T("$cpp"), pattern);
+		} else {
+			cmWork2.Replace(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp"));
+		}
 		cmWork3.SetString( temp.GetStringPtr() );
 	} else {
 		TCHAR	szWorkFolder[MAX_PATH];
