@@ -22,11 +22,11 @@ Download
 
 変更内容はコミットログを参照してください. 細かい内容は [my_config.h](https://github.com/calette/sakura/raw/master/sakura_core/my_config.h) を見てね.  
 
-+ [sakura-calette-2.28-x86.zip](http://mimix.sakura.ne.jp/release/sakura-calette-2.28-x86.zip) (908KB)  
++ [sakura-calette-2.29-x86.zip](http://mimix.sakura.ne.jp/release/sakura-calette-2.29-x86.zip) (909KB)  
++ 最新のキーワードセット [keyword_pack.zip](https://github.com/calette/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
 ※ 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
-+ 最新のキーワードセット [keyword_pack.zip](https://github.com/calette/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
 
 Setup  
