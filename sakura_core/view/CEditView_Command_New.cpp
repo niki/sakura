@@ -438,6 +438,10 @@ void CEditView::DeleteData2(
 		// 操作の追加
 		m_cCommander.GetOpeBlk()->AppendOpe( pcOpe );
 	}
+
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	m_sMarkCache.Refresh();  // キャッシュのクリア
+#endif  // SC_
 }
 
 
@@ -671,6 +675,9 @@ void CEditView::DeleteData(
 	}
 end_of_func:;
 
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	m_sMarkCache.Refresh();  // キャッシュのクリア
+#endif  // SC_
 	return;
 }
 
@@ -969,6 +976,10 @@ bool CEditView::ReplaceData_CEditView3(
 			*pnInsSeq = LRArg.nInsSeq;
 		}
 	}
+
+#ifdef SC_FIX_EDITVIEW_SCRBAR
+	m_sMarkCache.Refresh();  // キャッシュのクリア
+#endif  // SC_
 
 	//	Jan. 30, 2001 genta
 	//	ファイル全体の更新フラグが立っていないと各行の更新状態が表示されないので

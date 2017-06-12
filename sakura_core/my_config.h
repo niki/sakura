@@ -165,7 +165,11 @@
 //  - 検索結果を表示 2017.6.9 
 //  - ブックマークを表示 2017.6.9 
 //  - カーソル行を表示 2017.6.11 
-//  ? 更新がいまいち, バーにカーソルを乗せた時
+//  ? 結果を上に描画しているため現在の範囲がわかりにくい → スクロールバーの右側にラインを描画する
+//  ? 更新がいまいち
+//      バーにカーソルを乗せた時 → フェードアウトして消えてしまう;
+//      削除、貼り付けなどをした時の結果変動時 → Refreshする
+//      行数が変わったとき → Refreshする
 //------------------------------------------------------------------
 #define SC_FIX_EDITVIEW_SCRBAR
   #define SC_SCRBAR_FOUND_MAGIC (0x10000000)  // 検索
@@ -174,13 +178,16 @@
   #define SC_SCRBAR_LINEN_MASK  (0x0fffffff)  // 行番号マスク
   // 検索文字列のある行の色
   // (REG/EditViewScrBarFoundColor:#0000d7)
-  #define SC_EDITVIEW_SCRBAR_FOUND_COLOR _T("#0000d7")
+  #define SC_EDITVIEW_SCRBAR_FOUND_COLOR  _T("#0000d7")
   // ブックマークのある行の色
   // (REG/EditViewScrBarMarkColor:#d80000)
-  #define SC_EDITVIEW_SCRBAR_MARK_COLOR _T("#d80000")
+  #define SC_EDITVIEW_SCRBAR_MARK_COLOR   _T("#d80000")
   // キャレットのある行の色
   // (REG/EditViewScrBarMarkColor:#d80000)
   #define SC_EDITVIEW_SCRBAR_CURSOR_COLOR _T("#00d800")
+  // スクロールボックスの色
+  // (REG/EditViewScrBarMarkColor:#ffc040)
+  #define SC_EDITVIEW_SCRBAR_THUMB_COLOR  _T("#ffc040")
 
 //------------------------------------------------------------------
 // 行を中央ぞろえにする 2014.3.26 - 2015.7.24

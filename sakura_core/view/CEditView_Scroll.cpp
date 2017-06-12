@@ -348,7 +348,7 @@ void CEditView::AdjustScrollBars()
 			HDC hdc = ::GetDC(m_hwndVScrollBar);
 			
 			CGraphics gr(hdc);
-			COLORREF clrSearch, clrMark, clrCursor;
+			COLORREF clrSearch, clrMark, clrCursor, clrThumb;
 			
 			TCHAR szData[32];
 			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarFoundColor"), (LPCTSTR)szData)) {
@@ -369,6 +369,11 @@ void CEditView::AdjustScrollBars()
 				clrCursor = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_CURSOR_COLOR);
 				//clrCursor = CTypeSupport(this, COLORIDX_UNDERLINE).GetBackColor();
 			}
+			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarThumbColor"), (LPCTSTR)szData)) {
+				clrThumb = mn::ColorString::ToCOLORREF(szData);
+			} else {
+				clrThumb = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_THUMB_COLOR);
+			}
 			
 			// 行数が変わっていたら強制更新
 			if (m_sMarkCache.nLastLineCount != nAllLines) {
@@ -386,25 +391,20 @@ void CEditView::AdjustScrollBars()
 			};
 			// 検索印を描画
 			auto fnFoundDraw = [&gr, nCxVScroll, clrSearch](int x, int y) {
-				const int w = std::max(DpiScaleY(1), nCxVScroll);
+				const int w = std::max(DpiScaleX(1), nCxVScroll);
 				const int h = std::max(DpiScaleY(1), DpiScaleY(1));
 				RECT rc = {x, y, x + w, y + h};
 				gr.FillSolidMyRect(rc, clrSearch);
 			};
 			// ブックマーク印を描画
 			auto fnMarkDraw = [&gr, nCxVScroll, clrMark](int x, int y) {
-				const int w = std::max(DpiScaleY(1), nCxVScroll / 4);
+				const int w = std::max(DpiScaleX(1), nCxVScroll / 4);
 				const int h = std::max(DpiScaleY(1), nCxVScroll / 4);
 				RECT rc = {x, y, x + w, y + h};
 				gr.FillSolidMyRect(rc, clrMark);
 			};
-			// カーソル印を描画
-			auto fnCursorDraw = [&gr, nCxVScroll, clrCursor](int x, int y) {
-				const int w = std::max(DpiScaleY(1), nCxVScroll);
-				const int h = std::max(DpiScaleY(1), DpiScaleY(1));
-				RECT rc = {x, y, x + w, y + h};
-				gr.FillSolidMyRect(rc, clrCursor);
-			};
+			
+			//m_sMarkCache.Refresh();  // ここを有効にすると常にチェックする
 			
 			if (m_sMarkCache.vLines.empty()) {
 				// 更新・描画
@@ -414,15 +414,27 @@ void CEditView::AdjustScrollBars()
 				pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(nLinePos);
 
 				while (pCDocLine) {
-					// レイアウト行
 					CLogicInt nLogicY = nLinePos;
-					CLogicPoint ptXY = {0, nLogicY};
-					CLayoutPoint ptLayout;
-					m_pcEditDoc->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLineHint);
-					nLineHint = ptLayout.y;
+					CLayoutInt nLayoutY;
+
+					if (m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP) {
+						// 折り返しなし
+						// ロジック行＝レイアウト行
+						nLayoutY = nLogicY;
+					} else {
+						// 折り返しあり
+						// ロジック行→レイアウト行
+						CLogicInt nLogicY = nLinePos;
+						CLogicPoint ptXY = {0, nLogicY};
+						CLayoutPoint ptLayout;
+						m_pcEditDoc->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLineHint);
+						nLayoutY = ptLayout.y;
+					}
+
+					nLineHint = nLayoutY;
 
 					int x = 1;
-					int y = nBarTop + fnCalcY(ptLayout.y);
+					int y = nBarTop + fnCalcY(nLayoutY);
 
 					// 検索文字列のある行
 					if (m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
@@ -434,7 +446,7 @@ void CEditView::AdjustScrollBars()
 						if (nResult) {
 							fnFoundDraw(x, y);
 							// キャッシュに登録
-							m_sMarkCache.Add(ptLayout.y, SC_SCRBAR_FOUND_MAGIC);
+							m_sMarkCache.Add(nLayoutY, SC_SCRBAR_FOUND_MAGIC);
 						}
 					}
 
@@ -442,7 +454,7 @@ void CEditView::AdjustScrollBars()
 					if (CBookmarkGetter(pCDocLine).IsBookmarked()) {
 						fnMarkDraw(x, y);
 						// キャッシュに登録
-						m_sMarkCache.Add(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+						m_sMarkCache.Add(nLayoutY, SC_SCRBAR_MARK_MAGIC);
 					}
 
 					nLinePos++;
@@ -468,8 +480,24 @@ void CEditView::AdjustScrollBars()
 				int x = 1;
 				int y = nBarTop + fnCalcY(GetCaret().GetCaretLayoutPos().GetY2());
 
-				fnCursorDraw(x, y);
+				const int w = std::max(DpiScaleX(1), nCxVScroll);
+				const int h = std::max(DpiScaleY(1), DpiScaleY(1));
+				RECT rc = {x, y, x + w, y + h};
+				gr.FillSolidMyRect(rc, clrCursor);
 			}
+			
+#if 0
+			// スクロールボックス
+			if (bEnable) {
+				int x = nCxVScroll - DpiScaleX(2);
+				int y = sbi.xyThumbTop;
+
+				const int w = DpiScaleX(2);
+				const int h = sbi.xyThumbBottom - sbi.xyThumbTop;
+				RECT rc = {x, y, x + w, y + h};
+				gr.FillSolidMyRect(rc, clrThumb);
+			}
+#endif
 			
 			::ReleaseDC(m_hwndVScrollBar, hdc);
 			
