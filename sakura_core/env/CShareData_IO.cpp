@@ -2489,6 +2489,10 @@ void CShareData_IO::ShareData_IO_Plugin( CDataProfile& cProfile, CMenuDrawer* pc
 			pluginrec.m_szName[0] = L'\0';
 			pluginrec.m_szId[0] = L'\0';
 		}
+#ifdef SC_FIX_PROFILES
+		// 未定義値を無視
+		if (!cProfile.IsReadingMode() && pluginrec.m_szName[0] == _T('\0') && pluginrec.m_szId[0] == _T('\0')) continue;
+#endif  // SC_
 		auto_sprintf( szKeyName, LTEXT("P[%02d].Name"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW(pluginrec.m_szName) );
 		auto_sprintf( szKeyName, LTEXT("P[%02d].Id"), i );
