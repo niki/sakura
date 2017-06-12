@@ -1752,6 +1752,10 @@ void CShareData_IO::ShareData_IO_Print( CDataProfile& cProfile )
 	for( i = 0; i < MAX_PRINTSETTINGARR; ++i ){
 		// 2005.04.07 D.S.Koba
 		PRINTSETTING& printsetting = pShare->m_PrintSettingArr[i];
+#ifdef SC_FIX_PROFILES
+		// 未定義値を無視
+		if (!cProfile.IsReadingMode() && printsetting.m_mdmDevMode.m_szPrinterDeviceName[0] == _T('\0')) continue;
+#endif  // SC_
 		auto_sprintf( szKeyName, LTEXT("PS[%02d].nInts"), i );
 		static const WCHAR* pszForm = LTEXT("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d");
 		if( cProfile.IsReadingMode() ){
