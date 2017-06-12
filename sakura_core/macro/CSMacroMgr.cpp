@@ -25,9 +25,9 @@
 #include "StdAfx.h"
 #include "macro/CSMacroMgr.h"
 #include "macro/CPPAMacroMgr.h"
-#ifdef SC_USE_LUA
+#ifdef RB_USE_LUA
 #include "macro/CLuaMacroMgr.h"
-#endif  // SC_
+#endif  // RB_
 #include "macro/CWSHManager.h"
 #include "macro/CMacroFactory.h"
 #include "env/CShareData.h"
@@ -492,12 +492,12 @@ CSMacroMgr::CSMacroMgr()
 	
 	m_pShareData = &GetDllShareData();
 	
-#ifdef SC_USE_PPA
+#ifdef RB_USE_PPA
 	CPPAMacroMgr::declare();
-#endif  // SC_USE_PPA
-#ifdef SC_USE_LUA
+#endif  // RB_USE_PPA
+#ifdef RB_USE_LUA
 	CLuaMacroMgr::declare();
-#endif  // SC_
+#endif  // RB_
 	CKeyMacroMgr::declare();
 	CWSHMacroManager::declare();
 	

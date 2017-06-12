@@ -28,8 +28,8 @@
 		   distribution.
 */
 
-#ifndef SC_CDLGKEYWORDSELECT_H__
-#define SC_CDLGKEYWORDSELECT_H__
+#ifndef RB_CDLGKEYWORDSELECT_H__
+#define RB_CDLGKEYWORDSELECT_H__
 
 #include "dlg/CDialog.h"
 #include "config/maxdata.h" // MAX_KEYWORDSET_PER_TYPE

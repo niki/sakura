@@ -69,7 +69,7 @@ bool CFigure_Eol::DrawImp(SColorStrategyInfo* pInfo)
 	const CLayout* pcLayout = pInfo->m_pDispPos->GetLayoutRef();
 	CEol cEol = pcLayout->GetLayoutEol();
 	if(cEol.GetLen()){
-#ifdef SC_FIX_WS_COLOR
+#ifdef RB_FIX_WS_COLOR
 		bool bTrans = DrawImp_StyleSelect(pInfo);
 #else
 		// CFigureSpace::DrawImp_StyleSelectもどき。選択・検索色を優先する
@@ -86,9 +86,9 @@ bool CFigure_Eol::DrawImp(SColorStrategyInfo* pInfo)
 		bool blendColor = bSelecting && cCurrentType.GetTextColor() == cCurrentType.GetBackColor(); // 選択混合色
 		CTypeSupport& currentStyle = blendColor ? cCurrentType2 : cCurrentType;
 		CTypeSupport *pcText, *pcBack;
-#  ifdef SC_FIX_SELAREA
+#  ifdef RB_FIX_SELAREA
 		blendColor = true;
-#  endif  // SC_
+#  endif  // RB_
 		if( bSelecting && !blendColor ){
 			// 選択文字色固定指定
 			pcText = &cCurrentType;
@@ -117,7 +117,7 @@ bool CFigure_Eol::DrawImp(SColorStrategyInfo* pInfo)
 		sFont.m_sFontAttr.m_bUnderLine = cSpaceType.HasUnderLine();
 		sFont.m_hFont = pInfo->m_pcView->GetFontset().ChooseFontHandle( sFont.m_sFontAttr );
 		pInfo->m_gr.PushMyFont(sFont);
-#endif  // SC_
+#endif  // RB_
 
 		DispPos sPos(*pInfo->m_pDispPos);	// 現在位置を覚えておく
 		_DispEOL(pInfo->m_gr, pInfo->m_pDispPos, cEol, pcView, bTrans);
@@ -150,11 +150,11 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 		CTypeSupport cBgLineType(pcView,COLORIDX_CARETLINEBG);
 		CTypeSupport cEvenBgLineType(pcView,COLORIDX_EVENLINEBG);
 		CTypeSupport cPageViewBgLineType(pcView,COLORIDX_PAGEVIEW);
-#ifdef SC_FIX_COMMENT
+#ifdef RB_FIX_COMMENT
 		bool bBgcolor = true;
 #else
 		bool bBgcolor = cWrapType.GetBackColor() == cTextType.GetBackColor();
-#endif  // SC_
+#endif  // RB_
 		EColorIndexType eBgcolorOverwrite = COLORIDX_WRAP;
 		bool bTrans = pcView->IsBkBitmap();
 		if( cWrapType.IsDisp() ){
@@ -196,9 +196,9 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#ifdef SC_LINE_CENTERING
+#ifdef RB_LINE_CENTERING
 			(pcView->GetLineSpace() / 2) +
-#endif  // SC_
+#endif  // RB_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClip2,
@@ -235,7 +235,7 @@ void _DispEOF(
 	CTypeSupport cTextType(pcView,COLORIDX_TEXT);
 	bool bTrans = pcView->IsBkBitmap() && cEofType.GetBackColor() == cTextType.GetBackColor();
 
-#ifdef SC_FIX_WS_COLOR
+#ifdef RB_FIX_WS_COLOR
 	COLORREF crText = cTextType.GetTextColor();
 	COLORREF crBack = cTextType.GetBackColor();
 	//! 色をマージする
@@ -258,12 +258,12 @@ void _DispEOF(
 		return RGB( (BYTE)r, (BYTE)g, (BYTE)b );
 	};
 	
-	static int nBlendPer = RegKey(SC_REGKEY).get(_T("WhiteSpaceBlendPer"), SC_WS_BLEND_PER);
+	static int nBlendPer = RegKey(RB_REGKEY).get(_T("WhiteSpaceBlendPer"), RB_WS_BLEND_PER);
 	// 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
 	COLORREF col1 = cTextType.GetTextColor();
 	COLORREF col2 = crBack;	// 合成済みの色を使用する
 	crText = fnMeargeColor(col1, col2, nBlendPer);
-#endif  // SC_
+#endif  // RB_
 
 	//必要なインターフェースを取得
 	const CTextMetrics* pMetrics=&pcView->GetTextMetrics();
@@ -278,20 +278,20 @@ void _DispEOF(
 	if(pArea->GenerateClipRect(&rcClip,*pDispPos,nEofLen))
 	{
 		//色設定
-#ifdef SC_FIX_WS_COLOR
+#ifdef RB_FIX_WS_COLOR
 		gr.PushTextForeColor(crText);
 		gr.PushTextBackColor(crBack);
 #else
 		cEofType.SetGraphicsState_WhileThisObj(gr);
-#endif  // SC_
+#endif  // RB_
 
 		//描画
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#ifdef SC_LINE_CENTERING
+#ifdef RB_LINE_CENTERING
 			(pcView->GetLineSpace() / 2) +
-#endif  // SC_
+#endif  // RB_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClip,
@@ -300,10 +300,10 @@ void _DispEOF(
 			pMetrics->GetDxArray_AllHankaku()
 		);
 		
-#ifdef SC_FIX_WS_COLOR
+#ifdef RB_FIX_WS_COLOR
 		gr.PopTextForeColor();
 		gr.PopTextBackColor();
-#endif  // SC_
+#endif  // RB_
 	}
 
 	//描画位置を進める
@@ -335,9 +335,9 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#ifdef SC_LINE_CENTERING
+#ifdef RB_LINE_CENTERING
 			(pcView->GetLineSpace() / 2) +
-#endif  // SC_
+#endif  // RB_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClip2,

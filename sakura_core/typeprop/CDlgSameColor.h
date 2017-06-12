@@ -28,8 +28,8 @@
 		   distribution.
 */
 
-#ifndef SC_CDLGSAMECOLOR_H__
-#define SC_CDLGSAMECOLOR_H__
+#ifndef RB_CDLGSAMECOLOR_H__
+#define RB_CDLGSAMECOLOR_H__
 
 #include "dlg/CDialog.h"
 

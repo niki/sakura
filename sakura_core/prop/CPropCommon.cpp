@@ -128,9 +128,9 @@ CPropCommon::CPropCommon()
 	{
 		assert( sizeof(CPropGeneral)   - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropWin)       - sizeof(CPropCommon) == 0 );
-#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
+#ifndef RB_FIX_MAINMENU_FORCE_DEFAULT
 		assert( sizeof(CPropMainMenu)  - sizeof(CPropCommon) == 0 );
-#endif  // SC_
+#endif  // RB_
 		assert( sizeof(CPropToolbar)   - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropTab)       - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropStatusbar) - sizeof(CPropCommon) == 0 );
@@ -225,9 +225,9 @@ INT_PTR CPropCommon::DoPropertySheet( int nPageNum, bool bTrayProc )
 	static const ComPropSheetInfo ComPropSheetInfoList[] = {
 		{ STR_PROPCOMMON_GENERAL,	IDD_PROP_GENERAL,	CPropGeneral::DlgProc_page },
 		{ STR_PROPCOMMON_WINDOW,	IDD_PROP_WIN,		CPropWin::DlgProc_page },
-#ifndef SC_FIX_MAINMENU_FORCE_DEFAULT
+#ifndef RB_FIX_MAINMENU_FORCE_DEFAULT
 		{ STR_PROPCOMMON_MAINMENU,	IDD_PROP_MAINMENU,	CPropMainMenu::DlgProc_page },	// 2010/5/8 Uchi
-#endif  // SC_
+#endif  // RB_
 		{ STR_PROPCOMMON_TOOLBAR,	IDD_PROP_TOOLBAR,	CPropToolbar::DlgProc_page },
 		{ STR_PROPCOMMON_TABS,		IDD_PROP_TAB,		CPropTab::DlgProc_page },
 		{ STR_PROPCOMMON_STATBAR,	IDD_PROP_STATUSBAR,	CPropStatusbar::DlgProc_page },	// 文字コード表示指定	2008/6/21	Uchi

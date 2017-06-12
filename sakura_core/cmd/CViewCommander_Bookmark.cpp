@@ -63,9 +63,9 @@ void CViewCommander::Command_JUMP_DIALOG( void )
 /* 指定行ヘジャンプ */
 void CViewCommander::Command_JUMP( void )
 {
-#ifdef SC_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // SC_
+#ifdef RB_FIX_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(RB_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // RB_
 	const wchar_t*	pLine;
 	int			nMode;
 	int			bValidLine;
@@ -277,7 +277,7 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			pCDocLine=GetDocument()->m_cDocLineMgr.GetLine( nY );
 			CBookmarkSetter cBookmark(pCDocLine);
 			if(pCDocLine)cBookmark.SetBookmark(!cBookmark.IsBookmarked());
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 			if (pCDocLine) {
 				// レイアウト行
 				CLogicInt nLogicY = nY;
@@ -287,21 +287,21 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				
 				if (cBookmark.IsBookmarked()) {
 					// 登録
-					m_pCommanderView->m_sMarkCache.Add(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+					m_pCommanderView->m_sMarkCache.Add(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
 				} else {
 					// 削除
-					m_pCommanderView->m_sMarkCache.Del(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+					m_pCommanderView->m_sMarkCache.Del(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
 				}
 				//m_pCommanderView->m_sMarkCache.Refresh();
 			}
-#endif  // SC_
+#endif  // RB_
 		}
 	}
 	else{
 		pCDocLine=GetDocument()->m_cDocLineMgr.GetLine( GetCaret().GetCaretLogicPos().GetY2() );
 		CBookmarkSetter cBookmark(pCDocLine);
 		if(pCDocLine)cBookmark.SetBookmark(!cBookmark.IsBookmarked());
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 		if (pCDocLine) {
 			// レイアウト行
 			CLogicInt nLogicY = GetCaret().GetCaretLogicPos().GetY2();
@@ -311,19 +311,19 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			
 			if (cBookmark.IsBookmarked()) {
 				// 登録
-				m_pCommanderView->m_sMarkCache.Add(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+				m_pCommanderView->m_sMarkCache.Add(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
 			} else {
 				// 削除
-				m_pCommanderView->m_sMarkCache.Del(ptLayout.y, SC_SCRBAR_MARK_MAGIC);
+				m_pCommanderView->m_sMarkCache.Del(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
 			}
 			//m_pCommanderView->m_sMarkCache.Refresh();
 		}
-#endif  // SC_
+#endif  // RB_
 	}
 
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 	//m_pCommanderView->m_sMarkCache.Refresh();
-#endif  // SC_
+#endif  // RB_
 
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();
@@ -335,9 +335,9 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 //! 次のブックマークを探し，見つかったら移動する
 void CViewCommander::Command_BOOKMARK_NEXT(void)
 {
-#ifdef SC_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // SC_
+#ifdef RB_FIX_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(RB_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // RB_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
 	BOOL		bRedo	=	TRUE;	// hor
@@ -381,9 +381,9 @@ re_do:;								// hor
 //! 前のブックマークを探し，見つかったら移動する．
 void CViewCommander::Command_BOOKMARK_PREV(void)
 {
-#ifdef SC_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // SC_
+#ifdef RB_FIX_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(RB_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // RB_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
 	BOOL		bRedo	=	TRUE;	// hor
@@ -429,9 +429,9 @@ re_do:;								// hor
 void CViewCommander::Command_BOOKMARK_RESET(void)
 {
 	CBookmarkManager(&GetDocument()->m_cDocLineMgr).ResetAllBookMark();
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 	m_pCommanderView->m_sMarkCache.Refresh();
-#endif  // SC_
+#endif  // RB_
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();
 }
@@ -458,9 +458,9 @@ void CViewCommander::Command_BOOKMARK_PATTERN( void )
 //! 次の関数リストマークを探し，見つかったら移動する
 void CViewCommander::Command_FUNCLIST_NEXT(void)
 {
-#ifdef SC_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // SC_
+#ifdef RB_FIX_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(RB_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // RB_
 	CLogicPoint	ptXY(0, GetCaret().GetCaretLogicPos().y);
 	int			nYOld = ptXY.y;
 
@@ -491,9 +491,9 @@ void CViewCommander::Command_FUNCLIST_NEXT(void)
 //! 前のブックマークを探し，見つかったら移動する．
 void CViewCommander::Command_FUNCLIST_PREV(void)
 {
-#ifdef SC_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(SC_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // SC_
+#ifdef RB_FIX_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(RB_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // RB_
 
 	CLogicPoint	ptXY(0,GetCaret().GetCaretLogicPos().y);
 	int			nYOld = ptXY.y;

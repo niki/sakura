@@ -372,7 +372,7 @@ void CViewCommander::Command_WRAPWINDOWWIDTH( void )	//	Oct. 7, 2000 JEPRO WRAPW
 	CLayoutInt newKetas;
 	
 	nWrapMode = m_pCommanderView->GetWrapMode( &newKetas );
-#ifdef SC_FIX_WRAP_MODE
+#ifdef RB_FIX_WRAP_MODE
 	// GetWrapMode()はトグルになる次のモードが返ってくることに注意
 	// 現在の折り返しモードでないなら NextWrapMode()とかのほうがいいのではないか
 	switch( nWrapMode ){
@@ -390,7 +390,7 @@ void CViewCommander::Command_WRAPWINDOWWIDTH( void )	//	Oct. 7, 2000 JEPRO WRAPW
 	}
 #else
 	GetDocument()->m_nTextWrapMethodCur = WRAP_SETTING_WIDTH;
-#endif  // SC_
+#endif  // RB_
 	GetDocument()->m_bTextWrapMethodCurTemp = !( GetDocument()->m_nTextWrapMethodCur == m_pCommanderView->m_pTypeData->m_nTextWrapMethod );
 	if( nWrapMode == CEditView::TGWRAP_NONE ){
 		return;	// 折り返し桁は元のまま
@@ -405,7 +405,7 @@ void CViewCommander::Command_WRAPWINDOWWIDTH( void )	//	Oct. 7, 2000 JEPRO WRAPW
 //	2013.12.30 左隅に移動しないように
 //	m_pCommanderView->GetTextArea().SetViewLeftCol( CLayoutInt(0) );		/* 表示域の一番左の桁(0開始) */
 
-#ifdef SC_FIX_WRAP_MODE
+#ifdef RB_FIX_WRAP_MODE
 	switch( nWrapMode ){
 	case CEditView::TGWRAP_FULL:		// 折り返さない
 		GetDocument()->m_cLayoutMgr.CalculateTextWidth();		// テキスト最大幅を算出する

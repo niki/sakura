@@ -252,11 +252,11 @@ void CEditView::ISearchExit()
 		CSearchKeywordManager().AddToSearchKeyArr( m_strCurSearchKey.c_str() );
 	}
 	m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
-#ifdef SC_FIX_SEARCH_KEEP_REGEXP
+#ifdef RB_FIX_SEARCH_KEEP_REGEXP
 	///
 #else
 	GetDllShareData().m_Common.m_sSearch.m_sSearchOption = m_sCurSearchOption;
-#endif  // SC_
+#endif  // RB_
 	m_pcEditWnd->m_cToolbar.AcceptSharedSearchKey();
 	m_nISearchDirection = SEARCH_BACKWARD;
 	m_nISearchMode = SEARCH_NONE;
@@ -445,9 +445,9 @@ void CEditView::ISearchExec(bool bNext)
 		m_sISearchHistory[m_nISearchHistoryCount] = sMatchRange;
 	}
 
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 	m_sMarkCache.Refresh();
-#endif  // SC_
+#endif  // RB_
 	m_bCurSrchKeyMark = true;
 
 	Redraw();	

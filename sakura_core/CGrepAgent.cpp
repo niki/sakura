@@ -213,9 +213,9 @@ DWORD CGrepAgent::DoGrep(
 	}
 	pcViewDst->GetDocument()->m_cDocEditor.m_pcOpeBlk->AddRef();
 
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 	pcViewDst->m_sMarkCache.Refresh();
-#endif  // SC_
+#endif  // RB_
 	pcViewDst->m_bCurSrchKeyMark = true;								/* 検索文字列のマーク */
 	pcViewDst->m_strCurSearchKey = pcmGrepKey->GetStringPtr();				/* 検索文字列 */
 	pcViewDst->m_sCurSearchOption = sSearchOption;						// 検索オプション

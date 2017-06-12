@@ -10,9 +10,9 @@ Feature
 -------
 
 <details><summary>MacTypeなどの描画負荷の高いソフトを併用した際に起こる描画崩れを軽減(したつもり)</summary></details>  
-<details><summary>Luaをマクロ言語として組み込み</summary><img src="https://raw.github.com/wiki/calette/sakura/images/sakura_201706041845.png" width="50%"></details>  
-<details><summary>スクロールバーに検索結果やブックマークを表示</summary><img src="https://raw.github.com/wiki/calette/sakura/images/sakura_201706092354.png" width="50%"></details>  
-<details><summary>Grepフォルダの指定を４つに拡張</summary><img src="https://raw.github.com/wiki/calette/sakura/images/sakura_201706041815.png" width="50%"></details>  
+<details><summary>Luaをマクロ言語として組み込み</summary><img src="https://raw.github.com/wiki/rabbiteariris/sakura/images/sakura_201706041845.png" width="50%"></details>  
+<details><summary>スクロールバーに検索結果やブックマークを表示</summary><img src="https://raw.github.com/wiki/rabbiteariris/sakura/images/sakura_201706092354.png" width="50%"></details>  
+<details><summary>Grepフォルダの指定を４つに拡張</summary><img src="https://raw.github.com/wiki/rabbiteariris/sakura/images/sakura_201706041815.png" width="50%"></details>  
 <details><summary>半角空白やタブなどの見た目をすっきりさせる (Sublime Textを模倣)</summary></details>  
 <details><summary>sakura.iniの精査 (肥大化対策)</summary></details>  
 
@@ -20,10 +20,10 @@ Feature
 Download  
 --------
 
-変更内容はコミットログを参照してください. 細かい内容は [my_config.h](https://github.com/calette/sakura/raw/master/sakura_core/my_config.h) を見てね.  
+変更内容はコミットログを参照してください. 細かい内容は [my_config.h](https://github.com/rabbiteariris/sakura/raw/master/sakura_core/my_config.h) を見てね.  
 
-+ [sakura-calette-2.29-x86.zip](http://mimix.sakura.ne.jp/release/sakura-calette-2.29-x86.zip) (909KB)  
-+ 最新のキーワードセット [keyword_pack.zip](https://github.com/calette/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
++ [sakura-rei-2.30-x86.zip](http://mimix.sakura.ne.jp/release/sakura-rei-2.30-x86.zip) (909KB)  
++ 最新のキーワードセット [keyword_pack.zip](https://github.com/rabbiteariris/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
 ※ 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
@@ -38,7 +38,7 @@ Setup
 
 Build environment  
 -----------------
-+ 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/calette/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
++ 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/rabbiteariris/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド  
 + Boostを使用 (JSON)  
 + Luaを使用 (マクロ, プラグイン)  
@@ -53,8 +53,8 @@ Changed
 
 |修正版|公式|
 |-|-|
-|[sakura.default.ini](https://github.com/calette/sakura/raw/master/Publish/sakura.default.ini)<details><summary>デフォルト設定ファイルの使用</summary>デフォルト設定値を設定してあるファイルです.<br>ここに初期値を設定することで常にその状態で起動します.<br>ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>||
-|[sakura.keywordset.json](https://github.com/calette/sakura/raw/master/Publish/sakura.keywordset.json)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
+|[sakura.default.ini](https://github.com/rabbiteariris/sakura/raw/master/Publish/sakura.default.ini)<details><summary>デフォルト設定ファイルの使用</summary>デフォルト設定値を設定してあるファイルです.<br>ここに初期値を設定することで常にその状態で起動します.<br>ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>||
+|[sakura.keywordset.json](https://github.com/rabbiteariris/sakura/raw/master/Publish/sakura.keywordset.json)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
 |履歴を別ファイル (`sakura.recent.json`)に出力|`sakura.ini`に出力|
 |起動時に存在しないファイル・フォルダ履歴を削除する||
 |カラー設定のインポートはカラー情報だけを適用させる|すべての情報を適用|
@@ -125,4 +125,4 @@ Cregit
   Copyright © 1994–2017 Lua.org, PUC-Rio.  
   
 
-(C) 2017, Calette.
+(C) 2017, Reiris.

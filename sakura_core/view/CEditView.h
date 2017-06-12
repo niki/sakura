@@ -471,13 +471,13 @@ public:
 
 	int IsSearchString( const CStringRef& cStr, CLogicInt, CLogicInt*, CLogicInt* ) const;	/* 現在位置が検索文字列に該当するか */	//2002.02.08 hor 引数追加
 
-#ifdef SC_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef RB_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false, bool bRegQuote = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false, bool bRegQuote = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
 #else
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
-#endif  // SC_
+#endif  // RB_
 
 private:
 	/* インクリメンタルサーチ */ 
@@ -580,7 +580,7 @@ public:
 	void SetUndoBuffer( bool bPaintLineNumber = false );			// アンドゥバッファの処理
 	HWND StartProgress();
 
-#ifdef SC_LINE_CENTERING
+#ifdef RB_LINE_CENTERING
 	int GetLineSpace() const { //!< 行間のすきま取得
 		if (!m_bMiniMap && m_pTypeData) {
 			return m_pTypeData->m_nLineSpace;
@@ -588,7 +588,7 @@ public:
 			return 0;
 		}
 	}
-#endif  // SC_
+#endif  // RB_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         アクセサ                            //
@@ -772,14 +772,14 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(CEditView);
 	
-#ifdef SC_FIX_FLICKER
+#ifdef RB_FIX_FLICKER
 public:
 	void BeginIgnoreUpdateWindow();
 	void EndIgnoreUpdateWindow(bool bUpdate = true);
 	int m_ignore_update_window;  // UpdateWindowを無視する
-#endif  // SC_
+#endif  // RB_
 
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 public:
 	struct {
 		// 更新キュー
@@ -789,12 +789,12 @@ public:
 			if (vLines.empty()) {
 				vLines.push_back(nLayoutY | magic);
 			} else {
-				if ((vLines.back() & SC_SCRBAR_LINEN_MASK) <= (uint32_t)nLayoutY) {
+				if ((vLines.back() & RB_SCRBAR_LINEN_MASK) <= (uint32_t)nLayoutY) {
 					vLines.push_back(nLayoutY | magic);  // 末尾に追加
 				} else {
 					auto it = vLines.begin();
 					while (it != vLines.end()) {
-						if ((uint32_t)nLayoutY < ((*it) & SC_SCRBAR_LINEN_MASK)) {
+						if ((uint32_t)nLayoutY < ((*it) & RB_SCRBAR_LINEN_MASK)) {
 							vLines.insert(it, nLayoutY | magic);
 							break;
 						}
@@ -811,7 +811,7 @@ public:
 				auto it = vLines.begin();
 				while (it != vLines.end()) {
 					if ((*it) & magic) {
-						if (((*it) & SC_SCRBAR_LINEN_MASK) == nLayoutY) {
+						if (((*it) & RB_SCRBAR_LINEN_MASK) == nLayoutY) {
 							it = vLines.erase(it);
 							continue;
 						}
@@ -824,7 +824,7 @@ public:
 		int  nLastLineCount = 0;       // 最後に更新した時の行数
 		std::vector<uint32_t> vLines;  // キャッシュ
 	} m_sMarkCache;
-#endif  // SC_
+#endif  // RB_
 };
 
 

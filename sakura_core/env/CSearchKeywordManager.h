@@ -38,7 +38,7 @@ struct SShare_SearchKeywords{
 	StaticVector< StaticString<WCHAR, _MAX_PATH>, MAX_REPLACEKEY, const WCHAR*>	m_aReplaceKeys;
 	StaticVector< StaticString<TCHAR, _MAX_PATH>, MAX_GREPFILE,   const TCHAR*>	m_aGrepFiles;
 	StaticVector< StaticString<TCHAR, _MAX_PATH>, MAX_GREPFOLDER, const TCHAR*>	m_aGrepFolders;
-#ifdef SC_FIX_GREP
+#ifdef RB_FIX_GREP
 	bool		m_bGrepFolders99;
 	bool		m_bGrepFolders2;
 	bool		m_bGrepFolders3;
@@ -46,16 +46,16 @@ struct SShare_SearchKeywords{
 	SFilePath	m_szGrepFolders2;
 	SFilePath	m_szGrepFolders3;
 	SFilePath	m_szGrepFolders4;
-#endif  // SC_
-#ifdef SC_FIX_MAXDATA
+#endif  // RB_
+#ifdef RB_FIX_MAXDATA
 	SShare_SearchKeywords() {
-		m_aSearchKeys.resize(RegKey(SC_REGKEY).get(_T("RecentSearchKeyMax"), SC_MAX_SEARCHKEY));
-		m_aReplaceKeys.resize(RegKey(SC_REGKEY).get(_T("RecentReplaceKeyMax"), SC_MAX_REPLACEKEY));
-		m_aGrepFiles.resize(RegKey(SC_REGKEY).get(_T("RecentGrepFileMax"), SC_MAX_GREPFILE));
-		m_aGrepFolders.resize(RegKey(SC_REGKEY).get(_T("RecentGrepFolderMax"), SC_MAX_GREPFOLDER));
+		m_aSearchKeys.resize(RegKey(RB_REGKEY).get(_T("RecentSearchKeyMax"), RB_MAX_SEARCHKEY));
+		m_aReplaceKeys.resize(RegKey(RB_REGKEY).get(_T("RecentReplaceKeyMax"), RB_MAX_REPLACEKEY));
+		m_aGrepFiles.resize(RegKey(RB_REGKEY).get(_T("RecentGrepFileMax"), RB_MAX_GREPFILE));
+		m_aGrepFolders.resize(RegKey(RB_REGKEY).get(_T("RecentGrepFolderMax"), RB_MAX_GREPFOLDER));
 		//ここ、呼ばれてない。。。？ MessageBoxW(NULL, L"",L"",MB_OK);
 	}
-#endif  // SC_
+#endif  // RB_
 };
 
 //! 検索キーワード管理

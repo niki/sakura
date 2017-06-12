@@ -3,7 +3,7 @@
 //! @file  file.hpp
 //! @brief ファイル
 //!
-//! @author (C) 2017, Calette.
+//! @author (C) 2017, Reiris.
 //====================================================================
 #ifndef MENOU_FILE_HPP
 #define MENOU_FILE_HPP

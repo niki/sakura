@@ -152,9 +152,9 @@ public:
 	DLLSHAREDATA*	m_pShareData;
 	BOOL			m_bInited;
 	HINSTANCE		m_hLangRsrcInstance;		// メッセージリソースDLLのインスタンスハンドル	// 2011.04.10 nasukoji
-#ifdef SC_FIX_DIALOG_POS
+#ifdef RB_FIX_DIALOG_POS
 	HWND			m_hwndPlaceOfWindow;
-#endif  // SC_
+#endif  // RB_
 
 protected:
 	void CreateSizeBox( void );
@@ -165,10 +165,10 @@ protected:
 	// コントロールに画面のフォントを設定	2012/11/27 Uchi
 	HFONT SetMainFont( HWND hTarget );
 
-#ifdef SC_FIX_DIALOG_POS
+#ifdef RB_FIX_DIALOG_POS
 	void SetPlaceOfWindow();
 	void SetPlaceOfWindow(HWND hWnd, const RECT *prcView = nullptr);
-#endif  // SC_
+#endif  // RB_
 };
 
 

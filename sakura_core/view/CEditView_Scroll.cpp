@@ -29,11 +29,11 @@
 #include "window/CEditWnd.h"
 #include "types/CTypeSupport.h"
 #include <limits.h>
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 #include "_main/CAppMode.h"
 #include "CEditApp.h"
 #include "CGrepAgent.h" // use CEditApp.h
-#endif  // SC_
+#endif  // RB_
 
 /*! スクロールバー作成
 	@date 2006.12.19 ryoji 新規作成（CEditView::Createから分離）
@@ -332,7 +332,7 @@ void CEditView::AdjustScrollBars()
 			ScrollAtV( CLayoutInt(0) );
 		}
 
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 		if (!m_bMiniMap && !CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) {
 			SCROLLBARINFO sbi;
 			sbi.cbSize = sizeof(sbi);
@@ -351,28 +351,28 @@ void CEditView::AdjustScrollBars()
 			COLORREF clrSearch, clrMark, clrCursor, clrThumb;
 			
 			TCHAR szData[32];
-			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarFoundColor"), (LPCTSTR)szData)) {
+			if (RegKey(RB_REGKEY).read(_T("EditViewScrBarFoundColor"), (LPCTSTR)szData)) {
 				clrSearch = mn::ColorString::ToCOLORREF(szData);
 			} else {
-				clrSearch = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_FOUND_COLOR);
+				clrSearch = mn::ColorString::ToCOLORREF(RB_EDITVIEW_SCRBAR_FOUND_COLOR);
 				//clrSearch = CTypeSupport(this, COLORIDX_SEARCH).GetBackColor();
 			}
-			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarMarkColor"), (LPCTSTR)szData)) {
+			if (RegKey(RB_REGKEY).read(_T("EditViewScrBarMarkColor"), (LPCTSTR)szData)) {
 				clrMark = mn::ColorString::ToCOLORREF(szData);
 			} else {
-				clrMark = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_MARK_COLOR);
+				clrMark = mn::ColorString::ToCOLORREF(RB_EDITVIEW_SCRBAR_MARK_COLOR);
 				//clrMark = CTypeSupport(this, COLORIDX_MARK).GetBackColor();
 			}
-			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarCursorColor"), (LPCTSTR)szData)) {
+			if (RegKey(RB_REGKEY).read(_T("EditViewScrBarCursorColor"), (LPCTSTR)szData)) {
 				clrCursor = mn::ColorString::ToCOLORREF(szData);
 			} else {
-				clrCursor = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_CURSOR_COLOR);
+				clrCursor = mn::ColorString::ToCOLORREF(RB_EDITVIEW_SCRBAR_CURSOR_COLOR);
 				//clrCursor = CTypeSupport(this, COLORIDX_UNDERLINE).GetBackColor();
 			}
-			if (RegKey(SC_REGKEY).read(_T("EditViewScrBarThumbColor"), (LPCTSTR)szData)) {
+			if (RegKey(RB_REGKEY).read(_T("EditViewScrBarThumbColor"), (LPCTSTR)szData)) {
 				clrThumb = mn::ColorString::ToCOLORREF(szData);
 			} else {
-				clrThumb = mn::ColorString::ToCOLORREF(SC_EDITVIEW_SCRBAR_THUMB_COLOR);
+				clrThumb = mn::ColorString::ToCOLORREF(RB_EDITVIEW_SCRBAR_THUMB_COLOR);
 			}
 			
 			// 行数が変わっていたら強制更新
@@ -446,7 +446,7 @@ void CEditView::AdjustScrollBars()
 						if (nResult) {
 							fnFoundDraw(x, y);
 							// キャッシュに登録
-							m_sMarkCache.Add(nLayoutY, SC_SCRBAR_FOUND_MAGIC);
+							m_sMarkCache.Add(nLayoutY, RB_SCRBAR_FOUND_MAGIC);
 						}
 					}
 
@@ -454,7 +454,7 @@ void CEditView::AdjustScrollBars()
 					if (CBookmarkGetter(pCDocLine).IsBookmarked()) {
 						fnMarkDraw(x, y);
 						// キャッシュに登録
-						m_sMarkCache.Add(nLayoutY, SC_SCRBAR_MARK_MAGIC);
+						m_sMarkCache.Add(nLayoutY, RB_SCRBAR_MARK_MAGIC);
 					}
 
 					nLinePos++;
@@ -465,11 +465,11 @@ void CEditView::AdjustScrollBars()
 				// キャッシュを使用して描画
 				for (uint32_t ln : m_sMarkCache.vLines) {
 					int x = 1;
-					int y = nBarTop + fnCalcY(ln & SC_SCRBAR_LINEN_MASK);
+					int y = nBarTop + fnCalcY(ln & RB_SCRBAR_LINEN_MASK);
 
-					if (ln & SC_SCRBAR_FOUND_MAGIC) {
+					if (ln & RB_SCRBAR_FOUND_MAGIC) {
 						fnFoundDraw(x, y);
-					} else if (ln & SC_SCRBAR_MARK_MAGIC) {
+					} else if (ln & RB_SCRBAR_MARK_MAGIC) {
 						fnMarkDraw(x, y);
   				}
 				}
@@ -503,7 +503,7 @@ void CEditView::AdjustScrollBars()
 			
 			::UpdateWindow(m_hwndVScrollBar);
 		}
-#endif  // SC_
+#endif  // RB_
 	}
 	if( NULL != m_hwndHScrollBar ){
 		/* 水平スクロールバー */
@@ -588,13 +588,13 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip2 = {0,0,0,0};
 			ScrollDraw(nScrollRowNum, CLayoutInt(0), rcScrol, rcClip, rcClip2);
-#ifdef SC_FIX_FLICKER
+#ifdef RB_FIX_FLICKER
 			if (!m_ignore_update_window) {
 				::UpdateWindow( GetHwnd() );
 			}
 #else
 			::UpdateWindow( GetHwnd() );
-#endif  // SC_
+#endif  // RB_
 		}
 	}
 
@@ -676,13 +676,13 @@ CLayoutInt CEditView::ScrollAtH( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip = {0,0,0,0};
 			ScrollDraw(CLayoutInt(0), nScrollColNum, rcScrol, rcClip, rcClip2);
-#ifdef SC_FIX_FLICKER
+#ifdef RB_FIX_FLICKER
 			if (!m_ignore_update_window) {
 				::UpdateWindow( GetHwnd() );
 			}
 #else
 			::UpdateWindow( GetHwnd() );
-#endif  // SC_
+#endif  // RB_
 		}
 	}
 	//	2006.1.28 aroka 判定条件誤り修正 (バーが消えてもスクロールしない)

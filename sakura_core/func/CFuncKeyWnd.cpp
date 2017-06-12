@@ -88,11 +88,11 @@ CFuncKeyWnd::CFuncKeyWnd()
 	lf.lfClipPrecision	= 0x2;
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
-#ifdef SC_FIX_UI_FONT
+#ifdef RB_FIX_UI_FONT
 	_tcscpy( lf.lfFaceName, _T("MS Shell Dlg") );
 #else
 	_tcscpy( lf.lfFaceName, _T("ＭＳ Ｐゴシック") );
-#endif  // SC_
+#endif  // RB_
 	m_hFont = ::CreateFontIndirect( &lf );
 
 	m_bSizeBox = false;

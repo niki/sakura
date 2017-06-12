@@ -4,7 +4,7 @@
 */
 /*
 	Copyright (C) 2009, syat
-	Copyright (C) 2017, Calette
+	Copyright (C) 2017, Reiris
 
 	This software is provided 'as-is', without any express or implied
 	warranty. In no event will the authors be held liable for any damages

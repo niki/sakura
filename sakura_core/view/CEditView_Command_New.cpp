@@ -439,9 +439,9 @@ void CEditView::DeleteData2(
 		m_cCommander.GetOpeBlk()->AppendOpe( pcOpe );
 	}
 
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 	m_sMarkCache.Refresh();  // キャッシュのクリア
-#endif  // SC_
+#endif  // RB_
 }
 
 
@@ -495,9 +495,9 @@ void CEditView::DeleteData(
 
 	/* テキストが選択されているか */
 	if( GetSelectionInfo().IsTextSelected() ){
-#ifndef SC_FIX_WAITCUESOR
+#ifndef RB_FIX_WAITCUESOR
 		CWaitCursor cWaitCursor( this->GetHwnd() );  // 2002.02.05 hor
-#endif  // SC_
+#endif  // RB_
 		if( !m_bDoing_UndoRedo ){	/* アンドゥ・リドゥの実行中か */
 			/* 操作の追加 */
 			m_cCommander.GetOpeBlk()->AppendOpe(
@@ -675,9 +675,9 @@ void CEditView::DeleteData(
 	}
 end_of_func:;
 
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 	m_sMarkCache.Refresh();  // キャッシュのクリア
-#endif  // SC_
+#endif  // RB_
 	return;
 }
 
@@ -977,9 +977,9 @@ bool CEditView::ReplaceData_CEditView3(
 		}
 	}
 
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 	m_sMarkCache.Refresh();  // キャッシュのクリア
-#endif  // SC_
+#endif  // RB_
 
 	//	Jan. 30, 2001 genta
 	//	ファイル全体の更新フラグが立っていないと各行の更新状態が表示されないので

@@ -3,7 +3,7 @@
 //! @file  win32.hpp
 //! @brief Windows
 //!
-//! @author (C) 2017, Calette.
+//! @author (C) 2017, Reiris.
 //====================================================================
 #ifndef MENOU_WIN32_HPP
 #define MENOU_WIN32_HPP

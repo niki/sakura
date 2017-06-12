@@ -12,7 +12,7 @@
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
 */
-#ifdef SC_USE_PPA
+#ifdef RB_USE_PPA
 
 #ifndef _CPPAMACROMGR_H_
 #define _CPPAMACROMGR_H_
@@ -59,4 +59,4 @@ protected:
 
 
 	
-#endif  // SC_USE_PPA
+#endif  // RB_USE_PPA

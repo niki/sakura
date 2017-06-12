@@ -160,9 +160,9 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_cHistory(NULL)
 , m_cRegexKeyword(NULL)
 , m_hAtokModule(NULL)
-#ifdef SC_FIX_FLICKER
+#ifdef RB_FIX_FLICKER
 , m_ignore_update_window(0)
-#endif  // SC_
+#endif  // RB_
 {
 }
 
@@ -333,12 +333,12 @@ BOOL CEditView::Create(
 	/* エディタウィンドウの作成 */
 	SetHwnd(
 		::CreateWindowEx(
-#ifdef SC_FIX_EDITVIEW
+#ifdef RB_FIX_EDITVIEW
 			// 余計な境界はないようにする
 			/*WS_EX_STATICEDGE*/0,		// extended window style
 #else
 			WS_EX_STATICEDGE,		// extended window style
-#endif  // SC_
+#endif  // RB_
 			GSTR_VIEWNAME,			// pointer to registered class name
 			GSTR_VIEWNAME,			// pointer to window name
 			0						// window style
@@ -1131,10 +1131,10 @@ void CEditView::OnSetFocus( void )
 		}
 	}
 
-#ifdef SC_FIX_EDITVIEW_SCRBAR
+#ifdef RB_FIX_EDITVIEW_SCRBAR
 	// スクロールバーの状態を更新する
 	AdjustScrollBars();
-#endif  // SC_
+#endif  // RB_
 }
 
 
@@ -1420,9 +1420,9 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 	const wchar_t*	pLine;
 	CLogicInt		nLineLen;
 	CLogicInt		nLineLen2;
-#ifndef SC_FIX_WAITCUESOR
+#ifndef RB_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // SC_
+#endif  // RB_
 
 
 	/* テキストが選択されているか */
@@ -1430,9 +1430,9 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 		return;
 	}
 
-#ifdef SC_FIX_WAITCUESOR
+#ifdef RB_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // SC_
+#endif  // RB_
 
 	CLogicPoint ptFromLogic;	// 2009.07.18 ryoji Logicで記憶するように変更
 	m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
@@ -2549,9 +2549,9 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 	if( bUnderLine ){
 		nUnderLineY = GetTextArea().GetAreaTop() + (Int)(GetCaret().GetCaretLayoutPos().GetY2() - GetTextArea().GetViewTopLine())
 			 * GetTextMetrics().GetHankakuDy() + GetTextMetrics().GetHankakuHeight();
-#ifdef SC_LINE_CENTERING
+#ifdef RB_LINE_CENTERING
 		nUnderLineY += GetLineSpace() / 2;
-#endif  // SC_
+#endif  // RB_
 	}
 	// To Here 2007.09.09 Moca
 
@@ -2576,11 +2576,11 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			gr.SetPen( m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_sColorAttr.m_cTEXT );
 			::MoveToEx(
 				gr,
-#ifdef SC_FIX_CUR_UL
+#ifdef RB_FIX_CUR_UL
 				0,//GetTextArea().GetLeftYohaku(),
 #else
 				GetTextArea().GetAreaLeft(),
-#endif  // SC_
+#endif  // RB_
 				nUnderLineY,
 				NULL
 			);
@@ -2616,35 +2616,35 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				nUnderLineY = -1;
 			}else if( GetTextArea().m_nViewRowNum < nY ){
 				nUnderLineY = GetTextArea().GetAreaBottom() + 1;
-#ifdef SC_LINE_CENTERING
+#ifdef RB_LINE_CENTERING
 				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += GetLineSpace() / 2;
 				}
-#endif  // SC_
+#endif  // RB_
 			}else{
 				nUnderLineY = GetTextArea().GetAreaTop() + (Int)(nY) * GetTextMetrics().GetHankakuDy();
-#ifdef SC_LINE_CENTERING
+#ifdef RB_LINE_CENTERING
 				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += GetLineSpace() / 2;
 				}
-#endif  // SC_
+#endif  // RB_
 			}
 
 			GetCaret().m_cUnderLine.Lock();
 
 			PAINTSTRUCT ps;
-#ifdef SC_FIX_CUR_UL
+#ifdef RB_FIX_CUR_UL
 			//ps.rcPaint.left = GetTextArea().GetAreaLeft();
 			ps.rcPaint.left = 0;//GetTextArea().GetLeftYohaku();
 #else
 			ps.rcPaint.left = 0;
-#endif  // SC_
+#endif  // RB_
 			ps.rcPaint.right = GetTextArea().GetAreaRight();
 			int height;
 			if( bDrawPaint && m_nOldUnderLineYHeight != 0 ){
@@ -2944,7 +2944,7 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 	}
 }
 
-#ifdef SC_FIX_FLICKER
+#ifdef RB_FIX_FLICKER
 void CEditView::BeginIgnoreUpdateWindow() {
 	m_ignore_update_window++;
 }
@@ -2954,4 +2954,4 @@ void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
 		::UpdateWindow(GetHwnd());
 	}
 }
-#endif  // SC_
+#endif  // RB_

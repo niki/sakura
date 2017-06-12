@@ -3,7 +3,7 @@
 //! @file  color_string.hpp
 //! @brief 色文字列
 //!
-//! @author (C) 2017, Calette.
+//! @author (C) 2017, Reiris.
 //====================================================================
 #ifndef MENOU_COLOR_STRING_HPP
 #define MENOU_COLOR_STRING_HPP
