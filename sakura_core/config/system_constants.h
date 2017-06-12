@@ -529,6 +529,9 @@
 	Version 170:
 	ini読み取り専用オプション 2014.12.08 Moca
 
+	Version 171:
+	Grepファイル・フォルダ長を512(MAX_GREP_PATH)に変更
+
 	Version 172:
 	キーワードヘルプの右クリックメニュー表示選択
 

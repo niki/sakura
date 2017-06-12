@@ -40,6 +40,7 @@ CRecentSearch::CRecentSearch()
 {
 	Create(
 		GetShareData()->m_sSearchKeywords.m_aSearchKeys.dataPtr(),
+		GetShareData()->m_sSearchKeywords.m_aSearchKeys.dataPtr()->GetBufferCount(),
 		&GetShareData()->m_sSearchKeywords.m_aSearchKeys._GetSizeRef(),
 		NULL,
 #ifdef RB_FIX_MAXDATA
@@ -73,6 +74,9 @@ bool CRecentSearch::DataToReceiveType( LPCWSTR* dst, const CSearchString* src ) 
 
 bool CRecentSearch::TextToDataType( CSearchString* dst, LPCTSTR pszText ) const
 {
+	if( false == ValidateReceiveType(to_wchar(pszText)) ){
+		return false;
+	}
 	CopyItem(dst, to_wchar(pszText));
 	return true;
 }
@@ -85,4 +89,17 @@ int CRecentSearch::CompareItem( const CSearchString* p1, LPCWSTR p2 ) const
 void CRecentSearch::CopyItem( CSearchString* dst, LPCWSTR src ) const
 {
 	wcscpy(*dst,src);
+}
+
+bool CRecentSearch::ValidateReceiveType( LPCWSTR p ) const
+{
+	if( GetTextMaxLength() <= wcslen(p) ){
+		return false;
+	}
+	return true;
+}
+
+size_t CRecentSearch::GetTextMaxLength() const
+{
+	return m_nTextMaxLength;
 }

@@ -36,6 +36,7 @@ CRecentGrepFolder::CRecentGrepFolder()
 {
 	Create(
 		GetShareData()->m_sSearchKeywords.m_aGrepFolders.dataPtr(),
+		GetShareData()->m_sSearchKeywords.m_aGrepFolders.dataPtr()->GetBufferCount(),
 		&GetShareData()->m_sSearchKeywords.m_aGrepFolders._GetSizeRef(),
 		NULL,
 #ifdef RB_FIX_MAXDATA
@@ -69,6 +70,9 @@ bool CRecentGrepFolder::DataToReceiveType( LPCTSTR* dst, const CGrepFolderString
 
 bool CRecentGrepFolder::TextToDataType( CGrepFolderString* dst, LPCTSTR pszText ) const
 {
+	if( false == ValidateReceiveType(pszText) ){
+		return false;
+	}
 	CopyItem(dst, pszText);
 	return true;
 }
@@ -81,4 +85,17 @@ int CRecentGrepFolder::CompareItem( const CGrepFolderString* p1, LPCTSTR p2 ) co
 void CRecentGrepFolder::CopyItem( CGrepFolderString* dst, LPCTSTR src ) const
 {
 	_tcscpy(*dst,src);
+}
+
+bool CRecentGrepFolder::ValidateReceiveType( LPCTSTR p ) const
+{
+	if( GetTextMaxLength() <= _tcslen(p) ){
+		return false;
+	}
+	return true;
+}
+
+size_t CRecentGrepFolder::GetTextMaxLength() const
+{
+	return m_nTextMaxLength;
 }

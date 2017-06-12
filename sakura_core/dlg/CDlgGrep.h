@@ -53,8 +53,8 @@ public:
 
 	std::wstring	m_strText;				/*!< 検索文字列 */
 	bool			m_bSetText;				//!< 検索文字列を設定したか
-	SFilePath	m_szFile;					/*!< 検索ファイル */
-	SFilePath	m_szFolder;					/*!< 検索フォルダ */
+	SFilePathLong	m_szFile;				//!< 検索ファイル
+	SFilePathLong	m_szFolder;				//!< 検索フォルダ
 #ifdef RB_FIX_GREP
 	bool		m_bFolder99;
 	bool		m_bFolder2;
