@@ -3019,40 +3019,20 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 	
 	int nCxVScroll = ::GetSystemMetrics(SM_CXVSCROLL);
 	
-	//int nBarTop = sbi.xyThumbTop;
-	//int nBarHeight = sbi.xyThumbBottom - sbi.xyThumbTop;
+	int nThumbTop = sbi.xyThumbTop;
+	int nThumbBottom = sbi.xyThumbBottom;
 	int nBarTop = sbi.dxyLineButton;
 	int nBarHeight = sbi.rcScrollBar.bottom - sbi.rcScrollBar.top - (sbi.dxyLineButton * 2);
 	
 	HDC hdc = ::GetDC(m_hwndVScrollBar);
-	
 	CGraphics gr(hdc);
-	COLORREF clrSearch, clrMark, clrCursor, clrThumb;
 	
-	TCHAR szData[32];
-	if (RegKey(RB_REGKEY).read(_T("EditViewScrBarFoundColor"), (LPCTSTR)szData)) {
-		clrSearch = mn::ColorString::ToCOLORREF(szData);
-	} else {
-		clrSearch = mn::ColorString::ToCOLORREF(RB_EDITVIEW_SCRBAR_FOUND_COLOR);
-		//clrSearch = CTypeSupport(this, COLORIDX_SEARCH).GetBackColor();
-	}
-	if (RegKey(RB_REGKEY).read(_T("EditViewScrBarMarkColor"), (LPCTSTR)szData)) {
-		clrMark = mn::ColorString::ToCOLORREF(szData);
-	} else {
-		clrMark = mn::ColorString::ToCOLORREF(RB_EDITVIEW_SCRBAR_MARK_COLOR);
-		//clrMark = CTypeSupport(this, COLORIDX_MARK).GetBackColor();
-	}
-	if (RegKey(RB_REGKEY).read(_T("EditViewScrBarCursorColor"), (LPCTSTR)szData)) {
-		clrCursor = mn::ColorString::ToCOLORREF(szData);
-	} else {
-		clrCursor = mn::ColorString::ToCOLORREF(RB_EDITVIEW_SCRBAR_CURSOR_COLOR);
-		//clrCursor = CTypeSupport(this, COLORIDX_UNDERLINE).GetBackColor();
-	}
-	if (RegKey(RB_REGKEY).read(_T("EditViewScrBarThumbColor"), (LPCTSTR)szData)) {
-		clrThumb = mn::ColorString::ToCOLORREF(szData);
-	} else {
-		clrThumb = mn::ColorString::ToCOLORREF(RB_EDITVIEW_SCRBAR_THUMB_COLOR);
-	}
+	COLORREF clrSearch = mn::ColorString::ToCOLORREF(
+	             RegKey(RB_REGKEY).get_s(_T("EditViewScrBarFoundColor"), RB_SCRBAR_FOUND_COLOR));
+	COLORREF clrMark = mn::ColorString::ToCOLORREF(
+	             RegKey(RB_REGKEY).get_s(_T("EditViewScrBarMarkColor"), RB_SCRBAR_MARK_COLOR));
+	COLORREF clrCursor = mn::ColorString::ToCOLORREF(
+	             RegKey(RB_REGKEY).get_s(_T("EditViewScrBarCursorColor"), RB_SCRBAR_CURSOR_COLOR));
 	
 	// 
 	auto fnCalcY = [this, bBarEnable, nAllLines, nBarHeight](int ln) {
@@ -3063,18 +3043,26 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 		}
 	};
 	// 検索印を描画
-	auto fnFoundDraw = [&gr, nCxVScroll, clrSearch](int x, int y) {
+	auto fnFoundDraw = [&gr, nCxVScroll, nThumbTop, nThumbBottom](int x, int y, COLORREF clr) {
 		const int w = std::max(DpiScaleX(1), nCxVScroll);
 		const int h = std::max(DpiScaleY(1), DpiScaleY(1));
+		if (nThumbTop <= y && y <= nThumbBottom) {
+			COLORREF MakeColor2(COLORREF, COLORREF, int);
+			clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 96);
+		}
 		RECT rc = {x, y, x + w, y + h};
-		gr.FillSolidMyRect(rc, clrSearch);
+		gr.FillSolidMyRect(rc, clr);
 	};
 	// ブックマーク印を描画
-	auto fnMarkDraw = [&gr, nCxVScroll, clrMark](int x, int y) {
+	auto fnMarkDraw = [&gr, nCxVScroll, nThumbTop, nThumbBottom](int x, int y, COLORREF clr) {
 		const int w = std::max(DpiScaleX(1), nCxVScroll / 4);
 		const int h = std::max(DpiScaleY(1), nCxVScroll / 4);
+		if (nThumbTop <= y && y <= nThumbBottom) {
+			COLORREF MakeColor2(COLORREF, COLORREF, int);
+			clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 96);
+		}
 		RECT rc = {x, y, x + w, y + h};
-		gr.FillSolidMyRect(rc, clrMark);
+		gr.FillSolidMyRect(rc, clr);
 	};
 	
 	// 行数が変わっていたら強制更新
@@ -3125,7 +3113,7 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 				                  CLogicInt(0), &nSearchStart, &nSearchEnd);
 				
 				if (nResult) {
-					fnFoundDraw(x, y);
+					fnFoundDraw(x, y, clrSearch);
 					// キャッシュに登録
 					SBMarkCache_Add(nLayoutY, RB_SCRBAR_FOUND_MAGIC);
 				}
@@ -3133,7 +3121,7 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 
 			// ブックマーク
 			if (CBookmarkGetter(pCDocLine).IsBookmarked()) {
-				fnMarkDraw(x, y);
+				fnMarkDraw(x, y, clrMark);
 				// キャッシュに登録
 				SBMarkCache_Add(nLayoutY, RB_SCRBAR_MARK_MAGIC);
 			}
@@ -3149,9 +3137,9 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 			int y = nBarTop + fnCalcY(ln & RB_SCRBAR_LINEN_MASK);
 
 			if (ln & RB_SCRBAR_FOUND_MAGIC) {
-				fnFoundDraw(x, y);
+				fnFoundDraw(x, y, clrSearch);
 			} else if (ln & RB_SCRBAR_MARK_MAGIC) {
-				fnMarkDraw(x, y);
+				fnMarkDraw(x, y, clrMark);
 			}
 		}
 	}
@@ -3166,19 +3154,6 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 		RECT rc = {x, y, x + w, y + h};
 		gr.FillSolidMyRect(rc, clrCursor);
 	}
-	
-#if 0
-	// スクロールボックス
-	if (bBarEnable) {
-		int x = nCxVScroll - DpiScaleX(2);
-		int y = sbi.xyThumbTop;
-
-		const int w = DpiScaleX(2);
-		const int h = sbi.xyThumbBottom - sbi.xyThumbTop;
-		RECT rc = {x, y, x + w, y + h};
-		gr.FillSolidMyRect(rc, clrThumb);
-	}
-#endif
 	
 	::ReleaseDC(m_hwndVScrollBar, hdc);
 	
