@@ -3,10 +3,10 @@
 //! @file  basis.h
 //! @brief 基本
 //!
-//! @author (C) 2017, takamo.
+//! @author (C) 2017, Calette.
 //====================================================================
-#ifndef MENOU_BASIS_H
-#define MENOU_BASIS_H
+#ifndef SILICA_BASIS_H
+#define SILICA_BASIS_H
 
 #include <memory>
 #include <string>
@@ -20,6 +20,6 @@
   #endif
 #endif
 
-#define MENOU_INLINE static inline
+#define SILICA_INLINE static inline
 
-#endif /* MENOU_BASIS_H */
+#endif /* SILICA_BASIS_H */

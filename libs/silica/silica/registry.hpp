@@ -3,10 +3,10 @@
 //! @file  registry.hpp
 //! @brief レジストリ
 //!
-//! @author (C) 2017, takamo.
+//! @author (C) 2017, Calette.
 //====================================================================
-#ifndef MENOU_REGISTRY_HPP
-#define MENOU_REGISTRY_HPP
+#ifndef SILICA_REGISTRY_HPP
+#define SILICA_REGISTRY_HPP
 
 #include "basis.h"
 //#include <locale>
@@ -57,7 +57,7 @@
 //    DWORD cbData         // レジストリエントリのデータのサイズ
 //  );
 
-namespace mn {
+namespace si {
 
 //==================================================================
 // reg
@@ -67,17 +67,17 @@ namespace reg {
 //------------------------------------------------------------------
 //! ini形式のキー情報からレジストリキー名作成
 //------------------------------------------------------------------
-MENOU_INLINE std::tstring genkey(const std::tstring &prof, const std::tstring &section = _T("")) {
+SILICA_INLINE std::tstring genkey(const std::tstring &prof, const std::tstring &section = _T("")) {
   if (section.empty()) {
-    return _T("Software\\") + mn::file::fname(prof);
+    return _T("Software\\") + si::file::fname(prof);
   } else {
-    return _T("Software\\") + mn::file::fname(prof) + _T("\\") + section;
+    return _T("Software\\") + si::file::fname(prof) + _T("\\") + section;
   }
 }
 
 }  // namespace of reg
 
-}  // namespace of mn
+}  // namespace of si
 
 //------------------------------------------------------------------
 //! レジストリクラス
@@ -223,14 +223,14 @@ class ScopedRegKey : public RegKey {
 //! @param entry エントリー名
 //! @param data データ
 //------------------------------------------------------------------
-MENOU_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstring &section,
-                                   const std::tstring &entry, std::tstring &data) {
+SILICA_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstring &section,
+                                       const std::tstring &entry, std::tstring &data) {
   DWORD dwType;
   DWORD dwByte;
 
   data = _T("");
 
-  RegKey hKey(mn::reg::genkey(prof, section));
+  RegKey hKey(si::reg::genkey(prof, section));
   if (!hKey.getType(entry, &dwType, &dwByte)) return false;
 
   if (dwType == REG_DWORD) {
@@ -269,11 +269,11 @@ MENOU_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstri
 //! @param entry エントリー名
 //! @param data データ
 //------------------------------------------------------------------
-MENOU_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
-                                    const std::tstring &entry, const std::tstring &data) {
+SILICA_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
+                                       const std::tstring &entry, const std::tstring &data) {
   if (data.empty()) {
-    //return RegKeyRW(mn::reg::genkey(prof, section)).deleteEntry(entry);  // 空のときは削除
-    return RegKeyRW(mn::reg::genkey(prof, section)).write(entry, _T(""));
+    //return RegKeyRW(si::reg::genkey(prof, section)).deleteEntry(entry);  // 空のときは削除
+    return RegKeyRW(si::reg::genkey(prof, section)).write(entry, _T(""));
   } else {
     int i = 0;
     bool is_num = false;
@@ -285,11 +285,11 @@ MENOU_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstri
     is_num = !(*endptr != L'\0' || (i == INT_MAX && errno == ERANGE));
 
     if (is_num) {
-      return RegKeyRW(mn::reg::genkey(prof, section)).write(entry, (DWORD)i);
+      return RegKeyRW(si::reg::genkey(prof, section)).write(entry, (DWORD)i);
     } else {
-      return RegKeyRW(mn::reg::genkey(prof, section)).write(entry, data);
+      return RegKeyRW(si::reg::genkey(prof, section)).write(entry, data);
     }
   }
 }
 
-#endif /* MENOU_REGISTRY_HPP */
+#endif /* SILICA_REGISTRY_HPP */

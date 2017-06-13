@@ -3,17 +3,17 @@
 //! @file  color_string.hpp
 //! @brief 色文字列
 //!
-//! @author (C) 2017, takamo.
+//! @author (C) 2017, Calette.
 //====================================================================
-#ifndef MENOU_COLOR_STRING_HPP
-#define MENOU_COLOR_STRING_HPP
+#ifndef SILICA_COLOR_STRING_HPP
+#define SILICA_COLOR_STRING_HPP
 
 #include "basis.h"
 
 #define _RGB(r, g, b) (uint32_t)((((r)&0xff) << 16) | (((g & 0xff)) << 8) | (b & 0xff))
 #define _BGR(r, g, b) (uint32_t)((((b)&0xff) << 16) | (((g & 0xff)) << 8) | (r & 0xff))
 
-namespace mn {
+namespace si {
 
 class ColorString {
  public:
@@ -111,6 +111,6 @@ class ColorString {
   std::tstring color_code_;
 };
 
-} /* namespace of mn */
+} /* namespace of si */
 
-#endif /* MENOU_COLOR_STRING_HPP */
+#endif /* SILICA_COLOR_STRING_HPP */

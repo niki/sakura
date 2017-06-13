@@ -1,12 +1,12 @@
 ﻿// -*- mode:c++; coding:utf-8-ws -*-
 //====================================================================
-//! @file  menou.h
-//! @brief menou library
+//! @file  silica.h
+//! @brief silica library
 //!
-//! @author (C) 2017, takamo.
+//! @author (C) 2017, Calette.
 //====================================================================
-#ifndef MENOU_H
-#define MENOU_H
+#ifndef SILICA_H
+#define SILICA_H
 
 #include "basis.h"
 #include "using.h"
@@ -18,4 +18,4 @@
 
 #include "win32.hpp"
 
-#endif /* MENOU_H */
+#endif /* SILICA_H */

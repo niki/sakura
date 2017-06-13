@@ -20,6 +20,6 @@
 
 #include "my_config.h"
 
-#include <menou/menou.h>
+#include <silica/silica.h>
 
 #endif /* MY_CONFIG_H */

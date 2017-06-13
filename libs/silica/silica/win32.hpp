@@ -3,21 +3,21 @@
 //! @file  win32.hpp
 //! @brief Windows
 //!
-//! @author (C) 2017, takamo.
+//! @author (C) 2017, Calette.
 //====================================================================
-#ifndef MENOU_WIN32_HPP
-#define MENOU_WIN32_HPP
+#ifndef SILICA_WIN32_HPP
+#define SILICA_WIN32_HPP
 
 #include "basis.h"
 
-namespace mn {
+namespace si {
 
 //==================================================================
 // win32
 //==================================================================
 namespace win32 {
 
-MENOU_INLINE void FillSolidRect(HDC hdc, COLORREF clr, RECT *pRect) {
+SILICA_INLINE void FillSolidRect(HDC hdc, COLORREF clr, RECT *pRect) {
   ::SetBkColor(hdc, clr);
   ::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, pRect, NULL, 0, NULL);
 }
@@ -26,6 +26,6 @@ MENOU_INLINE void FillSolidRect(HDC hdc, COLORREF clr, RECT *pRect) {
 
 } /* namespace of win32 */
 
-} /* namespace of mn */
+} /* namespace of si */
 
-#endif /* MENOU_WIN32_HPP */
+#endif /* SILICA_WIN32_HPP */

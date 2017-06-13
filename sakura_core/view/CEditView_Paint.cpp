@@ -657,9 +657,9 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	}
 #ifdef RB_OUTPUT_DEBUG_STRING
 	if (m_bMiniMap) {
-	  mn::logln(L"OnPaint2 start minimap");
+	  si::logln(L"OnPaint2 start minimap");
 	} else {
-	  mn::logln(L"OnPaint2 start");
+	  si::logln(L"OnPaint2 start");
 	}
 #endif  // RB_
 	if( m_hdcCompatDC && NULL == m_hbmpCompatBMP
@@ -943,9 +943,9 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	
 #ifdef RB_OUTPUT_DEBUG_STRING
 	if (m_bMiniMap) {
-	  mn::logln(L"OnPaint2 finish minimap");
+	  si::logln(L"OnPaint2 finish minimap");
 	} else {
-	  mn::logln(L"OnPaint2 finish");
+	  si::logln(L"OnPaint2 finish");
 	}
 #endif  // RB_
 	return;

@@ -3,10 +3,10 @@
 //! @file  log.hpp
 //! @brief ログ
 //!
-//! @author (C) 2017, takamo.
+//! @author (C) 2017, Calette.
 //====================================================================
-#ifndef MENOU_LOG_HPP
-#define MENOU_LOG_HPP
+#ifndef SILICA_LOG_HPP
+#define SILICA_LOG_HPP
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -18,12 +18,12 @@
 //  return first + isum(rest...);
 //}
 
-namespace mn {
+namespace si {
 
 //------------------------------------------------------------------
 //! 出力
 //------------------------------------------------------------------
-MENOU_INLINE void log(const TCHAR *fmt, ...) {
+SILICA_INLINE void log(const TCHAR *fmt, ...) {
   TCHAR buf[1024];
 
   va_list arg;
@@ -41,7 +41,7 @@ MENOU_INLINE void log(const TCHAR *fmt, ...) {
 //------------------------------------------------------------------
 //! 出力 (改行つき)
 //------------------------------------------------------------------
-MENOU_INLINE void logln(const TCHAR *fmt, ...) {
+SILICA_INLINE void logln(const TCHAR *fmt, ...) {
   TCHAR buf[1024];
 
   va_list arg;
@@ -58,6 +58,6 @@ MENOU_INLINE void logln(const TCHAR *fmt, ...) {
 #endif
 }
 
-} /* namespace of mn */
+} /* namespace of si */
 
-#endif /* MENOU_LOG_HPP */
+#endif /* SILICA_LOG_HPP */

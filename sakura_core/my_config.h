@@ -53,18 +53,18 @@
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 // 修正者
-#define RB_AMENDER "takamo"
-#define RB_URL     "https://github.com/rabbiteariris/sakura"
+#define RB_AMENDER "Calette"
+#define RB_URL     "https://github.com/calette/sakura"
 
 // 拡張用レジストリキー
-#define RB_REGKEY _T("Software\\sakura-takamo")
+#define RB_REGKEY _T("Software\\sakura-silica")
 
 //------------------------------------------------------------------
 // バージョン情報ダイアログの変更 2017.3.15
 //------------------------------------------------------------------
 #define RB_FIX_VERDLG
-  #define PR_VER      2,30,0,0
-  #define PR_VER_STR "2.30"
+  #define PR_VER      2,31,0,0
+  #define PR_VER_STR "2.31"
 
 //-------------------------------------------------------------------------
 // デバッグ用

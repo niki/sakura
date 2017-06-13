@@ -175,7 +175,7 @@ CLayoutInt CCaret::MoveCursor(
 	}
 
 #ifdef RB_OUTPUT_DEBUG_STRING
-	mn::logln(L"MoveCursor start");
+	si::logln(L"MoveCursor start");
 #endif  // RB_
 
 	if( m_pEditView->GetSelectionInfo().IsMouseSelecting() ){	// 範囲選択中
@@ -552,7 +552,7 @@ CLayoutInt CCaret::MoveCursor(
 // 02/09/18 対括弧の強調表示 ai End		03/02/18 ai mod E
 
 #ifdef RB_OUTPUT_DEBUG_STRING
-	mn::logln(L"MoveCursor finish");
+	si::logln(L"MoveCursor finish");
 #endif  // RB_
 
 	return nScrollRowNum;

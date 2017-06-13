@@ -70,13 +70,13 @@ int CDlgTagsMake::DoModal(
 	auto fnSearchTags = [](const std::tstring &path, const std::tstring &name) -> std::tstring {
 		std::tstring s(path);
 		while (1) {
-			s = mn::util::rtrim(s, _T('\\'));
+			s = si::util::rtrim(s, _T('\\'));
 			if (s.empty() || s.back() == _T(':')) {  // ドライブ文字まで来てしまった
 				break;
-			} else if (mn::file::exist(s + _T("\\") + name)) {  // タグファイルが見つかった
+			} else if (si::file::exist(s + _T("\\") + name)) {  // タグファイルが見つかった
 				return s.c_str();
 			} else {
-				s = mn::file::dirname(s);
+				s = si::file::dirname(s);
 			}
 		}
 		return path;

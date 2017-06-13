@@ -3027,11 +3027,11 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 	HDC hdc = ::GetDC(m_hwndVScrollBar);
 	CGraphics gr(hdc);
 	
-	COLORREF clrSearch = mn::ColorString::ToCOLORREF(
+	COLORREF clrSearch = si::ColorString::ToCOLORREF(
 	             RegKey(RB_REGKEY).get_s(_T("EditViewScrBarFoundColor"), RB_SCRBAR_FOUND_COLOR));
-	COLORREF clrMark = mn::ColorString::ToCOLORREF(
+	COLORREF clrMark = si::ColorString::ToCOLORREF(
 	             RegKey(RB_REGKEY).get_s(_T("EditViewScrBarMarkColor"), RB_SCRBAR_MARK_COLOR));
-	COLORREF clrCursor = mn::ColorString::ToCOLORREF(
+	COLORREF clrCursor = si::ColorString::ToCOLORREF(
 	             RegKey(RB_REGKEY).get_s(_T("EditViewScrBarCursorColor"), RB_SCRBAR_CURSOR_COLOR));
 	
 	// 

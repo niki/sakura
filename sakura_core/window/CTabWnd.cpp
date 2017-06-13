@@ -1551,9 +1551,9 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 			if (p && p->m_bIsRecMacro) {
 				TCHAR szData[32];
 				if (RegKey(RB_REGKEY).read(_T("TabCaptionRecMacroColor"), (LPCTSTR)szData)) {
-					clrText = mn::ColorString::ToCOLORREF(szData);
+					clrText = si::ColorString::ToCOLORREF(szData);
 				} else {
-					clrText = mn::ColorString::ToCOLORREF(RB_RECMACRO_TAB_CAPTION_COLOR);
+					clrText = si::ColorString::ToCOLORREF(RB_RECMACRO_TAB_CAPTION_COLOR);
 				}
 			}
 		}
@@ -1562,9 +1562,9 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 			if (p && p->m_bIsModified) {
 				TCHAR szData[32];
 				if (RegKey(RB_REGKEY).read(_T("TabCaptionModifiedColor"), (LPCTSTR)szData)) {
-					clrText = mn::ColorString::ToCOLORREF(szData);
+					clrText = si::ColorString::ToCOLORREF(szData);
 				} else {
-					clrText = mn::ColorString::ToCOLORREF(RB_MODIFIED_TAB_CAPTION_COLOR);
+					clrText = si::ColorString::ToCOLORREF(RB_MODIFIED_TAB_CAPTION_COLOR);
 				}
 			}
 		}

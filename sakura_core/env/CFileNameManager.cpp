@@ -467,8 +467,8 @@ bool CFileNameManager::GetMenuFullLabel(
 		this->GetTransformFileNameFast( pszFile, szFileName, _MAX_PATH, hDC );
 
 #ifdef RB_FIX_RECENT_FILE_DISP_NAME
-		std::tstring dir = mn::file::dirname(szFileName, false);
-		std::tstring fname = mn::file::fname(szFileName);
+		std::tstring dir = si::file::dirname(szFileName, false);
+		std::tstring fname = si::file::fname(szFileName);
 		wsprintf( szFileName, _T("%s "), fname.c_str());
 		wsprintf( szDirName, _T("%s"), dir.c_str());
 #endif  // RB_
