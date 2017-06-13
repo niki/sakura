@@ -125,4 +125,4 @@ Cregit
   Copyright © 1994–2017 Lua.org, PUC-Rio.  
   
 
-(C) 2017, Reiris.
+(C) 2017, takamo.
