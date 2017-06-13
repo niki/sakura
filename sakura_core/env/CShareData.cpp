@@ -321,7 +321,7 @@ bool CShareData::InitShareData()
 			wcscpy(	//@@@ 2003.06.13 MIK
 				sTabBar.m_szTabWndCaption,
 #ifdef RB_FIX_TAB_CAPTION_COLOR
-				L"${w?【Grep】$h$:【アウトプット】$:$f$}${R?(ビューモード)$:(上書き禁止)$}"
+				L"${w?【Grep】$h$:【アウトプット】$:$f$}${U?*$}${R?(ビューモード)$:(上書き禁止)$}"
 #else
 				L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
 #endif  // RB_
