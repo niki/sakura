@@ -3,7 +3,7 @@
 //! @file  file.hpp
 //! @brief ファイル
 //!
-//! @author (C) 2017, Reiris.
+//! @author (C) 2017, takamo.
 //====================================================================
 #ifndef MENOU_FILE_HPP
 #define MENOU_FILE_HPP
@@ -46,14 +46,16 @@ MENOU_INLINE std::tstring fname(const std::tstring &path) {
 //! ディレクトリ名の取得 (e.g. C:\Windows\System32\calc.exe => C:\Windows\System32\)
 //! @param path パス名
 //------------------------------------------------------------------
-MENOU_INLINE std::tstring dirname(const std::tstring &path) {
+MENOU_INLINE std::tstring dirname(const std::tstring &path, bool lastDelimiter = true) {
   size_t pos = path.rfind(_T('\\'));
   if (pos != std::tstring::npos) {
-    return path.substr(0, pos + 1);
+    if (lastDelimiter) pos++;
+    return path.substr(0, pos);
   } else {
     pos = path.rfind(_T('/'));
     if (pos != std::tstring::npos) {
-      return path.substr(0, pos + 1);
+      if (lastDelimiter) pos++;
+      return path.substr(0, pos);
     }
   }
   return _T("");

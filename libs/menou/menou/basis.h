@@ -3,7 +3,7 @@
 //! @file  basis.h
 //! @brief 基本
 //!
-//! @author (C) 2017, Reiris.
+//! @author (C) 2017, takamo.
 //====================================================================
 #ifndef MENOU_BASIS_H
 #define MENOU_BASIS_H
