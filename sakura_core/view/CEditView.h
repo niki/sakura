@@ -781,49 +781,17 @@ public:
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
 public:
-	struct {
-		// 更新キュー
-		void Refresh() { vLines.clear(); }
-		// 登録
-		void Add(int nLayoutY, uint32_t magic) {
-			if (vLines.empty()) {
-				vLines.push_back(nLayoutY | magic);
-			} else {
-				if ((vLines.back() & RB_SCRBAR_LINEN_MASK) <= (uint32_t)nLayoutY) {
-					vLines.push_back(nLayoutY | magic);  // 末尾に追加
-				} else {
-					auto it = vLines.begin();
-					while (it != vLines.end()) {
-						if ((uint32_t)nLayoutY < ((*it) & RB_SCRBAR_LINEN_MASK)) {
-							vLines.insert(it, nLayoutY | magic);
-							break;
-						}
-						++it;
-					}
-				}
-			}
-		}
-		// 削除
-		void Del(int nLayoutY, uint32_t magic) {
-			if (vLines.empty()) {
-				// ???
-			} else {
-				auto it = vLines.begin();
-				while (it != vLines.end()) {
-					if ((*it) & magic) {
-						if (((*it) & RB_SCRBAR_LINEN_MASK) == nLayoutY) {
-							it = vLines.erase(it);
-							continue;
-						}
-					}
-					++it;
-				}
-			}
-		}
-		
-		int  nLastLineCount = 0;       // 最後に更新した時の行数
-		std::vector<uint32_t> vLines;  // キャッシュ
-	} m_sMarkCache;
+	// 更新キュー
+	void SBMarkCache_Refresh();
+	// 登録
+	void SBMarkCache_Add(int nLayoutY, uint32_t magic);
+	// 削除
+	void SBMarkCache_Del(int nLayoutY, uint32_t magic);
+	// 描画・再構築
+	void SBMarkCache_Draw(bool bBarEnable, bool bCacheClear = false);
+	
+	int  nCacheLastLineCount_ = 0;       // 最後に更新した時の行数
+	std::vector<uint32_t> vCacheLines_;  // キャッシュ
 #endif  // RB_
 };
 

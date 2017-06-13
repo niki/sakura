@@ -440,7 +440,8 @@ void CEditView::DeleteData2(
 	}
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-	m_sMarkCache.Refresh();  // キャッシュのクリア
+	SBMarkCache_Refresh();  // キャッシュのクリア
+	AdjustScrollBars();
 #endif  // RB_
 }
 
@@ -676,7 +677,8 @@ void CEditView::DeleteData(
 end_of_func:;
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-	m_sMarkCache.Refresh();  // キャッシュのクリア
+	SBMarkCache_Refresh();  // キャッシュのクリア
+	AdjustScrollBars();
 #endif  // RB_
 	return;
 }
@@ -978,7 +980,8 @@ bool CEditView::ReplaceData_CEditView3(
 	}
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-	m_sMarkCache.Refresh();  // キャッシュのクリア
+	SBMarkCache_Refresh();  // キャッシュのクリア
+	AdjustScrollBars();
 #endif  // RB_
 
 	//	Jan. 30, 2001 genta

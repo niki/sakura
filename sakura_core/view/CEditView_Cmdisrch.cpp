@@ -446,7 +446,7 @@ void CEditView::ISearchExec(bool bNext)
 	}
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-	m_sMarkCache.Refresh();
+	SBMarkCache_Refresh();
 #endif  // RB_
 	m_bCurSrchKeyMark = true;
 

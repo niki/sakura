@@ -287,12 +287,12 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				
 				if (cBookmark.IsBookmarked()) {
 					// 登録
-					m_pCommanderView->m_sMarkCache.Add(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
+					m_pCommanderView->SBMarkCache_Add(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
 				} else {
 					// 削除
-					m_pCommanderView->m_sMarkCache.Del(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
+					m_pCommanderView->SBMarkCache_Del(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
 				}
-				//m_pCommanderView->m_sMarkCache.Refresh();
+				//m_pCommanderView->SBMarkCache_Refresh();
 			}
 #endif  // RB_
 		}
@@ -311,18 +311,18 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			
 			if (cBookmark.IsBookmarked()) {
 				// 登録
-				m_pCommanderView->m_sMarkCache.Add(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
+				m_pCommanderView->SBMarkCache_Add(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
 			} else {
 				// 削除
-				m_pCommanderView->m_sMarkCache.Del(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
+				m_pCommanderView->SBMarkCache_Del(ptLayout.y, RB_SCRBAR_MARK_MAGIC);
 			}
-			//m_pCommanderView->m_sMarkCache.Refresh();
+			//m_pCommanderView->SBMarkCache_Refresh();
 		}
 #endif  // RB_
 	}
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-	//m_pCommanderView->m_sMarkCache.Refresh();
+	//m_pCommanderView->SBMarkCache_Refresh();
 #endif  // RB_
 
 	// 2002.01.16 hor 分割したビューも更新
@@ -430,7 +430,7 @@ void CViewCommander::Command_BOOKMARK_RESET(void)
 {
 	CBookmarkManager(&GetDocument()->m_cDocLineMgr).ResetAllBookMark();
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-	m_pCommanderView->m_sMarkCache.Refresh();
+	m_pCommanderView->SBMarkCache_Refresh();
 #endif  // RB_
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();
