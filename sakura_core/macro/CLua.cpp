@@ -148,7 +148,11 @@ static int _eval(lua_State *L, lua_State *L2) {
 
   // 変数の書式化
   char buf[256] = {};
-  ::snprintf(buf, sizeof(buf) - 1, "%g", num);
+  if (std::abs(num) - std::abs((int64_t)num) > 0.0) {
+    ::_snprintf_s(buf, sizeof(buf) - 1, "%g", num);
+  } else {
+    ::_snprintf_s(buf, sizeof(buf) - 1, "%lld", (int64_t)num);
+  }
 
   // 戻り値
   lua_pushstring(L, buf);
@@ -735,7 +739,7 @@ bool CLua::m_bIsRunning = false;
 
 CLua::CLua() {
 	lua_State *L;
-	int ret;
+	//int ret;
 
 	//
 	for (int i = 0; i < eState_Max; i++) {
