@@ -456,9 +456,6 @@ bool CFileNameManager::GetMenuFullLabel(
 ){
 	TCHAR szAccKey[4];
 	TCHAR szFileName[_MAX_PATH];
-#ifdef SI_FIX_RECENT_FILE_DISP_NAME
-	TCHAR szDirName[_MAX_PATH];
-#endif  // SI_
 	TCHAR szMenu2[_MAX_PATH * 2];
 	const TCHAR* pszName;
 
@@ -467,10 +464,37 @@ bool CFileNameManager::GetMenuFullLabel(
 		this->GetTransformFileNameFast( pszFile, szFileName, _MAX_PATH, hDC );
 
 #ifdef SI_FIX_RECENT_FILE_DISP_NAME
-		std::tstring dir = si::file::dirname(szFileName, false);
-		std::tstring fname = si::file::fname(szFileName);
-		wsprintf( szFileName, _T("%s "), fname.c_str());
-		wsprintf( szDirName, _T("%s"), dir.c_str());
+		{
+			TCHAR temp[_MAX_PATH] = {};
+			::PathCompactPathEx(temp, szFileName, 50, L'\\');
+			
+			HANDLE hFile;
+			DWORD size_low, size_high;
+			hFile = CreateFile(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hFile != INVALID_HANDLE_VALUE) {
+				size_low = GetFileSize(hFile,&size_high);
+				CloseHandle(hFile);
+			} else {
+				size_low = 0;
+			}
+			
+			if ( size_low < 1024) {
+				// 1KB未満
+				_stprintf_s( szFileName, _T("%s [1 KB]"), temp);
+			} else if ( size_low < 1024 * 1024) {
+				// 1MB未満
+				_stprintf_s( szFileName, _T("%s [%d KB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024));
+			} else if ( size_low < 1024 * 1024 * 10) {
+				// 10MB未満
+				_stprintf_s( szFileName, _T("%s [%.2f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
+			} else if ( size_low < 1024 * 1024 * 100) {
+				// 100MB未満
+				_stprintf_s( szFileName, _T("%s [%.1f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
+			} else {
+				// 100MB以上 (ケアなし)
+				_stprintf_s( szFileName, _T("%s [%d MB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024 / 1024));
+			}
+		}
 #endif  // SI_
 
 		// szFileName → szMenu2
@@ -500,9 +524,9 @@ bool CFileNameManager::GetMenuFullLabel(
 	}
 	
 #ifdef SI_FIX_RECENT_FILE_DISP_NAME
-	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts%ts %ts(%ts)\t%ts"),
-		(bFavorite ? _T("★ ") : _T("")), pszName,
-		(bModified ? _T("*"):_T("")), szAccKey, szDirName
+	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts %ts%ts %ts"),
+		szAccKey, (bFavorite ? _T("★ ") : _T("")), pszName,
+		(bModified ? _T("*"):_T(""))
 	);
 #else
 	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts%ts%ts %ts%ts"),
