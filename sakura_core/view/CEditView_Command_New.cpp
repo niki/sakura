@@ -346,6 +346,26 @@ void CEditView::InsertData_CEditView(
 		// 操作の追加
 		m_cCommander.GetOpeBlk()->AppendOpe( pcOpe );
 	}
+	
+#ifdef RB_FIX_EDITVIEW_SCRBAR
+	if (nInsLineNum == 0) {
+		const CDocLine *pCDocLine;
+		CLogicPoint ptLogic;
+		m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(*pptNewPos, &ptLogic);
+		pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(ptLogic.y);
+		if (SBMarkCache_IsFoundLine(pCDocLine)) {
+			SBMarkCache_Add(pptNewPos->y, RB_SCRBAR_FOUND_MAGIC);
+			si::logln(L"SBMarkCache_Add 703");
+		} else {
+			SBMarkCache_Del(pptNewPos->y, RB_SCRBAR_FOUND_MAGIC);
+			si::logln(L"SBMarkCache_Del 703");
+		}
+	} else {
+		SBMarkCache_Refresh(703);
+	}
+	AdjustScrollBars();
+#endif  // RB_
+
 }
 
 
@@ -440,7 +460,7 @@ void CEditView::DeleteData2(
 	}
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-	SBMarkCache_Refresh();  // キャッシュのクリア
+	SBMarkCache_Refresh(700);  // キャッシュのクリア
 	AdjustScrollBars();
 #endif  // RB_
 }
@@ -677,7 +697,7 @@ void CEditView::DeleteData(
 end_of_func:;
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-	SBMarkCache_Refresh();  // キャッシュのクリア
+	SBMarkCache_Refresh(701);  // キャッシュのクリア
 	AdjustScrollBars();
 #endif  // RB_
 	return;
@@ -978,11 +998,6 @@ bool CEditView::ReplaceData_CEditView3(
 			*pnInsSeq = LRArg.nInsSeq;
 		}
 	}
-
-#ifdef RB_FIX_EDITVIEW_SCRBAR
-	SBMarkCache_Refresh();  // キャッシュのクリア
-	AdjustScrollBars();
-#endif  // RB_
 
 	//	Jan. 30, 2001 genta
 	//	ファイル全体の更新フラグが立っていないと各行の更新状態が表示されないので

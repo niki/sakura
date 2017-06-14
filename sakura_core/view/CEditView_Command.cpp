@@ -395,11 +395,14 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 	if( bChangeState ){
 		if( !m_sSearchPattern.SetPattern(this->GetHwnd(), m_strCurSearchKey.c_str(), m_strCurSearchKey.size(),
 			m_sCurSearchOption, &m_CurRegexp) ){
+#ifdef RB_FIX_EDITVIEW_SCRBAR
+				SBMarkCache_Refresh(600);
+#endif  // RB_
 				m_bCurSrchKeyMark = false;
 				return FALSE;
 		}
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-		SBMarkCache_Refresh();
+		SBMarkCache_Refresh(601);
 #endif  // RB_
 		m_bCurSrchKeyMark = true;
 		if( bRedrawIfChanged ){
@@ -410,7 +413,7 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 	}
 	if( ! m_bCurSrchKeyMark ){
 #ifdef RB_FIX_EDITVIEW_SCRBAR
-		SBMarkCache_Refresh();
+		SBMarkCache_Refresh(602);
 #endif  // RB_
 		m_bCurSrchKeyMark = true;
 		// 検索文字列のマークだけ設定

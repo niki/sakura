@@ -123,7 +123,7 @@ void CViewCommander::Command_SEARCH_NEXT(
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
 	if (!m_pCommanderView->m_bCurSrchKeyMark) {
-		m_pCommanderView->SBMarkCache_Refresh();
+		m_pCommanderView->SBMarkCache_Refresh(300);
 	}
 #endif  // RB_
 
@@ -368,7 +368,7 @@ void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
 	if (!m_pCommanderView->m_bCurSrchKeyMark) {
-		m_pCommanderView->SBMarkCache_Refresh();
+		m_pCommanderView->SBMarkCache_Refresh(301);
 	}
 #endif  // RB_
 
@@ -1522,9 +1522,6 @@ void CViewCommander::Command_REPLACE_ALL()
 void CViewCommander::Command_SEARCH_CLEARMARK( void )
 {
 // From Here 2001.12.03 hor
-#ifdef RB_FIX_EDITVIEW_SCRBAR
-	m_pCommanderView->SBMarkCache_Refresh();
-#endif  // RB_
 
 	//検索マークのセット
 
@@ -1563,6 +1560,9 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 
 	//検索マークのクリア
 
+#ifdef RB_FIX_EDITVIEW_SCRBAR
+	m_pCommanderView->SBMarkCache_Refresh(302);
+#endif  // RB_
 	m_pCommanderView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 	/* フォーカス移動時の再描画 */
 	m_pCommanderView->RedrawAll();

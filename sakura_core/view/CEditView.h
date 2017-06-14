@@ -782,13 +782,15 @@ public:
 #ifdef RB_FIX_EDITVIEW_SCRBAR
 public:
 	// 更新キュー
-	void SBMarkCache_Refresh();
+	void SBMarkCache_Refresh(int foo = 0);
 	// 登録
 	void SBMarkCache_Add(int nLayoutY, uint32_t magic);
 	// 削除
 	void SBMarkCache_Del(int nLayoutY, uint32_t magic);
 	// 描画・再構築
 	void SBMarkCache_Draw(bool bBarEnable, bool bCacheClear = false);
+	// 検索文字列のある行か確認
+	bool SBMarkCache_IsFoundLine(const CDocLine *pCDocLine);
 	
 	int  nCacheLastLineCount_ = 0;       // 最後に更新した時の行数
 	std::vector<uint32_t> vCacheLines_;  // キャッシュ

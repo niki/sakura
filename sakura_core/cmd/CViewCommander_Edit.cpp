@@ -496,6 +496,9 @@ void CViewCommander::Command_UNDO( void )
 				}
 			}
 		}
+#ifdef RB_FIX_EDITVIEW_SCRBAR
+		m_pCommanderView->SBMarkCache_Refresh(1000);
+#endif  // RB_
 		m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);	//	hor
 		m_pCommanderView->AdjustScrollBars(); // 2007.07.22 ryoji
 		if (!bDraw) {

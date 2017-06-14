@@ -2962,7 +2962,8 @@ void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
 #endif  // RB_
 #ifdef RB_FIX_EDITVIEW_SCRBAR
 // 更新キュー
-void CEditView::SBMarkCache_Refresh() {
+void CEditView::SBMarkCache_Refresh(int foo) {
+	si::logln(L"SBMarkCache_Refresh, check %d", foo);
 	vCacheLines_.clear();
 }
 
@@ -2971,6 +2972,12 @@ void CEditView::SBMarkCache_Add(int nLayoutY, uint32_t magic) {
 	if (vCacheLines_.empty()) {
 		vCacheLines_.push_back(nLayoutY | magic);
 	} else {
+		auto iter = std::find(vCacheLines_.begin(), vCacheLines_.end(), nLayoutY | magic);
+		if (iter != vCacheLines_.end()) {
+			si::logln(L"SBMarkCache_Add, Already registered");
+			return;  // すでに登録済み
+		}
+		
 		if ((vCacheLines_.back() & RB_SCRBAR_LINEN_MASK) <= (uint32_t)nLayoutY) {
 			vCacheLines_.push_back(nLayoutY | magic);  // 末尾に追加
 		} else {
@@ -3068,7 +3075,7 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 	// 行数が変わっていたら強制更新
 	if (nCacheLastLineCount_ != nAllLines) {
 		nCacheLastLineCount_ = nAllLines;
-		SBMarkCache_Refresh();
+		SBMarkCache_Refresh(400);
 	}
 	
 	if (bCacheClear) {
@@ -3106,19 +3113,12 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 			int y = nBarTop + fnCalcY(nLayoutY);
 
 			// 検索文字列のある行
-			if (m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
-				int nSearchStart, nSearchEnd;
-				int nResult = IsSearchString(
-				                  CStringRef(pCDocLine->GetPtr(), pCDocLine->GetLengthWithoutEOL()),
-				                  CLogicInt(0), &nSearchStart, &nSearchEnd);
-				
-				if (nResult) {
-					fnFoundDraw(x, y, clrSearch);
-					// キャッシュに登録
-					SBMarkCache_Add(nLayoutY, RB_SCRBAR_FOUND_MAGIC);
-				}
+			if (SBMarkCache_IsFoundLine(pCDocLine)) {
+				fnFoundDraw(x, y, clrSearch);
+				// キャッシュに登録
+				SBMarkCache_Add(nLayoutY, RB_SCRBAR_FOUND_MAGIC);
 			}
-
+			
 			// ブックマーク
 			if (CBookmarkGetter(pCDocLine).IsBookmarked()) {
 				fnMarkDraw(x, y, clrMark);
@@ -3158,5 +3158,17 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 	::ReleaseDC(m_hwndVScrollBar, hdc);
 	
 	::UpdateWindow(m_hwndVScrollBar);
+}
+// 検索文字列のある行か確認
+bool CEditView::SBMarkCache_IsFoundLine(const CDocLine *pCDocLine) {
+	if (m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
+		int nSearchStart, nSearchEnd;
+		int nResult = IsSearchString(
+		                  CStringRef(pCDocLine->GetPtr(), pCDocLine->GetLengthWithoutEOL()),
+		                  CLogicInt(0), &nSearchStart, &nSearchEnd);
+		return !!nResult;
+	} else {
+		return false;
+	}
 }
 #endif  // RB_

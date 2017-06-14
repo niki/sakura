@@ -328,6 +328,7 @@ void CEditView::AdjustScrollBars()
 		}
 
 #ifdef RB_FIX_EDITVIEW_SCRBAR
+		//si::logln(L"AdjustScrollBars() vCacheLines_.empty=%d %p", vCacheLines_.empty(), this);
 		SBMarkCache_Draw(bEnable /*, bCacheClear = false*/);
 #endif  // RB_
 	}

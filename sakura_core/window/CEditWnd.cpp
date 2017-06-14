@@ -4669,6 +4669,9 @@ void CEditWnd::Views_Redraw()
 	GetMiniMap().Redraw();
 	//アクティブを再描画
 	GetActiveView().Redraw();
+#ifdef RB_FIX_EDITVIEW_SCRBAR
+	GetActiveView().AdjustScrollBars();
+#endif  // RB_
 }
 
 
