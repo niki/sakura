@@ -4,7 +4,7 @@
 	@date 2017.5.21
 */
 /*
-	Copyright (C) 2017, 
+	Copyright (C) 2017, Koma
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.

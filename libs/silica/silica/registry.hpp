@@ -3,7 +3,7 @@
 //! @file  registry.hpp
 //! @brief レジストリ
 //!
-//! @author (C) 2017, Calette.
+//! @author (C) 2017, Koma.
 //====================================================================
 #ifndef SILICA_REGISTRY_HPP
 #define SILICA_REGISTRY_HPP

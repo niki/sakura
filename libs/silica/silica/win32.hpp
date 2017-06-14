@@ -3,7 +3,7 @@
 //! @file  win32.hpp
 //! @brief Windows
 //!
-//! @author (C) 2017, Calette.
+//! @author (C) 2017, Koma.
 //====================================================================
 #ifndef SILICA_WIN32_HPP
 #define SILICA_WIN32_HPP

@@ -53,11 +53,11 @@
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 // 修正者
-#define RB_AMENDER "Calette"
+#define RB_AMENDER "Koma"
 #define RB_URL     "https://github.com/calette/sakura"
 
 // 拡張用レジストリキー
-#define RB_REGKEY _T("Software\\sakura-silica")
+#define RB_REGKEY _T("Software\\sakura-koma")
 
 //------------------------------------------------------------------
 // バージョン情報ダイアログの変更 2017.3.15
@@ -172,6 +172,7 @@
   #define RB_SCRBAR_FOUND_MAGIC (0x10000000)  // 検索
   #define RB_SCRBAR_MARK_MAGIC  (0x20000000)  // ブックマーク
   #define RB_SCRBAR_LINEN_MASK  (0x0fffffff)  // 行番号マスク
+  #define RB_SCRBAR_MAGIC_MASK  (0xf0000000)  // マジックマスク
   // 検索文字列のある行の色
   // (REG/EditViewScrBarFoundColor:#0000d7)
   #define RB_SCRBAR_FOUND_COLOR  _T("#0000d7")
