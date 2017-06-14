@@ -689,35 +689,21 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView) {
 	m_xPos = rc.left + rcView.left + viewWidth / 2 - m_nWidth / 2;
 	m_yPos = rc.top + rcView.top + viewHeight / 2 - m_nHeight / 2;
 #else
-	int top_place = RegKey(SI_REGKEY).get(_T("PlaceDialogWindowTop"), SI_DIALOG_PLACE_TOP);
-	int top_molecule = (top_place % 10);
-	int top_denominator = (top_place / 10);
-	if (top_molecule < 1 || 9 < top_molecule || top_denominator < 1 || 9 < top_denominator) {
-		top_molecule = 1;
-		top_denominator = 2;
-	}
+	int top_molecule    = 1;  // 分子
+	int top_denominator = 2;  // 分母
 	m_yPos = 0;
 	//m_yPos += rc.top;
 	m_yPos += rcView.top;
 	m_yPos += viewHeight / top_denominator * top_molecule;
 	m_yPos -= m_nHeight / 2;
 	
-	int left_place = RegKey(SI_REGKEY).get(_T("PlaceDialogWindowLeft"), SI_DIALOG_PLACE_LEFT);
-	int left_molecule = (left_place % 10);
-	int left_denominator = (left_place / 10);
-	if (left_molecule < 1 || 9 < left_molecule || left_denominator < 1 || 9 < left_denominator) {
-		left_molecule = 1;
-		left_denominator = 2;
-	}
+	int left_molecule    = 1;  // 分子
+	int left_denominator = 2;  // 分母
 	m_xPos = 0;
 	//m_xPos += rc.left;
 	m_xPos += rcView.left;
 	m_xPos += viewWidth / left_denominator * left_molecule;
 	m_xPos -= m_nWidth / 2;
-	
-	//TCHAR szMsg[128];
-	//auto_sprintf(szMsg, _T("top_place %d\n"), top_place);
-	//OutputDebugStringW(szMsg);
 #endif
 }
 #endif  // SI_
