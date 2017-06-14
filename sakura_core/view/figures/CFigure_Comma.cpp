@@ -60,7 +60,7 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 				gr,
 				sPos.GetDrawPos().x,
 #ifdef SI_LINE_CENTERING
-				(pcView->GetLineSpace() / 2) +
+				pcView->GetLineMargin() +
 #endif  // SI_
 				sPos.GetDrawPos().y,
 				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),

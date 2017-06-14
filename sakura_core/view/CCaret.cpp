@@ -1359,7 +1359,7 @@ POINT CCaret::CalcCaretDrawPos(const CLayoutPoint& ptCaretPos) const
 	}
 #ifdef SI_LINE_CENTERING
 	//nPosY += m_pEditView->GetLineSpace();    // 行間隔を含む高さにする場合
-	nPosY += m_pEditView->GetLineSpace() / 2;  // 文字の高さにする場合
+	nPosY += m_pEditView->GetLineMargin();  // 文字の高さにする場合
 #endif  // SI_
 
 	return CMyPoint(nPosX,nPosY);

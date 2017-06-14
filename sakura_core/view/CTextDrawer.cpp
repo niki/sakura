@@ -147,7 +147,7 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 			hdc,
 			nDrawX,					//X
 #ifdef SI_LINE_CENTERING
-			(m_pEditView->GetLineSpace() / 2) +
+			m_pEditView->GetLineMargin() +
 #endif  // SI_
 			y,						//Y
 			ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
@@ -507,7 +507,7 @@ void CTextDrawer::DispLineNumber(
       ::ExtTextOutW_AnyBuild( gr,
         drawNumTop,
 #  ifdef SI_LINE_CENTERING
-        (pView->GetLineSpace() / 2) +
+        pView->GetLineMargin() +
 #  endif  // SI_
         y,
         ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -581,7 +581,7 @@ void CTextDrawer::DispLineNumber(
 		::ExtTextOutW_AnyBuild( gr,
 			drawNumTop,
 #ifdef SI_LINE_CENTERING
-			(pView->GetLineSpace() / 2) +
+			pView->GetLineMargin() +
 #endif  // SI_
 			y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),

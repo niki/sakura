@@ -28,7 +28,7 @@ void CFigure_CtrlCode::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* p
 			gr,
 			pDispPos->GetDrawPos().x,
 #ifdef SI_LINE_CENTERING
-			(pcView->GetLineSpace() / 2) +
+			pcView->GetLineMargin() +
 #endif  // SI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -71,7 +71,7 @@ void CFigure_HanBinary::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* 
 			gr,
 			pDispPos->GetDrawPos().x,
 #ifdef SI_LINE_CENTERING
-			(pcView->GetLineSpace() / 2) +
+			pcView->GetLineMargin() +
 #endif  // SI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -114,7 +114,7 @@ void CFigure_ZenBinary::DispSpace( CGraphics& gr, DispPos* pDispPos, CEditView* 
 			gr,
 			pDispPos->GetDrawPos().x,
 #ifdef SI_LINE_CENTERING
-			(pcView->GetLineSpace() / 2) +
+			pcView->GetLineMargin() +
 #endif  // SI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),

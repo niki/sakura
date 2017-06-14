@@ -73,7 +73,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				gr,
 				nPosLeft,
 //#ifdef SI_LINE_CENTERING
-//			(pcView->GetLineSpace() / 2) +
+//			pcView->GetLineMargin() +
 //#endif  // SI_
 				sPos.GetDrawPos().y,
 				nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
@@ -124,7 +124,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 							gr,
 							sPos.GetDrawPos().x,
 //#ifdef SI_LINE_CENTERING
-//							(pcView->GetLineSpace() / 2) +
+//							pcView->GetLineMargin() +
 //#endif  // SI_
 							sPos.GetDrawPos().y,
 							pMetrics->GetHankakuWidth(),
@@ -142,7 +142,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 						gr,
 						nPosLeft,
 //#ifdef SI_LINE_CENTERING
-//						(pcView->GetLineSpace() / 2) +
+//						pcView->GetLineMargin() +
 //#endif  // SI_
 						sPos.GetDrawPos().y,
 						nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi

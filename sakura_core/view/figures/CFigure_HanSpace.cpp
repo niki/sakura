@@ -37,7 +37,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //			gr,
 //			pDispPos->GetDrawPos().x,
 //#  ifdef SI_LINE_CENTERING
-//			(pcView->GetLineSpace() / 2) +
+//			pcView->GetLineMargin() +
 //#  endif  // SI_
 //			pDispPos->GetDrawPos().y,
 //			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -52,7 +52,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
 		y++; // 少し下め
 //#  ifdef SI_LINE_CENTERING
-//		y += (pcView->GetLineSpace() / 2);
+//		y += pcView->GetLineMargin();
 //#  endif  // SI_
 		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // 少し左め
@@ -82,7 +82,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			gr,
 			pDispPos->GetDrawPos().x,
 #  ifdef SI_LINE_CENTERING
-			(pcView->GetLineSpace() / 2) +
+			pcView->GetLineMargin() +
 #  endif  // SI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
@@ -99,7 +99,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			gr,
 			pDispPos->GetDrawPos().x,
 #  ifdef SI_LINE_CENTERING
-			(pcView->GetLineSpace() / 2) +
+			pcView->GetLineMargin() +
 #  endif  // SI_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),

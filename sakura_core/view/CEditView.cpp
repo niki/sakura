@@ -2555,7 +2555,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 		nUnderLineY = GetTextArea().GetAreaTop() + (Int)(GetCaret().GetCaretLayoutPos().GetY2() - GetTextArea().GetViewTopLine())
 			 * GetTextMetrics().GetHankakuDy() + GetTextMetrics().GetHankakuHeight();
 #ifdef SI_LINE_CENTERING
-		nUnderLineY += GetLineSpace() / 2;
+		nUnderLineY += GetLineMargin();
 #endif  // SI_
 	}
 	// To Here 2007.09.09 Moca
@@ -2626,7 +2626,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
-					nUnderLineY += GetLineSpace() / 2;
+					nUnderLineY += GetLineMargin();
 				}
 #endif  // SI_
 			}else{
@@ -2636,7 +2636,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
-					nUnderLineY += GetLineSpace() / 2;
+					nUnderLineY += GetLineMargin();
 				}
 #endif  // SI_
 			}

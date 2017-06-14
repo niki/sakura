@@ -581,12 +581,17 @@ public:
 	HWND StartProgress();
 
 #ifdef SI_LINE_CENTERING
-	int GetLineSpace() const { //!< 行間のすきま取得
+	//! 行間のすきま取得
+	int GetLineSpace() const {
 		if (!m_bMiniMap && m_pTypeData) {
 			return m_pTypeData->m_nLineSpace;
 		} else {
 			return 0;
 		}
+	}
+	//! 行間のマージン取得
+	int GetLineMargin() const {
+		return GetLineSpace() / 2;
 	}
 #endif  // SI_
 

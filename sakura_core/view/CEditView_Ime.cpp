@@ -83,7 +83,7 @@ void CEditView::SetIMECompFormPos( void )
 	CompForm.ptCurrentPos.x = (long) point.x;
 	CompForm.ptCurrentPos.y = (long) point.y + GetCaret().GetCaretSize().cy - GetTextMetrics().GetHankakuHeight();
 //#ifdef SI_LINE_CENTERING // 変換位置
-//	CompForm.ptCurrentPos.y -= GetLineSpace() / 2 +
+//	CompForm.ptCurrentPos.y -= GetLineMargin() +
 //	                           (GetLineSpace() & 1);
 //#endif  // SI_
 
