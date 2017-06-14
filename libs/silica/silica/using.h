@@ -3,7 +3,7 @@
 //! @file  using.h
 //! @brief using定義
 //!
-//! @author (C) 2017, Koma.
+//! @author (C) 2017, silica33.
 //====================================================================
 #ifndef SILICA_USING_H
 #define SILICA_USING_H

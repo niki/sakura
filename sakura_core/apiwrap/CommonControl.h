@@ -31,7 +31,7 @@ namespace ApiWrap
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      ステータスバー                         //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-#ifdef RB_FIX_STATUSBAR
+#ifdef SI_FIX_STATUSBAR
 	inline LRESULT StatusBar_GetText(HWND hwndStatus, WPARAM opt, TCHAR* str)
 	{
 		if (0 < ::SendMessage(hwndStatus, SB_GETTEXTLENGTH, opt & 0xFF, (LPARAM)str)) {
@@ -41,10 +41,10 @@ namespace ApiWrap
 			return 0L;
 		}
 	}
-#endif  // RB_
+#endif  // SI_
 	inline LRESULT StatusBar_SetText(HWND hwndStatus, WPARAM opt, const TCHAR* str)
 	{
-#ifdef RB_FIX_STATUSBAR
+#ifdef SI_FIX_STATUSBAR
 		if (hwndStatus == NULL) return 0L;
 		if (str && (opt & SBT_OWNERDRAW) == 0) {
 			TCHAR	temp[256] = {};
@@ -54,7 +54,7 @@ namespace ApiWrap
 				if (temp[0] == _T('\0') && str[0] == _T('\0')) return 1L;  // 同じ場合は処理しない
 			}
 		}
-#endif  // RB_
+#endif  // SI_
 		return ::SendMessage( hwndStatus, SB_SETTEXT, opt, (LPARAM)str );
 	}
 

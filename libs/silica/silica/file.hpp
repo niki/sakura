@@ -3,7 +3,7 @@
 //! @file  file.hpp
 //! @brief ファイル
 //!
-//! @author (C) 2017, Koma.
+//! @author (C) 2017, silica33.
 //====================================================================
 #ifndef SILICA_FILE_HPP
 #define SILICA_FILE_HPP

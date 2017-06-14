@@ -30,14 +30,14 @@
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "typeprop/CImpExpManager.h"
-#ifdef RB_FIX_PROFILES
+#ifdef SI_FIX_PROFILES
 #include <codecvt>
 #include <locale>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
-#endif  // RB_
+#endif  // SI_
 
 void _DefaultConfig(STypeConfig* pType);
 
@@ -204,7 +204,7 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 #undef PopulateKeyword2
 #undef PopulateKeyword
 }
-#ifdef RB_FIX_PROFILES
+#ifdef SI_FIX_PROFILES
 void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstring &fname)
 {
 	/* 強調キーワードのテストデータ */
@@ -250,7 +250,7 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 		//si::logln((*file).c_str());
 	}
 }
-#endif  // RB_
+#endif  // SI_
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                        デフォルト                           //
@@ -272,10 +272,10 @@ void _DefaultConfig(STypeConfig* pType)
 	for( int i = 0; i < MAX_KEYWORDSET_PER_TYPE; i++ ){
 		pType->m_nKeyWordSetIdx[i] = -1;
 	}
-#ifndef RB_FIX_TAB_MARK
+#ifndef SI_FIX_TAB_MARK
 	wcscpy( pType->m_szTabViewString, _EDITL("^       ") );	/* TAB表示文字列 */
 	pType->m_bTabArrow = TABARROW_STRING;	/* タブ矢印表示 */	// 2001.12.03 hor	// default on 2013/4/11 Uchi
-#endif  // RB_
+#endif  // SI_
 	pType->m_bInsSpace = false;				/* スペースの挿入 */	// 2001.12.03 hor
 	
 	//@@@ 2002.09.22 YAZAKI 以下、m_cLineCommentとm_cBlockCommentsを使うように修正

@@ -12,7 +12,7 @@
 	Please contact the copyright holder to use this code for other purpose.
 */
 #include "StdAfx.h"
-#ifdef RB_USE_PPA
+#ifdef SI_USE_PPA
 #include "CPPAMacroMgr.h"
 #include "mem/CMemory.h"
 #include "CMacroFactory.h"
@@ -113,4 +113,4 @@ void CPPAMacroMgr::declare (void)
 //	To Here Apr. 29, 2002 genta
 
 
-#endif  // RB_USE_PPA
+#endif  // SI_USE_PPA

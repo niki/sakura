@@ -3,7 +3,7 @@
 //! @file  log.hpp
 //! @brief ログ
 //!
-//! @author (C) 2017, Koma.
+//! @author (C) 2017, silica33.
 //====================================================================
 #ifndef SILICA_LOG_HPP
 #define SILICA_LOG_HPP

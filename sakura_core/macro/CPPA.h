@@ -34,7 +34,7 @@
 /*
 PPA(Poor-Pascal for Application)はDelphi/C++Builder用のPascalインタプリタコンポーネントです。
 */
-#ifdef RB_USE_PPA
+#ifdef SI_USE_PPA
 
 #ifndef _DLL_CPPA_H_
 #define _DLL_CPPA_H_
@@ -297,4 +297,4 @@ private:
 
 #endif
 
-#endif  // RB_USE_PPA
+#endif  // SI_USE_PPA

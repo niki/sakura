@@ -3,7 +3,7 @@
 //! @file  util.hpp
 //! @brief ユーティリティ
 //!
-//! @author (C) 2017, Koma.
+//! @author (C) 2017, silica33.
 //====================================================================
 #ifndef SILICA_UTIL_HPP
 #define SILICA_UTIL_HPP

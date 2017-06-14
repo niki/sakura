@@ -347,24 +347,24 @@ void CEditView::InsertData_CEditView(
 		m_cCommander.GetOpeBlk()->AppendOpe( pcOpe );
 	}
 	
-#ifdef RB_FIX_EDITVIEW_SCRBAR
+#ifdef SI_FIX_EDITVIEW_SCRBAR
 	if (nInsLineNum == 0) {
 		const CDocLine *pCDocLine;
 		CLogicPoint ptLogic;
 		m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(*pptNewPos, &ptLogic);
 		pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(ptLogic.y);
 		if (SBMarkCache_IsFoundLine(pCDocLine)) {
-			SBMarkCache_Add(pptNewPos->y, RB_SCRBAR_FOUND_MAGIC);
+			SBMarkCache_Add(pptNewPos->y, SI_SCRBAR_FOUND_MAGIC);
 			si::logln(L"SBMarkCache_Add 703");
 		} else {
-			SBMarkCache_Del(pptNewPos->y, RB_SCRBAR_FOUND_MAGIC);
+			SBMarkCache_Del(pptNewPos->y, SI_SCRBAR_FOUND_MAGIC);
 			si::logln(L"SBMarkCache_Del 703");
 		}
 	} else {
 		SBMarkCache_Refresh(703);
 	}
 	AdjustScrollBars();
-#endif  // RB_
+#endif  // SI_
 
 }
 
@@ -459,10 +459,10 @@ void CEditView::DeleteData2(
 		m_cCommander.GetOpeBlk()->AppendOpe( pcOpe );
 	}
 
-#ifdef RB_FIX_EDITVIEW_SCRBAR
+#ifdef SI_FIX_EDITVIEW_SCRBAR
 	SBMarkCache_Refresh(700);  // キャッシュのクリア
 	AdjustScrollBars();
-#endif  // RB_
+#endif  // SI_
 }
 
 
@@ -516,9 +516,9 @@ void CEditView::DeleteData(
 
 	/* テキストが選択されているか */
 	if( GetSelectionInfo().IsTextSelected() ){
-#ifndef RB_FIX_WAITCUESOR
+#ifndef SI_FIX_WAITCUESOR
 		CWaitCursor cWaitCursor( this->GetHwnd() );  // 2002.02.05 hor
-#endif  // RB_
+#endif  // SI_
 		if( !m_bDoing_UndoRedo ){	/* アンドゥ・リドゥの実行中か */
 			/* 操作の追加 */
 			m_cCommander.GetOpeBlk()->AppendOpe(
@@ -696,10 +696,10 @@ void CEditView::DeleteData(
 	}
 end_of_func:;
 
-#ifdef RB_FIX_EDITVIEW_SCRBAR
+#ifdef SI_FIX_EDITVIEW_SCRBAR
 	SBMarkCache_Refresh(701);  // キャッシュのクリア
 	AdjustScrollBars();
-#endif  // RB_
+#endif  // SI_
 	return;
 }
 

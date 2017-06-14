@@ -150,7 +150,7 @@ INT_PTR CPropWin::DispatchEvent(
 			if( pMNUD->iDelta > 0 ){
 				--nVal;
 			}
-#ifdef RB_FIX_EDITVIEW
+#ifdef SI_FIX_EDITVIEW
 			nVal = std::min(std::max(nVal, 1), 32);
 #else
 			if( nVal < 0 ){
@@ -159,7 +159,7 @@ INT_PTR CPropWin::DispatchEvent(
 			if( nVal > 32 ){
 				nVal = 32;
 			}
-#endif  // RB_
+#endif  // SI_
 			::SetDlgItemInt( hwndDlg, IDC_EDIT_nRulerBottomSpace, nVal, FALSE );
 			return TRUE;
 		case IDC_SPIN_nLineNumberRightSpace:
@@ -405,7 +405,7 @@ int CPropWin::GetData( HWND hwndDlg )
 	}
 	/* ルーラーとテキストの隙間 */
 	m_Common.m_sWindow.m_nRulerBottomSpace = ::GetDlgItemInt( hwndDlg, IDC_EDIT_nRulerBottomSpace, NULL, FALSE );
-#ifdef RB_FIX_EDITVIEW
+#ifdef SI_FIX_EDITVIEW
 	m_Common.m_sWindow.m_nRulerBottomSpace = std::min(std::max(m_Common.m_sWindow.m_nRulerBottomSpace, 1), 32);
 #else
 	if( m_Common.m_sWindow.m_nRulerBottomSpace < 0 ){
@@ -414,7 +414,7 @@ int CPropWin::GetData( HWND hwndDlg )
 	if( m_Common.m_sWindow.m_nRulerBottomSpace > 32 ){
 		m_Common.m_sWindow.m_nRulerBottomSpace = 32;
 	}
-#endif  // RB_
+#endif  // SI_
 
 	//	Sep. 18. 2002 genta 行番号とテキストの隙間
 	m_Common.m_sWindow.m_nLineNumRightSpace = ::GetDlgItemInt( hwndDlg, IDC_EDIT_nLineNumberRightSpace, NULL, FALSE );

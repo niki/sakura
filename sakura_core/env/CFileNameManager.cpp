@@ -374,20 +374,20 @@ static void GetAccessKeyLabelByIndex(TCHAR* pszLabel, bool bEspaceAmp, int index
 		if( bEspaceAmp ){
 			pszLabel[0] = _T('&');
 			pszLabel[1] = c;
-#ifdef RB_FIX_RECENT_FILE_DISP_NAME
+#ifdef SI_FIX_RECENT_FILE_DISP_NAME
 			pszLabel[2] = _T('\0');
 #else
 			pszLabel[2] = _T(' ');
 			pszLabel[3] = _T('\0');
-#endif  // RB_
+#endif  // SI_
 		}else{
 			pszLabel[0] = c;
-#ifdef RB_FIX_RECENT_FILE_DISP_NAME
+#ifdef SI_FIX_RECENT_FILE_DISP_NAME
 			pszLabel[1] = _T('\0');
 #else
 			pszLabel[1] = _T(' ');
 			pszLabel[2] = _T('\0');
-#endif  // RB_
+#endif  // SI_
 		}
 	}else{
 		pszLabel[0] = _T('\0');
@@ -456,9 +456,9 @@ bool CFileNameManager::GetMenuFullLabel(
 ){
 	TCHAR szAccKey[4];
 	TCHAR szFileName[_MAX_PATH];
-#ifdef RB_FIX_RECENT_FILE_DISP_NAME
+#ifdef SI_FIX_RECENT_FILE_DISP_NAME
 	TCHAR szDirName[_MAX_PATH];
-#endif  // RB_
+#endif  // SI_
 	TCHAR szMenu2[_MAX_PATH * 2];
 	const TCHAR* pszName;
 
@@ -466,12 +466,12 @@ bool CFileNameManager::GetMenuFullLabel(
 	if( pszFile[0] ){
 		this->GetTransformFileNameFast( pszFile, szFileName, _MAX_PATH, hDC );
 
-#ifdef RB_FIX_RECENT_FILE_DISP_NAME
+#ifdef SI_FIX_RECENT_FILE_DISP_NAME
 		std::tstring dir = si::file::dirname(szFileName, false);
 		std::tstring fname = si::file::fname(szFileName);
 		wsprintf( szFileName, _T("%s "), fname.c_str());
 		wsprintf( szDirName, _T("%s"), dir.c_str());
-#endif  // RB_
+#endif  // SI_
 
 		// szFileName → szMenu2
 		//	Jan. 19, 2002 genta
@@ -499,7 +499,7 @@ bool CFileNameManager::GetMenuFullLabel(
 		pszCharset = szCodePageName;
 	}
 	
-#ifdef RB_FIX_RECENT_FILE_DISP_NAME
+#ifdef SI_FIX_RECENT_FILE_DISP_NAME
 	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts%ts %ts(%ts)\t%ts"),
 		(bFavorite ? _T("★ ") : _T("")), pszName,
 		(bModified ? _T("*"):_T("")), szAccKey, szDirName
@@ -509,7 +509,7 @@ bool CFileNameManager::GetMenuFullLabel(
 		szAccKey, (bFavorite ? _T("★ ") : _T("")), pszName,
 		(bModified ? _T("*"):_T(" ")), pszCharset
 	);
-#endif  // RB_
+#endif  // SI_
 	return 0 < ret;
 }
 

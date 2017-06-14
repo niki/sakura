@@ -54,9 +54,9 @@ bool CEditView::TagJumpSub(
 	bool*			pbJumpToSelf	//!< [out] オプションNULL可。自分にジャンプしたか
 )
 {
-#ifdef RB_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(RB_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // RB_
+#ifdef SI_FIX_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(SI_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // SI_
 
 	HWND	hwndOwner;
 	POINT	poCaret;
@@ -395,15 +395,15 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 	if( bChangeState ){
 		if( !m_sSearchPattern.SetPattern(this->GetHwnd(), m_strCurSearchKey.c_str(), m_strCurSearchKey.size(),
 			m_sCurSearchOption, &m_CurRegexp) ){
-#ifdef RB_FIX_EDITVIEW_SCRBAR
+#ifdef SI_FIX_EDITVIEW_SCRBAR
 				SBMarkCache_Refresh(600);
-#endif  // RB_
+#endif  // SI_
 				m_bCurSrchKeyMark = false;
 				return FALSE;
 		}
-#ifdef RB_FIX_EDITVIEW_SCRBAR
+#ifdef SI_FIX_EDITVIEW_SCRBAR
 		SBMarkCache_Refresh(601);
-#endif  // RB_
+#endif  // SI_
 		m_bCurSrchKeyMark = true;
 		if( bRedrawIfChanged ){
 			Redraw();
@@ -412,9 +412,9 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 		return TRUE;
 	}
 	if( ! m_bCurSrchKeyMark ){
-#ifdef RB_FIX_EDITVIEW_SCRBAR
+#ifdef SI_FIX_EDITVIEW_SCRBAR
 		SBMarkCache_Refresh(602);
-#endif  // RB_
+#endif  // SI_
 		m_bCurSrchKeyMark = true;
 		// 検索文字列のマークだけ設定
 		if( bRedrawIfChanged ){

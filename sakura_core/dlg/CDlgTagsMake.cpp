@@ -66,7 +66,7 @@ int CDlgTagsMake::DoModal(
 	const TCHAR*	pszPath		//パス
 )
 {
-#ifdef RB_FIX_TAGMAKEDLG
+#ifdef SI_FIX_TAGMAKEDLG
 	auto fnSearchTags = [](const std::tstring &path, const std::tstring &name) -> std::tstring {
 		std::tstring s(path);
 		while (1) {
@@ -91,7 +91,7 @@ int CDlgTagsMake::DoModal(
 	_tcscpy( m_szPath, path.c_str() );
 #else
 	_tcscpy( m_szPath, pszPath );
-#endif  // RB_
+#endif  // SI_
 
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_TAG_MAKE, lParam );
 }
@@ -164,9 +164,9 @@ void CDlgTagsMake::SelectFolder( HWND hwndDlg )
 /* ダイアログデータの設定 */
 void CDlgTagsMake::SetData( void )
 {
-#ifdef RB_FIX_DIALOG_POS
+#ifdef SI_FIX_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // RB_
+#endif  // SI_
 
 	//作成フォルダ
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_EDIT_TAG_MAKE_FOLDER ), _countof( m_szPath ) );

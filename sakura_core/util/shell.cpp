@@ -70,7 +70,7 @@ BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TC
 	CCurrentDirectoryBackupPoint dirBack;
 	ChangeCurrentDirectoryToExeDir();
 
-#ifdef RB_FIX_SELECTDIR
+#ifdef SI_FIX_SELECTDIR
   IFileOpenDialog *pFileOpenDialog;
   HRESULT hr;
   IShellItem *psiFolder;
@@ -138,7 +138,7 @@ BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TC
 		}
 	}
 	return FALSE;
-#endif  // RB_
+#endif  // SI_
 }
 
 
@@ -580,11 +580,11 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 
 			memset(&hp, 0, sizeof(hp));	// 構造体をゼロクリア
 			hp.cbStruct = sizeof(hp);
-#ifdef RB_FIX_UI_FONT
+#ifdef SI_FIX_UI_FONT
 			hp.pszFont = _T("MS Shell Dlg, 9");
 #else
 			hp.pszFont = _T("ＭＳ Ｐゴシック, 9");
-#endif  // RB_
+#endif  // SI_
 			hp.clrForeground = hp.clrBackground = -1;
 			hp.rcMargins.left = hp.rcMargins.top = hp.rcMargins.right = hp.rcMargins.bottom = -1;
 			if( uCommandOrg == HELP_CONTEXTMENU ){

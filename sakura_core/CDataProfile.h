@@ -73,13 +73,13 @@ typedef const StringBufferW_ StringBufferW;
 //2007.09.24 kobake データ変換部を子クラスに分離
 //!各種データ変換付きCProfile
 class CDataProfile : public CProfile{
-#ifdef RB_FIX_PROFILES
+#ifdef SI_FIX_PROFILES
 public:
 	CDataProfile() : pcProfileDef_(nullptr), bProfileDef_(false) {}
 	CDataProfile *pcProfileDef_;
 	bool bProfileDef_;
 	void *tag_;
-#endif  // RB_
+#endif  // SI_
 private:
 	//専用型
 	typedef std::wstring wstring;
@@ -234,7 +234,7 @@ public:
 				//Tに変換
 				profile_to_value(buf, &tEntryValue);
 			}
-#ifdef RB_FIX_PROFILES
+#ifdef SI_FIX_PROFILES
 			if (!ret) {
 				// 読み込みに失敗した場合はデフォルトを参照する
 				if (bProfileDef_ && pcProfileDef_ && (*pcProfileDef_).IsReadingMode()) {
@@ -244,7 +244,7 @@ public:
 					return (*pcProfileDef_).IOProfileData(pszSectionName, pszEntryKey, tEntryValue);
 				}
 			}
-#endif  // RB_
+#endif  // SI_
 			return ret;
 		}
 		//書き込み
@@ -252,7 +252,7 @@ public:
 			//文字列に変換
 			wstring buf;
 			value_to_profile(tEntryValue, &buf);
-#ifdef RB_FIX_PROFILES
+#ifdef SI_FIX_PROFILES
 			if (bProfileDef_ && pcProfileDef_ && (*pcProfileDef_).IsReadingMode()) {
 				TCHAR test[1024];
 				if ((*pcProfileDef_).IOProfileData(pszSectionName, pszEntryKey, MakeStringBufferT(test))) {
@@ -261,7 +261,7 @@ public:
 					}
 				}
 			}
-#endif  // RB_
+#endif  // SI_
 			//文字列書き込み
 			return SetProfileDataImp( pszSectionName, pszEntryKey, buf);
 		}

@@ -5,7 +5,7 @@
 #include "util/string_ex2.h"
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
-#ifdef RB_FIX_NUMERIC_COLOR
+#ifdef SI_FIX_NUMERIC_COLOR
 #define REGEX_MODE (3)  // 0:std::regex
                         // 1:boost::regex
                         // 2:RE2
@@ -23,7 +23,7 @@
 #elif REGEX_MODE == 3
   #include "window/CEditWnd.h"
 #endif
-#endif  // RB_
+#endif  // SI_
 
 static int IsNumber( const CStringRef& cStr, int offset );/* 数値ならその長さを返す */	//@@@ 2001.02.17 by MIK
 
@@ -88,7 +88,7 @@ bool CColor_Numeric::EndColor(const CStringRef& cStr, int nPos)
  */
 static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*, int length*/)
 {
-#ifdef RB_FIX_NUMERIC_COLOR
+#ifdef SI_FIX_NUMERIC_COLOR
 #if REGEX_MODE == 2
 	register const std::string p2(to_achar(cStr.GetPtr() + offset));
 	register const wchar_t *q2 = nullptr;
@@ -184,7 +184,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 		// 正規表現ライブラリが読み込まれていない
 		// そのまま通常の方法で判定する
 	}
-#endif  // RB_
+#endif  // SI_
 
 	register const wchar_t* p;
 	register const wchar_t* q;

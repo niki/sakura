@@ -33,14 +33,14 @@ void CViewCommander::Command_GREP_DIALOG( void )
 	bool bGetHistory = GetEditWindow()->m_cDlgGrep.m_bSetText == false;
 
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
-#ifdef RB_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef SI_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg(
 	    cmemCurText,
 	    bGetHistory,
 	    GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp);
 #else
 	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText, bGetHistory );	// 2006.08.23 ryoji ダイアログ専用関数に変更
-#endif  // RB_
+#endif  // SI_
 
 	if( bSet ){
 		GetEditWindow()->m_cDlgGrep.m_strText = cmemCurText.GetStringPtr();
@@ -68,7 +68,7 @@ void CViewCommander::Command_GREP( void )
 	CNativeW		cmWork4;
 
 	cmWork1.SetString( GetEditWindow()->m_cDlgGrep.m_strText.c_str() );
-#ifdef RB_FIX_GREP
+#ifdef SI_FIX_GREP
 	int count = 0;
 	CNativeT temp;
 	if (!GetEditWindow()->m_cDlgGrep.m_bFromThisText) {
@@ -95,8 +95,8 @@ void CViewCommander::Command_GREP( void )
 	if (count > 0) {
 		if (temp.GetStringLength() == 0) return;
 		cmWork2.SetString( GetEditWindow()->m_cDlgGrep.m_szFile );
-		cmWork2.Replace(_T("$cpp"), RegKey(RB_REGKEY).get_s(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp")));
-		cmWork2.Replace(_T("$make"), RegKey(RB_REGKEY).get_s(_T("$make"), _T("makefile *.mak *.om OMakefile OMakeRoot")));
+		cmWork2.Replace(_T("$cpp"), RegKey(SI_REGKEY).get_s(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp")));
+		cmWork2.Replace(_T("$make"), RegKey(SI_REGKEY).get_s(_T("$make"), _T("makefile *.mak *.om OMakefile OMakeRoot")));
 		cmWork3.SetString( temp.GetStringPtr() );
 	} else {
 		TCHAR	szWorkFolder[MAX_PATH];
@@ -111,7 +111,7 @@ void CViewCommander::Command_GREP( void )
 #else
 	cmWork2.SetString( GetEditWindow()->m_cDlgGrep.m_szFile );
 	cmWork3.SetString( GetEditWindow()->m_cDlgGrep.m_szFolder );
-#endif  // RB_
+#endif  // SI_
 
 	/*	今のEditViewにGrep結果を表示する。
 		Grepモードのとき、または未編集で無題かつアウトプットでない場合。
@@ -142,11 +142,11 @@ void CViewCommander::Command_GREP( void )
 			&cmWork2,
 			&cmWork3,
 			false,
-#ifdef RB_FIX_GREP
+#ifdef SI_FIX_GREP
 			(count > 0) ? GetEditWindow()->m_cDlgGrep.m_bSubFolder : false,
 #else
 			GetEditWindow()->m_cDlgGrep.m_bSubFolder,
-#endif  // RB_
+#endif  // SI_
 			false,
 			true, // Header
 			GetEditWindow()->m_cDlgGrep.m_sSearchOption,
