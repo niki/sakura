@@ -125,4 +125,4 @@ Cregit
   Copyright © 1994–2017 Lua.org, PUC-Rio.  
   
 
-(C) 2017, Calette.
+(C) 2017, koma.
