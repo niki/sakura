@@ -154,22 +154,6 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 //	MYTRACE( _T("Iniファイル処理 0 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
-#ifdef SI_FIX_PROFILES
-	CDataProfile cProfileDefault;
-	cProfileDefault.SetReadingMode();
-
-	{
-		std::tstring fname =
-		    si::file::dirname(szIniFileName) +
-		    si::file::basename(szIniFileName) + _T(".default.ini");
-
-		if (cProfileDefault.ReadProfile(fname.c_str())) {
-			cProfile.pcProfileDef_ = &cProfileDefault;
-			cProfile.bProfileDef_ = true;
-		}
-	}
-#endif  // SI_
-
 	CMenuDrawer* pcMenuDrawer = new CMenuDrawer; // 2010/7/4 Uchi
 
 	if( bRead ){
@@ -2677,10 +2661,6 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 
 #ifdef SI_FIX_PROFILES
 	std::vector<std::wstring> default_data;
-#ifndef SI_FIX_MAINMENU_FORCE_DEFAULT
-	bool bOldProfileDef = cProfile.bProfileDef_;
-	cProfile.bProfileDef_ = false;
-#endif  // SI_FIX_MAINMENU_FORCE_DEFAULT
 #endif  // SI_
 
 	if (cProfile.IsReadingMode()) {
@@ -2719,12 +2699,6 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 		dataNum++;
 #endif  // SI_
 	}
-
-#ifdef SI_FIX_PROFILES
-#ifndef SI_FIX_MAINMENU_FORCE_DEFAULT
-	cProfile.bProfileDef_ = bOldProfileDef;
-#endif  // SI_FIX_MAINMENU_FORCE_DEFAULT
-#endif  // SI_
 
 	if (cProfile.IsReadingMode()) {
 		// Top Level 初期化

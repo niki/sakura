@@ -75,9 +75,6 @@ typedef const StringBufferW_ StringBufferW;
 class CDataProfile : public CProfile{
 #ifdef SI_FIX_PROFILES
 public:
-	CDataProfile() : pcProfileDef_(nullptr), bProfileDef_(false) {}
-	CDataProfile *pcProfileDef_;
-	bool bProfileDef_;
 	void *tag_;
 #endif  // SI_
 private:
@@ -234,17 +231,6 @@ public:
 				//Tに変換
 				profile_to_value(buf, &tEntryValue);
 			}
-#ifdef SI_FIX_PROFILES
-			if (!ret) {
-				// 読み込みに失敗した場合はデフォルトを参照する
-				if (bProfileDef_ && pcProfileDef_ && (*pcProfileDef_).IsReadingMode()) {
-					//TCHAR temp[1024];
-					//auto_sprintf(temp, _T("pszSectionName=%s, pszEntryKey=%s\n"), pszSectionName, pszEntryKey);
-					//OutputDebugStringW(temp);
-					return (*pcProfileDef_).IOProfileData(pszSectionName, pszEntryKey, tEntryValue);
-				}
-			}
-#endif  // SI_
 			return ret;
 		}
 		//書き込み
@@ -252,16 +238,6 @@ public:
 			//文字列に変換
 			wstring buf;
 			value_to_profile(tEntryValue, &buf);
-#ifdef SI_FIX_PROFILES
-			if (bProfileDef_ && pcProfileDef_ && (*pcProfileDef_).IsReadingMode()) {
-				TCHAR test[1024];
-				if ((*pcProfileDef_).IOProfileData(pszSectionName, pszEntryKey, MakeStringBufferT(test))) {
-					if (buf == test) {
-						return false;  // 渡された CDataProfile から読み込んだ値を同じ場合は書き込まない
-					}
-				}
-			}
-#endif  // SI_
 			//文字列書き込み
 			return SetProfileDataImp( pszSectionName, pszEntryKey, buf);
 		}
