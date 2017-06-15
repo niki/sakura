@@ -288,7 +288,11 @@ void CPropTab::EnableTabPropInput(HWND hwndDlg)
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_DispTabClose       ), bTabWnd );
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_TextTabClose             ), bTabWnd );
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_TextTabCaption           ), bTabWnd );
+#ifdef SI_FIX_TABBAR_FONT
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_TABFONT           ), FALSE );
+#else
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_TABFONT           ), bTabWnd );
+#endif  // SI_
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_TABFONT           ), bTabWnd );	// 2013/4/24 Uchi
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_SortTabList        ), bTabWnd );
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_TAB_MULTILINE      ), bTabWnd );

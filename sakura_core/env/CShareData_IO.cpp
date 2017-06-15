@@ -1137,8 +1137,10 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, L"bTabMultiLine"			, common.m_sTabBar.m_bTabMultiLine );	// タブ多段
 	cProfile.IOProfileData_WrapInt( pszSecName, L"eTabPosition"		, common.m_sTabBar.m_eTabPosition );	// タブ位置
 
+#ifndef SI_FIX_TABBAR_FONT
 	ShareData_IO_Sub_LogFont( cProfile, pszSecName, L"lfTabFont", L"lfTabFontPs", L"lfTabFaceName",
 		common.m_sTabBar.m_lf, common.m_sTabBar.m_nPointSize );
+#endif  // SI_
 	
 	cProfile.IOProfileData( pszSecName, LTEXT("nTabMaxWidth")			, common.m_sTabBar.m_nTabMaxWidth );
 	cProfile.IOProfileData( pszSecName, LTEXT("nTabMinWidth")			, common.m_sTabBar.m_nTabMinWidth );
