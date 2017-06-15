@@ -321,6 +321,9 @@ void _DispEOF(
 void _DrawEOL(
 	CGraphics&		gr,
 	const CMyRect&	rcEol,
+#ifdef SI_LINE_CENTERING
+	int nMargin,
+#endif  // SI_
 	CEol			cEol,
 	bool			bBold,
 	COLORREF		pColor
@@ -362,7 +365,11 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 			// 文字色や太字かどうかを現在の DC から調べる	// 2009.05.29 ryoji 
 			// （検索マッチ等の状況に柔軟に対応するため、ここは記号の色指定には決め打ちしない）
 			// 2013.06.21 novice 文字色、太字をCGraphicsから取得
+#ifdef SI_LINE_CENTERING
+			_DrawEOL(gr, rcEol, pcView->GetLineMargin(), cEol, gr.GetCurrentMyFontBold(), gr.GetCurrentTextForeColor());
+#else
 			_DrawEOL(gr, rcEol, cEol, gr.GetCurrentMyFontBold(), gr.GetCurrentTextForeColor());
+#endif  // SI_
 
 			// リージョン破棄
 			gr.ClearClipping();
@@ -390,6 +397,9 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 void _DrawEOL(
 	CGraphics&		gr,		//!< Device Context Handle
 	const CMyRect&	rcEol,		//!< 描画領域
+#ifdef SI_LINE_CENTERING
+	int nMargin,
+#endif  // SI_
 	CEol			cEol,		//!< 行末コード種別
 	bool			bBold,		//!< TRUE: 太字
 	COLORREF		pColor		//!< 色
@@ -403,6 +413,9 @@ void _DrawEOL(
 		{
 			sx = rcEol.left;						//X左端
 			sy = rcEol.top + ( rcEol.Height() / 2);	//Y中心
+#ifdef SI_LINE_CENTERING
+			sy += nMargin;
+#endif  // SI_
 			DWORD pp[] = { 3, 3 };
 			POINT pt[6];
 			pt[0].x = sx + rcEol.Width();	//	上へ
@@ -440,6 +453,9 @@ void _DrawEOL(
 		{
 			sx = rcEol.left;
 			sy = rcEol.top + ( rcEol.Height() / 2 );
+#ifdef SI_LINE_CENTERING
+			sy += nMargin;
+#endif  // SI_
 			DWORD pp[] = { 3, 2 };
 			POINT pt[5];
 			pt[0].x = sx + rcEol.Width();	//	右へ
@@ -474,6 +490,9 @@ void _DrawEOL(
 		{
 			sx = rcEol.left + ( rcEol.Width() / 2 );
 			sy = rcEol.top + ( rcEol.Height() * 3 / 4 );
+#ifdef SI_LINE_CENTERING
+			sy += nMargin;
+#endif  // SI_
 			DWORD pp[] = { 3, 2 };
 			POINT pt[5];
 			pt[0].x = sx;	//	上へ
@@ -510,6 +529,9 @@ void _DrawEOL(
 			// 左下矢印(折れ曲がりなし)
 			sx = rcEol.left;			//X左端
 			sy = rcEol.top + ( rcEol.Height() * 3 / 4 );	//Y上から3/4
+#ifdef SI_LINE_CENTERING
+			sy += nMargin;
+#endif  // SI_
 			DWORD pp[] = { 2, 3 };
 			POINT pt[5];
 			int nWidth = t_min(rcEol.Width(), rcEol.Height() / 2);
