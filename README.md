@@ -39,7 +39,7 @@ Setup
 Build environment  
 -----------------
 + 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/uzuki3/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
-+ MSVC2017でビルド  
++ MSVC2017でビルド (/O1=[/Og /Os /Oy /Ob2 /Gs /GF /Gy])  
 + Boostを使用 (JSON)  
 + Luaを使用 (マクロ, プラグイン)  
 + 挙動の制御 (共有フラグ)としてレジストリを使用しています  
@@ -95,7 +95,7 @@ Changed
 
 |修正版|公式|
 |-|-|
-|<details><summary>メインメニューは常にデフォルトを使用する</summary>カスタマイズの有用性を感じられなかったのと機能が追加されたときにメニューに追加されず機能に気づかないことが多いので, それなら固定にしたほうが分かりやすいためです.<br>ついでにiniファイルの肥大化も軽減されます.</details>|カスタマイズ可能|
+|<details><summary>メインメニューは常にデフォルトを使用する</summary>カスタマイズの効果が感じられなかったのと機能が追加されたときに増えるメニューが対応されず, 機能に気づかないことが多いのでそれなら固定にしたほうが分かりやすいためです.<br>副作用でiniファイルに出力しないのでサイズが軽減されます.</details>|カスタマイズ可能|
 |<details><summary>タブと編集ウィンドウのバグ修正とスタイル調整 (モダンに?)</summary>境界線を描画しない, タブを詰める.<br>タブを閉じるボタンをグラフィカルにする.<br>間に選択タブがあると右側のエッヂがないバグを修正:bug:.<br>エディット画面のスタイルから WS_EX_STATICEDGE を外し境界線を描かないようにする.</details>|メニュー下に境界線や編集画面に枠がある|
 |リソース (ダイアログ)のフォントを `MS Shell Dlg`へ変更|`ＭＳ Ｐゴシック`|
 |変更, キーマクロ記録中のタブ名のカラーを変更||
