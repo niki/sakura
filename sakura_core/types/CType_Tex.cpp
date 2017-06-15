@@ -24,15 +24,11 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
-#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
 #include "outline/CFuncInfoArr.h"
 #include "view/Colors/EColorIndexType.h"
-
-int g_nKeywordsIdx_TEX = -1;
-int g_nKeywordsIdx_TEX2 = -1;
 
 /* TeX */
 //Oct. 31, 2000 JEPRO TeX  ユーザに贈る
@@ -185,7 +181,6 @@ void CDocOutline::MakeTopicList_tex(CFuncInfoArr* pcFuncInfoArr)
 
 
 
-#ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsTEX[] = {
 //Nov. 20, 2000 JEPRO	大幅追加 & 若干修正・削除 --ほとんどコマンドのみ
 	L"error",
@@ -843,5 +838,4 @@ const wchar_t* g_ppszKeywordsTEX2[] = {
 //		"zw"
 };
 int g_nKeywordsTEX2 = _countof(g_ppszKeywordsTEX2);
-#endif
 

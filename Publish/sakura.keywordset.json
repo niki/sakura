@@ -80,66 +80,6 @@
 			"name": "Rich Text",
 			"case_sensitive": "True",
 			"file": "rtf.kwd"
-		},
-		{
-			"name": "C#",
-			"case_sensitive": "True",
-			"file": "csharp.kwd"
-		},
-		{
-			"name": "C# content",
-			"case_sensitive": "True",
-			"file": "csharp-context.kwd"
-		},
-		{
-			"name": "CSS",
-			"case_sensitive": "True",
-			"file": "css2.1.kwd"
-		},
-		{
-			"name": "JavaScript",
-			"case_sensitive": "True",
-			"file": "ecmascript_sys.kwd"
-		},
-		{
-			"name": "JavaScript2",
-			"case_sensitive": "True",
-			"file": "javascript.kwd"
-		},
-		{
-			"name": "PHP",
-			"case_sensitive": "True",
-			"file": "php_reserved.kwd"
-		},
-		{
-			"name": "PHP2",
-			"case_sensitive": "True",
-			"file": "php.kwd"
-		},
-		{
-			"name": "python",
-			"case_sensitive": "True",
-			"file": "python_2.5.kwd"
-		},
-		{
-			"name": "Ruby1",
-			"case_sensitive": "True",
-			"file": "ruby1.kwd"
-		},
-		{
-			"name": "Ruby2",
-			"case_sensitive": "True",
-			"file": "ruby2.kwd"
-		},
-		{
-			"name": "Ruby3",
-			"case_sensitive": "True",
-			"file": "ruby3.kwd"
-		},
-		{
-			"name": "Ruby4",
-			"case_sensitive": "True",
-			"file": "ruby4.kwd"
 		}
 	]
 }

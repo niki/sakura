@@ -24,10 +24,7 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
-#include "types/CTypeInit.h"
 #include "view/colors/EColorIndexType.h"
-
-int g_nKeywordsIdx_PASCAL = -1;
 
 /* Pascal */
 //Mar. 10, 2001 JEPRO	半角数値を色分け表示
@@ -42,15 +39,13 @@ void CType_Pascal::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"{", L"}" );	/* ブロックコメントデリミタ */	//Nov. 5, 2000 JEPRO 追加
 	pType->m_cBlockComments[1].SetBlockCommentRule( L"(*", L"*)" );	/* ブロックコメントデリミタ2 */	//@@@ 2001.03.10 by MIK
 	pType->m_nStringType = 1;										/* 文字列区切り記号エスケープ方法  0=[\"][\'] 1=[""][''] */	//Nov. 5, 2000 JEPRO 追加
-	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_PASCAL;
+	pType->m_nKeyWordSetIdx[0] = 8;									/* キーワードセット */
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;			//@@@ 2001.11.11 upd MIK
 	pType->m_bStringLineOnly = true; // 文字列は行内のみ
 }
 
 
 
-#ifdef BUILD_OPT_IMPKEYWORD
-// 2014.11.23 PASCALが__stdcallに置換されるためPASCALに変更
 const wchar_t* g_ppszKeywordsPASCAL[] = {
 	L"and",
 	L"exports",
@@ -124,4 +119,3 @@ const wchar_t* g_ppszKeywordsPASCAL[] = {
 	L"override"
 };
 int g_nKeywordsPASCAL = _countof(g_ppszKeywordsPASCAL);
-#endif
