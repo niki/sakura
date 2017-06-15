@@ -792,12 +792,13 @@ public:
 	void SBMarkCache_Add(int nLayoutY, uint32_t magic);
 	// 削除
 	void SBMarkCache_Del(int nLayoutY, uint32_t magic);
-	// 描画・再構築
-	void SBMarkCache_Draw(bool bBarEnable, bool bCacheClear = false);
+	// 再構築
+	void SBMarkCache_Rebuild(bool bCacheClear = false);
+	// 描画
+	void SBMarkCache_Draw();
 	// 検索文字列のある行か確認
 	bool SBMarkCache_IsFoundLine(const CDocLine *pCDocLine);
 	
-	int nLineHint_ = 0;                  // 走査開始ラインのヒント
 	int nCacheLastLineCount_ = 0;        // 最後に更新した時の行数
 	std::vector<uint32_t> vCacheLines_;  // キャッシュ
 #endif  // SI_

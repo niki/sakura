@@ -2961,15 +2961,21 @@ void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
 }
 #endif  // SI_
 #ifdef SI_FIX_EDITVIEW_SCRBAR
-// 更新キュー
+//----------------------
+// 更新要求
+//----------------------
 void CEditView::SBMarkCache_Refresh(int foo) {
 	si::logln(L"SBMarkCache_Refresh, check %d", foo);
-	nLineHint_ = 0;
 	vCacheLines_.clear();
+	SBMarkCache_Draw();
 }
 
+//----------------------
 // 登録
+//----------------------
 void CEditView::SBMarkCache_Add(int nLayoutY, uint32_t magic) {
+	if (magic == 0) return;
+
 	if (vCacheLines_.empty()) {
 		vCacheLines_.push_back(nLayoutY | magic);
 	} else {
@@ -2994,7 +3000,9 @@ void CEditView::SBMarkCache_Add(int nLayoutY, uint32_t magic) {
 	}
 }
 
+//----------------------
 // 削除
+//----------------------
 void CEditView::SBMarkCache_Del(int nLayoutY, uint32_t magic) {
 	if (vCacheLines_.empty()) {
 		// ???
@@ -3012,25 +3020,116 @@ void CEditView::SBMarkCache_Del(int nLayoutY, uint32_t magic) {
 	}
 }
 
-// 描画・再構築
-void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
+//----------------------
+// 再構築
+//----------------------
+void CEditView::SBMarkCache_Rebuild(bool bCacheClear) {
 	if (m_bMiniMap) return;
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 	
 	/* 垂直スクロールバー */
-	const CLayoutInt	nEofMargin = CLayoutInt(2); // EOFとその下のマージン
+	const CLayoutInt	nEofMargin = CLayoutInt(1); // EOFのマージン
 	const CLayoutInt	nAllLines = m_pcEditDoc->m_cLayoutMgr.GetLineCount() + nEofMargin;
 	
+	// 行数が変わっていたら強制更新
+	if (nCacheLastLineCount_ != nAllLines) {
+		nCacheLastLineCount_ = nAllLines;
+		SBMarkCache_Refresh(400);
+	}
+	
+	if (bCacheClear) {
+		SBMarkCache_Refresh(401);
+	}
+	
+	// 更新
+	if (vCacheLines_.empty()) {
+		CLogicInt nLinePos = CLogicInt(0);
+		CLayoutInt nLineHint = nLinePos;
+		const CDocLine *pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(nLinePos);
+		bool bNoTextWrap = (m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
+
+		// 冗長だけど行数が多いとif文が多くなるので少しでも減らす
+		if (bNoTextWrap) {
+			// 折り返しなし
+			while (pCDocLine) {
+				uint32_t uFoundMagic = SBMarkCache_IsFoundLine(pCDocLine) ? SI_SCRBAR_FOUND_MAGIC : 0;
+				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? SI_SCRBAR_MARK_MAGIC : 0;
+
+				if ((uFoundMagic | uMarkMagic) != 0) {
+					CLogicInt nLogicY = nLinePos;
+					
+					// ロジック行＝レイアウト行
+					CLayoutInt nLayoutY = nLogicY;
+					
+					// キャッシュに登録
+					SBMarkCache_Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
+					SBMarkCache_Add(nLayoutY, uMarkMagic);   // ブックマーク
+					
+					nLineHint = nLayoutY;
+				} else {
+					nLineHint++;
+				}
+
+				nLinePos++;
+				pCDocLine = pCDocLine->GetNextLine();
+			}
+		} else {
+			// 折り返しあり
+			while (pCDocLine) {
+				uint32_t uFoundMagic = SBMarkCache_IsFoundLine(pCDocLine) ? SI_SCRBAR_FOUND_MAGIC : 0;
+				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? SI_SCRBAR_MARK_MAGIC : 0;
+
+				if ((uFoundMagic | uMarkMagic) != 0) {
+					CLogicInt nLogicY = nLinePos;
+					
+					// ロジック行→レイアウト行
+					CLayoutPoint ptLayout;
+					m_pcEditDoc->m_cLayoutMgr.LogicToLayout(/*CLogicPoint*/{0, nLogicY}, &ptLayout, nLineHint);
+					CLayoutInt nLayoutY = ptLayout.y;
+					
+					// キャッシュに登録
+					SBMarkCache_Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
+					SBMarkCache_Add(nLayoutY, uMarkMagic);   // ブックマーク
+					
+					nLineHint = nLayoutY;
+				} else {
+					nLineHint++;
+				}
+
+				nLinePos++;
+				pCDocLine = pCDocLine->GetNextLine();
+			}
+		}
+		
+		si::logln(L"SBMarkCache_Rebuild: %d", vCacheLines_.size());
+	}
+	
+	SBMarkCache_Draw();
+}
+
+//----------------------
+// 描画
+//----------------------
+void CEditView::SBMarkCache_Draw() {
+	if (m_bMiniMap) return;
+	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
+
+	/* 垂直スクロールバー */
+	const CLayoutInt	nEofMargin = CLayoutInt(1); // EOFのマージン
+	const CLayoutInt	nAllLines = m_pcEditDoc->m_cLayoutMgr.GetLineCount() + nEofMargin;
+	bool bEnable = (GetTextArea().m_nViewRowNum < nAllLines);
+
+	int nCxVScroll = ::GetSystemMetrics(SM_CXVSCROLL);
+	int nCyVScroll = ::GetSystemMetrics(SM_CYVSCROLL);
+
 	SCROLLBARINFO sbi;
 	sbi.cbSize = sizeof(sbi);
 	::GetScrollBarInfo(m_hwndVScrollBar, OBJID_CLIENT, &sbi);
-	
-	int nCxVScroll = ::GetSystemMetrics(SM_CXVSCROLL);
-	
+
 	int nThumbTop = sbi.xyThumbTop;
 	int nThumbBottom = sbi.xyThumbBottom;
-	int nBarTop = sbi.dxyLineButton;
-	int nBarHeight = sbi.rcScrollBar.bottom - sbi.rcScrollBar.top - (sbi.dxyLineButton * 2);
+	int nBarTop = nCyVScroll/*sbi.dxyLineButton*/;
+	int nBarHeight = sbi.rcScrollBar.bottom - sbi.rcScrollBar.top - (nCyVScroll/*sbi.dxyLineButton*/ * 2);
 	
 	HDC hdc = ::GetDC(m_hwndVScrollBar);
 	CGraphics gr(hdc);
@@ -3042,127 +3141,70 @@ void CEditView::SBMarkCache_Draw(bool bBarEnable, bool bCacheClear) {
 	COLORREF clrCursor = si::ColorString::ToCOLORREF(
 	             RegKey(SI_REGKEY).get_s(_T("EditViewScrBarCursorColor"), SI_SCRBAR_CURSOR_COLOR));
 	
-	// 
-	auto fnCalcY = [this, bBarEnable, nAllLines, nBarHeight](int ln) {
-		if (bBarEnable) {
-			return (int)( (float)ln / nAllLines * nBarHeight );
-		} else {
-			return (int)( (float)ln / this->GetTextArea().m_nViewRowNum * nBarHeight );
-		}
-	};
-	// 検索印を描画
-	auto fnFoundDraw = [&gr, nCxVScroll, nThumbTop, nThumbBottom](int x, int y, COLORREF clr) {
-		const int w = std::max(DpiScaleX(1), nCxVScroll);
-		const int h = std::max(DpiScaleY(1), DpiScaleY(1));
-		if (nThumbTop <= y && y <= nThumbBottom) {
-			COLORREF MakeColor2(COLORREF, COLORREF, int);
-			clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 96);
-		}
-		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clr);
-	};
-	// ブックマーク印を描画
-	auto fnMarkDraw = [&gr, nCxVScroll, nThumbTop, nThumbBottom](int x, int y, COLORREF clr) {
-		const int w = std::max(DpiScaleX(1), nCxVScroll / 4);
-		const int h = std::max(DpiScaleY(1), nCxVScroll / 4);
-		if (nThumbTop <= y && y <= nThumbBottom) {
-			COLORREF MakeColor2(COLORREF, COLORREF, int);
-			clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 96);
-		}
-		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clr);
-	};
-	
-	// 行数が変わっていたら強制更新
-	if (nCacheLastLineCount_ != nAllLines) {
-		nCacheLastLineCount_ = nAllLines;
-		SBMarkCache_Refresh(400);
-	}
-	
-	if (bCacheClear) {
-		vCacheLines_.clear();
-	}
-	
-	if (vCacheLines_.empty()) {
-		// 更新・描画
-		CLogicInt nLinePos = CLogicInt(0);
-		CLayoutInt nLineHint = nLinePos;
-		const CDocLine *pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(nLinePos);
+	// キャッシュを使用して描画
+	{
+		const int foundW = std::max(DpiScaleX(1), nCxVScroll);
+		const int foundH = std::max(DpiScaleY(1), DpiScaleY(1));
+		const int markW = std::max(DpiScaleX(1), nCxVScroll / 4);
+		const int markH = std::max(DpiScaleY(1), nCxVScroll / 4);
 
-		bool bNoTextWrap = (m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
-
-		while (pCDocLine) {
-			CLogicInt nLogicY = nLinePos;
-			CLayoutInt nLayoutY;
-
-			if (bNoTextWrap) {
-				// 折り返しなし
-				// ロジック行＝レイアウト行
-				nLayoutY = nLogicY;
-			} else {
-				// 折り返しあり
-				// ロジック行→レイアウト行
-				CLogicInt nLogicY = nLinePos;
-				CLayoutPoint ptLayout;
-				m_pcEditDoc->m_cLayoutMgr.LogicToLayout(/*CLogicPoint*/{0, nLogicY}, &ptLayout, nLineHint);
-				nLayoutY = ptLayout.y;
-			}
-
-			nLineHint = nLayoutY;
-
-			int x = 1;
-			int y = nBarTop + fnCalcY(nLayoutY);
-
-			// 検索文字列のある行
-			if (SBMarkCache_IsFoundLine(pCDocLine)) {
-				fnFoundDraw(x, y, clrSearch);
-				// キャッシュに登録
-				SBMarkCache_Add(nLayoutY, SI_SCRBAR_FOUND_MAGIC);
-			}
-			
-			// ブックマーク
-			if (CBookmarkGetter(pCDocLine).IsBookmarked()) {
-				fnMarkDraw(x, y, clrMark);
-				// キャッシュに登録
-				SBMarkCache_Add(nLayoutY, SI_SCRBAR_MARK_MAGIC);
-			}
-
-			nLinePos++;
-			pCDocLine = pCDocLine->GetNextLine();
-		}
-		
-		si::logln(L"SBMarkCache_Draw: new");
-		
-	} else {
-		// キャッシュを使用して描画
 		for (uint32_t ln : vCacheLines_) {
 			int x = 1;
-			int y = nBarTop + fnCalcY(ln & SI_SCRBAR_LINEN_MASK);
+			int y;
 
+			if (bEnable) {
+				y = nBarTop + (int)( (float)(ln & SI_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight );
+			} else {
+				y = nBarTop + (int)( (float)(ln & SI_SCRBAR_LINEN_MASK) / GetTextArea().m_nViewRowNum * nBarHeight );
+			}
+
+			// 検索行
 			if (ln & SI_SCRBAR_FOUND_MAGIC) {
-				fnFoundDraw(x, y, clrSearch);
-			} else if (ln & SI_SCRBAR_MARK_MAGIC) {
-				fnMarkDraw(x, y, clrMark);
+				COLORREF clr = clrSearch;
+				if (nThumbTop <= y && y <= nThumbBottom) {
+					COLORREF MakeColor2(COLORREF, COLORREF, int);
+					clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 96);
+				}
+				gr.FillSolidMyRect(/*RECT*/{x, y, x + foundW, y + foundH}, clr);
+				
+			}
+			// ブックマーク行
+			if (ln & SI_SCRBAR_MARK_MAGIC) {
+				COLORREF clr = clrMark;
+				if (nThumbTop <= y && y <= nThumbBottom) {
+					COLORREF MakeColor2(COLORREF, COLORREF, int);
+					clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 96);
+				}
+				gr.FillSolidMyRect(/*RECT*/{x, y, x + markW, y + markH}, clr);
 			}
 		}
 		
-		si::logln(L"SBMarkCache_Draw: cache");
+		si::logln(L"SBMarkCache_Draw: %d", vCacheLines_.size());
 	}
 	
 	// カーソル行
 	{
 		int x = 1;
-		int y = nBarTop + fnCalcY(GetCaret().GetCaretLayoutPos().GetY2());
-
+		int y;
+		if (bEnable) {
+			y = nBarTop + (int)( (float)(GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines * nBarHeight );
+		} else {
+			y = nBarTop + (int)( (float)(GetCaret().GetCaretLayoutPos().GetY2()) / GetTextArea().m_nViewRowNum * nBarHeight );
+		}
+		
 		const int w = std::max(DpiScaleX(1), nCxVScroll);
 		const int h = std::max(DpiScaleY(1), DpiScaleY(1));
-		RECT rc = {x, y, x + w, y + h};
-		gr.FillSolidMyRect(rc, clrCursor);
+		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor);
 	}
 	
 	::ReleaseDC(m_hwndVScrollBar, hdc);
 	
 	::UpdateWindow(m_hwndVScrollBar);
 }
+
+//----------------------
 // 検索文字列のある行か確認
+//----------------------
 bool CEditView::SBMarkCache_IsFoundLine(const CDocLine *pCDocLine) {
 	if (m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
 		int nSearchStart, nSearchEnd;
