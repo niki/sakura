@@ -33,7 +33,7 @@ Setup
 -----
 
 ダウンロードしたファイルをすでに使用しているサクラエディタに上書きしてください.  
-`sakura.default.ini`と`sakura.keywordset.json`は実行ファイルと同じ場所に置きます. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
+`sakura.keywordset.json`を実行ファイルと同じ場所に置きます. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
 
 
 Build environment  
@@ -53,7 +53,6 @@ Changed
 
 |修正版|公式|
 |-|-|
-|[sakura.default.ini](https://github.com/silica33/sakura/raw/master/Publish/sakura.default.ini)<details><summary>デフォルト設定ファイルの使用</summary>デフォルト設定値を設定してあるファイルです.<br>ここに初期値を設定することで常にその状態で起動します.<br>ここで設定した値のままの場合は`sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>||
 |[sakura.keywordset.json](https://github.com/silica33/sakura/raw/master/Publish/sakura.keywordset.json)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
 |履歴を別ファイル (`sakura.recent.json`)に出力|`sakura.ini`に出力|
 |起動時に存在しないファイル・フォルダ履歴を削除する||

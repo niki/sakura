@@ -28,8 +28,8 @@
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "sakura.hh"
 #ifdef SI_FIX_VERDLG
-  #include <boost/version.hpp>
-  #include <lua.hpp>
+  #include <boost/version.hpp>  // Boost
+  #include <lua.hpp>            // Lua
 #endif  // SI_
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK

@@ -6,33 +6,32 @@ libs
  |       +- version.hpp
  |            :
  +- lua (Original name 'lua-5.3.4')
-     +- doc
      +- src
          +- lua.hpp
+              :
 ```
 
 
-**Boost 1.64**
-1. Run <BoostRoot>/bootstrap.bat  
-2. Run build-boost.bat  
+**Boost**
+1. Extract to libs
+2. Change directory name to 'boost'
+3. Run <BoostRoot>/bootstrap.bat  
+4. Run build-boost.bat  
 
 32-bit  
 ```
-b2 --build-dir=build\x86 --with-regex --stagedir=x86 address-model=32 link=static runtime-link=static variant=release -j3
+b2 --build-dir=build\x86 --with-regex --stagedir=. address-model=32 link=static runtime-link=shared --layout=system variant=release -j5
 ```
 
 64-bit  
 ```
-b2 --build-dir=build\x64 --with-regex --stagedir=x64 address-model=64 link=static runtime-link=static variant=release -j3
+b2 --build-dir=build\x64 --with-regex --stagedir=. address-model=64 link=static runtime-link=shared --layout=system variant=release -j5
 ```
-
 
 ***Lua***
 Copyright © 1994–2017 Lua.org, PUC-Rio. 
 Freely available under the terms of the Lua license <http://www.lua.org/license.html>. 
 
-1. Download lib from `http://luabinaries.sourceforge.net/`
-2. Header files to `libs/lua/lua`
-3. x86 library to `libs/lua/x86`
-4. x64 library to `libs/lua/x64`
-
+1. Extract to libs
+2. Change directory name to 'lua'
+3. Run lua-rebuild.bat
