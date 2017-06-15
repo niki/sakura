@@ -27,10 +27,10 @@
 #include "svnrev.h"
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "sakura.hh"
-#ifdef SI_FIX_VERDLG
+#ifdef UZ_FIX_VERDLG
   #include <boost/version.hpp>  // Boost
   #include <lua.hpp>            // Lua
-#endif  // SI_
+#endif  // UZ_
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//12900
@@ -55,7 +55,7 @@ const DWORD p_helpids[] = {	//12900
 #  define TARGET_M_SUFFIX ""
 #endif
 
-#ifdef SI_FIX_VERDLG
+#ifdef UZ_FIX_VERDLG
 #if defined(_M_IA64)
 #  define TARGET_M_SUFFIX2 "64bit Itanium"
 #elif defined(_M_AMD64)
@@ -65,7 +65,7 @@ const DWORD p_helpids[] = {	//12900
 #else
 #  define TARGET_M_SUFFIX2 ""
 #endif
-#endif  // SI_
+#endif  // UZ_
 
 #if defined(__BORLANDC__)
 #  define COMPILER_TYPE "B"
@@ -80,7 +80,7 @@ const DWORD p_helpids[] = {	//12900
 #  define COMPILER_TYPE "D"
 #  define COMPILER_VER __DMC__
 #elif defined(_MSC_VER)
-#  ifdef SI_FIX_VERDLG
+#  ifdef UZ_FIX_VERDLG
 #    if (_MSC_VER == 1910)
 #      define COMPILER_TYPE2 "MSVC 2017"
 #    elif (_MSC_VER == 1900)
@@ -99,7 +99,7 @@ const DWORD p_helpids[] = {	//12900
 #      define COMPILER_TYPE2 "MSVC (Unknown ver.)"
 #    endif
 #    define COMPILER_VER2 _MSC_FULL_VER
-#  endif  // SI_FIX_VERDLG
+#  endif  // UZ_FIX_VERDLG
 #  define COMPILER_TYPE "V"
 #  define COMPILER_VER _MSC_VER
 #else
@@ -134,7 +134,7 @@ const DWORD p_helpids[] = {	//12900
 	#define MY_WIN32_WINNT 0
 #endif
 
-#ifdef SI_FIX_VERDLG
+#ifdef UZ_FIX_VERDLG
 #  ifdef _MT
 #    ifdef _DLL
 #      ifdef _DEBUG
@@ -152,7 +152,7 @@ const DWORD p_helpids[] = {	//12900
 #  else
 #    define MY_RTL ""
 #  endif
-#endif  // SI_
+#endif  // UZ_
 
 //	From Here Nov. 7, 2000 genta
 /*!
@@ -221,7 +221,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// バージョン&リビジョン情報
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
-#ifdef SI_FIX_VERDLG
+#ifdef UZ_FIX_VERDLG
 	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX2) _T(")\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS )
@@ -242,7 +242,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		LOWORD( dwVersionLS )
 	);
 #endif
-#endif  // SI_
+#endif  // UZ_
 	cmemMsg.AppendString( szMsg );
 
 	cmemMsg.AppendString( _T("\r\n") );
@@ -292,9 +292,9 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// 2011.06.01 nasukoji	各国語メッセージリソース対応
 	LPCTSTR pszDesc = LS( IDS_ABOUT_DESCRIPTION );
 	if( _tcslen(pszDesc) > 0 ){
-#ifdef SI_FIX_VERDLG
+#ifdef UZ_FIX_VERDLG
 		auto_sprintf( szMsg, pszDesc,
-			_T(SI_AMENDER), _T(SI_URL),
+			_T(UZ_AMENDER), _T(UZ_URL),
 			_T(COMPILER_TYPE2), COMPILER_VER2,
 			TARGET_M_SUFFIX[0] ? _T("x64") : _T("x86"),
 			_T(MY_RTL),
@@ -303,7 +303,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		);
 #else
 		_tcsncpy( szMsg, pszDesc, _countof(szMsg) - 1 );
-#endif  // SI_
+#endif  // UZ_
 		szMsg[_countof(szMsg) - 1] = 0;
 		::DlgItem_SetText( GetHwnd(), IDC_EDIT_ABOUT, szMsg );
 	}

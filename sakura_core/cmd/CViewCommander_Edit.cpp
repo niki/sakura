@@ -496,9 +496,9 @@ void CViewCommander::Command_UNDO( void )
 				}
 			}
 		}
-#ifdef SI_FIX_EDITVIEW_SCRBAR
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
 		m_pCommanderView->SBMarkCache_Refresh(1000);
-#endif  // SI_
+#endif  // UZ_
 		m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);	//	hor
 		m_pCommanderView->AdjustScrollBars(); // 2007.07.22 ryoji
 		if (!bDraw) {
@@ -512,9 +512,9 @@ void CViewCommander::Command_UNDO( void )
 
 		m_pCommanderView->SetBracketPairPos( true );	// 03/03/07 ai
 
-#if 0//-def SI_FIX_FLICKER
+#if 0//-def UZ_FIX_FLICKER
 		GetCaret().ShowEditCaret(); /* キャレットの表示・更新 */
-#endif  // SI_
+#endif  // UZ_
 
 		/* 再描画 */
 		// ルーラー再描画の必要があるときは DispRuler() ではなく他の部分と同時に Call_OnPaint() で描画する	// 2010.08.20 ryoji
@@ -767,9 +767,9 @@ void CViewCommander::Command_REDO( void )
 
 		m_pCommanderView->SetBracketPairPos( true );	// 03/03/07 ai
 
-#if 0//-def SI_FIX_FLICKER
+#if 0//-def UZ_FIX_FLICKER
 		GetCaret().ShowEditCaret(); /* キャレットの表示・更新 */
-#endif  // SI_
+#endif  // UZ_
 
 		/* 再描画 */
 		// ルーラー再描画の必要があるときは DispRuler() ではなく他の部分と同時に Call_OnPaint() で描画する	// 2010.08.20 ryoji

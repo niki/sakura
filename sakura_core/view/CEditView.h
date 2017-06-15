@@ -471,13 +471,13 @@ public:
 
 	int IsSearchString( const CStringRef& cStr, CLogicInt, CLogicInt*, CLogicInt* ) const;	/* 現在位置が検索文字列に該当するか */	//2002.02.08 hor 引数追加
 
-#ifdef SI_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false, bool bRegQuote = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false, bool bRegQuote = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
 #else
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
-#endif  // SI_
+#endif  // UZ_
 
 private:
 	/* インクリメンタルサーチ */ 
@@ -580,7 +580,7 @@ public:
 	void SetUndoBuffer( bool bPaintLineNumber = false );			// アンドゥバッファの処理
 	HWND StartProgress();
 
-#ifdef SI_LINE_CENTERING
+#ifdef UZ_LINE_CENTERING
 	//! 行間のすきま取得
 	int GetLineSpace() const {
 		if (!m_bMiniMap && m_pTypeData) {
@@ -593,7 +593,7 @@ public:
 	int GetLineMargin() const {
 		return GetLineSpace() / 2;
 	}
-#endif  // SI_
+#endif  // UZ_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         アクセサ                            //
@@ -777,14 +777,14 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(CEditView);
 	
-#ifdef SI_FIX_FLICKER
+#ifdef UZ_FIX_FLICKER
 public:
 	void BeginIgnoreUpdateWindow();
 	void EndIgnoreUpdateWindow(bool bUpdate = true);
 	int m_ignore_update_window;  // UpdateWindowを無視する
-#endif  // SI_
+#endif  // UZ_
 
-#ifdef SI_FIX_EDITVIEW_SCRBAR
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
 public:
 	// 更新キュー
 	void SBMarkCache_Refresh(int foo = 0);
@@ -801,7 +801,7 @@ public:
 	
 	int nCacheLastLineCount_ = 0;        // 最後に更新した時の行数
 	std::vector<uint32_t> vCacheLines_;  // キャッシュ
-#endif  // SI_
+#endif  // UZ_
 };
 
 

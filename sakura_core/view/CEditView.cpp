@@ -60,11 +60,11 @@
 #include "util/os.h" //WM_MOUSEWHEEL,IMR_RECONVERTSTRING,WM_XBUTTON*,IMR_CONFIRMRECONVERTSTRING
 #include "util/module.h"
 #include "debug/CRunningTimer.h"
-#ifdef SI_FIX_EDITVIEW_SCRBAR
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
 #include "_main/CAppMode.h"
 #include "CEditApp.h"
 #include "CGrepAgent.h" // use CEditApp.h
-#endif  // SI_
+#endif  // UZ_
 
 #ifndef IMR_DOCUMENTFEED
 #define IMR_DOCUMENTFEED 0x0007
@@ -165,9 +165,9 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_cHistory(NULL)
 , m_cRegexKeyword(NULL)
 , m_hAtokModule(NULL)
-#ifdef SI_FIX_FLICKER
+#ifdef UZ_FIX_FLICKER
 , m_ignore_update_window(0)
-#endif  // SI_
+#endif  // UZ_
 {
 }
 
@@ -338,12 +338,12 @@ BOOL CEditView::Create(
 	/* エディタウィンドウの作成 */
 	SetHwnd(
 		::CreateWindowEx(
-#ifdef SI_FIX_EDITVIEW
+#ifdef UZ_FIX_EDITVIEW
 			// 余計な境界はないようにする
 			/*WS_EX_STATICEDGE*/0,		// extended window style
 #else
 			WS_EX_STATICEDGE,		// extended window style
-#endif  // SI_
+#endif  // UZ_
 			GSTR_VIEWNAME,			// pointer to registered class name
 			GSTR_VIEWNAME,			// pointer to window name
 			0						// window style
@@ -1136,10 +1136,10 @@ void CEditView::OnSetFocus( void )
 		}
 	}
 
-#ifdef SI_FIX_EDITVIEW_SCRBAR
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
 	// スクロールバーの状態を更新する
 	AdjustScrollBars();
-#endif  // SI_
+#endif  // UZ_
 }
 
 
@@ -1425,9 +1425,9 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 	const wchar_t*	pLine;
 	CLogicInt		nLineLen;
 	CLogicInt		nLineLen2;
-#ifndef SI_FIX_WAITCUESOR
+#ifndef UZ_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // SI_
+#endif  // UZ_
 
 
 	/* テキストが選択されているか */
@@ -1435,9 +1435,9 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 		return;
 	}
 
-#ifdef SI_FIX_WAITCUESOR
+#ifdef UZ_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // SI_
+#endif  // UZ_
 
 	CLogicPoint ptFromLogic;	// 2009.07.18 ryoji Logicで記憶するように変更
 	m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
@@ -2554,9 +2554,9 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 	if( bUnderLine ){
 		nUnderLineY = GetTextArea().GetAreaTop() + (Int)(GetCaret().GetCaretLayoutPos().GetY2() - GetTextArea().GetViewTopLine())
 			 * GetTextMetrics().GetHankakuDy() + GetTextMetrics().GetHankakuHeight();
-#ifdef SI_LINE_CENTERING
+#ifdef UZ_LINE_CENTERING
 		nUnderLineY += GetLineMargin();
-#endif  // SI_
+#endif  // UZ_
 	}
 	// To Here 2007.09.09 Moca
 
@@ -2581,11 +2581,11 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			gr.SetPen( m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_sColorAttr.m_cTEXT );
 			::MoveToEx(
 				gr,
-#ifdef SI_FIX_CUR_UL
+#ifdef UZ_FIX_CUR_UL
 				0,//GetTextArea().GetLeftYohaku(),
 #else
 				GetTextArea().GetAreaLeft(),
-#endif  // SI_
+#endif  // UZ_
 				nUnderLineY,
 				NULL
 			);
@@ -2621,35 +2621,35 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				nUnderLineY = -1;
 			}else if( GetTextArea().m_nViewRowNum < nY ){
 				nUnderLineY = GetTextArea().GetAreaBottom() + 1;
-#ifdef SI_LINE_CENTERING
+#ifdef UZ_LINE_CENTERING
 				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += GetLineMargin();
 				}
-#endif  // SI_
+#endif  // UZ_
 			}else{
 				nUnderLineY = GetTextArea().GetAreaTop() + (Int)(nY) * GetTextMetrics().GetHankakuDy();
-#ifdef SI_LINE_CENTERING
+#ifdef UZ_LINE_CENTERING
 				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += GetLineMargin();
 				}
-#endif  // SI_
+#endif  // UZ_
 			}
 
 			GetCaret().m_cUnderLine.Lock();
 
 			PAINTSTRUCT ps;
-#ifdef SI_FIX_CUR_UL
+#ifdef UZ_FIX_CUR_UL
 			//ps.rcPaint.left = GetTextArea().GetAreaLeft();
 			ps.rcPaint.left = 0;//GetTextArea().GetLeftYohaku();
 #else
 			ps.rcPaint.left = 0;
-#endif  // SI_
+#endif  // UZ_
 			ps.rcPaint.right = GetTextArea().GetAreaRight();
 			int height;
 			if( bDrawPaint && m_nOldUnderLineYHeight != 0 ){
@@ -2949,7 +2949,7 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 	}
 }
 
-#ifdef SI_FIX_FLICKER
+#ifdef UZ_FIX_FLICKER
 void CEditView::BeginIgnoreUpdateWindow() {
 	m_ignore_update_window++;
 }
@@ -2959,8 +2959,8 @@ void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
 		::UpdateWindow(GetHwnd());
 	}
 }
-#endif  // SI_
-#ifdef SI_FIX_EDITVIEW_SCRBAR
+#endif  // UZ_
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
 //----------------------
 // 更新要求
 //----------------------
@@ -2985,12 +2985,12 @@ void CEditView::SBMarkCache_Add(int nLayoutY, uint32_t magic) {
 			return;  // すでに登録済み
 		}
 		
-		if ((vCacheLines_.back() & SI_SCRBAR_LINEN_MASK) <= (uint32_t)nLayoutY) {
+		if ((vCacheLines_.back() & UZ_SCRBAR_LINEN_MASK) <= (uint32_t)nLayoutY) {
 			vCacheLines_.push_back(nLayoutY | magic);  // 末尾に追加
 		} else {
 			auto it = vCacheLines_.begin();
 			while (it != vCacheLines_.end()) {
-				if ((uint32_t)nLayoutY < ((*it) & SI_SCRBAR_LINEN_MASK)) {
+				if ((uint32_t)nLayoutY < ((*it) & UZ_SCRBAR_LINEN_MASK)) {
 					vCacheLines_.insert(it, nLayoutY | magic);
 					break;
 				}
@@ -3010,7 +3010,7 @@ void CEditView::SBMarkCache_Del(int nLayoutY, uint32_t magic) {
 		auto it = vCacheLines_.begin();
 		while (it != vCacheLines_.end()) {
 			if ((*it) & magic) {
-				if (((*it) & SI_SCRBAR_LINEN_MASK) == nLayoutY) {
+				if (((*it) & UZ_SCRBAR_LINEN_MASK) == nLayoutY) {
 					it = vCacheLines_.erase(it);
 					continue;
 				}
@@ -3052,8 +3052,8 @@ void CEditView::SBMarkCache_Rebuild(bool bCacheClear) {
 		if (bNoTextWrap) {
 			// 折り返しなし
 			while (pCDocLine) {
-				uint32_t uFoundMagic = SBMarkCache_IsFoundLine(pCDocLine) ? SI_SCRBAR_FOUND_MAGIC : 0;
-				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? SI_SCRBAR_MARK_MAGIC : 0;
+				uint32_t uFoundMagic = SBMarkCache_IsFoundLine(pCDocLine) ? UZ_SCRBAR_FOUND_MAGIC : 0;
+				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? UZ_SCRBAR_MARK_MAGIC : 0;
 
 				if ((uFoundMagic | uMarkMagic) != 0) {
 					CLogicInt nLogicY = nLinePos;
@@ -3076,8 +3076,8 @@ void CEditView::SBMarkCache_Rebuild(bool bCacheClear) {
 		} else {
 			// 折り返しあり
 			while (pCDocLine) {
-				uint32_t uFoundMagic = SBMarkCache_IsFoundLine(pCDocLine) ? SI_SCRBAR_FOUND_MAGIC : 0;
-				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? SI_SCRBAR_MARK_MAGIC : 0;
+				uint32_t uFoundMagic = SBMarkCache_IsFoundLine(pCDocLine) ? UZ_SCRBAR_FOUND_MAGIC : 0;
+				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? UZ_SCRBAR_MARK_MAGIC : 0;
 
 				if ((uFoundMagic | uMarkMagic) != 0) {
 					CLogicInt nLogicY = nLinePos;
@@ -3135,11 +3135,11 @@ void CEditView::SBMarkCache_Draw() {
 	CGraphics gr(hdc);
 	
 	COLORREF clrSearch = si::ColorString::ToCOLORREF(
-	             RegKey(SI_REGKEY).get_s(_T("EditViewScrBarFoundColor"), SI_SCRBAR_FOUND_COLOR));
+	             RegKey(UZ_REGKEY).get_s(_T("EditViewScrBarFoundColor"), UZ_SCRBAR_FOUND_COLOR));
 	COLORREF clrMark = si::ColorString::ToCOLORREF(
-	             RegKey(SI_REGKEY).get_s(_T("EditViewScrBarMarkColor"), SI_SCRBAR_MARK_COLOR));
+	             RegKey(UZ_REGKEY).get_s(_T("EditViewScrBarMarkColor"), UZ_SCRBAR_MARK_COLOR));
 	COLORREF clrCursor = si::ColorString::ToCOLORREF(
-	             RegKey(SI_REGKEY).get_s(_T("EditViewScrBarCursorColor"), SI_SCRBAR_CURSOR_COLOR));
+	             RegKey(UZ_REGKEY).get_s(_T("EditViewScrBarCursorColor"), UZ_SCRBAR_CURSOR_COLOR));
 	
 	// キャッシュを使用して描画
 	{
@@ -3153,13 +3153,13 @@ void CEditView::SBMarkCache_Draw() {
 			int y;
 
 			if (bEnable) {
-				y = nBarTop + (int)( (float)(ln & SI_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight );
+				y = nBarTop + (int)( (float)(ln & UZ_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight );
 			} else {
-				y = nBarTop + (int)( (float)(ln & SI_SCRBAR_LINEN_MASK) / GetTextArea().m_nViewRowNum * nBarHeight );
+				y = nBarTop + (int)( (float)(ln & UZ_SCRBAR_LINEN_MASK) / GetTextArea().m_nViewRowNum * nBarHeight );
 			}
 
 			// 検索行
-			if (ln & SI_SCRBAR_FOUND_MAGIC) {
+			if (ln & UZ_SCRBAR_FOUND_MAGIC) {
 				COLORREF clr = clrSearch;
 				if (nThumbTop <= y && y <= nThumbBottom) {
 					COLORREF MakeColor2(COLORREF, COLORREF, int);
@@ -3169,7 +3169,7 @@ void CEditView::SBMarkCache_Draw() {
 				
 			}
 			// ブックマーク行
-			if (ln & SI_SCRBAR_MARK_MAGIC) {
+			if (ln & UZ_SCRBAR_MARK_MAGIC) {
 				COLORREF clr = clrMark;
 				if (nThumbTop <= y && y <= nThumbBottom) {
 					COLORREF MakeColor2(COLORREF, COLORREF, int);
@@ -3216,4 +3216,4 @@ bool CEditView::SBMarkCache_IsFoundLine(const CDocLine *pCDocLine) {
 		return false;
 	}
 }
-#endif  // SI_
+#endif  // UZ_

@@ -49,10 +49,10 @@
 #include "typeprop/CImpExpManager.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
-#ifdef SI_FIX_OUTLINEDLG
+#ifdef UZ_FIX_OUTLINEDLG
 #include <Uxtheme.h>
 #pragma comment(lib, "uxtheme.lib")
-#endif  // SI_
+#endif  // UZ_
 
 // 画面ドッキング用の定義	// 2010.06.05 ryoji
 #define DEFINE_SYNCCOLOR
@@ -420,13 +420,13 @@ void CDlgFuncList::SetData()
 	hwndList = ::GetDlgItem( GetHwnd(), IDC_LIST_FL );
 	hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
 
-#ifdef SI_FIX_OUTLINEDLG
+#ifdef UZ_FIX_OUTLINEDLG
 	SetWindowTheme(hwndList, L"Explorer", NULL);
 	//::SetWindowLongPtr(hwndList, GWL_STYLE, ::GetWindowLongPtr(hwndList, GWL_STYLE) & ~TVS_HASLINES);
 	
 	SetWindowTheme(hwndTree, L"Explorer", NULL);
 	//::SetWindowLongPtr(hwndTree, GWL_STYLE, ::GetWindowLongPtr(hwndTree, GWL_STYLE) & ~TVS_HASLINES);
-#endif  // SI_
+#endif  // UZ_
 
 	m_bDummyLParamMode = false;
 	m_vecDummylParams.clear();
@@ -784,13 +784,13 @@ void CDlgFuncList::SetData()
 		Combo_SetCurSel( hWnd_Combo_Sort , m_nSortType );
 		::ShowWindow( GetDlgItem( GetHwnd(), IDC_STATIC_nSortType ), SW_SHOW );
 		// 2002.11.10 Moca 追加 ソートする
-#ifdef SI_FIX_OUTLINEDLG
+#ifdef UZ_FIX_OUTLINEDLG
 		SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
 #else
 		if( SORTTYPE_DEFAULT < m_nSortType ){
 			SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
 		}
-#endif  // SI_
+#endif  // UZ_
 	}else if( m_nListType == OUTLINE_FILETREE ){
 		::ShowWindow( GetItemHwnd(IDC_COMBO_nSortType), SW_HIDE );
 		::ShowWindow( GetItemHwnd(IDC_STATIC_nSortType), SW_HIDE );
@@ -1545,7 +1545,7 @@ void CDlgFuncList::SetTree(bool tagjump, bool nolabel)
 		// 2016.04.24 TVI_LASTは要素数が多いとすごく遅い。TVI_FIRSTを使い後でソートしなおす
 		cTVInsertStruct.hInsertAfter = TVI_FIRST;
 		cTVInsertStruct.item.mask = TVIF_TEXT | TVIF_PARAM;
-#ifdef SI_FIX_OUTLINEDLG
+#ifdef UZ_FIX_OUTLINEDLG
 		// 先頭の空白は無視する
 		TCHAR *funcName = pcFuncInfo->m_cmemFuncName.GetStringPtr();
 		while (!(*funcName != _T(' ') && *funcName != _T('\t'))) {
@@ -1554,7 +1554,7 @@ void CDlgFuncList::SetTree(bool tagjump, bool nolabel)
 		cTVInsertStruct.item.pszText = funcName;
 #else
 		cTVInsertStruct.item.pszText = pcFuncInfo->m_cmemFuncName.GetStringPtr();
-#endif  // SI_
+#endif  // UZ_
 		cTVInsertStruct.item.lParam = i;	//	あとでこの数値（＝m_pcFuncInfoArrの何番目のアイテムか）を見て、目的地にジャンプするぜ!!。
 
 		/*	親子関係をチェック
@@ -1776,13 +1776,13 @@ void CDlgFuncList::SetTreeFile()
 			hParentTree.push_back(hParent);
 		}
 	}
-#ifdef SI_FIX_OUTLINEDLG
+#ifdef UZ_FIX_OUTLINEDLG
 	HTREEITEM		htiClass = TreeView_GetFirstVisible( hwndTree );
 	while( NULL != htiClass ){
 		TreeView_Expand( hwndTree, htiClass, TVE_EXPAND );
 		htiClass = TreeView_GetNextSibling( hwndTree, htiClass );
 	}
-#endif  // SI_
+#endif  // UZ_
 }
 
 
@@ -1959,13 +1959,13 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 				if( m_nHeight < DOCK_MIN_SIZE ) m_nHeight = DOCK_MIN_SIZE;
 			}
 		}
-#ifdef SI_FIX_DIALOG_POS
+#ifdef UZ_FIX_DIALOG_POS
 		else {
 			RECT rcView;
 			::GetWindowRect(pcEditView->GetHwnd(), &rcView);
 			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
 		}
-#endif  // SI_
+#endif  // UZ_
 	}
 
 	if( !m_bInChangeLayout ){	// ChangeLayout() 処理中は設定変更しない
@@ -2069,7 +2069,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
-#ifdef SI_FIX_OUTLINEDLG
+#ifdef UZ_FIX_OUTLINEDLG
 	// フォント設定
 	{
 		HFONT hFontOld = (HFONT)::SendMessageAny(GetItemHwnd(IDC_TREE_FL), WM_GETFONT, 0, 0);
@@ -2095,7 +2095,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		//HFONT hFont = SetMainFont(GetItemHwnd(IDC_LIST_FL));
 		m_cFontText[1].SetFont(hFontOld, hFont, GetItemHwnd(IDC_LIST_FL));
 	}
-#endif  // SI_
+#endif  // UZ_
 
 	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 }
@@ -2283,10 +2283,10 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 	}
 
 #ifdef DEFINE_SYNCCOLOR
-#ifdef SI_FIX_OUTLINEDLG
-  bool dock_color_sync = !RegKey(SI_REGKEY).get(_T("OutlineDockSystemColor"), 1);
+#ifdef UZ_FIX_OUTLINEDLG
+  bool dock_color_sync = !RegKey(UZ_REGKEY).get(_T("OutlineDockSystemColor"), 1);
   if (dock_color_sync)
-#endif  // SI_
+#endif  // UZ_
 	if( IsDocking() ){
 		if( hwndList == pnmh->hwndFrom || hwndTree == pnmh->hwndFrom ){
 			if( pnmh->code == NM_CUSTOMDRAW ){
@@ -2501,10 +2501,10 @@ static int CALLBACK Compare_by_ItemTextDesc(LPARAM lParam1, LPARAM lParam2, LPAR
 
 BOOL CDlgFuncList::OnDestroy( void )
 {
-#ifdef SI_FIX_OUTLINEDLG
+#ifdef UZ_FIX_OUTLINEDLG
 	m_cFontText[0].ReleaseOnDestroy();
 	m_cFontText[1].ReleaseOnDestroy();
-#endif  // SI_
+#endif  // UZ_
 	CDialog::OnDestroy();
 
 	/* アウトライン ■位置とサイズを記憶する */ // 20060201 aroka
@@ -2828,10 +2828,10 @@ void CDlgFuncList::SyncColor( void )
 	if( !IsDocking() )
 		return;
 #ifdef DEFINE_SYNCCOLOR
-#ifdef SI_FIX_OUTLINEDLG
-  bool dock_color_sync = !RegKey(SI_REGKEY).get(_T("OutlineDockSystemColor"), 1);
+#ifdef UZ_FIX_OUTLINEDLG
+  bool dock_color_sync = !RegKey(UZ_REGKEY).get(_T("OutlineDockSystemColor"), 1);
   if (!dock_color_sync) return;
-#endif  // SI_
+#endif  // UZ_
 	// テキスト色・背景色をビューと同色にする
 	CEditView* pcEditView = (CEditView*)m_lParam;
 	const STypeConfig	*TypeDataPtr = &(pcEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute());

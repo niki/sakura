@@ -393,7 +393,7 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("LNO"), 0},
 	{_T("MOD"), 0},
 	{_T("EBK"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
-#ifdef SI_FIX_WS_COLOR
+#ifdef UZ_FIX_WS_COLOR
 	{_T("TAB"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("SPC"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},	//2002.04.28 Add By KK
 	{_T("ZEN"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
@@ -401,32 +401,32 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("TAB"), 0},
 	{_T("SPC"), 0},	//2002.04.28 Add By KK
 	{_T("ZEN"), 0},
-#endif  // SI_
+#endif  // UZ_
 	{_T("CTL"), 0},
-#ifdef SI_FIX_WS_COLOR
+#ifdef UZ_FIX_WS_COLOR
 	{_T("EOL"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("EOL"), 0},
-#endif  // SI_
-#ifdef SI_FIX_COLOR_STRATEGY
+#endif  // UZ_
+#ifdef UZ_FIX_COLOR_STRATEGY
 	{_T("RAP"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("VER"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("RAP"), 0},
 	{_T("VER"), 0},  // 2005.11.08 Moca 指定桁縦線
-#endif  // SI_
-#ifdef SI_FIX_WS_COLOR
+#endif  // UZ_
+#ifdef UZ_FIX_WS_COLOR
 	{_T("EOF"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("EOF"), 0},
-#endif  // SI_
+#endif  // UZ_
 	{_T("NUM"), 0},	//@@@ 2001.02.17 by MIK 半角数値の強調
 	{_T("BRC"), 0},	//対括弧	// 02/09/18 ai Add
-#ifdef SI_FIX_SELAREA
+#ifdef UZ_FIX_SELAREA
 	{_T("SEL"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("SEL"), 0},
-#endif  // SI_
+#endif  // UZ_
 	{_T("FND"), 0},
 	{_T("FN2"), 0},
 	{_T("FN3"), 0},

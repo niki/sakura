@@ -117,7 +117,7 @@ void CRuler::DrawRulerBg(CGraphics& gr)
 	rc.bottom = m_pEditView->GetTextArea().GetAreaTop() - m_pEditView->GetTextArea().GetTopYohaku();
 	cRulerType.FillBack(gr,rc);
 
-#ifdef SI_FIX_EDITVIEW
+#ifdef UZ_FIX_EDITVIEW
 	{
 		// ルーラーの上部に境界線を描画する
 		gr.PushPen(::GetSysColor(COLOR_ACTIVEBORDER), 0);
@@ -125,7 +125,7 @@ void CRuler::DrawRulerBg(CGraphics& gr)
 		::LineTo(gr, rc.right, rc.top);
 		gr.PopPen();
 	}
-#endif  // SI_
+#endif  // UZ_
 
 	//ルーラー色設定
 	gr.PushPen(cRulerType.GetTextColor(),0);

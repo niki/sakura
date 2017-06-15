@@ -80,7 +80,7 @@ CDlgGrep::CDlgGrep()
 	m_bSetText = false;
 	m_szFile[0] = 0;
 	m_szFolder[0] = 0;
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	m_bFolder99 = true;
 	m_bFolder2 = false;
 	m_bFolder3 = false;
@@ -88,7 +88,7 @@ CDlgGrep::CDlgGrep()
 	m_szFolder2[0] = 0;
 	m_szFolder3[0] = 0;
 	m_szFolder4[0] = 0;
-#endif  // SI_
+#endif  // UZ_
 	return;
 }
 
@@ -117,11 +117,11 @@ BOOL CDlgGrep::OnCbnDropDown( HWND hwndCtl, int wID )
 		}
 		break;
 	case IDC_COMBO_FOLDER:
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	case IDC_COMBO_FOLDER2:
 	case IDC_COMBO_FOLDER3:
 	case IDC_COMBO_FOLDER4:
-#endif  // SI_
+#endif  // UZ_
 		if ( ::SendMessage(hwndCtl, CB_GETCOUNT, 0L, 0L) == 0) {
 			int nSize = m_pShareData->m_sSearchKeywords.m_aGrepFolders.size();
 			for( int i = 0; i < nSize; ++i ){
@@ -153,7 +153,7 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const TCHAR* pszCur
 	if( m_szFolder[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_aGrepFolders.size() ){
 		_tcscpy( m_szFolder, m_pShareData->m_sSearchKeywords.m_aGrepFolders[0] );	/* 検索フォルダ */
 	}
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	m_bFolder99 = m_pShareData->m_sSearchKeywords.m_bGrepFolders99;
 	m_bFolder2 = m_pShareData->m_sSearchKeywords.m_bGrepFolders2;
 	if( m_szFolder2[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepFolders2.At(0) != _T('\0')){
@@ -167,7 +167,7 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const TCHAR* pszCur
 	if( m_szFolder4[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepFolders4.At(0) != _T('\0')){
 		_tcscpy( m_szFolder4, m_pShareData->m_sSearchKeywords.m_szGrepFolders4.GetBufferPointer() );	/* 検索フォルダ */
 	}
-#endif  // SI_
+#endif  // UZ_
 
 	if( pszCurrentFilePath ){	// 2010.01.10 ryoji
 		_tcscpy(m_szCurrentFilePath, pszCurrentFilePath);
@@ -182,9 +182,9 @@ WNDPROC g_pOnFolderProc;
 
 BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
-#ifdef SI_FIX_DIALOG_POS
+#ifdef UZ_FIX_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // SI_
+#endif  // UZ_
 
 	_SetHwnd( hwndDlg );
 
@@ -192,21 +192,21 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	//	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_TEXT ), _MAX_PATH - 1 );
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FILE ), _countof2(m_szFile) - 1 );
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER ), _countof2(m_szFolder) - 1 );
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER2 ), _countof2(m_szFile) - 1 );
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER3 ), _countof2(m_szFile) - 1 );
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 ), _countof2(m_szFile) - 1 );
-#endif  // SI_
+#endif  // UZ_
 
 	/* コンボボックスのユーザー インターフェイスを拡張インターフェースにする */
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_TEXT ), TRUE );
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FILE ), TRUE );
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER ), TRUE );
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER2 ), TRUE );
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER3 ), TRUE );
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 ), TRUE );
-#endif  // SI_
+#endif  // UZ_
 
 	/* ダイアログのアイコン */
 //2002.02.08 Grepアイコンも大きいアイコンと小さいアイコンを別々にする。
@@ -230,7 +230,7 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DragAcceptFiles(hFolder, true);
 	g_pOnFolderProc = (WNDPROC)GetWindowLongPtr(hFolder, GWLP_WNDPROC);
 	SetWindowLongPtr(hFolder, GWLP_WNDPROC, (LONG_PTR)OnFolderProc);
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	HWND hFolder2 = ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER2 );
 	DragAcceptFiles(hFolder2, true);
 	SetWindowLongPtr(hFolder2, GWLP_WNDPROC, (LONG_PTR)OnFolderProc);
@@ -240,7 +240,7 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	HWND hFolder4 = ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 );
 	DragAcceptFiles(hFolder4, true);
 	SetWindowLongPtr(hFolder4, GWLP_WNDPROC, (LONG_PTR)OnFolderProc);
-#endif  // SI_
+#endif  // UZ_
 
 	m_comboDelText = SComboBoxItemDeleter();
 	m_comboDelText.pRecent = &m_cRecentSearch;
@@ -311,7 +311,7 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 		//Stonee, 2001/03/12 第四引数を、機能番号からヘルプトピック番号を調べるようにした
 		MyWinHelp( GetHwnd(), HELP_CONTEXT, ::FuncID_To_HelpContextID(F_GREP_DIALOG) );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	case IDC_CHK_FOLDER99:
 	case IDC_CHK_FOLDER2:
 	case IDC_CHK_FOLDER3:
@@ -320,12 +320,12 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 	  // 2010.05.30 関数化
 		SetDataFromThisText(false);
 		return TRUE;
-#else // SI_
+#else // UZ_
 	case IDC_CHK_FROMTHISTEXT:	/* この編集中のテキストから検索する */
 		// 2010.05.30 関数化
 		SetDataFromThisText( 0 != ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_FROMTHISTEXT ) );
 		return TRUE;
-#endif  // SI_
+#endif  // UZ_
 	case IDC_BUTTON_CURRENTFOLDER:	/* 現在編集中のファイルのフォルダ */
 		/* ファイルを開いているか */
 		if( m_szCurrentFilePath[0] != _T('\0') ){
@@ -397,11 +397,11 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 //				::CheckDlgButton( GetHwnd(), IDC_CHK_LOHICASE, 1 );
 //				::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_LOHICASE ), FALSE );
 
-#ifndef SI_FIX_ENABLE_WORD_SEARCH_REGEXP
+#ifndef UZ_FIX_ENABLE_WORD_SEARCH_REGEXP
 				//2001/06/23 N.Nakatani
 				/* 単語単位で検索 */
 				::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), FALSE );
-#endif  // SI_
+#endif  // UZ_
 			}
 		}else{
 			/* 英大文字と英小文字を区別する */
@@ -410,13 +410,13 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 //			::CheckDlgButton( GetHwnd(), IDC_CHK_LOHICASE, 0 );
 
 
-#ifndef SI_FIX_ENABLE_WORD_SEARCH_REGEXP
+#ifndef UZ_FIX_ENABLE_WORD_SEARCH_REGEXP
 //2001/06/23 N.Nakatani
 //単語単位のgrepが実装されたらコメントを外すと思います
 //2002/03/07実装してみた。
 			/* 単語単位で検索 */
 			::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), TRUE );
-#endif  // SI_
+#endif  // UZ_
 
 		}
 		return TRUE;
@@ -437,7 +437,7 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 		}
 		
 		return TRUE;
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	case IDC_BUTTON_FOLDER2:
 		/* フォルダ参照ボタン */
 		{
@@ -486,7 +486,7 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 		}
 		
 		return TRUE;
-#endif  // SI_
+#endif  // UZ_
 	case IDC_CHECK_CP:
 		{
 			if( IsDlgButtonChecked( GetHwnd(), IDC_CHECK_CP ) ){
@@ -545,7 +545,7 @@ void CDlgGrep::SetData( void )
 
 	/* 検索フォルダ */
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER, m_szFolder );
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	::CheckDlgButton( GetHwnd(), IDC_CHK_FOLDER99, m_bFolder99 );
 	::CheckDlgButton( GetHwnd(), IDC_CHK_FOLDER2, m_bFolder2 );
 	::CheckDlgButton( GetHwnd(), IDC_CHK_FOLDER3, m_bFolder3 );
@@ -553,7 +553,7 @@ void CDlgGrep::SetData( void )
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER2, m_szFolder2 );
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER3, m_szFolder3 );
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER4, m_szFolder4 );
-#endif  // SI_
+#endif  // UZ_
 
 	if((m_szFolder[0] == _T('\0') || m_pShareData->m_Common.m_sSearch.m_bGrepDefaultFolder) &&
 		m_szCurrentFilePath[0] != _T('\0')
@@ -567,10 +567,10 @@ void CDlgGrep::SetData( void )
 	/* サブフォルダからも検索する */
 	::CheckDlgButton( GetHwnd(), IDC_CHK_SUBFOLDER, m_bSubFolder );
 
-#ifndef SI_FIX_GREP
+#ifndef UZ_FIX_GREP
 	// この編集中のテキストから検索する
 	::CheckDlgButton( GetHwnd(), IDC_CHK_FROMTHISTEXT, m_bFromThisText );
-#endif  // SI_
+#endif  // UZ_
 	// 2010.05.30 関数化
 	SetDataFromThisText( m_bFromThisText != FALSE );
 
@@ -651,24 +651,24 @@ void CDlgGrep::SetData( void )
 //		::CheckDlgButton( GetHwnd(), IDC_CHK_LOHICASE, 1 );
 //		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_LOHICASE ), FALSE );
 
-#ifndef SI_FIX_ENABLE_WORD_SEARCH_REGEXP
+#ifndef UZ_FIX_ENABLE_WORD_SEARCH_REGEXP
 		// 2001/06/23 N.Nakatani
 		/* 単語単位で探す */
 		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), FALSE );
-#endif  // SI_
+#endif  // UZ_
 	}
 	else {
 		::CheckDlgButton( GetHwnd(), IDC_CHK_REGULAREXP, 0 );
 	}
 	// To Here Jun. 29, 2001 genta
 
-#ifndef SI_FIX_GREP
+#ifndef UZ_FIX_GREP
 	if( m_szCurrentFilePath[0] != _T('\0') ){
 		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_FROMTHISTEXT ), TRUE );
 	}else{
 		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_FROMTHISTEXT ), FALSE );
 	}
-#endif  // SI_
+#endif  // UZ_
 
 	CheckDlgButtonBool( GetHwnd(), IDC_CHECK_FILE_ONLY, m_bGrepOutputFileOnly );
 	CheckDlgButtonBool( GetHwnd(), IDC_CHECK_BASE_PATH, m_bGrepOutputBaseFolder );
@@ -686,7 +686,7 @@ void CDlgGrep::SetData( void )
 */
 void CDlgGrep::SetDataFromThisText( bool bChecked )
 {
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
   // Grepフォルダのチェックをすべて外したとき「ファイル」と「サブフォルダ検索」が無効になる
   //   →「編集中のファイルから検索」と同意義
   
@@ -735,7 +735,7 @@ void CDlgGrep::SetDataFromThisText( bool bChecked )
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER ),  bEnableControls );
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_BUTTON_FOLDER ), bEnableControls );
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_SUBFOLDER ), bEnableControls );
-#endif  // SI_
+#endif  // UZ_
 	return;
 }
 
@@ -749,9 +749,9 @@ int CDlgGrep::GetData( void )
 	m_bSubFolder = ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_SUBFOLDER );
 
 	/* この編集中のテキストから検索する */
-#ifndef SI_FIX_GREP
+#ifndef UZ_FIX_GREP
 	m_bFromThisText = ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_FROMTHISTEXT );
-#endif  // SI_
+#endif  // UZ_
 
 	/* 英大文字と英小文字を区別する */
 	m_sSearchOption.bLoHiCase = (0!=::IsDlgButtonChecked( GetHwnd(), IDC_CHK_LOHICASE ));
@@ -810,7 +810,7 @@ int CDlgGrep::GetData( void )
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_FILE, m_szFile, _countof2(m_szFile) );
 	/* 検索フォルダ */
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_FOLDER, m_szFolder, _countof2(m_szFolder) );
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	m_bFolder99 = ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_FOLDER99 );
 	m_bFolder2 = ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_FOLDER2 );
 	m_bFolder3 = ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_FOLDER3 );
@@ -826,7 +826,7 @@ int CDlgGrep::GetData( void )
 	m_pShareData->m_sSearchKeywords.m_szGrepFolders2 = m_szFolder2;
 	m_pShareData->m_sSearchKeywords.m_szGrepFolders3 = m_szFolder3;
 	m_pShareData->m_sSearchKeywords.m_szGrepFolders4 = m_szFolder4;
-#endif  // SI_
+#endif  // UZ_
 
 	m_pShareData->m_Common.m_sSearch.m_nGrepCharSet = m_nGrepCharSet;			// 文字コード自動判別
 	m_pShareData->m_Common.m_sSearch.m_nGrepOutputLineType = m_nGrepOutputLineType;	// 行を出力/該当部分/否マッチ行 を出力
@@ -924,7 +924,7 @@ int CDlgGrep::GetData( void )
 
 	// この編集中のテキストから検索する場合、履歴に残さない	Uchi 2008/5/23
 	// 2016.03.08 Moca 「このファイルから検索」の場合はサブフォルダ共通設定を更新しない
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
   bool bFromThisText = m_bFromThisText;
 	if (!m_bFolder99 && !m_bFolder4 && !m_bFolder3 && !m_bFolder2) {
 		bFromThisText = true;
@@ -932,12 +932,12 @@ int CDlgGrep::GetData( void )
 	if (!bFromThisText) {
 #else
 	if (!m_bFromThisText) {
-#endif  // SI_
+#endif  // UZ_
 		/* 検索ファイル */
 		CSearchKeywordManager().AddToGrepFileArr( m_szFile );
 
 		/* 検索フォルダ */
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 		if (m_bFolder99 && m_szFolder[0] != '\0') {
 			CSearchKeywordManager().AddToGrepFolderArr( m_szFolder );
 		}
@@ -952,7 +952,7 @@ int CDlgGrep::GetData( void )
 		}
 #else
 		CSearchKeywordManager().AddToGrepFolderArr( m_szFolder );
-#endif  // SI_
+#endif  // UZ_
 
 		// Grep：サブフォルダも検索
 		m_pShareData->m_Common.m_sSearch.m_bGrepSubFolder = m_bSubFolder;

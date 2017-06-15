@@ -160,12 +160,12 @@ void CDlgGrepReplace::SetData( void )
 
 	CDlgGrep::SetData();
 
-#ifdef SI_FIX_DIALOG_POS
+#ifdef UZ_FIX_DIALOG_POS
 	RECT rcView;
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	::GetWindowRect(pcEditView->GetHwnd(), &rcView);
 	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
-#endif  // SI_
+#endif  // UZ_
 }
 
 

@@ -68,9 +68,9 @@ HWND CDlgCancel::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTempl
 
 BOOL CDlgCancel::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
-#ifdef SI_FIX_DIALOG_POS
+#ifdef UZ_FIX_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // SI_
+#endif  // UZ_
 
 	_SetHwnd( hwndDlg );
 	HICON	hIcon;

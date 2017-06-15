@@ -161,11 +161,11 @@ void CDlgFind::SetData( void )
 //		::CheckDlgButton( GetHwnd(), IDC_CHK_LOHICASE, 1 );
 //		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_LOHICASE ), FALSE );
 
-#ifndef SI_FIX_ENABLE_WORD_SEARCH_REGEXP
+#ifndef UZ_FIX_ENABLE_WORD_SEARCH_REGEXP
 		// 2001/06/23 N.Nakatani
 		/* 単語単位で探す */
 		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), FALSE );
-#endif  // SI_
+#endif  // UZ_
 	}
 	else {
 		::CheckDlgButton( GetHwnd(), IDC_CHK_REGULAREXP, 0 );
@@ -178,12 +178,12 @@ void CDlgFind::SetData( void )
 	/* 先頭（末尾）から再検索 2002.01.26 hor */
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_SEARCHALL, m_pShareData->m_Common.m_sSearch.m_bSearchAll );
 
-#ifdef SI_FIX_DIALOG_POS
+#ifdef UZ_FIX_DIALOG_POS
 	RECT rcView;
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	::GetWindowRect(pcEditView->GetHwnd(), &rcView);
 	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
-#endif  // SI_
+#endif  // UZ_
 
 	return;
 }
@@ -307,11 +307,11 @@ BOOL CDlgFind::OnBnClicked( int wID )
 				//::CheckDlgButton( GetHwnd(), IDC_CHK_LOHICASE, 1 );
 				//::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_LOHICASE ), FALSE );
 
-#ifndef SI_FIX_ENABLE_WORD_SEARCH_REGEXP
+#ifndef UZ_FIX_ENABLE_WORD_SEARCH_REGEXP
 				// 2001/06/23 Norio Nakatani
 				/* 単語単位で検索 */
 				::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), FALSE );
-#endif  // SI_
+#endif  // UZ_
 			}
 		}else{
 			/* 英大文字と英小文字を区別する */
@@ -320,11 +320,11 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			//	大文字・小文字の区別は正規表現の設定に関わらず保存する
 			//::CheckDlgButton( GetHwnd(), IDC_CHK_LOHICASE, 0 );
 
-#ifndef SI_FIX_ENABLE_WORD_SEARCH_REGEXP
+#ifndef UZ_FIX_ENABLE_WORD_SEARCH_REGEXP
 			// 2001/06/23 Norio Nakatani
 			/* 単語単位で検索 */
 			::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), TRUE );
-#endif  // SI_
+#endif  // UZ_
 		}
 		break;
 	case IDC_BUTTON_SEARCHPREV:	/* 上検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDC_BUTTON1]→[IDC_BUTTON_SERACHPREV]に変更

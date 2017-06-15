@@ -327,10 +327,10 @@ void CEditView::AdjustScrollBars()
 			ScrollAtV( CLayoutInt(0) );
 		}
 
-#ifdef SI_FIX_EDITVIEW_SCRBAR
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
 		//si::logln(L"AdjustScrollBars() vCacheLines_.empty=%d %p", vCacheLines_.empty(), this);
 		SBMarkCache_Rebuild(/*bCacheClear = false*/);
-#endif  // SI_
+#endif  // UZ_
 	}
 	if( NULL != m_hwndHScrollBar ){
 		/* 水平スクロールバー */
@@ -415,13 +415,13 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip2 = {0,0,0,0};
 			ScrollDraw(nScrollRowNum, CLayoutInt(0), rcScrol, rcClip, rcClip2);
-#ifdef SI_FIX_FLICKER
+#ifdef UZ_FIX_FLICKER
 			if (!m_ignore_update_window) {
 				::UpdateWindow( GetHwnd() );
 			}
 #else
 			::UpdateWindow( GetHwnd() );
-#endif  // SI_
+#endif  // UZ_
 		}
 	}
 
@@ -503,13 +503,13 @@ CLayoutInt CEditView::ScrollAtH( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip = {0,0,0,0};
 			ScrollDraw(CLayoutInt(0), nScrollColNum, rcScrol, rcClip, rcClip2);
-#ifdef SI_FIX_FLICKER
+#ifdef UZ_FIX_FLICKER
 			if (!m_ignore_update_window) {
 				::UpdateWindow( GetHwnd() );
 			}
 #else
 			::UpdateWindow( GetHwnd() );
-#endif  // SI_
+#endif  // UZ_
 		}
 	}
 	//	2006.1.28 aroka 判定条件誤り修正 (バーが消えてもスクロールしない)

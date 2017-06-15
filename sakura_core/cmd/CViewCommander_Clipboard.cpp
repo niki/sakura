@@ -608,11 +608,11 @@ void CViewCommander::Command_INSTEXT(
 				);
 			}
 		}
-#if 0//-//def SI_FIX_FLICKER
+#if 0//-//def UZ_FIX_FLICKER
 		if (bRedraw) {
 			m_pCommanderView->Redraw();
 		}
-#endif  // SI_
+#endif  // UZ_
 	}
 
 end_of_func:

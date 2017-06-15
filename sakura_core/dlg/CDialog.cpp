@@ -79,9 +79,9 @@ CDialog::CDialog(bool bSizable, bool bCheckShareData)
 	m_nWidth = -1;
 	m_nHeight = -1;
 
-#ifdef SI_FIX_DIALOG_POS
+#ifdef UZ_FIX_DIALOG_POS
 	m_hwndPlaceOfWindow = NULL;
-#endif  // SI_
+#endif  // UZ_
 
 	return;
 
@@ -208,11 +208,11 @@ void CDialog::SetDialogPosSize()
 	}
 #endif
 
-#ifdef SI_FIX_DIALOG_POS
+#ifdef UZ_FIX_DIALOG_POS
 	if (m_hwndPlaceOfWindow != NULL) {
 		SetPlaceOfWindow(m_hwndPlaceOfWindow);
 	}
-#endif  // SI_
+#endif  // UZ_
 
 	if( -1 != m_xPos && -1 != m_yPos ){
 		/* ウィンドウ位置・サイズを再現 */
@@ -662,7 +662,7 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 	return hFont;
 }
 
-#ifdef SI_FIX_DIALOG_POS
+#ifdef UZ_FIX_DIALOG_POS
 void CDialog::SetPlaceOfWindow() {
 	m_hwndPlaceOfWindow = m_hwndParent;
 }
@@ -706,7 +706,7 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView) {
 	m_xPos -= m_nWidth / 2;
 #endif
 }
-#endif  // SI_
+#endif  // UZ_
 
 void CDialog::ResizeItem( HWND hTarget, const POINT& ptDlgDefault, const POINT& ptDlgNew, const RECT& rcItemDefault, EAnchorStyle anchor, bool bUpdate)
 {

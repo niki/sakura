@@ -100,7 +100,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	CNativeT		cmWork2;
 	CNativeT		cmWork3;
 	cmWork1.SetString( cDlgGrep.m_strText.c_str() );
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	int count = 0;
 	CNativeT temp;
 	if (!cDlgGrep.m_bFromThisText) {
@@ -127,8 +127,8 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	if (count > 0) {
 		if (temp.GetStringLength() == 0) return;
 		cmWork2.SetString( cDlgGrep.m_szFile );
-		cmWork2.Replace(_T("$cpp"), RegKey(SI_REGKEY).get_s(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp")));
-		cmWork2.Replace(_T("$make"), RegKey(SI_REGKEY).get_s(_T("$make"), _T("makefile *.mak *.om OMakefile OMakeRoot")));
+		cmWork2.Replace(_T("$cpp"), RegKey(UZ_REGKEY).get_s(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp")));
+		cmWork2.Replace(_T("$make"), RegKey(UZ_REGKEY).get_s(_T("$make"), _T("makefile *.mak *.om OMakefile OMakeRoot")));
 		cmWork3.SetString( temp.GetStringPtr() );
 	} else {
 		TCHAR	szWorkFolder[MAX_PATH];
@@ -143,7 +143,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 #else
 	cmWork2.SetString( cDlgGrep.m_szFile );
 	cmWork3.SetString( cDlgGrep.m_szFolder );
-#endif  // SI_
+#endif  // UZ_
 	cmWork1.Replace( L"\"", L"\"\"" );
 	cmWork2.Replace( _T("\""), _T("\"\"") );
 	cmWork3.Replace( _T("\""), _T("\"\"") );
@@ -163,11 +163,11 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 
 	//GOPTオプション
 	TCHAR pOpt[64] = _T("");
-#ifdef SI_FIX_GREP
+#ifdef UZ_FIX_GREP
 	if( (count > 0) && cDlgGrep.m_bSubFolder )_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
 #else
 	if( cDlgGrep.m_bSubFolder					)_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
-#endif  // SI_
+#endif  // UZ_
 	if( cDlgGrep.m_sSearchOption.bLoHiCase		)_tcscat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
 	if( cDlgGrep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// 正規表現
 	if( cDlgGrep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// 行を出力する
@@ -1171,9 +1171,9 @@ bool CControlTray::OpenNewEditor(
 	bool				bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-#ifdef SI_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(SI_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // SI_
+#ifdef UZ_FIX_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // UZ_
 
 	/* 共有データ構造体のアドレスを返す */
 	DLLSHAREDATA*	pShareData = &GetDllShareData();
@@ -1394,9 +1394,9 @@ bool CControlTray::OpenNewEditor2(
 	bool			bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-#ifdef SI_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(SI_REGKEY _T("\\CURSOR_JUMP_AUTH"));
-#endif  // SI_
+#ifdef UZ_FIX_CENTERING_CURSOR_JUMP
+	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // UZ_
 
 	DLLSHAREDATA*	pShareData;
 

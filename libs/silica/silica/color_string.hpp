@@ -3,7 +3,7 @@
 //! @file  color_string.hpp
 //! @brief 色文字列
 //!
-//! @author (C) 2017, silica33.
+//! @author (C) 2017, Uzuki.
 //====================================================================
 #ifndef SILICA_COLOR_STRING_HPP
 #define SILICA_COLOR_STRING_HPP

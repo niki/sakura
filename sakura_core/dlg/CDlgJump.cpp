@@ -192,9 +192,9 @@ BOOL CDlgJump::OnBnClicked( int wID )
 /* ダイアログデータの設定 */
 void CDlgJump::SetData( void )
 {
-#ifdef SI_FIX_DIALOG_POS
+#ifdef UZ_FIX_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // SI_
+#endif  // UZ_
 
 	CEditDoc*		pCEditDoc = (CEditDoc*)m_lParam;
 	CFuncInfoArr	cFuncInfoArr;

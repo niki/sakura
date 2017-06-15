@@ -82,10 +82,10 @@ void CEditView::SetIMECompFormPos( void )
 	CompForm.dwStyle = CFS_POINT;
 	CompForm.ptCurrentPos.x = (long) point.x;
 	CompForm.ptCurrentPos.y = (long) point.y + GetCaret().GetCaretSize().cy - GetTextMetrics().GetHankakuHeight();
-//#ifdef SI_LINE_CENTERING // 変換位置
+//#ifdef UZ_LINE_CENTERING // 変換位置
 //	CompForm.ptCurrentPos.y -= GetLineMargin() +
 //	                           (GetLineSpace() & 1);
-//#endif  // SI_
+//#endif  // UZ_
 
 	if ( hIMC ){
 		::ImmSetCompositionWindow( hIMC, &CompForm );

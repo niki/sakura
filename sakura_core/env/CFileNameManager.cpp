@@ -374,20 +374,20 @@ static void GetAccessKeyLabelByIndex(TCHAR* pszLabel, bool bEspaceAmp, int index
 		if( bEspaceAmp ){
 			pszLabel[0] = _T('&');
 			pszLabel[1] = c;
-#ifdef SI_FIX_RECENT_FILE_DISP_NAME
+#ifdef UZ_FIX_RECENT_FILE_DISP_NAME
 			pszLabel[2] = _T('\0');
 #else
 			pszLabel[2] = _T(' ');
 			pszLabel[3] = _T('\0');
-#endif  // SI_
+#endif  // UZ_
 		}else{
 			pszLabel[0] = c;
-#ifdef SI_FIX_RECENT_FILE_DISP_NAME
+#ifdef UZ_FIX_RECENT_FILE_DISP_NAME
 			pszLabel[1] = _T('\0');
 #else
 			pszLabel[1] = _T(' ');
 			pszLabel[2] = _T('\0');
-#endif  // SI_
+#endif  // UZ_
 		}
 	}else{
 		pszLabel[0] = _T('\0');
@@ -463,7 +463,7 @@ bool CFileNameManager::GetMenuFullLabel(
 	if( pszFile[0] ){
 		this->GetTransformFileNameFast( pszFile, szFileName, _MAX_PATH, hDC );
 
-#ifdef SI_FIX_RECENT_FILE_DISP_NAME
+#ifdef UZ_FIX_RECENT_FILE_DISP_NAME
 		{
 			TCHAR temp[_MAX_PATH] = {};
 			::PathCompactPathEx(temp, szFileName, 50, L'\\');
@@ -495,7 +495,7 @@ bool CFileNameManager::GetMenuFullLabel(
 				_stprintf_s( szFileName, _T("%s [%d MB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024 / 1024));
 			}
 		}
-#endif  // SI_
+#endif  // UZ_
 
 		// szFileName → szMenu2
 		//	Jan. 19, 2002 genta
@@ -523,7 +523,7 @@ bool CFileNameManager::GetMenuFullLabel(
 		pszCharset = szCodePageName;
 	}
 	
-#ifdef SI_FIX_RECENT_FILE_DISP_NAME
+#ifdef UZ_FIX_RECENT_FILE_DISP_NAME
 	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts %ts%ts %ts"),
 		szAccKey, (bFavorite ? _T("★ ") : _T("")), pszName,
 		(bModified ? _T("*"):_T(""))
@@ -533,7 +533,7 @@ bool CFileNameManager::GetMenuFullLabel(
 		szAccKey, (bFavorite ? _T("★ ") : _T("")), pszName,
 		(bModified ? _T("*"):_T(" ")), pszCharset
 	);
-#endif  // SI_
+#endif  // UZ_
 	return 0 < ret;
 }
 

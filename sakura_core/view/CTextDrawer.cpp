@@ -54,9 +54,9 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 	if( 0 >= nLength ){
 		return;
 	}
-#ifdef SI_OUTPUT_DEBUG_STRING
+#ifdef UZ_OUTPUT_DEBUG_STRING
 	//si::logln(L"DispText");
-#endif  // SI_
+#endif  // UZ_
 	int x=pDispPos->GetDrawPos().x;
 	int y=pDispPos->GetDrawPos().y;
 
@@ -146,9 +146,9 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, const wchar_t* pData, in
 		::ExtTextOutW_AnyBuild(
 			hdc,
 			nDrawX,					//X
-#ifdef SI_LINE_CENTERING
+#ifdef UZ_LINE_CENTERING
 			m_pEditView->GetLineMargin() +
-#endif  // SI_
+#endif  // UZ_
 			y,						//Y
 			ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
 			&rcClip,
@@ -245,11 +245,11 @@ void CTextDrawer::DispVerticalLines(
 			if( nWrapKetas < nXCol ){
 				break;
 			}
-#ifdef SI_FIX_COLUMN_VERTICAL_LINE
+#ifdef UZ_FIX_COLUMN_VERTICAL_LINE
 			int nPosX = nPosXOffset + (Int)( nXCol - pView->GetTextArea().GetViewLeftCol() ) * nCharDx;
 #else
 			int nPosX = nPosXOffset + (Int)( nXCol - 1 - pView->GetTextArea().GetViewLeftCol() ) * nCharDx;
-#endif // SI_
+#endif // UZ_
 			// 2006.04.30 Moca 線の引く範囲・方法を変更
 			// 太線の場合、半分だけ作画する可能性がある。
 			int nPosXBold = nPosX;
@@ -372,9 +372,9 @@ void CTextDrawer::DispLineNumber(
 	int				y
 ) const
 {
-#ifdef SI_OUTPUT_DEBUG_STRING
+#ifdef UZ_OUTPUT_DEBUG_STRING
 	//si::logln(L"DispLineNumber(%d)\n", nLineNum+1);
-#endif  // SI_
+#endif  // UZ_
 	//$$ 高速化：SearchLineByLayoutYにキャッシュを持たせる
 	const CLayout*	pcLayout = CEditDoc::GetInstance(0)->m_cLayoutMgr.SearchLineByLayoutY( nLineNum );
 
@@ -473,7 +473,7 @@ void CTextDrawer::DispLineNumber(
 		}
 		bDispLineNumTrans = true;
 
-#ifdef SI_FIX_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
+#ifdef UZ_FIX_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
     bool disp = false;
     CLayoutMgr &layout_mgr = CEditDoc::GetInstance(0)->m_cLayoutMgr;
     CLayoutInt line_count = layout_mgr.GetLineCount();
@@ -506,9 +506,9 @@ void CTextDrawer::DispLineNumber(
       int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
       ::ExtTextOutW_AnyBuild( gr,
         drawNumTop,
-#  ifdef SI_LINE_CENTERING
+#  ifdef UZ_LINE_CENTERING
         pView->GetLineMargin() +
-#  endif  // SI_
+#  endif  // UZ_
         y,
         ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
         &rcLineNum,
@@ -523,7 +523,7 @@ void CTextDrawer::DispLineNumber(
       
       bDispLineNumTrans = false;
     }
-#endif  // SI_
+#endif  // UZ_
 	}
 	else if( CTypeSupport(pView,COLORIDX_GYOU).IsDisp() ){ /* 行番号表示／非表示 */
 		SFONT sFont = cColorType.GetTypeFont();
@@ -580,9 +580,9 @@ void CTextDrawer::DispLineNumber(
 		int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
 		::ExtTextOutW_AnyBuild( gr,
 			drawNumTop,
-#ifdef SI_LINE_CENTERING
+#ifdef UZ_LINE_CENTERING
 			pView->GetLineMargin() +
-#endif  // SI_
+#endif  // UZ_
 			y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcLineNum,
@@ -598,11 +598,11 @@ void CTextDrawer::DispLineNumber(
 			rc.top = y;
 			rc.right = nLineNumAreaWidth - 1;
 			rc.bottom = y + nLineHeight;
-#ifdef SI_FIX_LINE_TERM_TYPE
+#ifdef UZ_FIX_LINE_TERM_TYPE
 			gr.FillSolidMyRect(rc, cGyouType.GetTextColor());
 #else
 			gr.FillSolidMyRect(rc, fgcolor);
-#endif  // SI_
+#endif  // UZ_
 		}
 
 		gr.PopTextForeColor();
@@ -622,14 +622,14 @@ void CTextDrawer::DispLineNumber(
 	{
 		// 2001.12.03 hor
 		/* とりあえずブックマークに縦線 */
-#ifdef SI_FIX_DRAW_BOOKMARK_LINE_NOGYOU
+#ifdef UZ_FIX_DRAW_BOOKMARK_LINE_NOGYOU
 		bool bookmark_line = false;
 		bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp();
 		bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !CTypeSupport(pView,COLORIDX_GYOU).IsDisp();
 		if (bookmark_line)
 #else
 		if(CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp() )
-#endif  // SI_
+#endif  // UZ_
 		{
 			gr.PushPen(cColorType.GetTextColor(),2);
 			::MoveToEx( gr, 1, y, NULL );

@@ -33,7 +33,7 @@
 */
 
 #include "StdAfx.h"
-#ifdef SI_USE_PPA
+#ifdef UZ_USE_PPA
 #include "CPPA.h"
 #include "view/CEditView.h"
 #include "func/Funccode.h"
@@ -607,4 +607,4 @@ void __stdcall CPPA::stdFinishProc()
 #endif
 
 
-#endif  // SI_USE_PPA
+#endif  // UZ_USE_PPA

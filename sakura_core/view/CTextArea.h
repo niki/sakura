@@ -111,12 +111,12 @@ public:
 	}
 	void SetTopYohaku(int nPixel)
 	{
-#ifdef SI_FIX_EDITVIEW
+#ifdef UZ_FIX_EDITVIEW
 		// 境界を描きたいのでルーラーとテキストの余白は最低１にする
 		m_nTopYohaku=std::min(std::max(nPixel, 1), 32);
 #else
 		m_nTopYohaku=nPixel;
-#endif  // SI_
+#endif  // UZ_
 	}
 	int GetLeftYohaku() const
 	{

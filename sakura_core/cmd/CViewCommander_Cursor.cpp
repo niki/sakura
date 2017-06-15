@@ -810,9 +810,9 @@ void CViewCommander::Command_1PageDown( bool bSelect, CLayoutYInt nScrollNum )
 /* ファイルの先頭に移動 */
 void CViewCommander::Command_GOFILETOP( bool bSelect )
 {
-#ifdef SI_FIX_FLICKER
+#ifdef UZ_FIX_FLICKER
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
-#endif  // SI_
+#endif  // UZ_
 	/* 先頭へカーソルを移動 */
 	//	Sep. 8, 2000 genta
 	m_pCommanderView->AddCurrentLineToHistory();
@@ -823,13 +823,13 @@ void CViewCommander::Command_GOFILETOP( bool bSelect )
 		CLayoutInt(0)
 	);
 	m_pCommanderView->MoveCursorSelecting( pt, bSelect );	//	通常は、(0, 0)へ移動。ボックス選択中は、(GetCaret().GetCaretLayoutPos().GetX2(), 0)へ移動
-#ifdef SI_FIX_FLICKER
+#ifdef UZ_FIX_FLICKER
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
 	if (m_pCommanderView->m_pcEditWnd->GetMiniMap().GetHwnd() != NULL) {
 		m_pCommanderView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
 	}
-#endif  // SI_
+#endif  // UZ_
 }
 
 
@@ -837,9 +837,9 @@ void CViewCommander::Command_GOFILETOP( bool bSelect )
 /* ファイルの最後に移動 */
 void CViewCommander::Command_GOFILEEND( bool bSelect )
 {
-#ifdef SI_FIX_FLICKER
+#ifdef UZ_FIX_FLICKER
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
-#endif  // SI_
+#endif  // UZ_
 // 2001.12.13 hor BOX選択中にファイルの最後にジャンプすると[EOF]の行が反転したままになるの修正
 	if( !bSelect ){
 		if( m_pCommanderView->GetSelectionInfo().IsTextSelected() ){
@@ -866,13 +866,13 @@ void CViewCommander::Command_GOFILEEND( bool bSelect )
 	if( bSelect ){
 		m_pCommanderView->GetSelectionInfo().PrintSelectionInfoMsg();
 	}
-#ifdef SI_FIX_FLICKER
+#ifdef UZ_FIX_FLICKER
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
 	if (m_pCommanderView->m_pcEditWnd->GetMiniMap().GetHwnd() != NULL) {
 		m_pCommanderView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
 	}
-#endif  // SI_
+#endif  // UZ_
 }
 
 
@@ -961,8 +961,8 @@ void CViewCommander::Command_WndScrollDown( void )
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef SI_FIX_SCROLL
-	nCaretMarginY = SI_VERTICAL_SCR;
+#ifdef UZ_FIX_SCROLL
+	nCaretMarginY = UZ_VERTICAL_SCR;
 	if( nCaretMarginY < 1 )
 		nCaretMarginY = CLayoutInt(1);
 #else
@@ -971,7 +971,7 @@ void CViewCommander::Command_WndScrollDown( void )
 		nCaretMarginY = CLayoutInt(1);
 
 	nCaretMarginY += 2;
-#endif  // SI_
+#endif  // UZ_
 
 	bool bCaretOff = false;
 	if( GetCaret().GetCaretLayoutPos().GetY() > m_pCommanderView->GetTextArea().m_nViewRowNum + m_pCommanderView->GetTextArea().GetViewTopLine() - (nCaretMarginY + 1) ){
@@ -1009,8 +1009,8 @@ void CViewCommander::Command_WndScrollUp(void)
 {
 	CLayoutInt	nCaretMarginY;
 
-#ifdef SI_FIX_SCROLL
-	nCaretMarginY = SI_VERTICAL_SCR;
+#ifdef UZ_FIX_SCROLL
+	nCaretMarginY = UZ_VERTICAL_SCR;
 	if( nCaretMarginY < 0 )
 		nCaretMarginY = CLayoutInt(0);
 #else
