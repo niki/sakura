@@ -243,12 +243,7 @@ void CTextDrawer::DispVerticalLines(
 			if( nWrapLayout < nXCol ){
 				break;
 			}
-#ifdef UZ_FIX_COLUMN_VERTICAL_LINE
-			//int nPosX = nPosXOffset + (Int)( nXCol - pView->GetTextArea().GetViewLeftCol() ) * nCharDx;
 			int nPosX = nPosXOffset + pView->GetTextMetrics().GetCharPxWidth(nXCol - pView->GetTextMetrics().GetLayoutXDefault() - nViewLeftCol);
-#else
-			int nPosX = nPosXOffset + pView->GetTextMetrics().GetCharPxWidth(nXCol - pView->GetTextMetrics().GetLayoutXDefault() - nViewLeftCol);
-#endif // UZ_
 			// 2006.04.30 Moca 線の引く範囲・方法を変更
 			// 太線の場合、半分だけ作画する可能性がある。
 			int nPosXBold = nPosX;

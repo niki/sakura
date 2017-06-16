@@ -216,8 +216,8 @@ CLayoutInt CCaret::MoveCursor(
 	// 水平スクロール量（文字数）の算出
 	nScrollColNum = CLayoutInt(0);
 #ifdef UZ_FIX_SCROLL
-	nScrollMarginRight = CLayoutInt(1);
-	nScrollMarginLeft = CLayoutInt(1);
+	nScrollMarginRight = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(1));
+	nScrollMarginLeft = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(1));
 #else
 	nScrollMarginRight = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(SCROLLMARGIN_RIGHT));
 	nScrollMarginLeft = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(SCROLLMARGIN_LEFT));
@@ -241,7 +241,7 @@ CLayoutInt CCaret::MoveCursor(
 			( area.GetViewLeftCol() + area.m_nViewColNum - nScrollMarginRight ) - ptWk_CaretPos.GetX2();
 #ifdef UZ_FIX_SCROLL
 		if (nScrollColNum != 0) {
-			static const int kSize = UZ_HORIZONTAL_SCR;
+			static const int kSize = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(UZ_HORIZONTAL_SCR));
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize
@@ -256,7 +256,7 @@ CLayoutInt CCaret::MoveCursor(
 		nScrollColNum = area.GetViewLeftCol() + nScrollMarginLeft - ptWk_CaretPos.GetX2();
 #ifdef UZ_FIX_SCROLL
 		if (nScrollColNum != 0) {
-			static const int kSize = UZ_HORIZONTAL_SCR;
+			static const int kSize = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(UZ_HORIZONTAL_SCR));
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize
