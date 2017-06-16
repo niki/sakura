@@ -1065,7 +1065,7 @@ void CCaret::ShowCaretPosInfo()
 	else{
 #ifdef UZ_FIX_STATUSBAR
 		TCHAR	szText_1[64];
-		auto_sprintf( szText_1, _T("Line %d, Column %d"), ptCaret.y, ptCaret.x );
+		auto_sprintf( szText_1, _T("Ln %d Col %d"), ptCaret.y, ptCaret.x );
 
 		TCHAR	szText_6[16];
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
