@@ -2,7 +2,6 @@ Introduction
 ------------
 
 サクラエディタ 修正版  
-プロポーショナルフォントは未マージ (ベースを新しくするときに対応予定)  
 気になったライブラリなどの試験場  
 
 
@@ -38,7 +37,7 @@ Setup
 
 Build environment  
 -----------------
-+ 2.2.0.1をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/uzuki3/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
++ 2.3.2.0をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/uzuki3/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド (/O1=[/Og /Os /Oy /Ob2 /Gs /GF /Gy])  
 + Boostを使用 (JSON)  
 + Luaを使用 (マクロ, プラグイン)  
