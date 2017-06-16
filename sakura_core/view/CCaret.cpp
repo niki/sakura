@@ -366,9 +366,7 @@ CLayoutInt CCaret::MoveCursor(
 			m_pEditView->GetTextArea().OffsetViewTopLine(-nScrollRowNum);
 
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-			if (!!RegKey(UZ_REGKEY).get(_T("CenteringCursorJump"), 1) &&
-			    RegKey(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid())
-			{  // CViewCommander::Command_CURLINECENTER()
+			if (RegKey(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid()) { // CViewCommander::Command_CURLINECENTER()
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 
@@ -417,9 +415,7 @@ CLayoutInt CCaret::MoveCursor(
 			}
 
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-			if (!!RegKey(UZ_REGKEY).get(_T("CenteringCursorJump"), 1) &&
-			    RegKey(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid())
-			{  // CViewCommander::Command_CURLINECENTER()
+			if (RegKey(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid()) { // CViewCommander::Command_CURLINECENTER()
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 

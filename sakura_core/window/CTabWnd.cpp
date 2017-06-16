@@ -160,10 +160,8 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 			//OutputDebugStringW(szMsg);
 			if (GetInterTabClk() != NULL) {
 				BreakInterTabClk();
-				if (!!RegKey(UZ_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
-					// ダブルクリックでタブを閉じる
-					return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
-				}
+				// ダブルクリックでタブを閉じる
+				return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
 			}
 			
 			// 閉じることができないときは左ボタンダウン扱いにする
@@ -242,9 +240,7 @@ LRESULT CTabWnd::OnTabLButtonDown( WPARAM wParam, LPARAM lParam )
 		if (nInterTab != 0) {    // タブが設定されている
 			BreakInterTabClk();
 			if (nInterTab == nTabNo + 1) {  // 同じタブ
-				if (!!RegKey(UZ_REGKEY).get(_T("DoubleClickClosesTab"), 1)) {
-					return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
-				}
+				return ExecTabCommand(F_WINCLOSE, MAKEPOINTS(lParam));
 			}
 		} else {
 			SetInterTabClk(nTabNo + 1);

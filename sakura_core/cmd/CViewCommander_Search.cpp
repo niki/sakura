@@ -530,12 +530,8 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 		GetEditWindow()->m_cDlgReplace.m_strText = cmemCurText.GetStringPtr();
 	}
 #ifdef UZ_FIX_REPLACE
-  {
-    bool replace_text_to_text = !!RegKey(UZ_REGKEY).get(_T("ReplaceTextToText"), 1);
-    if (replace_text_to_text) {
-      GetEditWindow()->m_cDlgReplace.m_strText2 = GetEditWindow()->m_cDlgReplace.m_strText;
-    }
-  }
+	// 置換後文字列に置換前文字列を設定する
+	GetEditWindow()->m_cDlgReplace.m_strText2 = GetEditWindow()->m_cDlgReplace.m_strText;
 #endif  // UZ_
 	if( 0 < GetDllShareData().m_sSearchKeywords.m_aReplaceKeys.size() ){
 		if( GetEditWindow()->m_cDlgReplace.m_nReplaceKeySequence < GetDllShareData().m_Common.m_sSearch.m_nReplaceKeySequence ){

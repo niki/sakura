@@ -376,10 +376,6 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 	};
 	
 	if (bRegQuote) {
-		bRegQuote = !!RegKey(UZ_REGKEY).get(_T("RegexpAutoQuote"), 1);
-	}
-	
-	if (bRegQuote) {
 		cmemTopic = preg_quote(cmemTopic);
 	}
 #endif  // UZ_
