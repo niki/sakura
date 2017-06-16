@@ -5,8 +5,10 @@ copy Lua.Makefile.nmake .\lua\src\Makefile.nmake
 cd .\lua\src
 
 nmake /f Makefile.nmake clean
-nmake /f Makefile.nmake dll
 
-copy lua53.lib ..
-copy lua53.dll ..
+rem nmake /f Makefile.nmake dll
+rem copy lua53.lib ..
+rem copy lua53.dll ..
 
+nmake /f Makefile.nmake lib
+copy liblua53.lib ..\lua53.lib
