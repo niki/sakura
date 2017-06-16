@@ -65,7 +65,7 @@
 #define UZ_FIX_VERDLG
   #define PR_VER      2,34,0,0
   #define PR_VER_STR "2.34"
-  #define BASE_REV   "4190"
+  #define BASE_REV    4190
 
 //-------------------------------------------------------------------------
 // デバッグ用

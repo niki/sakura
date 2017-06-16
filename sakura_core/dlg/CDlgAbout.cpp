@@ -216,15 +216,20 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	//      (あればSKR_PATCH_INFOの文字列がそのまま表示)
 	CNativeT cmemMsg;
 	cmemMsg.AppendString(LS(STR_DLGABOUT_APPNAME));
+#ifdef UZ_FIX_VERDLG
+	cmemMsg.AppendString(_T(" "));
+#else
 	cmemMsg.AppendString(_T("   "));
+#endif  // UZ_
 
 	// バージョン&リビジョン情報
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef UZ_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX2) _T(")\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX2) _T("), Based on revision %d\r\n"),
 		HIWORD( dwVersionMS ),
-		LOWORD( dwVersionMS )
+		LOWORD( dwVersionMS ),
+		BASE_REV
 	);
 #else
 #if (SVN_REV == 0)
