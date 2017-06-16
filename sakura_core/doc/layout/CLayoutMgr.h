@@ -29,6 +29,7 @@
 #include "basis/SakuraBasis.h"
 #include "types/CType.h"
 #include "CLayoutExInfo.h"
+#include "mem/CMemoryIterator.h"
 #include "CTsvModeInfo.h"
 #include "view/colors/EColorIndexType.h"
 #include "COpe.h"
@@ -56,7 +57,7 @@ enum EKinsokuType {
 struct LayoutReplaceArg {
 	CLayoutRange	sDelRange;		//!< [in]削除範囲。レイアウト単位。
 	COpeLineData*	pcmemDeleted;	//!< [out]削除されたデータ
-	COpeLineData*	pInsData;		//!< [in/out]挿入するデータ
+	COpeLineData*	pInsData;		//!< [in,out]挿入するデータ
 	CLayoutInt		nAddLineNum;	//!< [out] 再描画ヒント レイアウト行の増減
 	CLayoutInt		nModLineFrom;	//!< [out] 再描画ヒント 変更されたレイアウト行From(レイアウト行の増減が0のとき使う)
 	CLayoutInt		nModLineTo;		//!< [out] 再描画ヒント 変更されたレイアウト行To(レイアウト行の増減が0のとき使う)
@@ -75,7 +76,8 @@ struct CalTextWidthArg {
 
 class CLogicPointEx: public CLogicPoint{
 public:
-	CLayoutInt ext;
+	CLayoutInt ext;	//!< ピクセル幅
+	CLayoutXInt haba;	//!< ext設定時の１文字の幅
 };
 
 /*-----------------------------------------------------------------------
@@ -105,9 +107,13 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 public:
 	//! タブ幅の取得
-	CKetaXInt GetTabSpaceKetas() const { return m_nTabSpace; }
-	CLayoutInt GetTabSpace() const { return m_nTabSpace; }
+	CLayoutInt GetTabSpace() const { return m_nTabSpace * m_nCharLayoutXPerKeta; }
+	CKetaXInt  GetTabSpaceKetas() const { return m_nTabSpace; }
 
+	void SetTabSpaceInfo( CKetaXInt nTabSpaceKeta, CLayoutXInt nCharLayoutXPerKeta ){
+		m_nTabSpace = nTabSpaceKeta;
+		m_nCharLayoutXPerKeta = nCharLayoutXPerKeta;
+	}
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                          参照系                             //
@@ -138,7 +144,15 @@ public:
 		@param pos [in] 現在の位置
 		@return 次のTAB位置までの文字数．1〜TAB幅
 	 */
-	CLayoutInt GetActualTabSpace(CLayoutInt pos) const { return m_nTabSpace - pos % m_nTabSpace; }
+	CLayoutInt GetActualTabSpace(CLayoutInt pos) const {
+		CLayoutInt tabPadding = m_nCharLayoutXPerKeta - 1;
+		return GetTabSpace() + tabPadding - ((pos + tabPadding) % GetTabSpace());
+	}
+	CKetaXInt  GetActualTabSpaceKetas(CKetaXInt pos) const { return GetTabSpaceKetas() - pos % GetTabSpaceKetas(); }
+
+	CMemoryIterator CreateCMemoryIterator(const CLayout* pcLayout) const {
+		return CMemoryIterator(pcLayout, this->GetTabSpace(), this->m_tsvInfo, this->GetWidthPerKeta(), this->GetCharSpacing());
+	}
 
 	/*! 次のTABまたはカンマ位置までの幅
 		@param pos [in] 現在の位置
@@ -146,24 +160,29 @@ public:
 		@return 次のTAB位置までの文字数．1〜TAB幅
 	 */
 	CLayoutInt GetActualTsvSpace(CLayoutInt pos, wchar_t ch) const {
+		CLayoutInt tabPadding = m_nCharLayoutXPerKeta - 1;
 		if (m_tsvInfo.m_nTsvMode == TSV_MODE_NONE && ch == WCODE::TAB) {
-			return m_nTabSpace - pos % m_nTabSpace;
-		} else if (m_tsvInfo.m_nTsvMode == TSV_MODE_CSV && ch == WCODE::TAB) {
-			return CLayoutInt(1);
-		} else if ((m_tsvInfo.m_nTsvMode == TSV_MODE_TSV && ch == WCODE::TAB)
+			return GetTabSpace() + tabPadding - ((pos + tabPadding) % GetTabSpace());
+		}
+		else if (m_tsvInfo.m_nTsvMode == TSV_MODE_CSV && ch == WCODE::TAB) {
+			return tabPadding;
+		}
+		else if ((m_tsvInfo.m_nTsvMode == TSV_MODE_TSV && ch == WCODE::TAB)
 			|| (m_tsvInfo.m_nTsvMode == TSV_MODE_CSV && ch == L',')) {
-			return CLayoutInt(m_tsvInfo.GetActualTabLength(pos));
-		} else {
-			return CLayoutInt(1);
+			return CLayoutInt(m_tsvInfo.GetActualTabLength(pos, m_tsvInfo.m_nMaxCharLayoutX));
+		}
+		else {
+			return tabPadding;
 		}
 	}
 
 	//	Aug. 14, 2005 genta
 	// Sep. 07, 2007 kobake 関数名変更 GetMaxLineSize→GetMaxLineKetas
-	CLayoutInt GetMaxLineKetas(void) const { return m_nMaxLineKetas; }
+	CKetaXInt GetMaxLineKetas() const { return m_nMaxLineKetas; }
+	CLayoutXInt GetMaxLineLayout() const { return m_nMaxLineKetas * m_nCharLayoutXPerKeta; }
 
 	// 2005.11.21 Moca 引用符の色分け情報を引数から除去
-	bool ChangeLayoutParam( CLayoutInt nTabSize, int nTsvMode, CLayoutInt nMaxLineKetas );
+	bool ChangeLayoutParam( CKetaXInt nTabSize, int nTsvMode, CKetaXInt nMaxLineKetas );
 
 	// Jul. 29, 2006 genta
 	void GetEndLayoutPos(CLayoutPoint* ptLayoutEnd);
@@ -190,7 +209,11 @@ public:
 	void LogicToLayoutEx( const CLogicPointEx& ptLogicEx, CLayoutPoint* pptLayout, CLayoutInt nLineHint = CLayoutInt(0) )
 	{
 		LogicToLayout( ptLogicEx, pptLayout, nLineHint );
-		pptLayout->x += ptLogicEx.ext;
+		if( 0 < ptLogicEx.ext ){
+			// 文字幅換算をする
+			int ext = std::max(0, ::MulDiv((Int)ptLogicEx.ext, (Int)m_nCharLayoutXPerKeta, (Int)ptLogicEx.haba));
+			pptLayout->x += ext;
+		}
 	}
 	void LogicToLayout( const CLogicPoint& ptLogic, CLayoutPoint* pptLayout, CLayoutInt nLineHint = CLayoutInt(0) );
 	void LogicToLayout( const CLogicRange& rangeLogic, CLayoutRange* prangeLayout )
@@ -229,10 +252,13 @@ public:
 	*/
 	void SetLayoutInfo(
 		bool			bDoLayout,
+		bool			bBlockingHook,
 		const STypeConfig&	refType,
-		CLayoutInt		nTabSpace,
+		CKetaXInt		nTabSpace,
 		int				nTsvMode,
-		CLayoutInt		nMaxLineKetas
+		CKetaXInt		nMaxLineKetas,
+		CLayoutXInt		nCharLayoutXPerKeta,
+		const LOGFONT*	pLogfont
 	);
 
 	/* 文字列置換 */
@@ -242,7 +268,18 @@ public:
 
 	BOOL CalculateTextWidth( BOOL bCalLineLen = TRUE, CLayoutInt nStart = CLayoutInt(-1), CLayoutInt nEnd = CLayoutInt(-1) );	/* テキスト最大幅を算出する */		// 2009.08.28 nasukoji
 	void ClearLayoutLineWidth( void );				/* 各行のレイアウト行長の記憶をクリアする */		// 2009.08.28 nasukoji
-
+	CLayoutXInt GetLayoutXOfChar( const wchar_t* pData, int nDataLen, int i ) const {
+		CLayoutXInt nSpace = CLayoutXInt(0);
+		if( m_nSpacing ){
+			nSpace = CLayoutXInt(CNativeW::GetKetaOfChar(pData, nDataLen, i)) * m_nSpacing;
+		}
+		return CNativeW::GetColmOfChar( pData, nDataLen, i ) + nSpace;
+	}
+	CLayoutXInt GetLayoutXOfChar( const CStringRef& str, int i ) const {
+		return GetLayoutXOfChar(str.GetPtr(), str.GetLength(), i);
+	}
+	CPixelXInt GetWidthPerKeta() const { return Int(m_nCharLayoutXPerKeta); }
+	CPixelXInt GetCharSpacing() const { return m_nSpacing; }
 
 
 protected:
@@ -258,7 +295,7 @@ protected:
 	*/
 	// 2005.11.21 Moca 引用符の色分け情報を引数から除去
 public:
-	void _DoLayout();	/* 現在の折り返し文字数に合わせて全データのレイアウト情報を再生成します */
+	void _DoLayout(bool bBlockingHook);	/* 現在の折り返し文字数に合わせて全データのレイアウト情報を再生成します */
 protected:
 	// 2005.11.21 Moca 引用符の色分け情報を引数から除去
 	// 2009.08.28 nasukoji	テキスト最大幅算出用引数追加
@@ -371,12 +408,14 @@ protected:
 
 	//タイプ別設定
 	const STypeConfig*		m_pTypeConfig;
-	CLayoutInt				m_nMaxLineKetas;
-	CLayoutInt				m_nTabSpace;
-	vector_ex<wchar_t>		m_pszKinsokuHead_1;			// 行頭禁則文字	//@@@ 2002.04.08 MIK
-	vector_ex<wchar_t>		m_pszKinsokuTail_1;			// 行末禁則文字	//@@@ 2002.04.08 MIK
-	vector_ex<wchar_t>		m_pszKinsokuKuto_1;			// 句読点ぶらさげ文字	//@@@ 2002.04.17 MIK
-	CalcIndentProc			m_getIndentOffset;			//	Oct. 1, 2002 genta インデント幅計算関数を保持
+	CKetaXInt				m_nMaxLineKetas;			//!< 折り返し桁数
+	CKetaXInt				m_nTabSpace;				//!< TABの文字数
+	CLayoutXInt				m_nCharLayoutXPerKeta;		//!< CKetaXInt(1)あたりのCLayoutXInt値(Spacing入り)
+	CPixelXInt				m_nSpacing;					//!< 1文字ずつの間隔(px)
+	vector_ex<wchar_t>		m_pszKinsokuHead_1;			//!< 行頭禁則文字	//@@@ 2002.04.08 MIK
+	vector_ex<wchar_t>		m_pszKinsokuTail_1;			//!< 行末禁則文字	//@@@ 2002.04.08 MIK
+	vector_ex<wchar_t>		m_pszKinsokuKuto_1;			//!< 句読点ぶらさげ文字	//@@@ 2002.04.17 MIK
+	CalcIndentProc			m_getIndentOffset;			//!< Oct. 1, 2002 genta インデント幅計算関数を保持
 
 	//フラグ等
 	EColorIndexType			m_nLineTypeBot;				//!< タイプ 0=通常 1=行コメント 2=ブロックコメント 3=シングルクォーテーション文字列 4=ダブルクォーテーション文字列

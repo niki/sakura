@@ -101,7 +101,7 @@ BOOL CViewCommander::Command_FUNCLIST(
 	// 2015.11.14 「C」「C++」「C/C++」から選べるように
 	case OUTLINE_C:			// C/C++ は MakeFuncList_C
 	case OUTLINE_C_CPP:
-	case OUTLINE_CPP2:
+	case OUTLINE_CPP:
 		{
 			GetDocument()->m_cDocOutline.MakeFuncList_C( &cFuncInfoArr,
 				nOutlineType, GetDocument()->m_cDocFile.GetFilePath() );

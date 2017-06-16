@@ -692,8 +692,6 @@
 #define HIDC_CHECK_HOKANBYFILE					11512 //現在のファイルから入力補完		// 2003.06.25 Moca
 #define HIDC_COMBO_HOKAN_TYPE					11513 //入力補完種別
 #define HIDC_CHECK_HOKANBYKEYWORD				11514 //強調キーワードから入力補完
-#define HIDC_CHECK_HOKANBYOTHER					11515 //他のドキュメントから入力補完
-#define HIDC_CHECK_HOKANBYGREPOUT				11516 //Grep/アウトプットから入力補完
 #define HIDC_EDIT_HOKANFILE						11540 //単語ファイル名					//Jul. 05, 2001 JEPRO 共通から移動・変更
 #define HIDC_EDIT_KEYWORDHELPFILE				11541 //辞書ファイル名					//Jul. 05, 2001 JEPRO 共通から移動・変更
 #define HIDC_EDIT_TYPEEXTHELP					11542 //外部ヘルプファイル名	// 2006.08.06 ryoji
@@ -1113,6 +1111,7 @@
 #define HIDC_CHECK_DISP_UTF8_CODEPOINT	14203		// UTF-8をコードポイントで表示する
 #define HIDC_CHECK_DISP_SP_CODEPOINT	14204		// サロゲートペアをコードポイントで表示する
 #define HIDC_CHECK_DISP_SELCOUNT_BY_BYTE	14205	// 選択文字数を文字単位ではなくバイト単位で表示する
+#define HIDC_CHECK_DISP_COL_BY_CHAR		14206		// 現在桁をルーラー単位ではなく文字単位で表示する
 
 // 共通設定メインメニュー			// 2010/5/16	Uchi
 #define HIDC_TREE_RES						14400	//メニュー一覧

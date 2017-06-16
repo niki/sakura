@@ -610,7 +610,7 @@ const char* CFileLoad::GetNextLineCharCode(
 				char szEof[3] = {
 					(pData[i]  == '\x25' ? '\x0a' : '\x0d'),
 					(pData[i+1]== '\x25' ? '\x0a' : 
-						(pData[i+1] == '\x0a' ? 0 : // EBCDEC の"\x0aがLFにならないように細工する
+						(pData[i+1] == '\x0a' ? 0 : // EBCDIC の"\x0aがLFにならないように細工する
 							(i + 1 < nDataLen ? pData[i+1] : 0))),
 					0
 				};

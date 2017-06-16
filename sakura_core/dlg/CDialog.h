@@ -126,6 +126,7 @@ public:
 	void GetItemClientRect( int wID, RECT& rc );
 	static void SetComboBoxDeleter( HWND hwndCtl, SComboBoxItemDeleter* data );
 public:
+
 	static bool DirectoryUp( TCHAR* );
 
 public:

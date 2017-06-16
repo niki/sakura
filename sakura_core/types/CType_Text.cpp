@@ -46,7 +46,7 @@ void CType_Text::InitTypeConfigImp(STypeConfig* pType)
 	_tcscpy( pType->m_szTypeExts, _T("txt,log,1st,err,ps") );
 
 	//設定
-	pType->m_nMaxLineKetas = CLayoutInt(120);					/* 折り返し桁数 */
+	pType->m_nMaxLineKetas = CKetaXInt(120);					/* 折り返し桁数 */
 	pType->m_eDefaultOutline = OUTLINE_TEXT;					/* アウトライン解析方法 */
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = false;	//Oct. 17, 2000 JEPRO	シングルクォーテーション文字列を色分け表示しない
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = false;	//Sept. 4, 2000 JEPRO	ダブルクォーテーション文字列を色分け表示しない
@@ -68,12 +68,12 @@ void CType_Text::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_bUseRegexKeyword = true;							// 正規表現キーワードを使うか
 	pType->m_RegexKeywordArr[0].m_nColorIndex = COLORIDX_URL;	// 色指定番号
 	wcscpyn( &pKeyword[keywordPos],			// 正規表現キーワード
-		L"/(?<=\")(\\b[a-zA-Z]:|\\B\\\\\\\\)[^\"\\r\\n]*/k",			//   ""で挟まれた C:\～, \\～ にマッチするパターン
+		L"/(?<=\")(\\b[a-zA-Z]:|\\B\\\\\\\\)[^\"\\r\\n]*/k",			//   ""で挟まれた C:\〜, \\〜 にマッチするパターン
 		_countof(pType->m_RegexKeywordList) - 1 );
 	keywordPos += auto_strlen(&pKeyword[keywordPos]) + 1;
 	pType->m_RegexKeywordArr[1].m_nColorIndex = COLORIDX_URL;	// 色指定番号
 	wcscpyn( &pKeyword[keywordPos],			// 正規表現キーワード
-		L"/(\\b[a-zA-Z]:\\\\|\\B\\\\\\\\)[\\w\\-_.\\\\\\/$%~]*/k",		//   C:\～, \\～ にマッチするパターン
+		L"/(\\b[a-zA-Z]:\\\\|\\B\\\\\\\\)[\\w\\-_.\\\\\\/$%~]*/k",		//   C:\〜, \\〜 にマッチするパターン
 		_countof(pType->m_RegexKeywordList) - keywordPos - 1 );
 	keywordPos += auto_strlen(&pKeyword[keywordPos]) + 1;
 	pKeyword[keywordPos] = L'\0';

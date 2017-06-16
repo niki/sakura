@@ -1,14 +1,14 @@
 先頭に - がついているリビジョンは未適用.
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
-      	Imp: 他のドキュメントから入力補完  [patchunicode:#1065]
-      	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
+-      	Imp: 他のドキュメントから入力補完  [patchunicode:#1065]
+-      	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
  r4190	Keep: CViewCommanderクラス整理 [patchunicode:#1106]
  r4189	Fix: 未定義のコマンドがある場合にバッファが未初期化になる [patchunicode:#1101] Contributed by Moca
  r4186	Keep: CDlgTagJumpListクラス整理  [patchunicode:#1105]
--r4180	update version 2.3.2.0
+ r4180	update version 2.3.2.0
 --- 2.3.2.0 ---------------------------------------------------------------
  r4178	Fix: UnicodeをUTF-16表記に変更  [patchunicode:#1102] Contributed by Moca
  r4176	New: ウィンドウ一覧ダイアログ [patchunicode:#1072] Contributed by Moca
@@ -20,7 +20,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
  r4165	Fix: DragFinishがたりない [patchunicode:#1042] Contributed by Moca
  r4164	Fix: タイプ別から共通設定キーワードを表示すると内容が一致しない [patchunicode:#1083] Contributed by Moca
  r4163	Fix: UTF-7自動認識を厳しくする  [patchunicode:#988]
--r4162	Fix: タブ幅がフォントサイズが大きいと4固定になる [patchunicode:#1078] Contributed by Moca
+ r4162	Fix: タブ幅がフォントサイズが大きいと4固定になる [patchunicode:#1078] Contributed by Moca
  r4161	Imp: Grepファイル・フォルダ長を512に拡張 [patchunicode:#1076] Contributed by Moca
  r4160	Fix: 設定画面のファイル選択ダイアログで相対パスにできるときはする [patchunicode:#985] Contributed by Moca
  r4159	Imp: アウトラインメニューにすべて展開・縮小・ブックマーク削除・全削除を追加 [patchunicode:#1049] Contributed by Moca
@@ -67,7 +67,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
  r4096	Fix: ミニマップのDIFFマークを非表示に修正 [patchunicode:#1029]
  r4093	Fix: アウトラインのメニュー表示でリソースリーク [patchunicode:#1048]
  r4092	Fix: テキスト・ルールファイル解析での範囲外アクセスの修正 [patchunicode:#1010]
--r4090	Fix: WCODE::IsCtrlCode()でNUL文字がfalseになるためコントロールコードとして描画されない [patchunicode:#1035] Contributed by Moca
+ r4090	Fix: WCODE::IsCtrlCode()でNUL文字がfalseになるためコントロールコードとして描画されない [patchunicode:#1035] Contributed by Moca
  r4088	Keep: assertダイアログでファイル行番号を画面に表示 [patchunicode:#957] Contributed by Moca
  r4087	Fix: C++アウトライン解析で異常終了する [patchunicode:#1007]
  r4086	Fix: TSV,CSVモードコンボボックスの縦幅を広げる [patchunicode:#1033] Contributed by Moca
@@ -83,23 +83,23 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
  r4073	Keep: typo修正(コメント)
  r4072	Keep: typo修正(コメント)
  r4071	Fix: 上書きモードでの矩形選択入力で選択範囲を削除するオプションを追加 [patchunicode:#821]
--r4070	Fix: プロポーショナルフォント [patchunicode:#713]
+ r4070	Fix: プロポーショナルフォント [patchunicode:#713]
  r4068	Fix: 外部コマンド実行の拡張  [patchunicode:#324] 
  r4066	Fix: すべて置換の高速化 [patchunicode:#521] 
--r4065	Fix: プロポーショナルフォント [patchunicode:#713]
+ r4065	Fix: プロポーショナルフォント [patchunicode:#713]
  r4063	Keep: typo修正(Doxygenコメント)
  r4061	Fix: 共通・タイプ別設定変更後にタイトルバー更新  [patchunicode:#1013] 
  r4055	Keep: コメント追記(コマンドラインオプション用定数)
 --- 2.3.0.0 ---------------------------------------------------------------
  r4048	Fix: スクロールできないときマウスキャプチャされたままになる
  r4047	New: XMLアウトラインとHTMLの修正
--r4046	Fix: 文字の間隔の適用値が今までと異なる [patchunicode:#1003] Contributed by Moca 文字間隔回りがおかしいのを修正します。 1. プロポーショナル版で全角の文字間隔が2倍になるように 2. CTextMetrics::CalcTextWidth2/3の文字間隔の引数がずれてたバグの修正 3. CLayoutMgr::getIndentOffsetの文字幅にさらに文字間隔が足されていたバグの修正
--r4045	Imp: 桁数表示のオプション化 [patchunicode:#1004] Contributed by Moca, syat プロポーショナル対応にてステータスバーに表示する桁数が文字単位に変わったことに関して、共通設定でルーラー桁単位にできるようにします。
-!r4043	Fix: 折り返し記号をOFFにしても折り返し記号が消えない [patchunicode:#1002] unicode:2290 等幅フォント、右端折り返しのときの折り返し記号の描画を修正します。 ・タイプ別設定から折り返し記号の表示をやめても記号が消えない ・半角文字を入力すると行末にゴミが残る
+ r4046	Fix: 文字の間隔の適用値が今までと異なる [patchunicode:#1003] Contributed by Moca 文字間隔回りがおかしいのを修正します。 1. プロポーショナル版で全角の文字間隔が2倍になるように 2. CTextMetrics::CalcTextWidth2/3の文字間隔の引数がずれてたバグの修正 3. CLayoutMgr::getIndentOffsetの文字幅にさらに文字間隔が足されていたバグの修正
+ r4045	Imp: 桁数表示のオプション化 [patchunicode:#1004] Contributed by Moca, syat プロポーショナル対応にてステータスバーに表示する桁数が文字単位に変わったことに関して、共通設定でルーラー桁単位にできるようにします。
+ r4043	Fix: 折り返し記号をOFFにしても折り返し記号が消えない [patchunicode:#1002] unicode:2290 等幅フォント、右端折り返しのときの折り返し記号の描画を修正します。 ・タイプ別設定から折り返し記号の表示をやめても記号が消えない ・半角文字を入力すると行末にゴミが残る
  r4038	Fix: タブの検索をキーマクロとして保存できない
  r4037	Fix: ミニマップが印刷プレビューで表示されたままになる
  r4036	Keep: MinGWコンパイル対応 [patchunicode:#995]
--r4035	New: プロポーショナルフォント [patchunicode:#713] wiki:Request/500 フォント設定、印刷ページ設定でプロポーショナルフォントが使用できるようになります。
+ r4035	New: プロポーショナルフォント [patchunicode:#713] wiki:Request/500 フォント設定、印刷ページ設定でプロポーショナルフォントが使用できるようになります。
  r4034	Fix: Undo/Redo時にキャレットが期待する位置に移動しない  [patchunicode:#999]
  r4033	Fix: キーワードヘルプの表示位置不正  [patchunicode:#998]
  r4032	Fix: 「ミニマップを隠す」メニュー／ツールバーのアイコンが窪んだ状態にならない [patchunicode:#997]

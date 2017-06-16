@@ -210,10 +210,10 @@ void _DefaultConfig(STypeConfig* pType)
 /************************/
 
 	pType->m_nTextWrapMethod = WRAP_SETTING_WIDTH;	// テキストの折り返し方法		// 2008.05.30 nasukoji
-	pType->m_nMaxLineKetas = CLayoutInt(MAXLINEKETAS);	/* 折り返し桁数 */
+	pType->m_nMaxLineKetas = CKetaXInt(MAXLINEKETAS);	/* 折り返し桁数 */
 	pType->m_nColumnSpace = 0;					/* 文字と文字の隙間 */
 	pType->m_nLineSpace = 1;					/* 行間のすきま */
-	pType->m_nTabSpace = CLayoutInt(4);					/* TABの文字数 */
+	pType->m_nTabSpace = CKetaXInt(4);					/* TABの文字数 */
 	pType->m_nTsvMode = 0;						/* TSVモード */
 	for( int i = 0; i < MAX_KEYWORDSET_PER_TYPE; i++ ){
 		pType->m_nKeyWordSetIdx[i] = -1;
@@ -251,8 +251,6 @@ void _DefaultConfig(STypeConfig* pType)
 	//	2003.06.23 Moca ファイル内からの入力補完機能
 	pType->m_bUseHokanByFile = true;			//! 入力補完 開いているファイル内から候補を探す
 	pType->m_bUseHokanByKeyword = false;			// 強調キーワードから入力補完
-	pType->m_bUseHokanByOtherDocs = false;
-	pType->m_bUseHokanByGrepOut = false;
 
 	// 文字コード設定
 	pType->m_encoding.m_bPriorCesu8 = false;
@@ -345,7 +343,7 @@ void _DefaultConfig(STypeConfig* pType)
 
 	// 2005.11.08 Moca 指定位置縦線の設定
 	for(int i = 0; i < MAX_VERTLINES; i++ ){
-		pType->m_nVertLineIdx[i] = CLayoutInt(0);
+		pType->m_nVertLineIdx[i] = CKetaXInt(0);
 	}
 	pType->m_nNoteLineOffset = 0;
 

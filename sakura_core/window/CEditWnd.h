@@ -259,7 +259,7 @@ public:
 	BOOL WrapWindowWidth( int nPane );	/* 右端で折り返す */	// 2008.06.08 ryoji
 	BOOL UpdateTextWrap( void );		/* 折り返し方法関連の更新 */	// 2008.06.10 ryoji
 	//	Aug. 14, 2005 genta TAB幅と折り返し位置の更新
-	void ChangeLayoutParam( bool bShowProgress, CLayoutInt nTabSize, int nTsvMode, CLayoutInt nMaxLineKetas );
+	void ChangeLayoutParam( bool bShowProgress, CKetaXInt nTabSize, int nTsvMode, CKetaXInt nMaxLineKetas );
 	//	Aug. 14, 2005 genta
 	CLogicPointEx* SavePhysPosOfAllView();
 	void RestorePhysPosOfAllView( CLogicPointEx* pptPosArray );
@@ -404,7 +404,7 @@ private:
 	LPTSTR			m_pszMenubarMessage; //!< メニューバー右端に表示するメッセージ
 public:
 	int				m_nTimerCount;		//!< OnTimer用 2003.08.29 wmlhq
-	CLogicPointEx*	m_posSaveAry;
+	CLogicPointEx*	m_posSaveAry;		//!< フォント変更前の座標
 private:
 	int				m_nCurrentFocus;	//!< 現在のフォーカス情報
 	int				m_nWinSizeType;		//!< サイズ変更のタイプ。SIZE_MAXIMIZED, SIZE_MINIMIZED 等。

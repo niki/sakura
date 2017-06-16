@@ -37,12 +37,20 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 	const CTextArea* pArea=&pcView->GetTextArea();
 
 	int nLineHeight = pMetrics->GetHankakuDy();
-	int nCharWidth = pMetrics->GetHankakuDx();
+	int nCharWidth = pMetrics->GetCharPxWidth();	// Layout→Px
 
 	CTypeSupport cTabType(pcView,COLORIDX_TAB);
 
 	// これから描画するタブ幅
-	int tabDispWidth = (Int)pcView->m_pcEditDoc->m_cLayoutMgr.GetActualTsvSpace( sPos.GetDrawCol(), L',' );
+	CLayoutXInt tabDispWidthLayout = pcView->m_pcEditDoc->m_cLayoutMgr.GetActualTsvSpace( sPos.GetDrawCol(), L',' );
+	int tabDispWidth = (Int)tabDispWidthLayout;
+	if( pcView->m_bMiniMap ){
+		CLayoutMgr mgrTemp;
+		mgrTemp.SetTabSpaceInfo(pcView->m_pcEditDoc->m_cLayoutMgr.GetTabSpaceKetas(),
+			CLayoutXInt(pcView->GetTextMetrics().GetHankakuWidth()) );
+		tabDispWidthLayout = mgrTemp.GetActualTabSpace(sPos.GetDrawCol());
+		tabDispWidth = (Int)tabDispWidthLayout;
+	}
 
 	// タブ記号領域
 	RECT rcClip2;
@@ -53,6 +61,9 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 	}
 	rcClip2.top = sPos.GetDrawPos().y;
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
+#ifndef UZ_FIX_TAB_MARK
+	int nLen = wcslen( m_pTypeData->m_szTabViewString );
+#endif  // UZ_
 
 	if( pArea->IsRectIntersected(rcClip2) ){
 		if( cTabType.IsDisp() ){	//CSVモード
@@ -73,6 +84,6 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 	}
 
 	//Xを進める
-	sPos.ForwardDrawCol(tabDispWidth);
+	sPos.ForwardDrawCol(tabDispWidthLayout);
 }
 

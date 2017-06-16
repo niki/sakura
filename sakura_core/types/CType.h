@@ -60,7 +60,7 @@ enum EOutlineType{
 	OUTLINE_PYTHON,		//	2007.02.08 genta Pythonアウトライン解析
 	OUTLINE_ERLANG,		//	2009.08.10 genta Erlangアウトライン解析
 	OUTLINE_XML,		//  2014.12.25 Moca
-	OUTLINE_CPP2,		//  2015.11.13 Moca
+	OUTLINE_CPP,		//  2015.11.13 Moca
 	//	新しいアウトライン解析は必ずこの直前へ挿入
 	OUTLINE_CODEMAX,
 	OUTLINE_BOOKMARK,	//	2001.12.03 hor
@@ -136,10 +136,10 @@ struct STypeConfig{
 	TCHAR				m_szTypeName[MAX_TYPES_NAME];	//!< タイプ属性：名称
 	TCHAR				m_szTypeExts[MAX_TYPES_EXTS];	//!< タイプ属性：拡張子リスト
 	int					m_nTextWrapMethod;				//!< テキストの折り返し方法		// 2008.05.30 nasukoji
-	CLayoutInt			m_nMaxLineKetas;				//!< 折り返し桁数
+	CKetaXInt			m_nMaxLineKetas;				//!< 折り返し桁数
 	int					m_nColumnSpace;					//!< 文字と文字の隙間
 	int					m_nLineSpace;					//!< 行間のすきま
-	CLayoutInt			m_nTabSpace;					//!< TABの文字数
+	CKetaXInt			m_nTabSpace;					//!< TABの文字数
 #ifndef UZ_FIX_TAB_MARK
 	ETabArrow			m_bTabArrow;					//!< タブ矢印表示		//@@@ 2003.03.26 MIK
 	EDIT_CHAR			m_szTabViewString[8+1];			//!< TAB表示文字列	// 2003.1.26 aroka サイズ拡張	// 2009.02.11 ryoji サイズ戻し(17->8+1)
@@ -172,7 +172,7 @@ struct STypeConfig{
 	bool				m_bLineNumIsCRLF;				//!< 行番号の表示 false=折り返し単位／true=改行単位
 	int					m_nLineTermType;				//!< 行番号区切り  0=なし 1=縦線 2=任意
 	wchar_t				m_cLineTermChar;				//!< 行番号区切り文字
-	CLayoutInt			m_nVertLineIdx[MAX_VERTLINES];	//!< 指定桁縦線
+	CKetaXInt			m_nVertLineIdx[MAX_VERTLINES];	//!< 指定桁縦線
 	int 				m_nNoteLineOffset;				//!< ノート線のオフセット
 
 	bool				m_bWordWrap;					//!< 英文ワードラップをする
@@ -213,8 +213,6 @@ struct STypeConfig{
 	//	2003.06.23 Moca ファイル内からの入力補完機能
 	bool				m_bUseHokanByFile;				//!< 入力補完 開いているファイル内から候補を探す
 	bool				m_bUseHokanByKeyword;			//!< 強調キーワードから入力補完
-	bool				m_bUseHokanByOtherDocs;			//!< 他のドキュメントから入力補完
-	bool				m_bUseHokanByGrepOut;			//!< Grep/アウトプットから入力補完
 	
 	//	2001/06/19 asa-o
 	bool				m_bHokanLoHiCase;				//!< 入力補完機能：英大文字小文字を同一視する

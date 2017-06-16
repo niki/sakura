@@ -522,7 +522,6 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		//お気に入り	//@@@ 2003.04.08 MIK
 		wcscat( szKeyName, LTEXT(".bFavorite") );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] );
-
 	}
 	//読み込み時は残りを初期化
 	if ( cProfile.IsReadingMode() ){
@@ -1943,8 +1942,11 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 			types.m_nTsvMode				= buf[11];
 		}
 		// 折り返し幅の最小値は10。少なくとも４ないとハングアップする。 // 20050818 aroka
-		if( types.m_nMaxLineKetas < CLayoutInt(MINLINEKETAS) ){
-			types.m_nMaxLineKetas = CLayoutInt(MINLINEKETAS);
+		if( types.m_nMaxLineKetas < CKetaXInt(MINLINEKETAS) ){
+			types.m_nMaxLineKetas = CKetaXInt(MINLINEKETAS);
+		}
+		if( types.m_nMaxLineKetas - 2 < types.m_nTabSpace ){
+			types.m_nTabSpace = types.m_nMaxLineKetas - 2;
 		}
 	}
 	else{
@@ -1977,8 +1979,8 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	/* 行間のすきま */
 	cProfile.IOProfileData( pszSecName, LTEXT("nLineSpace"), types.m_nLineSpace );
 	if( cProfile.IsReadingMode() ){
-		if( types.m_nLineSpace < /* 1 */ 0 ){
-			types.m_nLineSpace = /* 1 */ 0;
+		if( types.m_nLineSpace < -LINESPACE_MAX ){
+			types.m_nLineSpace = -LINESPACE_MAX;
 		}
 		if( types.m_nLineSpace > LINESPACE_MAX ){
 			types.m_nLineSpace = LINESPACE_MAX;
@@ -2140,8 +2142,6 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	//	2003.06.23 Moca ファイル内からの入力補完機能
 	cProfile.IOProfileData( pszSecName, LTEXT("bUseHokanByFile")		, types.m_bUseHokanByFile );
 	cProfile.IOProfileData( pszSecName, LTEXT("bUseHokanByKeyword")		, types.m_bUseHokanByKeyword );
-	cProfile.IOProfileData( pszSecName, LTEXT("bUseHokanByOther")		, types.m_bUseHokanByOtherDocs );
-	cProfile.IOProfileData( pszSecName, LTEXT("bUseHokanByGrep")		, types.m_bUseHokanByGrepOut );
 
 	//@@@ 2002.2.4 YAZAKI
 	cProfile.IOProfileData( pszSecName, LTEXT("szExtHelp")			, types.m_szExtHelp );
@@ -2444,6 +2444,7 @@ void CShareData_IO::ShareData_IO_Statusbar( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("DispUtf8Codepoint")			, statusbar.m_bDispUtf8Codepoint);	// UTF-8をコードポイントで表示する
 	cProfile.IOProfileData( pszSecName, LTEXT("DispSurrogatePairCodepoint")	, statusbar.m_bDispSPCodepoint);	// サロゲートペアをコードポイントで表示する
 	cProfile.IOProfileData( pszSecName, LTEXT("DispSelectCountByByte")		, statusbar.m_bDispSelCountByByte);	// 選択文字数を文字単位ではなくバイト単位で表示する
+	cProfile.IOProfileData( pszSecName, LTEXT("DispColByChar")				, statusbar.m_bDispColByChar);		// 現在桁をルーラー単位ではなく文字単位で表示する
 }
 
 /*!

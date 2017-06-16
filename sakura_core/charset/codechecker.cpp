@@ -1131,6 +1131,8 @@ EndFunc:;
 		// '-' をスキップ。
 		*ppNextChar = const_cast<char*>(pr) + 1;
 	}else{
+		*ppNextChar = const_cast<char*>(pr);
+
 		if( (UC_LOOSE != (nOption & UC_LOOSE)) && bminus_found == false ){
 			// 2015.03.05 Moca エンコードチェック時に終端の'-'がない場合はポイントを加算しない
 			if( pr < pr_end ){
@@ -1140,7 +1142,6 @@ EndFunc:;
 				}
 			}
 		}
-		*ppNextChar = const_cast<char*>(pr);
 	}
 
 	return nchecklen;

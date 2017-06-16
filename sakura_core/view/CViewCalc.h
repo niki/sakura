@@ -38,6 +38,7 @@ class CViewCalc{
 protected:
 	//外部依存
 	CLayoutInt GetTabSpace() const;
+	CPixelXInt GetCharSpacing() const;
 	CTsvModeInfo& GetTsvMode() const;
 
 public:

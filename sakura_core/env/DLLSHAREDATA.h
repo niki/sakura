@@ -96,7 +96,7 @@ struct SShare_Flags{
 #endif  // UZ_
 };
 
-//共有ワークバッファ
+//! 共有ワークバッファ
 struct SShare_WorkBuffer{
 	//2007.09.16 kobake char型だと、常に文字列であるという誤解を招くので、BYTE型に変更。変数名も変更。
 	//           UNICODE版では、余分に領域を使うことが予想されるため、ANSI版の2倍確保。

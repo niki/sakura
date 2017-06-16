@@ -292,7 +292,7 @@ public:
 	BOOL CreateScrollBar();												/* スクロールバー作成 */	// 2006.12.19 ryoji
 	void DestroyScrollBar();											/* スクロールバー破棄 */	// 2006.12.19 ryoji
 	CLayoutInt GetWrapOverhang( void ) const;							/* 折り返し桁以後のぶら下げ余白計算 */	// 2008.06.08 ryoji
-	CLayoutInt ViewColNumToWrapColNum( CLayoutInt nViewColNum ) const;	/* 「右端で折り返す」用にビューの桁数から折り返し桁数を計算する */	// 2008.06.08 ryoji
+	CKetaXInt ViewColNumToWrapColNum( CLayoutXInt nViewColNum ) const;	/* 「右端で折り返す」用にビューの桁数から折り返し桁数を計算する */	// 2008.06.08 ryoji
 	CLayoutInt GetRightEdgeForScrollBar( void );								/* スクロールバー制御用に右端座標を取得する */		// 2009.08.28 nasukoji
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -516,8 +516,7 @@ public:
 	// 補完ウィンドウを表示する。Ctrl+Spaceや、文字の入力/削除時に呼び出されます。 YAZAKI 2002/03/11
 	void ShowHokanMgr( CNativeW& cmemData, BOOL bAutoDecided );
 
-	int HokanSearchByFile( HWND, const wchar_t*, bool, vector_ex<std::wstring>&, int ); // 2003.06.25 Moca
-	int GetLineHwnd(HWND, CLogicYInt, CNativeW&);
+	int HokanSearchByFile( const wchar_t*, bool, vector_ex<std::wstring>&, int ); // 2003.06.25 Moca
 
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -569,7 +568,7 @@ public:
 		TGWRAP_WINDOW,
 		TGWRAP_PROP,
 	};
-	TOGGLE_WRAP_ACTION GetWrapMode( CLayoutInt* newKetas );
+	TOGGLE_WRAP_ACTION GetWrapMode( CKetaXInt* newKetas );
 	void SmartIndent_CPP( wchar_t );	/* C/C++スマートインデント処理 */
 	/* コマンド操作 */
 	void SetFont( void );										/* フォントの変更 */

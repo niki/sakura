@@ -44,9 +44,6 @@ public:
 		CEditDoc* pCEditDoc = CEditDoc::GetInstance(0);
 		m_pTypeData = &pCEditDoc->m_cDocType.GetDocumentAttribute();
 	}
-	virtual bool IsFigureText(){
-		return false;
-	}
 protected:
 	const STypeConfig* m_pTypeData;
 };
@@ -54,14 +51,7 @@ protected:
 //! 通常テキスト描画
 class CFigure_Text : public CFigure{
 public:
-	// 文字列を進める
-	void FowardChars(SColorStrategyInfo* pInfo);
-	CLayoutInt GetDrawSize(SColorStrategyInfo* pInfo) const;
-	bool DrawImp(SColorStrategyInfo* pInfo){
-		assert( false );
-		return false;
-	}
-	bool DrawImp(SColorStrategyInfo* pInfo, int nPos, int nLength);
+	bool DrawImp(SColorStrategyInfo* pInfo);
 	bool Match(const wchar_t* pText, int nTextLen) const
 	{
 		return true;
@@ -70,10 +60,6 @@ public:
 	//! 色分け表示対象判定
 	virtual bool Disp(void) const
 	{
-		return true;
-	}
-
-	bool IsFigureText(){
 		return true;
 	}
 };

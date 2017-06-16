@@ -81,7 +81,7 @@ static const DWORD p_helpids1[] = {	//11300
 enum eOutlineNativeNamesId{
 	STR2_OUTLINE_XML = 0,
 	STR2_OUTLINE_C,
-	STR2_OUTLINE_CPP2,
+	STR2_OUTLINE_CPP,
 	STR2_OUTLINE_MAX
 };
 
@@ -96,7 +96,7 @@ const TCHAR* pszOutlineNames[] = {
 TYPE_NAME_ID<EOutlineType> OlmArr[] = {
 	{ OUTLINE_C_CPP,	STR_OUTLINE_CPP },
 	{ OUTLINE_C,		STR2_OUTLINE_C },
-	{ OUTLINE_CPP2,		STR2_OUTLINE_CPP2 },
+	{ OUTLINE_CPP,		STR2_OUTLINE_CPP },
 	{ OUTLINE_PLSQL,	STR_OUTLINE_PLSQL },
 	{ OUTLINE_JAVA,		STR_OUTLINE_JAVA },
 	{ OUTLINE_COBOL,	STR_OUTLINE_COBOL },
@@ -203,6 +203,7 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 			::EnableWindow( ::GetDlgItem( hwndDlg, IDC_EDIT_TYPENAME ), FALSE );	//設定の名前
 			::EnableWindow( ::GetDlgItem( hwndDlg, IDC_EDIT_TYPEEXTS ), FALSE );	//ファイル拡張子
 		}
+		UpDown_SetRange(::GetDlgItem(hwndDlg, IDC_SPIN_LINESPACE), -LINESPACE_MAX, LINESPACE_MAX);
 
 		return TRUE;
 	case WM_COMMAND:
@@ -270,11 +271,7 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 						lf = m_pShareData->m_Common.m_sView.m_lf;
 					}
 
-					bool bFixedFont = true;
-					if( m_pShareData->m_Common.m_sView.m_lf.lfPitchAndFamily & FIXED_PITCH  ){
-					}else{
-						bFixedFont = false;
-					}
+					bool bFixedFont = false;
 
 					if( MySelectFont( &lf, &nPointSize, hwndDlg, bFixedFont) ){
 						m_Types.m_lf = lf;
@@ -355,7 +352,7 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 		case IDC_SPIN_LINESPACE:
 			/* 行の隙間 */
 //			MYTRACE( _T("IDC_SPIN_LINESPACE\n") );
-			nVal = ::GetDlgItemInt( hwndDlg, IDC_EDIT_LINESPACE, NULL, FALSE );
+			nVal = ::GetDlgItemInt( hwndDlg, IDC_EDIT_LINESPACE, NULL, TRUE );
 			if( pMNUD->iDelta < 0 ){
 				++nVal;
 			}else
@@ -366,14 +363,14 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 //			if( nVal < 1 ){
 //				nVal = 1;
 //			}
-			if( nVal < 0 ){
-				nVal = 0;
+			if( nVal < -LINESPACE_MAX ){
+				nVal = -LINESPACE_MAX;
 			}
 //	To Here  Oct. 8, 2000
 			if( nVal > LINESPACE_MAX ){ // Feb. 18, 2003 genta 最大値の定数化
 				nVal = LINESPACE_MAX;
 			}
-			::SetDlgItemInt( hwndDlg, IDC_EDIT_LINESPACE, nVal, FALSE );
+			::SetDlgItemInt( hwndDlg, IDC_EDIT_LINESPACE, nVal, TRUE );
 			return TRUE;
 		case IDC_SPIN_TABSPACE:
 			//	Sep. 22, 2002 genta
@@ -473,7 +470,7 @@ void CPropTypesScreen::SetData( HWND hwndDlg )
 
 		::SetDlgItemInt( hwndDlg, IDC_EDIT_MAXLINELEN, (Int)m_Types.m_nMaxLineKetas, FALSE );	// 折り返し文字数
 		::SetDlgItemInt( hwndDlg, IDC_EDIT_CHARSPACE, m_Types.m_nColumnSpace, FALSE );			// 文字の間隔
-		::SetDlgItemInt( hwndDlg, IDC_EDIT_LINESPACE, m_Types.m_nLineSpace, FALSE );			// 行の間隔
+		::SetDlgItemInt( hwndDlg, IDC_EDIT_LINESPACE, m_Types.m_nLineSpace, TRUE );			// 行の間隔
 		::SetDlgItemInt( hwndDlg, IDC_EDIT_TABSPACE, (Int)m_Types.m_nTabSpace, FALSE );			// TAB幅	//	Sep. 22, 2002 genta
 #ifndef UZ_FIX_TAB_MARK
 		::DlgItem_SetText( hwndDlg, IDC_EDIT_TABVIEWSTRING, m_Types.m_szTabViewString );		// TAB表示(8文字)
@@ -645,13 +642,8 @@ int CPropTypesScreen::GetData( HWND hwndDlg )
 		m_Types.m_nTextWrapMethod = WrapMethodArr[nSelPos].nMethod;		// テキストの折り返し方法
 
 		/* 折り返し桁数 */
-		m_Types.m_nMaxLineKetas = CLayoutInt(::GetDlgItemInt( hwndDlg, IDC_EDIT_MAXLINELEN, NULL, FALSE ));
-		if( m_Types.m_nMaxLineKetas < CLayoutInt(MINLINEKETAS) ){
-			m_Types.m_nMaxLineKetas = CLayoutInt(MINLINEKETAS);
-		}
-		if( m_Types.m_nMaxLineKetas > CLayoutInt(MAXLINEKETAS) ){
-			m_Types.m_nMaxLineKetas = CLayoutInt(MAXLINEKETAS);
-		}
+		m_Types.m_nMaxLineKetas = CKetaXInt(t_max(MINLINEKETAS,
+			t_min<int>(MAXLINEKETAS, ::GetDlgItemInt( hwndDlg, IDC_EDIT_MAXLINELEN, NULL, FALSE ))));
 
 		/* 文字の間隔 */
 		m_Types.m_nColumnSpace = ::GetDlgItemInt( hwndDlg, IDC_EDIT_CHARSPACE, NULL, FALSE );
@@ -663,22 +655,17 @@ int CPropTypesScreen::GetData( HWND hwndDlg )
 		}
 
 		/* 行の間隔 */
-		m_Types.m_nLineSpace = ::GetDlgItemInt( hwndDlg, IDC_EDIT_LINESPACE, NULL, FALSE );
-		if( m_Types.m_nLineSpace < 0 ){
-			m_Types.m_nLineSpace = 0;
-		}
+		m_Types.m_nLineSpace = ::GetDlgItemInt( hwndDlg, IDC_EDIT_LINESPACE, NULL, TRUE );
+		if( m_Types.m_nLineSpace < -LINESPACE_MAX ){
+			m_Types.m_nLineSpace = -LINESPACE_MAX;
+ 		}
 		if( m_Types.m_nLineSpace > LINESPACE_MAX ){	// Feb. 18, 2003 genta 最大値の定数化
 			m_Types.m_nLineSpace = LINESPACE_MAX;
 		}
 
 		/* TAB幅 */
-		m_Types.m_nTabSpace = CLayoutInt(::GetDlgItemInt( hwndDlg, IDC_EDIT_TABSPACE, NULL, FALSE ));
-		if( m_Types.m_nTabSpace < CLayoutInt(1) ){
-			m_Types.m_nTabSpace = CLayoutInt(1);
-		}
-		if( m_Types.m_nTabSpace > CLayoutInt(64) ){
-			m_Types.m_nTabSpace = CLayoutInt(64);
-		}
+		m_Types.m_nTabSpace = CKetaXInt(t_max(1,
+			t_min<int>(64, ::GetDlgItemInt( hwndDlg, IDC_EDIT_TABSPACE, NULL, FALSE ))));
 
 #ifndef UZ_FIX_TAB_MARK
 		/* TAB表示文字列 */

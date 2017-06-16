@@ -28,8 +28,8 @@
 		   distribution.
 */
 
-#ifndef UZ_CDLGWINPOSSIZE_H__
-#define UZ_CDLGWINPOSSIZE_H__
+#ifndef SC_CDLGWINPOSSIZE_H__
+#define SC_CDLGWINPOSSIZE_H__
 
 #include "dlg/CDialog.h"
 #include "env/CommonSetting.h"

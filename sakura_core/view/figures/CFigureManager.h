@@ -38,9 +38,6 @@ public:
 	//	@param	pText	対象文字列の先頭
 	//	@param	nTextLen	pTextから行末までの長さ(ただしCRLF==2)
 	CFigure& GetFigure(const wchar_t* pText, int nTextLen);
-	CFigure_Text& GetTextFigure(){
-		return *m_cTextFigure;
-	}
 
 	// 設定変更
 	void OnChangeSetting(void);
@@ -48,7 +45,6 @@ public:
 private:
 	std::vector<CFigure*>	m_vFigures;
 	std::vector<CFigure*>	m_vFiguresDisp;	//!< 色分け表示対象
-	CFigure_Text*	m_cTextFigure;
 };
 
 #endif /* SAKURA_CFIGUREMANAGER_470D38ED_45D5_4E64_8D29_FFEA361C59E4_H_ */

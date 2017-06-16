@@ -225,7 +225,7 @@ namespace ApiWrap{
 		LPSIZE	lpSize
 	)
 	{
-	std::vector<char> buf;
+		vector<char> buf;
 		wcstombs_vector(lpString,cbString,&buf);
 		return GetTextExtentPoint32A(
 			hdc,

@@ -70,7 +70,6 @@ bool COpeBuf::AppendOpeBlk( COpeBlk* pcOpeBlk )
 		}
 		m_vCOpeBlkArr.resize(m_nCurrentPointer);
 	}
-
 	/* 配列のメモリサイズを調整 */
 	m_vCOpeBlkArr.push_back(pcOpeBlk);
 	m_nCurrentPointer++;

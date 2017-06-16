@@ -165,6 +165,12 @@ void CDocOutline::MakeTopicList_html(CFuncInfoArr* pcFuncInfoArr, bool bXml)
 					pLine += 3;
 				}
 				// 2004.04.20 Moca To Here
+				// 2014.12.25 Moca CDATA
+				if( bXml && i < nLineLen - 8 && 0 == wmemcmp( L"![CDATA[", pLine, 8 )){
+					bCDATA = true;
+					i += 8;
+					pLine += 8;
+				}
 				continue;
 			}
 			szTitle[j] = '\0';

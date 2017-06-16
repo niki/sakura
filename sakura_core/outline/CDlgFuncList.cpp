@@ -440,7 +440,7 @@ void CDlgFuncList::SetData()
 
 
 	SetDocLineFuncList();
-	if( OUTLINE_C_CPP == m_nListType || OUTLINE_CPP2 == m_nListType ){	/* C++メソッドリスト */
+	if( OUTLINE_C_CPP == m_nListType || OUTLINE_CPP == m_nListType ){	/* C++メソッドリスト */
 		m_nViewType = VIEWTYPE_TREE;
 		SetTreeJava( GetHwnd(), TRUE );	// Jan. 04, 2002 genta Java Method Treeに統合
 		::SetWindowText( GetHwnd(), LS(STR_DLGFNCLST_TITLE_CPP) );
@@ -838,8 +838,8 @@ bool CDlgFuncList::GetTreeFileFullName(HWND hwndTree, HTREEITEM target, std::tst
 }
 
 
-/*! LParamからFuncInfoの番号を算出
-	vecにはダミーのLParam番号が入っているのでずれている数を数える
+/*! lParamからFuncInfoの番号を算出
+	vecにはダミーのlParam番号が入っているのでずれている数を数える
 */
 static int TreeDummylParamToFuncInfoIndex(std::vector<int>& vec, LPARAM lParam)
 {
@@ -954,7 +954,6 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 	HTREEITEM		htiSelected = NULL;
 	TV_ITEM			tvi;
 	int				nClassNest;
-	std::tstring	strLabel;
 	std::vector<std::tstring> vStrClasses;
 
 	::EnableWindow( ::GetDlgItem( GetHwnd() , IDC_BUTTON_COPY ), TRUE );
@@ -984,7 +983,7 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 	m_pcFuncInfoArr->SetAppendText( FL_OBJ_NAMESPACE,	LSW(STR_DLGFNCLST_APND_NAMESPACE),	false );
 	m_pcFuncInfoArr->SetAppendText( FL_OBJ_INTERFACE,	LSW(STR_DLGFNCLST_APND_INTERFACE),	false );
 	m_pcFuncInfoArr->SetAppendText( FL_OBJ_GLOBAL,		LSW(STR_DLGFNCLST_APND_GLOBAL),		false );
-	
+
 	nFuncLineOld = CLayoutInt(-1);
 	nFuncColOld = CLayoutInt(-1);
 	bSelected = FALSE;
@@ -1095,7 +1094,7 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 				if( NULL == htiClass ){
 					// 2002/10/28 frozen 上からここへ移動
 					std::tstring strClassName = vStrClasses[k];
-
+					
 					if( bAddClass )
 					{
 						if( pcFuncInfo->m_nInfo == FL_OBJ_NAMESPACE )
@@ -1115,7 +1114,6 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 					tvis.item.lParam = nlParamCount;
 					m_vecDummylParams.push_back(nlParamCount);
 					nlParamCount++;
-
 
 					htiClass = TreeView_InsertItem( hwndTree, &tvis );
 				}else{
@@ -2472,6 +2470,7 @@ static inline int CALLBACK Compare_by_ItemData(LPARAM lParam1, LPARAM lParam2, L
 	else
 		return 0;
 }
+
 static int CALLBACK Compare_by_ItemDataDesc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
 	return Compare_by_ItemData(lParam2, lParam1, lParamSort);

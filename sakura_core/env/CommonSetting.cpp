@@ -61,7 +61,8 @@ struct CommonValueInfo{
 			}
 		}
 	}
-};std::vector<CommonValueInfo> g_commonvalues;
+};
+vector<CommonValueInfo> g_commonvalues;
 void CommonValue_AllSave()
 {
 	int nSize = (int)g_commonvalues.size();

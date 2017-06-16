@@ -115,11 +115,11 @@ protected:
 	bool	m_bStdcall;
 #endif
 	bool	m_bUtf8;
-	
+
 	LPCTSTR GetDllNameImp(int nIndex);
 	bool InitDllImp();
 	bool DeinitDllImp(void);
-	
+
 public:
 	long migemo_open(char* dict);
 	void migemo_close();

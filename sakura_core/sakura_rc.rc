@@ -36,8 +36,8 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 
 #define	S_COPYRIGHT	"Copyright (C) 1998-2017  by Norio Nakatani & Collaborators"
 #ifndef UZ_FIX_VERDLG
-#define PR_VER		2,2,0,1
-#define PR_VER_STR	"2.2.0.1"
+#define PR_VER		2,3,2,0
+#define PR_VER_STR	"2.3.2.0"
 #endif  // UZ_
 #define FL_VER		PR_VER
 #define FL_VER_STR	PR_VER_STR
@@ -1255,32 +1255,28 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,142,31,75,10
     CONTROL         "強調キーワード(&K)",IDC_CHECK_HOKANBYKEYWORD,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,217,31,75,10
-    CONTROL         "他のドキュメント(&D)",IDC_CHECK_HOKANBYOTHER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,142,43,75,10
-    CONTROL         "Grep/アウトプット(&G)",IDC_CHECK_HOKANBYGREPOUT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,217,43,75,10
-    GROUPBOX        "入力補完機能",IDC_STATIC,3,3,295,57,WS_GROUP
-    GROUPBOX        "外部ヘルプの設定(&L)",IDC_STATIC,3,67,295,32,WS_GROUP
-    EDITTEXT        IDC_EDIT_TYPEEXTHELP,8,80,264,12,ES_AUTOHSCROLL | 
+    GROUPBOX        "入力補完機能",IDC_STATIC,3,3,295,45,WS_GROUP
+    GROUPBOX        "外部ヘルプの設定(&L)",IDC_STATIC,3,55,295,32,WS_GROUP
+    EDITTEXT        IDC_EDIT_TYPEEXTHELP,8,68,264,12,ES_AUTOHSCROLL | 
                     WS_GROUP
-    PUSHBUTTON      "(&2)...",IDC_BUTTON_TYPEOPENHELP,275,79,19,14
-    GROUPBOX        "外部HTMLヘルプの設定(&P)",IDC_STATIC,3,107,295,45,
+    PUSHBUTTON      "(&2)...",IDC_BUTTON_TYPEOPENHELP,275,67,19,14
+    GROUPBOX        "外部HTMLヘルプの設定(&P)",IDC_STATIC,3,95,295,45,
                     WS_GROUP
-    EDITTEXT        IDC_EDIT_TYPEEXTHTMLHELP,8,121,264,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_EDIT_TYPEEXTHTMLHELP,8,109,264,12,ES_AUTOHSCROLL | 
                     WS_GROUP
-    PUSHBUTTON      "(&3)...",IDC_BUTTON_TYPEOPENEXTHTMLHELP,275,119,19,14
+    PUSHBUTTON      "(&3)...",IDC_BUTTON_TYPEOPENEXTHTMLHELP,275,107,19,14
     CONTROL         "ビューアを複数起動しない(&N)",
                     IDC_CHECK_TYPEHTMLHELPISSINGLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,137,109,10
+                    WS_TABSTOP,8,125,109,10
     CONTROL         "保存時に改行コードの混在を警告する(&E)",IDC_CHECK_CHKENTERATEND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,157,146,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,145,146,10
     CONTROL         "文字列を無視する(&S)",IDC_CHECK_INDENTCPPSTR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,146,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,171,146,10
     CONTROL         "コメントを無視する(&C)",IDC_CHECK_INDENTCPPCMT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,183,130,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,171,130,10
     CONTROL         "Undoバッファを分ける(&U)",IDC_CHECK_INDENTCPPUNDO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,195,146,10
-    GROUPBOX        "C/C++インデント詳細設定",IDC_STATIC,3,171,295,40,WS_GROUP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,146,10
+    GROUPBOX        "C/C++インデント詳細設定",IDC_STATIC,3,159,295,40,WS_GROUP
 END
 
 IDD_PROP_REGEX DIALOGEX 0, 0, 302, 244
@@ -1748,9 +1744,13 @@ BEGIN
     CONTROL         "サロゲートペアをコードポイントで表示する(&P)",
                     IDC_CHECK_DISP_SP_CODEPOINT,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,80,205,10
+    GROUPBOX        "表示文字数の指定",IDC_STATIC,3,98,285,47
     CONTROL         "選択文字数を文字単位ではなくバイト単位で表示する(&B)　※高負荷のため非推奨",
                     IDC_CHECK_DISP_SELCOUNT_BY_BYTE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,96,274,10
+                    WS_TABSTOP,7,112,274,10
+    CONTROL         "現在桁をルーラー単位ではなく文字単位で表示する(&C)",
+                    IDC_CHECK_DISP_COL_BY_CHAR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,128,274,10
 END
 
 IDD_PROP_EDIT DIALOGEX 0, 0, 293, 240
@@ -4083,7 +4083,6 @@ BEGIN
 	// CEditView_CmdHokan.cpp
 	STR_ERR_DLGEDITVWHOKAN1		"補完候補一覧ファイルが設定されていません。\n今すぐ設定しますか?"
 	STR_SUPPORT_NOT_COMPLITE	"補完対象がありません"
-	STR_COMPLIMENT_TIMEOUT		"補完候補検索を打ち切りました"
 
 	// CEditView_Cmdisrch.cpp
 	STR_EDITVWISRCH_REGEX		"正規表現ライブラリが使用できません。"

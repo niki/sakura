@@ -291,6 +291,7 @@ LRESULT CALLBACK OnFolderProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
 			_tcscpy( sPath, szWork );
 		}
 
+		SetGrepFolder(hwnd, sPath);
 		return 0;
 	}
 

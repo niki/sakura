@@ -37,8 +37,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
 
 #define	S_COPYRIGHT	"Copyright (C) 2011-2017  by Lucien & Collaborators"
 #ifndef UZ_FIX_VERDLG
-#define PR_VER		2,2,0,1
-#define PR_VER_STR	"2.2.0.1"
+#define PR_VER		2,3,2,0
+#define PR_VER_STR	"2.3.2.0"
 #endif  // UZ_
 #define FL_VER		PR_VER
 #define FL_VER_STR	PR_VER_STR
@@ -1247,32 +1247,28 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,142,31,68,10
     CONTROL         "From &Keyword Set",IDC_CHECK_HOKANBYKEYWORD,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,212,31,80,10
-    CONTROL         "Other &Document",IDC_CHECK_HOKANBYOTHER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,142,43,68,10
-    CONTROL         "&Grep/Output",IDC_CHECK_HOKANBYGREPOUT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,212,43,80,10
-    GROUPBOX        "Input Auto-complete Support",IDC_STATIC,3,3,295,57,WS_GROUP
-    GROUPBOX        "Externa&l Help Setup",IDC_STATIC,3,67,295,32,WS_GROUP
-    EDITTEXT        IDC_EDIT_TYPEEXTHELP,8,80,264,12,ES_AUTOHSCROLL | 
+    GROUPBOX        "Input Auto-complete Support",IDC_STATIC,3,3,295,45,WS_GROUP
+    GROUPBOX        "Externa&l Help Setup",IDC_STATIC,3,55,295,32,WS_GROUP
+    EDITTEXT        IDC_EDIT_TYPEEXTHELP,8,68,264,12,ES_AUTOHSCROLL | 
                     WS_GROUP
-    PUSHBUTTON      "(&2)...",IDC_BUTTON_TYPEOPENHELP,275,79,19,14
-    GROUPBOX        "External HTML Hel&p Setup",IDC_STATIC,3,107,295,45,
+    PUSHBUTTON      "(&2)...",IDC_BUTTON_TYPEOPENHELP,275,67,19,14
+    GROUPBOX        "External HTML Hel&p Setup",IDC_STATIC,3,95,295,45,
                     WS_GROUP
-    EDITTEXT        IDC_EDIT_TYPEEXTHTMLHELP,8,121,264,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_EDIT_TYPEEXTHTMLHELP,8,109,264,12,ES_AUTOHSCROLL | 
                     WS_GROUP
-    PUSHBUTTON      "(&3)...",IDC_BUTTON_TYPEOPENEXTHTMLHELP,275,119,19,14
+    PUSHBUTTON      "(&3)...",IDC_BUTTON_TYPEOPENEXTHTMLHELP,275,107,19,14
     CONTROL         "Do&nt open multiple viewers",
                     IDC_CHECK_TYPEHTMLHELPISSINGLE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,8,137,109,10
+                    WS_TABSTOP,8,125,109,10
     CONTROL         "Ch&eck CR consistence when save",IDC_CHECK_CHKENTERATEND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,157,146,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,145,146,10
     CONTROL         "Ignore char in strings(&S)",IDC_CHECK_INDENTCPPSTR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,146,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,171,146,10
     CONTROL         "Ignore char in comments(&C)",IDC_CHECK_INDENTCPPCMT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,183,130,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,171,130,10
     CONTROL         "When Undo, separate from editing(&U)",IDC_CHECK_INDENTCPPUNDO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,195,146,10
-    GROUPBOX        "C/C++ Indent Settings",IDC_STATIC,3,171,295,40,WS_GROUP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,146,10
+    GROUPBOX        "C/C++Å@Indent Settings",IDC_STATIC,3,159,295,40,WS_GROUP
 END
 
 IDD_PROP_REGEX DIALOGEX 0, 0, 302, 244
@@ -1356,6 +1352,10 @@ BEGIN
     CONTROL         "Search within selection(&P)",IDC_CHECK_KEYHELP_PREFIX,
                     "Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,7,224,
                     108,10
+    LTEXT           "&Right Click Menu",IDC_STATIC_MENU,120,225,70,8,NOT 
+                    WS_GROUP
+    COMBOBOX        IDC_COMBO_MENU,192,223,60,180,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PROP_WINDOW DIALOGEX 0, 0, 302, 244
@@ -1736,9 +1736,13 @@ BEGIN
     CONTROL         "Display Code Point for Surrogate &Pair",
                     IDC_CHECK_DISP_SP_CODEPOINT,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,80,205,10
+    GROUPBOX        "Character Count",IDC_STATIC,3,98,285,47
     CONTROL         "Display Character Count by &Bytes   * HIGH LOAD",
                     IDC_CHECK_DISP_SELCOUNT_BY_BYTE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,96,274,10
+                    WS_TABSTOP,7,112,274,10
+    CONTROL         "Display Column by Character Count(&C)",
+                    IDC_CHECK_DISP_COL_BY_CHAR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,128,274,10
 END
 
 IDD_PROP_EDIT DIALOGEX 0, 0, 293, 240

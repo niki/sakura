@@ -18,6 +18,7 @@ bool variant_to_wstr( VARIANT v, std::wstring& wstr )
 
 	wstr.assign( Source, SourceLength );
 	delete[] Source;
+
 	return true;
 }
 

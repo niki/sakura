@@ -82,6 +82,7 @@ static std::tstring GetProfileMgrFileName(LPCTSTR profName = NULL)
 	TCHAR	szDir[_MAX_PATH];
 	SplitPath_FolderAndFile( pszPath, szDir, NULL );
 
+
 	TCHAR szIniFile[_MAX_PATH];
 	if( profName == NULL ){
 		TCHAR szExePath[_MAX_PATH];

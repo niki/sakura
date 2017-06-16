@@ -1254,6 +1254,7 @@ bool CDlgOpenFile::GetSaveFileNameRecover( OPENFILENAMEZ* ofn )
 }
 
 
+
 /*! ファイル選択
 	@note 実行ファイルのパスor設定ファイルのパスが含まれる場合は相対パスに変換
 */

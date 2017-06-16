@@ -290,7 +290,7 @@ bool CProfile::WriteProfile(
 */
 bool CProfile::_WriteFile(
 	const tstring&			strFilename,	//!< [in]  ファイル名
-	const std::vector<wstring>&	vecLine			//!< [out] 文字列格納先
+	const vector<wstring>&	vecLine			//!< [out] 文字列格納先
 )
 {
 	CTextOutputStream out(strFilename.c_str());
