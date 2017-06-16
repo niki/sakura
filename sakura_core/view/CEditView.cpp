@@ -3141,12 +3141,32 @@ void CEditView::SBMarkCache_Draw() {
 	COLORREF clrCursor = si::ColorString::ToCOLORREF(
 	             RegKey(UZ_REGKEY).get_s(_T("EditViewScrBarCursorColor"), UZ_SCRBAR_CURSOR_COLOR));
 	
+	// カーソル行
+	{
+		int x = 1;
+		int y;
+		if (bEnable) {
+			y = nBarTop + (int)( (float)(GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines * nBarHeight );
+		} else {
+			y = nBarTop + (int)( (float)(GetCaret().GetCaretLayoutPos().GetY2()) / GetTextArea().m_nViewRowNum * nBarHeight );
+		}
+		
+		const int w = std::max(DpiScaleX(1), nCxVScroll);
+		const int h = std::max(DpiScaleY(1), DpiScaleY(1));
+		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor);
+	}
+
 	// キャッシュを使用して描画
 	{
-		const int foundW = std::max(DpiScaleX(1), nCxVScroll);
-		const int foundH = std::max(DpiScaleY(1), DpiScaleY(1));
-		const int markW = std::max(DpiScaleX(1), nCxVScroll / 4);
-		const int markH = std::max(DpiScaleY(1), nCxVScroll / 4);
+//		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll);
+//		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(1));
+		const int foundLeft = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
+		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll / 3);
+		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(3));
+		
+		const int markLeft = std::max(DpiScaleX(1), nCxVScroll / 3 * 0);
+		const int markWidth = std::max(DpiScaleX(1), nCxVScroll / 3);
+		const int markHeight = std::max(DpiScaleY(1), nCxVScroll / 3);
 
 		for (uint32_t ln : vCacheLines_) {
 			int x = 1;
@@ -3161,40 +3181,41 @@ void CEditView::SBMarkCache_Draw() {
 			// 検索行
 			if (ln & UZ_SCRBAR_FOUND_MAGIC) {
 				COLORREF clr = clrSearch;
-				if (nThumbTop <= y && y <= nThumbBottom) {
-					COLORREF MakeColor2(COLORREF, COLORREF, int);
-					clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 96);
+				//if (nThumbTop <= y && y <= nThumbBottom) {
+				//	COLORREF MakeColor2(COLORREF, COLORREF, int);
+				//	clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 128);
+				//}
+				int margin = 0;  // スクロールバーの領域を超えた時のマージン
+				int x2 = x + foundLeft;
+				int y2 = y - foundHeight / 2;  // 中央にくるように
+				if (y2 < nBarTop) {
+					margin = y2 - nBarTop;
+				} else if (y2 + foundHeight > nBarTop + nBarHeight) {
+					margin = -( (y2 + foundHeight) - (nBarTop + nBarHeight));
 				}
-				gr.FillSolidMyRect(/*RECT*/{x, y, x + foundW, y + foundH}, clr);
+				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + foundWidth, y2 + foundHeight + margin}, clr);
 				
 			}
 			// ブックマーク行
 			if (ln & UZ_SCRBAR_MARK_MAGIC) {
 				COLORREF clr = clrMark;
-				if (nThumbTop <= y && y <= nThumbBottom) {
-					COLORREF MakeColor2(COLORREF, COLORREF, int);
-					clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 96);
+				//if (nThumbTop <= y && y <= nThumbBottom) {
+				//	COLORREF MakeColor2(COLORREF, COLORREF, int);
+				//	clr = MakeColor2(clr, ::GetSysColor(COLOR_SCROLLBAR), 128);
+				//}
+				int margin = 0;  // スクロールバーの領域を超えた時のマージン
+				int x2 = x + markLeft;
+				int y2 = y - markHeight / 2;  // 中央にくるように
+				if (y2 < nBarTop) {
+					margin = y2 - nBarTop;
+				} else if (y2 + markHeight > nBarTop + nBarHeight) {
+					margin = -( (y2 + markHeight) - (nBarTop + nBarHeight) );
 				}
-				gr.FillSolidMyRect(/*RECT*/{x, y, x + markW, y + markH}, clr);
+				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + markWidth, y2 + markHeight + margin}, clr);
 			}
 		}
 		
 		si::logln(L"SBMarkCache_Draw: %d", vCacheLines_.size());
-	}
-	
-	// カーソル行
-	{
-		int x = 1;
-		int y;
-		if (bEnable) {
-			y = nBarTop + (int)( (float)(GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines * nBarHeight );
-		} else {
-			y = nBarTop + (int)( (float)(GetCaret().GetCaretLayoutPos().GetY2()) / GetTextArea().m_nViewRowNum * nBarHeight );
-		}
-		
-		const int w = std::max(DpiScaleX(1), nCxVScroll);
-		const int h = std::max(DpiScaleY(1), DpiScaleY(1));
-		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor);
 	}
 	
 	::ReleaseDC(m_hwndVScrollBar, hdc);

@@ -292,7 +292,7 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 					// 削除
 					m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
 				}
-				//m_pCommanderView->SBMarkCache_Refresh(200);
+				m_pCommanderView->SBMarkCache_Draw();
 			}
 #endif  // UZ_
 		}
@@ -316,7 +316,7 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				// 削除
 				m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
 			}
-			//m_pCommanderView->SBMarkCache_Refresh(201);
+			m_pCommanderView->SBMarkCache_Draw();
 		}
 #endif  // UZ_
 	}
