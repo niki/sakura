@@ -22,7 +22,7 @@ Download
 
 変更内容はコミットログを参照してください. 細かい内容は [my_config.h](https://github.com/uzuki3/sakura/raw/master/sakura_core/my_config.h) を見てね.  
 
-+ [sakura-uzuki-2.35-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.35-32bit.zip) (787KB)  
++ [sakura-uzuki-2.36-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.36-32bit.zip) (765KB)  
 + 最新のキーワードセット [keyword_pack.zip](https://github.com/uzuki3/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
 ※ 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
