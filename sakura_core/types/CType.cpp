@@ -170,34 +170,16 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 
 	cKeyWordSetMgr.ResetAllKeyWordSet();  // 再設定するため
 
-	std::ifstream ifs;
-	ifs.open(si::util::to_bytes(fname).c_str(), std::ios::in);
 
-	std::string line_buffer;
-
-	while (std::getline(ifs, line_buffer)) {
-		if (line_buffer.empty() || line_buffer.at(0) == '#') {
-			continue;
-		}
-
-		std::string token;
-		std::istringstream stream(line_buffer);
-
-		getline(stream, token, ',');
-		std::string reserve = token;  // １つ目は予約
+	si::csv::Csv csv(si::util::to_bytes(fname));
+	
+	for (auto v : csv.GetLines()) {
+		std::string reserve = v.GetX(0);  // １つ目は予約
+		std::wstring name = si::util::from_bytes(v.GetX(1));
+		bool case_sensitive = !!std::stoi(v.GetX(2));
+		std::wstring file = si::util::from_bytes(v.GetX(3));
 		
-		getline(stream, token, ',');
-		std::string name = token;
-
-		getline(stream, token, ',');
-		bool case_sensitive = !!std::stoi(token);
-		
-		getline(stream, token, ',');
-		std::string file = token;
-		
-		fnPopulateKeyword(si::util::from_bytes(name),
-		                  case_sensitive,
-		                  si::util::from_bytes(file));
+		fnPopulateKeyword(name, case_sensitive, file);
 	}
 }
 #endif  // UZ_

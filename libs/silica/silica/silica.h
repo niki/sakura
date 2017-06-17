@@ -16,6 +16,7 @@
 #include "registry.hpp"
 #include "color_string.hpp"
 
+#include "csv.hpp"
 #include "win32.hpp"
 
 #endif /* SILICA_H */
