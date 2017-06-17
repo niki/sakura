@@ -1,0 +1,17 @@
+#Reserved,Name,Case-sensitive,File
+0,C/C++,1,cpp.kwd
+0,HTML,0,html5.kwd
+0,PL/SQL,0,plsql.kwd
+0,COBOL,1,COBOL.kwd
+0,Java,1,java.kwd
+0,CORBA IDL,1,corba.kwd
+0,AWK,1,awk.kwd
+0,MS-DOS batch,0,batch.kwd
+0,Pascal,0,pascal.kwd
+0,TeX,1,tex1.kwd
+0,TeX2,1,tex2.kwd
+0,Perl,1,perl.kwd
+0,Perl2,1,perlvar.kwd
+0,Visual Basic,0,vb.kwd
+0,Visual Basic2,0,vb2.kwd
+0,Rich Text,1,rtf.kwd

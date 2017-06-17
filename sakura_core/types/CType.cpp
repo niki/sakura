@@ -30,13 +30,9 @@
 #include "env/DLLSHAREDATA.h"
 #ifdef UZ_FIX_PROFILES
 #include "typeprop/CImpExpManager.h"
-
-#include <codecvt>
-#include <locale>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/foreach.hpp>
-#include <boost/optional.hpp>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #endif  // UZ_
 
 void _DefaultConfig(STypeConfig* pType);
@@ -174,26 +170,34 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 
 	cKeyWordSetMgr.ResetAllKeyWordSet();  // 再設定するため
 
-	using boost::property_tree::ptree;
-	using boost::property_tree::read_json;
+	std::ifstream ifs;
+	ifs.open(si::util::to_bytes(fname).c_str(), std::ios::in);
 
-	ptree pt;
-	read_json(si::util::to_bytes(fname).c_str(), pt);
+	std::string line_buffer;
 
-	BOOST_FOREACH (const ptree::value_type& child, pt.get_child("KeywordSet")) {
-								 const ptree& info = child.second;
-		// name
-		boost::optional<std::string> name = info.get_optional<std::string>("name");
-		// case sensitive
-		boost::optional<std::string> case_sensitive = info.get_optional<std::string>("case_sensitive");
-		// file
-		boost::optional<std::string> file = info.get_optional<std::string>("file");
+	while (std::getline(ifs, line_buffer)) {
+		if (line_buffer.empty() || line_buffer.at(0) == '#') {
+			continue;
+		}
+
+		std::string token;
+		std::istringstream stream(line_buffer);
+
+		getline(stream, token, ',');
+		std::string reserve = token;  // １つ目は予約
 		
-		fnPopulateKeyword(si::util::from_bytes(*name),
-		                  si::util::to_b(*case_sensitive),
-		                  si::util::from_bytes(*file));
+		getline(stream, token, ',');
+		std::string name = token;
+
+		getline(stream, token, ',');
+		bool case_sensitive = !!std::stoi(token);
 		
-		//si::logln((*file).c_str());
+		getline(stream, token, ',');
+		std::string file = token;
+		
+		fnPopulateKeyword(si::util::from_bytes(name),
+		                  case_sensitive,
+		                  si::util::from_bytes(file));
 	}
 }
 #endif  // UZ_

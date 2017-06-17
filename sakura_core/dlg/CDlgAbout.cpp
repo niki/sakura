@@ -28,7 +28,6 @@
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "sakura.hh"
 #ifdef UZ_FIX_VERDLG
-  #include <boost/version.hpp>  // Boost
   #include <lua.hpp>            // Lua
 #endif  // UZ_
 
@@ -303,7 +302,6 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 			_T(COMPILER_TYPE2), COMPILER_VER2,
 			TARGET_M_SUFFIX[0] ? _T("x64") : _T("x86"),
 			_T(MY_RTL),
-			_T("Boost C++ Libraries v" BOOST_LIB_VERSION),
 			_T(LUA_RELEASE)
 		);
 #else

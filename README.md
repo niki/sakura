@@ -33,14 +33,13 @@ Setup
 -----
 
 ダウンロードしたファイルをすでに使用しているサクラエディタに上書きしてください.  
-`sakura.keywordset.json`は実行ファイルと同じ場所に置いてください. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
+`sakura.keywordset.csv`は実行ファイルと同じ場所に置いてください. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
 
 
 Build environment  
 -----------------
 + 2.3.2.0をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/uzuki3/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド (/O1=[/Og /Os /Oy /Ob2 /Gs /GF /Gy])  
-+ Boostを使用 (JSON)  
 + Luaを使用 (マクロ, プラグイン)  
 + 挙動の制御 (共有フラグ)としてレジストリを使用しています  
 
@@ -53,8 +52,8 @@ Changed
 
 |修正版|公式|
 |-|-|
-|[sakura.keywordset.json](https://github.com/uzuki3/sakura/raw/master/Publish/sakura.keywordset.json)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
-|履歴を別ファイル (`sakura.recent.json`)に出力|`sakura.ini`に出力|
+|[sakura.keywordset.csv](https://github.com/uzuki3/sakura/raw/master/Publish/sakura.keywordset.csv)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
+|履歴を別ファイル (`sakura.recent`)に出力|`sakura.ini`に出力|
 |起動時に存在しないファイル・フォルダ履歴を削除する||
 |カラー設定のインポートはカラー情報だけを適用させる|すべての情報を適用|
 |<details><summary>マクロ・プラグインに使用できる言語に `Lua`を追加</summary>文字列をLuaコードとして評価する `eval`関数があります.<br>e.g. `local n = eval("(1 + 2 + 3 + 4) * 3.14")`<br>今後はActiveXが使用できるようにしたいです.</details>||

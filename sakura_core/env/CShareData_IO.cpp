@@ -36,16 +36,59 @@
 #include "_main/CCommandLine.h"
 #ifdef UZ_FIX_PROFILES
 #include "sakura_rc.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #endif  // UZ_
 
 #ifdef UZ_FIX_PROFILES
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/foreach.hpp>
-#include <boost/optional.hpp>
-  using boost::property_tree::ptree;
-  using boost::property_tree::read_json;
-  using boost::property_tree::write_json;
+static std::string chomp(const std::string s) {
+	std::string tmp(s);
+	std::string::reverse_iterator ritr;
+	std::string::size_type n = 0;
+
+	for (ritr = tmp.rbegin(); ritr != tmp.rend(); ++ritr) {
+		if (*ritr != '\r' && *ritr != '\n') {
+			break;
+		}
+		n++;
+	}
+	
+	tmp.erase(tmp.length() - n, n);
+	return tmp;
+}
+
+static std::wstring wchomp(const std::string s) {
+	std::string tmp(s);
+	std::string::reverse_iterator ritr;
+	std::string::size_type n = 0;
+
+	for (ritr = tmp.rbegin(); ritr != tmp.rend(); ++ritr) {
+		if (*ritr != '\r' && *ritr != '\n') {
+			break;
+		}
+		n++;
+	}
+	
+	tmp.erase(tmp.length() - n, n);
+	return si::util::from_bytes(tmp.c_str());
+}
+
+static std::wstring GetTokenStringW(std::istringstream &stream, char delim) {
+	std::string token;
+	getline(stream, token, delim);
+	return si::util::from_bytes(token.c_str());
+}
+
+static int GetTokenInt(std::istringstream &stream, char delim) {
+	std::string token;
+	getline(stream, token, delim);
+	return std::stoi(chomp(token));
+}
+
+static bool GetTokenBool(std::istringstream &stream, char delim) {
+	return GetTokenInt(stream, ',') ? true : false;
+}
 #endif  // UZ_
 
 void ShareData_IO_Sub_LogFont( CDataProfile& cProfile, const WCHAR* pszSecName,
@@ -106,7 +149,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #ifdef UZ_FIX_PROFILES
 	std::tstring keywordset_fname =
 	    si::file::dirname(szIniFileName) +
-	    si::file::basename(szIniFileName) + _T(".keywordset.json");
+	    si::file::basename(szIniFileName) + _T(".keywordset.csv");
 #endif
 
 	if( bRead ){
@@ -172,9 +215,10 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 		std::tstring fname =
 		    si::file::dirname(szIniFileName) +
-		    si::file::basename(szIniFileName) + _T(".recent.json");
+		    si::file::basename(szIniFileName) + _T(".recent");
 
-		ptree pt;
+		std::ifstream ifs;
+		std::ofstream ofs;
 		
 		if (bRead) {
 			if (!si::file::exist(fname)) {
@@ -186,19 +230,20 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 				break;
 			}
 			
-			read_json(si::util::to_bytes(fname).c_str(), pt);
+			ifs.open(si::util::to_bytes(fname).c_str(), std::ios::in);
+			si::logln(L" open(in) %s", fname.c_str());
+			cProfileRecent.tag_ = &ifs;
+		} else {
+			ofs.open(si::util::to_bytes(fname).c_str(), std::ios::out | std::ios::trunc);
+			si::logln(L" open(out) %s", fname.c_str());
+			ofs << "; Recent file" << std::endl;
+			cProfileRecent.tag_ = &ofs;
 		}
-		
-		cProfileRecent.tag_ = &pt;
 
 		ShareData_IO_Mru(cProfileRecent);
 		ShareData_IO_Keys(cProfileRecent);
 		ShareData_IO_Grep(cProfileRecent);
 		ShareData_IO_Cmd(cProfileRecent);
-
-		if (!bRead) {
-			write_json(si::util::to_bytes(fname).c_str(), pt);
-		}
 	} while (0);
 #else
 	ShareData_IO_Mru( cProfile );
@@ -246,43 +291,6 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	return true;
 }
 
-#ifdef UZ_FIX_PROFILES
-namespace opt {
-static std::string to_string(const ptree &info, const std::string &value, const std::string &default_value = "") {
-	boost::optional<std::string> v = info.get_optional<std::string>(value);
-	if (v) {
-		return v.get();
-	} else {
-		return default_value;
-	}
-}
-static std::wstring to_wstring(const ptree &info, const std::string &value, const std::wstring &default_value = L"") {
-	boost::optional<std::string> v = info.get_optional<std::string>(value);
-	if (v) {
-		return si::util::from_bytes(v.get());
-	} else {
-		return default_value;
-	}
-}
-static int to_int(const ptree &info, const std::string &value, int default_value = 0) {
-	boost::optional<int> v = info.get_optional<int>(value);
-	if (v) {
-		return v.get();
-	} else {
-		return default_value;
-	}
-}
-static bool to_bool(const ptree &info, const std::string &value, bool default_value = false) {
-	boost::optional<std::string> v = info.get_optional<std::string>(value);
-	if (v) {
-		return si::util::to_b(v.get());
-	} else {
-		return default_value;
-	}
-}
-}
-#endif  // UZ_
-
 /*!
 	@brief 共有データのMruセクションの入出力
 	@param[in,out]	cProfile	INIファイル入出力クラス
@@ -300,67 +308,72 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	int			nSize;
 	EditInfo*	pfiWork;
 
-	ptree &pt = *(ptree *)(cProfile.tag_);
-
 	if (cProfile.IsReadingMode()) {
 		i = 0;
-		auto mru_num = pt.get_optional<int>("Recent.MRU_num");
-		if (mru_num) {
-			hist.m_nMRUArrNum = *mru_num;
 
-			BOOST_FOREACH (auto& child, pt.get_child("Recent.MRU")) {
-				const ptree& info = child.second;
+		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
+		std::string line_buffer;
+		bool bRead = false;
 
-				auto path = opt::to_wstring(info, "path");
+		while (std::getline(ifs, line_buffer)) {
+			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
 
-#if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
-					if (!fexist(path.c_str())) {
-						continue;
-					}
-				}
-#endif  // UZ_
-
-				pfiWork = &hist.m_fiMRUArr[i];
-				_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
-				pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
-				pfiWork->m_nViewTopLine = opt::to_int(info, "view_top_line", 0);
-				pfiWork->m_nViewLeftCol = opt::to_int(info, "view_left_col", 0);
-				pfiWork->m_ptCursor.x = opt::to_int(info, "x", 0);
-				pfiWork->m_ptCursor.y = opt::to_int(info, "y", 0);
-				auto char_code = opt::to_string(info, "char_code");
-				pfiWork->m_nCharCode = static_cast<ECodeType>(std::stoi(char_code));
-				auto mark = opt::to_wstring(info, "mark");
-				_tcsncpy(pfiWork->m_szMarkLines, mark.c_str(), MAX_MARKLINES_LEN + 1);
-				pfiWork->m_szMarkLines[MAX_MARKLINES_LEN + 1 - 1] = _T('\0');
-				pfiWork->m_nTypeId = opt::to_int(info, "type_id");
-				hist.m_bMRUArrFavorite[i] = opt::to_bool(info, "favorite", false);
-				i++;
+			if (line_buffer.find("#MRU") == 0) {
+				bRead = true;
+				si::logln(L"  section start.");
+				continue;
+			} else if (line_buffer.find("#end") == 0) {
+				si::logln(L"  section end.");
+				break;
 			}
+			
+			if (!bRead) continue;
+			
+			std::istringstream stream(line_buffer);
+
+			pfiWork = &hist.m_fiMRUArr[i];
+			_tcsncpy(pfiWork->m_szPath, GetTokenStringW(stream, ',').c_str(), _MAX_PATH);
+			pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
+			si::logln(pfiWork->m_szPath);
+			pfiWork->m_nViewTopLine = GetTokenInt(stream, ',');
+			pfiWork->m_nViewLeftCol = GetTokenInt(stream, ',');
+			pfiWork->m_ptCursor.x = GetTokenInt(stream, ',');
+			pfiWork->m_ptCursor.y = GetTokenInt(stream, ',');
+			pfiWork->m_nCharCode = static_cast<ECodeType>(GetTokenInt(stream, ','));
+			_tcsncpy(pfiWork->m_szMarkLines, GetTokenStringW(stream, ',').c_str(), MAX_MARKLINES_LEN + 1);
+			pfiWork->m_szMarkLines[MAX_MARKLINES_LEN + 1 - 1] = _T('\0');
+			pfiWork->m_nTypeId = GetTokenInt(stream, ',');
+			hist.m_bMRUArrFavorite[i] = GetTokenInt(stream, ',') ? true : false;
+			i++;
 		}
+
+		si::logln(L"end mru");
+
 		hist.m_nMRUArrNum = i;
 		SetValueLimit( hist.m_nMRUArrNum, MAX_MRU );
 	} else {
-		pt.put("Recent.MRU_num", hist.m_nMRUArrNum);
 		nSize = hist.m_nMRUArrNum;
 
-		ptree child;
-		for( i = 0; i < nSize; ++i ){
+		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
+		ofs << "" << std::endl;
+		ofs << "#MRU" << std::endl;
+
+		for (int i = 0; i < nSize; i++) {
 			pfiWork = &hist.m_fiMRUArr[i];
-			
-			ptree info;
-			info.put("path", si::util::to_bytes(pfiWork->m_szPath));
-			if (pfiWork->m_nViewTopLine != 0) info.put("view_top_line", pfiWork->m_nViewTopLine);
-			if (pfiWork->m_nViewLeftCol != 0) info.put("view_left_col", pfiWork->m_nViewLeftCol);
-			if (pfiWork->m_ptCursor.x != 0) info.put("x", pfiWork->m_ptCursor.x);
-			if (pfiWork->m_ptCursor.y != 0) info.put("y", pfiWork->m_ptCursor.y);
-			info.put("char_code", pfiWork->m_nCharCode);
-			info.put("mark", si::util::to_bytes(pfiWork->m_szMarkLines));
-			info.put("type_id", pfiWork->m_nTypeId);
-			if (hist.m_bMRUArrFavorite[i]) info.put("favorite", true);
-			child.push_back(std::make_pair("", info));
+			std::string line_buffer;
+			line_buffer += si::util::to_bytes(pfiWork->m_szPath) + ",";
+			line_buffer += std::to_string(pfiWork->m_nViewTopLine) + ",";
+			line_buffer += std::to_string(pfiWork->m_nViewLeftCol) + ",";
+			line_buffer += std::to_string(pfiWork->m_ptCursor.x) + ",";
+			line_buffer += std::to_string(pfiWork->m_ptCursor.y) + ",";
+			line_buffer += std::to_string(pfiWork->m_nCharCode) + ",";
+			line_buffer += si::util::to_bytes(pfiWork->m_szMarkLines) + ",";
+			line_buffer += std::to_string(pfiWork->m_nTypeId) + ",";
+			line_buffer += std::to_string((int)hist.m_bMRUArrFavorite[i]) + ",";
+			ofs << line_buffer << std::endl;
 		}
-		pt.add_child("Recent.MRU", child);
+
+		ofs << "#end" << std::endl;
 	}
 
 	//@@@ 2001.12.26 YAZAKI 残りのm_fiMRUArrを初期化。
@@ -381,42 +394,52 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 
 	if (cProfile.IsReadingMode()) {
 		i = 0;
-		auto folder_num = pt.get_optional<int>("Recent.folder_num");
-		if (folder_num) {
-			hist.m_nOPENFOLDERArrNum = *folder_num;
 
-			BOOST_FOREACH (auto& child, pt.get_child("Recent.folder")) {
-				const ptree& info = child.second;
-				
-				auto dir = opt::to_wstring(info, "dir");
+		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
+		std::string line_buffer;
+		bool bRead = false;
 
-#if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
-					if (!fexist(dir.c_str())) {
-						continue;
-					}
-				}
-#endif  // UZ_
+		while (std::getline(ifs, line_buffer)) {
+			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
 
-				hist.m_szOPENFOLDERArr[i].Assign(dir.c_str());
-				hist.m_bOPENFOLDERArrFavorite[i] = opt::to_bool(info, "favorite", false);
-				i++;
+			if (line_buffer.find("#Folder") == 0) {
+				bRead = true;
+				si::logln(L"  section start.");
+				continue;
+			} else if (line_buffer.find("#end") == 0) {
+				si::logln(L"  section end.");
+				break;
 			}
+			
+			if (!bRead) continue;
+
+			std::string token;
+			std::istringstream stream(line_buffer);
+
+			hist.m_szOPENFOLDERArr[i].Assign(GetTokenStringW(stream, ',').c_str());
+			hist.m_bOPENFOLDERArrFavorite[i] = GetTokenBool(stream, ',');
+			i++;
 		}
+
+		si::logln(L"end folder");
+
 		hist.m_nOPENFOLDERArrNum = i;
 		SetValueLimit( hist.m_nOPENFOLDERArrNum, MAX_OPENFOLDER );
 	} else {
-		pt.put("Recent.folder_num", hist.m_nOPENFOLDERArrNum);
 		nSize = hist.m_nOPENFOLDERArrNum;
 
-		ptree child;
-		for( i = 0; i < nSize; ++i ){
-			ptree info;
-			info.put("dir", si::util::to_bytes(hist.m_szOPENFOLDERArr[i].c_str()));
-			if (hist.m_bOPENFOLDERArrFavorite[i]) info.put("favorite", true);
-			child.push_back(std::make_pair("", info));
+		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
+		ofs << "" << std::endl;
+		ofs << "#Folder" << std::endl;
+
+		for (int i = 0; i < nSize; i++) {
+			std::string line_buffer;
+			line_buffer += si::util::to_bytes(hist.m_szOPENFOLDERArr[i].c_str()) + ",";
+			line_buffer += std::to_string((int)hist.m_bOPENFOLDERArrFavorite[i]);
+			ofs << line_buffer << std::endl;
 		}
-		pt.add_child("Recent.folder", child);
+
+		ofs << "#end" << std::endl;
 	}
 
 	//読み込み時は残りを初期化
@@ -430,31 +453,47 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	
 	if (cProfile.IsReadingMode()) {
 		i = 0;
-		auto except_mru_num = pt.get_optional<int>("Recent.except_MRU_num");
-		if (except_mru_num) {
-			hist.m_aExceptMRU._GetSizeRef() = *except_mru_num;
 
-			BOOST_FOREACH (auto& child, pt.get_child("Recent.except_MRU")) {
-				const ptree& info = child.second;
-				
-				auto name = opt::to_wstring(info, "name");
-				hist.m_aExceptMRU[i].Assign(name.c_str());
-				i++;
+		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
+		std::string line_buffer;
+		bool bRead = false;
+
+		while (std::getline(ifs, line_buffer)) {
+			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
+
+			if (line_buffer.find("#except_MRU") == 0) {
+				bRead = true;
+				si::logln(L"  section start.");
+				continue;
+			} else if (line_buffer.find("#end") == 0) {
+				si::logln(L"  section end.");
+				break;
 			}
+			
+			if (!bRead) continue;
+
+			hist.m_aExceptMRU[i].Assign(wchomp(line_buffer).c_str());
+			i++;
 		}
+
+		si::logln(L"end except_MRU");
+
 		hist.m_aExceptMRU._GetSizeRef() = i;
 		hist.m_aExceptMRU.SetSizeLimit();
 	} else {
-		pt.put("Recent.except_MRU_num", hist.m_aExceptMRU._GetSizeRef());
 		nSize = hist.m_aExceptMRU._GetSizeRef();
 
-		ptree child;
-		for( i = 0; i < nSize; ++i ){
-			ptree info;
-			info.put("name", si::util::to_bytes(hist.m_aExceptMRU[i].c_str()));
-			child.push_back(std::make_pair("", info));
+		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
+		ofs << "" << std::endl;
+		ofs << "#except_MRU" << std::endl;
+
+		for (int i = 0; i < nSize; i++) {
+			std::string line_buffer;
+			line_buffer += si::util::to_bytes(hist.m_aExceptMRU[i].c_str());
+			ofs << line_buffer << std::endl;
 		}
-		pt.add_child("Recent.except_MRU", child);
+
+		ofs << "#end" << std::endl;
 	}
 
 #else
@@ -558,64 +597,91 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 	int			i;
 	int			nSize;
 
-	ptree &pt = *(ptree *)(cProfile.tag_);
-
 	if (cProfile.IsReadingMode()) {
 		i = 0;
-		auto search_key_num = pt.get_optional<int>("Recent.search_key_num");
-		if (search_key_num) {
-			skwd.m_aSearchKeys._GetSizeRef() = *search_key_num;
 
-			BOOST_FOREACH (auto& child, pt.get_child("Recent.search_key")) {
-				const ptree& info = child.second;
-				
-				auto data = opt::to_wstring(info, "data");
-				skwd.m_aSearchKeys[i].Assign(data.c_str());
-				i++;
+		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
+		std::string line_buffer;
+		bool bRead = false;
+
+		while (std::getline(ifs, line_buffer)) {
+			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
+
+			if (line_buffer.find("#SearchKey") == 0) {
+				bRead = true;
+				si::logln(L"  section start.");
+				continue;
+			} else if (line_buffer.find("#end") == 0) {
+				si::logln(L"  section end.");
+				break;
 			}
+			
+			if (!bRead) continue;
+
+			skwd.m_aSearchKeys[i].Assign(wchomp(line_buffer).c_str());
+			i++;
 		}
+
 		skwd.m_aSearchKeys._GetSizeRef() = i;
 		skwd.m_aSearchKeys.SetSizeLimit();
 	} else {
-		pt.put("Recent.search_key_num", skwd.m_aSearchKeys._GetSizeRef());
 		nSize = skwd.m_aSearchKeys._GetSizeRef();
 
-		ptree child;
-		for( i = 0; i < nSize; ++i ){
-			ptree info;
-			info.put("data", si::util::to_bytes(skwd.m_aSearchKeys[i].c_str()));
-			child.push_back(std::make_pair("", info));
+		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
+		ofs << "" << std::endl;
+		ofs << "#SearchKey" << std::endl;
+
+		for (int i = 0; i < nSize; i++) {
+			std::string line_buffer;
+			line_buffer += si::util::to_bytes(skwd.m_aSearchKeys[i].c_str());
+			ofs << line_buffer << std::endl;
 		}
-		pt.add_child("Recent.search_key", child);
+
+		ofs << "#end" << std::endl;
 	}
 
 	if (cProfile.IsReadingMode()) {
 		i = 0;
-		auto replace_key_num = pt.get_optional<int>("Recent.replace_key_num");
-		if (replace_key_num) {
-			skwd.m_aReplaceKeys._GetSizeRef() = *replace_key_num;
 
-			BOOST_FOREACH (auto& child, pt.get_child("Recent.replace_key")) {
-				const ptree& info = child.second;
-				
-				auto data = opt::to_wstring(info, "data");
-				skwd.m_aReplaceKeys[i].Assign(data.c_str());
-				i++;
+		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
+		std::string line_buffer;
+		bool bRead = false;
+
+		while (std::getline(ifs, line_buffer)) {
+			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
+
+			if (line_buffer.find("#ReplaceKey") == 0) {
+				bRead = true;
+				si::logln(L"  section start.");
+				continue;
+			} else if (line_buffer.find("#end") == 0) {
+				si::logln(L"  section end.");
+				break;
 			}
+			
+			if (!bRead) continue;
+
+			skwd.m_aReplaceKeys[i].Assign(wchomp(line_buffer).c_str());
+			i++;
 		}
+
 		skwd.m_aReplaceKeys._GetSizeRef() = i;
 		skwd.m_aReplaceKeys.SetSizeLimit();
 	} else {
-		pt.put("Recent.replace_key_num", skwd.m_aReplaceKeys._GetSizeRef());
 		nSize = skwd.m_aReplaceKeys._GetSizeRef();
 
-		ptree child;
-		for( i = 0; i < nSize; ++i ){
-			ptree info;
-			info.put("data", si::util::to_bytes(skwd.m_aReplaceKeys[i].c_str()));
-			child.push_back(std::make_pair("", info));
+		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
+		ofs << "" << std::endl;
+		ofs << "#ReplaceKey" << std::endl;
+
+		for (int i = 0; i < nSize; i++) {
+			std::string line_buffer;
+			line_buffer += si::util::to_bytes(skwd.m_aReplaceKeys[i].c_str());
+			ofs << line_buffer << std::endl;
 		}
-		pt.add_child("Recent.replace_key", child);
+
+		ofs << "#end" << std::endl;
+
 	}
 
 #else
@@ -658,100 +724,121 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 	int			i;
 	int			nSize;
 
-	ptree &pt = *(ptree *)(cProfile.tag_);
-
 	if (cProfile.IsReadingMode()) {
 		i = 0;
-		auto grep_file_num = pt.get_optional<int>("Recent.grep_file_num");
-		if (grep_file_num) {
-			skwd.m_aGrepFiles._GetSizeRef() = *grep_file_num;
 
-			BOOST_FOREACH (auto& child, pt.get_child("Recent.grep_file")) {
-				const ptree& info = child.second;
-				
-				auto data = opt::to_wstring(info, "data");
-				skwd.m_aGrepFiles[i].Assign(data.c_str());
-				i++;
+		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
+		std::string line_buffer;
+		bool bRead = false;
+
+		while (std::getline(ifs, line_buffer)) {
+			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
+
+			if (line_buffer.find("#GrepFile") == 0) {
+				bRead = true;
+				si::logln(L"  section start.");
+				continue;
+			} else if (line_buffer.find("#end") == 0) {
+				si::logln(L"  section end.");
+				break;
 			}
+			
+			if (!bRead) continue;
+
+			skwd.m_aGrepFiles[i].Assign(wchomp(line_buffer).c_str());
+			i++;
 		}
+
 		skwd.m_aGrepFiles._GetSizeRef() = i;
 		skwd.m_aGrepFiles.SetSizeLimit();
 	} else {
-		pt.put("Recent.grep_file_num", skwd.m_aGrepFiles._GetSizeRef());
 		nSize = skwd.m_aGrepFiles._GetSizeRef();
 
-		ptree child;
-		for( i = 0; i < nSize; ++i ){
-			ptree info;
-			info.put("data", si::util::to_bytes(skwd.m_aGrepFiles[i].c_str()));
-			child.push_back(std::make_pair("", info));
+		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
+		ofs << "" << std::endl;
+		ofs << "#GrepFile" << std::endl;
+
+		for (int i = 0; i < nSize; i++) {
+			std::string line_buffer;
+			line_buffer += si::util::to_bytes(skwd.m_aGrepFiles[i].c_str());
+			ofs << line_buffer << std::endl;
 		}
-		pt.add_child("Recent.grep_file", child);
+
+		ofs << "#end" << std::endl;
 	}
 
 	if (cProfile.IsReadingMode()) {
 		i = 0;
-		auto grep_folder_num = pt.get_optional<int>("Recent.grep_folder_num");
-		if (grep_folder_num) {
-			skwd.m_aGrepFolders._GetSizeRef() = *grep_folder_num;
 
-			BOOST_FOREACH (auto& child, pt.get_child("Recent.grep_folder")) {
-				const ptree& info = child.second;
+		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
+		std::string line_buffer;
+		bool bRead = false;
 
-				auto data = opt::to_wstring(info, "data");
-				skwd.m_aGrepFolders[i].Assign(data.c_str());
-				i++;
+		while (std::getline(ifs, line_buffer)) {
+			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
+
+			if (line_buffer.find("#GrepFolder") == 0) {
+				bRead = true;
+				si::logln(L"  section start.");
+				
+				if (std::getline(ifs, line_buffer)) {
+  				skwd.m_bGrepFolders99 = std::stoi(chomp(line_buffer)) ? true : false;
+  			}
+  			if (std::getline(ifs, line_buffer)) {
+  				skwd.m_bGrepFolders2 = std::stoi(chomp(line_buffer)) ? true : false;
+  			}
+  			if (std::getline(ifs, line_buffer)) {
+  				skwd.m_bGrepFolders3 = std::stoi(chomp(line_buffer)) ? true : false;
+  			}
+  			if (std::getline(ifs, line_buffer)) {
+  				skwd.m_bGrepFolders4 = std::stoi(chomp(line_buffer)) ? true : false;
+  			}
+  			if (std::getline(ifs, line_buffer)) {
+  				skwd.m_szGrepFolders2.Assign(wchomp(line_buffer).c_str());
+  			}
+  			if (std::getline(ifs, line_buffer)) {
+  				skwd.m_szGrepFolders3.Assign(wchomp(line_buffer).c_str());
+  			}
+  			if (std::getline(ifs, line_buffer)) {
+  				skwd.m_szGrepFolders4.Assign(wchomp(line_buffer).c_str());
+  			}
+				
+				continue;
+			} else if (line_buffer.find("#end") == 0) {
+				si::logln(L"  section end.");
+				break;
 			}
+			
+			if (!bRead) continue;
+
+			skwd.m_aGrepFolders[i].Assign(wchomp(line_buffer).c_str());
+			i++;
 		}
+
 		skwd.m_aGrepFolders._GetSizeRef() = i;
 		skwd.m_aGrepFolders.SetSizeLimit();
-		
-		auto grep_folder_ex1 = pt.get_optional<std::string>("Recent.grep_folder_ex1");
-		auto grep_folder_ex2 = pt.get_optional<std::string>("Recent.grep_folder_ex2");
-		auto grep_folder_ex3 = pt.get_optional<std::string>("Recent.grep_folder_ex3");
-		auto grep_folder_ex4 = pt.get_optional<std::string>("Recent.grep_folder_ex4");
-		auto grep_folder_ex2_dir = pt.get_optional<std::string>("Recent.grep_folder_ex2_dir");
-		auto grep_folder_ex3_dir = pt.get_optional<std::string>("Recent.grep_folder_ex3_dir");
-		auto grep_folder_ex4_dir = pt.get_optional<std::string>("Recent.grep_folder_ex4_dir");
-
-		skwd.m_bGrepFolders99 = si::util::to_b(*grep_folder_ex1);
-		skwd.m_bGrepFolders2 = si::util::to_b(*grep_folder_ex2);
-		skwd.m_bGrepFolders3 = si::util::to_b(*grep_folder_ex3);
-		skwd.m_bGrepFolders4 = si::util::to_b(*grep_folder_ex4);
-		if (grep_folder_ex2_dir) {
-			skwd.m_szGrepFolders2.Assign(si::util::from_bytes(*grep_folder_ex2_dir).c_str());
-		} else {
-			skwd.m_szGrepFolders2.Assign(L"");
-		}
-		if (grep_folder_ex3_dir) {
-			skwd.m_szGrepFolders3.Assign(si::util::from_bytes(*grep_folder_ex3_dir).c_str());
-		} else {
-			skwd.m_szGrepFolders3.Assign(L"");
-		}
-		if (grep_folder_ex4_dir) {
-			skwd.m_szGrepFolders4.Assign(si::util::from_bytes(*grep_folder_ex4_dir).c_str());
-		} else {
-			skwd.m_szGrepFolders4.Assign(L"");
-		}
 	} else {
-		pt.put("Recent.grep_folder_num", skwd.m_aGrepFolders._GetSizeRef());
 		nSize = skwd.m_aGrepFolders._GetSizeRef();
 
-		ptree child;
-		for( i = 0; i < nSize; ++i ){
-			ptree info;
-			info.put("data", si::util::to_bytes(skwd.m_aGrepFolders[i].c_str()));
-			child.push_back(std::make_pair("", info));
+		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
+		ofs << "" << std::endl;
+		ofs << "#GrepFolder" << std::endl;
+
+		ofs << (skwd.m_bGrepFolders99 ? "1" : "0") << std::endl;
+		ofs << (skwd.m_bGrepFolders2 ? "1" : "0") << std::endl;
+		ofs << (skwd.m_bGrepFolders3 ? "1" : "0") << std::endl;
+		ofs << (skwd.m_bGrepFolders4 ? "1" : "0") << std::endl;
+		ofs << si::util::to_bytes(skwd.m_szGrepFolders2.c_str()) << std::endl;
+		ofs << si::util::to_bytes(skwd.m_szGrepFolders3.c_str()) << std::endl;
+		ofs << si::util::to_bytes(skwd.m_szGrepFolders4.c_str()) << std::endl;
+
+		for (int i = 0; i < nSize; i++) {
+			std::string line_buffer;
+			line_buffer += si::util::to_bytes(skwd.m_aGrepFolders[i].c_str());
+			ofs << line_buffer << std::endl;
 		}
-		pt.add_child("Recent.grep_folder", child);
-		
-		pt.put("Recent.grep_folder_ex1", skwd.m_bGrepFolders99);
-		pt.put("Recent.grep_folder_ex2", skwd.m_bGrepFolders2);
-		pt.put("Recent.grep_folder_ex3", skwd.m_bGrepFolders3);
-		pt.put("Recent.grep_folder_ex4", skwd.m_bGrepFolders4);
-		pt.put("Recent.grep_folder_ex2_dir", si::util::to_bytes(skwd.m_szGrepFolders2.c_str()));
-		pt.put("Recent.grep_folder_ex3_dir", si::util::to_bytes(skwd.m_szGrepFolders3.c_str()));
-		pt.put("Recent.grep_folder_ex4_dir", si::util::to_bytes(skwd.m_szGrepFolders4.c_str()));
+
+		ofs << "#end" << std::endl;
 	}
 
 #else
@@ -820,64 +907,90 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 	int			i;
 	int			nSize;
 
-	ptree &pt = *(ptree *)(cProfile.tag_);
-
 	if (cProfile.IsReadingMode()) {
 		i = 0;
-		auto search_key_num = pt.get_optional<int>("Recent.cmd_num");
-		if (search_key_num) {
-			hist.m_aCommands._GetSizeRef() = *search_key_num;
 
-			BOOST_FOREACH (auto& child, pt.get_child("Recent.cmd")) {
-				const ptree& info = child.second;
-				
-				auto data = opt::to_wstring(info, "data");
-				hist.m_aCommands[i].Assign(data.c_str());
-				i++;
+		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
+		std::string line_buffer;
+		bool bRead = false;
+
+		while (std::getline(ifs, line_buffer)) {
+			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
+
+			if (line_buffer.find("#Cmd") == 0) {
+				bRead = true;
+				si::logln(L"  section start.");
+				continue;
+			} else if (line_buffer.find("#end") == 0) {
+				si::logln(L"  section end.");
+				break;
 			}
-		}
+			
+			if (!bRead) continue;
+
+			hist.m_aCommands[i].Assign(wchomp(line_buffer).c_str());
+			i++;
+    }
+
 		hist.m_aCommands._GetSizeRef() = i;
 		hist.m_aCommands.SetSizeLimit();
 	} else {
-		pt.put("Recent.cmd_num", hist.m_aCommands._GetSizeRef());
 		nSize = hist.m_aCommands._GetSizeRef();
 
-		ptree child;
-		for( i = 0; i < nSize; ++i ){
-			ptree info;
-			info.put("data", si::util::to_bytes(hist.m_aCommands[i].c_str()));
-			child.push_back(std::make_pair("", info));
+		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
+		ofs << "" << std::endl;
+		ofs << "#Cmd" << std::endl;
+
+		for (int i = 0; i < nSize; i++) {
+			std::string line_buffer;
+			line_buffer += si::util::to_bytes(hist.m_aCommands[i].c_str());
+			ofs << line_buffer << std::endl;
 		}
-		pt.add_child("Recent.cmd", child);
+
+		ofs << "#end" << std::endl;
 	}
 
 	if (cProfile.IsReadingMode()) {
 		i = 0;
-		auto search_key_num = pt.get_optional<int>("Recent.cmd_cur_dir_num");
-		if (search_key_num) {
-			hist.m_aCurDirs._GetSizeRef() = *search_key_num;
 
-			BOOST_FOREACH (auto& child, pt.get_child("Recent.cmd_cur_dir")) {
-				const ptree& info = child.second;
-				
-				auto data = opt::to_wstring(info, "data");
-				hist.m_aCurDirs[i].Assign(data.c_str());
-				i++;
+		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
+		std::string line_buffer;
+		bool bRead = false;
+
+		while (std::getline(ifs, line_buffer)) {
+			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
+
+			if (line_buffer.find("#CmdCurDir") == 0) {
+				bRead = true;
+				si::logln(L"  section start.");
+				continue;
+			} else if (line_buffer.find("#end") == 0) {
+				si::logln(L"  section end.");
+				break;
 			}
-		}
+			
+			if (!bRead) continue;
+
+			hist.m_aCurDirs[i].Assign(wchomp(line_buffer).c_str());
+			i++;
+    }
+
 		hist.m_aCurDirs._GetSizeRef() = i;
 		hist.m_aCurDirs.SetSizeLimit();
 	} else {
-		pt.put("Recent.cmd_cur_dir_num", hist.m_aCurDirs._GetSizeRef());
 		nSize = hist.m_aCurDirs._GetSizeRef();
 
-		ptree child;
-		for( i = 0; i < nSize; ++i ){
-			ptree info;
-			info.put("data", si::util::to_bytes(hist.m_aCurDirs[i].c_str()));
-			child.push_back(std::make_pair("", info));
+		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
+		ofs << "" << std::endl;
+		ofs << "#CmdCurDir" << std::endl;
+
+		for (int i = 0; i < nSize; i++) {
+			std::string line_buffer;
+			line_buffer += si::util::to_bytes(hist.m_aCurDirs[i].c_str());
+			ofs << line_buffer << std::endl;
 		}
-		pt.add_child("Recent.cmd_cur_dir", child);
+
+		ofs << "#end" << std::endl;
 	}
 
 #else
