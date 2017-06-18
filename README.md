@@ -20,12 +20,10 @@ Feature
 Download  
 --------
 
-変更内容はコミットログを参照してください. 細かい内容は [my_config.h](https://github.com/uzuki3/sakura/raw/master/sakura_core/my_config.h) を見てね.  
-
 + [sakura-uzuki-2.37-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.37-32bit.zip) (766KB)  
-+ 最新のキーワードセット [keyword_pack.zip](https://github.com/uzuki3/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
-※ 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
+\- 変更履歴は[コミットログ](https://github.com/uzuki3/sakura/commits/master)を参照してください. 細かい内容は [my_config.h](sakura_core/my_config.h) を見てね.  
+\- 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
 
 
 
@@ -38,7 +36,7 @@ Setup
 
 Build environment  
 -----------------
-+ 2.3.2.0をベースに[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. ベースリビジョンからのマージ情報は[こちら](https://github.com/uzuki3/sakura/raw/master/Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
++ [サクラエディタのリポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. マージ情報は[こちら](Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
 + MSVC2017でビルド (/O1=[/Og /Os /Oy /Ob2 /Gs /GF /Gy])  
 + Luaを使用 (マクロ, プラグイン)  
 + 挙動の制御 (共有フラグ)としてレジストリを使用しています  
@@ -52,12 +50,12 @@ Changed
 
 |修正版|公式|
 |-|-|
-|[sakura.keywordset.csv](https://github.com/uzuki3/sakura/raw/master/Publish/sakura.keywordset.csv)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
+|[sakura.keywordset.csv](Publish/sakura.keywordset.csv)<details><summary>強調キーワードのセットファイルの使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意が必要です. 必要に応じてエクスポートしてください.<br>また, `sakura.ini`には出力されなくなります.<br>ファイルがない場合は今まで通りの動作になります.</details>|
 |履歴を別ファイル (`sakura.recent`)に出力|`sakura.ini`に出力|
 |起動時に存在しないファイル・フォルダ履歴を削除する||
 |カラー設定のインポートはカラー情報だけを適用させる|すべての情報を適用|
 |<details><summary>マクロ・プラグインに使用できる言語に `Lua`を追加</summary>文字列をLuaコードとして評価する `eval`関数があります.<br>e.g. `local n = eval("(1 + 2 + 3 + 4) * 3.14")`<br>今後はActiveXが使用できるようにしたいです.</details>||
-|<details><summary>履歴 (検索, 置換, Grep)の値を少なめに変更</summary>- 検索キー: `16`<br>- 置換キー: `16`<br>- Grepファイル: `8`<br>- Grepフォルダ: `16`|- 検索キー: `30`<br>- 置換キー: `30`<br>- Grepファイル: `30`<br>- Grepフォルダ: `30`|
+|履歴 (検索, 置換, Grep)の値を変更<br>- 検索キー: `20`<br>- 置換キー: `20`<br>- Grepファイル: `10`<br>- Grepフォルダ: `20`|- 検索キー: `30`<br>- 置換キー: `30`<br>- Grepファイル: `30`<br>- Grepフォルダ: `30`|
 |多重オープンの許可 (Shiftを押しながらファイルのドロップ)|できない|
 
 **表示系**  
