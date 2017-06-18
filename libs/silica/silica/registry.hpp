@@ -13,6 +13,7 @@
 //#include <codecvt>
 //#include <boost/container/vector.hpp>
 #include <errno.h>
+#include <vector>
 
 //*****
 // https://msdn.microsoft.com/ja-jp/library/cc429950.aspx
@@ -215,6 +216,58 @@ class ScopedRegKey : public RegKey {
     }
   }
 };
+
+//------------------------------------------------------------------
+//! レジストリキーのエントリ列挙
+//------------------------------------------------------------------
+SILICA_INLINE bool EnumRegKeyEntry(const std::tstring &key, std::vector<std::tstring> &e,
+                                   std::vector<std::tstring> *v = nullptr) {
+  RegKey hKey(key);
+
+  TCHAR szValueName[256];
+  DWORD dwValueNameSize;
+  DWORD dwType;
+  BYTE lpData[256];
+  DWORD dwDataSize;
+  DWORD i = 0;
+
+  while (true) {
+    dwValueNameSize = sizeof(szValueName) / sizeof(szValueName[0]);
+    dwDataSize = sizeof(lpData) / sizeof(lpData[0]);
+
+    // インデックス i に対するレジストリエントリを取得する
+    LONG lRet = ::RegEnumValue(hKey, i++, szValueName, &dwValueNameSize, NULL, &dwType, lpData,
+                               &dwDataSize);
+
+    if (lRet != ERROR_SUCCESS) {
+      break;
+    }
+
+    if (v) {
+      switch (dwType) {
+      case REG_DWORD: {
+        DWORD n;
+        memcpy(&n, lpData, sizeof(n));
+#if defined(_UNICODE)
+        (*v).push_back(std::to_wstring(n));
+#else
+        (*v).push_back(std::to_string(n));
+#endif
+      } break;
+      case REG_SZ:
+        (*v).push_back((LPCTSTR)lpData);
+        break;
+      default:
+        (*v).push_back(_T(""));
+        break;
+      }
+    }
+
+    e.push_back(szValueName);
+  }
+
+  return true;
+}
 
 //------------------------------------------------------------------
 //! レジストリキーの読み取り(SZ)
