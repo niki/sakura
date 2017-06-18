@@ -95,8 +95,20 @@ void CViewCommander::Command_GREP( void )
 	if (count > 0) {
 		if (temp.GetStringLength() == 0) return;
 		cmWork2.SetString( GetEditWindow()->m_cDlgGrep.m_szFile );
-		cmWork2.Replace(_T("$cpp"), RegKey(UZ_REGKEY).get_s(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp")));
-		cmWork2.Replace(_T("$make"), RegKey(UZ_REGKEY).get_s(_T("$make"), _T("makefile *.mak *.om OMakefile OMakeRoot")));
+		// レジストリから変数によるパターンの置換をする
+		{
+			std::vector<std::tstring> entrys;
+			std::vector<std::tstring> values;
+			EnumRegKeyEntry(UZ_REGKEY, entrys, &values);
+			int i = 0;
+			for (auto e : entrys) {
+				if (e[0] == _T('$')) {
+					cmWork2.Replace(e.c_str(), values[i].c_str());
+				}
+				i++;
+			}
+		}
+		cmWork2.Replace(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp"));
 		if (GetEditWindow()->m_cDlgGrep.m_szExcludeDirs[0] != _T('\0')) {
 			std::tstring exdirs;
 			exdirs += _T(" "); // 置換、区切りのため先頭に空白を入れておく
