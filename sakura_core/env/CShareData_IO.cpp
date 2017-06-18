@@ -231,11 +231,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			}
 			
 			ifs.open(si::util::to_bytes(fname).c_str(), std::ios::in);
-			si::logln(L" open(in) %s", fname.c_str());
 			cProfileRecent.tag_ = &ifs;
 		} else {
 			ofs.open(si::util::to_bytes(fname).c_str(), std::ios::out | std::ios::trunc);
-			si::logln(L" open(out) %s", fname.c_str());
 			ofs << "; Recent file" << std::endl;
 			cProfileRecent.tag_ = &ofs;
 		}
@@ -316,14 +314,10 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		bool bRead = false;
 
 		while (std::getline(ifs, line_buffer)) {
-			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
-
 			if (line_buffer.find("#MRU") == 0) {
 				bRead = true;
-				si::logln(L"  section start.");
 				continue;
 			} else if (line_buffer.find("#end") == 0) {
-				si::logln(L"  section end.");
 				break;
 			}
 			
@@ -344,7 +338,6 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			pfiWork = &hist.m_fiMRUArr[i];
 			_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
 			pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
-			si::logln(pfiWork->m_szPath);
 			pfiWork->m_nViewTopLine = GetTokenInt(stream, ',');
 			pfiWork->m_nViewLeftCol = GetTokenInt(stream, ',');
 			pfiWork->m_ptCursor.x = GetTokenInt(stream, ',');
@@ -356,8 +349,6 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			hist.m_bMRUArrFavorite[i] = GetTokenInt(stream, ',') ? true : false;
 			i++;
 		}
-
-		si::logln(L"end mru");
 
 		hist.m_nMRUArrNum = i;
 		SetValueLimit( hist.m_nMRUArrNum, MAX_MRU );
@@ -410,14 +401,10 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		bool bRead = false;
 
 		while (std::getline(ifs, line_buffer)) {
-			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
-
 			if (line_buffer.find("#Folder") == 0) {
 				bRead = true;
-				si::logln(L"  section start.");
 				continue;
 			} else if (line_buffer.find("#end") == 0) {
-				si::logln(L"  section end.");
 				break;
 			}
 			
@@ -440,8 +427,6 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			hist.m_bOPENFOLDERArrFavorite[i] = GetTokenBool(stream, ',');
 			i++;
 		}
-
-		si::logln(L"end folder");
 
 		hist.m_nOPENFOLDERArrNum = i;
 		SetValueLimit( hist.m_nOPENFOLDERArrNum, MAX_OPENFOLDER );
@@ -479,14 +464,10 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		bool bRead = false;
 
 		while (std::getline(ifs, line_buffer)) {
-			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
-
 			if (line_buffer.find("#except_MRU") == 0) {
 				bRead = true;
-				si::logln(L"  section start.");
 				continue;
 			} else if (line_buffer.find("#end") == 0) {
-				si::logln(L"  section end.");
 				break;
 			}
 			
@@ -495,8 +476,6 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			hist.m_aExceptMRU[i].Assign(wchomp(line_buffer).c_str());
 			i++;
 		}
-
-		si::logln(L"end except_MRU");
 
 		hist.m_aExceptMRU._GetSizeRef() = i;
 		hist.m_aExceptMRU.SetSizeLimit();
@@ -625,14 +604,10 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		bool bRead = false;
 
 		while (std::getline(ifs, line_buffer)) {
-			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
-
 			if (line_buffer.find("#SearchKey") == 0) {
 				bRead = true;
-				si::logln(L"  section start.");
 				continue;
 			} else if (line_buffer.find("#end") == 0) {
-				si::logln(L"  section end.");
 				break;
 			}
 			
@@ -668,14 +643,10 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		bool bRead = false;
 
 		while (std::getline(ifs, line_buffer)) {
-			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
-
 			if (line_buffer.find("#ReplaceKey") == 0) {
 				bRead = true;
-				si::logln(L"  section start.");
 				continue;
 			} else if (line_buffer.find("#end") == 0) {
-				si::logln(L"  section end.");
 				break;
 			}
 			
@@ -752,14 +723,10 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		bool bRead = false;
 
 		while (std::getline(ifs, line_buffer)) {
-			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
-
 			if (line_buffer.find("#GrepFile") == 0) {
 				bRead = true;
-				si::logln(L"  section start.");
 				continue;
 			} else if (line_buffer.find("#end") == 0) {
-				si::logln(L"  section end.");
 				break;
 			}
 			
@@ -795,11 +762,8 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		bool bRead = false;
 
 		while (std::getline(ifs, line_buffer)) {
-			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
-
 			if (line_buffer.find("#GrepFolder") == 0) {
 				bRead = true;
-				si::logln(L"  section start.");
 				
 				if (std::getline(ifs, line_buffer)) {
   				skwd.m_bGrepFolders99 = std::stoi(chomp(line_buffer)) ? true : false;
@@ -828,7 +792,6 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 				
 				continue;
 			} else if (line_buffer.find("#end") == 0) {
-				si::logln(L"  section end.");
 				break;
 			}
 			
@@ -940,14 +903,10 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		bool bRead = false;
 
 		while (std::getline(ifs, line_buffer)) {
-			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
-
 			if (line_buffer.find("#Cmd") == 0) {
 				bRead = true;
-				si::logln(L"  section start.");
 				continue;
 			} else if (line_buffer.find("#end") == 0) {
-				si::logln(L"  section end.");
 				break;
 			}
 			
@@ -983,14 +942,10 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		bool bRead = false;
 
 		while (std::getline(ifs, line_buffer)) {
-			si::logln(L" *** %s", to_wchar(line_buffer.c_str()));
-
 			if (line_buffer.find("#CmdCurDir") == 0) {
 				bRead = true;
-				si::logln(L"  section start.");
 				continue;
 			} else if (line_buffer.find("#end") == 0) {
-				si::logln(L"  section end.");
 				break;
 			}
 			
