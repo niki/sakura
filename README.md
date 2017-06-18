@@ -22,7 +22,7 @@ Download
 
 変更内容はコミットログを参照してください. 細かい内容は [my_config.h](https://github.com/uzuki3/sakura/raw/master/sakura_core/my_config.h) を見てね.  
 
-+ [sakura-uzuki-2.36-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.36-32bit.zip) (765KB)  
++ [sakura-uzuki-2.37-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.37-32bit.zip) (766KB)  
 + 最新のキーワードセット [keyword_pack.zip](https://github.com/uzuki3/sakura/raw/master/Publish/keyword_pack.zip) (355KB)  
 
 ※ 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
@@ -99,7 +99,8 @@ Changed
 |変更, キーマクロ記録中のタブ名のカラーを変更||
 |タブをダブルクリックで閉じられるようにする||
 |選択タブのアクティブ化をマウス押下時に行いレスポンス向上|マウス押上時にアクティブになる|
-|Grepフォルダの指定BOXを４つに増やす|１つ|
+|Grep フォルダの指定BOXを４つに増やす|１つ|
+|Grep 除外フォルダを別ボックスで指定できるようにする|ファイル条件でまとめて指定|
 |Grep「現在編集中のファイルから検索」をチェックした時の状態を保持しないようにする|保持される|
 |置換ダイアログの置換後テキストに置換前テキストを設定|前回のテキスト|
 |正規表現検索のときに正規表現記号をクォート (`^abc$`を検索する場合 `\^abc\$`にする)||

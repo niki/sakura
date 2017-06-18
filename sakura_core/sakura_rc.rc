@@ -272,7 +272,7 @@ BEGIN
     CONTROL         "フォルダ毎に表示(&Y)",
                     IDC_CHECK_SEP_FOLDER,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,90,188,83,10
-    LTEXT           "文字コードセット(&A)",IDC_STATIC,16,187,62,8
+    LTEXT           "文字コードセット(&A)",IDC_STATIC,16,202,62,8
     COMBOBOX        IDC_COMBO_CHARSET,80,200,65,101,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "CP(&2)",IDC_CHECK_CP,"Button",BS_AUTOCHECKBOX | 
