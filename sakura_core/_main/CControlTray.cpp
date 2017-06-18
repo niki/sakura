@@ -129,6 +129,30 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 		cmWork2.SetString( cDlgGrep.m_szFile );
 		cmWork2.Replace(_T("$cpp"), RegKey(UZ_REGKEY).get_s(_T("$cpp"), _T("*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp")));
 		cmWork2.Replace(_T("$make"), RegKey(UZ_REGKEY).get_s(_T("$make"), _T("makefile *.mak *.om OMakefile OMakeRoot")));
+		if (cDlgGrep.m_szExcludeDirs[0] != _T('\0')) {
+			std::tstring exdirs;
+			exdirs += _T(" "); // 置換、区切りのため先頭に空白を入れておく
+			exdirs += cDlgGrep.m_szExcludeDirs;
+			// ,を空白にする
+			si::util::replace(exdirs, _T(","), _T(" "));
+			// ;を空白にする
+			si::util::replace(exdirs, _T(";"), _T(" "));
+			// 空白の二重化
+			si::util::replace(exdirs, _T(" "), _T("  "));
+			// パターン直前の空白を#にする
+			// ".svn  .git  obj  romfiles  Debug  Development  Release"
+			{
+				int pos = exdirs.size() - 1;
+				TCHAR prev = exdirs[pos];
+				for (int i = pos - 1; i >= 0; i--) {
+					if (exdirs[i] == _T(' ') && prev != _T(' ') && prev != _T('#')) {
+						exdirs[i] = _T('#');
+					}
+					prev = exdirs[i];
+				}
+			}
+			cmWork2.AppendString(exdirs.c_str());
+		}
 		cmWork3.SetString( temp.GetStringPtr() );
 	} else {
 		TCHAR	szWorkFolder[MAX_PATH];

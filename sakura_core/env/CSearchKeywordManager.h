@@ -46,6 +46,7 @@ struct SShare_SearchKeywords{
 	SFilePath	m_szGrepFolders2;
 	SFilePath	m_szGrepFolders3;
 	SFilePath	m_szGrepFolders4;
+	SFilePath	m_szGrepExcludeDirs;
 #endif  // UZ_
 #ifdef UZ_FIX_MAXDATA
 	SShare_SearchKeywords() {

@@ -839,6 +839,7 @@
 #define IDC_BUTTON_FOLDER2              7020
 #define IDC_BUTTON_FOLDER3              7021
 #define IDC_BUTTON_FOLDER4              7022
+#define IDC_EDIT_EXCLUDEDIRS            7030
 #define IDC_CHK_CPP                     7500
 #endif  // UZ_
 #define IDC_STATIC                      -1

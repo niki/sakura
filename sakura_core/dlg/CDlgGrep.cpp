@@ -88,6 +88,7 @@ CDlgGrep::CDlgGrep()
 	m_szFolder2[0] = 0;
 	m_szFolder3[0] = 0;
 	m_szFolder4[0] = 0;
+	m_szExcludeDirs[0] = 0;
 #endif  // UZ_
 	return;
 }
@@ -167,6 +168,9 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const TCHAR* pszCur
 	if( m_szFolder4[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepFolders4.At(0) != _T('\0')){
 		_tcscpy( m_szFolder4, m_pShareData->m_sSearchKeywords.m_szGrepFolders4.GetBufferPointer() );	/* 検索フォルダ */
 	}
+	if( m_szExcludeDirs[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs.At(0) != _T('\0')){
+		_tcscpy( m_szExcludeDirs, m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs.GetBufferPointer() );	/* Exclude dirs */
+	}
 #endif  // UZ_
 
 	if( pszCurrentFilePath ){	// 2010.01.10 ryoji
@@ -196,6 +200,7 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER2 ), _countof2(m_szFile) - 1 );
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER3 ), _countof2(m_szFile) - 1 );
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 ), _countof2(m_szFile) - 1 );
+	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_EDIT_EXCLUDEDIRS ), _countof2(m_szFile) - 1 );
 #endif  // UZ_
 
 	/* コンボボックスのユーザー インターフェイスを拡張インターフェースにする */
@@ -206,6 +211,7 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER2 ), TRUE );
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER3 ), TRUE );
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 ), TRUE );
+	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_EDIT_EXCLUDEDIRS ), TRUE );
 #endif  // UZ_
 
 	/* ダイアログのアイコン */
@@ -234,9 +240,11 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	HWND hFolder2 = ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER2 );
 	DragAcceptFiles(hFolder2, true);
 	SetWindowLongPtr(hFolder2, GWLP_WNDPROC, (LONG_PTR)OnFolderProc);
+
 	HWND hFolder3 = ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER3 );
 	DragAcceptFiles(hFolder3, true);
 	SetWindowLongPtr(hFolder3, GWLP_WNDPROC, (LONG_PTR)OnFolderProc);
+
 	HWND hFolder4 = ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 );
 	DragAcceptFiles(hFolder4, true);
 	SetWindowLongPtr(hFolder4, GWLP_WNDPROC, (LONG_PTR)OnFolderProc);
@@ -554,6 +562,7 @@ void CDlgGrep::SetData( void )
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER2, m_szFolder2 );
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER3, m_szFolder3 );
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER4, m_szFolder4 );
+	::DlgItem_SetText( GetHwnd(), IDC_EDIT_EXCLUDEDIRS, m_szExcludeDirs );
 #endif  // UZ_
 
 	if((m_szFolder[0] == _T('\0') || m_pShareData->m_Common.m_sSearch.m_bGrepDefaultFolder) &&
@@ -716,6 +725,7 @@ void CDlgGrep::SetDataFromThisText( bool bChecked )
 	
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_COMBO_FILE ),    !bThisText );
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_SUBFOLDER ), !bThisText );
+	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_EDIT_EXCLUDEDIRS ), !bThisText );
 #else
 	BOOL bEnableControls = TRUE;
 	if( 0 != m_szCurrentFilePath[0] && bChecked ){
@@ -819,6 +829,7 @@ int CDlgGrep::GetData( void )
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_FOLDER2, m_szFolder2, _countof2(m_szFolder2) );
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_FOLDER3, m_szFolder3, _countof2(m_szFolder3) );
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_FOLDER4, m_szFolder4, _countof2(m_szFolder4) );
+	::DlgItem_GetText( GetHwnd(), IDC_EDIT_EXCLUDEDIRS, m_szExcludeDirs, _countof2(m_szExcludeDirs) );
 	
 	m_pShareData->m_sSearchKeywords.m_bGrepFolders99 = m_bFolder99;
 	m_pShareData->m_sSearchKeywords.m_bGrepFolders2 = m_bFolder2;
@@ -827,6 +838,7 @@ int CDlgGrep::GetData( void )
 	m_pShareData->m_sSearchKeywords.m_szGrepFolders2 = m_szFolder2;
 	m_pShareData->m_sSearchKeywords.m_szGrepFolders3 = m_szFolder3;
 	m_pShareData->m_sSearchKeywords.m_szGrepFolders4 = m_szFolder4;
+	m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs = m_szExcludeDirs;
 #endif  // UZ_
 
 	m_pShareData->m_Common.m_sSearch.m_nGrepCharSet = m_nGrepCharSet;			// 文字コード自動判別

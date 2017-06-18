@@ -63,6 +63,7 @@ public:
 	SFilePath	m_szFolder2;				/*!< 検索フォルダ */
 	SFilePath	m_szFolder3;				/*!< 検索フォルダ */
 	SFilePath	m_szFolder4;				/*!< 検索フォルダ */
+	SFilePath	m_szExcludeDirs;		/*!< Exclude dirs */
 #endif  // UZ_
 	SFilePath	m_szCurrentFilePath;
 protected:
