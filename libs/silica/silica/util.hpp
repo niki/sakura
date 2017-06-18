@@ -76,6 +76,20 @@ SILICA_INLINE std::tstring rtrim(const std::tstring &s, const TCHAR c) {
   return s.substr(0, ((size_t)p - (size_t)s.c_str()) / sizeof(TCHAR) + 1);
 }
 
+//------------------------------------------------------------------
+//! 文字列の置換
+//------------------------------------------------------------------
+SILICA_INLINE int replace(std::tstring &s, const std::tstring &from, const std::tstring &to) {
+  int repcnt = 0;
+  std::tstring::size_type pos = s.find(from);
+  while(pos != std::tstring::npos){
+    s.replace(pos, from.size(), to);
+    repcnt++;
+    pos = s.find(from, pos + to.size());
+  }
+  return repcnt;
+}
+
 } /* namespace of util */
 
 } /* namespace of si */
