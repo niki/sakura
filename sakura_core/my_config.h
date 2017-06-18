@@ -323,18 +323,18 @@
 #define UZ_MULTIPLE_OPEN_FILES
 
 //------------------------------------------------------------------
-// 最大数 2013.10.2, 2016.12.13
+// 最大数 2013.10.2, 2016.12.13, 2017.6.18 
 // \sakura_core\config\maxdata.h
-// (REG/RecentSearchKeyMax:16)
-// (REG/RecentReplaceKeyMax:16)
-// (REG/RecentGrepFileMax:8)
-// (REG/RecentGrepFolderMax:16)
+// (REG/RecentSearchKeyMax:20)
+// (REG/RecentReplaceKeyMax:20)
+// (REG/RecentGrepFileMax:10)
+// (REG/RecentGrepFolderMax:20)
 //------------------------------------------------------------------
 #define UZ_FIX_MAXDATA
-  #define UZ_MAX_SEARCHKEY  (16) // 検索キー
-  #define UZ_MAX_REPLACEKEY (16) // 置換キー
-  #define UZ_MAX_GREPFILE   (8)  // Grepファイル
-  #define UZ_MAX_GREPFOLDER (16) // Grepフォルダ
+  #define UZ_MAX_SEARCHKEY  (20) // 検索キー
+  #define UZ_MAX_REPLACEKEY (20) // 置換キー
+  #define UZ_MAX_GREPFILE   (10)  // Grepファイル
+  #define UZ_MAX_GREPFOLDER (20) // Grepフォルダ
 
 //------------------------------------------------------------------
 // メニューアイコン
