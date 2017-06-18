@@ -331,8 +331,18 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			
 			std::istringstream stream(line_buffer);
 
+			std::wstring path = GetTokenStringW(stream, ',');
+
+#if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+			if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+				if (!fexist(path.c_str())) {
+					continue;
+				}
+			}
+#endif  // UZ_
+
 			pfiWork = &hist.m_fiMRUArr[i];
-			_tcsncpy(pfiWork->m_szPath, GetTokenStringW(stream, ',').c_str(), _MAX_PATH);
+			_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
 			pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
 			si::logln(pfiWork->m_szPath);
 			pfiWork->m_nViewTopLine = GetTokenInt(stream, ',');
@@ -416,7 +426,17 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			std::string token;
 			std::istringstream stream(line_buffer);
 
-			hist.m_szOPENFOLDERArr[i].Assign(GetTokenStringW(stream, ',').c_str());
+			std::wstring dir = GetTokenStringW(stream, ',');
+
+#if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+			if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+				if (!fexist(dir.c_str())) {
+					continue;
+				}
+			}
+#endif  // UZ_
+
+			hist.m_szOPENFOLDERArr[i].Assign(dir.c_str());
 			hist.m_bOPENFOLDERArrFavorite[i] = GetTokenBool(stream, ',');
 			i++;
 		}
