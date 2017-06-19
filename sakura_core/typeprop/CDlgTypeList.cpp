@@ -223,7 +223,9 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 			case MYWM_ADD_TYPESETTING:
 			へ教えてあげてくださあい
 			*/
-			::MessageBoxW(NULL, names[nId - 1].c_str(), L"", MB_OK);
+			if (nId > 0) {
+				::MessageBoxW(NULL, names[nId - 1].c_str(), L"", MB_OK);
+			}
 		}
 		break;
 #endif  // UZ_
