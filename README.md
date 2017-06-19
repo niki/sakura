@@ -20,7 +20,7 @@ Feature
 Download  
 --------
 
-+ [sakura-uzuki-2.38-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.38-32bit.zip) (766KB)  
++ [sakura-uzuki-2.39-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.39-32bit.zip) (766KB)  
 
 \- 変更履歴は[コミットログ](https://github.com/uzuki3/sakura/commits/master)を参照してください. 細かい内容は [my_config.h](sakura_core/my_config.h) を見てね.  
 \- 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
@@ -91,6 +91,7 @@ Changed
 
 |修正版|公式|
 |-|-|
+|タイプ別設定一覧の「追加」から任意のタイプを追加できるようにする<br>(工事中)|「基本」のみの追加|
 |<details><summary>メインメニューは常にデフォルトを使用する</summary>:memo:カスタマイズの効果が感じられなかったのと機能が追加されたときに増えるメニューが対応されず, 機能に気づかないことが多いのでいっそのこと固定にしちゃったほうがわかりやすいので. 副作用でiniファイルに出力しないのでサイズが軽減されます.</details>|カスタマイズ可能|
 |<details><summary>タブと編集ウィンドウのバグ修正とスタイル調整 (モダンに?)</summary><ul><li>境界線を描画しない, タブを詰める.<li>タブを閉じるボタンをグラフィカルにする.<li>:bug:間に選択タブがあると右側のエッヂがないバグを修正.<li>エディット画面のスタイルから WS_EX_STATICEDGE を外し境界線を描かないようにする.</ul></details>|メニュー下に境界線や編集画面に枠がある|
 |リソース (ダイアログ)のフォントを `MS Shell Dlg`へ変更|`ＭＳ Ｐゴシック`|
