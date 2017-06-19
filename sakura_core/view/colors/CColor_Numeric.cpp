@@ -89,7 +89,7 @@ bool CColor_Numeric::EndColor(const CStringRef& cStr, int nPos)
 static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*, int length*/)
 {
 #ifdef UZ_FIX_NUMERIC_COLOR
-#if REGEX_MODE == 2
+#if REGEX_MODE == 2  // RE2
 	register const std::string p2(to_achar(cStr.GetPtr() + offset));
 	register const wchar_t *q2 = nullptr;
 #else
@@ -97,22 +97,35 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	register const wchar_t *q2 = cStr.GetPtr() + cStr.GetLength();
 #endif
 
-#if REGEX_MODE == 3  // BREGEXP
-	const CEditDoc *pcEditDoc = CEditDoc::GetInstance(0);
-	const CEditView *pView = &pcEditDoc->m_pcEditWnd->GetActiveView();
-	using _regex = std::wstring;
-	using _match = BREGEXP_W*;
-	#define _re_is_available() pView->m_CurRegexp.IsAvailable()
+#if REGEX_MODE == 0  // std::regex
+	using _regex = wregex;
+	using _match = wcmatch;
+	#define _re_is_available() (1)
 	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))
 	#define _re_search(pt, p, q, match, msg) \
-	                           pView->m_CurRegexp.BMatch(pt.c_str(), p, q, &(match), msg)
-	#define _re_startp(p)      p
-	#define _re_endp(match)    match->endp[0]
-	#define _re_init(p)        p = nullptr
-	#define _re_free(p)        if (p) { pView->m_CurRegexp.BRegfree(p); }
-	#define PREFIX             "/"
-	#define SUFIX              "/k"
-	#define REGSTR(x)          L"" PREFIX ##x SUFIX
+	                           regex_search(p, q, match, pt)
+	#define _re_startp(p)      (0)
+	#define _re_endp(match)    match.length(0)
+	#define _re_init(p)        
+	#define _re_free(p)        
+	#define PREFIX             ""
+	#define SUFIX              ""
+	#define REGSTR(x)          L##x
+	#define REGEX(x)           _regex(REGSTR(x))
+#elif REGEX_MODE == 1  // boost::regex
+	using _regex = wregex;
+	using _match = wcmatch;
+	#define _re_is_available() (1)
+	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))
+	#define _re_search(pt, p, q, match, msg) \
+	                           regex_search(p, q, match, pt)
+	#define _re_startp(p)      (0)
+	#define _re_endp(match)    match.length(0)
+	#define _re_init(p)        
+	#define _re_free(p)        
+	#define PREFIX             ""
+	#define SUFIX              ""
+	#define REGSTR(x)          L##x
 	#define REGEX(x)           _regex(REGSTR(x))
 #elif REGEX_MODE == 2  // RE2
 	using _regex = re2::RE2;
@@ -129,21 +142,25 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	#define SUFIX              ""
 	#define REGSTR(x)          x
 	#define REGEX(x)           REGSTR(x)
-#else  // std::regex, boost::regex
-	using _regex = wregex;
-	using _match = wcmatch;
-	#define _re_is_available() (1)
+#elif REGEX_MODE == 3  // BREGEXP
+	const CEditDoc *pcEditDoc = CEditDoc::GetInstance(0);
+	const CEditView *pView = &pcEditDoc->m_pcEditWnd->GetActiveView();
+	using _regex = std::wstring;
+	using _match = BREGEXP_W*;
+	#define _re_is_available() pView->m_CurRegexp.IsAvailable()
 	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))
 	#define _re_search(pt, p, q, match, msg) \
-	                           regex_search(p, q, match, pt)
-	#define _re_startp(p)      (0)
-	#define _re_endp(match)    match.length(0)
-	#define _re_init(p)        
-	#define _re_free(p)        
-	#define PREFIX             ""
-	#define SUFIX              ""
-	#define REGSTR(x)          L##x
+	                           pView->m_CurRegexp.BMatch(pt.c_str(), p, q, &(match), msg)
+	#define _re_startp(p)      p
+	#define _re_endp(match)    match->endp[0]
+	#define _re_init(p)        p = nullptr
+	#define _re_free(p)        if (p) { pView->m_CurRegexp.BRegfree(p); }
+	#define PREFIX             "/"
+	#define SUFIX              "/k"
+	#define REGSTR(x)          L"" PREFIX ##x SUFIX
 	#define REGEX(x)           _regex(REGSTR(x))
+#else  // std::regex
+	static_assert(0);
 #endif
 
 	static const struct {
