@@ -2,6 +2,7 @@
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
 -      	Imp: 他のドキュメントから入力補完  [patchunicode:#1065]
+       	Fix: プロポーショナル版で変更された単語単位移動を戻す  [patchunicode:#1047]
        	Fix: 改行文字部分とそれより後ろのキャレット移動に関して  [patchunicode:#1006]
 -      	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
