@@ -465,8 +465,10 @@ bool CFileNameManager::GetMenuFullLabel(
 
 #ifdef UZ_FIX_RECENT_FILE_DISP_NAME
 		{
+			int compactlen = (int)RegKey(UZ_REGKEY).get(_T("FilePathCompactLength"), UZ_FILEPATH_COMPACT_LENGTH);
+			
 			TCHAR temp[_MAX_PATH] = {};
-			::PathCompactPathEx(temp, szFileName, 50, L'\\');
+			::PathCompactPathEx(temp, szFileName, compactlen, L'\\');
 			
 			HANDLE hFile;
 			DWORD size_low, size_high;

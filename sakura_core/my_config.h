@@ -350,6 +350,7 @@
 //------------------------------------------------------------------
 // 最近使ったファイル
 //  - ファイルパスを短縮して表示する 2017.6.15 
+//    (REG/FilePathCompactLength:50)
 //  - ファイルサイズを表示 2017.6.15 
 // \sakura_core\env\CFileNameManager.cpp
 //   bool CFileNameManager::GetMenuFullLabel(
@@ -359,6 +360,7 @@
 //   cMRU.CreateMenu( hMenu, &m_cMenuDrawer );	//	ファイルメニュー
 //------------------------------------------------------------------
 #define UZ_FIX_RECENT_FILE_DISP_NAME
+  #define UZ_FILEPATH_COMPACT_LENGTH (50)
 
 //------------------------------------------------------------------
 // 正規表現検索の際、検索文字列の正規表現記号をクォートする 2015.6.1
