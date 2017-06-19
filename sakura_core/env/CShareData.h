@@ -99,6 +99,10 @@ public:
 	void InitKeywordFromList(DLLSHAREDATA*, const std::tstring&);
 #endif  // UZ_
 
+#ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+	void GetTypeNames(std::vector<std::tstring>&);  // タイプ設定の名前を取得する
+#endif  // UZ_
+
 protected:
 	/*
 	||  実装ヘルパ関数

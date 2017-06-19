@@ -188,6 +188,45 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 	switch( wMsg ){
+#ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+	case WM_NOTIFY:
+	  // 任意のタイプ設定を追加する
+		if (((LPNMHDR)lParam)->code ==  BCN_DROPDOWN) {
+			HWND hwndBtn = GetDlgItem(GetHwnd(), IDC_BUTTON_ADD_TYPE);
+			CMenuDrawer cMenuDrawer;
+			cMenuDrawer.Create(G_AppInstance(), hwndBtn, NULL);
+			cMenuDrawer.ResetContents();
+			HMENU hMenuPopUp = ::CreatePopupMenu();
+			std::vector<std::tstring> names;
+			CShareData::getInstance()->GetTypeNames(names);
+			int nIdx = 0;
+			for (auto v : names) {
+				int nFlag = MF_BYPOSITION | MF_STRING;
+				cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, nIdx + 1, v.c_str(), _T(""), FALSE);
+				nIdx++;
+			}
+			RECT rc;
+			::GetClientRect(hwndBtn, &rc);
+			POINT po = {rc.left, rc.bottom};
+			::ClientToScreen(hwndBtn, &po);
+			int nId = (int)::TrackPopupMenu(hMenuPopUp,
+				TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
+				po.x, po.y,
+				0,
+				hwndBtn,
+				NULL
+			);
+			::DestroyMenu( hMenuPopUp );
+			/*
+			_main\CControlTray.cpp
+			LRESULT CControlTray::DispatchEvent(
+			case MYWM_ADD_TYPESETTING:
+			へ教えてあげてくださあい
+			*/
+			::MessageBoxW(NULL, names[nId - 1].c_str(), L"", MB_OK);
+		}
+		break;
+#endif  // UZ_
 	case WM_COMMAND:
 		{
 		HWND hwndList = GetDlgItem( GetHwnd(), IDC_LIST_TYPES );

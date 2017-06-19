@@ -107,6 +107,40 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConf
 	pShareData->m_nTypesCount = (int)types.size();
 }
 
+#ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+// タイプ名を取得するためだけにnewをしている、冗長だけど仕方ない
+void CShareData::GetTypeNames(std::vector<std::tstring>& names) {
+	CType* table[] = {
+		new CType_Basis(),	//基本
+		new CType_Text(),	//テキスト
+		new CType_Cpp(),	//C/C++
+		new CType_Html(),	//HTML
+		new CType_Sql(),	//PL/SQL
+		new CType_Cobol(),	//COBOL
+		new CType_Java(),	//Java
+		new CType_Asm(),	//アセンブラ
+		new CType_Awk(),	//awk
+		new CType_Dos(),	//MS-DOSバッチファイル
+		new CType_Pascal(),	//Pascal
+		new CType_Tex(),	//TeX
+		new CType_Perl(),	//Perl
+		new CType_Vb(),		//Visual Basic
+		new CType_Rich(),	//リッチテキスト
+		new CType_Ini(),	//設定ファイル
+	};
+	names.clear();
+	assert( _countof(table) <= MAX_TYPES );
+	for(int i = 0; i < _countof(table) && i < MAX_TYPES; i++){
+		STypeConfig* type = new STypeConfig;
+		table[i]->InitTypeConfig(i, *type);
+		names.push_back(type->m_szTypeName);
+		SAFE_DELETE(type);
+		SAFE_DELETE(table[i]);
+	}
+}
+#endif  // UZ_
+
+
 /*!	@brief 共有メモリ初期化/強調キーワード
 
 	強調キーワード関連の初期化処理
