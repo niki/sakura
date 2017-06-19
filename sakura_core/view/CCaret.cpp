@@ -1071,10 +1071,11 @@ void CCaret::ShowCaretPosInfo()
 
 		TCHAR	szText_TabSize[16];
 		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
+		CKetaXInt tabNum = m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpaceKetas();
 		if (ins_space) {
-			auto_sprintf( szText_TabSize, _T("Spaces: %d"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace() );
+			auto_sprintf( szText_TabSize, _T("Spaces: %d"), tabNum );
 		} else {
-			auto_sprintf( szText_TabSize, _T("Tab: %d"), m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpace() );
+			auto_sprintf( szText_TabSize, _T("Tab: %d"), tabNum );
 		}
 		::StatusBar_SetText( hwndStatusBar, 6/*7*/ | 0,             szText_TabSize );  //	タブサイズ
 		::StatusBar_SetText( hwndStatusBar, 7/*8*/ | 0,             m_pEditView->m_pTypeData->m_szTypeName );  //	タイプ
