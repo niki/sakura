@@ -52,7 +52,7 @@ typedef struct tagEncodingInfo  MBCODE_INFO, WCCODE_INFO;
 
 	typedef名 MBCODE_INFO
 	評価値１ → 固有バイト数
-	評価値２ → ポイント数（特有バイト数 − 不正バイト数）
+	評価値２ → ポイント数（特有バイト数 － 不正バイト数）
 
 	UTF-16 UTF-16BE の場合：
 

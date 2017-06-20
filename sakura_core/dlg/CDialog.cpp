@@ -447,7 +447,7 @@ BOOL CDialog::OnCommand( WPARAM wParam, LPARAM lParam )
 	WORD	wID;
 	HWND	hwndCtl;
 	wNotifyCode = HIWORD(wParam);	/* 通知コード */
-	wID			= LOWORD(wParam);	/* 項目ID、 コントロールID、 またはアクセラレータID */
+	wID			= LOWORD(wParam);	/* 項目ID､ コントロールID､ またはアクセラレータID */
 	hwndCtl		= (HWND) lParam;	/* コントロールのハンドル */
 	TCHAR	szClass[32];
 

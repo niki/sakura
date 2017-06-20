@@ -242,7 +242,7 @@ INT_PTR CPropKeyword::DispatchEvent(
 		break;
 	case WM_COMMAND:
 		wNotifyCode = HIWORD(wParam);	/* 通知コード */
-		wID = LOWORD(wParam);			/* 項目ID、 コントロールID、 またはアクセラレータID */
+		wID = LOWORD(wParam);			/* 項目ID､ コントロールID､ またはアクセラレータID */
 		hwndCtl = (HWND) lParam;		/* コントロールのハンドル */
 		if( hwndCOMBO_SET == hwndCtl){
 			switch( wNotifyCode ){

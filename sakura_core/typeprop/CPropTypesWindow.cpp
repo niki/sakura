@@ -114,7 +114,7 @@ INT_PTR CPropTypesWindow::DispatchEvent(
 
 	case WM_COMMAND:
 		wNotifyCode	= HIWORD( wParam );	/* 通知コード */
-		wID			= LOWORD( wParam );	/* 項目ID、 コントロールID、 またはアクセラレータID */
+		wID			= LOWORD( wParam );	/* 項目ID､ コントロールID､ またはアクセラレータID */
 
 		switch( wNotifyCode ){
 		case CBN_SELCHANGE:

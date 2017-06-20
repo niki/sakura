@@ -162,7 +162,7 @@ INT_PTR CPropFileName::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 	case WM_COMMAND:
 		{
 			WORD	wNotifyCode = HIWORD(wParam);	// 通知コード
-			WORD	wID = LOWORD(wParam);			// 項目ID、 コントロールID、 またはアクセラレータID
+			WORD	wID = LOWORD(wParam);			// 項目ID､ コントロールID､ またはアクセラレータID
 			int		nCount;
 
 			switch( wNotifyCode ){

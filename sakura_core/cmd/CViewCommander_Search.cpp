@@ -759,7 +759,7 @@ void CViewCommander::Command_REPLACE( HWND hwndParent )
 	@date 2003.05.22 かろと 無限マッチ対策．行頭・行末処理など見直し
 	@date 2006.03.31 かろと 行置換機能追加
 	@date 2007.01.16 ryoji 行置換機能を全置換のオプションに変更
-	@date 2009.09.20 genta 左下〜右上で矩形選択された領域の置換が行われない
+	@date 2009.09.20 genta 左下～右上で矩形選択された領域の置換が行われない
 	@date 2010.09.17 ryoji ラインモード貼り付け処理を追加
 	@date 2011.12.18 Moca オプション・検索キーをDllShareDataからm_cDlgReplace/EditViewベースに変更。文字列長制限の撤廃
 	@date 2013.05.10 Moca fastMode
@@ -863,9 +863,9 @@ void CViewCommander::Command_REPLACE_ALL()
 		sRangeA = GetSelect();
 
 		//	From Here 2007.09.20 genta 矩形範囲の選択置換ができない
-		//	左下〜右上と選択した場合，m_nSelectColumnTo < m_nSelectColumnFrom となるが，
+		//	左下～右上と選択した場合，m_nSelectColumnTo < m_nSelectColumnFrom となるが，
 		//	範囲チェックで colFrom < colTo を仮定しているので，
-		//	矩形選択の場合は左上〜右下指定になるよう桁を入れ換える．
+		//	矩形選択の場合は左上～右下指定になるよう桁を入れ換える．
 		if( bBeginBoxSelect && sRangeA.GetTo().x < sRangeA.GetFrom().x )
 			std::swap(sRangeA.GetFromPointer()->x,sRangeA.GetToPointer()->x);
 		//	To Here 2007.09.20 genta 矩形範囲の選択置換ができない

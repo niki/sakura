@@ -32,11 +32,11 @@
 	++ ++ 命名参考(規則では無い) ++ ++
 
 	標準関数から引用
-	〜_s:  バッファオーバーフロー考慮版 (例: strcpy_s)
-	〜i〜: 大文字小文字区別無し版       (例: stricmp)
+	～_s:  バッファオーバーフロー考慮版 (例: strcpy_s)
+	～i～: 大文字小文字区別無し版       (例: stricmp)
 
 	独自
-	auto_〜:  引数の型により、自動で処理が決定される版 (例: auto_strcpy)
+	auto_～:  引数の型により、自動で処理が決定される版 (例: auto_strcpy)
 */
 
 #include "util/tchar_printf.h"
@@ -46,7 +46,7 @@
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 // 文字列コピーや文字列比較の際に、mem系関数が使われている箇所が多々ありますが、
 // mem系関数はvoidポインタを受け取り、型チェックが行われないので危険です。
-// ここに、型チェック付きのmem系互換の関数を作成しました。…と書いたけど、実際のプロトタイプはもっと下のほうに。。(auto_mem〜)
+// ここに、型チェック付きのmem系互換の関数を作成しました。…と書いたけど、実際のプロトタイプはもっと下のほうに。。(auto_mem～)
 // (※対象がメモリなので、そもそも文字という概念は無いが、
 //    便宜上、ACHAR系では1バイト単位を、WCHAR系では2バイト単位を、
 //    文字とみなして処理を行う、ということで)
@@ -61,7 +61,7 @@ inline int amemicmp(const ACHAR* p1, const ACHAR* p2, size_t count){ return ::me
        int wmemicmp_ascii(const WCHAR* p1, const WCHAR* p2, size_t count);
 
 //元の関数と同じシグニチャ版。
-//文字列以外のメモリ処理でmem〜系関数を使う場面では、この関数を使っておくと、意味合いがはっきりして良い。
+//文字列以外のメモリ処理でmem～系関数を使う場面では、この関数を使っておくと、意味合いがはっきりして良い。
 inline void* memset_raw(void* dest, int c, size_t size){ return ::memset(dest,c,size); }
 inline void* memcpy_raw(void* dest, const void* src, size_t size){ return ::memcpy(dest,src,size); }
 

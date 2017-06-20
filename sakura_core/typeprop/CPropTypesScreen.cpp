@@ -208,7 +208,7 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 		return TRUE;
 	case WM_COMMAND:
 		wNotifyCode	= HIWORD(wParam);	/* 通知コード */
-		wID			= LOWORD(wParam);	/* 項目ID、 コントロールID、 またはアクセラレータID */
+		wID			= LOWORD(wParam);	/* 項目ID､ コントロールID､ またはアクセラレータID */
 //		hwndCtl		= (HWND) lParam;	/* コントロールのハンドル */
 		switch( wNotifyCode ){
 		case CBN_SELCHANGE:

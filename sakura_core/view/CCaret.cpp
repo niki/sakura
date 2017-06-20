@@ -299,7 +299,7 @@ CLayoutInt CCaret::MoveCursor(
 				nScrollRowNum = m_pEditView->GetTextArea().GetViewTopLine() - ptWk_CaretPos.y + 1;
 			}
 		}else
-							// 移動先は、画面の最大行数−２より下か？（down キー）
+							// 移動先は、画面の最大行数－２より下か？（down キー）
 		if( ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine() >= (m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY - 2) ){
 			CLayoutInt ii = m_pEditDoc->m_cLayoutMgr.GetLineCount();
 			if( ii - ptWk_CaretPos.y < nCaretMarginY + 1 &&
@@ -320,7 +320,7 @@ CLayoutInt CCaret::MoveCursor(
 			nScrollRowNum = -(ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine()) + nCaretMarginY;
 		}
 	}
-	// 移動先は、画面の最大行数−２より下か？（down キー）
+	// 移動先は、画面の最大行数－２より下か？（down キー）
 #ifdef UZ_FIX_SCROLL
 	else if( ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine() >= m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY - 1 ){
 		CLayoutInt ii = m_pEditDoc->m_cLayoutMgr.GetLineCount();

@@ -56,7 +56,7 @@
 //2001.12.06 hor    F_SORT_DESC
 //2001.12.06 hor    F_MERGE
 //2002.04.09 minfu  F_RECONVERT
-//Dec. 4, 2002 genta F_FILE_REOPEN〜
+//Dec. 4, 2002 genta F_FILE_REOPEN～
 //Oct. 10, 2000 JEPRO F_ROLLDOWN     下の半ページアップに名称変更
 //Oct. 10, 2000 JEPRO F_ROLLUP       下の半ページダウンに名称変更
 //Oct.  6, 2000 JEPRO F_HalfPageUp   名称をPC-AT互換機系に変更(ROLL→PAGE) //Oct. 10, 2000 JEPRO 名称変更
@@ -108,7 +108,7 @@
 //2006.04.26 maru F_TRACEOUT            	
 //2003.06.10 MIK F_SHOWTAB			 	
 //2003.04.08 MIK F_FAVORITE				
-//Stonee, 2001/05/18 設定ダイアログ用の機能番号を用意 F_TYPE_SCREEN〜F_OPTION_HELPER
+//Stonee, 2001/05/18 設定ダイアログ用の機能番号を用意 F_TYPE_SCREEN～F_OPTION_HELPER
 //Jul. 03, 2001 JEPRO 追加 F_TYPE_HELPER		 	
 //2001.11.17 add MIK F_TYPE_REGEX_KEYWORD	 	
 //2006.10.06 ryoji 追加 F_TYPE_KEYHELP		 	

@@ -755,7 +755,7 @@ HWND CEditWnd::Create(
 	//アクティブ情報
 	m_bIsActiveApp = ( ::GetActiveWindow() == GetHwnd() );	// 2007.03.08 ryoji
 
-	// エディタ−トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
+	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
 	if( IsWinVista_or_later() ){
 		m_bUIPI = FALSE;
 		::SendMessage( m_pShareData->m_sHandles.m_hwndTray, MYWM_UIPI_CHECK,  (WPARAM)0, (LPARAM)GetHwnd() );
@@ -1821,7 +1821,7 @@ LRESULT CEditWnd::DispatchEvent(
 		return 0L;
 
 	case MYWM_UIPI_CHECK:
-		/* エディタ−トレイ間でのUI特権分離の確認メッセージ */	// 2007.06.07 ryoji
+		/* エディタ－トレイ間でのUI特権分離の確認メッセージ */	// 2007.06.07 ryoji
 		m_bUIPI = TRUE;	// トレイからの返事を受け取った
 		return 0L;
 

@@ -682,7 +682,7 @@
 #define HIDC_RADIO_LINETERMTYPE0				11464 //行番号区切り（なし）
 #define HIDC_RADIO_LINETERMTYPE1				11465 //行番号区切り（縦線）
 #define HIDC_RADIO_LINETERMTYPE2				11466 //行番号区切り（任意）
-#define HIDC_BUTTON_KEYWORD_SELECT				11467 //強調キーワード2〜10	// 2006.08.06 ryoji
+#define HIDC_BUTTON_KEYWORD_SELECT				11467 //強調キーワード2～10	// 2006.08.06 ryoji
 #define HIDC_EDIT_VERTLINE						11468 //縦線の桁指定	// 2006.08.06 ryoji
 #define HIDC_COMBO_STRINGLITERAL				11469 //文字列エスケープ
 #define HIDC_CHECK_STRINGLINEONLY				11470 //文字列は行内のみ
@@ -1102,7 +1102,7 @@
 //強調キーワードの設定ダイアログ	// 2006.10.10 ryoji
 #define HIDOK_KEYWORD_SELECT			14100		// OK
 #define HIDCANCEL_KEYWORD_SELECT		14101		// キャンセル
-#define HIDC_COMBO_KEYWORD_SELECT		14102		// 強調キーワード1〜10
+#define HIDC_COMBO_KEYWORD_SELECT		14102		// 強調キーワード1～10
 
 // 共通設定ステータスバー			// 2008/6/21	Uchi
 #define HIDC_CHECK_DISP_UNICODE_IN_SJIS	14200		// SJISで文字コード値をUnicodeで表示する

@@ -134,7 +134,7 @@ INT_PTR CPropTab::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	case WM_COMMAND:
 		{
 			WORD wNotifyCode = HIWORD(wParam);	/* 通知コード */
-			WORD wID = LOWORD(wParam);	/* 項目ID、 コントロールID、 またはアクセラレータID */
+			WORD wID = LOWORD(wParam);	/* 項目ID､ コントロールID､ またはアクセラレータID */
 			if( wNotifyCode == BN_CLICKED ){
 				switch( wID ){
 				case IDC_CHECK_DispTabWnd:

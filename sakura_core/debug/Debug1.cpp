@@ -3,7 +3,7 @@
 
 	@author Norio Nakatani
 
-	@date 2001/06/23 N.Nakatani DebugOut()に微妙〜な修正
+	@date 2001/06/23 N.Nakatani DebugOut()に微妙～な修正
 	@date 2002/01/17 aroka 型の修正
 	@date 2013/03/03 Uchi MessageBox用関数を分離
 */

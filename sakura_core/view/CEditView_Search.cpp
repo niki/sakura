@@ -56,7 +56,7 @@ BOOL CEditView::KeyWordHelpSearchDict( LID_SKH nID, POINT* po, RECT* rc )
 		goto end_of_search;
 	switch(nID){
 	case LID_SKH_ONTIMER:
-		/* 右コメントの１〜３でない場合 */
+		/* 右コメントの１～３でない場合 */
 		if(!( m_bInMenuLoop == FALSE	&&			/* １．メニュー モーダル ループに入っていない */
 			0 != m_dwTipTimer			&&			/* ２．辞書Tipを表示していない */
 			300 < ::GetTickCount() - m_dwTipTimer	/* ３．一定時間以上、マウスが固定されている */

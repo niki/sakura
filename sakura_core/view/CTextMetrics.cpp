@@ -34,7 +34,7 @@ using namespace std;
 
 CTextMetrics::CTextMetrics()
 {
-	//$ 適当な仮値で初期化。実際には使う側でSet〜を呼ぶので、これらの仮値が参照されることは無い。
+	//$ 適当な仮値で初期化。実際には使う側でSet～を呼ぶので、これらの仮値が参照されることは無い。
 	SetHankakuWidth(10);
 	SetHankakuHeight(18);
 	SetHankakuDx(12);

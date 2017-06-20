@@ -1652,7 +1652,7 @@ void CEditView::OnLBUTTONDBLCLK( WPARAM fwKeys, int _xPos , int _yPos )
 				if( hThread != INVALID_HANDLE_VALUE ){
 					// ユーザーのURL起動指示に反応した目印としてちょっとの時間だけ砂時計カーソルを表示しておく
 					// ShellExecute は即座にエラー終了することがちょくちょくあるので WaitForSingleObject ではなく Sleep を使用（ex.存在しないパスの起動）
-					// 【補足】いずれの API でも待ちを長め（2〜3秒）にするとなぜか Web ブラウザ未起動からの起動が重くなる模様（PCタイプ, XP/Vista, IE/FireFox に関係なく）
+					// 【補足】いずれの API でも待ちを長め（2～3秒）にするとなぜか Web ブラウザ未起動からの起動が重くなる模様（PCタイプ, XP/Vista, IE/FireFox に関係なく）
 					::Sleep(200);
 					::CloseHandle(hThread);
 				}else{
@@ -2069,7 +2069,7 @@ STDMETHODIMP CEditView::Drop( LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL
 				}
 				// Note.
 				// (sDelLogic.GetTo().GetY2() - sDelLogic.GetFrom().GetY2()) だと実際の削除行数と同じになる
-				// こともあるが、（削除行数−１）になることもある．
+				// こともあるが、（削除行数－１）になることもある．
 				// 例）フリーカーソルでの行番号クリック時の１行選択
 				int nLines = m_pcEditDoc->m_cDocLineMgr.GetLineCount();
 				sSelLogic.SetFromY( sSelLogic.GetFrom().GetY2() - (nLines_Old - nLines) );

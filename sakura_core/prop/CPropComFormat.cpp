@@ -155,7 +155,7 @@ INT_PTR CPropFormat::DispatchEvent(
 		return TRUE;
 	case WM_COMMAND:
 		wNotifyCode	= HIWORD(wParam);	/* 通知コード */
-		wID			= LOWORD(wParam);	/* 項目ID、 コントロールID、 またはアクセラレータID */
+		wID			= LOWORD(wParam);	/* 項目ID､ コントロールID､ またはアクセラレータID */
 		switch( wNotifyCode ){
 		case EN_CHANGE:
 			if( IDC_EDIT_DFORM == wID ){

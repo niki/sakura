@@ -882,8 +882,8 @@ void CGrepAgent::SetGrepResult(
 	const TCHAR*		pszFilePath,	/*!< [in] フルパス or 相対パス*/
 	const TCHAR*		pszCodeName,	/*!< [in] 文字コード情報．" [SJIS]"とか */
 	/* マッチした行の情報 */
-	LONGLONG	nLine,				/*!< [in] マッチした行番号(1〜) */
-	int			nColumn,			/*!< [in] マッチした桁番号(1〜) */
+	LONGLONG	nLine,				/*!< [in] マッチした行番号(1～) */
+	int			nColumn,			/*!< [in] マッチした桁番号(1～) */
 	const wchar_t*	pCompareData,	/*!< [in] 行の文字列 */
 	int			nLineLen,			/*!< [in] 行の文字列の長さ */
 	int			nEolCodeLen,		/*!< [in] EOLの長さ */

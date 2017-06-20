@@ -565,7 +565,7 @@ LRESULT CControlTray::DispatchEvent(
 		return 0;
 
 	case MYWM_UIPI_CHECK:
-		/* エディタ−トレイ間でのUI特権分離の確認メッセージ */	// 2007.06.07 ryoji
+		/* エディタ－トレイ間でのUI特権分離の確認メッセージ */	// 2007.06.07 ryoji
 		::SendMessage( (HWND)lParam, MYWM_UIPI_CHECK,  (WPARAM)0, (LPARAM)0 );	// 返事を返す
 		return 0L;
 

@@ -28,7 +28,7 @@ void DebugOutA( LPCSTR lpFmt, ...);
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 /*
 	MYTRACEはリリースモードではコンパイルエラーとなるようにしてあるので，
-	MYTRACEを使う場合には必ず#ifdef _DEBUG 〜 #endif で囲む必要がある．
+	MYTRACEを使う場合には必ず#ifdef _DEBUG ～ #endif で囲む必要がある．
 */
 #ifdef _DEBUG
 	#ifdef _UNICODE
@@ -40,7 +40,7 @@ void DebugOutA( LPCSTR lpFmt, ...);
 	#define MYTRACE   Do_not_use_the_MYTRACE_function_if_release_mode
 #endif
 
-//#ifdef _DEBUG〜#endifで囲まなくても良い版
+//#ifdef _DEBUG～#endifで囲まなくても良い版
 #ifdef _DEBUG
 	#ifdef _UNICODE
 	#define DEBUG_TRACE DebugOutW

@@ -176,7 +176,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		// バージョンアップ時はバックアップファイルを作成する	// 2011.01.28 ryoji
 		TCHAR iniVer[256];
 		DWORD mH, mL, lH, lL;
-		mH = mL = lH = lL = 0;	// ※ 古〜い ini だと "szVersion" は無い
+		mH = mL = lH = lL = 0;	// ※ 古～い ini だと "szVersion" は無い
 		if( cProfile.IOProfileData( LTEXT("Other"), LTEXT("szVersion"), MakeStringBufferT(iniVer) ) )
 			_stscanf( iniVer, _T("%u.%u.%u.%u"), &mH, &mL, &lH, &lL );
 		DWORD dwMS = (DWORD)MAKELONG(mL, mH);

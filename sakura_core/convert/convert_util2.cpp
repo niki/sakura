@@ -44,7 +44,7 @@
 
 /*
 	変換テーブル   BASE64 文字 → 数値
-	添え字の定義域：0x00 〜 0x7F
+	添え字の定義域：0x00 ～ 0x7F
 	@author D. S. Koba
 */
 const uchar_t cNA = 0xff;
@@ -71,7 +71,7 @@ const uchar_t TABLE_BASE64CharToValue[] = {
 
 /*!
 	変換テーブル 数値 → Modified BASE64 文字
-	添え字の定義域：0 〜 63
+	添え字の定義域：0 ～ 63
 	@author D. S. Koba
 */
 const char TABLE_ValueToBASE64Char[] = {

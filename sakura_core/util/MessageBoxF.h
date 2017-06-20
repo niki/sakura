@@ -36,7 +36,7 @@
 //                 メッセージボックス：実装                    //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-//2007.10.02 kobake メッセージボックスの使用はデバッグ時に限らないので、「Debug〜」という名前を廃止
+//2007.10.02 kobake メッセージボックスの使用はデバッグ時に限らないので、「Debug～」という名前を廃止
 #undef MessageBox
 #define MessageBox Wrap_MessageBox
 int Wrap_MessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType);

@@ -511,7 +511,7 @@ CMenuDrawer::CMenuDrawer()
 /* 351 */		F_DISABLE		/*, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 /* 352 */		F_DISABLE		/*, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 
-//2002.01.17 hor 「その他」のエリアを外部マクロ用に割当て
+//2002.01.17 hor ｢その他｣のエリアを外部マクロ用に割当て
 /* 外部マクロ(12段目31個: 353-383) */
 /* 353 */		F_USERMACRO_0+0		/*, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//外部マクロ①
 /* 354 */		F_USERMACRO_0+1		/*, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//外部マクロ②

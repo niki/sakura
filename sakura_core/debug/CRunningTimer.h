@@ -78,7 +78,7 @@ protected:
 };
 
 //	Oct. 16, 2002 genta
-//	#ifdef _DEBUG〜#endifで逐一囲まなくても簡単にタイマーのON/OFFを行うためのマクロ
+//	#ifdef _DEBUG～#endifで逐一囲まなくても簡単にタイマーのON/OFFを行うためのマクロ
 #if defined(_DEBUG) && defined(TIME_MEASURE)
   #define MY_TRACETIME(c,m) (c).WriteTrace(m)
   #define MY_RUNNINGTIMER(c,m) CRunningTimer c(m)

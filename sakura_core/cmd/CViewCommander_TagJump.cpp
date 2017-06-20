@@ -197,8 +197,8 @@ bool CViewCommander::Command_TAGJUMP( bool bClose )
 				searchMode = TAGLIST_FILEPATH;
 			}else{
 				// ノーマル/ファイル相対パス
-				// ・FileName.ext(123,45): str
-				// ・FileName.ext(123,45)  [SJIS]: str
+				// ･FileName.ext(123,45): str
+				// ･FileName.ext(123,45)  [SJIS]: str
 				const wchar_t* pTagEnd = wcsstr( pLine, L"): " );
 				if( !pTagEnd ){
 					pTagEnd = wcsstr( pLine, L"]: " );

@@ -53,7 +53,7 @@ static const DWORD p_helpids2[] = {	//11400
 	IDC_BUTTON_IMPORT,				HIDC_BUTTON_IMPORT_COLOR,		//インポート
 	IDC_BUTTON_EXPORT,				HIDC_BUTTON_EXPORT_COLOR,		//エクスポート
 	IDC_COMBO_SET,					HIDC_COMBO_SET_COLOR,			//強調キーワード１セット名
-	IDC_BUTTON_KEYWORD_SELECT,		HIDC_BUTTON_KEYWORD_SELECT,		//強調キーワード2〜10	// 2006.08.06 ryoji
+	IDC_BUTTON_KEYWORD_SELECT,		HIDC_BUTTON_KEYWORD_SELECT,		//強調キーワード2～10	// 2006.08.06 ryoji
 	IDC_EDIT_BLOCKCOMMENT_FROM,		HIDC_EDIT_BLOCKCOMMENT_FROM,	//ブロックコメント１開始
 	IDC_EDIT_BLOCKCOMMENT_TO,		HIDC_EDIT_BLOCKCOMMENT_TO,		//ブロックコメント１終了
 	IDC_EDIT_BLOCKCOMMENT_FROM2,	HIDC_EDIT_BLOCKCOMMENT_FROM2,	//ブロックコメント２開始
@@ -307,7 +307,7 @@ INT_PTR CPropTypesColor::DispatchEvent(
 
 	case WM_COMMAND:
 		wNotifyCode	= HIWORD( wParam );	/* 通知コード */
-		wID			= LOWORD( wParam );	/* 項目ID、 コントロールID、 またはアクセラレータID */
+		wID			= LOWORD( wParam );	/* 項目ID､ コントロールID､ またはアクセラレータID */
 		hwndCtl		= (HWND) lParam;	/* コントロールのハンドル */
 		if( hwndListColor == hwndCtl ){
 			switch( wNotifyCode ){
@@ -655,7 +655,7 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_STRINGENDLINE),
 		::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_STRINGLINEONLY ) );
 
-	//強調キーワード1〜10の設定
+	//強調キーワード1～10の設定
 	for( i = 0; i < MAX_KEYWORDSET_PER_TYPE; i++ ){
 		m_nSet[ i ] = m_Types.m_nKeyWordSetIdx[i];
 	}
@@ -813,7 +813,7 @@ int CPropTypesColor::GetData( HWND hwndDlg )
 	}
 	m_nSet[0] = m_Types.m_nKeyWordSetIdx[0];
 
-	//強調キーワード2〜10の取得(1は別)
+	//強調キーワード2～10の取得(1は別)
 	for( nIdx = 1; nIdx < MAX_KEYWORDSET_PER_TYPE; nIdx++ ){
 		m_Types.m_nKeyWordSetIdx[nIdx] = m_nSet[nIdx];
 	}

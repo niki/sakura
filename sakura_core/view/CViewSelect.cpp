@@ -357,7 +357,7 @@ void CViewSelect::DrawSelectArea2( HDC hdc ) const
 		// ::CombineRgn()の結果を受け取るために、適当なリージョンを作る
 		HRGN hrgnDraw = ::CreateRectRgnIndirect( &rcNew2 );
 		{
-			// 旧選択矩形と新選択矩形のリージョンを結合し、 重なりあう部分だけを除去します
+			// 旧選択矩形と新選択矩形のリージョンを結合し､ 重なりあう部分だけを除去します
 			if( NULLREGION != ::CombineRgn( hrgnDraw, hrgnOld, hrgnNew, RGN_XOR ) ){
 
 				// 2002.02.16 hor

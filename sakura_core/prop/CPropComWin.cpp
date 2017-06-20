@@ -125,7 +125,7 @@ INT_PTR CPropWin::DispatchEvent(
 			}
 			break;
 		case IDC_SPIN_nRulerHeight:
-			/* ルーラ−の高さ */
+			/* ルーラ－の高さ */
 			nVal = ::GetDlgItemInt( hwndDlg, IDC_EDIT_nRulerHeight, NULL, FALSE );
 			if( pMNUD->iDelta < 0 ){
 				++nVal;
@@ -201,7 +201,7 @@ INT_PTR CPropWin::DispatchEvent(
 //	From Here Sept. 9, 2000 JEPRO
 	case WM_COMMAND:
 		wNotifyCode	= HIWORD(wParam);	/* 通知コード */
-		wID			= LOWORD(wParam);	/* 項目ID、 コントロールID、 またはアクセラレータID */
+		wID			= LOWORD(wParam);	/* 項目ID､ コントロールID､ またはアクセラレータID */
 		switch( wNotifyCode ){
 		/* ボタン／チェックボックスがクリックされた */
 		case BN_CLICKED:

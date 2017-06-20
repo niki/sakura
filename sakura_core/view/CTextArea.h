@@ -201,7 +201,7 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         サポート                            //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	//$ Generateなんていう大げさな名前じゃなくて、Get〜で良い気がしてきた
+	//$ Generateなんていう大げさな名前じゃなくて、Get～で良い気がしてきた
 	//!クリッピング矩形を作成。表示範囲外だった場合はfalseを返す。
 	void GenerateCharRect(RECT* rc,const DispPos& sPos,CLayoutXInt nColumns) const;
 	bool TrimRectByArea(RECT* rc) const;

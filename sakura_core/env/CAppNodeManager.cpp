@@ -550,10 +550,10 @@ int CAppNodeManager::GetNoNameNumber( HWND hWnd )
 	-------------------------------------------------
 	bSort	bGSort	処理結果
 	-------------------------------------------------
-	FALSE	FALSE	グループMRU順−ウィンドウMRU順
-	TRUE	FALSE	グループMRU順−ウィンドウ番号順
-	FALSE	TRUE	グループ番号順−ウィンドウMRU順
-	TRUE	TRUE	グループ番号順−ウィンドウ番号順
+	FALSE	FALSE	グループMRU順－ウィンドウMRU順
+	TRUE	FALSE	グループMRU順－ウィンドウ番号順
+	FALSE	TRUE	グループ番号順－ウィンドウMRU順
+	TRUE	TRUE	グループ番号順－ウィンドウ番号順
 	-------------------------------------------------
 
 	@return 配列の要素数を返す

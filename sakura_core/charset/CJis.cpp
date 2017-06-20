@@ -381,7 +381,7 @@ int CJis::UniToJis( const wchar_t* pSrc, const int nSrcLen, char* pDst, bool* pb
 				*pw = '?';
 				++pw;
 			}else if( echarset_cur == CHARSET_JIS_HANKATA ){
-				// '・' 0x25(JIS) を出力
+				// '･' 0x25(JIS) を出力
 				*pw = 0x25;
 				++pw;
 			}else if( echarset_cur == CHARSET_JIS_ZENKAKU ){

@@ -176,7 +176,7 @@ bool CKeyWordSetMgr::DelKeyWordSet( int nIdx )
 
 /*! ｎ番目のセットのセット名を返す
 
-	@param nIdx [in] セット番号 0〜キーワードセット数-1
+	@param nIdx [in] セット番号 0～キーワードセット数-1
 */
 const wchar_t* CKeyWordSetMgr::GetTypeName( int nIdx )
 {
@@ -618,7 +618,7 @@ bool CKeyWordSetMgr::KeyWordAlloc( int nSize )
 /*!	初期化済みのキーワードセットのキーワード領域の再割り当て、解放を行う
 
 	@param nIdx [in] キーワードセット番号
-	@param nSize [in] 必要なキーワード数 (0〜)
+	@param nSize [in] 必要なキーワード数 (0～)
 */
 bool CKeyWordSetMgr::KeyWordReAlloc( int nIdx, int nSize )
 {

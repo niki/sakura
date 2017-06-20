@@ -35,7 +35,7 @@ public:
 	//action
 	bool DrawImp(SColorStrategyInfo* pInfo);
 	virtual void DispSpaceEx(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans, int width) const;
-	virtual wchar_t GetAlternateChar() const{ return L'・'; }
+	virtual wchar_t GetAlternateChar() const{ return L'･'; }
 	void DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans) const{assert(0);};
 	EColorIndexType GetColorIdx(void) const{ return COLORIDX_CTRLCODE; }
 };

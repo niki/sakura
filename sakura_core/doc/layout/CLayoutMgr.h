@@ -142,7 +142,7 @@ public:
 
 	/*! 次のTAB位置までの幅
 		@param pos [in] 現在の位置
-		@return 次のTAB位置までの文字数．1〜TAB幅
+		@return 次のTAB位置までの文字数．1～TAB幅
 	 */
 	CLayoutInt GetActualTabSpace(CLayoutInt pos) const {
 		CLayoutInt tabPadding = m_nCharLayoutXPerKeta - 1;
@@ -157,7 +157,7 @@ public:
 	/*! 次のTABまたはカンマ位置までの幅
 		@param pos [in] 現在の位置
 		@param 
-		@return 次のTAB位置までの文字数．1〜TAB幅
+		@return 次のTAB位置までの文字数．1～TAB幅
 	 */
 	CLayoutInt GetActualTsvSpace(CLayoutInt pos, wchar_t ch) const {
 		CLayoutInt tabPadding = m_nCharLayoutXPerKeta - 1;

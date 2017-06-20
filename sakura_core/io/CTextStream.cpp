@@ -130,7 +130,7 @@ void CTextOutputStream::WriteString(
 		else lf = NULL;
 
 		if(lf){
-			//\nの前まで(p〜lf)出力
+			//\nの前まで(p～lf)出力
 			CNativeW cSrc(p,lf-p);
 			CMemory cDst;
 			m_pcCodeBase->UnicodeToCode(cSrc,&cDst); //コード変換

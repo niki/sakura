@@ -83,7 +83,7 @@ enum EDllResult{
 	@date 2001.07.05 genta GetDllName: 引数追加。パスの指定などに使える
 	@date 2007.06.25 genta GetDllName: GetDllNameImpを使用する場合は必須ではないので，
 										純粋仮想関数はやめてプレースホルダーを用意する．
-	@date 2008.05.10 kobake 整理。派生クラスは、〜Impをオーバーロードすれば良いという方式です。
+	@date 2008.05.10 kobake 整理。派生クラスは、～Impをオーバーロードすれば良いという方式です。
 */
 class CDllImp{
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -186,7 +186,7 @@ protected:
 		それはDLLのロードに成功する(成功)か，戻り値としてNULLを返す(失敗)
 		まで続けられる．
 
-		@param[in] nIndex インデックス．(0〜)
+		@param[in] nIndex インデックス．(0～)
 		
 		@return 引数に応じてDLL名(LoadLibraryに渡す文字列)，またはNULL．
 	*/

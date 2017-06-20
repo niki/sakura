@@ -54,11 +54,11 @@ void CType_Text::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_bKinsokuTail = false;								// 行末禁則				//@@@ 2002.04.08 MIK
 	pType->m_bKinsokuRet  = false;								// 改行文字をぶら下げる	//@@@ 2002.04.13 MIK
 	pType->m_bKinsokuKuto = false;								// 句読点をぶら下げる	//@@@ 2002.04.17 MIK
-	wcscpy( pType->m_szKinsokuHead, L"!%),.:;?]}\xa2°’”‰′″℃、。々〉》」』】〕゛゜ゝゞ・ヽヾ！％），．：；？］｝。」、・゛゜¢" );		/* 行頭禁則 */	//@@@ 2002.04.13 MIK 
-	wcscpy( pType->m_szKinsokuTail, L"$([\\{\xa3\xa5‘“〈《「『【〔＄（［｛「£¥" );		/* 行末禁則 */	//@@@ 2002.04.08 MIK 
+	wcscpy( pType->m_szKinsokuHead, L"!%),.:;?]}\xa2°’”‰′″℃、。々〉》」』】〕゛゜ゝゞ・ヽヾ！％），．：；？］｝｡｣､･ﾞﾟ￠" );		/* 行頭禁則 */	//@@@ 2002.04.13 MIK 
+	wcscpy( pType->m_szKinsokuTail, L"$([\\{\xa3\xa5‘“〈《「『【〔＄（［｛｢￡￥" );		/* 行末禁則 */	//@@@ 2002.04.08 MIK 
 	// pType->m_szKinsokuKuto（句読点ぶら下げ文字）はここではなく全タイプにデフォルト設定	// 2009.08.07 ryoji 
 
-	//※小さな親切として、C:\〜〜 や \\〜〜 などのファイルパスをクリッカブルにする設定を「テキスト」に既定で仕込む
+	//※小さな親切として、C:\～～ や \\～～ などのファイルパスをクリッカブルにする設定を「テキスト」に既定で仕込む
 	//※""で挟まれる設定は挟まれない設定よりも上に無ければならない
 	//※""で挟まれる設定を複製してちょっと修正すれば、<>や[]に挟まれたものにも対応できる（ユーザに任せる）
 
@@ -68,12 +68,12 @@ void CType_Text::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_bUseRegexKeyword = true;							// 正規表現キーワードを使うか
 	pType->m_RegexKeywordArr[0].m_nColorIndex = COLORIDX_URL;	// 色指定番号
 	wcscpyn( &pKeyword[keywordPos],			// 正規表現キーワード
-		L"/(?<=\")(\\b[a-zA-Z]:|\\B\\\\\\\\)[^\"\\r\\n]*/k",			//   ""で挟まれた C:\〜, \\〜 にマッチするパターン
+		L"/(?<=\")(\\b[a-zA-Z]:|\\B\\\\\\\\)[^\"\\r\\n]*/k",			//   ""で挟まれた C:\～, \\～ にマッチするパターン
 		_countof(pType->m_RegexKeywordList) - 1 );
 	keywordPos += auto_strlen(&pKeyword[keywordPos]) + 1;
 	pType->m_RegexKeywordArr[1].m_nColorIndex = COLORIDX_URL;	// 色指定番号
 	wcscpyn( &pKeyword[keywordPos],			// 正規表現キーワード
-		L"/(\\b[a-zA-Z]:\\\\|\\B\\\\\\\\)[\\w\\-_.\\\\\\/$%~]*/k",		//   C:\〜, \\〜 にマッチするパターン
+		L"/(\\b[a-zA-Z]:\\\\|\\B\\\\\\\\)[\\w\\-_.\\\\\\/$%~]*/k",		//   C:\～, \\～ にマッチするパターン
 		_countof(pType->m_RegexKeywordList) - keywordPos - 1 );
 	keywordPos += auto_strlen(&pKeyword[keywordPos]) + 1;
 	pKeyword[keywordPos] = L'\0';
@@ -153,9 +153,9 @@ void CDocOutline::MakeTopicList_txt( CFuncInfoArr* pcFuncInfoArr )
 		}
 		else if( IsInRange(pLine[i], L'０', L'９') ) wcscpy( szTitle, L"０" ); // 全角数字
 		else if( IsInRange(pLine[i], L'①', L'⑳') || pLine[i] == L'\u24ea'
-			|| IsInRange(pLine[i], L'\u3251', L'\u325f') || IsInRange(pLine[i], L'\u32b1', L'\u32bf') ) wcscpy( szTitle, L"①" ); // ①〜⑳ ○0　○21○35　○36○50
-		else if( IsInRange(pLine[i], L'Ⅰ', L'\u216f') ) wcscpy( szTitle, L"Ⅰ" ); // Ⅰ〜Ⅹ　XIXIILCDM
-		else if( IsInRange(pLine[i], L'ⅰ', L'\u217f') ) wcscpy( szTitle, L"Ⅰ" ); // Ⅰ〜Ⅹ　xixiilcdm
+			|| IsInRange(pLine[i], L'\u3251', L'\u325f') || IsInRange(pLine[i], L'\u32b1', L'\u32bf') ) wcscpy( szTitle, L"①" ); // ①～⑳ ○0　○21○35　○36○50
+		else if( IsInRange(pLine[i], L'Ⅰ', L'\u216f') ) wcscpy( szTitle, L"Ⅰ" ); // Ⅰ～Ⅹ　XIXIILCDM
+		else if( IsInRange(pLine[i], L'ⅰ', L'\u217f') ) wcscpy( szTitle, L"Ⅰ" ); // Ⅰ～Ⅹ　xixiilcdm
 		else if( IsInRange(pLine[i], L'\u2474', L'\u2487') ) wcscpy( szTitle, L"\u2474" ); // (1)-(20)
 		else if( IsInRange(pLine[i], L'\u2488', L'\u249b') ) wcscpy( szTitle, L"\u2488" ); // 1.-20.
 		else if( IsInRange(pLine[i], L'\u249c', L'\u24b5') ) wcscpy( szTitle, L"\u249c" ); // (a)-(z)

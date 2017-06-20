@@ -49,7 +49,7 @@ namespace ApiWrap{
 		return FALSE != ret;
 	}
 
-	// TreeView 全開・全閉
+	// TreeView 全開･全閉
 	void TreeView_ExpandAll(HWND hwndTree, bool bExpand, int nMaxDepth)
 	{
 		HTREEITEM	htiCur;

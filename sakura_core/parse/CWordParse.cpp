@@ -323,7 +323,7 @@ bool CWordParse::SearchNextWordPosition4KW(
 uchar_t wc_to_c(wchar_t wc)
 {
 #if 0
-//! wcがSJIS1バイト文字ならcharに変換して0〜255を返す。SJIS2バイト文字なら0を返す。
+//! wcがSJIS1バイト文字ならcharに変換して0～255を返す。SJIS2バイト文字なら0を返す。
 	char buf[3]={0,0,0};
 	int ret=wctomb(buf,wc);
 	if(ret==-1)return 0;   //エラー

@@ -101,7 +101,7 @@ static const bool UNICODE_BOOL=false;
 	inline void* operator new(size_t nSize)
 	{
 		void* p = ::malloc(nSize);
-		_fill_new_memory(p,nSize,"ニュー",3); //確保されたばかりのメモリ状態は「ニューニューニュー…」となります
+		_fill_new_memory(p,nSize,"ﾆｭｰ",3); //確保されたばかりのメモリ状態は「ﾆｭｰﾆｭｰﾆｭｰ…」となります
 		return p;
 	}
 #ifdef _MSC_VER
@@ -112,7 +112,7 @@ static const bool UNICODE_BOOL=false;
 	inline void* operator new[](size_t nSize)
 	{
 		void* p = ::malloc(nSize);
-		_fill_new_memory(p,nSize,"ギュー",4); //確保されたばかりのメモリ状態は「ギューギューギュー…」となります
+		_fill_new_memory(p,nSize,"ｷﾞｭｰ",4); //確保されたばかりのメモリ状態は「ｷﾞｭｰｷﾞｭｰｷﾞｭｰ…」となります
 		return p;
 	}
 	inline void operator delete(void* p)

@@ -152,7 +152,7 @@ void CDlgCtrlCode::SetData( void )
 		else if( p_ctrl_list[i].code == 0x7f )
 			_tcscpy( tmp, _T("^?") );
 		else
-			_tcscpy( tmp, _T("・") );
+			_tcscpy( tmp, _T("･") );
 		lvi.mask     = LVIF_TEXT;
 		lvi.iItem    = count;
 		lvi.iSubItem = 1;

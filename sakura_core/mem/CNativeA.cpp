@@ -220,15 +220,15 @@ void CNativeA::ToLower()
 				pBuf[i] = pBuf[i];
 				pBuf[i + 1] = pBuf[i + 1] + 0x21;
 //@@@ 2001.02.03 Start by MIK: ギリシャ文字変換
-			//大文字:0x839f〜0x83b6
-			//小文字:0x83bf〜0x83d6
+			//大文字:0x839f～0x83b6
+			//小文字:0x83bf～0x83d6
 			}else if( pBuf[i] == 0x83 && pBuf[i + 1] >= 0x9f && pBuf[i + 1] <= 0xb6 ){
 				pBuf[i] = pBuf[i];
 				pBuf[i + 1] = pBuf[i + 1] + 0x20;
 //@@@ 2001.02.03 End
 //@@@ 2001.02.03 Start by MIK: ロシア文字変換
-			//大文字:0x8440〜0x8460
-			//小文字:0x8470〜0x8491 0x847fがない！
+			//大文字:0x8440～0x8460
+			//小文字:0x8470～0x8491 0x847fがない！
 			}else if( pBuf[i] == 0x84 && pBuf[i + 1] >= 0x40 && pBuf[i + 1] <= 0x60 ){
 				pBuf[i] = pBuf[i];
 				if( pBuf[i + 1] >= 0x4f ){
@@ -271,15 +271,15 @@ void CNativeA::ToUpper()
 				pBuf[i] = pBuf[i];
 				pBuf[i + 1] = pBuf[i + 1] - 0x21;
 //@@@ 2001.02.03 Start by MIK: ギリシャ文字変換
-			//大文字:0x839f〜0x83b6
-			//小文字:0x83bf〜0x83d6
+			//大文字:0x839f～0x83b6
+			//小文字:0x83bf～0x83d6
 			}else if( pBuf[i] == 0x83 && pBuf[i + 1] >= 0xbf && pBuf[i + 1] <= 0xd6 ){
 				pBuf[i] = pBuf[i];
 				pBuf[i + 1] = pBuf[i + 1] - 0x20;
 //@@@ 2001.02.03 End
 //@@@ 2001.02.03 Start by MIK: ロシア文字変換
-			//大文字:0x8440〜0x8460
-			//小文字:0x8470〜0x8491 0x847fがない！
+			//大文字:0x8440～0x8460
+			//小文字:0x8470～0x8491 0x847fがない！
 			}else if( pBuf[i] == 0x84 && pBuf[i + 1] >= 0x70 && pBuf[i + 1] <= 0x91 && pBuf[i + 1] != 0x7f ){
 				pBuf[i] = pBuf[i];
 				if( pBuf[i + 1] >= 0x7f ){
@@ -313,9 +313,9 @@ void CNativeA::ToZenkaku(
 	unsigned short			usDes;
 	unsigned char*			pBufDes;
 	int						nBufDesLen;
-	static unsigned char*	pszHanKataSet = (unsigned char*)"。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜";
-	static unsigned char*	pszDakuSet = (unsigned char*)"カキクケコサシスセソタチツテトハヒフヘホ";
-	static unsigned char*	pszYouSet = (unsigned char*)"ハヒフヘホ";
+	static unsigned char*	pszHanKataSet = (unsigned char*)"｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ";
+	static unsigned char*	pszDakuSet = (unsigned char*)"ｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾊﾋﾌﾍﾎ";
+	static unsigned char*	pszYouSet = (unsigned char*)"ﾊﾋﾌﾍﾎ";
 	BOOL					bHenkanOK;
 
 	pBufDes = new unsigned char[nBufLen * 2 + 1];
@@ -343,8 +343,8 @@ void CNativeA::ToZenkaku(
 			if( bHenkanOK ){
 				usSrc = pBuf[i];
 				if( !bHiragana &&
-					pBuf[i]		== (unsigned char)'ウ' &&
-					pBuf[i + 1] == (unsigned char)'゛' &&
+					pBuf[i]		== (unsigned char)'ｳ' &&
+					pBuf[i + 1] == (unsigned char)'ﾞ' &&
 					bHiragana != 2
 				){
 					usDes = (unsigned short)0x8394; /* ヴ */
@@ -352,14 +352,14 @@ void CNativeA::ToZenkaku(
 				}else {
 					usDes = (unsigned short)_mbbtombc( usSrc );
 					/* 濁音 */
-					if( bHiragana != 2 && pBuf[i + 1] == (unsigned char)'゛' && NULL != strchr( (const char *)pszDakuSet, pBuf[i] ) ){
+					if( bHiragana != 2 && pBuf[i + 1] == (unsigned char)'ﾞ' && NULL != strchr( (const char *)pszDakuSet, pBuf[i] ) ){
 						usDes++;
 						nCharChars = 2;
 					}
 					/* 拗音 */
 					//! 英数変換用に新たな条件を付加 2001/07/30 Misaka
 					//! bHiragana != 2 //英数変換フラグがオンではない場合
-					if( bHiragana != 2 && pBuf[i + 1] == (unsigned char)'゜' && NULL != strchr( (const char *)pszYouSet, pBuf[i] ) ){
+					if( bHiragana != 2 && pBuf[i + 1] == (unsigned char)'ﾟ' && NULL != strchr( (const char *)pszYouSet, pBuf[i] ) ){
 						usDes += 2;
 						nCharChars = 2;
 					}
@@ -367,10 +367,10 @@ void CNativeA::ToZenkaku(
 
 				if( bHiragana == 1 ){
 					/* ひらがなに変換可能なカタカナならば、ひらがなに変換する */
-					if( (unsigned short)0x8340 <= usDes && usDes <= (unsigned short)0x837e ){	/* ァ〜ミ */
+					if( (unsigned short)0x8340 <= usDes && usDes <= (unsigned short)0x837e ){	/* ァ～ミ */
 						usDes-= (unsigned short)0x00a1;
 					}else
-					if( (unsigned short)0x8380 <= usDes && usDes <= (unsigned short)0x8393 ){	/* ム〜ン */
+					if( (unsigned short)0x8380 <= usDes && usDes <= (unsigned short)0x8393 ){	/* ム～ン */
 						usDes-= (unsigned short)0x00a2;
 					}
 				}
@@ -388,18 +388,18 @@ void CNativeA::ToZenkaku(
 			if( bHanKataOnly == 0 ){
 				if( bHiragana == 1 ){//英数変換を付加したために数値で指定した　2001/07/30 Misaka
 					/* 全角ひらがなに変換可能な全角カタカナならば、ひらがなに変換する */
-					if( (unsigned short)0x8340 <= usSrc && usSrc <= (unsigned short)0x837e ){	/* ァ〜ミ */
+					if( (unsigned short)0x8340 <= usSrc && usSrc <= (unsigned short)0x837e ){	/* ァ～ミ */
 						usDes = usSrc - (unsigned short)0x00a1;
 					}else
-					if( (unsigned short)0x8380 <= usSrc && usSrc <= (unsigned short)0x8393 ){	/* ム〜ン */
+					if( (unsigned short)0x8380 <= usSrc && usSrc <= (unsigned short)0x8393 ){	/* ム～ン */
 						usDes = usSrc - (unsigned short)0x00a2;
 					}
 				}else if( bHiragana == 0 ){//英数変換を付加したために数値で指定した　2001/07/30 Misaka
 					/* 全角カタカナに変換可能な全角ひらがなならば、カタカナに変換する */
-					if( (unsigned short)0x829f <= usSrc && usSrc <= (unsigned short)0x82dd ){	/* ぁ〜み */
+					if( (unsigned short)0x829f <= usSrc && usSrc <= (unsigned short)0x82dd ){	/* ぁ～み */
 						usDes = usSrc + (unsigned short)0x00a1;
 					}else
-					if( (unsigned short)0x82de <= usSrc && usSrc <= (unsigned short)0x82f1 ){	/* む〜ん */
+					if( (unsigned short)0x82de <= usSrc && usSrc <= (unsigned short)0x82f1 ){	/* む～ん */
 						usDes = usSrc + (unsigned short)0x00a2;
 					}
 				}

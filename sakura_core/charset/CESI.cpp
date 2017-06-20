@@ -180,7 +180,7 @@ void CESI::SortMBCInfo( void )
 	int i, j;
 
 	/*
-		「特有バイト数 − 不正バイト数＝ポイント数 (.nPoints)」の数の大きい順にソート（バブルソート）
+		「特有バイト数 － 不正バイト数＝ポイント数 (.nPoints)」の数の大きい順にソート（バブルソート）
 	*/
 	for( i = 0; i < NUM_OF_MBCODE; i++ ){
 		m_apMbcInfo[i] = &m_aMbcInfo[i];

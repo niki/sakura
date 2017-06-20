@@ -1244,7 +1244,7 @@ static void Tab2Space(wchar_t* pTrg)
 }
 
 
-/*! 印刷/印刷プレビュー ヘッダ・フッタの描画
+/*! 印刷/印刷プレビュー ヘッダ･フッタの描画
 */
 void CPrintPreview::DrawHeaderFooter( HDC hdc, const CMyRect& rect, bool bHeader )
 {

@@ -1,7 +1,7 @@
 ﻿/*
 	ドキュメント種別の管理
 
-	2008.01〜03 kobake 作成
+	2008.01～03 kobake 作成
 */
 /*
 	Copyright (C) 2008, kobake

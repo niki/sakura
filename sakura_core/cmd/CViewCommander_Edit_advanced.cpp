@@ -485,7 +485,7 @@ void CViewCommander::Command_UNINDENT( wchar_t wcChar )
 					nDelLen = CLogicInt(1);
 				}
 				else{
-					//削り取る半角スペース数 (1〜タブ幅分) -> nDelLen
+					//削り取る半角スペース数 (1～タブ幅分) -> nDelLen
 					CLogicInt i;
 					CLogicInt nTabSpaces = CLogicInt((Int)GetDocument()->m_cLayoutMgr.GetTabSpaceKetas());
 					for( i = CLogicInt(0); i < nLineLen; i++ ){

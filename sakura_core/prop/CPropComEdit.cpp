@@ -93,7 +93,7 @@ INT_PTR CPropEdit::DispatchEvent(
 		return TRUE;
 	case WM_COMMAND:
 		wNotifyCode	= HIWORD(wParam);	/* 通知コード */
-		wID			= LOWORD(wParam);	/* 項目ID、 コントロールID、 またはアクセラレータID */
+		wID			= LOWORD(wParam);	/* 項目ID､ コントロールID､ またはアクセラレータID */
 		switch( wNotifyCode ){
 		/* ボタン／チェックボックスがクリックされた */
 		case BN_CLICKED:

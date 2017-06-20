@@ -149,10 +149,10 @@ const char* TABLE_JISESCDATA[] = {
 	SJIS のこと.
 
 	第１バイト |  1000 0001(0x81)         |   1110 0000(0xE0)         |   1010 0001(0xA1)
-	           | 〜 1001 1111(0x9F)       |  〜 1110 1111(0xEF)       |  〜 1101 1111(0xDF)
+	           | ～ 1001 1111(0x9F)       |  ～ 1110 1111(0xEF)       |  ～ 1101 1111(0xDF)
 	           | → SJIS 全角漢字かなカナ |  → SJIS 全角漢字カナかな |  → 半角カナ
 	-----------+--------------------------+---------------------------+-------------------------
-	第２バイト |        0100 0000(0x40)  〜  1111 1100(0xFC)          |      ----
+	第２バイト |        0100 0000(0x40)  ～  1111 1100(0xFC)          |      ----
 	           |         ただし 0111 1111(0x7F) は除く.               |
 
 	参考：「■G-PROJECT■ -日本語文字コードの判別」http://www.gprj.net/dev/tips/other/kanji.shtml
@@ -207,14 +207,14 @@ int CheckSjisChar( const char* pS, const int nLen, ECharSet *peCharset )
 /*
 	EUC-JP のこと.
 
-	第1バイト |   1000 1110(0x8E)   |  1000 1111(0x8F)    |  1010 0001(0xA1) 〜 1111 1110(0xFE)
+	第1バイト |   1000 1110(0x8E)   |  1000 1111(0x8F)    |  1010 0001(0xA1) ～ 1111 1110(0xFE)
 	          |   → 半角カナ       |  → 補助漢字        |  → 漢字かなカナ
 	----------+---------------------+---------------------+-------------------------------------
 	第2バイト |  1010 0001(0xA1)    |   1010 0001(0xA1)   |      1010 0001(0xA1)
-	          | 〜 1101 1111(0xDF)  |  〜 1111 1110(0xFE) |     〜 1111 1110(0xFE)
+	          | ～ 1101 1111(0xDF)  |  ～ 1111 1110(0xFE) |     ～ 1111 1110(0xFE)
 	----------+---------------------+---------------------+-------------------------------------
 	第3バイト |        ----         |   1010 0001(0xA1)   |        ----
-	          |                     |  〜 1111 1110(0xFE) |
+	          |                     |  ～ 1111 1110(0xFE) |
 
 	参考：「■G-PROJECT■ -日本語文字コードの判別」http://www.gprj.net/dev/tips/other/kanji.shtml
 	      「ミケネコの文字コードの部屋」http://mikeneko.creator.club.ne.jp/~lab/kcode/index.html
@@ -467,11 +467,11 @@ int _CheckJisAnyPart(
 
 	U+10000 から U+10FFFF の文字値 a0 に対しては,
 
-		a0 = HHHHHHHHHHLLLLLLLLLL  U+10000 〜 U+10FFFF
-		w1 = 110110HH HHHHHHHH     上位サロゲート：U+D800 〜 U+DBFF
-		w2 = 110111LL LLLLLLLL     下位サロゲート：U+DC00 〜 U+DFFF
+		a0 = HHHHHHHHHHLLLLLLLLLL  U+10000 ～ U+10FFFF
+		w1 = 110110HH HHHHHHHH     上位サロゲート：U+D800 ～ U+DBFF
+		w2 = 110111LL LLLLLLLL     下位サロゲート：U+DC00 ～ U+DFFF
 
-	1. 0x10000 を引き, 20ビットの文字値 a1 (0x00000 〜 0xFFFFF) で表現した後,
+	1. 0x10000 を引き, 20ビットの文字値 a1 (0x00000 ～ 0xFFFFF) で表現した後,
 	     a1 ← a0 - 0x10000
 	2. 上位 10ビットを w1, 下位 10ビットを w2 に分け,
 	     w1 ← (a1 & 0xFFC0) >> 6
@@ -583,10 +583,10 @@ UTF-8のコード
 UTF-8のエンコーディング
 
 ビット列                  MSB -         UCS ビット列         - LSB     第1バイト  第2バイト  第3バイト  第4バイト
-\u0〜\u7F         (UCS2)  0000 0000 0000 0000  0000 0000 0aaa bbbb  -> 0aaa bbbb     ---        ---        ---
-\u80〜\u7FF       (UCS2)  0000 0000 0000 0000  0000 0aaa bbbb cccc  -> 110a aabb  10bb cccc     ---        ---
-\u800〜\uFFFF     (UCS2)  0000 0000 0000 0000  aaaa bbbb cccc dddd  -> 1110 aaaa  10bb bbcc  10cc dddd     ---
-\u10000〜\u1FFFFF (UCS4)  0000 0000 000a bbbb  cccc dddd eeee ffff  -> 1111 0abb  10bb cccc  10dd ddee  10ee ffff
+\u0～\u7F         (UCS2)  0000 0000 0000 0000  0000 0000 0aaa bbbb  -> 0aaa bbbb     ---        ---        ---
+\u80～\u7FF       (UCS2)  0000 0000 0000 0000  0000 0aaa bbbb cccc  -> 110a aabb  10bb cccc     ---        ---
+\u800～\uFFFF     (UCS2)  0000 0000 0000 0000  aaaa bbbb cccc dddd  -> 1110 aaaa  10bb bbcc  10cc dddd     ---
+\u10000～\u1FFFFF (UCS4)  0000 0000 000a bbbb  cccc dddd eeee ffff  -> 1111 0abb  10bb cccc  10dd ddee  10ee ffff
 
 参考資料：「UCSとUTF」http://nomenclator.la.coocan.jp/unicode/ucs_utf.htm
 * --------------------------------------------------------------------------------------------------------------- */

@@ -60,13 +60,13 @@ CShareData::CShareData()
 }
 
 /*!
-	共有メモリ領域がある場合はプロセスのアドレス空間から、
+	共有メモリ領域がある場合はプロセスのアドレス空間から､
 	すでにマップされているファイル ビューをアンマップする。
 */
 CShareData::~CShareData()
 {
 	if( m_pShareData ){
-		/* プロセスのアドレス空間から、 すでにマップされているファイル ビューをアンマップします */
+		/* プロセスのアドレス空間から､ すでにマップされているファイル ビューをアンマップします */
 		SetDllShareData( NULL );
 		::UnmapViewOfFile( m_pShareData );
 		m_pShareData = NULL;
@@ -134,7 +134,7 @@ bool CShareData::InitShareData()
 
 	if( GetLastError() != ERROR_ALREADY_EXISTS ){
 		/* オブジェクトが存在していなかった場合 */
-		/* ファイルのビューを、 呼び出し側プロセスのアドレス空間にマップします */
+		/* ファイルのビューを､ 呼び出し側プロセスのアドレス空間にマップします */
 		m_pShareData = (DLLSHAREDATA*)::MapViewOfFile(
 			m_hFileMap,
 			FILE_MAP_ALL_ACCESS,
@@ -678,7 +678,7 @@ bool CShareData::InitShareData()
 		}
 
 		{
-			/* m_PrintSettingArr[0]を設定して、残りの1〜7にコピーする。
+			/* m_PrintSettingArr[0]を設定して、残りの1～7にコピーする。
 				必要になるまで遅らせるために、CPrintに、CShareDataを操作する権限を与える。
 				YAZAKI.
 			*/
@@ -742,7 +742,7 @@ bool CShareData::InitShareData()
 		}
 	}else{
 		/* オブジェクトがすでに存在する場合 */
-		/* ファイルのビューを、 呼び出し側プロセスのアドレス空間にマップします */
+		/* ファイルのビューを､ 呼び出し側プロセスのアドレス空間にマップします */
 		m_pShareData = (DLLSHAREDATA*)::MapViewOfFile(
 			m_hFileMap,
 			FILE_MAP_ALL_ACCESS,
