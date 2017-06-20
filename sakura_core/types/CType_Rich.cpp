@@ -24,7 +24,10 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "view/colors/EColorIndexType.h"
+
+int g_nKeywordsIdx_RTF;
 
 /* リッチテキスト */
 //JUl. 10, 2001 JEPRO WinHelp作るのにいるケンね
@@ -37,7 +40,7 @@ void CType_Rich::InitTypeConfigImp(STypeConfig* pType)
 
 	//設定
 	pType->m_eDefaultOutline = OUTLINE_TEXT;					/* アウトライン解析方法 */
-	pType->m_nKeyWordSetIdx[0]  = 15;							/* キーワードセット */
+	pType->m_nKeyWordSetIdx[0]  = g_nKeywordsIdx_RTF;
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;		/* 半角数値を色分け表示 */
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = false;	//シングルクォーテーション文字列を色分け表示しない
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = false;	//ダブルクォーテーション文字列を色分け表示しない
@@ -46,6 +49,7 @@ void CType_Rich::InitTypeConfigImp(STypeConfig* pType)
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 //Jul. 10, 2001 JEPRO 追加
 const wchar_t* g_ppszKeywordsRTF[] = {
 	L"\\ansi",
@@ -133,3 +137,4 @@ const wchar_t* g_ppszKeywordsRTF[] = {
 	L"emr"
 };
 int g_nKeywordsRTF = _countof(g_ppszKeywordsRTF);
+#endif

@@ -23,7 +23,8 @@
 */
 
 #include "StdAfx.h"
-#include "CType.h"
+#include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CDocOutline.h"
 #include "doc/CEditDoc.h"
 #include "outline/CFuncInfoArr.h"
@@ -31,6 +32,8 @@
 #include "cmd/CViewCommander_inline.h"
 #include "view/CEditView.h"
 #include "view/colors/EColorIndexType.h"
+
+int g_nKeywordsIdx_CPP = -1;
 
 //!CPPキーワードで始まっていれば true
 inline bool IsHeadCppKeyword(const wchar_t* pData)
@@ -59,7 +62,7 @@ void CType_Cpp::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );							/* 行コメントデリミタ */
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"/*", L"*/" );			/* ブロックコメントデリミタ */
 	pType->m_cBlockComments[1].SetBlockCommentRule( L"#if 0", L"#endif" );	/* ブロックコメントデリミタ2 */	//Jul. 11, 2001 JEPRO
-	pType->m_nKeyWordSetIdx[0] = 0;											/* キーワードセット */
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_CPP;
 	pType->m_eDefaultOutline = OUTLINE_C_CPP;									/* アウトライン解析方法 */
 	pType->m_eSmartIndent = SMARTINDENT_CPP;								/* スマートインデント種別 */
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;					//半角数値を色分け表示	//Mar. 10, 2001 JEPRO

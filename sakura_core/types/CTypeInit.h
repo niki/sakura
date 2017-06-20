@@ -1,5 +1,5 @@
 ﻿/*
-	Copyright (C) 2008, kobake
+	Copyright (C) 2014, Moca
 
 	This software is provided 'as-is', without any express or implied
 	warranty. In no event will the authors be held liable for any damages
@@ -22,51 +22,13 @@
 		   distribution.
 */
 
-#include "StdAfx.h"
-#include "types/CType.h"
-#include "types/CTypeInit.h"
+#ifndef SAKURA_CTYPEINIT_H_
+#define SAKURA_CTYPEINIT_H_
 
-int g_nKeywordsIdx_CORBA_IDL = -1;
+// 内蔵キーワードを定義するにはこれを定義してください
+// #define BUILD_OPT_IMPKEYWORD 1
 
-#ifdef BUILD_OPT_IMPKEYWORD
-const wchar_t* g_ppszKeywordsCORBA_IDL[] = {
-	L"any",
-	L"attribute",
-	L"boolean",
-	L"case",
-	L"char",
-	L"const",
-	L"context",
-	L"default",
-	L"double",
-	L"enum",
-	L"exception",
-	L"FALSE",
-	L"fixed",
-	L"float",
-	L"in",
-	L"inout",
-	L"interface",
-	L"long",
-	L"module",
-	L"Object",
-	L"octet",
-	L"oneway",
-	L"out",
-	L"raises",
-	L"readonly",
-	L"sequence",
-	L"short",
-	L"string",
-	L"struct",
-	L"switch",
-	L"TRUE",
-	L"typedef",
-	L"unsigned",
-	L"union",
-	L"void",
-	L"wchar_t",
-	L"wstring"
-};
-int g_nKeywordsCORBA_IDL = _countof(g_ppszKeywordsCORBA_IDL);
-#endif
+void RegexAdd(STypeConfig* pType, int& keywordPos, int idx, int colorIdx, const wchar_t* keyword );
+void SetColorInfoBC(STypeConfig* pType, int index, bool bBold, COLORREF color);
+
+#endif // SAKURA_CTYPEINIT_H_

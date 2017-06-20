@@ -24,6 +24,7 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
@@ -64,19 +65,10 @@ void CType_Text::InitTypeConfigImp(STypeConfig* pType)
 
 	//正規表現キーワード
 	int keywordPos = 0;
-	wchar_t* pKeyword = pType->m_RegexKeywordList;
-	pType->m_bUseRegexKeyword = true;							// 正規表現キーワードを使うか
-	pType->m_RegexKeywordArr[0].m_nColorIndex = COLORIDX_URL;	// 色指定番号
-	wcscpyn( &pKeyword[keywordPos],			// 正規表現キーワード
-		L"/(?<=\")(\\b[a-zA-Z]:|\\B\\\\\\\\)[^\"\\r\\n]*/k",			//   ""で挟まれた C:\～, \\～ にマッチするパターン
-		_countof(pType->m_RegexKeywordList) - 1 );
-	keywordPos += auto_strlen(&pKeyword[keywordPos]) + 1;
-	pType->m_RegexKeywordArr[1].m_nColorIndex = COLORIDX_URL;	// 色指定番号
-	wcscpyn( &pKeyword[keywordPos],			// 正規表現キーワード
-		L"/(\\b[a-zA-Z]:\\\\|\\B\\\\\\\\)[\\w\\-_.\\\\\\/$%~]*/k",		//   C:\～, \\～ にマッチするパターン
-		_countof(pType->m_RegexKeywordList) - keywordPos - 1 );
-	keywordPos += auto_strlen(&pKeyword[keywordPos]) + 1;
-	pKeyword[keywordPos] = L'\0';
+	int idx = 0;
+	RegexAdd( pType, keywordPos, idx++, COLORIDX_URL, L"/(?<=\")(\\b[a-zA-Z]:|\\B\\\\\\\\)[^\"\\r\\n]*/k" );    //   ""で挟まれた C:\～, \\～ にマッチするパターン
+	RegexAdd( pType, keywordPos, idx++, COLORIDX_URL, L"/(\\b[a-zA-Z]:\\\\|\\B\\\\\\\\)[\\w\\-_.\\\\\\/$%~]*/k" );    //   C:\～, \\～ にマッチするパターン
+	pType->m_bUseHokanByKeyword = false;					// 強調キーワードから入力補完
 }
 
 

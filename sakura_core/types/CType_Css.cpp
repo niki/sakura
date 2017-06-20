@@ -1,5 +1,6 @@
 ﻿/*
 	Copyright (C) 2008, kobake
+	Copyright (C) 2014, Moca
 
 	This software is provided 'as-is', without any express or implied
 	warranty. In no event will the authors be held liable for any damages
@@ -21,22 +22,31 @@
 		3. This notice may not be removed or altered from any source
 		   distribution.
 */
-
 #include "StdAfx.h"
 #include "types/CType.h"
-#include "doc/CDocOutline.h"
+#include "types/CTypeInit.h"
 #include "view/colors/EColorIndexType.h"
 
-void CType_Basis::InitTypeConfigImp(STypeConfig* pType)
+int g_nKeywordsIdx_CSS = -1;
+
+/* CSS */
+void CType_Css::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("基本") );
-	_tcscpy( pType->m_szTypeExts, _T("") );
+	_tcscpy( pType->m_szTypeName, _T("CSS") );
+	_tcscpy( pType->m_szTypeExts, _T("css") );
 
 	//設定
-	pType->m_nMaxLineKetas = CKetaXInt(MAXLINEKETAS);			// 折り返し桁数
-	pType->m_eDefaultOutline = OUTLINE_TEXT;					// アウトライン解析方法
-	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = false;	// シングルクォーテーション文字列を色分け表示しない	//Oct. 17, 2000 JEPRO
-	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = false;	// ダブルクォーテーション文字列を色分け表示しない	//Sept. 4, 2000 JEPRO
-	pType->m_bUseHokanByKeyword = false;						// 強調キーワードから入力補完
+	pType->m_cBlockComments[0].SetBlockCommentRule( L"/*", L"*/" );
+	pType->m_nStringType = STRING_LITERAL_CPP;
+	pType->m_bStringLineOnly = true;
+	pType->m_eDefaultOutline = OUTLINE_TEXT;
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_CSS;
+	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;
+	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = true;
+	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = true;
+	pType->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp = true;
 }
+
+
+

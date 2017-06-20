@@ -509,7 +509,7 @@ bool CShareData::InitShareData()
 
 		// [強調キーワード]タブ
 		{
-			InitKeyword( m_pShareData );
+			InitKeyword(m_pShareData, false);
 		}
 
 		// [支援]タブ

@@ -577,6 +577,9 @@
     <ClInclude Include="..\sakura_core\types\CType.h">
       <Filter>Cpp Source Files\types</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\types\CTypeInit.h">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\types\CTypeSupport.h">
       <Filter>Cpp Source Files\types</Filter>
     </ClInclude>
@@ -1569,6 +1572,12 @@
     <ClCompile Include="..\sakura_core\types\CType_Cpp.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Csharp.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Css.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Dos.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
@@ -1584,6 +1593,9 @@
     <ClCompile Include="..\sakura_core\types\CType_Java.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_JavaScript.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Others.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
@@ -1593,10 +1605,16 @@
     <ClCompile Include="..\sakura_core\types\CType_Perl.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Php.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Python.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Rich.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Ruby.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Sql.cpp">
@@ -1609,6 +1627,9 @@
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Vb.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Xml.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\types\CTypeSupport.cpp">

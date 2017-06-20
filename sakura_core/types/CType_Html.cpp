@@ -24,11 +24,14 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
 #include "outline/CFuncInfoArr.h"
 #include "view/Colors/EColorIndexType.h"
+
+int g_nKeywordsIdx_HTML = -1;
 
 /* HTML */
 //Oct. 31, 2000 JEPRO VC++の生成するテキストファイルも読み込めるようにする
@@ -44,9 +47,9 @@ void CType_Html::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"<!--", L"-->" );	/* ブロックコメントデリミタ */
 	pType->m_nStringType = STRING_LITERAL_HTML;							/* 文字列区切り記号エスケープ方法 */
 	pType->m_bStringLineOnly = true; // 文字列は行内のみ
-	pType->m_nKeyWordSetIdx[0] = 1;										/* キーワードセット */
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_HTML;
 	pType->m_eDefaultOutline = OUTLINE_HTML;							/* アウトライン解析方法 */
-	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = true;				//シングルクォートの色分けOFF
+	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = true;				//シングルクォートの色分けON
 }
 
 
@@ -391,6 +394,7 @@ void CDocOutline::MakeTopicList_html(CFuncInfoArr* pcFuncInfoArr, bool bXml)
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsHTML[] = {
 	L"_blank",
 	L"_parent",
@@ -646,3 +650,4 @@ const wchar_t* g_ppszKeywordsHTML[] = {
 	L"XMP"
 };
 int g_nKeywordsHTML = _countof(g_ppszKeywordsHTML);
+#endif

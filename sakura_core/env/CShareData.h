@@ -95,6 +95,7 @@ public:
 
 	static CMutex& GetMutexShareWork();
 
+	void InitKeyword(DLLSHAREDATA*, bool);
 #ifdef UZ_FIX_PROFILES
 	void InitKeywordFromList(DLLSHAREDATA*, const std::tstring&);
 #endif  // UZ_
@@ -110,7 +111,6 @@ protected:
 	*/
 
 	//	Jan. 30, 2005 genta 初期化関数の分割
-	void InitKeyword(DLLSHAREDATA*);
 	bool InitKeyAssign(DLLSHAREDATA*); // 2007.11.04 genta 起動中止のため値を返す
 	void RefreshKeyAssignString(DLLSHAREDATA*);
 	void InitToolButtons(DLLSHAREDATA*);

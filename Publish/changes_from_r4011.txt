@@ -1,13 +1,13 @@
 先頭に - がついているリビジョンは未適用.
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
--      	Imp: 他のドキュメントから入力補完  [patchunicode:#1065]
--      	Fix: エンコーディング名による文字コードの設定の修正  [patchunicode:#1050]
-       	Fix: プロポーショナル版で変更された単語単位移動を戻す  [patchunicode:#1047]
-       	Fix: 改行文字部分とそれより後ろのキャレット移動に関して  [patchunicode:#1006]
+-     	Imp: 他のドキュメントから入力補完  [patchunicode:#1065]
+-     	Fix: エンコーディング名による文字コードの設定の修正  [patchunicode:#1050]
+      	Fix: プロポーショナル版で変更された単語単位移動を戻す  [patchunicode:#1047]
+      	Fix: 改行文字部分とそれより後ろのキャレット移動に関して  [patchunicode:#1006]
       	Imp: マクロの文字列コピーを減らす  [patchunicode:#830]
--      	Imp: タイプ別設定の追加と強調キーワードの外部化  [patchunicode:#720]
--      	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
+      	Imp: タイプ別設定の追加と強調キーワードの外部化  [patchunicode:#720]
+-     	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
  r4190	Keep: CViewCommanderクラス整理 [patchunicode:#1106]

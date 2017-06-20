@@ -160,7 +160,12 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #ifdef UZ_FIX_PROFILES
 			if (si::file::exist(keywordset_fname)) {
 				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
+			} else {
+				pcShare->InitKeyword( &GetDllShareData(), true );
 			}
+#else
+			// キーワードファイルのインポート
+			pcShare->InitKeyword( &GetDllShareData(), true );
 #endif  // UZ_
 			return false;
 		}
@@ -2452,6 +2457,9 @@ void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 					pCKeyWordSetMgr->SetKeyWordArr( i, nKeyWordNum, sValue.c_str() );
 				}
 			}
+		}else{
+			// キーワードファイルのインポート
+			CShareData::getInstance()->InitKeyword( &GetDllShareData(), true );
 		}
 	}else{
 		int nSize = pCKeyWordSetMgr->m_nKeyWordSetNum;

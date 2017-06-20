@@ -24,11 +24,14 @@
 
 #include "StdAfx.h"
 #include "types/CType.h"
+#include "types/CTypeInit.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocOutline.h"
 #include "doc/logic/CDocLine.h"
 #include "outline/CFuncInfoArr.h"
 #include "view/Colors/EColorIndexType.h"
+
+int g_nKeywordsIdx_COBOL = -1;
 
 /* COBOL */
 void CType_Cobol::InitTypeConfigImp(STypeConfig* pType)
@@ -42,7 +45,7 @@ void CType_Cobol::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_cLineComment.CopyTo( 1, L"D", 6 );			//Jun. 04, 2001 JEPRO 追加
 	pType->m_nStringType = STRING_LITERAL_PLSQL;							/* 文字列区切り記号エスケープ方法  0=[\"][\'] 1=[""][''] */
 	wcscpy( pType->m_szIndentChars, L"*" );				/* その他のインデント対象文字 */
-	pType->m_nKeyWordSetIdx[0] = 3;						/* キーワードセット */		//Jul. 10, 2001 JEPRO
+	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_COBOL;
 	pType->m_eDefaultOutline = OUTLINE_COBOL;			/* アウトライン解析方法 */
 	// 指定桁縦線	//2005.11.08 Moca
 	pType->m_ColorInfoArr[COLORIDX_VERTLINE].m_bDisp = true;
@@ -146,6 +149,7 @@ void CDocOutline::MakeTopicList_cobol( CFuncInfoArr* pcFuncInfoArr )
 
 
 
+#ifdef BUILD_OPT_IMPKEYWORD
 //Jul. 10, 2001 JEPRO 追加
 const wchar_t* g_ppszKeywordsCOBOL[] = {
 	L"ACCEPT",
@@ -252,3 +256,4 @@ const wchar_t* g_ppszKeywordsCOBOL[] = {
 	L"ZERO"
 };
 int g_nKeywordsCOBOL = _countof(g_ppszKeywordsCOBOL);
+#endif
