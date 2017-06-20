@@ -1516,13 +1516,8 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 			if(ArgSize != 1) return false;
 			if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[0]) ), 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
 			//void ExpandParameter(const char* pszSource, char* pszBuffer, int nBufferLen);
-			//pszSourceを展開して、pszBufferにコピー
-			wchar_t *Source;
-			int SourceLength;
-			Wrap(&varCopy.Data.bstrVal)->GetW(&Source, &SourceLength);
 			wchar_t Buffer[2048];
-			CSakuraEnvironment::ExpandParameter(Source, Buffer, 2047);
-			delete[] Source;
+			CSakuraEnvironment::ExpandParameter(varCopy.Data.bstrVal, Buffer, 2047);
 			SysString S(Buffer, wcslen(Buffer));
 			Wrap(&Result)->Receive(S);
 		}
@@ -1842,18 +1837,12 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 		//	2011.03.18 syat バージョン番号の比較
 		{
 			if( ArgSize != 2 ) return false;
-			TCHAR *Source;
-			int SourceLength;
 
-			if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[0]) ), 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
-			Wrap(&varCopy.Data.bstrVal)->GetT(&Source, &SourceLength);
-			std::tstring sVerA = Source;	// バージョンA
-			delete[] Source;
+			std::tstring sVerA;	// バージョンA
+			if( !variant_to_auto_str(Arguments[0], sVerA) ) return false;	// VT_BSTRとして解釈
 
-			if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[1]) ), 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
-			Wrap(&varCopy.Data.bstrVal)->GetT(&Source, &SourceLength);
-			std::tstring sVerB = Source;	// バージョンB
-			delete[] Source;
+			std::tstring sVerB;	// バージョンB
+			if( !variant_to_auto_str(Arguments[1], sVerB) ) return false;	// VT_BSTRとして解釈
 
 			Wrap( &Result )->Receive( CompareVersion( sVerA.c_str(), sVerB.c_str() ) );
 		}
@@ -1982,15 +1971,24 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 				nOpt = varCopy.Data.intVal;	// オプション
 			}
 
+			const TCHAR* pszClipText = _T("");
+			int nClipTextLen = 0;
 			if( ArgSize >= 2 ){
 				if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[1]) ), 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
+#ifdef UNICODE
+				pszClipText = varCopy.Data.bstrVal;
+				nClipTextLen = ::SysStringLen(varCopy.Data.bstrVal);
+#else
 				Wrap(&varCopy.Data.bstrVal)->GetT(&sValue);
+				pszClipText = sValue.c_str();
+				nClipTextLen = (int)sValue.size();
+#endif
 			}
 
 			// 2013.06.12 オプション設定
 			bool bColumnSelect = ((nOpt & 0x01) == 0x01);
 			bool bLineSelect = ((nOpt & 0x02) == 0x02);
-			bool bRet = View->MySetClipboardData( sValue.c_str(), sValue.size(), bColumnSelect, bLineSelect );
+			bool bRet = View->MySetClipboardData( pszClipText, nClipTextLen, bColumnSelect, bLineSelect );
 			Wrap( &Result )->Receive( bRet );
 		}
 		return true;
