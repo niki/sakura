@@ -36,8 +36,8 @@ Setup
 
 Build environment  
 -----------------
-+ [サクラエディタのリポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ. マージ情報は[こちら](Publish/changes_from_r4011.txt). あと、[パッチ](https://sourceforge.net/p/sakura-editor/patchunicode/)のマージ  
-+ MSVC2017でビルド (/O1=[/Og /Os /Oy /Ob2 /Gs /GF /Gy])  
++ [サクラエディタのリポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の[追っかけ](Publish/changes_from_r4011.txt). [パッチのマージ](#patchunicode)  
++ MSVC2017でビルド (/O2 /Os)  
 + Luaを使用 (マクロ, プラグイン)  
 + 挙動の制御 (共有フラグ)としてレジストリを使用しています  
 
@@ -112,6 +112,15 @@ Changed
 |各種ダイアログを編集ウィンドウの中央に配置||
 |:bug:ルールファイルを設定してアウトライン解析をするとデフォルトが逆順になっているのを修正||
 
+** <a name="patchunicode"> マージ済みパッチ**  
+|修正版|公式|
+|-|-|
+|[patchunicode:#1065](https://sourceforge.net/p/sakura-editor/patchunicode/1065/) ~~他のドキュメントから入力補完~~||
+|[patchunicode:#1050](https://sourceforge.net/p/sakura-editor/patchunicode/1050/) ~~エンコーディング名による文字コードの設定の修正~~||
+|[patchunicode:#1047](https://sourceforge.net/p/sakura-editor/patchunicode/1047/) プロポーショナル版で変更された単語単位移動を戻す||
+|[patchunicode:#1006](https://sourceforge.net/p/sakura-editor/patchunicode/1006/) 改行文字部分とそれより後ろのキャレット移動に関して||
+|[patchunicode:#830](https://sourceforge.net/p/sakura-editor/patchunicode/830/) ~~マクロの文字列コピーを減らす~~||
+|[patchunicode:#720](https://sourceforge.net/p/sakura-editor/patchunicode/720/) ~~タイプ別設定の追加と強調キーワードの外部化~~||
 
 Cregit  
 ------

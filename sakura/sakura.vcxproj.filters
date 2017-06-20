@@ -2248,12 +2248,6 @@
       <Filter>Cpp Source Files\uiparts</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\doc\layout\CTsvModeInfo.cpp" />
-    <ClCompile Include="..\sakura_core\types\CType_Csharp.cpp" />
-    <ClCompile Include="..\sakura_core\types\CType_Css.cpp" />
-    <ClCompile Include="..\sakura_core\types\CType_JavaScript.cpp" />
-    <ClCompile Include="..\sakura_core\types\CType_Php.cpp" />
-    <ClCompile Include="..\sakura_core\types\CType_Ruby.cpp" />
-    <ClCompile Include="..\sakura_core\types\CType_Xml.cpp" />
     <ClCompile Include="..\sakura_core\view\figures\CFigure_Comma.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgWindowList.cpp" />
     <ClCompile Include="..\sakura_core\macro\CLuaMacroMgr.cpp">
