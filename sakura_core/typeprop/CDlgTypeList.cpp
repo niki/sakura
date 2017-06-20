@@ -217,14 +217,13 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 				NULL
 			);
 			::DestroyMenu( hMenuPopUp );
-			/*
-			_main\CControlTray.cpp
-			LRESULT CControlTray::DispatchEvent(
-			case MYWM_ADD_TYPESETTING:
-			へ教えてあげてくださあい
-			*/
+			// タイプIDを指定して追加
 			if (nId > 0) {
-				::MessageBoxW(NULL, names[nId - 1].c_str(), L"", MB_OK);
+				int nNewTypeIndex = GetDllShareData().m_nTypesCount;
+				if (!CDocTypeManager().AddTypeConfig(CTypeConfig(nNewTypeIndex), (uint32_t)nId)) {
+					break;
+				}
+				SetData(nNewTypeIndex);
 			}
 		}
 		break;

@@ -100,6 +100,7 @@ public:
 #endif  // UZ_
 
 #ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+	STypeConfig *CreateTypeConfig(int nIdx);  // 指定タイプを作成
 	void GetTypeNames(std::vector<std::tstring>&);  // タイプ設定の名前を取得する
 #endif  // UZ_
 

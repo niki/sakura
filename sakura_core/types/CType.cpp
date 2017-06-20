@@ -108,34 +108,46 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConf
 }
 
 #ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+// 指定タイプを作成
+STypeConfig *CShareData::CreateTypeConfig(int nIdx) {
+	CType* table[] = {
+		(nIdx == 0) ? new CType_Basis() : nullptr,	//基本
+		(nIdx == 1) ? new CType_Text() : nullptr,	//テキスト
+		(nIdx == 2) ? new CType_Cpp() : nullptr,	//C/C++
+		(nIdx == 3) ? new CType_Html() : nullptr,	//HTML
+		(nIdx == 4) ? new CType_Sql() : nullptr,	//PL/SQL
+		(nIdx == 5) ? new CType_Cobol() : nullptr,	//COBOL
+		(nIdx == 6) ? new CType_Java() : nullptr,	//Java
+		(nIdx == 7) ? new CType_Asm() : nullptr,	//アセンブラ
+		(nIdx == 8) ? new CType_Awk() : nullptr,	//awk
+		(nIdx == 9) ? new CType_Dos() : nullptr,	//MS-DOSバッチファイル
+		(nIdx == 10) ? new CType_Pascal() : nullptr,	//Pascal
+		(nIdx == 11) ? new CType_Tex() : nullptr,	//TeX
+		(nIdx == 12) ? new CType_Perl() : nullptr,	//Perl
+		(nIdx == 13) ? new CType_Vb() : nullptr,		//Visual Basic
+		(nIdx == 14) ? new CType_Rich() : nullptr,	//リッチテキスト
+		(nIdx == 15) ? new CType_Ini() : nullptr,	//設定ファイル
+	};
+	assert( _countof(table) <= MAX_TYPES );
+	
+	if (nIdx >= _countof(table)) {
+		return nullptr;
+	}
+	
+	STypeConfig *type = new STypeConfig;
+	table[nIdx]->InitTypeConfig(nIdx, *type);
+	SAFE_DELETE(table[nIdx]);
+	return type;
+}
 // タイプ名を取得するためだけにnewをしている、冗長だけど仕方ない
 void CShareData::GetTypeNames(std::vector<std::tstring>& names) {
-	CType* table[] = {
-		new CType_Basis(),	//基本
-		new CType_Text(),	//テキスト
-		new CType_Cpp(),	//C/C++
-		new CType_Html(),	//HTML
-		new CType_Sql(),	//PL/SQL
-		new CType_Cobol(),	//COBOL
-		new CType_Java(),	//Java
-		new CType_Asm(),	//アセンブラ
-		new CType_Awk(),	//awk
-		new CType_Dos(),	//MS-DOSバッチファイル
-		new CType_Pascal(),	//Pascal
-		new CType_Tex(),	//TeX
-		new CType_Perl(),	//Perl
-		new CType_Vb(),		//Visual Basic
-		new CType_Rich(),	//リッチテキスト
-		new CType_Ini(),	//設定ファイル
-	};
 	names.clear();
-	assert( _countof(table) <= MAX_TYPES );
-	for(int i = 0; i < _countof(table) && i < MAX_TYPES; i++){
-		STypeConfig* type = new STypeConfig;
-		table[i]->InitTypeConfig(i, *type);
+	for (int i = 0; ; i++) {
+		std::unique_ptr<STypeConfig> type(CreateTypeConfig(i));
+		if (!type.get()) {
+			break;
+		}
 		names.push_back(type->m_szTypeName);
-		SAFE_DELETE(type);
-		SAFE_DELETE(table[i]);
 	}
 }
 #endif  // UZ_

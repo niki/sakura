@@ -783,10 +783,42 @@ LRESULT CControlTray::DispatchEvent(
 				// "共通"の前には入れない
 				if( 0 < nInsert && nInsert <= m_pShareData->m_nTypesCount && nInsert < MAX_TYPES ){
 					std::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
+#ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+					STypeConfig* type;
+					//si::logln(L"  *** add type : LPAARAM %p", lParam);
+					if (lParam != 0) {
+						int nId = (int)lParam;
+						type = CShareData::getInstance()->CreateTypeConfig(nId - 1);  // タイプを作成
+						// カラー情報は基本をコピーする
+						memcpy_raw(&type->m_nColorInfoArrNum, &types[0]->m_nColorInfoArrNum, sizeof(type->m_nColorInfoArrNum));
+						memcpy_raw(type->m_ColorInfoArr, types[0]->m_ColorInfoArr, sizeof(type->m_ColorInfoArr));
+						//si::logln(L"  *** add type : name %s, ext %s", type->m_szTypeName, type->m_szTypeExts);
+					} else {
+						type = new STypeConfig();
+						*type = *types[0]; // 基本をコピー
+						//si::logln(L"  *** add type : common");
+					}
+#else
 					STypeConfig* type = new STypeConfig();
 					*type = *types[0]; // 基本をコピー
+#endif  // UZ_
 					type->m_nIdx = nInsert;
 					type->m_id = (::GetTickCount() & 0x3fffffff) + nInsert * 0x10000;
+#ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+					if (lParam == 0) {
+						// 同じ名前のものがあったらその次にする
+						int nAddNameNum = nInsert + 1;
+						auto_sprintf( type->m_szTypeName, LS(STR_TRAY_TYPE_NAME), nAddNameNum ); 
+						for(int k = 1; k < m_pShareData->m_nTypesCount; k++){
+							if( auto_strcmp(types[k]->m_szTypeName, type->m_szTypeName) == 0 ){
+								nAddNameNum++;
+								auto_sprintf( type->m_szTypeName, LS(STR_TRAY_TYPE_NAME), nAddNameNum ); 
+								k = 0;
+							}
+						}
+						auto_strcpy( type->m_szTypeExts, _T("") );
+					}
+#else
 					// 同じ名前のものがあったらその次にする
 					int nAddNameNum = nInsert + 1;
 					auto_sprintf( type->m_szTypeName, LS(STR_TRAY_TYPE_NAME), nAddNameNum ); 
@@ -798,6 +830,7 @@ LRESULT CControlTray::DispatchEvent(
 						}
 					}
 					auto_strcpy( type->m_szTypeExts, _T("") );
+#endif  // UZ_
 					type->m_nRegexKeyMagicNumber = CRegexKeyword::GetNewMagicNumber();
 					types.resize( m_pShareData->m_nTypesCount + 1 );
 					int nTypeSizeOld = m_pShareData->m_nTypesCount;
