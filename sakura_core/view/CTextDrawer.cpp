@@ -386,7 +386,11 @@ void CTextDrawer::DispLineNumber(
 	CTypeSupport &cBackType = (cCaretLineBg.IsDisp() &&
 		pView->GetCaret().GetCaretLayoutPos().GetY() == nLineNum
 			? cCaretLineBg
+#ifdef UZ_FIX_NOT_EVEN_LINE_FROM_EOF
+			: cEvenLineBg.IsDisp() && nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() && nLineNum % 2 == 1
+#else
 			: cEvenLineBg.IsDisp() && nLineNum % 2 == 1
+#endif  // UZ_
 				? cEvenLineBg
 				: cTextType);
 
@@ -431,7 +435,11 @@ void CTextDrawer::DispLineNumber(
 	//該当行の行番号エリア矩形
 	RECT	rcLineNum;
 	rcLineNum.left = 0;
+#ifdef UZ_FIX_LINE_BG_OVERFLOW
+	rcLineNum.right = nLineNumAreaWidth - 1;
+#else
 	rcLineNum.right = nLineNumAreaWidth;
+#endif  // UZ_
 	rcLineNum.top = y;
 	rcLineNum.bottom = y + nLineHeight;
 	
@@ -648,7 +656,11 @@ void CTextDrawer::DispLineNumber(
 	}
 
 	// 行番号部分のノート線描画
+#ifdef UZ_FIX_NOT_NOTE_LINE_FROM_EOF
+	if( !pView->m_bMiniMap && nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
+#else
 	if( !pView->m_bMiniMap ){
+#endif  // UZ_
 		int left   = bDispLineNumTrans ? 0 : rcLineNum.right;
 		int right  = pView->GetTextArea().GetAreaLeft();
 		int top    = y;

@@ -1085,7 +1085,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	CTypeSupport&	cBackType = (cCaretLineBg.IsDisp() &&
 		GetCaret().GetCaretLayoutPos().GetY() == pInfo->m_pDispPos->GetLayoutLineRef() && !m_bMiniMap
 			? cCaretLineBg
+#ifdef UZ_FIX_NOT_EVEN_LINE_FROM_EOF
+			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1 && !m_bMiniMap
+#else
 			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1 && !m_bMiniMap
+#endif  // UZ_
 				? cEvenLineBg
 				: (cPageViewBg.IsDisp() && m_bMiniMap
 					&& cActiveView.GetTextArea().GetViewTopLine() <= pInfo->m_pDispPos->GetLayoutLineRef()
@@ -1291,7 +1295,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	}
 
 	// ノート線描画
+#ifdef UZ_FIX_NOT_NOTE_LINE_FROM_EOF
+	if( !m_bMiniMap && pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
+#else
 	if( !m_bMiniMap ){
+#endif  // UZ_
 		GetTextDrawer().DispNoteLine(
 			pInfo->m_gr,
 			pInfo->m_pDispPos->GetDrawPos().y,
