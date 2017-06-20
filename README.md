@@ -19,7 +19,7 @@ Feature
 Download  
 --------
 
-+ [sakura-uzuki-2.39-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.39-32bit.zip) (766KB)  
++ [sakura-uzuki-2.40-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.40-32bit.zip) (769KB)  
 
 \- 変更履歴は[コミットログ](https://github.com/uzuki3/sakura/commits/master)を参照してください. 細かい内容は [my_config.h](sakura_core/my_config.h) を見てね.  
 \- 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
@@ -31,6 +31,8 @@ Setup
 
 ダウンロードしたファイルをすでに使用しているサクラエディタに上書きしてください.  
 `sakura.keywordset.csv`は実行ファイルと同じ場所に置いてください. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
+
+最近のキーワードファイル [keyword_pack.zip](Publish/keyword_pack.zip)  
 
 
 Build environment  
@@ -116,7 +118,7 @@ Changed
 ||[patchunicode:#1047](https://sourceforge.net/p/sakura-editor/patchunicode/1047/) プロポーショナル版で変更された単語単位移動を戻す|
 ||[patchunicode:#1006](https://sourceforge.net/p/sakura-editor/patchunicode/1006/) 改行文字部分とそれより後ろのキャレット移動に関して|
 ||[patchunicode:#830](https://sourceforge.net/p/sakura-editor/patchunicode/830/) ~~マクロの文字列コピーを減らす~~|
-||[patchunicode:#720](https://sourceforge.net/p/sakura-editor/patchunicode/720/) ~~タイプ別設定の追加と強調キーワードの外部化~~|
+||[patchunicode:#720](https://sourceforge.net/p/sakura-editor/patchunicode/720/) タイプ別設定の追加と強調キーワードの外部化|
 
 Cregit  
 ------
