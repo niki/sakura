@@ -434,6 +434,9 @@ void CEditView::ISearchExec(bool bNext)
 			m_sISearchHistory[m_nISearchHistoryCount].Set(GetCaret().GetCaretLayoutPos());
 		}
 	}else{
+#ifdef UZ_FIX_CENTERING_CURSOR_JUMP
+		ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+#endif  // UZ_
 		//検索結果あり
 		//キャレット移動
 		GetCaret().MoveCursor( sMatchRange.GetFrom(), true, _CARETMARGINRATE / 3 );
