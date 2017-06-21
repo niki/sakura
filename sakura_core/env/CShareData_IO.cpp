@@ -294,6 +294,63 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	return true;
 }
 
+// ifstreamの行繰り返しテンプレート
+template <typename Functor1, typename Functor2, typename Functor3>
+static int EachIStreamLines(std::ifstream &ifs,
+                            const std::string &section_start, const std::string &section_end,
+                            Functor1 fnBegin,
+                            Functor2 fnEnd,
+                            Functor3 fnBlock) {
+	std::string line_buffer;
+	bool bRead = false;
+	int i = 0;
+
+	while (std::getline(ifs, line_buffer)) {
+		if (line_buffer.find(section_start) == 0) {
+			bRead = true;
+			fnBegin();
+			continue;
+		} else if (line_buffer.find(section_end) == 0) {
+			fnEnd();
+			break;
+		}
+		
+		if (!bRead) continue;
+		
+		fnBlock(i, line_buffer);
+		
+		i++;
+	}
+	
+	return i;  // 処理した数
+}
+
+// ofstreamの行繰り返しテンプレート
+template <typename Functor1, typename Functor2, typename Functor3>
+static void EachOStreamLines(std::ofstream &ofs,
+                             const std::string &section_start, const std::string &section_end,
+                             int nSize,
+                             Functor1 fnBegin,
+                             Functor2 fnEnd,
+                             Functor3 fnBlock) {
+
+	ofs << "" << std::endl;
+	ofs << section_start << std::endl;
+
+	fnBegin();
+
+	for (int i = 0; i < nSize; i++) {
+		fnBlock(i);
+	}
+
+	fnEnd();
+
+	ofs << section_end << std::endl;
+}
+
+
+
+
 /*!
 	@brief 共有データのMruセクションの入出力
 	@param[in,out]	cProfile	INIファイル入出力クラス
@@ -307,79 +364,62 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 #ifdef UZ_FIX_PROFILES
 	SShare_History &hist = pShare->m_sHistory;
 
-	int			i;
-	int			nSize;
-	EditInfo*	pfiWork;
-
 	if (cProfile.IsReadingMode()) {
-		i = 0;
-
 		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
-		std::string line_buffer;
-		bool bRead = false;
 
-		while (std::getline(ifs, line_buffer)) {
-			if (line_buffer.find("#MRU") == 0) {
-				bRead = true;
-				continue;
-			} else if (line_buffer.find("#end") == 0) {
-				break;
-			}
-			
-			if (!bRead) continue;
-			
-			std::istringstream stream(line_buffer);
-
-			std::wstring path = GetTokenStringW(stream, ',');
+		int i = EachIStreamLines(ifs, "#MRU", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) {  // block
+				std::istringstream stream(line_buffer);
+				std::wstring path = GetTokenStringW(stream, ',');
 
 #if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-			if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
-				if (!fexist(path.c_str())) {
-					continue;
+				if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+					if (!fexist(path.c_str())) {
+						return;
+					}
 				}
-			}
 #endif  // UZ_
 
-			pfiWork = &hist.m_fiMRUArr[i];
-			_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
-			pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
-			pfiWork->m_nViewTopLine = GetTokenInt(stream, ',');
-			pfiWork->m_nViewLeftCol = GetTokenInt(stream, ',');
-			pfiWork->m_ptCursor.x = GetTokenInt(stream, ',');
-			pfiWork->m_ptCursor.y = GetTokenInt(stream, ',');
-			pfiWork->m_nCharCode = static_cast<ECodeType>(GetTokenInt(stream, ','));
-			_tcsncpy(pfiWork->m_szMarkLines, GetTokenStringW(stream, ',').c_str(), MAX_MARKLINES_LEN + 1);
-			pfiWork->m_szMarkLines[MAX_MARKLINES_LEN + 1 - 1] = _T('\0');
-			pfiWork->m_nTypeId = GetTokenInt(stream, ',');
-			hist.m_bMRUArrFavorite[i] = GetTokenInt(stream, ',') ? true : false;
-			i++;
-		}
+				EditInfo *pfiWork = &hist.m_fiMRUArr[index];
+				_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
+				pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
+				pfiWork->m_nViewTopLine = GetTokenInt(stream, ',');
+				pfiWork->m_nViewLeftCol = GetTokenInt(stream, ',');
+				pfiWork->m_ptCursor.x = GetTokenInt(stream, ',');
+				pfiWork->m_ptCursor.y = GetTokenInt(stream, ',');
+				pfiWork->m_nCharCode = static_cast<ECodeType>(GetTokenInt(stream, ','));
+				_tcsncpy(pfiWork->m_szMarkLines, GetTokenStringW(stream, ',').c_str(), MAX_MARKLINES_LEN + 1);
+				pfiWork->m_szMarkLines[MAX_MARKLINES_LEN + 1 - 1] = _T('\0');
+				pfiWork->m_nTypeId = GetTokenInt(stream, ',');
+				hist.m_bMRUArrFavorite[index] = GetTokenInt(stream, ',') ? true : false;
+			}
+		);
 
 		hist.m_nMRUArrNum = i;
 		SetValueLimit( hist.m_nMRUArrNum, MAX_MRU );
 	} else {
-		nSize = hist.m_nMRUArrNum;
-
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
-		ofs << "" << std::endl;
-		ofs << "#MRU" << std::endl;
-
-		for (int i = 0; i < nSize; i++) {
-			pfiWork = &hist.m_fiMRUArr[i];
-			std::string line_buffer;
-			line_buffer += si::util::to_bytes(pfiWork->m_szPath) + ",";
-			line_buffer += std::to_string(pfiWork->m_nViewTopLine) + ",";
-			line_buffer += std::to_string(pfiWork->m_nViewLeftCol) + ",";
-			line_buffer += std::to_string(pfiWork->m_ptCursor.x) + ",";
-			line_buffer += std::to_string(pfiWork->m_ptCursor.y) + ",";
-			line_buffer += std::to_string(pfiWork->m_nCharCode) + ",";
-			line_buffer += si::util::to_bytes(pfiWork->m_szMarkLines) + ",";
-			line_buffer += std::to_string(pfiWork->m_nTypeId) + ",";
-			line_buffer += std::to_string((int)hist.m_bMRUArrFavorite[i]) + ",";
-			ofs << line_buffer << std::endl;
-		}
-
-		ofs << "#end" << std::endl;
+		
+		EachOStreamLines(ofs, "#MRU", "#end", hist.m_nMRUArrNum,
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				EditInfo *pfiWork = &hist.m_fiMRUArr[index];
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(pfiWork->m_szPath) + ",";
+				line_buffer += std::to_string(pfiWork->m_nViewTopLine) + ",";
+				line_buffer += std::to_string(pfiWork->m_nViewLeftCol) + ",";
+				line_buffer += std::to_string(pfiWork->m_ptCursor.x) + ",";
+				line_buffer += std::to_string(pfiWork->m_ptCursor.y) + ",";
+				line_buffer += std::to_string(pfiWork->m_nCharCode) + ",";
+				line_buffer += si::util::to_bytes(pfiWork->m_szMarkLines) + ",";
+				line_buffer += std::to_string(pfiWork->m_nTypeId) + ",";
+				line_buffer += std::to_string((int)hist.m_bMRUArrFavorite[index]) + ",";
+				ofs << line_buffer << std::endl;
+			}
+		);
 	}
 
 	//@@@ 2001.12.26 YAZAKI 残りのm_fiMRUArrを初期化。
@@ -392,69 +432,57 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		fiInit.m_ptCursor.Set(CLogicInt(0), CLogicInt(0));
 		_tcscpy( fiInit.m_szPath, _T("") );
 		fiInit.m_szMarkLines[0] = L'\0';	// 2002.01.16 hor
-		for( ; i < MAX_MRU; ++i){
+		for (int i = hist.m_nMRUArrNum; i < MAX_MRU; ++i) {
 			hist.m_fiMRUArr[i] = fiInit;
 			hist.m_bMRUArrFavorite[i] = false;	//お気に入り	//@@@ 2003.04.08 MIK
 		}
 	}
 
 	if (cProfile.IsReadingMode()) {
-		i = 0;
-
 		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
-		std::string line_buffer;
-		bool bRead = false;
+		
+		int i = EachIStreamLines(ifs, "#Folder", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) {  // block
+				std::string token;
+				std::istringstream stream(line_buffer);
 
-		while (std::getline(ifs, line_buffer)) {
-			if (line_buffer.find("#Folder") == 0) {
-				bRead = true;
-				continue;
-			} else if (line_buffer.find("#end") == 0) {
-				break;
-			}
-			
-			if (!bRead) continue;
-
-			std::string token;
-			std::istringstream stream(line_buffer);
-
-			std::wstring dir = GetTokenStringW(stream, ',');
+				std::wstring dir = GetTokenStringW(stream, ',');
 
 #if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-			if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
-				if (!fexist(dir.c_str())) {
-					continue;
+				if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
+					if (!fexist(dir.c_str())) {
+						return;
+					}
 				}
-			}
 #endif  // UZ_
 
-			hist.m_szOPENFOLDERArr[i].Assign(dir.c_str());
-			hist.m_bOPENFOLDERArrFavorite[i] = GetTokenBool(stream, ',');
-			i++;
-		}
+				hist.m_szOPENFOLDERArr[index].Assign(dir.c_str());
+				hist.m_bOPENFOLDERArrFavorite[index] = GetTokenBool(stream, ',');
+			}
+		);
 
 		hist.m_nOPENFOLDERArrNum = i;
 		SetValueLimit( hist.m_nOPENFOLDERArrNum, MAX_OPENFOLDER );
 	} else {
-		nSize = hist.m_nOPENFOLDERArrNum;
-
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
-		ofs << "" << std::endl;
-		ofs << "#Folder" << std::endl;
 
-		for (int i = 0; i < nSize; i++) {
-			std::string line_buffer;
-			line_buffer += si::util::to_bytes(hist.m_szOPENFOLDERArr[i].c_str()) + ",";
-			line_buffer += std::to_string((int)hist.m_bOPENFOLDERArrFavorite[i]);
-			ofs << line_buffer << std::endl;
-		}
-
-		ofs << "#end" << std::endl;
+		EachOStreamLines(ofs, "#Folder", "#end", hist.m_nOPENFOLDERArrNum,
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(hist.m_szOPENFOLDERArr[index].c_str()) + ",";
+				line_buffer += std::to_string((int)hist.m_bOPENFOLDERArrFavorite[index]);
+				ofs << line_buffer << std::endl;
+			}
+		);
 	}
 
 	//読み込み時は残りを初期化
 	if ( cProfile.IsReadingMode() ){
-		for (; i< MAX_OPENFOLDER; ++i){
+		for (int i = hist.m_nOPENFOLDERArrNum; i < MAX_OPENFOLDER; ++i) {
 			// 2005.04.05 D.S.Koba
 			hist.m_szOPENFOLDERArr[i][0] = L'\0';
 			hist.m_bOPENFOLDERArrFavorite[i] = false;	//お気に入り	//@@@ 2003.04.08 MIK
@@ -462,42 +490,30 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	}
 	
 	if (cProfile.IsReadingMode()) {
-		i = 0;
-
 		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
-		std::string line_buffer;
-		bool bRead = false;
-
-		while (std::getline(ifs, line_buffer)) {
-			if (line_buffer.find("#except_MRU") == 0) {
-				bRead = true;
-				continue;
-			} else if (line_buffer.find("#end") == 0) {
-				break;
+		
+		int i = EachIStreamLines(ifs, "#except_MRU", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) {  // block
+				hist.m_aExceptMRU[index].Assign(wchomp(line_buffer).c_str());
 			}
-			
-			if (!bRead) continue;
-
-			hist.m_aExceptMRU[i].Assign(wchomp(line_buffer).c_str());
-			i++;
-		}
+		);
 
 		hist.m_aExceptMRU._GetSizeRef() = i;
 		hist.m_aExceptMRU.SetSizeLimit();
 	} else {
-		nSize = hist.m_aExceptMRU._GetSizeRef();
-
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
-		ofs << "" << std::endl;
-		ofs << "#except_MRU" << std::endl;
-
-		for (int i = 0; i < nSize; i++) {
-			std::string line_buffer;
-			line_buffer += si::util::to_bytes(hist.m_aExceptMRU[i].c_str());
-			ofs << line_buffer << std::endl;
-		}
-
-		ofs << "#end" << std::endl;
+		
+		EachOStreamLines(ofs, "#except_MRU", "#end", hist.m_aExceptMRU._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(hist.m_aExceptMRU[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
 	}
 
 #else
@@ -598,86 +614,58 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 #ifdef UZ_FIX_PROFILES
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
-	int			i;
-	int			nSize;
-
 	if (cProfile.IsReadingMode()) {
-		i = 0;
-
 		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
-		std::string line_buffer;
-		bool bRead = false;
-
-		while (std::getline(ifs, line_buffer)) {
-			if (line_buffer.find("#SearchKey") == 0) {
-				bRead = true;
-				continue;
-			} else if (line_buffer.find("#end") == 0) {
-				break;
+		
+		int i = EachIStreamLines(ifs, "#SearchKey", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&skwd](int index, const std::string &line_buffer) {  // block
+				skwd.m_aSearchKeys[index].Assign(wchomp(line_buffer).c_str());
 			}
-			
-			if (!bRead) continue;
-
-			skwd.m_aSearchKeys[i].Assign(wchomp(line_buffer).c_str());
-			i++;
-		}
-
+		);
+		
 		skwd.m_aSearchKeys._GetSizeRef() = i;
 		skwd.m_aSearchKeys.SetSizeLimit();
 	} else {
-		nSize = skwd.m_aSearchKeys._GetSizeRef();
-
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
-		ofs << "" << std::endl;
-		ofs << "#SearchKey" << std::endl;
-
-		for (int i = 0; i < nSize; i++) {
-			std::string line_buffer;
-			line_buffer += si::util::to_bytes(skwd.m_aSearchKeys[i].c_str());
-			ofs << line_buffer << std::endl;
-		}
-
-		ofs << "#end" << std::endl;
+		
+		EachOStreamLines(ofs, "#SearchKey", "#end", skwd.m_aSearchKeys._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &skwd](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(skwd.m_aSearchKeys[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
 	}
 
 	if (cProfile.IsReadingMode()) {
-		i = 0;
-
 		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
-		std::string line_buffer;
-		bool bRead = false;
-
-		while (std::getline(ifs, line_buffer)) {
-			if (line_buffer.find("#ReplaceKey") == 0) {
-				bRead = true;
-				continue;
-			} else if (line_buffer.find("#end") == 0) {
-				break;
+		
+		int i = EachIStreamLines(ifs, "#ReplaceKey", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&skwd](int index, const std::string &line_buffer) {  // block
+				skwd.m_aReplaceKeys[index].Assign(wchomp(line_buffer).c_str());
 			}
-			
-			if (!bRead) continue;
-
-			skwd.m_aReplaceKeys[i].Assign(wchomp(line_buffer).c_str());
-			i++;
-		}
+		);
 
 		skwd.m_aReplaceKeys._GetSizeRef() = i;
 		skwd.m_aReplaceKeys.SetSizeLimit();
 	} else {
-		nSize = skwd.m_aReplaceKeys._GetSizeRef();
-
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
-		ofs << "" << std::endl;
-		ofs << "#ReplaceKey" << std::endl;
-
-		for (int i = 0; i < nSize; i++) {
-			std::string line_buffer;
-			line_buffer += si::util::to_bytes(skwd.m_aReplaceKeys[i].c_str());
-			ofs << line_buffer << std::endl;
-		}
-
-		ofs << "#end" << std::endl;
-
+		
+		EachOStreamLines(ofs, "#ReplaceKey", "#end", skwd.m_aReplaceKeys._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &skwd](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(skwd.m_aReplaceKeys[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
 	}
 
 #else
@@ -717,59 +705,39 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 #ifdef UZ_FIX_PROFILES
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
-	int			i;
-	int			nSize;
-
 	if (cProfile.IsReadingMode()) {
-		i = 0;
-
 		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
-		std::string line_buffer;
-		bool bRead = false;
-
-		while (std::getline(ifs, line_buffer)) {
-			if (line_buffer.find("#GrepFile") == 0) {
-				bRead = true;
-				continue;
-			} else if (line_buffer.find("#end") == 0) {
-				break;
+		
+		int i = EachIStreamLines(ifs, "#GrepFile", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&skwd](int index, const std::string &line_buffer) {  // block
+				skwd.m_aGrepFiles[index].Assign(wchomp(line_buffer).c_str());
 			}
-			
-			if (!bRead) continue;
-
-			skwd.m_aGrepFiles[i].Assign(wchomp(line_buffer).c_str());
-			i++;
-		}
+		);
 
 		skwd.m_aGrepFiles._GetSizeRef() = i;
 		skwd.m_aGrepFiles.SetSizeLimit();
 	} else {
-		nSize = skwd.m_aGrepFiles._GetSizeRef();
-
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
-		ofs << "" << std::endl;
-		ofs << "#GrepFile" << std::endl;
-
-		for (int i = 0; i < nSize; i++) {
-			std::string line_buffer;
-			line_buffer += si::util::to_bytes(skwd.m_aGrepFiles[i].c_str());
-			ofs << line_buffer << std::endl;
-		}
-
-		ofs << "#end" << std::endl;
+		
+		EachOStreamLines(ofs, "#GrepFile", "#end", skwd.m_aGrepFiles._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &skwd](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(skwd.m_aGrepFiles[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
 	}
 
 	if (cProfile.IsReadingMode()) {
-		i = 0;
-
 		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
-		std::string line_buffer;
-		bool bRead = false;
-
-		while (std::getline(ifs, line_buffer)) {
-			if (line_buffer.find("#GrepFolder") == 0) {
-				bRead = true;
-				
+		
+		int i = EachIStreamLines(ifs, "#GrepFolder", "#end",
+			[&ifs, &skwd]{  // begin
+				std::string line_buffer;
 				if (std::getline(ifs, line_buffer)) {
   				skwd.m_bGrepFolders99 = std::stoi(chomp(line_buffer)) ? true : false;
   			}
@@ -794,43 +762,36 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
   			if (std::getline(ifs, line_buffer)) {
   				skwd.m_szGrepExcludeDirs.Assign(wchomp(line_buffer).c_str());
   			}
-				
-				continue;
-			} else if (line_buffer.find("#end") == 0) {
-				break;
+			},
+			[]{},  // end
+			[&skwd](int index, const std::string &line_buffer) {  // block
+				skwd.m_aGrepFolders[index].Assign(wchomp(line_buffer).c_str());
 			}
-			
-			if (!bRead) continue;
-
-			skwd.m_aGrepFolders[i].Assign(wchomp(line_buffer).c_str());
-			i++;
-		}
+		);
 
 		skwd.m_aGrepFolders._GetSizeRef() = i;
 		skwd.m_aGrepFolders.SetSizeLimit();
 	} else {
-		nSize = skwd.m_aGrepFolders._GetSizeRef();
-
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
-		ofs << "" << std::endl;
-		ofs << "#GrepFolder" << std::endl;
-
-		ofs << (skwd.m_bGrepFolders99 ? "1" : "0") << std::endl;
-		ofs << (skwd.m_bGrepFolders2 ? "1" : "0") << std::endl;
-		ofs << (skwd.m_bGrepFolders3 ? "1" : "0") << std::endl;
-		ofs << (skwd.m_bGrepFolders4 ? "1" : "0") << std::endl;
-		ofs << si::util::to_bytes(skwd.m_szGrepFolders2.c_str()) << std::endl;
-		ofs << si::util::to_bytes(skwd.m_szGrepFolders3.c_str()) << std::endl;
-		ofs << si::util::to_bytes(skwd.m_szGrepFolders4.c_str()) << std::endl;
-		ofs << si::util::to_bytes(skwd.m_szGrepExcludeDirs.c_str()) << std::endl;
-
-		for (int i = 0; i < nSize; i++) {
-			std::string line_buffer;
-			line_buffer += si::util::to_bytes(skwd.m_aGrepFolders[i].c_str());
-			ofs << line_buffer << std::endl;
-		}
-
-		ofs << "#end" << std::endl;
+		
+		EachOStreamLines(ofs, "#GrepFolder", "#end", skwd.m_aGrepFolders._GetSizeRef(),
+			[&ofs, &skwd]{  // begin
+				ofs << (skwd.m_bGrepFolders99 ? "1" : "0") << std::endl;
+				ofs << (skwd.m_bGrepFolders2 ? "1" : "0") << std::endl;
+				ofs << (skwd.m_bGrepFolders3 ? "1" : "0") << std::endl;
+				ofs << (skwd.m_bGrepFolders4 ? "1" : "0") << std::endl;
+				ofs << si::util::to_bytes(skwd.m_szGrepFolders2.c_str()) << std::endl;
+				ofs << si::util::to_bytes(skwd.m_szGrepFolders3.c_str()) << std::endl;
+				ofs << si::util::to_bytes(skwd.m_szGrepFolders4.c_str()) << std::endl;
+				ofs << si::util::to_bytes(skwd.m_szGrepExcludeDirs.c_str()) << std::endl;
+			},
+			[]{},  // end
+			[&ofs, &skwd](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(skwd.m_aGrepFolders[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
 	}
 
 #else
@@ -897,85 +858,58 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 #ifdef UZ_FIX_PROFILES
 	SShare_History &hist = pShare->m_sHistory;
 
-	int			i;
-	int			nSize;
-
 	if (cProfile.IsReadingMode()) {
-		i = 0;
-
 		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
-		std::string line_buffer;
-		bool bRead = false;
-
-		while (std::getline(ifs, line_buffer)) {
-			if (line_buffer.find("#Cmd") == 0) {
-				bRead = true;
-				continue;
-			} else if (line_buffer.find("#end") == 0) {
-				break;
+		
+		int i = EachIStreamLines(ifs, "#Cmd", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) {  // block
+				hist.m_aCommands[index].Assign(wchomp(line_buffer).c_str());
 			}
-			
-			if (!bRead) continue;
-
-			hist.m_aCommands[i].Assign(wchomp(line_buffer).c_str());
-			i++;
-    }
+		);
 
 		hist.m_aCommands._GetSizeRef() = i;
 		hist.m_aCommands.SetSizeLimit();
 	} else {
-		nSize = hist.m_aCommands._GetSizeRef();
-
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
-		ofs << "" << std::endl;
-		ofs << "#Cmd" << std::endl;
-
-		for (int i = 0; i < nSize; i++) {
-			std::string line_buffer;
-			line_buffer += si::util::to_bytes(hist.m_aCommands[i].c_str());
-			ofs << line_buffer << std::endl;
-		}
-
-		ofs << "#end" << std::endl;
+		
+		EachOStreamLines(ofs, "#Cmd", "#end", hist.m_aCommands._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(hist.m_aCommands[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
 	}
 
 	if (cProfile.IsReadingMode()) {
-		i = 0;
-
 		std::ifstream &ifs = *(std::ifstream *)(cProfile.tag_);
-		std::string line_buffer;
-		bool bRead = false;
-
-		while (std::getline(ifs, line_buffer)) {
-			if (line_buffer.find("#CmdCurDir") == 0) {
-				bRead = true;
-				continue;
-			} else if (line_buffer.find("#end") == 0) {
-				break;
+		
+		int i = EachIStreamLines(ifs, "#CmdCurDir", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) {  // block
+				hist.m_aCurDirs[index].Assign(wchomp(line_buffer).c_str());
 			}
-			
-			if (!bRead) continue;
-
-			hist.m_aCurDirs[i].Assign(wchomp(line_buffer).c_str());
-			i++;
-    }
+		);
 
 		hist.m_aCurDirs._GetSizeRef() = i;
 		hist.m_aCurDirs.SetSizeLimit();
 	} else {
-		nSize = hist.m_aCurDirs._GetSizeRef();
-
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
-		ofs << "" << std::endl;
-		ofs << "#CmdCurDir" << std::endl;
-
-		for (int i = 0; i < nSize; i++) {
-			std::string line_buffer;
-			line_buffer += si::util::to_bytes(hist.m_aCurDirs[i].c_str());
-			ofs << line_buffer << std::endl;
-		}
-
-		ofs << "#end" << std::endl;
+		
+		EachOStreamLines(ofs, "#CmdCurDir", "#end", hist.m_aCurDirs._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(hist.m_aCurDirs[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
 	}
 
 #else
