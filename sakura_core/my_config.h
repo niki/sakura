@@ -53,8 +53,8 @@
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 // 修正者
-#define UZ_AMENDER "Uzuki"
-#define UZ_URL     "https://github.com/uzuki3/sakura"
+#define UZ_AUTHOR       "Uzuki"
+#define UZ_AUTHOR_PAGE  "https://github.com/uzuki3/sakura"
 
 // 拡張用レジストリキー
 #define UZ_REGKEY _T("Software\\sakura-uzuki")

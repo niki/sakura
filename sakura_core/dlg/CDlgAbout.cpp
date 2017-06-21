@@ -298,11 +298,11 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	if( _tcslen(pszDesc) > 0 ){
 #ifdef UZ_FIX_VERDLG
 		auto_sprintf( szMsg, pszDesc,
-			_T(UZ_AMENDER), _T(UZ_URL),
 			_T(COMPILER_TYPE2), COMPILER_VER2,
 			TARGET_M_SUFFIX[0] ? _T("x64") : _T("x86"),
 			_T(MY_RTL),
-			_T(LUA_RELEASE)
+			_T(UZ_AUTHOR), _T(UZ_AUTHOR_PAGE),
+			_T(LUA_COPYRIGHT)
 		);
 #else
 		_tcsncpy( szMsg, pszDesc, _countof(szMsg) - 1 );
