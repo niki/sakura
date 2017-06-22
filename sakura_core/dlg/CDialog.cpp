@@ -666,7 +666,7 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 void CDialog::SetPlaceOfWindow() {
 	m_hwndPlaceOfWindow = m_hwndParent;
 }
-void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView) {
+void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place) {
 	RECT rc;
 	::GetWindowRect(GetHwnd(), &rc);
 
@@ -693,17 +693,35 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView) {
 	int top_denominator = 2;  // 分母
 	m_yPos = 0;
 	//m_yPos += rc.top;
-	m_yPos += rcView.top;
-	m_yPos += viewHeight / top_denominator * top_molecule;
-	m_yPos -= m_nHeight / 2;
+	if (place == DLGPLACE_BL) {  // 左下
+		m_yPos += rcView.bottom;
+		m_yPos -= m_nHeight;
+		m_yPos -= 30;  // offset
+	} else if (place == DLGPLACE_BC) {  // 中央下
+		m_yPos += rcView.bottom;
+		m_yPos -= m_nHeight;
+	} else {
+		m_yPos += rcView.top;
+		m_yPos += viewHeight / top_denominator * top_molecule;
+		m_yPos -= m_nHeight / 2;
+	}
 	
 	int left_molecule    = 1;  // 分子
 	int left_denominator = 2;  // 分母
 	m_xPos = 0;
 	//m_xPos += rc.left;
-	m_xPos += rcView.left;
-	m_xPos += viewWidth / left_denominator * left_molecule;
-	m_xPos -= m_nWidth / 2;
+	if (place == DLGPLACE_BL) {  // 左下
+		m_xPos += rcView.left;
+		m_xPos += 50;  // offset
+	} else if (place == DLGPLACE_BC) {  // 中央下
+		m_xPos += rcView.left;
+		m_xPos += viewWidth / left_denominator * left_molecule;
+		m_xPos -= m_nWidth / 2;
+	} else {
+		m_xPos += rcView.left;
+		m_xPos += viewWidth / left_denominator * left_molecule;
+		m_xPos -= m_nWidth / 2;
+	}
 #endif
 }
 #endif  // UZ_

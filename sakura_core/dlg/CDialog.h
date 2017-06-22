@@ -168,7 +168,19 @@ protected:
 
 #ifdef UZ_FIX_DIALOG_POS
 	void SetPlaceOfWindow();
-	void SetPlaceOfWindow(HWND hWnd, const RECT *prcView = nullptr);
+	
+	enum eDLGPLACE {
+		DLGPLACE_TL,  // 左上
+		DLGPLACE_TC,  // 中央上
+		DLGPLACE_TR,  // 右上
+		DLGPLACE_CL,  // 左中央
+		DLGPLACE_CC,  // 中央
+		DLGPLACE_CR,  // 右中央
+		DLGPLACE_BL,  // 左下
+		DLGPLACE_BC,  // 中央下
+		DLGPLACE_BR,  // 右下
+	};
+	void SetPlaceOfWindow(HWND hWnd, const RECT *prcView = nullptr, eDLGPLACE place = DLGPLACE_CC);
 #endif  // UZ_
 };
 
