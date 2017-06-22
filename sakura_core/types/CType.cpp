@@ -348,7 +348,11 @@ void _DefaultConfig(STypeConfig* pType)
 
 	// 文字コード設定
 	pType->m_encoding.m_bPriorCesu8 = false;
+#ifdef UZ_FIX_DEFAULT_CHARCODE_TO_UTF8
+	pType->m_encoding.m_eDefaultCodetype = CODE_UTF8;
+#else
 	pType->m_encoding.m_eDefaultCodetype = CODE_SJIS;
+#endif  // UZ_
 	pType->m_encoding.m_eDefaultEoltype = EOL_CRLF;
 	pType->m_encoding.m_bDefaultBom = false;
 
