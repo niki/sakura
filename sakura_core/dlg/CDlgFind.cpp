@@ -50,6 +50,80 @@ CDlgFind::CDlgFind()
 	return;
 }
 
+#ifdef UZ_FIX_FINDDLG
+/** 標準以外のメッセージを捕捉する
+	@date 2008.05.28 ryoji 新規作成
+*/
+INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
+{
+	INT_PTR result;
+	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
+	//si::logln(L"wMsg %x %x %x", wMsg, HIWORD(wParam), LOWORD(wParam));
+	switch( wMsg ){
+	case WM_COMMAND:
+		// 検索ダイアログを自動的に閉じる場合は逐次検索はしない
+		if (::IsDlgButtonChecked(GetHwnd(), IDC_CHECK_bAutoCloseDlgFind)) {
+			break;
+		}
+
+		// リストボックスが表示されているときは処理しない
+		if (::SendMessage(GetItemHwnd(IDC_COMBO_TEXT), CB_GETDROPPEDSTATE, 0, 0)) {
+			break;
+		}
+
+		//si::logln(L"WM_COMMAND %x %x", HIWORD(wParam), LOWORD(wParam));
+		if (LOWORD(wParam) == IDC_COMBO_TEXT) {
+			//si::logln(L"  IDC_COMBO_TEXT %x %x", HIWORD(lParam), LOWORD(lParam));
+			int nBufferSize = ::GetWindowTextLength( GetItemHwnd(IDC_COMBO_TEXT) ) + 1;
+			std::vector<TCHAR> vText(nBufferSize);
+			::DlgItem_GetText( GetHwnd(), IDC_COMBO_TEXT, &vText[0], nBufferSize);
+			std::wstring text = to_wchar(&vText[0]);
+			if (text != m_inputText) {
+				m_inputText = text;
+
+				CEditView *pcEditView = (CEditView *)m_lParam;
+
+				int nRet = GetData();
+
+				pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
+
+				if (text.empty()) {
+					pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+					pcEditView->SBMarkCache_Refresh(1500);
+#endif  // UZ_
+					pcEditView->Redraw();
+					//pcEditView->RedrawLines(pcEditView->GetTextArea().GetViewTopLine(),
+					//                        pcEditView->GetTextArea().GetBottomLine());
+				} else {
+					if( 0 < nRet ){
+						const bool bDrawSwitchOld = pcEditView->SetDrawSwitch(false);
+
+						/* 次を検索 */
+						pcEditView->GetCommander().HandleCommand( F_SEARCH_NEXT, true, (LPARAM)GetHwnd(), 0, 0, 0 );
+						pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
+
+						pcEditView->SetDrawSwitch(bDrawSwitchOld);
+
+						pcEditView->Redraw();
+						//pcEditView->RedrawLines(pcEditView->GetTextArea().GetViewTopLine(),
+						//                        pcEditView->GetTextArea().GetBottomLine());
+
+						// 検索開始位置を登録
+						if( FALSE != pcEditView->m_bSearch ){
+							// 検索開始時のカーソル位置登録条件変更 02/07/28 ai start
+							pcEditView->m_ptSrchStartPos_PHY = m_ptEscCaretPos_PHY;
+							pcEditView->m_bSearch = FALSE;
+						}
+					}
+				}
+			}
+		}
+  	break;
+	}
+	return result;
+}
+#endif  // UZ_
 
 /*!
 	コンボボックスのドロップダウンメッセージを捕捉する
@@ -182,7 +256,7 @@ void CDlgFind::SetData( void )
 	RECT rcView;
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	::GetWindowRect(pcEditView->GetHwnd(), &rcView);
-	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
+	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView, CDialog::DLGPLACE_BL);
 #endif  // UZ_
 
 	return;
@@ -256,7 +330,13 @@ int CDlgFind::GetData( void )
 		/* 検索文字列 */
 		//@@@ 2002.2.2 YAZAKI CShareDataに移動
 		if( m_strText.size() < _MAX_PATH ){
+#ifdef UZ_FIX_FINDDLG
+			if (m_inputText.empty()) {  // 入力中の検索は履歴に残さない
+				CSearchKeywordManager().AddToSearchKeyArr( m_strText.c_str() );
+			}
+#else
 			CSearchKeywordManager().AddToSearchKeyArr( m_strText.c_str() );
+#endif  // UZ_
 			m_pShareData->m_Common.m_sSearch.m_sSearchOption = m_sSearchOption;		// 検索オプション
 		}
 		CEditView*	pcEditView = (CEditView*)m_lParam;
@@ -284,6 +364,14 @@ BOOL CDlgFind::OnBnClicked( int wID )
 {
 	int			nRet;
 	CEditView*	pcEditView = (CEditView*)m_lParam;
+#ifdef UZ_FIX_FINDDLG
+	// 下検索のときにシフトキーが押されていたら上検索にする
+	if (wID == IDC_BUTTON_SEARCHNEXT) {
+		if (::GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+			wID = IDC_BUTTON_SEARCHPREV;
+		}
+	}
+#endif  // UZ_
 	switch( wID ){
 	case IDC_BUTTON_HELP:
 		/* 「検索」のヘルプ */
@@ -360,6 +448,9 @@ BOOL CDlgFind::OnBnClicked( int wID )
 		}
 		return TRUE;
 	case IDC_BUTTON_SEARCHNEXT:		/* 下検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDOK]→[IDC_BUTTON_SERACHNEXT]に変更
+#ifdef UZ_FIX_FINDDLG
+		m_inputText.clear();  // ボタン決定による検索
+#endif  // UZ_
 		/* ダイアログデータの取得 */
 		nRet = GetData();
 		if( 0 < nRet ){
