@@ -27,6 +27,9 @@
 #include "util/os.h"
 #include "util/shell.h"
 #include "util/module.h"
+#ifdef UZ_FIX_SETMAINFONT
+#include "util/window.h"
+#endif  // UZ_
 
 /* ダイアログプロシージャ */
 INT_PTR CALLBACK MyDialogProc(
@@ -624,7 +627,11 @@ bool CDialog::DirectoryUp( TCHAR* szDir )
 }
 
 // コントロールに画面のフォントを設定	2012/11/27 Uchi
+#ifdef UZ_FIX_SETMAINFONT
+HFONT CDialog::SetMainFont( HWND hTarget, int ptOfs )
+#else
 HFONT CDialog::SetMainFont( HWND hTarget )
+#endif  // UZ_
 {
 	if (hTarget == NULL)	return NULL;
 
@@ -634,7 +641,11 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 	// 設定するフォントの高さを取得
 	hFont = (HFONT)::SendMessage(hTarget, WM_GETFONT, 0, 0);
 	GetObject(hFont, sizeof(lf), &lf);
+#ifdef UZ_FIX_SETMAINFONT
+	LONG nfHeight = lf.lfHeight + DpiPointsToPixels(-ptOfs);
+#else
 	LONG nfHeight = lf.lfHeight;
+#endif  // UZ_
 
 	// LOGFONTの作成
 	lf = m_pShareData->m_Common.m_sView.m_lf;
@@ -693,14 +704,14 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place) 
 	int top_denominator = 2;  // 分母
 	m_yPos = 0;
 	//m_yPos += rc.top;
-	if (place == DLGPLACE_BL) {  // 左下
+	if (place == DLGPLACE_TL || place == DLGPLACE_TC || place == DLGPLACE_TR) {  // 左上, 中央上, 右上
+		m_yPos += rcView.top;
+		m_yPos += 20;  // offset
+	} else if (place == DLGPLACE_BL || place == DLGPLACE_BC || place == DLGPLACE_BR) {  // 左下, 中央下, 右下
 		m_yPos += rcView.bottom;
 		m_yPos -= m_nHeight;
-		m_yPos -= 30;  // offset
-	} else if (place == DLGPLACE_BC) {  // 中央下
-		m_yPos += rcView.bottom;
-		m_yPos -= m_nHeight;
-	} else {
+		m_yPos -= 20;  // offset
+	} else {  // 中央
 		m_yPos += rcView.top;
 		m_yPos += viewHeight / top_denominator * top_molecule;
 		m_yPos -= m_nHeight / 2;
@@ -710,14 +721,14 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place) 
 	int left_denominator = 2;  // 分母
 	m_xPos = 0;
 	//m_xPos += rc.left;
-	if (place == DLGPLACE_BL) {  // 左下
+	if (place == DLGPLACE_TL || place == DLGPLACE_CL || place == DLGPLACE_BL) {  // 左下, 中央左, 左上
 		m_xPos += rcView.left;
 		m_xPos += 50;  // offset
-	} else if (place == DLGPLACE_BC) {  // 中央下
-		m_xPos += rcView.left;
-		m_xPos += viewWidth / left_denominator * left_molecule;
-		m_xPos -= m_nWidth / 2;
-	} else {
+	} else if (place == DLGPLACE_TL || place == DLGPLACE_CL || place == DLGPLACE_BL) {  // 右下, 中央右, 右上
+		m_xPos += rcView.right;
+		m_xPos -= m_nWidth;
+		m_xPos -= 50;  // offset
+	} else {  // 中央
 		m_xPos += rcView.left;
 		m_xPos += viewWidth / left_denominator * left_molecule;
 		m_xPos -= m_nWidth / 2;

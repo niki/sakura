@@ -164,7 +164,11 @@ protected:
 	HWND GetItemHwnd(int nID){ return ::GetDlgItem( GetHwnd(), nID ); }
 
 	// コントロールに画面のフォントを設定	2012/11/27 Uchi
+#ifdef UZ_FIX_SETMAINFONT
+	HFONT SetMainFont( HWND hTarget, int ptOfs = 0 );
+#else
 	HFONT SetMainFont( HWND hTarget );
+#endif  // UZ_
 
 #ifdef UZ_FIX_DIALOG_POS
 	void SetPlaceOfWindow();

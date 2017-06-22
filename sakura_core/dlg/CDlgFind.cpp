@@ -173,7 +173,11 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 
 	// フォント設定	2012/11/27 Uchi
 	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT ), WM_GETFONT, 0, 0 );
+#ifdef UZ_FIX_FINDDLG
+	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ), 2 );
+#else
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ) );
+#endif  // UZ_
 	m_cFontText.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT ) );
 	return bRet;
 }
@@ -182,6 +186,12 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 
 BOOL CDlgFind::OnDestroy()
 {
+#ifdef UZ_FIX_FINDDLG
+	// 最後に入力した文字列を履歴に追加する
+	if (!m_inputText.empty()) {  // 入力中の検索は履歴に残さない
+		CSearchKeywordManager().AddToSearchKeyArr( m_strText.c_str() );
+	}
+#endif  // UZ_
 	m_cFontText.ReleaseOnDestroy();
 	return CDialog::OnDestroy();
 }
@@ -331,9 +341,7 @@ int CDlgFind::GetData( void )
 		//@@@ 2002.2.2 YAZAKI CShareDataに移動
 		if( m_strText.size() < _MAX_PATH ){
 #ifdef UZ_FIX_FINDDLG
-			if (m_inputText.empty()) {  // 入力中の検索は履歴に残さない
-				CSearchKeywordManager().AddToSearchKeyArr( m_strText.c_str() );
-			}
+			// 入力中の検索は履歴に残さない
 #else
 			CSearchKeywordManager().AddToSearchKeyArr( m_strText.c_str() );
 #endif  // UZ_
@@ -448,9 +456,6 @@ BOOL CDlgFind::OnBnClicked( int wID )
 		}
 		return TRUE;
 	case IDC_BUTTON_SEARCHNEXT:		/* 下検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDOK]→[IDC_BUTTON_SERACHNEXT]に変更
-#ifdef UZ_FIX_FINDDLG
-		m_inputText.clear();  // ボタン決定による検索
-#endif  // UZ_
 		/* ダイアログデータの取得 */
 		nRet = GetData();
 		if( 0 < nRet ){
