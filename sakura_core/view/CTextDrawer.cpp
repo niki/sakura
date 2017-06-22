@@ -299,9 +299,41 @@ void CTextDrawer::DispNoteLine(
 {
 	const CEditView* pView=m_pEditView;
 
+#ifdef UZ_FIX_WS_COLOR
+	static int nBlendPer = RegKey(UZ_REGKEY).get(_T("WhiteSpaceBlendPer"), UZ_WS_BLEND_PER);
+	//! 色をマージする
+	//! @param colText テキスト色
+	//! @param colBase ベースとなる色
+	//! @return 合成後の色
+	auto fnMeargeColor = [](COLORREF colText, COLORREF colBase, int blendPer) {
+		COLORREF c1 = colText;
+		COLORREF c2 = colBase;
+		float blendPerN = 1.0f / 100.0f * blendPer;
+		const float r1 = (float)GetRValue(c1);
+		const float g1 = (float)GetGValue(c1);
+		const float b1 = (float)GetBValue(c1);
+		const float r2 = (float)GetRValue(c2);
+		const float g2 = (float)GetGValue(c2);
+		const float b2 = (float)GetBValue(c2);
+		float r = r2 + (r1 - r2) * blendPerN;
+		float g = g2 + (g1 - g2) * blendPerN;
+		float b = b2 + (b1 - b2) * blendPerN;
+		return RGB( (BYTE)r, (BYTE)g, (BYTE)b );
+	};
+	// 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
+	CTypeSupport cTextType(pView, COLORIDX_TEXT); // テキストの指定色
+	COLORREF col1 = cTextType.GetTextColor();
+	COLORREF col2 = cTextType.GetBackColor();
+	COLORREF crText = fnMeargeColor(col1, col2, nBlendPer);
+#endif  // UZ_
+
 	CTypeSupport cNoteLine(pView, COLORIDX_NOTELINE);
 	if( cNoteLine.IsDisp() ){
+#ifdef UZ_FIX_WS_COLOR
+		gr.SetPen( crText );
+#else
 		gr.SetPen( cNoteLine.GetTextColor() );
+#endif  // UZ_
 		const int nLineHeight = pView->GetTextMetrics().GetHankakuDy();
 		const int left = nLeft;
 		const int right = nRight;
