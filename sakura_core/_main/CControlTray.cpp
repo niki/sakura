@@ -789,8 +789,10 @@ LRESULT CControlTray::DispatchEvent(
 					if (lParam != 0) {
 						int nId = (int)lParam;
 						type = CShareData::getInstance()->CreateTypeConfig(nId - 1);  // タイプを作成
-						// カラー情報は基本をコピーする
-						memcpy_raw(&type->m_nColorInfoArrNum, &types[0]->m_nColorInfoArrNum, sizeof(type->m_nColorInfoArrNum));
+						// いくつかの情報は「基本」からコピーする
+						type->m_nColumnSpace = types[0]->m_nColumnSpace;  // 文字と文字の隙間
+						type->m_nLineSpace = types[0]->m_nLineSpace;  // 行間のすきま
+						type->m_nColorInfoArrNum = types[0]->m_nColorInfoArrNum;  // 色設定配列の有効数
 						memcpy_raw(type->m_ColorInfoArr, types[0]->m_ColorInfoArr, sizeof(type->m_ColorInfoArr));
 						//si::logln(L"  *** add type : name %s, ext %s", type->m_szTypeName, type->m_szTypeExts);
 					} else {
