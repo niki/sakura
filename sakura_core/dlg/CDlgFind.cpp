@@ -93,21 +93,16 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 					pcEditView->SBMarkCache_Refresh(1500);
 #endif  // UZ_
 					pcEditView->Redraw();
-					//pcEditView->RedrawLines(pcEditView->GetTextArea().GetViewTopLine(),
-					//                        pcEditView->GetTextArea().GetBottomLine());
 				} else {
 					if( 0 < nRet ){
 						const bool bDrawSwitchOld = pcEditView->SetDrawSwitch(false);
 
+#if 1
+						pcEditView->ChangeCurRegexp(false);
+#else
 						/* 次を検索 */
 						pcEditView->GetCommander().HandleCommand( F_SEARCH_NEXT, true, (LPARAM)GetHwnd(), 0, 0, 0 );
 						pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
-
-						pcEditView->SetDrawSwitch(bDrawSwitchOld);
-
-						pcEditView->Redraw();
-						//pcEditView->RedrawLines(pcEditView->GetTextArea().GetViewTopLine(),
-						//                        pcEditView->GetTextArea().GetBottomLine());
 
 						// 検索開始位置を登録
 						if( FALSE != pcEditView->m_bSearch ){
@@ -115,6 +110,10 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 							pcEditView->m_ptSrchStartPos_PHY = m_ptEscCaretPos_PHY;
 							pcEditView->m_bSearch = FALSE;
 						}
+#endif
+
+						pcEditView->SetDrawSwitch(bDrawSwitchOld);
+						pcEditView->Redraw();
 					}
 				}
 			}
