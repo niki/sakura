@@ -724,10 +724,10 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place) 
 	if (place == DLGPLACE_TL || place == DLGPLACE_CL || place == DLGPLACE_BL) {  // 左下, 中央左, 左上
 		m_xPos += rcView.left;
 		m_xPos += 50;  // offset
-	} else if (place == DLGPLACE_TL || place == DLGPLACE_CL || place == DLGPLACE_BL) {  // 右下, 中央右, 右上
+	} else if (place == DLGPLACE_TR || place == DLGPLACE_CR || place == DLGPLACE_BR) {  // 右下, 中央右, 右上
 		m_xPos += rcView.right;
 		m_xPos -= m_nWidth;
-		m_xPos -= 50;  // offset
+		m_xPos -= 20;  // offset
 	} else {  // 中央
 		m_xPos += rcView.left;
 		m_xPos += viewWidth / left_denominator * left_molecule;
