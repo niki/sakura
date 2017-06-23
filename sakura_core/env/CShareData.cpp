@@ -711,7 +711,7 @@ bool CShareData::InitShareData()
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders2 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders3 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders4 = _T("");
-			m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs = _T("");
+			m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs = _T(".vs .svn .git .hg obj Debug Release");
 #endif  // UZ_
 
 			// 2004/06/21 novice タグジャンプ機能追加
