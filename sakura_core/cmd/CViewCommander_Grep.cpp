@@ -86,11 +86,6 @@ void CViewCommander::Command_GREP( void )
 			temp.AppendString(GetEditWindow()->m_cDlgGrep.m_szFolder3);
 			count++;
 		}
-		if (GetEditWindow()->m_cDlgGrep.m_bFolder4) {
-			if (count > 0) temp.AppendString(_T(";"));
-			temp.AppendString(GetEditWindow()->m_cDlgGrep.m_szFolder4);
-			count++;
-		}
 	}
 	if (count > 0) {
 		if (temp.GetStringLength() == 0) return;

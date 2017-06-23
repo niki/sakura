@@ -831,7 +831,6 @@
 #ifdef UZ_FIX_GREP
 #define IDC_COMBO_FOLDER2               7000
 #define IDC_COMBO_FOLDER3               7001
-#define IDC_COMBO_FOLDER4               7002
 #define IDC_CHK_FOLDER99                7010
 #define IDC_CHK_FOLDER2                 7011
 #define IDC_CHK_FOLDER3                 7012

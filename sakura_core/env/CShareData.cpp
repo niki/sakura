@@ -707,10 +707,8 @@ bool CShareData::InitShareData()
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders99 = true;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders2 = false;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders3 = false;
-			m_pShareData->m_sSearchKeywords.m_bGrepFolders4 = false;
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders2 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders3 = _T("");
-			m_pShareData->m_sSearchKeywords.m_szGrepFolders4 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs = _T(".vs .svn .git .hg obj Debug Release");
 #endif  // UZ_
 

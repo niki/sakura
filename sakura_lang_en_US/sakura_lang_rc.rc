@@ -231,7 +231,7 @@ BEGIN
 END
 
 #ifdef UZ_FIX_GREP
-IDD_GREP DIALOGEX 0, 0, 308, 231
+IDD_GREP DIALOGEX 0, 0, 308, 216
 #else
 IDD_GREP DIALOGEX 0, 0, 308, 171
 #endif // UZ_
@@ -261,66 +261,59 @@ BEGIN
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_CHK_FOLDER3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,37,50,8,10
     PUSHBUTTON      "&...",IDC_BUTTON_FOLDER3,293,49,9,13
-    LTEXT           "Folder/4",IDC_STATIC,5,66,38,8
-    COMBOBOX        IDC_COMBO_FOLDER4,46,64,246,120,CBS_DROPDOWN | 
+    LTEXT           "File(&T)",IDC_STATIC,5,66,36,8,NOT WS_GROUP
+    COMBOBOX        IDC_COMBO_FILE,46,64,257,120,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_CHK_FOLDER4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,37,65,8,10
-    PUSHBUTTON      "&...",IDC_BUTTON_FOLDER4,293,64,9,13
-    LTEXT           "File(&T)",IDC_STATIC,5,81,36,8,NOT WS_GROUP
-    COMBOBOX        IDC_COMBO_FILE,46,79,257,120,CBS_DROPDOWN | 
-                    CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Exclude dirs",IDC_STATIC,5,96,52,8,NOT WS_GROUP
-    EDITTEXT        IDC_EDIT_EXCLUDEDIRS,46,94,257,12,ES_AUTOHSCROLL
-    //PUSHBUTTON      "Up(&B)",IDC_BUTTON_FOLDER_UP,225,94,25,14
-    PUSHBUTTON      "C&ur Folder",IDC_BUTTON_CURRENTFOLDER,253,109,49,14,
+    LTEXT           "Exclude dirs",IDC_STATIC,5,81,52,8,NOT WS_GROUP
+    EDITTEXT        IDC_EDIT_EXCLUDEDIRS,46,79,257,12,ES_AUTOHSCROLL
+    //PUSHBUTTON      "Up(&B)",IDC_BUTTON_FOLDER_UP,225,79,25,14
+    PUSHBUTTON      "C&ur Folder",IDC_BUTTON_CURRENTFOLDER,253,94,49,14,
                     BS_MULTILINE
-    //1CONTROL         "C/C++(.c .cpp .cc .cxx .c++ .h .hpp)",IDC_CHK_CPP,"Button",
-    //1                BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,50,92,128,10
     CONTROL         "Search from current file(&Q)",IDC_CHK_FROMTHISTEXT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,112,125,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,97,125,10
     CONTROL         "Match Whole &Word",IDC_CHK_WORD,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,5,123,73,10
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,5,108,73,10
     CONTROL         "Search &Sub Folders",IDC_CHK_SUBFOLDER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,134,113,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,119,113,10
     CONTROL         "&Case Sensitive",IDC_CHK_LOHICASE,"Button",
-                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,145,119,10
+                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,130,119,10
     CONTROL         "R&egex",IDC_CHK_REGULAREXP,"Button",
-                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,156,55,10
-    LTEXT           "",IDC_STATIC_JRE32VER,18,165,159,8
+                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,141,55,10
+    LTEXT           "",IDC_STATIC_JRE32VER,18,150,159,8
     CONTROL         "Match Once Per File(&G)",
                     IDC_CHECK_FILE_ONLY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,176,119,10
+                    WS_TABSTOP,5,161,119,10
     CONTROL         "Output relati&ve path",
                     IDC_CHECK_BASE_PATH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,188,83,10
+                    WS_TABSTOP,5,173,83,10
     CONTROL         "Output per director&y",
                     IDC_CHECK_SEP_FOLDER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,90,188,83,10
-    LTEXT           "Encoding(&A)",IDC_STATIC,16,202,62,8
-    COMBOBOX        IDC_COMBO_CHARSET,80,200,65,101,CBS_DROPDOWNLIST | 
+                    WS_TABSTOP,90,173,83,10
+    LTEXT           "Encoding(&A)",IDC_STATIC,16,187,62,8
+    COMBOBOX        IDC_COMBO_CHARSET,80,185,65,101,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "CP(&2)",IDC_CHECK_CP,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,148,200,30,10
+                    WS_TABSTOP,148,185,30,10
     CONTROL         "&Default for Folder is 1st Folder",
                     IDC_CHK_DEFAULTFOLDER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,216,164,10
+                    WS_TABSTOP,5,201,164,10
     CONTROL         "Complete &Line",IDC_RADIO_OUTPUTLINE,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,185,133,48,10
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,185,118,48,10
     CONTROL         "Matching &Part",IDC_RADIO_OUTPUTMARKED,"Button",
-                    BS_AUTORADIOBUTTON,185,145,56,10
+                    BS_AUTORADIOBUTTON,185,130,56,10
     CONTROL         "NoHit Line(&1)",IDC_RADIO_NOHIT,"Button",
-                    BS_AUTORADIOBUTTON,185,157,56,10
-    GROUPBOX        "Result Ouput",IDC_STATIC,180,123,65,47,WS_GROUP
+                    BS_AUTORADIOBUTTON,185,142,56,10
+    GROUPBOX        "Result Ouput",IDC_STATIC,180,108,65,47,WS_GROUP
     CONTROL         "Nor&mal",IDC_RADIO_OUTPUTSTYLE1,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,185,184,54,10
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,185,169,54,10
     CONTROL         "Per-F&ile",IDC_RADIO_OUTPUTSTYLE2,"Button",
-                    BS_AUTORADIOBUTTON,185,196,59,10
+                    BS_AUTORADIOBUTTON,185,181,59,10
     CONTROL         "&Result Only",IDC_RADIO_OUTPUTSTYLE3,"Button",
-                    BS_AUTORADIOBUTTON,185,208,59,10
-    GROUPBOX        "Output Format",IDC_STATIC,180,174,65,47,WS_GROUP
-    DEFPUSHBUTTON   "&Find",IDOK,253,136,49,14,WS_GROUP
-    PUSHBUTTON      "Cancel(&X)",IDCANCEL,253,190,49,14
-    PUSHBUTTON      "&Help",IDC_BUTTON_HELP,253,207,49,14
+                    BS_AUTORADIOBUTTON,185,193,59,10
+    GROUPBOX        "Output Format",IDC_STATIC,180,159,65,47,WS_GROUP
+    DEFPUSHBUTTON   "&Find",IDOK,253,121,49,14,WS_GROUP
+    PUSHBUTTON      "Cancel(&X)",IDCANCEL,253,175,49,14
+    PUSHBUTTON      "&Help",IDC_BUTTON_HELP,253,192,49,14
 #else
     LTEXT           "File(&T)",IDC_STATIC,5,21,36,8,NOT WS_GROUP
     COMBOBOX        IDC_COMBO_FILE,46,19,257,120,CBS_DROPDOWN | 

@@ -84,10 +84,8 @@ CDlgGrep::CDlgGrep()
 	m_bFolder99 = true;
 	m_bFolder2 = false;
 	m_bFolder3 = false;
-	m_bFolder4 = false;
 	m_szFolder2[0] = 0;
 	m_szFolder3[0] = 0;
-	m_szFolder4[0] = 0;
 	m_szExcludeDirs[0] = 0;
 #endif  // UZ_
 	return;
@@ -121,7 +119,6 @@ BOOL CDlgGrep::OnCbnDropDown( HWND hwndCtl, int wID )
 #ifdef UZ_FIX_GREP
 	case IDC_COMBO_FOLDER2:
 	case IDC_COMBO_FOLDER3:
-	case IDC_COMBO_FOLDER4:
 #endif  // UZ_
 		if ( ::SendMessage(hwndCtl, CB_GETCOUNT, 0L, 0L) == 0) {
 			int nSize = m_pShareData->m_sSearchKeywords.m_aGrepFolders.size();
@@ -164,10 +161,6 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const TCHAR* pszCur
 	if( m_szFolder3[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepFolders3.At(0) != _T('\0')){
 		_tcscpy( m_szFolder3, m_pShareData->m_sSearchKeywords.m_szGrepFolders3.GetBufferPointer() );	/* 検索フォルダ */
 	}
-	m_bFolder4 = m_pShareData->m_sSearchKeywords.m_bGrepFolders4;
-	if( m_szFolder4[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepFolders4.At(0) != _T('\0')){
-		_tcscpy( m_szFolder4, m_pShareData->m_sSearchKeywords.m_szGrepFolders4.GetBufferPointer() );	/* 検索フォルダ */
-	}
 	if( m_szExcludeDirs[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs.At(0) != _T('\0')){
 		_tcscpy( m_szExcludeDirs, m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs.GetBufferPointer() );	/* Exclude dirs */
 	}
@@ -199,7 +192,6 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 #ifdef UZ_FIX_GREP
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER2 ), _countof2(m_szFile) - 1 );
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER3 ), _countof2(m_szFile) - 1 );
-	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 ), _countof2(m_szFile) - 1 );
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_EDIT_EXCLUDEDIRS ), _countof2(m_szFile) - 1 );
 #endif  // UZ_
 
@@ -210,7 +202,6 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 #ifdef UZ_FIX_GREP
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER2 ), TRUE );
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER3 ), TRUE );
-	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 ), TRUE );
 	Combo_SetExtendedUI( ::GetDlgItem( GetHwnd(), IDC_EDIT_EXCLUDEDIRS ), TRUE );
 #endif  // UZ_
 
@@ -244,10 +235,6 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	HWND hFolder3 = ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER3 );
 	DragAcceptFiles(hFolder3, true);
 	SetWindowLongPtr(hFolder3, GWLP_WNDPROC, (LONG_PTR)OnFolderProc);
-
-	HWND hFolder4 = ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 );
-	DragAcceptFiles(hFolder4, true);
-	SetWindowLongPtr(hFolder4, GWLP_WNDPROC, (LONG_PTR)OnFolderProc);
 #endif  // UZ_
 
 	m_comboDelText = SComboBoxItemDeleter();
@@ -324,7 +311,6 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 	case IDC_CHK_FOLDER99:
 	case IDC_CHK_FOLDER2:
 	case IDC_CHK_FOLDER3:
-	case IDC_CHK_FOLDER4:
 	case IDC_CHK_FROMTHISTEXT:	/* この編集中のテキストから検索する */
 	  // 2010.05.30 関数化
 		SetDataFromThisText(false);
@@ -479,22 +465,6 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 		}
 		
 		return TRUE;
-	case IDC_BUTTON_FOLDER4:
-		/* フォルダ参照ボタン */
-		{
-			const int nMaxPath = MAX_GREP_PATH;
-			TCHAR	szFolder[nMaxPath];
-			/* 検索フォルダ */
-			::DlgItem_GetText( GetHwnd(), IDC_COMBO_FOLDER4, szFolder, nMaxPath - 1 );
-			if( szFolder[0] == _T('\0') ){
-				::GetCurrentDirectory( nMaxPath, szFolder );
-			}
-			if( SelectDir( GetHwnd(), LS(STR_DLGGREP1), szFolder, szFolder ) ){
-				SetGrepFolder( GetItemHwnd(IDC_COMBO_FOLDER4), szFolder );
-			}
-		}
-		
-		return TRUE;
 #endif  // UZ_
 	case IDC_CHECK_CP:
 		{
@@ -558,10 +528,8 @@ void CDlgGrep::SetData( void )
 	::CheckDlgButton( GetHwnd(), IDC_CHK_FOLDER99, m_bFolder99 );
 	::CheckDlgButton( GetHwnd(), IDC_CHK_FOLDER2, m_bFolder2 );
 	::CheckDlgButton( GetHwnd(), IDC_CHK_FOLDER3, m_bFolder3 );
-	::CheckDlgButton( GetHwnd(), IDC_CHK_FOLDER4, m_bFolder4 );
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER2, m_szFolder2 );
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER3, m_szFolder3 );
-	::DlgItem_SetText( GetHwnd(), IDC_COMBO_FOLDER4, m_szFolder4 );
 	::DlgItem_SetText( GetHwnd(), IDC_EDIT_EXCLUDEDIRS, m_szExcludeDirs );
 #endif  // UZ_
 
@@ -706,22 +674,18 @@ void CDlgGrep::SetDataFromThisText( bool bChecked )
 	::EnableWindow(::GetDlgItem(GetHwnd(), IDC_CHK_FOLDER99), !f);
 	::EnableWindow(::GetDlgItem(GetHwnd(), IDC_CHK_FOLDER2), !f);
 	::EnableWindow(::GetDlgItem(GetHwnd(), IDC_CHK_FOLDER3), !f);
-	::EnableWindow(::GetDlgItem(GetHwnd(), IDC_CHK_FOLDER4), !f);
 	
 	BOOL bFolder99 = !f && (0 != ::IsDlgButtonChecked(GetHwnd(), IDC_CHK_FOLDER99));
 	BOOL bFolder2 = !f && (0 != ::IsDlgButtonChecked(GetHwnd(), IDC_CHK_FOLDER2));
 	BOOL bFolder3 = !f && (0 != ::IsDlgButtonChecked(GetHwnd(), IDC_CHK_FOLDER3));
-	BOOL bFolder4 = !f && (0 != ::IsDlgButtonChecked(GetHwnd(), IDC_CHK_FOLDER4));
-	BOOL bThisText = f || (!bFolder99 && !bFolder2 && !bFolder3 && !bFolder4);
+	BOOL bThisText = f || (!bFolder99 && !bFolder2 && !bFolder3);
 	
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER ),  bFolder99 );
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER2 ), bFolder2 );
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER3 ), bFolder3 );
-	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_COMBO_FOLDER4 ), bFolder4 );
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_BUTTON_FOLDER ), bFolder99 );
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_BUTTON_FOLDER2 ), bFolder2 );
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_BUTTON_FOLDER3 ), bFolder3 );
-	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_BUTTON_FOLDER4 ), bFolder4 );
 	
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_COMBO_FILE ),    !bThisText );
 	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_SUBFOLDER ), !bThisText );
@@ -825,19 +789,15 @@ int CDlgGrep::GetData( void )
 	m_bFolder99 = ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_FOLDER99 );
 	m_bFolder2 = ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_FOLDER2 );
 	m_bFolder3 = ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_FOLDER3 );
-	m_bFolder4 = ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_FOLDER4 );
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_FOLDER2, m_szFolder2, _countof2(m_szFolder2) );
 	::DlgItem_GetText( GetHwnd(), IDC_COMBO_FOLDER3, m_szFolder3, _countof2(m_szFolder3) );
-	::DlgItem_GetText( GetHwnd(), IDC_COMBO_FOLDER4, m_szFolder4, _countof2(m_szFolder4) );
 	::DlgItem_GetText( GetHwnd(), IDC_EDIT_EXCLUDEDIRS, m_szExcludeDirs, _countof2(m_szExcludeDirs) );
 	
 	m_pShareData->m_sSearchKeywords.m_bGrepFolders99 = m_bFolder99;
 	m_pShareData->m_sSearchKeywords.m_bGrepFolders2 = m_bFolder2;
 	m_pShareData->m_sSearchKeywords.m_bGrepFolders3 = m_bFolder3;
-	m_pShareData->m_sSearchKeywords.m_bGrepFolders4 = m_bFolder4;
 	m_pShareData->m_sSearchKeywords.m_szGrepFolders2 = m_szFolder2;
 	m_pShareData->m_sSearchKeywords.m_szGrepFolders3 = m_szFolder3;
-	m_pShareData->m_sSearchKeywords.m_szGrepFolders4 = m_szFolder4;
 	m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs = m_szExcludeDirs;
 #endif  // UZ_
 
@@ -939,7 +899,7 @@ int CDlgGrep::GetData( void )
 	// 2016.03.08 Moca 「このファイルから検索」の場合はサブフォルダ共通設定を更新しない
 #ifdef UZ_FIX_GREP
   bool bFromThisText = m_bFromThisText;
-	if (!m_bFolder99 && !m_bFolder4 && !m_bFolder3 && !m_bFolder2) {
+	if (!m_bFolder99 && !m_bFolder3 && !m_bFolder2) {
 		bFromThisText = true;
 	}
 	if (!bFromThisText) {
@@ -953,9 +913,6 @@ int CDlgGrep::GetData( void )
 #ifdef UZ_FIX_GREP
 		if (m_bFolder99 && m_szFolder[0] != '\0') {
 			CSearchKeywordManager().AddToGrepFolderArr( m_szFolder );
-		}
-		if (m_bFolder4 && m_szFolder4[0] != '\0') {
-			CSearchKeywordManager().AddToGrepFolderArr( m_szFolder4 );
 		}
 		if (m_bFolder3 && m_szFolder3[0] != '\0') {
 			CSearchKeywordManager().AddToGrepFolderArr( m_szFolder3 );

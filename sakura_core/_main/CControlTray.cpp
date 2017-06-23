@@ -118,11 +118,6 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 			temp.AppendString(cDlgGrep.m_szFolder3);
 			count++;
 		}
-		if (cDlgGrep.m_bFolder4) {
-			if (count > 0) temp.AppendString(_T(";"));
-			temp.AppendString(cDlgGrep.m_szFolder4);
-			count++;
-		}
 	}
 	if (count > 0) {
 		if (temp.GetStringLength() == 0) return;

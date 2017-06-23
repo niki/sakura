@@ -42,10 +42,8 @@ struct SShare_SearchKeywords{
 	bool		m_bGrepFolders99;
 	bool		m_bGrepFolders2;
 	bool		m_bGrepFolders3;
-	bool		m_bGrepFolders4;
 	SFilePath	m_szGrepFolders2;
 	SFilePath	m_szGrepFolders3;
-	SFilePath	m_szGrepFolders4;
 	SFilePath	m_szGrepExcludeDirs;
 #endif  // UZ_
 #ifdef UZ_FIX_MAXDATA

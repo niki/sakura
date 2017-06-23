@@ -747,8 +747,8 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
   			if (std::getline(ifs, line_buffer)) {
   				skwd.m_bGrepFolders3 = std::stoi(chomp(line_buffer)) ? true : false;
   			}
-  			if (std::getline(ifs, line_buffer)) {
-  				skwd.m_bGrepFolders4 = std::stoi(chomp(line_buffer)) ? true : false;
+  			while (std::getline(ifs, line_buffer)) {
+  				if (line_buffer == "---") break;
   			}
   			if (std::getline(ifs, line_buffer)) {
   				skwd.m_szGrepFolders2.Assign(wchomp(line_buffer).c_str());
@@ -757,10 +757,10 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
   				skwd.m_szGrepFolders3.Assign(wchomp(line_buffer).c_str());
   			}
   			if (std::getline(ifs, line_buffer)) {
-  				skwd.m_szGrepFolders4.Assign(wchomp(line_buffer).c_str());
-  			}
-  			if (std::getline(ifs, line_buffer)) {
   				skwd.m_szGrepExcludeDirs.Assign(wchomp(line_buffer).c_str());
+  			}
+  			while (std::getline(ifs, line_buffer)) {
+  				if (line_buffer == "---") break;
   			}
 			},
 			[]{},  // end
@@ -776,14 +776,16 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		
 		EachOStreamLines(ofs, "#GrepFolder", "#end", skwd.m_aGrepFolders._GetSizeRef(),
 			[&ofs, &skwd]{  // begin
+#ifdef UZ_FIX_GREP
 				ofs << (skwd.m_bGrepFolders99 ? "1" : "0") << std::endl;
 				ofs << (skwd.m_bGrepFolders2 ? "1" : "0") << std::endl;
 				ofs << (skwd.m_bGrepFolders3 ? "1" : "0") << std::endl;
-				ofs << (skwd.m_bGrepFolders4 ? "1" : "0") << std::endl;
+				ofs << "---" << std::endl;
 				ofs << si::util::to_bytes(skwd.m_szGrepFolders2.c_str()) << std::endl;
 				ofs << si::util::to_bytes(skwd.m_szGrepFolders3.c_str()) << std::endl;
-				ofs << si::util::to_bytes(skwd.m_szGrepFolders4.c_str()) << std::endl;
 				ofs << si::util::to_bytes(skwd.m_szGrepExcludeDirs.c_str()) << std::endl;
+				ofs << "---" << std::endl;
+#endif  // UZ_
 			},
 			[]{},  // end
 			[&ofs, &skwd](int index) {  // block
@@ -819,10 +821,8 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[*].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders99 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders3 );
-	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[2].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders4 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Path"), pShare->m_sSearchKeywords.m_szGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Path"), pShare->m_sSearchKeywords.m_szGrepFolders3 );
-	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[2].Path"), pShare->m_sSearchKeywords.m_szGrepFolders4 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPEXCLUDEDIRS.Path"), pShare->m_sSearchKeywords.m_szGrepExcludeDirs );
 #endif  // UZ_
 #endif  // UZ_

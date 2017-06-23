@@ -59,10 +59,8 @@ public:
 	bool		m_bFolder99;
 	bool		m_bFolder2;
 	bool		m_bFolder3;
-	bool		m_bFolder4;
 	SFilePath	m_szFolder2;				/*!< 検索フォルダ */
 	SFilePath	m_szFolder3;				/*!< 検索フォルダ */
-	SFilePath	m_szFolder4;				/*!< 検索フォルダ */
 	SFilePath	m_szExcludeDirs;		/*!< Exclude dirs */
 #endif  // UZ_
 	SFilePath	m_szCurrentFilePath;
