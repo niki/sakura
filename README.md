@@ -11,7 +11,7 @@ Feature
 <details><summary>MacTypeなどの描画負荷の高いソフトを併用した際に起こる描画崩れを軽減(したつもり)</summary></details>  
 <details><summary>Luaをマクロ言語として組み込み</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041845.png" width="50%"></details>  
 <details><summary>スクロールバーに検索結果やブックマークを表示</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706092354.png" width="50%"></details>  
-<details><summary>Grepフォルダの指定を４つに拡張</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041815.png" width="50%"></details>  
+<details><summary>Grepフォルダの指定を３つに拡張, 他</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041815.png" width="50%"></details>  
 <details><summary>半角空白やタブなどの見た目をすっきりさせる (Sublime Textを模倣)</summary></details>  
 <details><summary>sakura.iniの精査 (肥大化対策)</summary></details>  
 
@@ -19,7 +19,7 @@ Feature
 Download  
 --------
 
-+ [sakura-uzuki-2.41-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.41-32bit.zip) (768KB)  
++ [sakura-uzuki-2.42-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.42-32bit.zip) (768KB)  
 
 \- 変更履歴は[コミットログ](https://github.com/uzuki3/sakura/commits/master)を参照してください. 細かい内容は [my_config.h](sakura_core/my_config.h) を見てね.  
 \- 動作には[Visual Studio 2017 Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/#other-ja)が必要です.  
@@ -61,14 +61,14 @@ Changed
 ||履歴 (検索, 置換, Grep)の値を変更<br><ul><li>検索キー: `20`<li>置換キー: `20`<li>Grepファイル: `10`<li>Grepフォルダ: `20`</ul>|
 ||タブをダブルクリックで閉じられるようにする|
 ||選択タブのアクティブ化をマウス押下時に行いレスポンス向上|
-||Grep フォルダの指定BOXを４つに増やす|
+||検索ダイアログをVisualStudioのような挙動にする<br>ダイアログを開いたまま「次を検索」「前を検索」のショートカットが有効です.|
+||Grep フォルダの指定BOXを３つに増やす|
 ||Grep 除外フォルダを別ボックスで指定できるようにする|
 ||<details><summary>Grep パターン変数を使用できるようにする</summary>レジストリ `HKEY_CURRENT_USER\Software\sakura-uzuki`への追加が必要です.<br>`"$cpp"="*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp"`<br>`"$make"="makefile *.mak *.om OMakefile OMakeRoot"`<br>上記のようにレジストリエントリを追加し、Grepのファイルに `$cpp`を指定すると `*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp`で置き換えます.</details>|
 ||多重オープンの許可 (Shiftを押しながらファイルのドロップ)|
 |:bug:|折り返しモードをトグルで切り替えたときに「折り返さない」が処理されていないのを修正|
 ||垂直, 水平スクロールの挙動をメモ帳の挙動と同じにする<ul><li>垂直スクロールマージン１行<li>水平スクロールマージン１, １６文字移動</ul>|
 ||検索時に画面外へ移動するときカーソル行を中央表示|
-||検索ダイアログで検索するときに文字入力の度に検索(インクリメンタルサーチ)<br>邪魔にならないようにダイアログレイアウトの調整|
 ||タブ入力文字の切り替え機能<br>(`S_ChangeTabWidth`マクロを修正, 負の値を設定するとタブと空白を相互に切り替えます)|
 |:bug:|検索マーク切り替え, インクリメンタルサーチの際に検索ダイアログの「正規表現」が影響を受けてしまうのを修正|
 ||<details><summary>メインメニューは常にデフォルトを使用する</summary>:memo:カスタマイズの効果が感じられなかったのと機能が追加されたときに増えるメニューが対応されず, 機能に気づかないことが多いのでいっそのこと固定にしちゃったほうがわかりやすいので. 副作用でiniファイルに出力しないのでサイズが軽減されます.</details>|
