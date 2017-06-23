@@ -24,6 +24,9 @@
 #include "util/shell.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
+#ifdef UZ_FIX_FINDDLG
+#include "uiparts/CMenuDrawer.h"
+#endif  // UZ_
 
 //検索 CDlgFind.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//11800
@@ -47,8 +50,48 @@ const DWORD p_helpids[] = {	//11800
 CDlgFind::CDlgFind()
 {
 	m_sSearchOption.Reset();
+
+#ifdef UZ_FIX_FINDDLG
+	HWND hwndBtn = GetDlgItem(GetHwnd(), IDC_BUTTON_SEARCHNEXT);
+	CMenuDrawer cMenuDrawer;
+	cMenuDrawer.Create(G_AppInstance(), hwndBtn, NULL);
+	cMenuDrawer.ResetContents();
+	HMENU hMenuPopUp = ::CreatePopupMenu();
+	
+	// 次を検索メニュー
+	{ 
+		TCHAR szLabel[_MAX_PATH * 2+ 30] = _T("");
+		TCHAR szKey[10] = _T("");
+		CKeyBind::GetMenuLabel(G_AppInstance(), 
+			m_pShareData->m_Common.m_sKeyBind.m_nKeyNameArrNum,
+			m_pShareData->m_Common.m_sKeyBind.m_pKeyNameArr,
+			F_SEARCH_NEXT, szLabel, szKey, true, _countof(szLabel)
+		);
+		cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_BYPOSITION | MF_STRING, 1, szLabel, _T(""));
+	}
+	
+	// 前を検索メニュー
+	{
+		TCHAR szLabel[_MAX_PATH * 2+ 30] = _T("");
+		TCHAR szKey[10] = _T("");
+		CKeyBind::GetMenuLabel(G_AppInstance(), 
+			m_pShareData->m_Common.m_sKeyBind.m_nKeyNameArrNum,
+			m_pShareData->m_Common.m_sKeyBind.m_pKeyNameArr,
+			F_SEARCH_PREV, szLabel, szKey, true, _countof(szLabel)
+		);
+		cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_BYPOSITION | MF_STRING, 2, szLabel, _T(""));
+	}
+	
+	m_hMenuPopUp = hMenuPopUp;
+#endif  // UZ_
 	return;
 }
+
+#ifdef UZ_FIX_FINDDLG
+CDlgFind::~CDlgFind() {
+	::DestroyMenu(m_hMenuPopUp);
+}
+#endif  // UZ_
 
 #ifdef UZ_FIX_FINDDLG
 /** 標準以外のメッセージを捕捉する
@@ -58,9 +101,64 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 {
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
-	//si::logln(L"wMsg %x %x %x", wMsg, HIWORD(wParam), LOWORD(wParam));
+	si::logln(L"wMsg %x %x %x", wMsg, HIWORD(wParam), LOWORD(wParam));
 	switch( wMsg ){
+	case WM_NOTIFY:
+	  // 任意のタイプ設定を追加する
+		if (((LPNMHDR)lParam)->code ==  BCN_DROPDOWN) {
+			HWND hwndBtn = GetDlgItem(GetHwnd(), IDC_BUTTON_SEARCHNEXT);
+			RECT rc;
+			::GetClientRect(hwndBtn, &rc);
+			POINT po = {rc.left, rc.bottom};
+			::ClientToScreen(hwndBtn, &po);
+			int nId = (int)::TrackPopupMenu(m_hMenuPopUp,
+				TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
+				po.x, po.y,
+				0,
+				hwndBtn,
+				NULL
+			);
+			// 
+			if (nId > 0) {
+				if (nId == 1) {
+					int nRet = GetData();
+					if( 0 < nRet ){
+						CEditView *pcEditView = (CEditView *)m_lParam;
+						
+						/* 次を検索 */
+						pcEditView->GetCommander().HandleCommand( F_SEARCH_NEXT, true, (LPARAM)GetHwnd(), 0, 0, 0 );
+						pcEditView->Redraw();
+
+						// 検索開始位置を登録
+						if( FALSE != pcEditView->m_bSearch ){
+							// 検索開始時のカーソル位置登録条件変更 02/07/28 ai start
+							pcEditView->m_ptSrchStartPos_PHY = m_ptEscCaretPos_PHY;
+							pcEditView->m_bSearch = FALSE;
+						}
+					}
+				} else if (nId == 2) {
+					int nRet = GetData();
+					if( 0 < nRet ){
+						CEditView *pcEditView = (CEditView *)m_lParam;
+						
+						/* 前を検索 */
+						pcEditView->GetCommander().HandleCommand( F_SEARCH_PREV, true, (LPARAM)GetHwnd(), 0, 0, 0 );
+						pcEditView->Redraw();
+
+						// 検索開始位置を登録
+						if( FALSE != pcEditView->m_bSearch ){
+							// 検索開始時のカーソル位置登録条件変更 02/07/28 ai start
+							pcEditView->m_ptSrchStartPos_PHY = m_ptEscCaretPos_PHY;
+							pcEditView->m_bSearch = FALSE;
+						}
+					}
+				}
+			}
+		}
+		break;
 	case WM_COMMAND:
+		//si::logln(L"WM_COMMAND %x %x", wParam, lParam);
+		
 		// 検索ダイアログを自動的に閉じる場合は逐次検索はしない
 		if (::IsDlgButtonChecked(GetHwnd(), IDC_CHECK_bAutoCloseDlgFind)) {
 			break;
@@ -71,7 +169,19 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 			break;
 		}
 
-		//si::logln(L"WM_COMMAND %x %x", HIWORD(wParam), LOWORD(wParam));
+		if (HIWORD(wParam) == 1) {  // アクセラレータからのメッセージ
+			EFunctionCode nFuncCode = CKeyBind::GetFuncCode(
+				LOWORD(wParam),
+				m_pShareData->m_Common.m_sKeyBind.m_nKeyNameArrNum,
+				m_pShareData->m_Common.m_sKeyBind.m_pKeyNameArr
+			);
+			if (nFuncCode == F_SEARCH_NEXT || nFuncCode == F_SEARCH_PREV) {
+				CEditView *pcEditView = (CEditView *)m_lParam;
+				pcEditView->GetCommander().HandleCommand( (EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true, (LPARAM)GetHwnd(), 0, 0, 0 );
+			}
+			break;
+		}
+
 		if (LOWORD(wParam) == IDC_COMBO_TEXT) {
 			//si::logln(L"  IDC_COMBO_TEXT %x %x", HIWORD(lParam), LOWORD(lParam));
 			int nBufferSize = ::GetWindowTextLength( GetItemHwnd(IDC_COMBO_TEXT) ) + 1;
@@ -371,14 +481,6 @@ BOOL CDlgFind::OnBnClicked( int wID )
 {
 	int			nRet;
 	CEditView*	pcEditView = (CEditView*)m_lParam;
-#ifdef UZ_FIX_FINDDLG
-	// 下検索のときにシフトキーが押されていたら上検索にする
-	if (wID == IDC_BUTTON_SEARCHNEXT) {
-		if (::GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-			wID = IDC_BUTTON_SEARCHPREV;
-		}
-	}
-#endif  // UZ_
 	switch( wID ){
 	case IDC_BUTTON_HELP:
 		/* 「検索」のヘルプ */
@@ -485,6 +587,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			OkMessage( GetHwnd(), LS(STR_DLGFIND1) );	// 検索条件を指定してください。
 		}
 		return TRUE;
+#ifndef UZ_FIX_FINDDLG
 	case IDC_BUTTON_SETMARK:	//2002.01.16 hor 該当行マーク
 		if( 0 < GetData() ){
 			if( m_bModal ){		/* モーダルダイアログか */
@@ -501,6 +604,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			}
 		}
 		return TRUE;
+#endif  // UZ_
 	case IDCANCEL:
 		CloseDialog( 0 );
 		return TRUE;

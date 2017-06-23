@@ -77,7 +77,7 @@ END
 //
 
 #ifdef UZ_FIX_FINDDLG
-IDD_FIND DIALOGEX 30, 0, 201, 68
+IDD_FIND DIALOGEX 30, 0, 201, 66
 STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 #else
@@ -91,28 +91,28 @@ FONT 9, "MS Shell Dlg"
 BEGIN
 #ifdef UZ_FIX_FINDDLG
 //    LTEXT           "条件(&N)",IDC_STATIC,65,6,26,8
-    COMBOBOX        IDC_COMBO_TEXT,67,4,131,150,CBS_DROPDOWN | 
+    COMBOBOX        IDC_COMBO_TEXT,5,4,151,150,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "“”",IDC_CHK_WORD,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,45,7,20,10
+    CONTROL         "|Ab|",IDC_CHK_WORD,"Button",
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,27,21,22,10
     CONTROL         "Aa",IDC_CHK_LOHICASE,"Button",
-                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,25,7,20,10
+                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,21,19,10
     CONTROL         ".*",IDC_CHK_REGULAREXP,"Button",
-                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,7,20,10 
-    CONTROL         "該当なしはメッセージを表示(&M)",
+                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,53,21,19,10 
+    CONTROL         "見つからないときにメッセージを表示(&M)",
                     IDC_CHECK_NOTIFYNOTFOUND,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,53,108,10
-    CONTROL         "自動的に閉じる(&L)",
+                    WS_TABSTOP,5,53,140,10
+    CONTROL         "検索ダイアログを自動的に閉じる(&L)",
                     IDC_CHECK_bAutoCloseDlgFind,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,43,72,10
-    CONTROL         "折り返し検索(&Z)",IDC_CHECK_SEARCHALL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,33,63,10
-    LTEXT           "",IDC_STATIC_JRE32VER,5,21,154,10
-    PUSHBUTTON      "前へ(&U)",IDC_BUTTON_SEARCHPREV,124,21,36,15,WS_GROUP
-    DEFPUSHBUTTON   "次へ(&D)",IDC_BUTTON_SEARCHNEXT,162,21,36,15
+                    WS_TABSTOP,5,43,130,10
+    CONTROL         "先頭（末尾）から再検索する(&Z)",IDC_CHECK_SEARCHALL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,33,130,10
+    LTEXT           "",IDC_STATIC_JRE32VER,74,21,154,10
+//    PUSHBUTTON      "前へ(&U)",IDC_BUTTON_SEARCHPREV,124,21,36,15,WS_GROUP
+    DEFPUSHBUTTON   "検索",IDC_BUTTON_SEARCHNEXT,158,3,40,17,BS_SPLITBUTTON
 //    PUSHBUTTON      "該当行マーク(&B)",IDC_BUTTON_SETMARK,160,20,58,14
-    PUSHBUTTON      "ｷｬﾝｾﾙ(&X)",IDCANCEL,158,38,40,13,WS_GROUP
-    PUSHBUTTON      "ヘルプ(&H)",IDC_BUTTON_HELP,158,51,40,13
+    PUSHBUTTON      "ｷｬﾝｾﾙ(&X)",IDCANCEL,158,36,40,13,WS_GROUP
+    PUSHBUTTON      "ヘルプ(&H)",IDC_BUTTON_HELP,158,49,40,13
 #else
     LTEXT           "条件(&N)",IDC_STATIC,5,6,26,8
     COMBOBOX        IDC_COMBO_TEXT,34,4,183,150,CBS_DROPDOWN | 

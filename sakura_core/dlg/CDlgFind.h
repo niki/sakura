@@ -29,6 +29,9 @@ public:
 	||  Constructors
 	*/
 	CDlgFind();
+#ifdef UZ_FIX_FINDDLG
+	~CDlgFind();
+#endif  // UZ_
 	/*
 	||  Attributes & Operations
 	*/
@@ -53,6 +56,7 @@ public:
 
 #ifdef UZ_FIX_FINDDLG
 	std::wstring m_inputText;  // 入力中の文字列
+	HMENU m_hMenuPopUp;
 #endif  // UZ_
 
 protected:

@@ -1121,7 +1121,20 @@ void CEditWnd::MessageLoop( void )
 
 		//ダイアログメッセージ
 		     if( MyIsDialogMessage( m_pPrintPreview->GetPrintPreviewBarHANDLE_Safe(),	&msg ) ){}	//!< 印刷プレビュー 操作バー
+#ifdef UZ_FIX_FINDDLG
+		else if( MyIsDialogMessage( m_cDlgFind.GetHwnd(),								&msg ) ){	//!<「検索」ダイアログ
+		  MSG	msg2 = msg;
+		  msg2.hwnd = m_cDlgFind.GetHwnd();
+			if( m_hAccel && TranslateAccelerator( msg2.hwnd, m_hAccel, &msg2 ) ){}
+			//通常メッセージ
+			else{
+				TranslateMessage( &msg2 );
+				DispatchMessage( &msg2 );
+			}
+		}
+#else
 		else if( MyIsDialogMessage( m_cDlgFind.GetHwnd(),								&msg ) ){}	//!<「検索」ダイアログ
+#endif  // UZ_
 		else if( MyIsDialogMessage( m_cDlgFuncList.GetHwnd(),							&msg ) ){}	//!<「アウトライン」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgReplace.GetHwnd(),							&msg ) ){}	//!<「置換」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgGrep.GetHwnd(),								&msg ) ){}	//!<「Grep」ダイアログ
