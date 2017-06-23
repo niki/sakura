@@ -317,9 +317,9 @@ static int EachIStreamLines(std::ifstream &ifs,
 		
 		if (!bRead) continue;
 		
-		fnBlock(i, line_buffer);
-		
-		i++;
+		if (fnBlock(i, line_buffer)) {
+			i++;
+		}
 	}
 	
 	return i;  // 処理した数
@@ -377,7 +377,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 #if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 				if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
 					if (!fexist(path.c_str())) {
-						return;
+						return false;
 					}
 				}
 #endif  // UZ_
@@ -394,6 +394,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				pfiWork->m_szMarkLines[MAX_MARKLINES_LEN + 1 - 1] = _T('\0');
 				pfiWork->m_nTypeId = GetTokenInt(stream, ',');
 				hist.m_bMRUArrFavorite[index] = GetTokenInt(stream, ',') ? true : false;
+				return true;
 			}
 		);
 
@@ -453,13 +454,14 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 #if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 				if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
 					if (!fexist(dir.c_str())) {
-						return;
+						return false;
 					}
 				}
 #endif  // UZ_
 
 				hist.m_szOPENFOLDERArr[index].Assign(dir.c_str());
 				hist.m_bOPENFOLDERArrFavorite[index] = GetTokenBool(stream, ',');
+				return true;
 			}
 		);
 
@@ -497,6 +499,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			[]{},  // end
 			[&hist](int index, const std::string &line_buffer) {  // block
 				hist.m_aExceptMRU[index].Assign(wchomp(line_buffer).c_str());
+				return true;
 			}
 		);
 
@@ -622,6 +625,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 			[]{},  // end
 			[&skwd](int index, const std::string &line_buffer) {  // block
 				skwd.m_aSearchKeys[index].Assign(wchomp(line_buffer).c_str());
+				return true;
 			}
 		);
 		
@@ -649,6 +653,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 			[]{},  // end
 			[&skwd](int index, const std::string &line_buffer) {  // block
 				skwd.m_aReplaceKeys[index].Assign(wchomp(line_buffer).c_str());
+				return true;
 			}
 		);
 
@@ -713,6 +718,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 			[]{},  // end
 			[&skwd](int index, const std::string &line_buffer) {  // block
 				skwd.m_aGrepFiles[index].Assign(wchomp(line_buffer).c_str());
+				return true;
 			}
 		);
 
@@ -766,6 +772,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 			[]{},  // end
 			[&skwd](int index, const std::string &line_buffer) {  // block
 				skwd.m_aGrepFolders[index].Assign(wchomp(line_buffer).c_str());
+				return true;
 			}
 		);
 
@@ -866,6 +873,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 			[]{},  // end
 			[&hist](int index, const std::string &line_buffer) {  // block
 				hist.m_aCommands[index].Assign(wchomp(line_buffer).c_str());
+				return true;
 			}
 		);
 
@@ -893,6 +901,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 			[]{},  // end
 			[&hist](int index, const std::string &line_buffer) {  // block
 				hist.m_aCurDirs[index].Assign(wchomp(line_buffer).c_str());
+				return true;
 			}
 		);
 
