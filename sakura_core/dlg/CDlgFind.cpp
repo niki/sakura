@@ -101,7 +101,7 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 {
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
-	si::logln(L"wMsg %x %x %x", wMsg, HIWORD(wParam), LOWORD(wParam));
+	//si::logln(L"wMsg %x %x %x", wMsg, HIWORD(wParam), LOWORD(wParam));
 	switch( wMsg ){
 	case WM_NOTIFY:
 	  // 任意のタイプ設定を追加する
@@ -120,37 +120,24 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 			);
 			// 
 			if (nId > 0) {
-				if (nId == 1) {
-					int nRet = GetData();
-					if( 0 < nRet ){
-						CEditView *pcEditView = (CEditView *)m_lParam;
-						
+				int nRet = GetData();
+				if (0 < nRet) {
+					CEditView *pcEditView = (CEditView *)m_lParam;
+					if (nId == 1) {
 						/* 次を検索 */
-						pcEditView->GetCommander().HandleCommand( F_SEARCH_NEXT, true, (LPARAM)GetHwnd(), 0, 0, 0 );
+						pcEditView->GetCommander().HandleCommand(F_SEARCH_NEXT, true, (LPARAM)GetHwnd(), 0, 0, 0);
 						pcEditView->Redraw();
-
-						// 検索開始位置を登録
-						if( FALSE != pcEditView->m_bSearch ){
-							// 検索開始時のカーソル位置登録条件変更 02/07/28 ai start
-							pcEditView->m_ptSrchStartPos_PHY = m_ptEscCaretPos_PHY;
-							pcEditView->m_bSearch = FALSE;
-						}
-					}
-				} else if (nId == 2) {
-					int nRet = GetData();
-					if( 0 < nRet ){
-						CEditView *pcEditView = (CEditView *)m_lParam;
-						
+					} else if (nId == 2) {
 						/* 前を検索 */
-						pcEditView->GetCommander().HandleCommand( F_SEARCH_PREV, true, (LPARAM)GetHwnd(), 0, 0, 0 );
+						pcEditView->GetCommander().HandleCommand(F_SEARCH_PREV, true, (LPARAM)GetHwnd(), 0, 0, 0);
 						pcEditView->Redraw();
-
-						// 検索開始位置を登録
-						if( FALSE != pcEditView->m_bSearch ){
-							// 検索開始時のカーソル位置登録条件変更 02/07/28 ai start
-							pcEditView->m_ptSrchStartPos_PHY = m_ptEscCaretPos_PHY;
-							pcEditView->m_bSearch = FALSE;
-						}
+					}
+					
+					// 検索開始位置を登録
+					if (FALSE != pcEditView->m_bSearch) {
+						// 検索開始時のカーソル位置登録条件変更 02/07/28 ai start
+						pcEditView->m_ptSrchStartPos_PHY = m_ptEscCaretPos_PHY;
+						pcEditView->m_bSearch = FALSE;
 					}
 				}
 			}
@@ -175,9 +162,20 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 				m_pShareData->m_Common.m_sKeyBind.m_nKeyNameArrNum,
 				m_pShareData->m_Common.m_sKeyBind.m_pKeyNameArr
 			);
-			if (nFuncCode == F_SEARCH_NEXT || nFuncCode == F_SEARCH_PREV) {
-				CEditView *pcEditView = (CEditView *)m_lParam;
-				pcEditView->GetCommander().HandleCommand( (EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true, (LPARAM)GetHwnd(), 0, 0, 0 );
+			if (nFuncCode == F_SEARCH_PREV) {
+				int nRet = GetData();
+				if (0 < nRet) {
+					CEditView *pcEditView = (CEditView *)m_lParam;
+					pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
+                                         (LPARAM)GetHwnd(), 0, 0, 0);
+				}
+			} else if (nFuncCode == F_SEARCH_NEXT) {
+				int nRet = GetData();
+				if (0 < nRet) {
+					CEditView *pcEditView = (CEditView *)m_lParam;
+					pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
+                                         (LPARAM)GetHwnd(), 0, 0, 0);
+				}
 			}
 			break;
 		}
