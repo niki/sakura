@@ -436,7 +436,9 @@ bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHist
 		bool bGet = false;
 		if( GetDllShareData().m_Common.m_sSearch.m_bCaretTextForSearch ){
 #ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
-			GetCurrentTextForSearch( cmemCurText, bStripMaxPath, false, bRegQuote );	// カーソル位置単語を取得
+			GetCurrentTextForSearch( cmemCurText, bStripMaxPath, true, bRegQuote );	// カーソル位置単語を取得
+				// 正規表現検索の時は文字列をクォートする
+				// 空白タブは自動取得の対象としない 2017.6.28 
 #else
 			GetCurrentTextForSearch( cmemCurText, bStripMaxPath );	// カーソル位置単語を取得
 #endif  // UZ_

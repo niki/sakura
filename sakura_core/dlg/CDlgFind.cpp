@@ -25,6 +25,7 @@
 #include "sakura_rc.h"
 #include "sakura.hh"
 #ifdef UZ_FIX_FINDDLG
+#include "window/CEditWnd.h"
 #include "uiparts/CMenuDrawer.h"
 #endif  // UZ_
 
@@ -99,12 +100,13 @@ CDlgFind::~CDlgFind() {
 */
 INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
+	CEditView *pcEditView = (CEditView *)m_lParam;
+	
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 	//si::logln(L"wMsg %x %x %x", wMsg, HIWORD(wParam), LOWORD(wParam));
 	switch( wMsg ){
 	case WM_NOTIFY:
-	  // 任意のタイプ設定を追加する
 		if (((LPNMHDR)lParam)->code ==  BCN_DROPDOWN) {
 			HWND hwndBtn = GetDlgItem(GetHwnd(), IDC_BUTTON_SEARCHNEXT);
 			RECT rc;
@@ -122,7 +124,6 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 			if (nId > 0) {
 				int nRet = GetData();
 				if (0 < nRet) {
-					CEditView *pcEditView = (CEditView *)m_lParam;
 					if (nId == 1) {
 						/* 次を検索 */
 						pcEditView->GetCommander().HandleCommand(F_SEARCH_NEXT, true, (LPARAM)GetHwnd(), 0, 0, 0);
@@ -165,16 +166,14 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 			if (nFuncCode == F_SEARCH_PREV) {
 				int nRet = GetData();
 				if (0 < nRet) {
-					CEditView *pcEditView = (CEditView *)m_lParam;
 					pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
-                                         (LPARAM)GetHwnd(), 0, 0, 0);
+					                                         (LPARAM)GetHwnd(), 0, 0, 0);
 				}
 			} else if (nFuncCode == F_SEARCH_NEXT) {
 				int nRet = GetData();
 				if (0 < nRet) {
-					CEditView *pcEditView = (CEditView *)m_lParam;
 					pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
-                                         (LPARAM)GetHwnd(), 0, 0, 0);
+					                                         (LPARAM)GetHwnd(), 0, 0, 0);
 				}
 			}
 			break;
@@ -189,41 +188,57 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 			if (text != m_inputText) {
 				m_inputText = text;
 
-				CEditView *pcEditView = (CEditView *)m_lParam;
-
-				int nRet = GetData();
-
-				pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
-
-				if (text.empty()) {
-					pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
+				do {
+					int inputSize = text.size();
+					bool bRegularExp = (0 != IsDlgButtonChecked(GetHwnd(), IDC_CHK_REGULAREXP));
+					
+					// 正規表現検索のときだけ行ジャンプできるようにする
+					if (bRegularExp && inputSize >= 1) {
+						if (text[0] == L':') {  // 行番号指定にする
+							pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-					pcEditView->SBMarkCache_Refresh(1500);
+							pcEditView->SBMarkCache_Refresh(1500);
 #endif  // UZ_
-					pcEditView->Redraw();
-				} else {
-					if( 0 < nRet ){
-						const bool bDrawSwitchOld = pcEditView->SetDrawSwitch(false);
-
-#if 1
-						pcEditView->ChangeCurRegexp(false);
-#else
-						/* 次を検索 */
-						pcEditView->GetCommander().HandleCommand( F_SEARCH_NEXT, true, (LPARAM)GetHwnd(), 0, 0, 0 );
-						pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
-
-						// 検索開始位置を登録
-						if( FALSE != pcEditView->m_bSearch ){
-							// 検索開始時のカーソル位置登録条件変更 02/07/28 ai start
-							pcEditView->m_ptSrchStartPos_PHY = m_ptEscCaretPos_PHY;
-							pcEditView->m_bSearch = FALSE;
+							pcEditView->Redraw();
+							break;
 						}
-#endif
-
-						pcEditView->SetDrawSwitch(bDrawSwitchOld);
-						pcEditView->Redraw();
 					}
-				}
+					
+					if (bRegularExp) {
+						// 正規表現のときは最後の文字がエスケープ文字だったらパスする
+						if (inputSize >= 1 && text[inputSize - 1] == L'\\') {
+							// １文字なのでパス
+							if (inputSize == 1) {
+								break;
+							}
+							// ただし、エスケープされていたら続行する
+							if (inputSize >= 2 && text[inputSize - 2] != L'\\') {
+								break;
+							}
+							// でもその前が本当のエスケープだったらやっぱりパスする
+							if (inputSize >= 3 && text[inputSize - 3] == L'\\') {
+								break;
+							}
+						}
+					}
+
+					pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
+
+					int nRet = GetData();
+
+					if (text.empty()) {
+						pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+						pcEditView->SBMarkCache_Refresh(1500);
+#endif  // UZ_
+						pcEditView->Redraw();
+					} else {
+						if( 0 < nRet ){
+							pcEditView->ChangeCurRegexp(false);
+							pcEditView->Redraw();
+						}
+					}
+				} while (0);
 			}
 		}
   	break;
@@ -370,10 +385,35 @@ void CDlgFind::SetData( void )
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_SEARCHALL, m_pShareData->m_Common.m_sSearch.m_bSearchAll );
 
 #ifdef UZ_FIX_DIALOG_POS
-	RECT rcView;
-	CEditView* pcEditView=(CEditView*)m_lParam;
-	::GetWindowRect(pcEditView->GetHwnd(), &rcView);
-	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView, CDialog::DLGPLACE_TR);
+	{
+		RECT rcView;
+		CEditView* pcEditView=(CEditView*)m_lParam;
+		::GetWindowRect(pcEditView->GetHwnd(), &rcView);
+		SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView, CDialog::DLGPLACE_TR);
+	}
+#endif  // UZ_
+
+#ifdef UZ_FIX_FINDDLG
+	// 最後に検索した文字列をマークする 2017.6.28 
+	{
+		CEditView* pcEditView=(CEditView*)m_lParam;
+		
+		int nBufferSize = ::GetWindowTextLength( GetItemHwnd(IDC_COMBO_TEXT) ) + 1;
+		std::vector<TCHAR> vText(nBufferSize);
+		::DlgItem_GetText( GetHwnd(), IDC_COMBO_TEXT, &vText[0], nBufferSize);
+		std::wstring text = to_wchar(&vText[0]);
+		m_strText = to_wchar(&vText[0]);
+		
+		if (text.empty()) {
+			pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+			pcEditView->SBMarkCache_Refresh(1500);
+#endif  // UZ_
+		} else {
+			pcEditView->ChangeCurRegexp(false);
+		}
+		pcEditView->Redraw();
+	}
 #endif  // UZ_
 
 	return;
@@ -555,6 +595,29 @@ BOOL CDlgFind::OnBnClicked( int wID )
 		}
 		return TRUE;
 	case IDC_BUTTON_SEARCHNEXT:		/* 下検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDOK]→[IDC_BUTTON_SERACHNEXT]に変更
+#ifdef UZ_FIX_FINDDLG
+		{
+			bool bRegularExp = (0 != IsDlgButtonChecked(GetHwnd(), IDC_CHK_REGULAREXP));
+			
+			// 正規表現検索のときだけ行ジャンプできるようにする
+			if (bRegularExp && m_inputText.size() >= 1) {
+				if (m_inputText[0] == L':') {  // 行番号指定にする
+					try {
+						int ln = std::stoi(m_inputText.c_str() + 1);
+						pcEditView->m_pcEditWnd->m_cDlgJump.m_nLineNum = ln;
+						pcEditView->m_pcEditWnd->m_cDlgJump.m_bPLSQL = false;
+						pcEditView->GetCommander().HandleCommand(F_JUMP, true, (LPARAM)GetHwnd(), 0, 0, 0);
+					} catch (const std::invalid_argument& /*e*/) {
+						// nop
+					} catch (const std::out_of_range& /*e*/) {
+						// nop
+					}
+					CloseDialog( 0 );
+					return TRUE;
+				}
+			}
+		}
+#endif  // UZ_
 		/* ダイアログデータの取得 */
 		nRet = GetData();
 		if( 0 < nRet ){

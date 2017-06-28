@@ -99,7 +99,7 @@ BEGIN
                     BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,21,19,10
     CONTROL         ".*",IDC_CHK_REGULAREXP,"Button",
                     BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,53,21,19,10 
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDFRAME,3,32,196,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDFRAME,-5,32,300,1
     CONTROL         "見つからないときにメッセージを表示(&M)",
                     IDC_CHECK_NOTIFYNOTFOUND,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,5,54,140,10
