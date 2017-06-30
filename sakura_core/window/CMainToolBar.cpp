@@ -684,6 +684,38 @@ int CMainToolBar::GetSearchKey(std::wstring& strText)
 void CMainToolBar::SetFocusSearchBox( void ) const
 {
 	if( m_hwndSearchBox ){
+#if 0
+#ifdef UZ_FIX_FINDBOX
+		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
+		CNativeW cmemCurText;
+  #ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+		m_pOwner->GetActiveView().GetCurrentTextForSearch(
+		    cmemCurText, true, true, GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp);
+  #else
+		m_pOwner->GetActiveView().GetCurrentTextForSearch(cmemCurText, true, true);
+  #endif  // UZ_
+		
+		if (cmemCurText.GetStringLength() > 0 && cmemCurText.GetStringLength() < _MAX_PATH) {
+			//検索キーを登録
+			CSearchKeywordManager().AddToSearchKeyArr(cmemCurText.GetStringPtr());
+		}
+		
+//		::SetWindowText(m_hwndSearchBox, cmemCurText.GetStringPtr());
+//		
+//		if (cmemCurText.GetStringLength() > 0) { //キー文字列がある
+//			m_pOwner->GetActiveView().m_strCurSearchKey = cmemCurText.GetStringPtr();
+//			m_pOwner->GetActiveView().m_bCurSearchUpdate = true;
+//			m_pOwner->GetActiveView().ChangeCurRegexp(false);
+//			m_pOwner->GetActiveView().Redraw();
+//		} else {
+//			m_pOwner->GetActiveView().m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
+//  #ifdef UZ_FIX_EDITVIEW_SCRBAR
+//			m_pOwner->GetActiveView().SBMarkCache_Refresh(1500);
+//  #endif  // UZ_
+//			m_pOwner->GetActiveView().Redraw();
+//		}
+#endif  // UZ_
+#endif
 		::SetFocus(m_hwndSearchBox);
 	}
 }

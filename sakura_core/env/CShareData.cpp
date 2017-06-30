@@ -1297,6 +1297,9 @@ void CShareData::InitToolButtons(DLLSHAREDATA* pShareData)
 		0,
 
 		225,	//検索		//Sept. 16, 2000 JEPRO 9→22に変更	//Oct. 25, 2000 22→225
+#ifdef UZ_FIX_FINDBOX
+		246,	//検索ボックス
+#endif  // UZ_
 		226,	//次を検索	//Sept. 16, 2000 JEPRO 16→23に変更	//Oct. 25, 2000 23→226
 		227,	//前を検索	//Sept. 16, 2000 JEPRO 17→24に変更	//Oct. 25, 2000 24→227
 		228,	//置換		// Oct. 7, 2000 JEPRO 追加
