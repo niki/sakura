@@ -387,7 +387,11 @@ void CDlgFind::SetData( void )
 		RECT rcView;
 		CEditView* pcEditView=(CEditView*)m_lParam;
 		::GetWindowRect(pcEditView->GetHwnd(), &rcView);
+#ifdef UZ_FIX_FINDDLG
 		SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView, CDialog::DLGPLACE_TR);
+#else
+		SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
+#endif
 	}
 #endif  // UZ_
 
