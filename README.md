@@ -1,7 +1,9 @@
 Introduction  
 ------------
 
+サクラエディタのリポジトリ([link](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2))の[追っかけ](Publish/changes_from_r4011.txt). パッチ([link](#patchunicode))のマージ.  
 可能な限り最新版をベースに修正をしています.  
+個人的な趣味でマクロとプラグインに **Lua** を使用できます.  
 普段使いながらヘイト値ためて, どかっと修正しているのでそれなりに良くなっているかと思います。
 
 
@@ -19,9 +21,12 @@ Feature
 Download  
 --------
 
-+ [sakura-uzuki-2.42-32bit.zip](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.42-32bit.zip) (768KB)  
++ **sakura-uzuki-2.42-32bit.zip** (768KB) [download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.42-32bit.zip)  
 
-\- 変更履歴は[コミットログ](https://github.com/uzuki3/sakura/commits/master)を参照してください. 細かい内容は [my_config.h](sakura_core/my_config.h) を見てね.  
++ patchunicode:#720 に対応した最新のキーワードファイル **keyword_pack.zip** [download](Publish/keyword_pack.zip)  
+
+
+変更履歴はコミットログ([link](https://github.com/uzuki3/sakura/commits/master))を参照してください. 細かい内容はmy_config.h([link](sakura_core/my_config.h)) を見てね.  
 
 
 
@@ -30,16 +35,6 @@ Setup
 
 ダウンロードしたファイルをすでに使用しているサクラエディタに上書きしてください.  
 `sakura.keywordset.csv`は実行ファイルと同じ場所に置いてください. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
-
-最新のキーワードファイル [keyword_pack.zip](Publish/keyword_pack.zip)  
-
-
-Build environment  
------------------
-+ [サクラエディタのリポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の[追っかけ](Publish/changes_from_r4011.txt). [パッチのマージ](#patchunicode)  
-+ MSVC2017でビルド (/O2 /Os)  
-+ Luaを使用 (マクロ, プラグイン)  
-+ 挙動の制御 (共有フラグ)としてレジストリを使用しています  
 
 
 Changed  
