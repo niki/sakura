@@ -392,11 +392,9 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 //				::CheckDlgButton( GetHwnd(), IDC_CHK_LOHICASE, 1 );
 //				::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_LOHICASE ), FALSE );
 
-#ifndef UZ_FIX_ENABLE_WORD_SEARCH_REGEXP
 				//2001/06/23 N.Nakatani
 				/* 単語単位で検索 */
 				::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), FALSE );
-#endif  // UZ_
 			}
 		}else{
 			/* 英大文字と英小文字を区別する */
@@ -405,13 +403,11 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 //			::CheckDlgButton( GetHwnd(), IDC_CHK_LOHICASE, 0 );
 
 
-#ifndef UZ_FIX_ENABLE_WORD_SEARCH_REGEXP
 //2001/06/23 N.Nakatani
 //単語単位のgrepが実装されたらコメントを外すと思います
 //2002/03/07実装してみた。
 			/* 単語単位で検索 */
 			::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), TRUE );
-#endif  // UZ_
 
 		}
 		return TRUE;
@@ -629,11 +625,9 @@ void CDlgGrep::SetData( void )
 //		::CheckDlgButton( GetHwnd(), IDC_CHK_LOHICASE, 1 );
 //		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_LOHICASE ), FALSE );
 
-#ifndef UZ_FIX_ENABLE_WORD_SEARCH_REGEXP
 		// 2001/06/23 N.Nakatani
 		/* 単語単位で探す */
 		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), FALSE );
-#endif  // UZ_
 	}
 	else {
 		::CheckDlgButton( GetHwnd(), IDC_CHK_REGULAREXP, 0 );
