@@ -2101,7 +2101,7 @@ LRESULT CEditWnd::DispatchEvent(
 	case MYWM_SETCARETPOS:	/* カーソル位置変更通知 */
 		{
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+			GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 
 			//	2006.07.09 genta LPARAMに新たな意味を追加

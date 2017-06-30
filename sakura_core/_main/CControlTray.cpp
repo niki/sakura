@@ -1238,7 +1238,7 @@ bool CControlTray::OpenNewEditor(
 )
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 
 	/* 共有データ構造体のアドレスを返す */
@@ -1461,7 +1461,7 @@ bool CControlTray::OpenNewEditor2(
 )
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 
 	DLLSHAREDATA*	pShareData;

@@ -63,9 +63,9 @@
 // バージョン情報ダイアログの変更 2017.3.15
 //------------------------------------------------------------------
 #define UZ_FIX_VERDLG
-  #define PR_VER      2,42,0,0
-  #define PR_VER_STR "2.42"
-  #define BASE_REV    4190
+	#define PR_VER      2,42,0,0
+	#define PR_VER_STR "2.42"
+	#define BASE_REV    4190
 
 //-------------------------------------------------------------------------
 // デバッグ用
@@ -83,20 +83,19 @@
 // スクロール
 //------------------------------------------------------------------
 #define UZ_FIX_SCROLL
-  // 水平スクロールの変更
-  //  - スクロール開始マージンを 1 に変更。画面の端でスクロール開始 2014.5.7
-  //  - スクロール幅を 16 に設定。一度に大きく移動することで見やすくする (Imitate 'Notepad') 2015.9.2
-  #define UZ_HORIZONTAL_SCR (16)
-  // 垂直スクロールの変更
-  //  - スクロールマージンを 0 に変更 2017.4.9
-  #define UZ_VERTICAL_SCR (0)
+	// 水平スクロールの変更
+	//  - スクロール開始マージンを 1 に変更。画面の端でスクロール開始 2014.5.7
+	//  - スクロール幅を 16 に設定。一度に大きく移動することで見やすくする (Imitate 'Notepad') 2015.9.2
+	#define UZ_HORIZONTAL_SCR (16)
+	// 垂直スクロールの変更
+	//  - スクロールマージンを 0 に変更 2017.4.9
+	#define UZ_VERTICAL_SCR (0)
 
 //------------------------------------------------------------------
 // カーソルが大きく移動する処理ではカーソル行をセンタリングする 2017.4.13
 //  (行番号ジャンプやタグジャンプ、アウトライン解析から移動した場合など)
 //  - 同一画面内の移動はセンタリングしない
 //  ! CCaret::MoveCursor, 同期スクロールの対応がまだ
-//  ? 'CURSOR_JUMP_AUTH' キーの有無で処理するか判断 (必要な場合は直前で作成)
 //------------------------------------------------------------------
 #define UZ_FIX_CENTERING_CURSOR_JUMP
 
@@ -133,12 +132,12 @@
 // タブ名カラー
 //------------------------------------------------------------------
 #define UZ_FIX_TAB_CAPTION_COLOR
-  // 変更ドキュメントタブ名カラー
-  // (REG/TabCaptionModifiedColor:#0000d7)
-  #define UZ_MODIFIED_TAB_CAPTION_COLOR _T("#0000d7")
-  // マクロ記録中ドキュメントタブ名カラー
-  // (REG/TabCaptionRecMacroColor:#d80000)
-  #define UZ_RECMACRO_TAB_CAPTION_COLOR _T("#d80000")
+	// 変更ドキュメントタブ名カラー
+	// (REG/TabCaptionModifiedColor:#0000d7)
+	#define UZ_MODIFIED_TAB_CAPTION_COLOR _T("#0000d7")
+	// マクロ記録中ドキュメントタブ名カラー
+	// (REG/TabCaptionRecMacroColor:#d80000)
+	#define UZ_RECMACRO_TAB_CAPTION_COLOR _T("#d80000")
 
 //------------------------------------------------------------------
 // タブウィンドウ 2015.8.28
@@ -173,19 +172,19 @@
 //  ? 更新がいまいち, バーにカーソルを乗せた時 → フェードアウトして消えてしまう;
 //------------------------------------------------------------------
 #define UZ_FIX_EDITVIEW_SCRBAR
-  #define UZ_SCRBAR_FOUND_MAGIC (0x10000000)  // 検索
-  #define UZ_SCRBAR_MARK_MAGIC  (0x20000000)  // ブックマーク
-  #define UZ_SCRBAR_LINEN_MASK  (0x0fffffff)  // 行番号マスク
-  #define UZ_SCRBAR_MAGIC_MASK  (0xf0000000)  // マジックマスク
-  // 検索文字列のある行の色
-  // (REG/EditViewScrBarFoundColor:#0000d7)
-  #define UZ_SCRBAR_FOUND_COLOR  _T("#f4a721") // _T("#0000d7")
-  // ブックマークのある行の色
-  // (REG/EditViewScrBarMarkColor:#d80000)
-  #define UZ_SCRBAR_MARK_COLOR   _T("#ff0000") //_T("#d80000")
-  // キャレットのある行の色
-  // (REG/EditViewScrBarMarkColor:#d80000)
-  #define UZ_SCRBAR_CURSOR_COLOR _T("#0000cd") //_T("#00d800")
+	#define UZ_SCRBAR_FOUND_MAGIC (0x10000000)  // 検索
+	#define UZ_SCRBAR_MARK_MAGIC  (0x20000000)  // ブックマーク
+	#define UZ_SCRBAR_LINEN_MASK  (0x0fffffff)  // 行番号マスク
+	#define UZ_SCRBAR_MAGIC_MASK  (0xf0000000)  // マジックマスク
+	// 検索文字列のある行の色
+	// (REG/EditViewScrBarFoundColor:#0000d7)
+	#define UZ_SCRBAR_FOUND_COLOR  _T("#f4a721") // _T("#0000d7")
+	// ブックマークのある行の色
+	// (REG/EditViewScrBarMarkColor:#d80000)
+	#define UZ_SCRBAR_MARK_COLOR   _T("#ff0000") //_T("#d80000")
+	// キャレットのある行の色
+	// (REG/EditViewScrBarMarkColor:#d80000)
+	#define UZ_SCRBAR_CURSOR_COLOR _T("#0000cd") //_T("#00d800")
 
 //------------------------------------------------------------------
 // 行を中央ぞろえにする 2014.3.26 - 2015.7.24
@@ -226,13 +225,13 @@
 //  - カラー設定は背景カラーのみ
 //------------------------------------------------------------------
 #define UZ_FIX_SELAREA
-  // 選択領域のブレンド率[%] 2015.6.5
-  // (REG/SelectAreaTextBlendPer:0x00000000)
-  // (REG/SelectAreaBackBlendPer:0x00000064)
-  // (REG/SelectAreaBackBlendPer2:0x0000003C)
-  #define UZ_SELAREA_TEXT_BLEND_PER (0)
-  #define UZ_SELAREA_BACK_BLEND_PER (100)  // 選択範囲のブレンド率
-  #define UZ_SELAREA_BACK_BLEND_PER2 (60)  // 特定の下地のときの選択範囲のブレンド率
+	// 選択領域のブレンド率[%] 2015.6.5
+	// (REG/SelectAreaTextBlendPer:0x00000000)
+	// (REG/SelectAreaBackBlendPer:0x00000064)
+	// (REG/SelectAreaBackBlendPer2:0x0000003C)
+	#define UZ_SELAREA_TEXT_BLEND_PER (0)
+	#define UZ_SELAREA_BACK_BLEND_PER (100)  // 選択範囲のブレンド率
+	#define UZ_SELAREA_BACK_BLEND_PER2 (60)  // 特定の下地のときの選択範囲のブレンド率
 
 //------------------------------------------------------------------
 // 空白,TAB,改行,EOF,ノート線のカラー (Imitate 'Sublime Text') 2015.6.5
@@ -241,9 +240,9 @@
 //  - 空白,タブ,改行の色は他のカラー設定の影響を受けます
 //------------------------------------------------------------------
 #define UZ_FIX_WS_COLOR
-  // 空白,TAB,改行,EOF,ノート線 現在のカラーのブレンド率[%] 2015.6.5
-  // (REG/WhiteSpaceBlendPer:0x0000001E)
-  #define UZ_WS_BLEND_PER (30)
+	// 空白,TAB,改行,EOF,ノート線 現在のカラーのブレンド率[%] 2015.6.5
+	// (REG/WhiteSpaceBlendPer:0x0000001E)
+	#define UZ_WS_BLEND_PER (30)
 //						     
 						     
 
@@ -313,7 +312,7 @@
 //  - 印刷設定書き込み時、未定義値を無視する 2017.6.12 
 //------------------------------------------------------------------
 #define UZ_FIX_PROFILES
-  #define UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP (1)
+	#define UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP (1)
 
 //------------------------------------------------------------------
 // メインメニューはデフォルトを使用する 2017.5.15
@@ -336,10 +335,10 @@
 // (REG/RecentGrepFolderMax:20)
 //------------------------------------------------------------------
 #define UZ_FIX_MAXDATA
-  #define UZ_MAX_SEARCHKEY  (20) // 検索キー
-  #define UZ_MAX_REPLACEKEY (20) // 置換キー
-  #define UZ_MAX_GREPFILE   (10)  // Grepファイル
-  #define UZ_MAX_GREPFOLDER (20) // Grepフォルダ
+	#define UZ_MAX_SEARCHKEY  (20) // 検索キー
+	#define UZ_MAX_REPLACEKEY (20) // 置換キー
+	#define UZ_MAX_GREPFILE   (10)  // Grepファイル
+	#define UZ_MAX_GREPFOLDER (20) // Grepフォルダ
 
 //------------------------------------------------------------------
 // メニューアイコン
@@ -365,7 +364,7 @@
 //   cMRU.CreateMenu( hMenu, &m_cMenuDrawer );	//	ファイルメニュー
 //------------------------------------------------------------------
 #define UZ_FIX_RECENT_FILE_DISP_NAME
-  #define UZ_FILEPATH_COMPACT_LENGTH (50)
+	#define UZ_FILEPATH_COMPACT_LENGTH (50)
 
 //------------------------------------------------------------------
 // タイプ別設定一覧の「追加」から任意のタイプを追加できるようにする 2017.6.20 

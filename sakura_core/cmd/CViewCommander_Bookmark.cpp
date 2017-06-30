@@ -64,7 +64,7 @@ void CViewCommander::Command_JUMP_DIALOG( void )
 void CViewCommander::Command_JUMP( void )
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 	const wchar_t*	pLine;
 	int			nMode;
@@ -336,7 +336,7 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 void CViewCommander::Command_BOOKMARK_NEXT(void)
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
@@ -382,7 +382,7 @@ re_do:;								// hor
 void CViewCommander::Command_BOOKMARK_PREV(void)
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
@@ -459,7 +459,7 @@ void CViewCommander::Command_BOOKMARK_PATTERN( void )
 void CViewCommander::Command_FUNCLIST_NEXT(void)
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 	CLogicPoint	ptXY(0, GetCaret().GetCaretLogicPos().y);
 	int			nYOld = ptXY.y;
@@ -492,7 +492,7 @@ void CViewCommander::Command_FUNCLIST_NEXT(void)
 void CViewCommander::Command_FUNCLIST_PREV(void)
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 
 	CLogicPoint	ptXY(0,GetCaret().GetCaretLogicPos().y);

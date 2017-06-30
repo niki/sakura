@@ -92,7 +92,10 @@ struct SShare_Flags{
 	BOOL				m_bRecordingKeyMacro;		/* キーボードマクロの記録中 */
 	HWND				m_hwndRecordingKeyMacro;	/* キーボードマクロを記録中のウィンドウ */
 #ifdef UZ_FIX_TABWND
-	int					m_nInterTabClk;	/* タブ間のクリック判定 */
+	int					m_nInterTabClk = 0;	/* タブ間のクリック判定 */
+#endif  // UZ_
+#ifdef UZ_FIX_CENTERING_CURSOR_JUMP
+	int					m_nCenteringCursor = 0;	/* カーソルのセンタリングフラグ */
 #endif  // UZ_
 };
 

@@ -92,7 +92,7 @@ void CViewCommander::Command_SEARCH_NEXT(
 )
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 	bool		bSelecting;
 	bool		bFlag1 = false;
@@ -347,7 +347,7 @@ end_of_func:;
 void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-	ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 	bool		bSelecting;
 	bool		bSelectingLock_Old = false;

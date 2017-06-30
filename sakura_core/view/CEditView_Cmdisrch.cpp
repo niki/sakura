@@ -435,7 +435,7 @@ void CEditView::ISearchExec(bool bNext)
 		}
 	}else{
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-		ScopedRegKey auth_reg(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH"));
+		GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
 		//検索結果あり
 		//キャレット移動

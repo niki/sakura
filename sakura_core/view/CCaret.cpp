@@ -368,7 +368,9 @@ CLayoutInt CCaret::MoveCursor(
 			m_pEditView->GetTextArea().OffsetViewTopLine(-nScrollRowNum);
 
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-			if (RegKey(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid()) { // CViewCommander::Command_CURLINECENTER()
+			if (GetDllShareData().m_sFlags.m_nCenteringCursor > 0) { // CViewCommander::Command_CURLINECENTER()
+				GetDllShareData().m_sFlags.m_nCenteringCursor = 0;
+				
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 
@@ -418,7 +420,9 @@ CLayoutInt CCaret::MoveCursor(
 			}
 
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-			if (RegKey(UZ_REGKEY _T("\\CURSOR_JUMP_AUTH")).valid()) { // CViewCommander::Command_CURLINECENTER()
+			if (GetDllShareData().m_sFlags.m_nCenteringCursor > 0) { // CViewCommander::Command_CURLINECENTER()
+				GetDllShareData().m_sFlags.m_nCenteringCursor = 0;
+				
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 
@@ -498,6 +502,10 @@ CLayoutInt CCaret::MoveCursor(
 	if( bScroll ){
 		/* キャレットの表示・更新 */
 		ShowEditCaret();
+
+#ifdef UZ_FIX_CENTERING_CURSOR_JUMP
+		GetDllShareData().m_sFlags.m_nCenteringCursor = 0;
+#endif  // UZ_
 
 #ifdef UZ_FIX_FLICKER
 		if (nFinalDrawFlag != PAINT_ALL) {
