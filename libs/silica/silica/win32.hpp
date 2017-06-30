@@ -18,8 +18,8 @@ namespace si {
 namespace win32 {
 
 SILICA_INLINE void FillSolidRect(HDC hdc, COLORREF clr, RECT *pRect) {
-  ::SetBkColor(hdc, clr);
-  ::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, pRect, NULL, 0, NULL);
+	::SetBkColor(hdc, clr);
+	::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, pRect, NULL, 0, NULL);
 }
 
 //

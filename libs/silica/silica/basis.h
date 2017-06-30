@@ -13,11 +13,11 @@
 #include <tchar.h>
 
 #if !defined(tstring)
-  #if defined(_UNICODE)
-    #define tstring wstring
-  #else
-    #define tstring string
-  #endif
+#if defined(_UNICODE)
+#define tstring wstring
+#else
+#define tstring string
+#endif
 #endif
 
 #define SILICA_INLINE static inline

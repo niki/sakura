@@ -24,17 +24,17 @@ namespace si {
 //! 出力
 //------------------------------------------------------------------
 SILICA_INLINE void log(const TCHAR *fmt, ...) {
-  TCHAR buf[1024];
+	TCHAR buf[1024];
 
-  va_list arg;
-  va_start(arg, fmt);
-  _vstprintf_s(buf, 1024, fmt, arg);
-  va_end(arg);
+	va_list arg;
+	va_start(arg, fmt);
+	_vstprintf_s(buf, 1024, fmt, arg);
+	va_end(arg);
 
 #ifdef _WIN32
-  OutputDebugStringW(buf);
+	OutputDebugStringW(buf);
 #else
-  printf(buf);
+	printf(buf);
 #endif
 }
 
@@ -42,19 +42,19 @@ SILICA_INLINE void log(const TCHAR *fmt, ...) {
 //! 出力 (改行つき)
 //------------------------------------------------------------------
 SILICA_INLINE void logln(const TCHAR *fmt, ...) {
-  TCHAR buf[1024];
+	TCHAR buf[1024];
 
-  va_list arg;
-  va_start(arg, fmt);
-  _vstprintf_s(buf, 1024, fmt, arg);
-  va_end(arg);
+	va_list arg;
+	va_start(arg, fmt);
+	_vstprintf_s(buf, 1024, fmt, arg);
+	va_end(arg);
 
-  _tcscat_s(buf, _T("\n"));
+	_tcscat_s(buf, _T("\n"));
 
 #ifdef _WIN32
-  OutputDebugStringW(buf);
+	OutputDebugStringW(buf);
 #else
-  printf(buf);
+	printf(buf);
 #endif
 }
 

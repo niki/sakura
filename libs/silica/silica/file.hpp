@@ -22,7 +22,7 @@ namespace file {
 //! @param path パス名
 //------------------------------------------------------------------
 SILICA_INLINE BOOL exist(const std::tstring &path) {
-  return ::PathFileExists(path.c_str());
+	return ::PathFileExists(path.c_str());
 }
 
 //------------------------------------------------------------------
@@ -30,16 +30,16 @@ SILICA_INLINE BOOL exist(const std::tstring &path) {
 //! @param path パス名
 //------------------------------------------------------------------
 SILICA_INLINE std::tstring fname(const std::tstring &path) {
-  size_t pos = path.rfind(_T('\\'));
-  if (pos != std::tstring::npos) {
-    return path.substr(pos + 1, path.size() - pos - 1);
-  } else {
-    pos = path.rfind(_T('/'));
-    if (pos != std::tstring::npos) {
-      return path.substr(pos + 1, path.size() - pos - 1);
-    }
-  }
-  return path;
+	size_t pos = path.rfind(_T('\\'));
+	if (pos != std::tstring::npos) {
+		return path.substr(pos + 1, path.size() - pos - 1);
+	} else {
+		pos = path.rfind(_T('/'));
+		if (pos != std::tstring::npos) {
+			return path.substr(pos + 1, path.size() - pos - 1);
+		}
+	}
+	return path;
 }
 
 //------------------------------------------------------------------
@@ -47,18 +47,18 @@ SILICA_INLINE std::tstring fname(const std::tstring &path) {
 //! @param path パス名
 //------------------------------------------------------------------
 SILICA_INLINE std::tstring dirname(const std::tstring &path, bool lastDelimiter = true) {
-  size_t pos = path.rfind(_T('\\'));
-  if (pos != std::tstring::npos) {
-    if (lastDelimiter) pos++;
-    return path.substr(0, pos);
-  } else {
-    pos = path.rfind(_T('/'));
-    if (pos != std::tstring::npos) {
-      if (lastDelimiter) pos++;
-      return path.substr(0, pos);
-    }
-  }
-  return _T("");
+	size_t pos = path.rfind(_T('\\'));
+	if (pos != std::tstring::npos) {
+		if (lastDelimiter) pos++;
+		return path.substr(0, pos);
+	} else {
+		pos = path.rfind(_T('/'));
+		if (pos != std::tstring::npos) {
+			if (lastDelimiter) pos++;
+			return path.substr(0, pos);
+		}
+	}
+	return _T("");
 }
 
 //------------------------------------------------------------------
@@ -66,12 +66,12 @@ SILICA_INLINE std::tstring dirname(const std::tstring &path, bool lastDelimiter 
 //! @param path パス名
 //------------------------------------------------------------------
 SILICA_INLINE std::tstring basename(const std::tstring &path) {
-  std::tstring s = fname(path);
-  size_t pos = s.rfind(_T('.'));
-  if (pos != std::tstring::npos) {
-    return s.substr(0, pos);
-  }
-  return _T("");
+	std::tstring s = fname(path);
+	size_t pos = s.rfind(_T('.'));
+	if (pos != std::tstring::npos) {
+		return s.substr(0, pos);
+	}
+	return _T("");
 }
 
 //------------------------------------------------------------------
@@ -79,15 +79,15 @@ SILICA_INLINE std::tstring basename(const std::tstring &path) {
 //! @param path パス名
 //------------------------------------------------------------------
 SILICA_INLINE std::tstring extname(const std::tstring &path) {
-  std::tstring s = fname(path);
-  size_t pos = s.rfind(_T('.'));
-  if (pos != std::tstring::npos) {
-    return s.substr(pos);
-  }
-  return _T("");
+	std::tstring s = fname(path);
+	size_t pos = s.rfind(_T('.'));
+	if (pos != std::tstring::npos) {
+		return s.substr(pos);
+	}
+	return _T("");
 }
 
-}  // namespace of file
+} // namespace of file
 
 } /* namespace of si */
 

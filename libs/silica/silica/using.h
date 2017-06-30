@@ -8,6 +8,4 @@
 #ifndef SILICA_USING_H
 #define SILICA_USING_H
 
-
-
 #endif /* SILICA_USING_H */
