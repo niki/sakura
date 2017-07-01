@@ -119,10 +119,10 @@ Changed
 
 Cregit  
 ------
-+ Lua  
-  http://www.lua.org/  [License](http://www.lua.org/license.html)  
++ Lua ([link](http://www.lua.org/))  
   Copyright (C) 1994-2017 Lua.org, PUC-Rio  
   R. Ierusalimschy, L. H. de Figueiredo, W. Celes  
+  [License](http://www.lua.org/license.html)  
 
-
+---
 (C) 2017, Uzuki.
