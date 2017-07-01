@@ -55,7 +55,8 @@ Changed
 ||履歴 (検索, 置換, Grep)の値を変更<br><ul><li>検索キー: `20`<li>置換キー: `20`<li>Grepファイル: `10`<li>Grepフォルダ: `20`</ul>|
 ||タブをダブルクリックで閉じられるようにする|
 ||選択タブのアクティブ化をマウス押下時に行いレスポンス向上|
-||検索ダイアログをVisualStudioのような挙動にする<br>ダイアログを開いたまま「次を検索」「前を検索」のショートカットが有効です.|
+||~~検索ダイアログをVisualStudioのような挙動にする<br>ダイアログを開いたまま「次を検索」「前を検索」のショートカットが有効です.~~|
+||検索ボックスの検索をインクリメンタルにする|
 ||Grep フォルダの指定BOXを３つに増やす|
 ||Grep 除外フォルダを別ボックスで指定できるようにする|
 ||<details><summary>Grep パターン変数を使用できるようにする</summary>レジストリ `HKEY_CURRENT_USER\Software\sakura-uzuki`への追加が必要です.<br>`"$cpp"="*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp"`<br>`"$make"="makefile *.mak *.om OMakefile OMakeRoot"`<br>上記のようにレジストリエントリを追加し、Grepのファイルに `$cpp`を指定すると `*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp`で置き換えます.</details>|
