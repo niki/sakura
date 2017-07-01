@@ -3183,9 +3183,9 @@ void CEditView::SBMarkCache_Draw() {
 			int y;
 
 			if (bEnable) {
-				y = nBarTop + (int)( (float)(ln & UZ_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight );
+				y = nBarTop + (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight);
 			} else {
-				y = nBarTop + (int)( (float)(ln & UZ_SCRBAR_LINEN_MASK) / GetTextArea().m_nViewRowNum * nBarHeight );
+				y = nBarTop + (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / GetTextArea().m_nViewRowNum * nBarHeight);
 			}
 
 			// 検索行
@@ -3198,13 +3198,13 @@ void CEditView::SBMarkCache_Draw() {
 				int margin = 0;  // スクロールバーの領域を超えた時のマージン
 				int x2 = x + foundLeft;
 				int y2 = y - foundHeight / 2;  // 中央にくるように
+				// スクロールボックスに被らないように補正
 				if (y2 < nBarTop) {
-					margin = y2 - nBarTop;
+					margin = nBarTop - y2;
 				} else if (y2 + foundHeight > nBarTop + nBarHeight) {
-					margin = -( (y2 + foundHeight) - (nBarTop + nBarHeight));
+					margin = (nBarTop + nBarHeight) - (y2 + foundHeight); 
 				}
 				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + foundWidth, y2 + foundHeight + margin}, clr);
-				
 			}
 			// ブックマーク行
 			if (ln & UZ_SCRBAR_MARK_MAGIC) {
@@ -3216,10 +3216,11 @@ void CEditView::SBMarkCache_Draw() {
 				int margin = 0;  // スクロールバーの領域を超えた時のマージン
 				int x2 = x + markLeft;
 				int y2 = y - markHeight / 2;  // 中央にくるように
+				// スクロールボックスに被らないように補正
 				if (y2 < nBarTop) {
-					margin = y2 - nBarTop;
+					margin = nBarTop - y2;
 				} else if (y2 + markHeight > nBarTop + nBarHeight) {
-					margin = -( (y2 + markHeight) - (nBarTop + nBarHeight) );
+					margin = (nBarTop + nBarHeight) - (y2 + markHeight); 
 				}
 				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + markWidth, y2 + markHeight + margin}, clr);
 			}
