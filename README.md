@@ -21,9 +21,9 @@ Feature
 Download  
 --------
 
-+ **sakura-uzuki-2.42-32bit.zip** (768KB) [download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.42-32bit.zip)  
++ **sakura-uzuki-2.43-32bit.zip** (820KB) ([download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.43-32bit.zip))  
 
-+ patchunicode:#720 に対応した最新のキーワードファイル **keyword_pack.zip** [download](Publish/keyword_pack.zip)  
++ patchunicode:#720 に対応した最新のキーワードファイル **keyword_pack.zip** ([download](Publish/keyword_pack.zip))  
 
 
 変更履歴はコミットログ([link](https://github.com/uzuki3/sakura/commits/master))を参照してください. 細かい内容はmy_config.h([link](sakura_core/my_config.h)) を見てね.  
