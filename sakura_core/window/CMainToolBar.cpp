@@ -57,6 +57,23 @@ void CMainToolBar::ProcSearchBox( MSG *msg )
 		return;
 	}
 	
+	EFunctionCode nFundId = (EFunctionCode)0;
+
+	int keyState = 0;
+	if (::GetAsyncKeyState(VK_SHIFT) & 0x8000) keyState += 1;
+	if (::GetAsyncKeyState(VK_CONTROL) & 0x8000) keyState += 2;
+	if (::GetAsyncKeyState(VK_MENU) & 0x8000) keyState += 4;
+
+	// 一致するキーがあるか探す
+	int keyArrNum = GetDllShareData().m_Common.m_sKeyBind.m_nKeyNameArrNum;
+	for (int i = 0; i < keyArrNum; i++) {
+		KEYDATA &keydata = GetDllShareData().m_Common.m_sKeyBind.m_pKeyNameArr[i];
+		if (msg->wParam == keydata.m_nKeyCode) {
+			nFundId = keydata.m_nFuncCodeArr[keyState];
+			break;
+		}
+	}
+
 	if( msg->message == WM_KEYDOWN) {
 //	m_nFuncCodeArr[0]	//                      Key
 //	m_nFuncCodeArr[1]	// Shift +              Key
@@ -67,23 +84,6 @@ void CMainToolBar::ProcSearchBox( MSG *msg )
 //	m_nFuncCodeArr[6]	//         Ctrl + Alt + Key
 //	m_nFuncCodeArr[7]	// Shift + Ctrl + Alt + Key
 
-		EFunctionCode nFundId = (EFunctionCode)0;
-
-		int keyState = 0;
-		if (::GetAsyncKeyState(VK_SHIFT) & 0x8000) keyState += 1;
-		if (::GetAsyncKeyState(VK_CONTROL) & 0x8000) keyState += 2;
-		if (::GetAsyncKeyState(VK_MENU) & 0x8000) keyState += 4;
-
-		// 一致するキーがあるか探す
-		int keyArrNum = GetDllShareData().m_Common.m_sKeyBind.m_nKeyNameArrNum;
-		for (int i = 0; i < keyArrNum; i++) {
-			KEYDATA &keydata = GetDllShareData().m_Common.m_sKeyBind.m_pKeyNameArr[i];
-			if (msg->wParam == keydata.m_nKeyCode) {
-				nFundId = keydata.m_nFuncCodeArr[keyState];
-				break;
-			}
-		}
-		
 		// エンターで次を検索
 		if (msg->wParam == VK_RETURN) {
 			nFundId = F_SEARCH_NEXT;
@@ -126,11 +126,16 @@ void CMainToolBar::ProcSearchBox( MSG *msg )
 		
 		//フォーカスを移動
 		if (msg->wParam == VK_ESCAPE) {
+			//検索ボックスを更新
+			AcceptSharedSearchKey();
+			
 			::SetFocus( m_pOwner->GetHwnd()  );
 		}
 	} else if( msg->message == WM_KEYUP) {
-		if (msg->wParam == VK_UP || msg->wParam == VK_DOWN ||
-		    msg->wParam == VK_LEFT || msg->wParam == VK_RIGHT
+		if (nFundId == F_SEARCH_BOX) {
+			// nop
+		} else if (msg->wParam == VK_UP || msg->wParam == VK_DOWN ||
+		           msg->wParam == VK_LEFT || msg->wParam == VK_RIGHT
 		) {  // 無視するキー
 			// nop
 		} else {
@@ -139,10 +144,38 @@ void CMainToolBar::ProcSearchBox( MSG *msg )
 			//検索キーワードを取得
 			std::wstring strText;
 			if (0 < GetSearchKey(strText)) { //キー文字列がある
+#if 1
+				m_pOwner->GetActiveView().m_strCurSearchKey = strText;
+				m_pOwner->GetActiveView().m_bCurSearchUpdate = true;
+				m_pOwner->GetActiveView().ChangeCurRegexp(false);
+
+				// 検索開始時のカーソル位置登録条件を変更 02/07/28 ai start
+				//m_pOwner->GetActiveView().m_ptSrchStartPos_PHY = m_pOwner->GetActiveView().GetCaret().GetCaretLogicPos();
+				// 02/07/28 ai end
+
+				m_pOwner->GetActiveView().GetSelectionInfo().DisableSelectArea(false);  // 選択解除
+
+				/* 次を検索 */
+				bool bSearchAll = GetDllShareData().m_Common.m_sSearch.m_bSearchAll;
+				GetDllShareData().m_Common.m_sSearch.m_bSearchAll = true;
+				
+				m_pOwner->GetActiveView().GetCommander().HandleCommand(F_SEARCH_NEXT, true, (LPARAM)m_hwndSearchBox, 0, 0, 0);
+				
+				GetDllShareData().m_Common.m_sSearch.m_bSearchAll = bSearchAll;
+				
+				m_pOwner->GetActiveView().Redraw();
+				
+				//::SetWindowText(m_hwndSearchBox, to_tchar(strText.c_str()));
+				
+				// 一番最後にカーソルを移動
+				//::SendDlgItemMessage(m_hwndSearchBox, IDC_EDIT,EM_SETSEL, (WPARAM)len, (LPARAM)len);
+				//::SendMessage(m_hwndSearchBox, EM_SETSEL, 0, -1);
+#else
 				m_pOwner->GetActiveView().m_strCurSearchKey = strText;
 				m_pOwner->GetActiveView().m_bCurSearchUpdate = true;
 				m_pOwner->GetActiveView().ChangeCurRegexp(false);
 				m_pOwner->GetActiveView().Redraw();
+#endif
 			} else {
 				m_pOwner->GetActiveView().m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
@@ -385,12 +418,21 @@ void CMainToolBar::CreateToolBar( void )
 						Toolbar_GetItemRect( m_hwndToolBar, count-1, &rc );
 
 						//コンボボックスを作る
+#ifdef UZ_FIX_FINDBOX
+						// なぜ1ドット下にずらしたのか 2017.7.3 
+						m_hwndSearchBox = CreateWindow( _T("COMBOBOX"), _T("Combo"),
+								WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWN
+								/*| CBS_SORT*/ | CBS_AUTOHSCROLL /*| CBS_DISABLENOSCROLL*/,
+								rc.left, rc.top, rc.right - rc.left, (rc.bottom - rc.top) * 10,
+								m_hwndToolBar, (HMENU)(INT_PTR)tbb.idCommand, CEditApp::getInstance()->GetAppInstance(), NULL );
+#else
 						//	Mar. 8, 2003 genta 検索ボックスを1ドット下にずらした
 						m_hwndSearchBox = CreateWindow( _T("COMBOBOX"), _T("Combo"),
 								WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWN
 								/*| CBS_SORT*/ | CBS_AUTOHSCROLL /*| CBS_DISABLENOSCROLL*/,
 								rc.left, rc.top + 1, rc.right - rc.left, (rc.bottom - rc.top) * 10,
 								m_hwndToolBar, (HMENU)(INT_PTR)tbb.idCommand, CEditApp::getInstance()->GetAppInstance(), NULL );
+#endif // UZ_
 						if( m_hwndSearchBox )
 						{
 							m_pOwner->SetCurrentFocus(0);
@@ -681,41 +723,29 @@ int CMainToolBar::GetSearchKey(std::wstring& strText)
 ツールバーの検索ボックスにフォーカスを移動する.
 	@date 2006.06.04 yukihane 新規作成
 */
+#ifdef UZ_FIX_FINDBOX
+void CMainToolBar::SetFocusSearchBox( void )
+#else
 void CMainToolBar::SetFocusSearchBox( void ) const
+#endif  // UZ_
 {
 	if( m_hwndSearchBox ){
-#if 0
 #ifdef UZ_FIX_FINDBOX
-		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
-		CNativeW cmemCurText;
-  #ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
-		m_pOwner->GetActiveView().GetCurrentTextForSearch(
-		    cmemCurText, true, true, GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp);
-  #else
-		m_pOwner->GetActiveView().GetCurrentTextForSearch(cmemCurText, true, true);
-  #endif  // UZ_
-		
-		if (cmemCurText.GetStringLength() > 0 && cmemCurText.GetStringLength() < _MAX_PATH) {
-			//検索キーを登録
-			CSearchKeywordManager().AddToSearchKeyArr(cmemCurText.GetStringPtr());
+		//検索キーワードを取得
+		std::wstring strText;
+		if (0 < GetSearchKey(strText)) { //キー文字列がある
+			m_pOwner->GetActiveView().m_strCurSearchKey = strText;
+			m_pOwner->GetActiveView().m_bCurSearchUpdate = true;
+			m_pOwner->GetActiveView().ChangeCurRegexp(false);
+			m_pOwner->GetActiveView().Redraw();
+		} else {
+			m_pOwner->GetActiveView().m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
+#  ifdef UZ_FIX_EDITVIEW_SCRBAR
+			m_pOwner->GetActiveView().SBMarkCache_Refresh(1500);
+#  endif  // UZ_
+			m_pOwner->GetActiveView().Redraw();
 		}
-		
-//		::SetWindowText(m_hwndSearchBox, cmemCurText.GetStringPtr());
-//		
-//		if (cmemCurText.GetStringLength() > 0) { //キー文字列がある
-//			m_pOwner->GetActiveView().m_strCurSearchKey = cmemCurText.GetStringPtr();
-//			m_pOwner->GetActiveView().m_bCurSearchUpdate = true;
-//			m_pOwner->GetActiveView().ChangeCurRegexp(false);
-//			m_pOwner->GetActiveView().Redraw();
-//		} else {
-//			m_pOwner->GetActiveView().m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
-//  #ifdef UZ_FIX_EDITVIEW_SCRBAR
-//			m_pOwner->GetActiveView().SBMarkCache_Refresh(1500);
-//  #endif  // UZ_
-//			m_pOwner->GetActiveView().Redraw();
-//		}
 #endif  // UZ_
-#endif
 		::SetFocus(m_hwndSearchBox);
 	}
 }

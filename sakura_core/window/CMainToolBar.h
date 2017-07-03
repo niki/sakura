@@ -61,7 +61,11 @@ public:
 	int GetSearchKey(std::wstring&); //!< 検索キーを取得。戻り値は検索キーの文字数。
 
 	//操作
+#ifdef UZ_FIX_FINDBOX
+	void SetFocusSearchBox( void );		/* ツールバー検索ボックスへフォーカスを移動 */	// 2006.06.04 yukihane
+#else
 	void SetFocusSearchBox( void ) const;		/* ツールバー検索ボックスへフォーカスを移動 */	// 2006.06.04 yukihane
+#endif  // UZ_
 
 private:
 	CEditWnd*	m_pOwner;
