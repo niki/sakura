@@ -823,6 +823,18 @@ LRESULT CALLBACK SubEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch( uMsg ){
 	case WM_KEYDOWN:
 	{
+#ifdef UZ_FIX_DLG
+		if (wParam == VK_UP || wParam == VK_DOWN) {  // 上下キーでドロップダウンさせない 2017.7.4 
+			// リストボックスが表示されているときはデフォルト処理
+			HWND hwndCombo = data->hwndCombo;
+			BOOL bShow = Combo_GetDroppedState(hwndCombo);
+			if (bShow) {
+				break;
+			} else {
+				return 1;
+			}
+		} else 
+#endif  // UZ_
 		if( wParam == VK_DELETE ){
 			HWND hwndCombo = data->hwndCombo;
 			BOOL bShow = Combo_GetDroppedState(hwndCombo);
