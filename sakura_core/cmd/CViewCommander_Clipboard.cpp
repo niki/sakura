@@ -616,6 +616,9 @@ void CViewCommander::Command_INSTEXT(
 
 end_of_func:
 
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+	m_pCommanderView->SBMarkCache_Refresh(2000);
+#endif  // UZ_
 	return;
 }
 
