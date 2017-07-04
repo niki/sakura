@@ -7,35 +7,35 @@ Introduction
 普段使いながらヘイト値ためて, どかっと修正しているのでそれなりに良くなっているかと思います。
 
 
+<br>
+
 Feature  
 -------
 
 <details><summary>MacTypeなどの描画負荷の高いソフトを併用した際に起こる描画崩れを軽減(したつもり)</summary></details>  
 <details><summary>Luaをマクロ言語として組み込み</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041845.png" width="50%"></details>  
 <details><summary>スクロールバーに検索結果やブックマークを表示</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706092354.png" width="50%"></details>  
-<details><summary>Grepフォルダの指定を３つに拡張, 他</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041815.png" width="50%"></details>  
+<details><summary>Grepフォルダの指定を３つに拡張, 除外フォルダ指定ボックスの追加, 他</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041815.png" width="50%"></details>  
 <details><summary>半角空白やタブなどの見た目をすっきりさせる (Sublime Textを模倣)</summary></details>  
-<details><summary>sakura.iniの精査 (肥大化対策)</summary></details>  
 
 
-Download  
+<br>
+
+Download % Setup  
 --------
 
-+ **sakura-uzuki-2.43-32bit.zip** (820KB) ([download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.43-32bit.zip))  
-
-+ patchunicode:#720 に対応した最新のキーワードファイル **keyword_pack.zip** ([download](Publish/keyword_pack.zip))  
-
-
-変更履歴はコミットログ([link](https://github.com/uzuki3/sakura/commits/master))を参照してください. 細かい内容はmy_config.h([link](sakura_core/my_config.h)) を見てね.  
-
-
-
-Setup  
------
+|ファイル名|備考|サイズ|日付||
+|-|-|-|-|-|
+|sakura-uzuki-2.43-32bit.zip|32bit|820KB|2017.7.2|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.43-32bit.zip)|
+|keyword_pack.zip|patchunicode:#720対応|355KB|2017.6.16|[download](Publish/keyword_pack.zip)|
 
 ダウンロードしたファイルをすでに使用しているサクラエディタに上書きしてください.  
 `sakura.keywordset.csv`は実行ファイルと同じ場所に置いてください. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
 
+変更履歴はコミットログ([link](https://github.com/uzuki3/sakura/commits/master))を参照してください. 細かい内容はmy_config.h([link](sakura_core/my_config.h)) を見てね.  
+
+
+<br>
 
 Changed  
 -------
@@ -45,32 +45,32 @@ Changed
 
 ||内容|
 |-|-|
-||<details><summary>強調キーワードのセットファイル ([sakura.keywordset.csv](Publish/sakura.keywordset.csv))の使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意.<br>また, `sakura.ini`には出力されなくなりますのでダイエットにもなります.<br>ファイルがない場合は今まで通りの動作です.</details>|
+||<details><summary>強調キーワードのセットファイル ([sakura.keywordset.csv](Publish/sakura.keywordset.csv))の使用</summary>起動時に列挙したキーワードファイルをインポートします.<br>共通設定からの強調キーワード設定は可能ですが保存はされなくなりますので注意.<br>また, `sakura.ini`には出力されなくなりますのでダイエットにもなります.<br>ファイルがない場合は今まで通りの動作です.|
 ||履歴を別ファイル (`sakura.recent`)に出力|
 ||起動時に存在しないファイル・フォルダ履歴を削除する<br>:memo:消さないでグレー表示でもいいかも…|
-|:star:|<details><summary>マクロ・プラグインに使用できる言語に `Lua`を追加</summary>:memo:文字列をLuaコードとして評価する `eval`関数があります.<br>　e.g. `local n = eval("(1 + 2 + 3 + 4) * 3.14")`<br>:memo:今後はActiveXが使用できるようにしたいです.</details>|
+|:star:|<details><summary>マクロ・プラグインに使用できる言語に `Lua`を追加</summary>:memo:文字列をLuaコードとして評価する `eval`関数があります.<br>　e.g. `local n = eval("(1 + 2 + 3 + 4) * 3.14")`<br>:memo:今後はActiveXが使用できるようにしたいです.|
 |:star:|タイプ別設定一覧の「追加」から任意のタイプを追加できるようにする|
 ||デフォルト文字コードを UTF8にする|
 ||カラー設定のインポートはカラー情報だけを適用させる<br>:memo:カラー設定を使い分けることってあるのかな|
-||履歴 (検索, 置換, Grep)の値を変更<br><ul><li>検索キー: `20`<li>置換キー: `20`<li>Grepファイル: `10`<li>Grepフォルダ: `20`</ul>|
+||<details><summary>履歴 (検索, 置換, Grep)の値を変更</summary><ul><li>検索キー: `20`<li>置換キー: `20`<li>Grepファイル: `10`<li>Grepフォルダ: `20`|
 ||タブをダブルクリックで閉じられるようにする|
 ||選択タブのアクティブ化をマウス押下時に行いレスポンス向上|
-||~~検索ダイアログをVisualStudioのような挙動にする<br>ダイアログを開いたまま「次を検索」「前を検索」のショートカットが有効です.~~|
-||検索ボックスの検索をインクリメンタルにする|
+||<details><summary>検索ダイアログをVisualStudioのような挙動にする</summary><ul><li>入力中にもインクリメンタルに検索されます<li>ダイアログを開いたまま「次を検索」「前を検索」のショートカットが有効です|
+||~~検索ボックスの検索をインクリメンタルにする~~|
 ||Grep フォルダの指定BOXを３つに増やす|
 ||Grep 除外フォルダを別ボックスで指定できるようにする|
-||<details><summary>Grep パターン変数を使用できるようにする</summary>レジストリ `HKEY_CURRENT_USER\Software\sakura-uzuki`への追加が必要です.<br>`"$cpp"="*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp"`<br>`"$make"="makefile *.mak *.om OMakefile OMakeRoot"`<br>上記のようにレジストリエントリを追加し、Grepのファイルに `$cpp`を指定すると `*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp`で置き換えます.</details>|
+||<details><summary>Grep パターン変数を使用できるようにする</summary>レジストリ `HKEY_CURRENT_USER\Software\sakura-uzuki`への追加が必要です.<br>`"$cpp"="*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp"`<br>`"$make"="makefile *.mak *.om OMakefile OMakeRoot"`<br>上記のようにレジストリエントリを追加し、Grepのファイルに `$cpp`を指定すると `*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp`で置き換えます.|
 ||多重オープンの許可 (Shiftを押しながらファイルのドロップ)|
 |:bug:|折り返しモードをトグルで切り替えたときに「折り返さない」が処理されていないのを修正|
 ||垂直, 水平スクロールの挙動をメモ帳の挙動と同じにする<ul><li>垂直スクロールマージン１行<li>水平スクロールマージン１, １６文字移動</ul>|
 ||検索時に画面外へ移動するときカーソル行を中央表示|
 ||タブ入力文字の切り替え機能<br>(`S_ChangeTabWidth`マクロを修正, 負の値を設定するとタブと空白を相互に切り替えます)|
 |:bug:|検索マーク切り替え, インクリメンタルサーチの際に検索ダイアログの「正規表現」が影響を受けてしまうのを修正|
-||<details><summary>メインメニューは常にデフォルトを使用する</summary>:memo:カスタマイズの効果が感じられなかったのと機能が追加されたときに増えるメニューが対応されず, 機能に気づかないことが多いのでいっそのこと固定にしちゃったほうがわかりやすいので. 副作用でiniファイルに出力しないのでサイズが軽減されます.</details>|
+||<details><summary>メインメニューは常にデフォルトを使用する</summary>:memo:カスタマイズの効果が感じられなかったのと機能が追加されたときに増えるメニューが対応されず, 機能に気づかないことが多いのでいっそのこと固定にしちゃったほうがわかりやすいので. 副作用でiniファイルに出力しないのでサイズが軽減されます.|
 ||Grep「現在編集中のファイルから検索」をチェックした時の状態を保持しないようにする|
 ||置換ダイアログの置換後テキストに置換前テキストを設定|
 ||正規表現検索のときに正規表現記号をクォート (`^abc$`を検索する場合 `\^abc\$`にする)|
-||<details><summary>ステータスバーのカスタマイズ</summary><ul><li>:bug:カーソル移動時のちらつき抑制<li>カラムの並べ替え<li>左クリックでメニューを表示<li>「? 行 ? 桁」→「Ln ? Col ?」に変更<li>タイプ名を表示<li>タブサイズを表示<li>入力改行コードを主に使われているシステム名で表記</ul></details>|
+||<details><summary>ステータスバーのカスタマイズ</summary><ul><li>:bug:カーソル移動時のちらつき抑制<li>カラムの並べ替え<li>左クリックでメニューを表示<li>「? 行 ? 桁」→「Ln ? Col ?」に変更<li>タイプ名を表示<li>タブサイズを表示<li>入力改行コードを主に使われているシステム名で表記|
 ||タグファイル作成時にフォルダの初期値を `tags`, `ctags.cnf`ファイルがあるところまで辿る|
 
 
@@ -95,7 +95,7 @@ Changed
 |:bug:|行番号背景が行番号縦線をはみ出しているのを修正|
 |:bug:|偶数行背景はEOF以降は適用しない|
 |:bug:|ノート線はEOF以降は適用しない|
-||<details><summary>タブと編集ウィンドウのバグ修正とスタイル調整 (モダンに?)</summary><ul><li>境界線を描画しない, タブを詰める.<li>タブを閉じるボタンをグラフィカルにする.<li>:bug:間に選択タブがあると右側のエッヂがないバグを修正.<li>エディット画面のスタイルから WS_EX_STATICEDGE を外し境界線を描かないようにする.</ul></details>|
+||<details><summary>タブと編集ウィンドウのバグ修正とスタイル調整 (モダンに?)</summary><ul><li>境界線を描画しない, タブを詰める.<li>タブを閉じるボタンをグラフィカルにする.<li>:bug:間に選択タブがあると右側のエッヂがないバグを修正.<li>エディット画面のスタイルから WS_EX_STATICEDGE を外し境界線を描かないようにする.|
 ||リソース (ダイアログ)のフォントを `MS Shell Dlg`へ変更|
 ||変更, キーマクロ記録中のタブ名のカラーを変更|
 ||アウトライン解析ダイアログのドッキング時はコントロールカラーのままにする|
@@ -103,7 +103,6 @@ Changed
 ||フォルダ選択ダイアログを今風にする|
 ||各種ダイアログを編集ウィンドウの中央に配置|
 |:bug:|ルールファイルを設定してアウトライン解析をするとデフォルトが逆順になっているのを修正|
-
 
 
 **<a name="patchunicode">マージ済みパッチ**  
@@ -116,6 +115,9 @@ Changed
 ||[patchunicode:#1006](https://sourceforge.net/p/sakura-editor/patchunicode/1006/) 改行文字部分とそれより後ろのキャレット移動に関して|
 ||[patchunicode:#830](https://sourceforge.net/p/sakura-editor/patchunicode/830/) ~~マクロの文字列コピーを減らす~~|
 ||[patchunicode:#720](https://sourceforge.net/p/sakura-editor/patchunicode/720/) タイプ別設定の追加と強調キーワードの外部化|
+
+
+<br>
 
 Cregit  
 ------
