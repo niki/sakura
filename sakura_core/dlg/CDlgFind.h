@@ -65,6 +65,9 @@ protected:
 	/* オーバーライド? */
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID );
 	int GetData( void );		/* ダイアログデータの取得 */
+#ifdef UZ_FIX_FINDDLG
+	int InstantInput( void );
+#endif  // UZ_
 	void SetCombosList( void );	/* 検索文字列/置換後文字列リストの設定 */
 	void SetData( void );		/* ダイアログデータの設定 */
 	BOOL OnInitDialog( HWND, WPARAM, LPARAM );
