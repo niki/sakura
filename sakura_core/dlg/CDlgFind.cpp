@@ -347,7 +347,11 @@ void CDlgFind::SetData( void )
 	// To Here Jun. 29, 2001 genta
 
 	/* 検索ダイアログを自動的に閉じる */
+#ifdef UZ_FIX_FINDDLG
+	::CheckDlgButton( GetHwnd(), IDC_CHECK_bAutoCloseDlgFind, FALSE );
+#else
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_bAutoCloseDlgFind, m_pShareData->m_Common.m_sSearch.m_bAutoCloseDlgFind );
+#endif  // UZ_
 
 	/* 先頭（末尾）から再検索 2002.01.26 hor */
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_SEARCHALL, m_pShareData->m_Common.m_sSearch.m_bSearchAll );

@@ -94,22 +94,23 @@ BEGIN
 //    LTEXT           "èåè(&N)",IDC_STATIC,65,6,26,8
     COMBOBOX        IDC_COMBO_TEXT,67,4,131,150,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "ÅgÅh",IDC_CHK_WORD,"Button",
+    CONTROL         "|Ab|",IDC_CHK_WORD,"Button",
                     BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,45,6,20,10
     CONTROL         "Aa",IDC_CHK_LOHICASE,"Button",
                     BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,25,6,20,10
     CONTROL         ".*",IDC_CHK_REGULAREXP,"Button",
                     BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,6,20,10 
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDFRAME,-5,32,300,1
     CONTROL         "Display a &message if not found",
                     IDC_CHECK_NOTIFYNOTFOUND,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,78,31,108,10
     CONTROL         "Automatica&lly close the search dialog",
                     IDC_CHECK_bAutoCloseDlgFind,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,31,72,10
+                    WS_TABSTOP | WS_DISABLED,5,31,72,10
     CONTROL         "Re-start search from beginning(end)(&Z)",IDC_CHECK_SEARCHALL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,21,63,10
     LTEXT           "",IDC_STATIC_JRE32VER,70,21,154,10
-    PUSHBUTTON      "Previo&us",IDC_BUTTON_SEARCHPREV,236,3,40,15,WS_GROUP
+//    PUSHBUTTON      "Previo&us",IDC_BUTTON_SEARCHPREV,236,3,40,15,WS_GROUP
     DEFPUSHBUTTON   "Next(&D)",IDC_BUTTON_SEARCHNEXT,200,3,36,15
 //    PUSHBUTTON      "&Bookmark",IDC_BUTTON_SETMARK,160,20,58,14
     PUSHBUTTON      "Cancel(&X)",IDCANCEL,236,18,40,13,WS_GROUP

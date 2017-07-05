@@ -105,7 +105,7 @@ BEGIN
                     WS_TABSTOP,5,54,140,10
     CONTROL         "検索ダイアログを自動的に閉じる(&L)",
                     IDC_CHECK_bAutoCloseDlgFind,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,44,130,10
+                    WS_TABSTOP | WS_DISABLED,5,44,130,10
     CONTROL         "先頭（末尾）から再検索する(&Z)",IDC_CHECK_SEARCHALL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,34,130,10
     LTEXT           "",IDC_STATIC_JRE32VER,74,22,154,10
