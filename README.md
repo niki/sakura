@@ -24,10 +24,10 @@ Feature
 Download % Setup  
 --------
 
-|ファイル名           |     |主な変更内容            |サイズ|日付     ||
-|-                    |-    |-                       |-               |-|
-|sakura-uzuki-2.44.zip|32bit|検索ダイアログ関連の修正|821KB |2017.7.5 |[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.44.zip)|
-|keyword_pack.zip     |     |patchunicode:#720対応   |355KB |2017.6.16|[download](Publish/keyword_pack.zip)|
+|ファイル名||主な変更内容|サイズ|日付||
+|-|-|-|-|-|-|
+|sakura-uzuki-2.44.zip|32bit|検索ダイアログ関連の修正|821KB|2017.7.5|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.44.zip)|
+|keyword_pack.zip||patchunicode:#720対応|355KB|2017.6.16|[download](Publish/keyword_pack.zip)|
 
 ダウンロードしたファイルをすでに使用しているサクラエディタに上書きしてください.  
 `sakura.keywordset.csv`は実行ファイルと同じ場所に置いてください. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
