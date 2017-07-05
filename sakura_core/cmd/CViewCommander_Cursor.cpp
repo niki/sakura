@@ -818,7 +818,7 @@ void CViewCommander::Command_1PageDown( bool bSelect, CLayoutYInt nScrollNum )
 /* ファイルの先頭に移動 */
 void CViewCommander::Command_GOFILETOP( bool bSelect )
 {
-#ifdef UZ_FIX_FLICKER
+#if 0//-2017.7.5 def UZ_FIX_FLICKER
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
 #endif  // UZ_
 	/* 先頭へカーソルを移動 */
@@ -831,7 +831,7 @@ void CViewCommander::Command_GOFILETOP( bool bSelect )
 		CLayoutInt(0)
 	);
 	m_pCommanderView->MoveCursorSelecting( pt, bSelect );	//	通常は、(0, 0)へ移動。ボックス選択中は、(GetCaret().GetCaretLayoutPos().GetX2(), 0)へ移動
-#ifdef UZ_FIX_FLICKER
+#if 0//-2017.7.5 def UZ_FIX_FLICKER
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
 	if (m_pCommanderView->m_pcEditWnd->GetMiniMap().GetHwnd() != NULL) {
@@ -845,7 +845,7 @@ void CViewCommander::Command_GOFILETOP( bool bSelect )
 /* ファイルの最後に移動 */
 void CViewCommander::Command_GOFILEEND( bool bSelect )
 {
-#ifdef UZ_FIX_FLICKER
+#if 0//-2017.7.5 def UZ_FIX_FLICKER
 	const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(false);
 #endif  // UZ_
 // 2001.12.13 hor BOX選択中にファイルの最後にジャンプすると[EOF]の行が反転したままになるの修正
@@ -874,7 +874,7 @@ void CViewCommander::Command_GOFILEEND( bool bSelect )
 	if( bSelect ){
 		m_pCommanderView->GetSelectionInfo().PrintSelectionInfoMsg();
 	}
-#ifdef UZ_FIX_FLICKER
+#if 0//-2017.7.5 def UZ_FIX_FLICKER
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
 	m_pCommanderView->RedrawAll();
 	if (m_pCommanderView->m_pcEditWnd->GetMiniMap().GetHwnd() != NULL) {
