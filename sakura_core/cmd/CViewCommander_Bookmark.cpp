@@ -292,7 +292,6 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 					// 削除
 					m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
 				}
-				m_pCommanderView->SBMarkCache_Draw();
 			}
 #endif  // UZ_
 		}
@@ -316,14 +315,9 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				// 削除
 				m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
 			}
-			m_pCommanderView->SBMarkCache_Draw();
 		}
 #endif  // UZ_
 	}
-
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-	//m_pCommanderView->SBMarkCache_Refresh(202);
-#endif  // UZ_
 
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();
@@ -430,7 +424,7 @@ void CViewCommander::Command_BOOKMARK_RESET(void)
 {
 	CBookmarkManager(&GetDocument()->m_cDocLineMgr).ResetAllBookMark();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-	m_pCommanderView->SBMarkCache_Refresh(203);
+	m_pCommanderView->SBMarkCache_Clear(203);
 #endif  // UZ_
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();

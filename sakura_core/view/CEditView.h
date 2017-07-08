@@ -785,21 +785,28 @@ public:
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 public:
-	// 更新キュー
-	void SBMarkCache_Refresh(int foo = 0);
+	// 描画要求
+	void SBMarkCache_CallPaint(int foo = 0);
+	// クリア (再構築要求)
+	void SBMarkCache_Clear(int foo = 0);
 	// 登録
 	void SBMarkCache_Add(int nLayoutY, uint32_t magic);
 	// 削除
 	void SBMarkCache_Del(int nLayoutY, uint32_t magic);
 	// 再構築
-	void SBMarkCache_Rebuild(bool bCacheClear = false);
+	void SBMarkCache_Build(bool bCacheClear, int foo = 0);
 	// 描画
 	void SBMarkCache_Draw();
 	// 検索文字列のある行か確認
 	bool SBMarkCache_IsFoundLine(const CDocLine *pCDocLine);
 	
-	int nCacheLastLineCount_ = 0;        // 最後に更新した時の行数
-	std::vector<uint32_t> vCacheLines_;  // キャッシュ
+	// スクロールバー関連
+	int nCacheLastLineCount_ = 0;          // 最後に更新した時の行数
+	std::vector<uint32_t> vCacheLines_;    // キャッシュ
+	HANDLE hCacheThread_ = 0;              // キャッシュ作成スレッドハンドル
+	bool bCacheThreadRunning_ = false;     // スレッド稼働状態
+	bool bExitRequestCacheThread_ = false; // スレッド終了リクエスト
+	SCROLLBARINFO sbiCache_;
 #endif  // UZ_
 };
 

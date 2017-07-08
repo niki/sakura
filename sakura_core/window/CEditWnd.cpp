@@ -4690,6 +4690,12 @@ void CEditWnd::Views_Redraw()
 		if( m_nActivePaneIndex != v )
 			GetView(v).Redraw();
 	}
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+	for( int v = 0; v < GetAllViewCount(); ++v ){
+		if( m_nActivePaneIndex != v )
+			GetView(v).AdjustScrollBars();
+	}
+#endif  // UZ_
 	GetMiniMap().Redraw();
 	//アクティブを再描画
 	GetActiveView().Redraw();

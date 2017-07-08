@@ -363,9 +363,9 @@ void CEditView::InsertData_CEditView(
 			si::logln(L"SBMarkCache_Del 703");
 		}
 	} else {
-		SBMarkCache_Refresh(703);
+		SBMarkCache_Clear(703);
 	}
-	AdjustScrollBars();
+	//AdjustScrollBars();
 #endif  // UZ_
 
 }
@@ -462,7 +462,7 @@ void CEditView::DeleteData2(
 	}
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-	SBMarkCache_Refresh(700);  // キャッシュのクリア
+	SBMarkCache_Clear(700);  // キャッシュのクリア
 	AdjustScrollBars();
 #endif  // UZ_
 }
@@ -699,7 +699,7 @@ void CEditView::DeleteData(
 end_of_func:;
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-	SBMarkCache_Refresh(701);  // キャッシュのクリア
+	SBMarkCache_Clear(701);  // キャッシュのクリア
 	AdjustScrollBars();
 #endif  // UZ_
 	return;

@@ -178,10 +178,10 @@ void CMainToolBar::ProcSearchBox( MSG *msg )
 #endif
 			} else {
 				m_pOwner->GetActiveView().m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-				m_pOwner->GetActiveView().SBMarkCache_Refresh(1500);
-#endif  // UZ_
 				m_pOwner->GetActiveView().Redraw();
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+				m_pOwner->GetActiveView().SBMarkCache_Clear(1500);
+#endif  // UZ_
 			}
 		}
 	}
@@ -740,10 +740,10 @@ void CMainToolBar::SetFocusSearchBox( void ) const
 			m_pOwner->GetActiveView().Redraw();
 		} else {
 			m_pOwner->GetActiveView().m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
-#  ifdef UZ_FIX_EDITVIEW_SCRBAR
-			m_pOwner->GetActiveView().SBMarkCache_Refresh(1500);
-#  endif  // UZ_
 			m_pOwner->GetActiveView().Redraw();
+#  ifdef UZ_FIX_EDITVIEW_SCRBAR
+			m_pOwner->GetActiveView().SBMarkCache_Clear(1500);
+#  endif  // UZ_
 		}
 #endif  // UZ_
 		::SetFocus(m_hwndSearchBox);

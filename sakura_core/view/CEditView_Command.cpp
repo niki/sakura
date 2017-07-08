@@ -395,30 +395,30 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 	if( bChangeState ){
 		if( !m_sSearchPattern.SetPattern(this->GetHwnd(), m_strCurSearchKey.c_str(), m_strCurSearchKey.size(),
 			m_sCurSearchOption, &m_CurRegexp) ){
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-				SBMarkCache_Refresh(600);
-#endif  // UZ_
 				m_bCurSrchKeyMark = false;
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+				SBMarkCache_Clear(600);
+#endif  // UZ_
 				return FALSE;
 		}
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-		SBMarkCache_Refresh(601);
-#endif  // UZ_
 		m_bCurSrchKeyMark = true;
 		if( bRedrawIfChanged ){
 			Redraw();
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+			SBMarkCache_Clear(601);
+#endif  // UZ_
 		}
 		m_pcEditWnd->m_cToolbar.AcceptSharedSearchKey();
 		return TRUE;
 	}
 	if( ! m_bCurSrchKeyMark ){
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-		SBMarkCache_Refresh(602);
-#endif  // UZ_
 		m_bCurSrchKeyMark = true;
 		// 検索文字列のマークだけ設定
 		if( bRedrawIfChanged ){
 			Redraw(); // 自View再描画
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+			SBMarkCache_Clear(602);
+#endif  // UZ_
 		}
 	}
 

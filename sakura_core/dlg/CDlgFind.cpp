@@ -196,10 +196,10 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 					if (bRegularExp && inputSize >= 1) {
 						if (text[0] == L':') {  // 行番号指定にする
 							pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-							pcEditView->SBMarkCache_Refresh(1500);
-#endif  // UZ_
 							pcEditView->Redraw();
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+							//pcEditView->SBMarkCache_CallPaint(1500);
+#endif  // UZ_
 							break;
 						}
 					}
@@ -207,6 +207,7 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 					pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
 
 					InstantInput();
+					pcEditView->SBMarkCache_Clear(1700);
 
 				} while (0);
 			}
@@ -382,13 +383,15 @@ void CDlgFind::SetData( void )
 		
 		if (text.empty()) {
 			pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-			pcEditView->SBMarkCache_Refresh(1500);
-#endif  // UZ_
 		} else {
+			pcEditView->m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
+			pcEditView->m_bCurSearchUpdate = true;
 			pcEditView->ChangeCurRegexp(false);
 		}
 		pcEditView->Redraw();
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+		//pcEditView->SBMarkCache_Clear(1501);
+#endif  // UZ_
 	}
 #endif  // UZ_
 
@@ -530,10 +533,10 @@ int CDlgFind::InstantInput( void )
 			::DlgItem_SetText(GetHwnd(), IDC_STATIC_JRE32VER, _T("invalid regex"));
 			
 			pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-			pcEditView->SBMarkCache_Refresh(1500);
-#endif  // UZ_
 			pcEditView->Redraw();
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+			//pcEditView->SBMarkCache_CallPaint(1502);
+#endif  // UZ_
 			return -1;
 		} else {
 			if (m_sSearchOption.bRegularExp) {
@@ -557,6 +560,9 @@ int CDlgFind::InstantInput( void )
 		pcEditView->m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
 		pcEditView->ChangeCurRegexp(false);
 		pcEditView->Redraw();
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+		//pcEditView->SBMarkCache_CallPaint(1503);
+#endif  // UZ_
 		return 1;
 	}else{
 		if (m_sSearchOption.bRegularExp) {
@@ -564,10 +570,10 @@ int CDlgFind::InstantInput( void )
 		}
 		
 		pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-		pcEditView->SBMarkCache_Refresh(1500);
-#endif  // UZ_
 		pcEditView->Redraw();
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+		//pcEditView->SBMarkCache_CallPaint(1504);
+#endif  // UZ_
 		return 0;
 	}
 }

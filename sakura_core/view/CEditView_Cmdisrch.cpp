@@ -449,7 +449,7 @@ void CEditView::ISearchExec(bool bNext)
 	}
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-	SBMarkCache_Refresh(500);
+	SBMarkCache_CallPaint(500);
 #endif  // UZ_
 	m_bCurSrchKeyMark = true;
 

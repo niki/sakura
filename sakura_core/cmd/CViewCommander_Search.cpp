@@ -121,12 +121,6 @@ void CViewCommander::Command_SEARCH_NEXT(
 		pcSelectLogic->Clear(-1);
 	}
 
-#if 0//def UZ_FIX_EDITVIEW_SCRBAR
-	if (!m_pCommanderView->m_bCurSrchKeyMark) {
-		m_pCommanderView->SBMarkCache_Refresh(300);
-	}
-#endif  // UZ_
-
 	bSelecting = false;
 	// 2002.01.16 hor
 	// 共通部分のくくりだし
@@ -365,12 +359,6 @@ void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
 
 	CLayoutRange sSelectBgn_Old;
 	CLayoutRange sSelect_Old;
-
-#if 0//def UZ_FIX_EDITVIEW_SCRBAR
-	if (!m_pCommanderView->m_bCurSrchKeyMark) {
-		m_pCommanderView->SBMarkCache_Refresh(301);
-	}
-#endif  // UZ_
 
 	bSelecting = false;
 	// 2002.01.16 hor
@@ -1550,18 +1538,21 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 
 		// 再描画
 		m_pCommanderView->RedrawAll();
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+		m_pCommanderView->SBMarkCache_Clear(301);
+#endif  // UZ_
 		return;
 	}
 // To Here 2001.12.03 hor
 
 	//検索マークのクリア
 
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-	m_pCommanderView->SBMarkCache_Refresh(302);
-#endif  // UZ_
 	m_pCommanderView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 	/* フォーカス移動時の再描画 */
 	m_pCommanderView->RedrawAll();
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+	m_pCommanderView->SBMarkCache_Clear(302);
+#endif  // UZ_
 	return;
 }
 
