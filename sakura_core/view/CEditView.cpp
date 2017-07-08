@@ -832,6 +832,11 @@ LRESULT CEditView::DispatchEvent(
 		}
 		return 0L;
 
+#ifdef UZ_FIX_SUPPRESSION_OF_WM_ERASEBKGND
+	case WM_ERASEBKGND:  // 背景の描画を処理したことにする
+		return 1L;
+#endif  // UZ_
+
 	case WM_CLOSE:
 //		MYTRACE( _T("	WM_CLOSE\n") );
 		::DestroyWindow( hwnd );
