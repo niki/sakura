@@ -754,8 +754,14 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 			rc.top    = GetTextArea().GetRulerHeight();
 			rc.right  = GetTextArea().GetLineNumberWidth(); //	Sep. 23 ,2002 genta 余白はテキスト色のまま残す
 			rc.bottom = GetTextArea().GetAreaTop();
+#ifdef UZ_FIX_EXTTEXTOUT_TO_PATBLT
+			gr.PushBrushColor(m_pTypeData->m_ColorInfoArr[COLORIDX_GYOU].m_sColorAttr.m_cBACK);
+			::PatBlt(gr, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
+			gr.PopBrushColor();
+#else
 			gr.SetTextBackColor(m_pTypeData->m_ColorInfoArr[COLORIDX_GYOU].m_sColorAttr.m_cBACK);
 			gr.FillMyRectTextBackColor(rc);
+#endif  // UZ_
 		}
 	}
 	//	To Here Sep. 7, 2001 genta

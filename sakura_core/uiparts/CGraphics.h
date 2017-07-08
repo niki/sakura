@@ -219,9 +219,15 @@ public:
 	//! 矩形塗り潰し
 	void FillSolidMyRect(const RECT& rc, COLORREF color)
 	{
+#ifdef UZ_FIX_EXTTEXTOUT_TO_PATBLT
+		PushBrushColor(color);
+		::PatBlt(m_hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
+		PopBrushColor();
+#else
 		PushTextBackColor(color);
 		FillMyRectTextBackColor(rc);
 		PopTextBackColor();
+#endif  // UZ_
 	}
 	//! 矩形塗り潰し
 	void FillMyRectTextBackColor(const RECT& rc)
