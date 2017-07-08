@@ -2,9 +2,11 @@ Introduction
 ------------
 
 サクラエディタのリポジトリ([link](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2))の[追っかけ](Publish/changes_from_r4011.txt). パッチ([link](#patchunicode))のマージ.  
-可能な限り最新版をベースに修正をしています.  
-個人的な趣味でマクロとプラグインに **Lua** を使用できます.  
-普段使いながらヘイト値ためて, どかっと修正しているのでそれなりに良くなっているかと思います。
+
+普段使っていてたまったヘイト値をどかっと吐き出して修正しているのでそれなりに良くなっているかと思います.  
+個人的な趣味でマクロとプラグインに **Lua** を使用できます. 将来的には **Python** も使えるようにしたいです.  
+
+<details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています.</summary><ul><li>OS: Windows10 Home 1703<li>CPU: Celeron 3215U 1.7GHz<li>Memory: 8GB<li>Compiler: Visual Studio Community 2017<li>Heavy software used: MacType, ESET</details>
 
 
 <br>
@@ -12,16 +14,16 @@ Introduction
 Feature  
 -------
 
-<details><summary>MacTypeなどの描画負荷の高いソフトを併用した際に起こる描画崩れを軽減(したつもり)</summary></details>  
+<details open><summary>MacTypeなどの描画負荷の高いソフトを併用した際に起こる描画崩れを軽減(したつもり)</summary></details>  
 <details><summary>Luaをマクロ言語として組み込み</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041845.png" width="50%"></details>  
 <details><summary>スクロールバーに検索結果やブックマークを表示</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706092354.png" width="50%"></details>  
 <details><summary>Grepフォルダの指定を３つに拡張, 除外フォルダ指定ボックスの追加, 他</summary><img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041815.png" width="50%"></details>  
-<details><summary>半角空白やタブなどの見た目をすっきりさせる (Sublime Textを模倣)</summary></details>  
+<details open><summary>半角空白やタブなどの見た目をすっきりさせる (Sublime Textを模倣)</summary></details>  
 
 
 <br>
 
-Download % Setup  
+Download & Setup  
 --------
 
 |ファイル名||主な変更内容|サイズ|日付||
