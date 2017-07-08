@@ -340,12 +340,7 @@ BOOL CEditView::Create(
 	/* エディタウィンドウの作成 */
 	SetHwnd(
 		::CreateWindowEx(
-#ifdef UZ_FIX_EDITVIEW
-			// 余計な境界はないようにする
-			/*WS_EX_STATICEDGE*/0,		// extended window style
-#else
 			WS_EX_STATICEDGE,		// extended window style
-#endif  // UZ_
 			GSTR_VIEWNAME,			// pointer to registered class name
 			GSTR_VIEWNAME,			// pointer to window name
 			0						// window style

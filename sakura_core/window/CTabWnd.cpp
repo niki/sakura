@@ -66,13 +66,8 @@
 
 // 2006.01.30 ryoji タブのサイズ／位置に関する定義
 // 2009.10.01 ryoji 高DPI対応スケーリング
-#ifdef UZ_FIX_TABWND
-#define TAB_MARGIN_TOP		DpiScaleY(2)
-#define TAB_MARGIN_LEFT		DpiScaleX(0)
-#else
 #define TAB_MARGIN_TOP		DpiScaleY(3)
 #define TAB_MARGIN_LEFT		DpiScaleX(1)
-#endif  // UZ_
 #define TAB_MARGIN_RIGHT	DpiScaleX(47)
 
 //#define TAB_FONT_HEIGHT		DpiPointsToPixels(9)
@@ -302,9 +297,7 @@ LRESULT CTabWnd::OnTabLButtonDown( WPARAM wParam, LPARAM lParam )
 	::SetCapture( m_hwndTab );
 
 #ifdef UZ_FIX_TABWND
-	TCHAR szMsg[128];
-	auto_sprintf(szMsg, L"CTabWnd::OnTabLButtonDown %d\n", m_hwndTab),
-	OutputDebugStringW(szMsg);
+	si::logln(L"CTabWnd::OnTabLButtonDown %d", m_hwndTab),
 #endif  // UZ_
 
 	return 0L;
@@ -1746,10 +1739,8 @@ LRESULT CTabWnd::OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 	DrawListBtn( gr, &rc );
 	DrawCloseBtn( gr, &rc );	// 2006.10.21 ryoji 追加
 
-#if 1//ndef UZ_FIX_TABWND
 	// 上側に境界線を描画する
 	::DrawEdge(gr, &rc, EDGE_ETCHED, BF_TOP);
-#endif  // UZ_
 
 	// Windowsクラシックスタイルの場合はアクティブタブの上部にトップバンドを描画する	// 2006.03.27 ryoji
 	if( !m_bVisualStyle )
@@ -2573,9 +2564,6 @@ void CTabWnd::LayoutTab( void )
 	::SetWindowPos( GetHwnd(), NULL, 0, 0, rcWnd.right - rcWnd.left, nHeight, SWP_NOMOVE | SWP_NOZORDER );
 	int nWidth = (rcWnd.right - rcWnd.left) - (TAB_MARGIN_LEFT + TAB_MARGIN_RIGHT + nSizeBoxWidth);
 	if( (nWidth != rcTab.right - rcTab.left) || (nHeight != rcTab.bottom - rcTab.top) ){
-#ifdef UZ_FIX_TABWND
-		nHeight += DpiScaleY(2);  // 調整
-#endif // UZ_
 		::MoveWindow( m_hwndTab, TAB_MARGIN_LEFT, TAB_MARGIN_TOP, nWidth, nHeight, TRUE );
 	}
 }

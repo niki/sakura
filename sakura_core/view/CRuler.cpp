@@ -117,16 +117,6 @@ void CRuler::DrawRulerBg(CGraphics& gr)
 	rc.bottom = m_pEditView->GetTextArea().GetAreaTop() - m_pEditView->GetTextArea().GetTopYohaku();
 	cRulerType.FillBack(gr,rc);
 
-#ifdef UZ_FIX_EDITVIEW
-	{
-		// ルーラーの上部に境界線を描画する
-		gr.PushPen(::GetSysColor(COLOR_ACTIVEBORDER), 0);
-		::MoveToEx(gr, rc.left, rc.top, NULL);
-		::LineTo(gr, rc.right, rc.top);
-		gr.PopPen();
-	}
-#endif  // UZ_
-
 	//ルーラー色設定
 	gr.PushPen(cRulerType.GetTextColor(),0);
 	gr.PushTextForeColor(cRulerType.GetTextColor());
