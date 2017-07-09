@@ -297,7 +297,7 @@ LRESULT CTabWnd::OnTabLButtonDown( WPARAM wParam, LPARAM lParam )
 	::SetCapture( m_hwndTab );
 
 #ifdef UZ_FIX_TABWND
-	si::logln(L"CTabWnd::OnTabLButtonDown %d", m_hwndTab),
+	si::logln(L"CTabWnd::OnTabLButtonDown %d", m_hwndTab);
 #endif  // UZ_
 
 	return 0L;
