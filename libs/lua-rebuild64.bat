@@ -11,4 +11,4 @@ rem copy lua53.lib ..
 rem copy lua53.dll ..
 
 nmake /f Makefile.nmake lib
-copy liblua53.lib ..\lua53.lib
+copy liblua53.lib ..\lua53_64.lib
