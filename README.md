@@ -22,7 +22,7 @@ Download & Setup
 
 |ファイル名||主な変更内容|サイズ|日付||
 |-|-|-|-|-|-|
-|sakura-uzuki-2.45.zip|32bit|マークキャッシュ作成のスレッド化|822KB|2017.7.9|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.45.zip)|
+|sakura-uzuki-2.46.zip|32bit|マークキャッシュ作成,描画のスレッド化|822KB|2017.7.9|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.46.zip)|
 |keyword_pack.zip||patchunicode:#720対応|355KB|2017.6.16|[download](Publish/keyword_pack.zip)|
 
 ダウンロードしたファイルをすでに使用しているサクラエディタに上書きしてください.  
