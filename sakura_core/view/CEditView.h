@@ -66,6 +66,10 @@
 #include "basis/SakuraBasis.h"	// CLogicInt, CLayoutInt
 #include "util/container.h"		// vector_ex
 #include "util/design_template.h"
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#include <mutex>
+#include <process.h>
+#endif  // UZ_
 
 class CViewFont;
 class CRuler;
@@ -803,9 +807,15 @@ public:
 	// スクロールバー関連
 	int nCacheLastLineCount_ = 0;          // 最後に更新した時の行数
 	std::vector<uint32_t> vCacheLines_;    // キャッシュ
-	HANDLE hCacheThread_ = 0;              // キャッシュ作成スレッドハンドル
-	bool bCacheThreadRunning_ = false;     // スレッド稼働状態
-	bool bExitRequestCacheThread_ = false; // スレッド終了リクエスト
+	HANDLE hCacheBuildThread_ = 0;                 // キャッシュ作成スレッドハンドル
+	std::mutex mtxCacheBuildMutex_;
+	bool bCacheBuildThreadRunning_ = false;        //   スレッド稼働状態
+	bool bExitRequestCacheBuildThread_ = false;    //   スレッド終了リクエスト
+	HANDLE hCacheDrawThread_ = 0;                  // キャッシュ描画スレッドハンドル
+	std::mutex mtxCacheDrawMutex_;
+	bool bCacheDrawThreadRunning_ = false;         //   スレッド稼働状態
+	bool bRestartRequestCacheDrawThread_ = false;  //   描画やり直しリクエスト
+	bool bExitRequestCacheDrawThread_ = false;     //   スレッド終了リクエスト
 	SCROLLBARINFO sbiCache_;
 #endif  // UZ_
 };

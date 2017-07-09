@@ -164,7 +164,8 @@
 //  ? 更新がいまいち, バーにカーソルを乗せた時 → フェードアウトして消えてしまう;
 //------------------------------------------------------------------
 #define UZ_FIX_EDITVIEW_SCRBAR
-	#define WM_APP_SCRBAR_PAINT (WM_APP + 2501)  // スクロールバー描画メッセージ
+	#define WM_APP_SCRBAR_PAINT    (WM_APP + 2501)  // スクロールバー描画メッセージ
+	#define WM_APP_SCRBAR_ENDPAINT (WM_APP + 2502)  // スクロールバー描画終了メッセージ
 	#define UZ_SCRBAR_FOUND_MAGIC (0x10000000)  // 検索
 	#define UZ_SCRBAR_MARK_MAGIC  (0x20000000)  // ブックマーク
 	#define UZ_SCRBAR_LINEN_MASK  (0x0fffffff)  // 行番号マスク
