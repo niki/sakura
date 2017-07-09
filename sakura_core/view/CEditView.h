@@ -810,7 +810,7 @@ public:
 	// スクロールバー関連
 	int nCacheLastLineCount_ = 0;          // 最後に更新した時の行数
 	std::vector<uint32_t> vCacheLines_;    // キャッシュ
-	std::mutex mtxCacheMutex_;
+	//std::mutex mtxCacheMutex_;
 	HANDLE hCacheBuildThread_ = 0;                 // キャッシュ作成スレッドハンドル
 	bool bCacheBuildThreadRunning_ = false;        //   スレッド稼働状態
 	bool bExitRequestCacheBuildThread_ = false;    //   スレッド終了リクエスト
