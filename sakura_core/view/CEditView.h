@@ -803,16 +803,18 @@ public:
 	void SBMarkCache_Draw();
 	// 検索文字列のある行か確認
 	bool SBMarkCache_IsFoundLine(const CDocLine *pCDocLine);
+	// スレッドを待つ
+	void SBMarkCache_WaitForBuild(bool abort = false);
+	void SBMarkCache_WaitForDraw(bool abort = false);
 	
 	// スクロールバー関連
 	int nCacheLastLineCount_ = 0;          // 最後に更新した時の行数
 	std::vector<uint32_t> vCacheLines_;    // キャッシュ
+	std::mutex mtxCacheMutex_;
 	HANDLE hCacheBuildThread_ = 0;                 // キャッシュ作成スレッドハンドル
-	std::mutex mtxCacheBuildMutex_;
 	bool bCacheBuildThreadRunning_ = false;        //   スレッド稼働状態
 	bool bExitRequestCacheBuildThread_ = false;    //   スレッド終了リクエスト
 	HANDLE hCacheDrawThread_ = 0;                  // キャッシュ描画スレッドハンドル
-	std::mutex mtxCacheDrawMutex_;
 	bool bCacheDrawThreadRunning_ = false;         //   スレッド稼働状態
 	bool bRestartRequestCacheDrawThread_ = false;  //   描画やり直しリクエスト
 	bool bExitRequestCacheDrawThread_ = false;     //   スレッド終了リクエスト

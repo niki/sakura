@@ -397,7 +397,7 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 			m_sCurSearchOption, &m_CurRegexp) ){
 				m_bCurSrchKeyMark = false;
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-				SBMarkCache_Clear(600);
+				//SBMarkCache_Clear(600);
 #endif  // UZ_
 				return FALSE;
 		}
@@ -405,7 +405,7 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 		if( bRedrawIfChanged ){
 			Redraw();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-			SBMarkCache_Clear(601);
+			//SBMarkCache_Clear(601);
 #endif  // UZ_
 		}
 		m_pcEditWnd->m_cToolbar.AcceptSharedSearchKey();
@@ -417,7 +417,7 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 		if( bRedrawIfChanged ){
 			Redraw(); // 自View再描画
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-			SBMarkCache_Clear(602);
+			//SBMarkCache_Clear(602);
 #endif  // UZ_
 		}
 	}

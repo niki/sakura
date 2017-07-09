@@ -453,14 +453,8 @@ void CEditView::Close()
 	m_pcRuler = NULL;
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-	if (hCacheBuildThread_ != 0) {
-		::CloseHandle(hCacheBuildThread_);
-		hCacheBuildThread_ = 0;
-	}
-	if (hCacheDrawThread_ != 0) {
-		::CloseHandle(hCacheDrawThread_);
-		hCacheDrawThread_ = 0;
-	}
+	SBMarkCache_WaitForBuild(true);
+	SBMarkCache_WaitForDraw(true);
 #endif  // UZ_
 }
 
@@ -502,26 +496,14 @@ LRESULT CEditView::DispatchEvent(
 	case WM_APP_SCRBAR_PAINT: // スクロールバー描画
 		{
 			si::logln(L"WM_APP_SCRBAR_PAINT");
-			if (bCacheBuildThreadRunning_) {
-				::WaitForSingleObject(hCacheBuildThread_, INFINITE);
-			}
-			if (hCacheBuildThread_ != 0) {
-				::CloseHandle(hCacheBuildThread_);
-				hCacheBuildThread_ = 0;
-			}
+			SBMarkCache_WaitForBuild(false);
 			SBMarkCache_Draw();
 		}
 		return 0L;
 	case WM_APP_SCRBAR_ENDPAINT: // スクロールバー描画終了
 		{
 			si::logln(L"WM_APP_SCRBAR_ENDPAINT");
-			if (bCacheDrawThreadRunning_) {
-				::WaitForSingleObject(hCacheDrawThread_, INFINITE);
-			}
-			if (hCacheDrawThread_ != 0) {
-				::CloseHandle(hCacheDrawThread_);
-				hCacheDrawThread_ = 0;
-			}
+			SBMarkCache_WaitForDraw(false);
 			::UpdateWindow(m_hwndVScrollBar);
 		}
 		return 0L;
@@ -3075,6 +3057,8 @@ unsigned __stdcall SBMarkCache_BuildThread(void *arg) {
 	bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
 	
 	while (pCDocLine) {
+		//std::lock_guard<std::mutex> lock(pEditView->mtxCacheMutex_);
+
 		uint32_t uFoundMagic = pEditView->SBMarkCache_IsFoundLine(pCDocLine) ? UZ_SCRBAR_FOUND_MAGIC : 0;
 		uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? UZ_SCRBAR_MARK_MAGIC : 0;
 
@@ -3113,12 +3097,11 @@ unsigned __stdcall SBMarkCache_BuildThread(void *arg) {
 
 
 end_thread:
-	{
-		std::lock_guard<std::mutex> lock(pEditView->mtxCacheBuildMutex_);
-		pEditView->bExitRequestCacheBuildThread_ = false;
-		pEditView->bCacheBuildThreadRunning_ = false;
+	if (!pEditView->bExitRequestCacheBuildThread_) {
+		::PostMessage(pEditView->GetHwnd(), WM_APP_SCRBAR_PAINT, 0, 0);  // 描画要求
 	}
-	::PostMessage(pEditView->GetHwnd(), WM_APP_SCRBAR_PAINT, 0, 0);  // 描画要求
+	pEditView->bExitRequestCacheBuildThread_ = false;
+	pEditView->bCacheBuildThreadRunning_ = false;
 	si::logln(L"  >>> finish SBMarkCache_BuildThread %d", pEditView->vCacheLines_.size());
 	_endthreadex(0);
 	return 0;  
@@ -3226,7 +3209,6 @@ start_thread:
 			}
 			
 			if (pEditView->bRestartRequestCacheDrawThread_) {  // やり直し
-				std::lock_guard<std::mutex> lock(pEditView->mtxCacheDrawMutex_);
 				pEditView->bRestartRequestCacheDrawThread_ = false;
 				si::logln(L"  >>>> restart CacheDrawThread");
 				goto start_thread;
@@ -3242,13 +3224,12 @@ start_thread:
 
 
 end_thread:
-	{
-		std::lock_guard<std::mutex> lock(pEditView->mtxCacheDrawMutex_);
-		pEditView->bRestartRequestCacheDrawThread_ = false;
-		pEditView->bExitRequestCacheDrawThread_ = false;
-		pEditView->bCacheDrawThreadRunning_ = false;
+	if (!pEditView->bExitRequestCacheDrawThread_) {
+		::PostMessage(pEditView->GetHwnd(), WM_APP_SCRBAR_ENDPAINT, 0, 0);  // 描画終了要求
 	}
-	::PostMessage(pEditView->GetHwnd(), WM_APP_SCRBAR_ENDPAINT, 0, 0);  // 描画終了要求
+	pEditView->bRestartRequestCacheDrawThread_ = false;
+	pEditView->bExitRequestCacheDrawThread_ = false;
+	pEditView->bCacheDrawThreadRunning_ = false;
 	si::logln(L"  >>> finish SBMarkCache_DrawThread %d", pEditView->vCacheLines_.size());
 	_endthreadex(0);
 	return 0;  
@@ -3294,13 +3275,11 @@ void CEditView::SBMarkCache_Build(bool bCacheClear, int foo) {
 		bCacheClear = true;
 	}
 	
+	// 描画スレッドを中断
+	SBMarkCache_WaitForDraw(true);
+	
 	if (bCacheClear) {
-		//SBMarkCache_CallPaint(401);
-		if (bCacheBuildThreadRunning_) {
-			bExitRequestCacheBuildThread_ = true;  // 中断
-			::WaitForSingleObject(hCacheBuildThread_, INFINITE);
-			bExitRequestCacheBuildThread_ = false;
-		}
+		SBMarkCache_WaitForBuild(true);
 		
 		// キャッシュをクリア
 		vCacheLines_.clear();
@@ -3308,18 +3287,12 @@ void CEditView::SBMarkCache_Build(bool bCacheClear, int foo) {
 	
 	// 更新
 	if (vCacheLines_.empty()) {
-		if (bCacheBuildThreadRunning_) {
-			bExitRequestCacheBuildThread_ = true;  // 中断
-			::WaitForSingleObject(hCacheBuildThread_, INFINITE);
-			bExitRequestCacheBuildThread_ = false;
-		}
-		if (hCacheBuildThread_ != 0) {
-			::CloseHandle(hCacheBuildThread_);
-			hCacheBuildThread_ = 0;
-		}
+		SBMarkCache_WaitForBuild(true);
+
 		// キャッシュ作成スレッド起動
 		bCacheBuildThreadRunning_ = true;
 		hCacheBuildThread_ = (HANDLE)_beginthreadex(NULL, 0, &SBMarkCache_BuildThread, (void *)this, 0, NULL);
+		::Sleep(10);
 		si::logln(L"SBMarkCache_Build (%d) start: %d", foo, vCacheLines_.size());
 	} else {
 		if (bCacheBuildThreadRunning_) {
@@ -3341,19 +3314,12 @@ void CEditView::SBMarkCache_Draw() {
 	if (m_bMiniMap) return;
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 
-#if 1
+	//std::lock_guard<std::mutex> lock(mtxCacheMutex_);
+
 	if (bCacheDrawThreadRunning_) {
-		std::lock_guard<std::mutex> lock(mtxCacheDrawMutex_);
 		bRestartRequestCacheDrawThread_ = true;  // やり直し
 		return;
 	}
-#else
-	if (bCacheDrawThreadRunning_) {
-		bExitRequestCacheDrawThread_ = true;  // 中断
-		::WaitForSingleObject(hCacheDrawThread_, INFINITE);
-		bExitRequestCacheDrawThread_ = false;
-	}
-#endif
 	if (hCacheDrawThread_ != 0) {
 		::CloseHandle(hCacheDrawThread_);
 		hCacheDrawThread_ = 0;
@@ -3381,6 +3347,30 @@ bool CEditView::SBMarkCache_IsFoundLine(const CDocLine *pCDocLine) {
 		return !!nResult;
 	} else {
 		return false;
+	}
+}
+
+void CEditView::SBMarkCache_WaitForBuild(bool abort) {
+	if (bCacheBuildThreadRunning_) {
+		if (abort) bExitRequestCacheBuildThread_ = true;  // 中断
+		::WaitForSingleObject(hCacheBuildThread_, INFINITE);
+		bExitRequestCacheBuildThread_ = false;
+	}
+	if (hCacheBuildThread_ != 0) {
+		::CloseHandle(hCacheBuildThread_);
+		hCacheBuildThread_ = 0;
+	}
+}
+
+void CEditView::SBMarkCache_WaitForDraw(bool abort) {
+	if (bCacheDrawThreadRunning_) {
+		if (abort) bExitRequestCacheDrawThread_ = true;  // 中断
+		::WaitForSingleObject(hCacheDrawThread_, INFINITE);
+		bExitRequestCacheDrawThread_ = false;
+	}
+	if (hCacheDrawThread_ != 0) {
+		::CloseHandle(hCacheDrawThread_);
+		hCacheDrawThread_ = 0;
 	}
 }
 #endif  // UZ_

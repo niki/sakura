@@ -206,7 +206,11 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 					
 					pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
 
+					pcEditView->SBMarkCache_WaitForDraw(true);
+					pcEditView->SBMarkCache_WaitForBuild(true);
+					
 					InstantInput();
+					
 					pcEditView->SBMarkCache_Clear(1700);
 
 				} while (0);
