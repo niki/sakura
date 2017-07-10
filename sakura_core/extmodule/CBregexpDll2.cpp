@@ -42,13 +42,18 @@ CBregexpDll2::~CBregexpDll2()
 LPCTSTR CBregexpDll2::GetDllNameImp( int index )
 {
 #ifdef UZ_BREGONIG_64NAME_SEARCH
-#ifdef _WIN64
 	TCHAR szPath[_MAX_PATH + 1];
 	GetExedir(szPath);
 	std::wstring fname = szPath;
-	fname += _T("\\bregonig_64.dll");
+#ifdef _WIN64
+	fname += _T("\\bregonig64.dll");
 	if (fexist(fname.c_str())) {
-		return _T("bregonig_64.dll");
+		return _T("bregonig64.dll");
+	}
+#else
+	fname += _T("\\bregonig32.dll");
+	if (fexist(fname.c_str())) {
+		return _T("bregonig32.dll");
 	}
 #endif  // _WIN64
 #endif  // UZ_
