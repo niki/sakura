@@ -27,10 +27,12 @@ Download & Setup
 |sakura-uzuki-2.47-64.zip|64bit||980KB|2017.7.9|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.47-64.zip)|
 |keyword_pack.zip||patchunicode:#720対応|355KB|2017.6.16|[download](Publish/keyword_pack.zip)|
 
-ダウンロードしたファイルをすでに使用しているサクラエディタに上書きしてください.  
-`sakura.keywordset.csv`は実行ファイルと同じ場所に置いてください. 実行ファイル名が違う場合は`sakura`の部分を変更してください.  
+- sakura.keywordset.csv  
+  [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードを外部ファイルを使用して設定する定義ファイルです.  
+  「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
+  このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
 
-変更履歴はコミットログ([link](https://github.com/uzuki3/sakura/commits/master))を参照してください. 細かい内容はmy_config.h([link](sakura_core/my_config.h)) を見てね.  
+- 変更履歴はコミットログ([link](https://github.com/uzuki3/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([link](sakura_core/my_config.h)) を見てね.  
 
 
 <br>
