@@ -287,10 +287,15 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				
 				if (cBookmark.IsBookmarked()) {
 					// 登録
-					m_pCommanderView->SBMarkCache_Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
+					if (m_pCommanderView->SBMarkCache_Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
+						m_pCommanderView->nCacheBookmarkFoundLine_++;
+					}
 				} else {
 					// 削除
-					m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
+					if (m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
+						m_pCommanderView->nCacheBookmarkFoundLine_--;
+						m_pCommanderView->nCacheBookmarkFoundLine_ = std::max(m_pCommanderView->nCacheBookmarkFoundLine_, 0);
+					}
 				}
 			}
 #endif  // UZ_
@@ -310,10 +315,15 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			
 			if (cBookmark.IsBookmarked()) {
 				// 登録
-				m_pCommanderView->SBMarkCache_Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
+				if (m_pCommanderView->SBMarkCache_Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
+					m_pCommanderView->nCacheBookmarkFoundLine_++;
+				}
 			} else {
 				// 削除
-				m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
+				if (m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
+					m_pCommanderView->nCacheBookmarkFoundLine_--;
+					m_pCommanderView->nCacheBookmarkFoundLine_ = std::max(m_pCommanderView->nCacheBookmarkFoundLine_, 0);
+				}
 			}
 		}
 #endif  // UZ_

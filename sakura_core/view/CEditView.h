@@ -794,9 +794,9 @@ public:
 	// クリア (再構築要求)
 	void SBMarkCache_Clear(int foo = 0);
 	// 登録
-	void SBMarkCache_Add(int nLayoutY, uint32_t magic);
+	bool SBMarkCache_Add(int nLayoutY, uint32_t magic);
 	// 削除
-	void SBMarkCache_Del(int nLayoutY, uint32_t magic);
+	bool SBMarkCache_Del(int nLayoutY, uint32_t magic);
 	// 再構築
 	void SBMarkCache_Build(bool bCacheClear, int foo = 0);
 	// 描画
@@ -807,18 +807,23 @@ public:
 	void SBMarkCache_WaitForBuild(bool abort = false);
 	void SBMarkCache_WaitForDraw(bool abort = false);
 	
-	// スクロールバー関連
+	// --- スクロールバー関連 ---
 	int nCacheLastLineCount_ = 0;          // 最後に更新した時の行数
 	std::vector<uint32_t> vCacheLines_;    // キャッシュ
+	
+	int nCacheSearchFoundLine_ = 0;
+	int nCacheBookmarkFoundLine_ = 0;
+	
 	//std::mutex mtxCacheMutex_;
-	HANDLE hCacheBuildThread_ = 0;                 // キャッシュ作成スレッドハンドル
-	bool bCacheBuildThreadRunning_ = false;        //   スレッド稼働状態
-	bool bExitRequestCacheBuildThread_ = false;    //   スレッド終了リクエスト
-	HANDLE hCacheDrawThread_ = 0;                  // キャッシュ描画スレッドハンドル
-	bool bCacheDrawThreadRunning_ = false;         //   スレッド稼働状態
-	bool bRestartRequestCacheDrawThread_ = false;  //   描画やり直しリクエスト
-	bool bExitRequestCacheDrawThread_ = false;     //   スレッド終了リクエスト
+	HANDLE hCacheBuildThread_ = 0;                   // キャッシュ作成スレッドハンドル
+	bool   bCacheBuildThreadRunning_ = false;        //   スレッド稼働状態
+	bool   bExitRequestCacheBuildThread_ = false;    //   スレッド終了リクエスト
+	HANDLE hCacheDrawThread_ = 0;                    // キャッシュ描画スレッドハンドル
+	bool   bCacheDrawThreadRunning_ = false;         //   スレッド稼働状態
+	bool   bRestartRequestCacheDrawThread_ = false;  //   描画やり直しリクエスト
+	bool   bExitRequestCacheDrawThread_ = false;     //   スレッド終了リクエスト
 	SCROLLBARINFO sbiCache_;
+	// --------------------------
 #endif  // UZ_
 };
 

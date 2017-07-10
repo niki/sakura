@@ -2998,8 +2998,8 @@ void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
 //----------------------
 // 登録
 //----------------------
-void CEditView::SBMarkCache_Add(int nLayoutY, uint32_t magic) {
-	if (magic == 0) return;
+bool CEditView::SBMarkCache_Add(int nLayoutY, uint32_t magic) {
+	if (magic == 0) return false;
 
 	if (vCacheLines_.empty()) {
 		vCacheLines_.push_back(nLayoutY | magic);
@@ -3007,7 +3007,7 @@ void CEditView::SBMarkCache_Add(int nLayoutY, uint32_t magic) {
 		auto iter = std::find(vCacheLines_.begin(), vCacheLines_.end(), nLayoutY | magic);
 		if (iter != vCacheLines_.end()) {
 			si::logln(L"SBMarkCache_Add, Already registered");
-			return;  // すでに登録済み
+			return true;  // すでに登録済み
 		}
 		
 		if ((vCacheLines_.back() & UZ_SCRBAR_LINEN_MASK) <= (uint32_t)nLayoutY) {
@@ -3023,26 +3023,33 @@ void CEditView::SBMarkCache_Add(int nLayoutY, uint32_t magic) {
 			}
 		}
 	}
+	
+	return true;
 }
 
 //----------------------
 // 削除
 //----------------------
-void CEditView::SBMarkCache_Del(int nLayoutY, uint32_t magic) {
+bool CEditView::SBMarkCache_Del(int nLayoutY, uint32_t magic) {
+	bool bDelete = false;
+	
 	if (vCacheLines_.empty()) {
-		// ???
+		return false;
 	} else {
 		auto it = vCacheLines_.begin();
 		while (it != vCacheLines_.end()) {
 			if ((*it) & magic) {
 				if (((*it) & UZ_SCRBAR_LINEN_MASK) == nLayoutY) {
 					it = vCacheLines_.erase(it);
+					bDelete = true;
 					continue;
 				}
 			}
 			++it;
 		}
 	}
+	
+	return bDelete;
 }
 
 //----------------------
@@ -3055,6 +3062,9 @@ unsigned __stdcall SBMarkCache_BuildThread(void *arg) {
 	CLayoutInt nLineHint = nLinePos;
 	const CDocLine *pCDocLine = pEditView->m_pcEditDoc->m_cDocLineMgr.GetLine(nLinePos);
 	bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
+	
+	pEditView->nCacheSearchFoundLine_ = 0;
+	pEditView->nCacheBookmarkFoundLine_ = 0;
 	
 	while (pCDocLine) {
 		//std::lock_guard<std::mutex> lock(pEditView->mtxCacheMutex_);
@@ -3078,8 +3088,12 @@ unsigned __stdcall SBMarkCache_BuildThread(void *arg) {
 			}
 			
 			// キャッシュに登録
-			pEditView->SBMarkCache_Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
-			pEditView->SBMarkCache_Add(nLayoutY, uMarkMagic);   // ブックマーク
+			if (pEditView->SBMarkCache_Add(nLayoutY, uFoundMagic)) {  // 検索文字列のある行
+				pEditView->nCacheSearchFoundLine_++;
+			}
+			if (pEditView->SBMarkCache_Add(nLayoutY, uMarkMagic)) {   // ブックマーク
+				pEditView->nCacheBookmarkFoundLine_++;
+			}
 			
 			nLineHint = nLayoutY;
 		} else {
