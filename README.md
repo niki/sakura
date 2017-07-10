@@ -23,8 +23,8 @@ Download & Setup
 
 |ファイル名||主な変更内容|サイズ|日付||
 |-|-|-|-|-|-|
-|sakura-uzuki-2.47.zip|32bit||822KB|2017.7.9|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.47.zip)|
-|sakura-uzuki-2.47-64.zip|64bit||980KB|2017.7.9|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.47-64.zip)|
+|sakura-uzuki-2.48.zip|32bit|bregonig32.dllに名前の変更対応|822KB|2017.7.10|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.48.zip)|
+|sakura-uzuki-2.48-64.zip|64bit|bregonig64.dllに名前の変更対応|980KB|2017.7.10|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.48-64.zip)|
 |keyword_pack.zip||patchunicode:#720対応|355KB|2017.6.16|[download](Publish/keyword_pack.zip)|
 
 - sakura.keywordset.csv  
