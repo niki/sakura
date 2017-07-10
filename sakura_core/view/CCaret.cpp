@@ -353,11 +353,11 @@ CLayoutInt CCaret::MoveCursor(
 			//nFinalDrawFlag |= PAINT_BODY;
 			nFinalDrawFlag |= PAINT_ALL;
 		}
-//2017.6.9 		if (nScrollRowNum != 0) {  // 垂直スクロール
-//2017.6.9 			m_pEditView->SetDrawSwitch(false);
-//2017.6.9 			nFinalDrawFlag |= PAINT_BODY;
-//2017.6.9 			nFinalDrawFlag |= PAINT_LINENUMBER;
-//2017.6.9 		}
+		//if (nScrollRowNum != 0) {  // 垂直スクロール
+		//	m_pEditView->SetDrawSwitch(false);
+		//	nFinalDrawFlag |= PAINT_BODY;
+		//	nFinalDrawFlag |= PAINT_LINENUMBER;
+		//}
 	}
 #endif  // UZ_
 	//	To Here 2007.07.28 じゅうじ
@@ -436,19 +436,12 @@ CLayoutInt CCaret::MoveCursor(
 				
 			} else { // @1
 #endif  // UZ_
-#ifdef UZ_FIX_FLICKER
-			bool oldDraw2 = m_pEditView->GetDrawSwitch();
-			m_pEditView->SetDrawSwitch(oldDraw);
-#endif  // UZ_
 			if( m_pEditView->GetDrawSwitch() ){
 				m_pEditView->ScrollDraw(nScrollRowNum, nScrollColNum, rcScroll, rcClip, rcClip2);
 				if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
 					m_pEditView->MiniMapRedraw(false);
 				}
 			}
-#ifdef UZ_FIX_FLICKER
-			m_pEditView->SetDrawSwitch(oldDraw2);
-#endif  // UZ_
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
 			} //@1
 #endif  // UZ_
@@ -479,20 +472,6 @@ CLayoutInt CCaret::MoveCursor(
 					m_pEditView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
 				}
 			}
-		} else {
-//2017.6.9 			// 画面端の行を早めに再描画する
-//2017.6.9 			// スクロール処理をしてから描画するまで少しの間時間差があるようで
-//2017.6.9 			// スクロールした行が残っているように見えてしまうため
-//2017.6.9 			if (nScrollRowNum > 0) {
-//2017.6.9 				int top = m_pEditView->GetTextArea().GetViewTopLine();
-//2017.6.9 				m_pEditView->RedrawLines(top, top + nScrollRowNum + 1);
-//2017.6.9 			} else if (nScrollRowNum < 0) {
-//2017.6.9 				int bottom = m_pEditView->GetTextArea().GetViewTopLine() + m_pEditView->GetTextArea().m_nViewRowNum + 1;
-//2017.6.9 				m_pEditView->RedrawLines(bottom - nScrollRowNum - 2, bottom);
-//2017.6.9 			}
-//2017.6.9 			if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
-//2017.6.9 				m_pEditView->MiniMapRedraw(true);
-//2017.6.9 			}
 		}
 	}
 #endif  // UZ_

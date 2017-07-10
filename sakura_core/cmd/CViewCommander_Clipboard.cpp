@@ -607,11 +607,6 @@ void CViewCommander::Command_INSTEXT(
 				);
 			}
 		}
-#if 0//-//def UZ_FIX_FLICKER
-		if (bRedraw) {
-			m_pCommanderView->Redraw();
-		}
-#endif  // UZ_
 	}
 
 end_of_func:

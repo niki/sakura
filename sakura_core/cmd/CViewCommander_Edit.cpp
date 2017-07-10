@@ -512,10 +512,6 @@ void CViewCommander::Command_UNDO( void )
 
 		m_pCommanderView->SetBracketPairPos( true );	// 03/03/07 ai
 
-#if 0//-def UZ_FIX_FLICKER
-		GetCaret().ShowEditCaret(); /* キャレットの表示・更新 */
-#endif  // UZ_
-
 		/* 再描画 */
 		// ルーラー再描画の必要があるときは DispRuler() ではなく他の部分と同時に Call_OnPaint() で描画する	// 2010.08.20 ryoji
 		// ・DispRuler() はルーラーとテキストの隙間（左側は行番号の幅に合わせた帯）を描画してくれない
@@ -766,10 +762,6 @@ void CViewCommander::Command_REDO( void )
 		m_pCommanderView->m_bDoing_UndoRedo = false;	/* アンドゥ・リドゥの実行中か */
 
 		m_pCommanderView->SetBracketPairPos( true );	// 03/03/07 ai
-
-#if 0//-def UZ_FIX_FLICKER
-		GetCaret().ShowEditCaret(); /* キャレットの表示・更新 */
-#endif  // UZ_
 
 		/* 再描画 */
 		// ルーラー再描画の必要があるときは DispRuler() ではなく他の部分と同時に Call_OnPaint() で描画する	// 2010.08.20 ryoji
