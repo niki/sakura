@@ -841,6 +841,9 @@
 #define IDC_EDIT_EXCLUDEDIRS            7030
 #define IDC_CHK_CPP                     7500
 #endif  // UZ_
+#ifdef UZ_FIX_FINDDLG
+#define IDC_FIND_RESULT                 7600
+#endif  // UZ_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

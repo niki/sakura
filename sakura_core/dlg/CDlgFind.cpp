@@ -188,37 +188,105 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 			if (text != m_inputText) {
 				m_inputText = text;
 
-				do {
-					int inputSize = text.size();
-					bool bRegularExp = (0 != IsDlgButtonChecked(GetHwnd(), IDC_CHK_REGULAREXP));
-					
-					// 正規表現検索のときだけ行ジャンプできるようにする
-					if (bRegularExp && inputSize >= 1) {
-						if (text[0] == L':') {  // 行番号指定にする
-							pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
-							pcEditView->Redraw();
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
-							//pcEditView->SBMarkCache_CallPaint(1500);
-#endif  // UZ_
-							break;
-						}
-					}
-					
-					pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
+				pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
 
-					pcEditView->SBMarkCache_WaitForDraw(true);
-					pcEditView->SBMarkCache_WaitForBuild(true);
-					
-					InstantInput();
-					
-					pcEditView->SBMarkCache_Clear(1700);
-
-				} while (0);
+				pcEditView->SBMarkCache_WaitForDraw(true);
+				pcEditView->SBMarkCache_WaitForBuild(true);
+				
+				int ret = InstantInput();
+				
+				SetStatus(ret);
+				
+				pcEditView->SBMarkCache_Clear(1700);
 			}
 		}
-  	break;
+		break;
 	}
 	return result;
+}
+
+void CDlgFind::SetStatus(int stat) {
+	if (stat == 1) {
+		return;  // nop
+	}
+	
+	auto fnClearBG = [](HDC hdc, int x, int y, int w, int h) {
+		HBRUSH hBrush = ::CreateSolidBrush(::GetSysColor(COLOR_BTNFACE));
+		HBRUSH hBrushOld = (HBRUSH)::SelectObject(hdc, hBrush);
+
+		::PatBlt(hdc, x, y, w, h, PATCOPY);
+
+		::SelectObject(hdc, hBrushOld);
+		::SelectClipRgn(hdc, NULL);
+	};
+	
+	auto fnDrawSysIcon = [](HDC hdc, int x, int y, LPCTSTR iconName) {
+		HICON hIcon = ::LoadIcon(NULL, iconName);
+		::DrawIcon(hdc, x, y, hIcon);
+		::DestroyIcon(hIcon);
+	};
+
+	bool bClear = true;
+
+	HDC hdc = ::GetDC(GetHwnd());
+	
+	int baseIconX = DpiScaleX(220);
+	int baseIconY = DpiScaleY(45);
+	
+	int iconX = DpiScaleX(7);
+	int iconY = DpiScaleY(80);
+	
+	int fromWidth = DpiScaleX(32);
+	int fromHeight = DpiScaleY(32);
+	int toWidth = DpiScaleX(20);
+	int toHeight = DpiScaleY(20);
+	
+	int iStretchModeOld = ::SetStretchBltMode(hdc, HALFTONE);
+	
+	if (stat == -1) {  // 正規表現失敗
+		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_ERROR);
+		
+		::StretchBlt(hdc, iconX, iconY, toWidth, toHeight, hdc, baseIconX, baseIconY, fromWidth, fromHeight, SRCCOPY);
+		fnClearBG(hdc, baseIconX, baseIconY, fromWidth, fromHeight);  // 不要になった個所を消す
+		::UpdateWindow(GetHwnd());
+		
+		::DlgItem_SetText(GetHwnd(), IDC_FIND_RESULT, _T("invalid regex!!"));
+		
+		bClear = false;
+	} else if (stat == -2) {  // 前方
+		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_WARNING);
+		
+		::StretchBlt(hdc, iconX, iconY, toWidth, toHeight, hdc, baseIconX, baseIconY, fromWidth, fromHeight, SRCCOPY);
+		fnClearBG(hdc, baseIconX, baseIconY, fromWidth, fromHeight);  // 不要になった個所を消す
+		::UpdateWindow(GetHwnd());
+		
+		::DlgItem_SetText(GetHwnd(), IDC_FIND_RESULT, _T("not found in ↓"));
+		
+		bClear = false;
+	} else if (stat == -3) {  // 後方
+		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_WARNING);
+		
+		::StretchBlt(hdc, iconX, iconY, toWidth, toHeight, hdc, baseIconX, baseIconY, fromWidth, fromHeight, SRCCOPY);
+		fnClearBG(hdc, baseIconX, baseIconY, fromWidth, fromHeight);  // 不要になった個所を消す
+		::UpdateWindow(GetHwnd());
+		
+		::DlgItem_SetText(GetHwnd(), IDC_FIND_RESULT, _T("not found in ↑"));
+		
+		bClear = false;
+	}
+
+	::SetStretchBltMode(hdc, iStretchModeOld);
+
+	if (bClear) {
+		fnClearBG(hdc, iconX, iconY, toWidth, toHeight);  // 不要な個所を消す
+		::UpdateWindow(GetHwnd());
+		
+		::DlgItem_SetText(GetHwnd(), IDC_FIND_RESULT, _T(""));
+	}
+	
+	::ReleaseDC(GetHwnd(), hdc);
+	
+	si::logln(L"   **** SetStatus stat=%d", stat);
 }
 #endif  // UZ_
 
@@ -328,7 +396,11 @@ void CDlgFind::SetData( void )
 	::CheckDlgButton( GetHwnd(), IDC_CHK_WORD, m_sSearchOption.bWordOnly );
 
 	/* 検索／置換  見つからないときメッセージを表示 */
+#ifdef UZ_FIX_FINDDLG
+	::CheckDlgButton( GetHwnd(), IDC_CHECK_NOTIFYNOTFOUND, FALSE );
+#else
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_NOTIFYNOTFOUND, m_bNOTIFYNOTFOUND );
+#endif  // UZ_
 
 	// From Here Jun. 29, 2001 genta
 	// 正規表現ライブラリの差し替えに伴う処理の見直し
@@ -534,8 +606,6 @@ int CDlgFind::InstantInput( void )
 		nFlag |= m_sSearchOption.bLoHiCase ? 0x01 : 0x00;
 		if( m_sSearchOption.bRegularExp && !CheckRegexpSyntax( m_strText.c_str(), GetHwnd(), false, nFlag ) ){
 			// 失敗!!
-			::DlgItem_SetText(GetHwnd(), IDC_STATIC_JRE32VER, _T("invalid regex"));
-			
 			pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 			pcEditView->Redraw();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
@@ -543,9 +613,7 @@ int CDlgFind::InstantInput( void )
 #endif  // UZ_
 			return -1;
 		} else {
-			if (m_sSearchOption.bRegularExp) {
-				CheckRegexpVersion(GetHwnd(), IDC_STATIC_JRE32VER, false);  // ;;
-			}
+			// nop
 		}
 		// To Here Jun. 26, 2001 genta 正規表現ライブラリ差し替え
 
@@ -562,22 +630,21 @@ int CDlgFind::InstantInput( void )
 			pcEditView->m_bCurSearchUpdate = true;
 		}
 		pcEditView->m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
-		pcEditView->ChangeCurRegexp(false);
-		pcEditView->Redraw();
+		//-pcEditView->ChangeCurRegexp(false);
+		//-pcEditView->Redraw();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 		//pcEditView->SBMarkCache_CallPaint(1503);
 #endif  // UZ_
+		pcEditView->GetCommander().HandleCommand((EFunctionCode)(F_SEARCH_NEXT | FA_FROMKEYBOARD), true,
+		                                         (LPARAM)GetHwnd(), 0, 0, 0);
 		return 1;
 	}else{
-		if (m_sSearchOption.bRegularExp) {
-			CheckRegexpVersion(GetHwnd(), IDC_STATIC_JRE32VER, false);  // ;;
-		}
-		
 		pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 		pcEditView->Redraw();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 		//pcEditView->SBMarkCache_CallPaint(1504);
 #endif  // UZ_
+		SetStatus(0);
 		return 0;
 	}
 }
@@ -661,29 +728,6 @@ BOOL CDlgFind::OnBnClicked( int wID )
 		}
 		return TRUE;
 	case IDC_BUTTON_SEARCHNEXT:		/* 下検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDOK]→[IDC_BUTTON_SERACHNEXT]に変更
-#ifdef UZ_FIX_FINDDLG
-		{
-			bool bRegularExp = (0 != IsDlgButtonChecked(GetHwnd(), IDC_CHK_REGULAREXP));
-			
-			// 正規表現検索のときだけ行ジャンプできるようにする
-			if (bRegularExp && m_inputText.size() >= 1) {
-				if (m_inputText[0] == L':') {  // 行番号指定にする
-					try {
-						int ln = std::stoi(m_inputText.c_str() + 1);
-						pcEditView->m_pcEditWnd->m_cDlgJump.m_nLineNum = ln;
-						pcEditView->m_pcEditWnd->m_cDlgJump.m_bPLSQL = false;
-						pcEditView->GetCommander().HandleCommand(F_JUMP, true, (LPARAM)GetHwnd(), 0, 0, 0);
-					} catch (const std::invalid_argument& /*e*/) {
-						// nop
-					} catch (const std::out_of_range& /*e*/) {
-						// nop
-					}
-					CloseDialog( 0 );
-					return TRUE;
-				}
-			}
-		}
-#endif  // UZ_
 		/* ダイアログデータの取得 */
 		nRet = GetData();
 		if( 0 < nRet ){

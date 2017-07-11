@@ -305,6 +305,11 @@ end_of_func:;
 	if(bFound){
 		if(NULL == pcSelectLogic && ((nLineNumOld > nLineNum)||(nLineNumOld == nLineNum && nIdxOld > nIdx)))
 			m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRNEXT1));
+#ifdef UZ_FIX_FINDDLG
+		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
+			GetEditWindow()->m_cDlgFind.SetStatus(0);
+		}
+#endif  // UZ_
 	}
 	else{
 		GetCaret().ShowEditCaret();	// 2002/04/18 YAZAKI
@@ -332,6 +337,11 @@ end_of_func:;
 		else{
 			AlertNotFound(hwndParent, bReplaceAll, _T("%ls"), pszNotFoundMessage);
 		}
+#ifdef UZ_FIX_FINDDLG
+		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
+			GetEditWindow()->m_cDlgFind.SetStatus(-2);
+		}
+#endif  // UZ_
 	}
 }
 
@@ -474,7 +484,11 @@ end_of_func:;
 	if(bFound){
 		if((nLineNumOld < nLineNum)||(nLineNumOld == nLineNum && nIdxOld < nIdx))
 			m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRPREV1));
-	}else{
+#ifdef UZ_FIX_FINDDLG
+		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
+			GetEditWindow()->m_cDlgFind.SetStatus(0);
+		}
+#endif  // UZ_	}else{
 		m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRPREV2));
 // To Here 2002.01.26 hor
 
@@ -492,6 +506,13 @@ end_of_func:;
 			KeyName.GetStringPtr()
 		);
 	}
+#ifdef UZ_FIX_FINDDLG
+	else {
+		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
+			GetEditWindow()->m_cDlgFind.SetStatus(-3);
+		}
+	}
+#endif  // UZ_
 	return;
 }
 

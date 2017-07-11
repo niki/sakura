@@ -40,6 +40,7 @@ public:
 
 #ifdef UZ_FIX_FINDDLG
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* ダイアログのメッセージ処理 *//* BOOL->INT_PTR 2008/7/18 Uchi*/
+	void SetStatus(int stat);
 #endif  // UZ_
 
 	void ChangeView( LPARAM );
