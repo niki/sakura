@@ -382,8 +382,9 @@ CLayoutInt CCaret::MoveCursor(
 				m_pEditView->SetDrawSwitch(false);
 				nFinalDrawFlag |= PAINT_ALL;
 				
-			} else
+			}
 #endif  // UZ_
+
 			if( m_pEditView->GetDrawSwitch() ){
 				m_pEditView->InvalidateRect( NULL );
 				if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
@@ -392,6 +393,23 @@ CLayoutInt CCaret::MoveCursor(
 			}
 		}
 		else if( nScrollRowNum != 0 || nScrollColNum != 0 ){
+#ifdef UZ_FIX_CENTERING_CURSOR_JUMP
+			if (GetDllShareData().m_sFlags.m_nCenteringCursor > 0) { // CViewCommander::Command_CURLINECENTER()
+				GetDllShareData().m_sFlags.m_nCenteringCursor = 0;
+				
+				CLayoutInt		nViewTopLine;
+				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
+
+				if (0 > nViewTopLine) nViewTopLine = CLayoutInt(0);
+				
+				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
+				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
+				
+				m_pEditView->SetDrawSwitch(false);
+				nFinalDrawFlag |= PAINT_ALL;
+				
+			} else { // @1
+#endif  // UZ_
 			RECT	rcClip;
 			RECT	rcClip2;
 			RECT	rcScroll;
@@ -419,23 +437,6 @@ CLayoutInt CCaret::MoveCursor(
 				m_pEditView->GetTextArea().GenerateRightRect(&rcClip2, -nScrollColNum);
 			}
 
-#ifdef UZ_FIX_CENTERING_CURSOR_JUMP
-			if (GetDllShareData().m_sFlags.m_nCenteringCursor > 0) { // CViewCommander::Command_CURLINECENTER()
-				GetDllShareData().m_sFlags.m_nCenteringCursor = 0;
-				
-				CLayoutInt		nViewTopLine;
-				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
-
-				if (0 > nViewTopLine) nViewTopLine = CLayoutInt(0);
-				
-				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
-				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
-				
-				m_pEditView->SetDrawSwitch(false);
-				nFinalDrawFlag |= PAINT_ALL;
-				
-			} else { // @1
-#endif  // UZ_
 			if( m_pEditView->GetDrawSwitch() ){
 				m_pEditView->ScrollDraw(nScrollRowNum, nScrollColNum, rcScroll, rcClip, rcClip2);
 				if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
