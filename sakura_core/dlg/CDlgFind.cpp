@@ -232,10 +232,10 @@ void CDlgFind::SetStatus(int stat) {
 	
 	int fromWidth  = DpiScaleX(32);
 	int fromHeight = DpiScaleY(32);
-	int toWidth    = DpiScaleX(20);
-	int toHeight   = DpiScaleY(20);
+	int toWidth    = DpiScaleX(18);
+	int toHeight   = DpiScaleY(18);
 
-	int baseIconX = DpiScaleX(rc.right) - fromWidth;
+	int baseIconX = rc.right - fromWidth;
 	int baseIconY = DpiScaleY(32);
 	
 	int iconX = DpiScaleX(7);
