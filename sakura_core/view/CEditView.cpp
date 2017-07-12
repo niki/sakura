@@ -3137,7 +3137,7 @@ unsigned __stdcall SBMarkCache_DrawThread(void *arg) {
 	const CLayoutInt	nAllLines = pEditView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() + nEofMargin;
 	bool bEnable = (pEditView->GetTextArea().m_nViewRowNum < nAllLines);
 
-	int nCxVScroll = ::GetSystemMetrics(SM_CXVSCROLL);
+	int nCxVScroll = ::GetSystemMetrics(SM_CXVSCROLL) - DpiScaleX(1);
 	int nCyVScroll = ::GetSystemMetrics(SM_CYVSCROLL);
 
 	int nThumbTop = pEditView->sbiCache_.xyThumbTop;
@@ -3177,8 +3177,6 @@ start_thread:
 
 	// キャッシュを使用して描画
 	{
-//		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll);
-//		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(1));
 		const int foundLeft = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
 		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll / 3);
 		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(2));
