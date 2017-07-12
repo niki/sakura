@@ -497,6 +497,11 @@ LRESULT CEditView::DispatchEvent(
 		{
 			si::logln(L"WM_APP_SCRBAR_PAINT");
 			SBMarkCache_WaitForBuild(false);
+#ifdef UZ_FIX_FINDDLG
+			if (m_pcEditWnd->m_cDlgFind.GetHwnd() && nCacheSearchFoundLine_ > 0) {
+				m_pcEditWnd->m_cDlgFind.SetStatus(nCacheSearchFoundLine_);
+			}
+#endif  // UZ_
 			SBMarkCache_Draw();
 		}
 		return 0L;

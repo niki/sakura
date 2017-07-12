@@ -195,7 +195,9 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 				
 				int ret = InstantInput();
 				
-				SetStatus(ret);
+				if (ret < 0) {
+					SetStatus(ret);
+				}
 				
 				pcEditView->SBMarkCache_Clear(1700);
 			}
@@ -206,10 +208,6 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 }
 
 void CDlgFind::SetStatus(int stat) {
-	if (stat == 1) {
-		return;  // nop
-	}
-	
 	auto fnClearBG = [](HDC hdc, int x, int y, int w, int h) {
 		HBRUSH hBrush = ::CreateSolidBrush(::GetSysColor(COLOR_BTNFACE));
 		HBRUSH hBrushOld = (HBRUSH)::SelectObject(hdc, hBrush);
@@ -225,50 +223,62 @@ void CDlgFind::SetStatus(int stat) {
 		::DrawIcon(hdc, x, y, hIcon);
 		::DestroyIcon(hIcon);
 	};
+	
 
 	bool bClear = true;
 
-	HDC hdc = ::GetDC(GetHwnd());
+	RECT rc;
+	::GetClientRect(GetHwnd(), &rc);
 	
-	int baseIconX = DpiScaleX(220);
-	int baseIconY = DpiScaleY(45);
+	int fromWidth  = DpiScaleX(32);
+	int fromHeight = DpiScaleY(32);
+	int toWidth    = DpiScaleX(20);
+	int toHeight   = DpiScaleY(20);
+
+	int baseIconX = DpiScaleX(rc.right) - fromWidth;
+	int baseIconY = DpiScaleY(32);
 	
 	int iconX = DpiScaleX(7);
-	int iconY = DpiScaleY(80);
+	int iconY = DpiScaleY(75);
 	
-	int fromWidth = DpiScaleX(32);
-	int fromHeight = DpiScaleY(32);
-	int toWidth = DpiScaleX(20);
-	int toHeight = DpiScaleY(20);
-	
+	HDC hdc = ::GetDC(GetHwnd());
 	int iStretchModeOld = ::SetStretchBltMode(hdc, HALFTONE);
 	
-	if (stat == -1) {  // 正規表現失敗
-		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_ERROR);
-		
+	auto fnSrcCopyBlt = [=](HWND hwnd) {
 		::StretchBlt(hdc, iconX, iconY, toWidth, toHeight, hdc, baseIconX, baseIconY, fromWidth, fromHeight, SRCCOPY);
 		fnClearBG(hdc, baseIconX, baseIconY, fromWidth, fromHeight);  // 不要になった個所を消す
-		::UpdateWindow(GetHwnd());
+		::UpdateWindow(hwnd);
+	};
+
+	if (stat > 0) {  // 見つかった行の数
+		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_INFORMATION);
+		fnSrcCopyBlt(GetHwnd());
+		
+		TCHAR szMsg[128];
+		auto_sprintf(szMsg, _T("%d lines found!"), stat);
+		::DlgItem_SetText(GetHwnd(), IDC_FIND_RESULT, szMsg);
+		
+		bClear = false;
+		
+	} else if (stat == -1) {  // 正規表現失敗
+		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_ERROR);
+		fnSrcCopyBlt(GetHwnd());
 		
 		::DlgItem_SetText(GetHwnd(), IDC_FIND_RESULT, _T("invalid regex!!"));
 		
 		bClear = false;
+		
 	} else if (stat == -2) {  // 前方
 		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_WARNING);
-		
-		::StretchBlt(hdc, iconX, iconY, toWidth, toHeight, hdc, baseIconX, baseIconY, fromWidth, fromHeight, SRCCOPY);
-		fnClearBG(hdc, baseIconX, baseIconY, fromWidth, fromHeight);  // 不要になった個所を消す
-		::UpdateWindow(GetHwnd());
+		fnSrcCopyBlt(GetHwnd());
 		
 		::DlgItem_SetText(GetHwnd(), IDC_FIND_RESULT, _T("not found in ↓"));
 		
 		bClear = false;
+		
 	} else if (stat == -3) {  // 後方
 		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_WARNING);
-		
-		::StretchBlt(hdc, iconX, iconY, toWidth, toHeight, hdc, baseIconX, baseIconY, fromWidth, fromHeight, SRCCOPY);
-		fnClearBG(hdc, baseIconX, baseIconY, fromWidth, fromHeight);  // 不要になった個所を消す
-		::UpdateWindow(GetHwnd());
+		fnSrcCopyBlt(GetHwnd());
 		
 		::DlgItem_SetText(GetHwnd(), IDC_FIND_RESULT, _T("not found in ↑"));
 		
@@ -286,7 +296,7 @@ void CDlgFind::SetStatus(int stat) {
 	
 	::ReleaseDC(GetHwnd(), hdc);
 	
-	si::logln(L"   **** SetStatus stat=%d", stat);
+	//si::logln(L"   **** SetStatus stat=%d", stat);
 }
 #endif  // UZ_
 
