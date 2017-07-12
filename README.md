@@ -110,12 +110,9 @@ Changed
 </details>
 
 
-Luaマクロ<br>
-<img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041845.png" width="50%"><br>
-Grep<br>
-<img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041815.png" width="50%"><br>
-検索マーク<br>
-<img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706092354.png" width="50%"><br>
+<img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201707130016.png" width="75%" alt="検索マーク/検索ダイアログ">
+<img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041845.png" width="50%" alt="Luaマクロ">
+<img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041815.png" width="50%" alt="Grep">
 
 
 <br>
