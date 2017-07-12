@@ -705,6 +705,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), TRUE );
 		}
 		break;
+#ifndef UZ_FIX_FINDDLG
 	case IDC_BUTTON_SEARCHPREV:	/* 上検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDC_BUTTON1]→[IDC_BUTTON_SERACHPREV]に変更
 		/* ダイアログデータの取得 */
 		nRet = GetData();
@@ -737,6 +738,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			OkMessage( GetHwnd(), LS(STR_DLGFIND1) );	// 検索条件を指定してください。
 		}
 		return TRUE;
+#endif  // UZ_
 	case IDC_BUTTON_SEARCHNEXT:		/* 下検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDOK]→[IDC_BUTTON_SERACHNEXT]に変更
 		/* ダイアログデータの取得 */
 		nRet = GetData();

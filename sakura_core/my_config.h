@@ -172,7 +172,7 @@
 	#define UZ_SCRBAR_MAGIC_MASK  (0xf0000000)  // マジックマスク
 	// 検索文字列のある行の色
 	// (REG/EditViewScrBarFoundColor:#0000d7)
-	#define UZ_SCRBAR_FOUND_COLOR  _T("#32CD32") //_T("#f4a721") //_T("#0000d7")
+	#define UZ_SCRBAR_FOUND_COLOR  _T("#f4a721") //_T("#32CD32") //_T("#0000d7")
 	// ブックマークのある行の色
 	// (REG/EditViewScrBarMarkColor:#d80000)
 	#define UZ_SCRBAR_MARK_COLOR   _T("#ff0032") //_T("#ff0000") //_T("#d80000")
