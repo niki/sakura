@@ -32,7 +32,11 @@ class CRecycledBuffer{
 //コンフィグ
 private:
 	static const int BLOCK_SIZE  = 1024; //ブロックサイズ。バイト単位。
+#ifdef UZ_FIX_ADJUST_LARGE_STATIC_BUFFER_SIZE
+	static const int CHAIN_COUNT = UZ_RECYCLEDBUFFER_CHAIN_COUNT;   //再利用可能なブロック数。
+#else
 	static const int CHAIN_COUNT = 64;   //再利用可能なブロック数。
+#endif  // UZ_
 
 //コンストラクタ・デストラクタ
 public:
@@ -73,7 +77,11 @@ private:
 class CRecycledBufferDynamic{
 //コンフィグ
 private:
+#ifdef UZ_FIX_ADJUST_LARGE_STATIC_BUFFER_SIZE
+	static const int CHAIN_COUNT = UZ_RECYCLEDBUFFER_CHAIN_COUNT;   //再利用可能なブロック数。
+#else
 	static const int CHAIN_COUNT = 64;   //再利用可能なブロック数。
+#endif  // UZ_
 
 //コンストラクタ・デストラクタ
 public:

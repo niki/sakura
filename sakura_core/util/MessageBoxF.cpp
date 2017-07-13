@@ -86,7 +86,11 @@ int VMessageBoxF(
 {
 	hwndOwner=GetMessageBoxOwner(hwndOwner);
 	//整形
+#ifdef UZ_FIX_ADJUST_LARGE_STATIC_BUFFER_SIZE
+	static TCHAR szBuf[UZ_VMESSAGEBOXF_BUFF_SIZE];
+#else
 	static TCHAR szBuf[16000];
+#endif  // UZ_
 	tchar_vsnprintf_s(szBuf,_countof(szBuf),lpText,v);
 	//API呼び出し
 	return ::MessageBox( hwndOwner, szBuf, lpCaption, uType);

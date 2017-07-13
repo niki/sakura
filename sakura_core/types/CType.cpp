@@ -44,6 +44,9 @@ void _DefaultConfig(STypeConfig* pType);
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 void CType::InitTypeConfig(int nIdx, STypeConfig& type)
 {
+#ifdef UZ_FIX_TYPE_CONFIG_DEFAULT
+	_DefaultConfig(&type);
+#else
 	//規定値をコピー
 	static STypeConfig sDefault;
 	static bool bLoadedDefault = false;
@@ -52,6 +55,7 @@ void CType::InitTypeConfig(int nIdx, STypeConfig& type)
 		bLoadedDefault=true;
 	}
 	type = sDefault;
+#endif  // UZ_
 
 	//インデックスを設定
 	type.m_nIdx = nIdx;
