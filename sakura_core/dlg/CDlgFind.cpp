@@ -190,8 +190,8 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 
 				pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
 
-				pcEditView->SBMarkCache_WaitForDraw(true);
-				pcEditView->SBMarkCache_WaitForBuild(true);
+				pcEditView->SB_MarkCache_WaitForDraw(true);
+				pcEditView->SB_MarkCache_WaitForBuild(true);
 				
 				int ret = InstantInput();
 				
@@ -199,7 +199,7 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 					SetStatus(ret);
 				}
 				
-				pcEditView->SBMarkCache_Clear(1700);
+				pcEditView->SB_MarkCache_Clear(1700);
 			}
 		}
 		break;
@@ -476,7 +476,7 @@ void CDlgFind::SetData( void )
 		}
 		pcEditView->Redraw();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-		pcEditView->SBMarkCache_Clear(1701);
+		pcEditView->SB_MarkCache_Clear(1701);
 #endif  // UZ_
 	}
 #endif  // UZ_
@@ -619,7 +619,7 @@ int CDlgFind::InstantInput( void )
 			pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 			pcEditView->Redraw();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-			//pcEditView->SBMarkCache_CallPaint(1502);
+			//pcEditView->SB_MarkCache_CallPaint(1502);
 #endif  // UZ_
 			return -1;
 		} else {
@@ -643,7 +643,7 @@ int CDlgFind::InstantInput( void )
 		//-pcEditView->ChangeCurRegexp(false);
 		//-pcEditView->Redraw();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-		//pcEditView->SBMarkCache_CallPaint(1503);
+		//pcEditView->SB_MarkCache_CallPaint(1503);
 #endif  // UZ_
 		pcEditView->GetCommander().HandleCommand((EFunctionCode)(F_SEARCH_NEXT | FA_FROMKEYBOARD), true,
 		                                         (LPARAM)GetHwnd(), 0, 0, 0);
@@ -652,7 +652,7 @@ int CDlgFind::InstantInput( void )
 		pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 		pcEditView->Redraw();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-		//pcEditView->SBMarkCache_CallPaint(1504);
+		//pcEditView->SB_MarkCache_CallPaint(1504);
 #endif  // UZ_
 		SetStatus(0);
 		return 0;

@@ -287,12 +287,12 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				
 				if (cBookmark.IsBookmarked()) {
 					// 登録
-					if (m_pCommanderView->SBMarkCache_Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
+					if (m_pCommanderView->SB_MarkCache_Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
 						m_pCommanderView->nCacheBookmarkFoundLine_++;
 					}
 				} else {
 					// 削除
-					if (m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
+					if (m_pCommanderView->SB_MarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
 						m_pCommanderView->nCacheBookmarkFoundLine_--;
 						m_pCommanderView->nCacheBookmarkFoundLine_ = std::max(m_pCommanderView->nCacheBookmarkFoundLine_, 0);
 					}
@@ -315,12 +315,12 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			
 			if (cBookmark.IsBookmarked()) {
 				// 登録
-				if (m_pCommanderView->SBMarkCache_Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
+				if (m_pCommanderView->SB_MarkCache_Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
 					m_pCommanderView->nCacheBookmarkFoundLine_++;
 				}
 			} else {
 				// 削除
-				if (m_pCommanderView->SBMarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
+				if (m_pCommanderView->SB_MarkCache_Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC)) {
 					m_pCommanderView->nCacheBookmarkFoundLine_--;
 					m_pCommanderView->nCacheBookmarkFoundLine_ = std::max(m_pCommanderView->nCacheBookmarkFoundLine_, 0);
 				}
@@ -434,7 +434,7 @@ void CViewCommander::Command_BOOKMARK_RESET(void)
 {
 	CBookmarkManager(&GetDocument()->m_cDocLineMgr).ResetAllBookMark();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-	m_pCommanderView->SBMarkCache_Clear(203);
+	m_pCommanderView->SB_MarkCache_Clear(203);
 #endif  // UZ_
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();

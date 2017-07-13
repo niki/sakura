@@ -355,15 +355,15 @@ void CEditView::InsertData_CEditView(
 		CLogicPoint ptLogic;
 		m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(*pptNewPos, &ptLogic);
 		pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(ptLogic.y);
-		if (SBMarkCache_IsFoundLine(pCDocLine)) {
-			SBMarkCache_Add(pptNewPos->y, UZ_SCRBAR_FOUND_MAGIC);
-			si::logln(L"SBMarkCache_Add 703");
+		if (SB_MarkCache_IsFoundLine(pCDocLine)) {
+			SB_MarkCache_Add(pptNewPos->y, UZ_SCRBAR_FOUND_MAGIC);
+			si::logln(L"SB_MarkCache_Add 703");
 		} else {
-			SBMarkCache_Del(pptNewPos->y, UZ_SCRBAR_FOUND_MAGIC);
-			si::logln(L"SBMarkCache_Del 703");
+			SB_MarkCache_Del(pptNewPos->y, UZ_SCRBAR_FOUND_MAGIC);
+			si::logln(L"SB_MarkCache_Del 703");
 		}
 	} else {
-		SBMarkCache_Clear(703);
+		SB_MarkCache_Clear(703);
 	}
 	//AdjustScrollBars();
 #endif  // UZ_
@@ -462,7 +462,7 @@ void CEditView::DeleteData2(
 	}
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-	SBMarkCache_Clear(700);  // キャッシュのクリア
+	SB_MarkCache_Clear(700);  // キャッシュのクリア
 	AdjustScrollBars();
 #endif  // UZ_
 }
@@ -699,7 +699,7 @@ void CEditView::DeleteData(
 end_of_func:;
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-	SBMarkCache_Clear(701);  // キャッシュのクリア
+	SB_MarkCache_Clear(701);  // キャッシュのクリア
 	AdjustScrollBars();
 #endif  // UZ_
 	return;
