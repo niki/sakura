@@ -3300,6 +3300,9 @@ void CEditView::SBMarkCache_Build(bool bCacheClear, int foo) {
 		
 		// キャッシュをクリア
 		vCacheLines_.clear();
+		
+		nCacheSearchFoundLine_ = 0;
+		nCacheBookmarkFoundLine_ = 0;
 	}
 	
 	// 更新
@@ -3335,11 +3338,13 @@ void CEditView::SBMarkCache_Draw() {
 
 	if (bCacheDrawThreadRunning_) {
 		bRestartRequestCacheDrawThread_ = true;  // やり直し
+		si::logln(L" *** %s: bRestartRequestCacheDrawThread_", _T(__FUNCTION__));
 		return;
 	}
 	if (hCacheDrawThread_ != 0) {
 		::CloseHandle(hCacheDrawThread_);
 		hCacheDrawThread_ = 0;
+		si::logln(L" *** %s: CloseHandle(hCacheDrawThread_)", _T(__FUNCTION__));
 	}
 	
 	// スクロールバーの情報を取得
@@ -3372,10 +3377,12 @@ void CEditView::SBMarkCache_WaitForBuild(bool abort) {
 		if (abort) bExitRequestCacheBuildThread_ = true;  // 中断
 		::WaitForSingleObject(hCacheBuildThread_, INFINITE);
 		bExitRequestCacheBuildThread_ = false;
+		si::logln(L" *** %s: bCacheBuildThreadRunning_", _T(__FUNCTION__));
 	}
 	if (hCacheBuildThread_ != 0) {
 		::CloseHandle(hCacheBuildThread_);
 		hCacheBuildThread_ = 0;
+		si::logln(L" *** %s: CloseHandle(hCacheBuildThread_)", _T(__FUNCTION__));
 	}
 }
 
@@ -3384,10 +3391,12 @@ void CEditView::SBMarkCache_WaitForDraw(bool abort) {
 		if (abort) bExitRequestCacheDrawThread_ = true;  // 中断
 		::WaitForSingleObject(hCacheDrawThread_, INFINITE);
 		bExitRequestCacheDrawThread_ = false;
+		si::logln(L" *** %s: bCacheDrawThreadRunning_", _T(__FUNCTION__));
 	}
 	if (hCacheDrawThread_ != 0) {
 		::CloseHandle(hCacheDrawThread_);
 		hCacheDrawThread_ = 0;
+		si::logln(L" *** %s: CloseHandle(hCacheDrawThread_)", _T(__FUNCTION__));
 	}
 }
 #endif  // UZ_

@@ -476,7 +476,7 @@ void CDlgFind::SetData( void )
 		}
 		pcEditView->Redraw();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-		//pcEditView->SBMarkCache_Clear(1501);
+		pcEditView->SBMarkCache_Clear(1701);
 #endif  // UZ_
 	}
 #endif  // UZ_
