@@ -65,7 +65,7 @@
 #define UZ_FIX_VERDLG
 	#define PR_VER      2,49,0,0
 	#define PR_VER_STR "2.49"
-	#define BASE_REV    4190
+	#define BASE_REV    4192
 
 //-------------------------------------------------------------------------
 // デバッグ用
@@ -413,11 +413,13 @@
 //      -  WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0501
 //      -> WINVER=0x0601;_WIN32_WINNT=0x0601;_WIN32_IE=0x0800
 // http://eternalwindows.jp/installer/originalinstall/originalinstall02.html
-// https://msdn.microsoft.com/ja-jp/library/windows/desktop/ff485843(v=vs.85).aspx
-// http://qiita.com/hkuno/items/7b8daa37d9b68e390d7e _WIN32_WINNT
+// https://msdn.microsoft.com/ja-jp/library/windows/desktop/ff485843(v=vs.85).aspx Minimum supported client
+// http://qiita.com/hkuno/items/7b8daa37d9b68e390d7e _WIN32_WINNTの設定値
 // http://www.02.246.ne.jp/~torutk/cxx/vc/vcpp100.html
 //------------------------------------------------------------------
+#if (WINVER >= _WIN32_WINNT_VISTA)
 #define UZ_FIX_SELECTDIR
+#endif
 
 //------------------------------------------------------------------
 // ダイアログを編集ウィンドウに配置 2017.4.4
