@@ -16,6 +16,8 @@
 #include "registry.hpp"
 #include "color_string.hpp"
 
+#include "debug.hpp"
+
 #include "csv.hpp"
 #include "win32.hpp"
 
