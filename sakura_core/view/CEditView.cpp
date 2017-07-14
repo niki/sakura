@@ -501,6 +501,13 @@ LRESULT CEditView::DispatchEvent(
 			// 再描画したいタイミングが複数あり, メッセージがたくさん飛んでくるので
 			// リクエストカウンタが残り１のときに描画処理をする
 			if (nCacheDrawRequestCount_ == 1) {
+				// 構築時のキーと違っていたら再構築から
+				if (m_sSearchPattern.GetKey() && strCacheKey_ != m_sSearchPattern.GetKey()) {
+					si::logln(L"    !!! strCacheKey_ != m_sSearchPattern.GetKey()");
+					SB_MarkCache_Clear(4000);
+					return 0L;
+				}
+				
 				SB_MarkCache_Draw();
 
 #ifdef UZ_FIX_FINDDLG
@@ -3019,6 +3026,13 @@ unsigned __stdcall SB_MarkCache_BuildThread(void *arg) {
 	CLayoutInt nLineHint = nLinePos;
 	const CDocLine *pCDocLine = pEditView->m_pcEditDoc->m_cDocLineMgr.GetLine(nLinePos);
 	bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
+	
+	// 構築時のキーを記録
+	if (pEditView->m_sSearchPattern.GetKey()) {
+		pEditView->strCacheKey_ = pEditView->m_sSearchPattern.GetKey();
+	} else {
+		pEditView->strCacheKey_ = _T("");
+	}
 	
 	pEditView->nCacheSearchFoundLine_ = 0;
 	pEditView->nCacheBookmarkFoundLine_ = 0;

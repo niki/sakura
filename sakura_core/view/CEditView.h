@@ -808,7 +808,7 @@ public:
 	void SB_MarkCache_WaitForDraw(bool abort = false);
 	
 	// トレース用マクロ
-	#define SCRBAR_MARKCACHE_TRACE 0
+	#define SCRBAR_MARKCACHE_TRACE 1
 	#if SCRBAR_MARKCACHE_TRACE
 		#define SB_MarkCache_CallPaint(foo)          _SB_MarkCache_CallPaint(foo); DebugOutputCaller("    <- Caller, CallPaint")
 		#define SB_MarkCache_Clear(foo)              _SB_MarkCache_Clear(foo); DebugOutputCaller("    <- Caller, Clear")
@@ -826,6 +826,8 @@ public:
 	// --- スクロールバー関連 ---
 	int nCacheLastLineCount_ = 0;          // 最後に更新した時の行数
 	std::vector<uint32_t> vCacheLines_;    // キャッシュ
+	
+	std::tstring strCacheKey_;             // 構築時のキー
 	
 	int nCacheSearchFoundLine_ = 0;        // 見つかった検索行の数
 	int nCacheBookmarkFoundLine_ = 0;      // 見つかったブックマーク行の数
