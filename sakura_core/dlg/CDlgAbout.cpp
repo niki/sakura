@@ -225,7 +225,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef UZ_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX2) _T("), Based on revision %d\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%d (") _T(TARGET_M_SUFFIX2) _T("), Based on Revision %d\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		BASE_REV
