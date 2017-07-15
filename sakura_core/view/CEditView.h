@@ -316,7 +316,9 @@ public:
 	CLayoutInt  ScrollByV( CLayoutInt vl ){	return ScrollAtV( GetTextArea().GetViewTopLine() + vl );}	/* 指定行スクロール*/
 	CLayoutInt  ScrollByH( CLayoutInt hl ){	return ScrollAtH( GetTextArea().GetViewLeftCol() + hl );}	/* 指定桁スクロール */
 	void ScrollDraw(CLayoutInt, CLayoutInt, const RECT&, const RECT&, const RECT&);
+#ifdef UZ_USE_MINIMAP
 	void MiniMapRedraw(bool);
+#endif  // UZ_
 public:
 	void SyncScrollV( CLayoutInt );									/* 垂直同期スクロール */
 	void SyncScrollH( CLayoutInt );									/* 水平同期スクロール */
@@ -462,7 +464,9 @@ public:
 	bool IsISearchEnabled(int nCommand) const;
 
 	BOOL KeySearchCore( const CNativeW* pcmemCurText );	// 2006.04.10 fon
+#ifdef UZ_USE_MINIMAP
 	bool MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide );
+#endif // UZ_
 
 	/*!	CEditView::KeyWordHelpSearchDictのコール元指定用ローカルID
 		@date 2006.04.10 fon 新規作成
@@ -586,11 +590,19 @@ public:
 #ifdef UZ_LINE_CENTERING
 	//! 行間のすきま取得
 	int GetLineSpace() const {
+#ifdef UZ_USE_MINIMAP
 		if (!m_bMiniMap && m_pTypeData) {
 			return m_pTypeData->m_nLineSpace;
 		} else {
 			return 0;
 		}
+#else
+		if (m_pTypeData) {
+			return m_pTypeData->m_nLineSpace;
+		} else {
+			return 0;
+		}
+#endif // UZ_
 	}
 	//! 行間のマージン取得
 	int GetLineMargin() const {
@@ -772,8 +784,10 @@ public:
 	CRegexKeyword*	m_cRegexKeyword;	//@@@ 2001.11.17 add MIK
 	int				m_nMyIndex;	/* 分割状態 */
 	CMigemo*		m_pcmigemo;
+#ifdef UZ_USE_MINIMAP
 	bool			m_bMiniMap;
 	bool			m_bMiniMapMouseDown;
+#endif // UZ_
 	CLayoutInt		m_nPageViewTop;
 	CLayoutInt		m_nPageViewBottom;
 

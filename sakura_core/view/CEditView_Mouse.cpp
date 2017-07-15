@@ -60,6 +60,7 @@ void CEditView::OnLBUTTONDOWN( WPARAM fwKeys, int _xPos , int _yPos )
 	if( m_nAutoScrollMode ){
 		AutoScrollExit();
 	}
+#ifdef UZ_USE_MINIMAP
 	if( m_bMiniMap ){
 		::SetFocus( GetHwnd() );
 		::SetCapture( GetHwnd() );
@@ -67,6 +68,7 @@ void CEditView::OnLBUTTONDOWN( WPARAM fwKeys, int _xPos , int _yPos )
 		OnMOUSEMOVE( fwKeys, _xPos, _yPos );
 		return;
 	}
+#endif // UZ_
 
 	CNativeW	cmemCurText;
 	const wchar_t*	pLine;
@@ -584,9 +586,11 @@ void CEditView::OnRBUTTONDOWN( WPARAM fwKeys, int xPos , int yPos )
 	if( m_nAutoScrollMode ){
 		AutoScrollExit();
 	}
+#ifdef UZ_USE_MINIMAP
 	if( m_bMiniMap ){
 		return;
 	}
+#endif // UZ_
 	/* 現在のマウスカーソル位置→レイアウト位置 */
 
 	CLayoutPoint ptNew;
@@ -727,9 +731,11 @@ void CEditView::AutoScrollEnter()
 {
 	m_bAutoScrollVertical = GetTextArea().m_nViewRowNum < m_pcEditDoc->m_cLayoutMgr.GetLineCount() + 2;
 	m_bAutoScrollHorizontal = GetTextArea().m_nViewColNum < GetRightEdgeForScrollBar();
+#ifdef UZ_USE_MINIMAP
 	if( m_bMiniMap ){
 		m_bAutoScrollHorizontal = false;
 	}
+#endif // UZ_
 	if( !m_bAutoScrollHorizontal && !m_bAutoScrollVertical ){
 		m_nAutoScrollMode = 0;
 		::ReleaseCapture();
@@ -968,6 +974,7 @@ void CEditView::OnMOUSEMOVE( WPARAM fwKeys, int xPos_, int yPos_ )
 		return;
 	}
 
+#ifdef UZ_USE_MINIMAP
 	if( m_bMiniMap ){
 		POINT		po;
 		::GetCursorPos( &po );
@@ -1036,6 +1043,7 @@ void CEditView::OnMOUSEMOVE( WPARAM fwKeys, int xPos_, int yPos_ )
 		GetSelectionInfo().m_ptMouseRollPosOld = ptMouse; // マウス範囲選択前回位置(XY座標)
 		return;
 	}
+#endif // UZ_
 
 	if( !GetSelectionInfo().IsMouseSelecting() ){
 		// マウスによる範囲選択中でない場合
@@ -1395,17 +1403,21 @@ LRESULT CEditView::OnMOUSEWHEEL2( WPARAM wParam, LPARAM lParam, bool bHorizontal
 				if( ::SystemParametersInfo( SPI_GETWHEELSCROLLCHARS, 0, &nScrollChars, 0 ) ){
 					bGetParam = true;
 					nRollLineNum = nScrollChars;
+#ifdef UZ_USE_MINIMAP
 					if( nRollLineNum != -1 && m_bMiniMap ){
 						nRollLineNum *= 10;
 					}
+#endif // UZ_
 				}
 			}
 			if( !bGetParam ){
 				if( ReadRegistry( HKEY_CURRENT_USER, _T("Control Panel\\desktop"), _T("WheelScrollLines"), szValStr, uDataLen ) ){
 					nRollLineNum = ::_ttoi( szValStr );
+#ifdef UZ_USE_MINIMAP
 					if( nRollLineNum != -1 && m_bMiniMap ){
 						nRollLineNum *= 10;
 					}
+#endif // UZ_
 				}
 			}
 		}
@@ -1581,10 +1593,12 @@ void CEditView::OnLBUTTONUP( WPARAM fwKeys, int xPos , int yPos )
 			GetSelectionInfo().DisableSelectArea( true );
 		}
 	}
+#ifdef UZ_USE_MINIMAP
 	if( m_bMiniMapMouseDown ){
 		m_bMiniMapMouseDown = false;
 		::ReleaseCapture();
 	}
+#endif // UZ_
 	return;
 }
 

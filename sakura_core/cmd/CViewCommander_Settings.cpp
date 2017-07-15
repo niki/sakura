@@ -134,6 +134,7 @@ void CViewCommander::Command_SHOWSTATUSBAR( void )
 
 
 
+#ifdef UZ_USE_MINIMAP
 /*! ミニマップの表示/非表示
 
 	@date 2014.07.14 新規作成
@@ -154,6 +155,7 @@ void CViewCommander::Command_SHOWMINIMAP( void )
 		pCEditWnd->GetHwnd()
 	);
 }
+#endif  // UZ_
 
 
 

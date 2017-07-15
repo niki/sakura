@@ -111,7 +111,11 @@ bool SColorStrategyInfo::CheckChangeColor(const CStringRef& cLineStr)
 
 	//カーソル行背景色
 	CTypeSupport cCaretLineBg(m_pcView, COLORIDX_CARETLINEBG);
+#ifdef UZ_USE_MINIMAP
 	if( cCaretLineBg.IsDisp() && !m_pcView->m_bMiniMap ){
+#else
+	if( cCaretLineBg.IsDisp() ){
+#endif  // UZ_
 		if(m_colorIdxBackLine==COLORIDX_CARETLINEBG){
 			if( m_pDispPos->GetLayoutLineRef() != m_pcView->GetCaret().GetCaretLayoutPos().GetY2() ){
 				m_colorIdxBackLine = COLORIDX_TEXT;
@@ -126,7 +130,11 @@ bool SColorStrategyInfo::CheckChangeColor(const CStringRef& cLineStr)
 	}
 	//偶数行の背景色
 	CTypeSupport cEvenLineBg(m_pcView, COLORIDX_EVENLINEBG);
+#ifdef UZ_USE_MINIMAP
 	if( cEvenLineBg.IsDisp() && !m_pcView->m_bMiniMap && m_colorIdxBackLine != COLORIDX_CARETLINEBG ){
+#else
+	if( cEvenLineBg.IsDisp() && m_colorIdxBackLine != COLORIDX_CARETLINEBG ){
+#endif // UZ_
 		if( m_colorIdxBackLine == COLORIDX_EVENLINEBG ){
 			if( m_pDispPos->GetLayoutLineRef() % 2 == 0 ){
 				m_colorIdxBackLine = COLORIDX_TEXT;
@@ -139,6 +147,7 @@ bool SColorStrategyInfo::CheckChangeColor(const CStringRef& cLineStr)
 			}
 		}
 	}
+#ifdef UZ_USE_MINIMAP
 	if( m_pcView->m_bMiniMap ){
 		CTypeSupport cPageViewBg(m_pcView, COLORIDX_PAGEVIEW);
 		if( cPageViewBg.IsDisp() ){
@@ -158,6 +167,7 @@ bool SColorStrategyInfo::CheckChangeColor(const CStringRef& cLineStr)
 			}
 		}
 	}
+#endif // UZ_
 
 	return bChange;
 }

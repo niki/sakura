@@ -19,6 +19,7 @@
 */
 
 #include "StdAfx.h"
+#ifdef UZ_USE_WINLISTDLG
 #include "dlg/CDlgWindowList.h"
 #include "Funccode_enum.h"
 #include "util/shell.h"
@@ -296,3 +297,4 @@ BOOL CDlgWindowList::OnActivate(WPARAM wParam, LPARAM lParam)
 	return CDialog::OnActivate(wParam, lParam);
 }
 
+#endif // UZ_

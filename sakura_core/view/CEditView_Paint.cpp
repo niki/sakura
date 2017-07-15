@@ -595,14 +595,18 @@ void CEditView::OnPaint( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp 
 	if (m_pcEditWnd->m_pPrintPreview) {
 		return;
 	}
+#ifdef UZ_USE_MINIMAP
 	bool bChangeFont = m_bMiniMap;
 	if( bChangeFont ){
 		SelectCharWidthCache( CWM_FONT_MINIMAP, CWM_CACHE_LOCAL );
 	}
+#endif // UZ_
 	OnPaint2( _hdc, pPs, bDrawFromComptibleBmp );
+#ifdef UZ_USE_MINIMAP
 	if( bChangeFont ){
 		SelectCharWidthCache( CWM_FONT_EDIT, m_pcEditWnd->GetLogfontCacheMode() );
 	}
+#endif  // UZ_
 }
 
 /*! 通常の描画処理 new 
@@ -656,11 +660,15 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		return;
 	}
 #ifdef UZ_OUTPUT_DEBUG_STRING
+#ifdef UZ_USE_MINIMAP
 	if (m_bMiniMap) {
 	  si::logln(L"OnPaint2 start minimap");
 	} else {
 	  si::logln(L"OnPaint2 start");
 	}
+#else
+  si::logln(L"OnPaint2 start");
+#endif  // UZ_
 #endif  // UZ_
 	if( m_hdcCompatDC && NULL == m_hbmpCompatBMP
 		 || m_nCompatBMPWidth < (pPs->rcPaint.right - pPs->rcPaint.left)
@@ -906,11 +914,15 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		GetCaret().ShowCaret_( this->GetHwnd() ); // 2002/07/22 novice
 	
 #ifdef UZ_OUTPUT_DEBUG_STRING
+#ifdef UZ_USE_MINIMAP
 	if (m_bMiniMap) {
 	  si::logln(L"OnPaint2 finish minimap");
 	} else {
 	  si::logln(L"OnPaint2 finish");
 	}
+#else
+  si::logln(L"OnPaint2 finish");
+#endif  // UZ_
 #endif  // UZ_
 	return;
 }
@@ -1071,6 +1083,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	CTypeSupport cComment(this, COLORIDX_COMMENT);
 #endif  // UZ_
 	CEditView& cActiveView = m_pcEditWnd->GetActiveView();
+#ifdef UZ_USE_MINIMAP
 	CTypeSupport&	cBackType = (cCaretLineBg.IsDisp() &&
 		GetCaret().GetCaretLayoutPos().GetY() == pInfo->m_pDispPos->GetLayoutLineRef() && !m_bMiniMap
 			? cCaretLineBg
@@ -1085,6 +1098,18 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 					&& pInfo->m_pDispPos->GetLayoutLineRef() < cActiveView.GetTextArea().GetBottomLine())
 						? cPageViewBg
 						: cTextType);
+#else
+	CTypeSupport&	cBackType = (cCaretLineBg.IsDisp() &&
+		GetCaret().GetCaretLayoutPos().GetY() == pInfo->m_pDispPos->GetLayoutLineRef()
+			? cCaretLineBg
+#ifdef UZ_FIX_NOT_EVEN_LINE_FROM_EOF
+			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1
+#else
+			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1
+#endif  // UZ_
+				? cEvenLineBg
+				: cTextType);
+#endif // UZ_
 	bool bTransText = IsBkBitmap();
 	if( bTransText ){
 		bTransText = cBackType.GetBackColor() == cTextType.GetBackColor();
@@ -1284,11 +1309,19 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	}
 
 	// ノート線描画
+#ifdef UZ_USE_MINIMAP
 #ifdef UZ_FIX_NOT_NOTE_LINE_FROM_EOF
 	if( !m_bMiniMap && pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
 #else
 	if( !m_bMiniMap ){
 #endif  // UZ_
+#else
+#ifdef UZ_FIX_NOT_NOTE_LINE_FROM_EOF
+	if( pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
+#else
+	{
+#endif  // UZ_
+#endif // UZ_
 		GetTextDrawer().DispNoteLine(
 			pInfo->m_gr,
 			pInfo->m_pDispPos->GetDrawPos().y,
@@ -1308,7 +1341,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	);
 
 	// 折り返し桁縦線描画
+#ifdef UZ_USE_MINIMAP
 	if( !m_bMiniMap ){
+#else
+	{
+#endif // UZ_
 		GetTextDrawer().DispWrapLine(
 			pInfo->m_gr,
 			pInfo->m_pDispPos->GetDrawPos().y,

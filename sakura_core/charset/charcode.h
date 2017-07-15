@@ -341,7 +341,9 @@ struct SCharWidthCache {
 enum ECharWidthFontMode {
 	CWM_FONT_EDIT,
 	CWM_FONT_PRINT,
+#ifdef UZ_USE_MINIMAP
 	CWM_FONT_MINIMAP,
+#endif // UZ_
 	CWM_FONT_MAX,
 };
 enum ECharWidthCacheMode {

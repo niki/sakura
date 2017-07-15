@@ -30,7 +30,9 @@ class CViewFont{
 public:
 	CViewFont(const LOGFONT *plf, bool bMiniMap = false)
 	{
+#ifdef UZ_USE_MINIMAP
 		m_bMiniMap = bMiniMap;
+#endif // UZ_
 		CreateFont(plf);
 	}
 	virtual ~CViewFont()
@@ -66,7 +68,9 @@ private:
 	HFONT	m_hFont_HAN_BOLD_UL;	/* 現在のフォントハンドル(太字、下線) */
 
 	LOGFONT	m_LogFont;
+#ifdef UZ_USE_MINIMAP
 	bool	m_bMiniMap;
+#endif // UZ_
 };
 
 #endif /* SAKURA_CVIEWFONT_9E51373D_58BA_4A64_9930_5174F7BF9C929_H_ */

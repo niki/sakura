@@ -193,7 +193,9 @@ public:
 	void LayoutFuncKey( void );			/* ファンクションキーの配置処理 */	// 2006.12.19 ryoji
 	void LayoutTabBar( void );			/* タブバーの配置処理 */			// 2006.12.19 ryoji
 	void LayoutStatusBar( void );		/* ステータスバーの配置処理 */		// 2006.12.19 ryoji
+#ifdef UZ_USE_MINIMAP
 	void LayoutMiniMap();				// ミニマップの配置処理
+#endif // UZ_
 	void EndLayoutBars( BOOL bAdjust = TRUE );	/* バーの配置終了処理 */	// 2006.12.19 ryoji
 
 
@@ -280,7 +282,9 @@ public:
 	CEditView&			GetActiveView()       { return *m_pcEditView; }
 	const CEditView&    GetView(int n) const { return *m_pcEditViewArr[n]; }
 	CEditView&          GetView(int n)       { return *m_pcEditViewArr[n]; }
+#ifdef UZ_USE_MINIMAP
 	CEditView&          GetMiniMap()       { return *m_pcEditViewMiniMap; }
+#endif // UZ_
 	bool                IsEnablePane(int n) const { return 0 <= n && n < m_nEditViewCount; }
 	int                 GetAllViewCount() const { return m_nEditViewCount; }
 
@@ -366,7 +370,9 @@ public:
 	CSplitterWnd	m_cSplitterWnd;		//!< 分割フレーム
 	CEditView*		m_pcDragSourceView;	//!< ドラッグ元のビュー
 	CViewFont*		m_pcViewFont;		//!< フォント
+#ifdef UZ_USE_MINIMAP
 	CViewFont*		m_pcViewFontMiniMap;		//!< フォント
+#endif // UZ_
 
 	//ダイアログ達
 	CDlgFind		m_cDlgFind;			// 「検索」ダイアログ
@@ -383,7 +389,9 @@ private:
 	CEditDoc* 		m_pcEditDoc;
 	CEditView*		m_pcEditViewArr[4];	//!< ビュー
 	CEditView*		m_pcEditView;		//!< 有効なビュー
+#ifdef UZ_USE_MINIMAP
 	CEditView*		m_pcEditViewMiniMap;	//!< ミニマップ
+#endif // UZ_
 	int				m_nActivePaneIndex;	//!< 有効なビューのindex
 	int				m_nEditViewCount;	//!< 有効なビューの数
 	const int		m_nEditViewMaxCount;//!< ビューの最大数=4

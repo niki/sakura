@@ -387,9 +387,11 @@ CLayoutInt CCaret::MoveCursor(
 
 			if( m_pEditView->GetDrawSwitch() ){
 				m_pEditView->InvalidateRect( NULL );
+#ifdef UZ_USE_MINIMAP
 				if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
 					m_pEditView->MiniMapRedraw(true);
 				}
+#endif // UZ_
 			}
 		}
 		else if( nScrollRowNum != 0 || nScrollColNum != 0 ){
@@ -439,9 +441,11 @@ CLayoutInt CCaret::MoveCursor(
 
 			if( m_pEditView->GetDrawSwitch() ){
 				m_pEditView->ScrollDraw(nScrollRowNum, nScrollColNum, rcScroll, rcClip, rcClip2);
+#ifdef UZ_USE_MINIMAP
 				if( m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd() ){
 					m_pEditView->MiniMapRedraw(false);
 				}
+#endif // UZ_
 			}
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
 			} //@1
@@ -469,9 +473,11 @@ CLayoutInt CCaret::MoveCursor(
 		if (nFinalDrawFlag == PAINT_ALL) {
 			m_pEditView->Call_OnPaint(PAINT_ALL, false);
 			if (nScrollRowNum != 0) {
+#ifdef UZ_USE_MINIMAP
 				if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
 					m_pEditView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
 				}
+#endif // UZ_
 			}
 		}
 	}
@@ -632,9 +638,11 @@ BOOL CCaret::GetAdjustCursorPos(
 /* キャレットの表示・更新 */
 void CCaret::ShowEditCaret()
 {
+#ifdef UZ_USE_MINIMAP
 	if( m_pEditView->m_bMiniMap ){
 		return;
 	}
+#endif // UZ_
 	//必要なインターフェース
 	const CLayoutMgr* pLayoutMgr=&m_pEditDoc->m_cLayoutMgr;
 	CommonSetting* pCommon=&GetDllShareData().m_Common;

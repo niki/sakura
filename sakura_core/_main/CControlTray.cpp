@@ -620,6 +620,7 @@ LRESULT CControlTray::DispatchEvent(
 		}
 		return 0;
 
+#ifdef UZ_USE_WINLISTDLG
 	case MYWM_DLGWINLIST:
 		{
 			static CDlgWindowList dlg;
@@ -631,6 +632,7 @@ LRESULT CControlTray::DispatchEvent(
 			}
 		}
 		return 0;
+#endif // UZ_
 
 	case WM_CREATE:
 		m_hWnd = hwnd;

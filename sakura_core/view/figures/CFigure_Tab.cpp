@@ -52,6 +52,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 	// これから描画するタブ幅
 	CLayoutXInt tabDispWidthLayout = pcView->m_pcEditDoc->m_cLayoutMgr.GetActualTsvSpace( sPos.GetDrawCol(), WCODE::TAB );
 	int tabDispWidth = (Int)tabDispWidthLayout;
+#ifdef UZ_USE_MINIMAP
 	if( pcView->m_bMiniMap ){
 		CLayoutMgr mgrTemp;
 		mgrTemp.SetTabSpaceInfo(pcView->m_pcEditDoc->m_cLayoutMgr.GetTabSpaceKetas(),
@@ -59,6 +60,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 		tabDispWidthLayout = mgrTemp.GetActualTabSpace(sPos.GetDrawCol());
 		tabDispWidth = (Int)tabDispWidthLayout;
 	}
+#endif // UZ_
 
 	// タブ記号領域
 	RECT rcClip2;

@@ -44,6 +44,7 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 	// これから描画するタブ幅
 	CLayoutXInt tabDispWidthLayout = pcView->m_pcEditDoc->m_cLayoutMgr.GetActualTsvSpace( sPos.GetDrawCol(), L',' );
 	int tabDispWidth = (Int)tabDispWidthLayout;
+#ifdef UZ_USE_MINIMAP
 	if( pcView->m_bMiniMap ){
 		CLayoutMgr mgrTemp;
 		mgrTemp.SetTabSpaceInfo(pcView->m_pcEditDoc->m_cLayoutMgr.GetTabSpaceKetas(),
@@ -51,6 +52,7 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 		tabDispWidthLayout = mgrTemp.GetActualTabSpace(sPos.GetDrawCol());
 		tabDispWidth = (Int)tabDispWidthLayout;
 	}
+#endif // UZ_
 
 	// タブ記号領域
 	RECT rcClip2;

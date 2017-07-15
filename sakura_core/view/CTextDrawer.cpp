@@ -672,9 +672,13 @@ void CTextDrawer::DispLineNumber(
 		}
 
 		//DIFFマーク描画
+#ifdef UZ_USE_MINIMAP
 		if( !pView->m_bMiniMap ){
 			CDiffLineGetter(pCDocLine).DrawDiffMark(gr,y,nLineHeight,fgcolor);
 		}
+#else
+		CDiffLineGetter(pCDocLine).DrawDiffMark(gr,y,nLineHeight,fgcolor);
+#endif // UZ_
 	}
 
 	// 行番号とテキストの隙間の描画
@@ -688,11 +692,19 @@ void CTextDrawer::DispLineNumber(
 	}
 
 	// 行番号部分のノート線描画
+#ifdef UZ_USE_MINIMAP
 #ifdef UZ_FIX_NOT_NOTE_LINE_FROM_EOF
 	if( !pView->m_bMiniMap && nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
 #else
 	if( !pView->m_bMiniMap ){
 #endif  // UZ_
+#else
+#ifdef UZ_FIX_NOT_NOTE_LINE_FROM_EOF
+	if( nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
+#else
+	{
+#endif  // UZ_
+#endif // UZ_
 		int left   = bDispLineNumTrans ? 0 : rcLineNum.right;
 		int right  = pView->GetTextArea().GetAreaLeft();
 		int top    = y;

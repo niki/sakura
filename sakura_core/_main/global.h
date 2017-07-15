@@ -78,7 +78,9 @@ enum EBarChangeNotifyType {
 	MYBCN_FUNCKEY	= 1,		//ファンクションキー
 	MYBCN_TAB		= 2,		//タブ
 	MYBCN_STATUSBAR	= 3,		//ステータスバー
+#ifdef UZ_USE_MINIMAP
 	MYBCN_MINIMAP	= 4,		//ミニマップ
+#endif // UZ_
 };
 //@@@ To Here 2003.05.31 MIK
 

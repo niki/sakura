@@ -185,15 +185,21 @@ BOOL CEditView::Create(
 	bool		bMiniMap
 )
 {
+#ifdef UZ_USE_MINIMAP
 	m_bMiniMap = bMiniMap;
+#endif  // UZ_
 	m_pcTextArea = new CTextArea(this);
 	m_pcCaret = new CCaret(this, pcEditDoc);
 	m_pcRuler = new CRuler(this, pcEditDoc);
+#ifdef UZ_USE_MINIMAP
 	if( m_bMiniMap ){
 		m_pcViewFont = m_pcEditWnd->m_pcViewFontMiniMap;
 	}else{
 		m_pcViewFont = m_pcEditWnd->m_pcViewFont;
 	}
+#else
+	m_pcViewFont = m_pcEditWnd->m_pcViewFont;
+#endif // UZ_
 
 	m_cHistory = new CAutoMarkMgr;
 	m_cRegexKeyword = NULL;				// 2007.04.08 ryoji
@@ -299,7 +305,9 @@ BOOL CEditView::Create(
 	// 2010.07.15 Moca
 	m_cMouseDownPos.Set(-INT_MAX, -INT_MAX);
 
+#ifdef UZ_USE_MINIMAP
 	m_bMiniMapMouseDown = false;
+#endif // UZ_
 
 	//↑今までコンストラクタでやってたこと
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -318,9 +326,13 @@ BOOL CEditView::Create(
 	GetTextArea().SetTopYohaku( GetDllShareData().m_Common.m_sWindow.m_nRulerBottomSpace ); 	/* ルーラーとテキストの隙間 */
 	GetTextArea().SetAreaTop( GetTextArea().GetTopYohaku() );								/* 表示域の上端座標 */
 	/* ルーラー表示 */
+#ifdef UZ_USE_MINIMAP
 	if( m_pTypeData->m_ColorInfoArr[COLORIDX_RULER].m_bDisp && !m_bMiniMap ){
 		GetTextArea().SetAreaTop( GetTextArea().GetAreaTop() + GetDllShareData().m_Common.m_sWindow.m_nRulerHeight);	/* ルーラー高さ */
 	}
+#else
+	GetTextArea().SetAreaTop( GetTextArea().GetAreaTop() + GetDllShareData().m_Common.m_sWindow.m_nRulerHeight);	/* ルーラー高さ */
+#endif // UZ_
 	GetTextArea().SetLeftYohaku( GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace );
 
 
@@ -365,10 +377,15 @@ BOOL CEditView::Create(
 		return FALSE;
 	}
 
+#ifdef UZ_USE_MINIMAP
 	if( !m_bMiniMap ){
 		m_pcDropTarget = new CDropTarget( this );
 		m_pcDropTarget->Register_DropTarget( GetHwnd() );
 	}
+#else
+	m_pcDropTarget = new CDropTarget( this );
+	m_pcDropTarget->Register_DropTarget( GetHwnd() );
+#endif // UZ_
 
 	/* 辞書Tip表示ウィンドウ作成 */
 	m_cTipWnd.Create( G_AppInstance(), GetHwnd()/*GetDllShareData().m_sHandles.m_hwndTray*/ );
@@ -700,9 +717,11 @@ LRESULT CEditView::DispatchEvent(
 	// 2004.04.27 To Here
 
 	case WM_LBUTTONDBLCLK:
+#ifdef UZ_USE_MINIMAP
 		if( m_bMiniMap ){
 			return 0L;
 		}
+#endif // UZ_
 		// 2007.10.02 nasukoji	非アクティブウィンドウのダブルクリック時はここでカーソルを移動する
 		// 2007.10.12 genta フォーカス移動のため，OnLBUTTONDBLCLKより移動
 		if(m_bActivateByMouse){
@@ -945,9 +964,13 @@ LRESULT CEditView::DispatchEvent(
 			if( hwndCursorPos == GetHwnd() ){
 				// ビュー上にマウスがあるので SetActivePane() を直接呼び出す
 				// （個別のマウスメッセージが届く前にアクティブペインを設定しておく）
+#ifdef UZ_USE_MINIMAP
 				if( !m_bMiniMap ){
 					m_pcEditWnd->SetActivePane( m_nMyIndex );
 				}
+#else
+				m_pcEditWnd->SetActivePane( m_nMyIndex );
+#endif // UZ_
 			}else if( (m_pcsbwVSplitBox && hwndCursorPos == m_pcsbwVSplitBox->GetHwnd())
 						|| (m_pcsbwHSplitBox && hwndCursorPos == m_pcsbwHSplitBox->GetHwnd()) ){
 				// 2010.01.19 ryoji
@@ -960,9 +983,13 @@ LRESULT CEditView::DispatchEvent(
 				// このタイミング（WM_MOUSEACTIVATE）でスクロール範囲を変更するのはまずい。
 				// 例えば Win XP/Vista だとスクロール範囲が小さくなってスクロールバーが有効から
 				// 無効に切り替わるとそれ以後スクロールバーが機能しなくなる。
+#ifdef UZ_USE_MINIMAP
 				if( !m_bMiniMap ){
 					::PostMessageAny( GetHwnd(), MYWM_SETACTIVEPANE, (WPARAM)m_nMyIndex, 0 );
 				}
+#else
+				::PostMessageAny( GetHwnd(), MYWM_SETACTIVEPANE, (WPARAM)m_nMyIndex, 0 );
+#endif // UZ_
 			}
 		}
 
@@ -1129,6 +1156,7 @@ void CEditView::OnSize( int cx, int cy )
 	/* 親ウィンドウのタイトルを更新 */
 	// m_pcEditWnd->UpdateCaption(); // [Q] genta 本当に必要？
 
+#ifdef UZ_USE_MINIMAP
 	if( m_pcEditWnd->GetMiniMap().GetHwnd() ){
 		CEditView& miniMap = m_pcEditWnd->GetMiniMap();
 		if( miniMap.m_nPageViewTop != GetTextArea().GetViewTopLine()
@@ -1136,6 +1164,7 @@ void CEditView::OnSize( int cx, int cy )
 			MiniMapRedraw(true);
 		}
 	}
+#endif // UZ_
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 	SB_Marker_CallPaint(1901);
 #endif  // UZ_
@@ -1147,9 +1176,11 @@ void CEditView::OnSize( int cx, int cy )
 /* 入力フォーカスを受け取ったときの処理 */
 void CEditView::OnSetFocus( void )
 {
+#ifdef UZ_USE_MINIMAP
 	if( m_bMiniMap ){
 		return;
 	}
+#endif // UZ_
 	// 2004.04.02 Moca EOFのみのレイアウト行は、0桁目のみ有効.EOFより下の行のある場合は、EOF位置にする
 	{
 		CLayoutPoint ptPos = GetCaret().GetCaretLayoutPos();
@@ -1174,6 +1205,7 @@ void CEditView::OnSetFocus( void )
 
 	m_pcEditWnd->m_cToolbar.AcceptSharedSearchKey();
 
+#ifdef UZ_USE_MINIMAP
 	if( m_pcEditWnd->GetMiniMap().GetHwnd() ){
 		CEditView& miniMap = m_pcEditWnd->GetMiniMap();
 		if( miniMap.m_nPageViewTop != GetTextArea().GetViewTopLine()
@@ -1181,6 +1213,7 @@ void CEditView::OnSetFocus( void )
 			MiniMapRedraw(true);
 		}
 	}
+#endif // UZ_
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 	SB_Marker_CallPaint(1900);
@@ -1191,9 +1224,11 @@ void CEditView::OnSetFocus( void )
 /* 入力フォーカスを失ったときの処理 */
 void CEditView::OnKillFocus( void )
 {
+#ifdef UZ_USE_MINIMAP
 	if( m_bMiniMap ){
 		return;
 	}
+#endif // UZ_
 	// 03/02/18 対括弧の強調表示(消去) ai
 	DrawBracketPair( false );
 	m_bDrawBracketPairFlag = FALSE;
@@ -1235,11 +1270,15 @@ void CEditView::SetFont( void )
 	HDC hdc = ::GetDC( GetHwnd() );
 
 	// メトリクス更新
+#ifdef UZ_USE_MINIMAP
 	if( m_bMiniMap ){
 		GetTextMetrics().Update(hdc, GetFontset().GetFontHan(), 0, 0);
 	}else{
 		GetTextMetrics().Update(hdc, GetFontset().GetFontHan(), m_pTypeData->m_nLineSpace, m_pTypeData->m_nColumnSpace);
 	}
+#else
+	GetTextMetrics().Update(hdc, GetFontset().GetFontHan(), m_pTypeData->m_nLineSpace, m_pTypeData->m_nColumnSpace);
+#endif // UZ_
 
 	::ReleaseDC( GetHwnd(), hdc );
 
@@ -1430,6 +1469,7 @@ VOID CEditView::OnTimer(
 	}
 	/* 範囲選択中でない場合 */
 	if(!GetSelectionInfo().IsMouseSelecting()){
+#ifdef UZ_USE_MINIMAP
 		if( m_bMiniMap ){
 			bool bHide;
 			if( MiniMapCursorLineTip( &po, &rc, &bHide ) ){
@@ -1446,6 +1486,12 @@ VOID CEditView::OnTimer(
 				m_cTipWnd.Show( po.x, po.y + GetTextMetrics().GetHankakuHeight(), NULL );
 			}
 		}
+#else
+		if( FALSE != KeyWordHelpSearchDict( LID_SKH_ONTIMER, &po, &rc ) ){	// 2006.04.10 fon
+			/* 辞書Tipを表示 */
+			m_cTipWnd.Show( po.x, po.y + GetTextMetrics().GetHankakuHeight(), NULL );
+		}
+#endif // UZ_
 	}
 	else{
 		::GetCursorPos( &po );
@@ -1840,9 +1886,13 @@ void CEditView::OnChangeSetting()
 	m_pTypeData = &m_pcEditDoc->m_cDocType.GetDocumentAttribute();
 
 	/* ルーラー表示 */
+#ifdef UZ_USE_MINIMAP
 	if( m_pTypeData->m_ColorInfoArr[COLORIDX_RULER].m_bDisp && !m_bMiniMap ){
 		GetTextArea().SetAreaTop(GetTextArea().GetAreaTop() + GetDllShareData().m_Common.m_sWindow.m_nRulerHeight);	/* ルーラー高さ */
 	}
+#else
+	GetTextArea().SetAreaTop(GetTextArea().GetAreaTop() + GetDllShareData().m_Common.m_sWindow.m_nRulerHeight);	/* ルーラー高さ */
+#endif  // UZ_
 	GetTextArea().SetLeftYohaku( GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace );
 
 	/* フォントの変更 */
@@ -3252,7 +3302,9 @@ void CEditView::ScrBarMarker::Clear(int foo) {
 // 再構築
 //----------------------
 void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo) {
+#ifdef UZ_USE_MINIMAP
 	if (pEditView_->m_bMiniMap) return;
+#endif // UZ_
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 	
 	/* 垂直スクロールバー */
@@ -3310,7 +3362,9 @@ void CEditView::ScrBarMarker::DrawRequest() {
 // 描画
 //----------------------
 void CEditView::ScrBarMarker::Draw() {
+#ifdef UZ_USE_MINIMAP
 	if (pEditView_->m_bMiniMap) return;
+#endif // UZ_
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 
 	//std::lock_guard<std::mutex> lock(mtxCacheMutex_);
