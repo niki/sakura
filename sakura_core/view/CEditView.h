@@ -789,60 +789,79 @@ public:
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 public:
-	// 描画要求 foo:マーキング用
-	void _SB_MarkCache_CallPaint(int foo);
-	// クリア (再構築要求) foo:マーキング用
-	void _SB_MarkCache_Clear(int foo);
-	// 再構築 foo:マーキング用
-	void _SB_MarkCache_Build(bool bCacheClear, int foo);
-	// 描画
-	void _SB_MarkCache_DrawRequest();
-	void _SB_MarkCache_Draw();
-	// 登録・削除
-	bool SB_MarkCache_Add(int nLayoutY, uint32_t magic);
-	bool SB_MarkCache_Del(int nLayoutY, uint32_t magic);
-	// 検索文字列のある行か確認
-	bool SB_MarkCache_IsFoundLine(const CDocLine *pCDocLine);
-	// スレッドを待つ
-	void SB_MarkCache_WaitForBuild(bool abort = false);
-	void SB_MarkCache_WaitForDraw(bool abort = false);
+	// --- スクロールバーマーカー関連 ---
+	class ScrBarMarker {
+	public:
+		explicit ScrBarMarker(CEditView *pEditView);
+		~ScrBarMarker();
+		
+		void CallPaint(int foo);               // 描画要求 foo:マーキング用
+		void Clear(int foo);                   // クリア (再構築要求) foo:マーキング用
+		void Build(bool bCacheClear, int foo); // 再構築 foo:マーキング用
+		void DrawRequest();                    // 描画リクエスト
+		void Draw();                           // 描画
+
+		// 登録・削除
+		bool Add(int nLayoutY, uint32_t magic);
+		bool Del(int nLayoutY, uint32_t magic);
+		
+		// 検索文字列のある行か確認
+		bool IsFoundLine(const CDocLine *pCDocLine);
+		
+		// スレッドを待つ
+		void WaitForBuild(bool abort = false);
+		void WaitForDraw(bool abort = false);
+
+	public:
+		CEditView *pEditView_ = nullptr;
+		
+		int nLastLineCount_ = 0;                    // 最後に更新した時の行数
+		std::vector<uint32_t> vLines_;              // キャッシュ
+		
+		std::tstring strKey_;                       // 構築時のキー
+		
+		int nSearchFoundLine_ = 0;                  // 見つかった検索行の数
+		int nMarkFoundLine_ = 0;                    // 見つかったブックマーク行の数
+		
+		//std::mutex mtxCacheMutex_;
+		HANDLE hBuildThread_ = 0;                   // キャッシュ作成スレッドハンドル
+		bool   bBuildThreadRunning_ = false;        //   スレッド稼働状態
+		bool   bExitRequestBuildThread_ = false;    //   スレッド終了リクエスト
+		
+		HANDLE hDrawThread_ = 0;                    // キャッシュ描画スレッドハンドル
+		bool   bDrawThreadRunning_ = false;         //   スレッド稼働状態
+		bool   bExitRequestDrawThread_ = false;     //   スレッド終了リクエスト
+		bool   bRestartRequestDrawThread_ = false;  //   描画やり直しリクエスト
+		int    nDrawRequestCount_ = 0;              //   描画リクエスト回数
+		
+		SCROLLBARINFO sbi_;
+	};
+	
+	std::unique_ptr<ScrBarMarker> SBMarker_;
+	// --------------------------
+	
+	void _SB_Marker_CallPaint(int foo);               // 描画要求 foo:マーキング用
+	void _SB_Marker_Clear(int foo);                   // クリア (再構築要求) foo:マーキング用
+	void _SB_Marker_Build(bool bCacheClear, int foo); // 再構築 foo:マーキング用
+	void _SB_Marker_DrawRequest();                    // 描画リクエスト
+	void _SB_Marker_Draw();                           // 描画
 	
 	// トレース用マクロ
 	#define SCRBAR_MARKCACHE_TRACE 1
 	#if SCRBAR_MARKCACHE_TRACE
-		#define SB_MarkCache_CallPaint(foo)          _SB_MarkCache_CallPaint(foo); DebugOutputCaller("    <- Caller, CallPaint")
-		#define SB_MarkCache_Clear(foo)              _SB_MarkCache_Clear(foo); DebugOutputCaller("    <- Caller, Clear")
-		#define SB_MarkCache_Build(bCacheClear, foo) _SB_MarkCache_Build(bCacheClear, foo); DebugOutputCaller("    <- Caller, Build")
-		#define SB_MarkCache_DrawRequest()           _SB_MarkCache_DrawRequest(); DebugOutputCaller("    <- Caller, DrawRequest")
-		#define SB_MarkCache_Draw()                  _SB_MarkCache_Draw(); DebugOutputCaller("    <- Caller, Draw")
+		#define SB_Marker_CallPaint(foo)          _SB_Marker_CallPaint(foo); DebugOutputCaller("    <- Caller, CallPaint")
+		#define SB_Marker_Clear(foo)              _SB_Marker_Clear(foo); DebugOutputCaller("    <- Caller, Clear")
+		#define SB_Marker_Build(bCacheClear, foo) _SB_Marker_Build(bCacheClear, foo); DebugOutputCaller("    <- Caller, Build")
+		#define SB_Marker_DrawRequest()           _SB_Marker_DrawRequest(); DebugOutputCaller("    <- Caller, DrawRequest")
+		#define SB_Marker_Draw()                  _SB_Marker_Draw(); DebugOutputCaller("    <- Caller, Draw")
 	#else
-		#define SB_MarkCache_CallPaint(foo)          _SB_MarkCache_CallPaint(foo)
-		#define SB_MarkCache_Clear(foo)              _SB_MarkCache_Clear(foo)
-		#define SB_MarkCache_Build(bCacheClear, foo) _SB_MarkCache_Build(bCacheClear, foo)
-		#define SB_MarkCache_DrawRequest()           _SB_MarkCache_DrawRequest()
-		#define SB_MarkCache_Draw()                  _SB_MarkCache_Draw()
+		#define SB_Marker_CallPaint(foo)          _SB_Marker_CallPaint(foo)
+		#define SB_Marker_Clear(foo)              _SB_Marker_Clear(foo)
+		#define SB_Marker_Build(bCacheClear, foo) _SB_Marker_Build(bCacheClear, foo)
+		#define SB_Marker_DrawRequest()           _SB_Marker_DrawRequest()
+		#define SB_Marker_Draw()                  _SB_Marker_Draw()
 	#endif
 
-	// --- スクロールバー関連 ---
-	int nCacheLastLineCount_ = 0;          // 最後に更新した時の行数
-	std::vector<uint32_t> vCacheLines_;    // キャッシュ
-	
-	std::tstring strCacheKey_;             // 構築時のキー
-	
-	int nCacheSearchFoundLine_ = 0;        // 見つかった検索行の数
-	int nCacheBookmarkFoundLine_ = 0;      // 見つかったブックマーク行の数
-	
-	//std::mutex mtxCacheMutex_;
-	HANDLE hCacheBuildThread_ = 0;                   // キャッシュ作成スレッドハンドル
-	bool   bCacheBuildThreadRunning_ = false;        //   スレッド稼働状態
-	bool   bExitRequestCacheBuildThread_ = false;    //   スレッド終了リクエスト
-	HANDLE hCacheDrawThread_ = 0;                    // キャッシュ描画スレッドハンドル
-	bool   bCacheDrawThreadRunning_ = false;         //   スレッド稼働状態
-	bool   bRestartRequestCacheDrawThread_ = false;  //   描画やり直しリクエスト
-	bool   bExitRequestCacheDrawThread_ = false;     //   スレッド終了リクエスト
-	int    nCacheDrawRequestCount_ = 0;              //   描画リクエスト回数
-	SCROLLBARINFO sbiCache_;
-	// --------------------------
 #endif  // UZ_
 };
 

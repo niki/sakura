@@ -1560,7 +1560,7 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 		// 再描画
 		m_pCommanderView->RedrawAll();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-		m_pCommanderView->SB_MarkCache_Clear(301);
+		m_pCommanderView->SB_Marker_Clear(301);
 #endif  // UZ_
 		return;
 	}
@@ -1572,7 +1572,7 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 	/* フォーカス移動時の再描画 */
 	m_pCommanderView->RedrawAll();
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-	m_pCommanderView->SB_MarkCache_Clear(302);
+	m_pCommanderView->SB_Marker_Clear(302);
 #endif  // UZ_
 	return;
 }

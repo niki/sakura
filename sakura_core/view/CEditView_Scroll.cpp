@@ -328,8 +328,8 @@ void CEditView::AdjustScrollBars()
 		}
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
-		//SB_MarkCache_Build(/*bCacheClear = */ false, 3000);
-		SB_MarkCache_CallPaint(10000);
+		//SB_Marker_Build(/*bCacheClear = */ false, 3000);
+		SB_Marker_CallPaint(10000);
 #endif  // UZ_
 	}
 	if( NULL != m_hwndHScrollBar ){
