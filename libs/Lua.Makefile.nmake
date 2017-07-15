@@ -18,7 +18,11 @@ LIB_O=	lauxlib.o lbaselib.o lbitlib.o lcorolib.o ldblib.o liolib.o \
 
 OBJS    = $(CORE_O) $(LIB_O)
 
+!ifdef x64
+LUAV        = 53_64
+!else
 LUAV        = 53
+!endif
 LUALIB      = liblua$(LUAV).lib
 LUADLLBASE  = lua$(LUAV)
 LUADLL      = $(LUADLLBASE).dll
@@ -32,8 +36,11 @@ RESULT  = $(LUALIB) $(LUADLL) $(LUADLLLIB) $(LUADLLEXP)
 WARN    = /W4
 #RUNTIME = /MT
 RUNTIME = /MD
-#OPTIM   = /Od
+!ifdef debug
+OPTIM   = /Od
+!else
 OPTIM   = /O2 /Os
+!endif
 
 CFLAGS  = /GS $(WARN) $(RUNTIME) $(OPTIM) /DWIN32 /D_WINDOWS /D_MBCS \
           /DNDEBUG /DLUA_COMPAT_5_2 /DLUA_BUILD_AS_DLL
