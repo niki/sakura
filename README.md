@@ -23,9 +23,15 @@ Download & Setup
 
 |ファイル名||主な変更内容|サイズ|日付||
 |-|-|-|-|-|-|
-|sakura-uzuki-2.49.zip|32bit|検索ダイアログの修正|822KB|2017.7.13|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.49.zip)|
-|sakura-uzuki-2.49-64.zip|64bit|同上|980KB|2017.7.13|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.49-64.zip)|
+|sakura-uzuki-2.50.zip|32bit(x86)||776KB|2017.7.16|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.50.zip)|
+|sakura-uzuki-2.50-64.zip|64bit(x64)||---|----.--.--|[download]()|
 |keyword_pack.zip||patchunicode:#720対応|355KB|2017.6.16|[download](Publish/keyword_pack.zip)|
+
+- Visual C++ 2017 ランタイムが必要です  
+  [Visual Studio 2017 の Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/?q=#other-ja)  
+  使用するバージョン(32bit,64bit)に合わせてダウンロードしてください.  
+  - [vc_redist.x64.exe](https://go.microsoft.com/fwlink/?LinkId=746572)  
+  - [vc_redist.x86.exe](https://go.microsoft.com/fwlink/?LinkId=746571)  
 
 - sakura.keywordset.csv  
   [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードを外部ファイルを使用して設定する定義ファイルです.  
