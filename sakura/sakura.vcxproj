@@ -113,7 +113,6 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;..\libs\lua</AdditionalLibraryDirectories>
-      <AdditionalOptions>/NODEFAULTLIB:libcmt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
@@ -151,7 +150,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;..\libs\lua</AdditionalLibraryDirectories>
-      <AdditionalOptions>/NODEFAULTLIB:libcmt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
