@@ -261,16 +261,12 @@ bool CShareData::InitShareData()
 			sWindow.m_bDispTOOLBAR = TRUE;			/* 次回ウィンドウを開いたときツールバーを表示する */
 			sWindow.m_bDispSTATUSBAR = TRUE;			/* 次回ウィンドウを開いたときステータスバーを表示する */
 			sWindow.m_bDispFUNCKEYWND = FALSE;		/* 次回ウィンドウを開いたときファンクションキーを表示する */
-#ifdef UZ_USE_MINIMAP
 			sWindow.m_bDispMiniMap = false;			// ミニマップを表示する
-#endif  // UZ_
 			sWindow.m_nFUNCKEYWND_Place = 1;			/* ファンクションキー表示位置／0:上 1:下 */
 			sWindow.m_nFUNCKEYWND_GroupNum = 4;			// 2002/11/04 Moca ファンクションキーのグループボタン数
-#ifdef UZ_USE_MINIMAP
 			sWindow.m_nMiniMapFontSize = -1;
 			sWindow.m_nMiniMapQuality = NONANTIALIASED_QUALITY;
 			sWindow.m_nMiniMapWidth = 150;
-#endif  // UZ_
 
 			sWindow.m_bSplitterWndHScroll = TRUE;	// 2001/06/20 asa-o 分割ウィンドウの水平スクロールの同期をとる
 			sWindow.m_bSplitterWndVScroll = TRUE;	// 2001/06/20 asa-o 分割ウィンドウの垂直スクロールの同期をとる
@@ -636,9 +632,7 @@ bool CShareData::InitShareData()
 			::SetRect( &sOthers.m_rcDiffDialog, 0, 0, 0, 0 );
 			::SetRect( &sOthers.m_rcFavoriteDialog, 0, 0, 0, 0 );
 			::SetRect( &sOthers.m_rcTagJumpDialog, 0, 0, 0, 0 );
-#ifdef UZ_USE_WINLISTDLG
 			::SetRect( &sOthers.m_rcWindowListDialog, 0, 0, 0, 0 );
-#endif // UZ_
 
 			sOthers.m_bIniReadOnly = false;
 		}

@@ -486,9 +486,7 @@ BOOL CViewCommander::HandleCommand(
 	case F_SHOWFUNCKEY:		Command_SHOWFUNCKEY();break;	/* ファンクションキーの表示/非表示 */
 	case F_SHOWTAB:			Command_SHOWTAB();break;		/* タブの表示/非表示 */	//@@@ 2003.06.10 MIK
 	case F_SHOWSTATUSBAR:	Command_SHOWSTATUSBAR();break;	/* ステータスバーの表示/非表示 */
-#ifdef UZ_USE_MINIMAP
 	case F_SHOWMINIMAP:		Command_SHOWMINIMAP();break;	// ミニマップの表示/非表示
-#endif  // UZ_
 	case F_TYPE_LIST:		Command_TYPE_LIST();break;		/* タイプ別設定一覧 */
 	case F_CHANGETYPE:		Command_CHANGETYPE((int)lparam1);break;		// タイプ別設定一時適用
 	case F_OPTION_TYPE:		Command_OPTION_TYPE();break;	/* タイプ別設定 */
@@ -594,9 +592,7 @@ BOOL CViewCommander::HandleCommand(
 	case F_TRACEOUT:		Command_TRACEOUT((const wchar_t*)lparam1, (int)lparam2, (int)lparam3);break;		//マクロ用アウトプットウィンドウに表示 maru 2006.04.26
 	case F_TOPMOST:			Command_WINTOPMOST( lparam1 );break;	//常に手前に表示 Moca
 	case F_WINLIST:			Command_WINLIST( nCommandFrom );break;		/* ウィンドウ一覧ポップアップ表示処理 */	// 2006.03.23 fon // 2006.05.19 genta 引数追加
-#ifdef UZ_USE_WINLISTDLG
 	case F_DLGWINLIST:		Command_DLGWINLIST();break;		// ウィンドウ一覧表示
-#endif  // UZ_
 	case F_GROUPCLOSE:		Command_GROUPCLOSE();break;		/* グループを閉じる */		// 2007.06.20 ryoji 追加
 	case F_NEXTGROUP:		Command_NEXTGROUP();break;		/* 次のグループ */			// 2007.06.20 ryoji 追加
 	case F_PREVGROUP:		Command_PREVGROUP();break;		/* 前のグループ */			// 2007.06.20 ryoji 追加

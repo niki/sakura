@@ -142,7 +142,6 @@ bool CTextArea::DetectWidthOfLineNumberArea( bool bRedraw )
 
 	int				nViewAlignLeftNew;
 
-#ifdef UZ_USE_MINIMAP
 	if( pView->m_pTypeData->m_ColorInfoArr[COLORIDX_GYOU].m_bDisp && !pView->m_bMiniMap ){
 		/* 行番号表示に必要な桁数を計算 */
 		int i = DetectWidthOfLineNumberArea_calculate(&pView->m_pcEditDoc->m_cLayoutMgr);
@@ -155,17 +154,6 @@ bool CTextArea::DetectWidthOfLineNumberArea( bool bRedraw )
 		nViewAlignLeftNew = 8;
 		m_nViewAlignLeftCols = 0;
 	}
-#else
-	if( pView->m_pTypeData->m_ColorInfoArr[COLORIDX_GYOU].m_bDisp ){
-		/* 行番号表示に必要な桁数を計算 */
-		int i = DetectWidthOfLineNumberArea_calculate(&pView->m_pcEditDoc->m_cLayoutMgr);
-		nViewAlignLeftNew = pView->GetTextMetrics().GetHankakuDx() * (i + 1);	/* 表示域の左端座標 */
-		m_nViewAlignLeftCols = i + 1;
-	}else{
-		nViewAlignLeftNew = 8;
-		m_nViewAlignLeftCols = 0;
-	}
-#endif  // UZ_
 
 	//	Sep 18, 2002 genta
 	nViewAlignLeftNew += GetLeftYohaku();

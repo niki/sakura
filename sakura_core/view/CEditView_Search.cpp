@@ -198,7 +198,6 @@ BOOL CEditView::KeySearchCore( const CNativeW* pcmemCurText )
 	return FALSE;
 }
 
-#ifdef UZ_USE_MINIMAP
 bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 {
 	*pbHide = true;
@@ -288,7 +287,6 @@ bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 	m_poTipCurPos = *po;	// 現在のマウスカーソル位置 */
 	return true;			// ここまで来ていればヒット・ワード
 }
-#endif // UZ_
 
 /* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 #ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE

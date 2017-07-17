@@ -204,15 +204,9 @@ void CRuler::DispRuler( HDC hdc )
 	if( !m_pEditView->GetDrawSwitch() ){
 		return;
 	}
-#ifdef UZ_USE_MINIMAP
 	if( !cRulerType.IsDisp() || m_pEditView->m_bMiniMap ){
 		return;
 	}
-#else
-	if( !cRulerType.IsDisp() ){
-		return;
-	}
-#endif // UZ_
 
 	// 描画対象
 	CGraphics gr(hdc);

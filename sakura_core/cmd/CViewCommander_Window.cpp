@@ -117,7 +117,6 @@ void CViewCommander::Command_WINLIST( int nCommandFrom )
 }
 
 
-#ifdef UZ_USE_WINLISTDLG
 /*! ウィンドウ一覧表示
 */
 void CViewCommander::Command_DLGWINLIST( void )
@@ -128,7 +127,6 @@ void CViewCommander::Command_DLGWINLIST( void )
 	::AllowSetForegroundWindow(dwPid);
 	::PostMessage(hwnd, MYWM_DLGWINLIST, 0, 0);
 }
-#endif // UZ_
 
 
 /*!	@brief 重ねて表示

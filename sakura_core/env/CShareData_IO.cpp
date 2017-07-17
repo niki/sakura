@@ -1134,17 +1134,13 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispTOOLBAR")			, common.m_sWindow.m_bDispTOOLBAR );
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispSTATUSBAR")			, common.m_sWindow.m_bDispSTATUSBAR );
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispFUNCKEYWND")		, common.m_sWindow.m_bDispFUNCKEYWND );
-#ifdef UZ_USE_MINIMAP
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispMiniMap")			, common.m_sWindow.m_bDispMiniMap );
-#endif  // UZ_
 	cProfile.IOProfileData( pszSecName, LTEXT("nFUNCKEYWND_Place")		, common.m_sWindow.m_nFUNCKEYWND_Place );
 	cProfile.IOProfileData( pszSecName, LTEXT("nFUNCKEYWND_GroupNum")	, common.m_sWindow.m_nFUNCKEYWND_GroupNum );		// 2002/11/04 Moca ファンクションキーのグループボタン数
 	cProfile.IOProfileData( pszSecName, LTEXT("szLanguageDll")			, MakeStringBufferT( common.m_sWindow.m_szLanguageDll ) );
-#ifdef UZ_USE_MINIMAP
 	cProfile.IOProfileData( pszSecName, LTEXT("nMiniMapFontSize")		, common.m_sWindow.m_nMiniMapFontSize );
 	cProfile.IOProfileData( pszSecName, LTEXT("nMiniMapQuality")		, common.m_sWindow.m_nMiniMapQuality );
 	cProfile.IOProfileData( pszSecName, LTEXT("nMiniMapWidth")			, common.m_sWindow.m_nMiniMapWidth );
-#endif  // UZ_
 	
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispTabWnd")			, common.m_sTabBar.m_bDispTabWnd );	//タブウインドウ	//@@@ 2003.05.31 MIK
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispTabWndMultiWin")	, common.m_sTabBar.m_bDispTabWndMultiWin );	//タブウインドウ	//@@@ 2003.05.31 MIK
@@ -1256,9 +1252,7 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	ShareData_IO_RECT( cProfile,  pszSecName, LTEXT("rcDiffDialog"), common.m_sOthers.m_rcDiffDialog );
 	ShareData_IO_RECT( cProfile,  pszSecName, LTEXT("rcFavoriteDialog"), common.m_sOthers.m_rcFavoriteDialog );
 	ShareData_IO_RECT( cProfile,  pszSecName, LTEXT("rcTagJumpDialog"), common.m_sOthers.m_rcTagJumpDialog );
-#ifdef UZ_USE_WINLISTDLG
 	ShareData_IO_RECT( cProfile,  pszSecName, LTEXT("rcWindowListDialog"), common.m_sOthers.m_rcWindowListDialog );
-#endif // UZ_
 	
 	//2002.02.08 aroka,hor
 	cProfile.IOProfileData( pszSecName, LTEXT("bMarkUpBlankLineEnable")	, common.m_sOutline.m_bMarkUpBlankLineEnable );
@@ -2597,12 +2591,10 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 			{1, F_GREP_REPLACE_DLG, F_GREP_DIALOG, L'\0', false, false}, 	// Grep置換
 			{1, F_FILETREE, F_OUTLINE, L'E', false, false}, 	// ファイルツリー表示
 			{1, F_FILETREE, F_OUTLINE_TOGGLE, L'E', false, false}, 	// ファイルツリー表示(Sub)
-#ifdef UZ_USE_MINIMAP
 			{1, F_SHOWMINIMAP, F_SHOWSTATUSBAR, L'N', false, false}, 	// ミニマップ表示
 			{1, F_SHOWMINIMAP, F_SHOWTAB, L'N', false, false}, 	// ミニマップ表示(Sub)
 			{1, F_SHOWMINIMAP, F_SHOWFUNCKEY, L'N', false, false}, 	// ミニマップ表示(Sub)
 			{1, F_SHOWMINIMAP, F_SHOWTOOLBAR, L'N', false, false}, 	// ミニマップ表示(Sub)
-#endif  // UZ_
 			{1, F_FUNCLIST_NEXT, F_JUMPHIST_SET, L'\0', true, false}, 	// 次の関数リストマーク(セパレータ追加)
 			{1, F_FUNCLIST_PREV, F_FUNCLIST_NEXT, L'\0', false, false}, 	// 前の関数リストマーク
 			{1, F_MODIFYLINE_NEXT, F_FUNCLIST_PREV, L'\0', false, false}, 	// 次の変更行へ

@@ -64,11 +64,7 @@ BOOL CEditView::CreateScrollBar()
 
 	/* スクロールバーの作成 */
 	m_hwndHScrollBar = NULL;
-#ifdef UZ_USE_MINIMAP
 	if( GetDllShareData().m_Common.m_sWindow.m_bScrollBarHorz && !m_bMiniMap ){	/* 水平スクロールバーを使う */
-#else
-	if( GetDllShareData().m_Common.m_sWindow.m_bScrollBarHorz ){	/* 水平スクロールバーを使う */
-#endif  // UZ_
 		m_hwndHScrollBar = ::CreateWindowEx(
 			0L,									/* no extended styles */
 			_T("SCROLLBAR"),					/* scroll bar control class */
@@ -435,9 +431,7 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 	/* キャレットの表示・更新 */
 	GetCaret().ShowEditCaret();
 
-#ifdef UZ_USE_MINIMAP
 	MiniMapRedraw(false);
-#endif // UZ_
 
 	return -nScrollRowNum;	//方向が逆なので符号反転が必要
 }
@@ -624,7 +618,6 @@ void CEditView::ScrollDraw(CLayoutInt nScrollRowNum, CLayoutInt nScrollColNum, c
 }
 
 
-#ifdef UZ_USE_MINIMAP
 void CEditView::MiniMapRedraw(bool bUpdateAll)
 {
 	if( this == &m_pcEditWnd->GetActiveView() && m_pcEditWnd->GetMiniMap().GetHwnd() ){
@@ -692,7 +685,6 @@ void CEditView::MiniMapRedraw(bool bUpdateAll)
 		::UpdateWindow( miniMap.GetHwnd() );
 	}
 }
-#endif // UZ_
 
 
 /*!	垂直同期スクロール

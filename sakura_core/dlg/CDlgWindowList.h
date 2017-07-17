@@ -31,7 +31,6 @@
 #ifndef SAKURA_CWINDOWLIST_H_
 #define SAKURA_CWINDOWLIST_H_
 
-#ifdef UZ_USE_WINLISTDLG
 #include "dlg/CDialog.h"
 class CDlgWindowList : public CDialog
 {
@@ -60,5 +59,4 @@ private:
 	RECT		m_rcItems[5];
 };
 
-#endif // UZ_
 #endif /* SAKURA_CWINDOWLIST_H_ */

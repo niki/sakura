@@ -571,9 +571,7 @@ static int luaopen_editor(lua_State* L) {
 		LUA_SAKURA_FUNC_C(F_SHOWFUNCKEY, "ShowFunckey")
 		LUA_SAKURA_FUNC_C(F_SHOWTAB, "ShowTab")
 		LUA_SAKURA_FUNC_C(F_SHOWSTATUSBAR, "ShowStatusbar")
-#ifdef UZ_USE_MINIMAP
 		LUA_SAKURA_FUNC_C(F_SHOWMINIMAP, "ShowMiniMap")
-#endif  // UZ_
 		LUA_SAKURA_FUNC_C(F_TYPE_LIST, "TypeList")
 		LUA_SAKURA_FUNC_C(F_CHANGETYPE, "ChangeType")
 		LUA_SAKURA_FUNC_C(F_OPTION_TYPE, "OptionType")

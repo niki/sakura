@@ -322,9 +322,7 @@ public:
 	void Command_SHOWFUNCKEY( void );		/* ファンクションキーの表示/非表示 */
 	void Command_SHOWTAB( void );			/* タブの表示/非表示 */	//@@@ 2003.06.10 MIK
 	void Command_SHOWSTATUSBAR( void );		/* ステータスバーの表示/非表示 */
-#ifdef UZ_USE_MINIMAP
 	void Command_SHOWMINIMAP( void );		// ミニマップの表示/非表示
-#endif // UZ_
 	void Command_TYPE_LIST( void );			/* タイプ別設定一覧 */
 	void Command_CHANGETYPE( int nTypePlusOne );	// タイプ別設定一時適用
 	void Command_OPTION_TYPE( void );		/* タイプ別設定 */
@@ -377,9 +375,7 @@ public:
 	void Command_TRACEOUT( const wchar_t* outputstr , int, int );	//マクロ用アウトプットウィンドウに表示 maru 2006.04.26
 	void Command_WINTOPMOST( LPARAM );		// 常に手前に表示 2004.09.21 Moca
 	void Command_WINLIST( int nCommandFrom );		/* ウィンドウ一覧ポップアップ表示処理 */	// 2006.03.23 fon // 2006.05.19 genta 引数追加
-#ifdef UZ_USE_WINLISTDLG
 	void Command_DLGWINLIST( void );	// ウィンドウ一覧ダイアログ // 2015.03.07 Moca
-#endif  // UZ_
 	void Command_GROUPCLOSE( void );	/* グループを閉じる */		// 2007.06.20 ryoji
 	void Command_NEXTGROUP( void );		/* 次のグループ */			// 2007.06.20 ryoji
 	void Command_PREVGROUP( void );		/* 前のグループ */			// 2007.06.20 ryoji

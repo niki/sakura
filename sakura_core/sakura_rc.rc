@@ -2479,7 +2479,6 @@ BEGIN
     PUSHBUTTON      "ƒwƒ‹ƒv(&H)",IDC_BUTTON_HELP,238,225,50,14
 END
 
-#ifdef UZ_USE_WINLISTDLG
 IDD_WINLIST DIALOGEX 0, 0, 350, 250
 STYLE DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_THICKFRAME |
 WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
@@ -2495,7 +2494,6 @@ BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,229,229,50,14
     PUSHBUTTON      "ƒwƒ‹ƒv(&H)",IDC_BUTTON_HELP,286,229,50,14
 END
-#endif // UZ_
 
 /////////////////////////////////////////////////////////////////////////////
 //

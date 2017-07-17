@@ -110,9 +110,7 @@ struct CommonSetting_Window
 	BOOL			m_bDispTOOLBAR;				//!< 次回ウィンドウを開いたときツールバーを表示する
 	BOOL			m_bDispSTATUSBAR;			//!< 次回ウィンドウを開いたときステータスバーを表示する
 	BOOL			m_bDispFUNCKEYWND;			//!< 次回ウィンドウを開いたときファンクションキーを表示する
-#ifdef UZ_USE_MINIMAP
 	bool			m_bDispMiniMap;				//!< ミニマップを表示する
-#endif  // UZ_
 	BOOL			m_bMenuIcon;				//!< メニューにアイコンを表示する (アイコン付きメニュー)
 	BOOL			m_bScrollBarHorz;			//!< 水平スクロールバーを使う
 	BOOL			m_bUseCompatibleBMP;		//!< 再作画用互換ビットマップを使う 2007.09.09 Moca
@@ -150,12 +148,10 @@ struct CommonSetting_Window
 	//言語選択
 	TCHAR			m_szLanguageDll[MAX_PATH];	//!< 言語DLLファイル名
 
-#ifdef UZ_USE_MINIMAP
 	//ミニマップ
 	int				m_nMiniMapFontSize;
 	int				m_nMiniMapQuality;
 	int				m_nMiniMapWidth;
-#endif  // UZ_
 };
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -640,9 +636,7 @@ struct CommonSetting_Others
 	RECT		m_rcDiffDialog;				//!< 「DIFF差分表示」ダイアログボックスのサイズと位置
 	RECT		m_rcFavoriteDialog;			//!< 「履歴とお気に入りの管理」ダイアログボックスのサイズと位置
 	RECT		m_rcTagJumpDialog;			//!< 「ダイレクトタグジャンプ候補一覧」ダイアログボックスのサイズと位置
-#ifdef UZ_USE_WINLISTDLG
 	RECT		m_rcWindowListDialog;		//!< 「ウィンドウ一覧」ダイアログボックスのサイズと位置
-#endif // UZ_
 
 	bool		m_bIniReadOnly;				//!< sakura.iniの読み取り専用
 };
