@@ -143,7 +143,7 @@ void CEditView::Redraw()
 
 	::ReleaseDC( GetHwnd(), hdc );
 	
-#if 0//-2017.7.18, def UZ_FIX_EDITVIEW_SCRBAR
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
 	// スクロールバーの状態を更新する
 	AdjustScrollBars();
 #endif  // UZ_

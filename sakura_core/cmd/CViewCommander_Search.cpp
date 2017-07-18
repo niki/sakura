@@ -94,6 +94,12 @@ void CViewCommander::Command_SEARCH_NEXT(
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #endif  // UZ_
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+	bool bSBClear = false;
+	if (!m_pCommanderView->m_bCurSrchKeyMark) {
+		bSBClear = true;
+	}
+#endif  // UZ_
 	bool		bSelecting;
 	bool		bFlag1 = false;
 	bool		bSelectingLock_Old = false;
@@ -343,6 +349,12 @@ end_of_func:;
 		}
 #endif  // UZ_
 	}
+
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+	if (bSBClear) {
+		m_pCommanderView->SB_Marker_Clear(801);
+	}
+#endif  // UZ_
 }
 
 
@@ -352,6 +364,12 @@ void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
 {
 #ifdef UZ_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
+#endif  // UZ_
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+	bool bSBClear = false;
+	if (!m_pCommanderView->m_bCurSrchKeyMark) {
+		bSBClear = true;
+	}
 #endif  // UZ_
 	bool		bSelecting;
 	bool		bSelectingLock_Old = false;
@@ -513,6 +531,13 @@ end_of_func:;
 		}
 	}
 #endif  // UZ_
+
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+	if (bSBClear) {
+		m_pCommanderView->SB_Marker_Clear(802);
+	}
+#endif  // UZ_
+
 	return;
 }
 
