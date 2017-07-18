@@ -847,14 +847,16 @@ public:
 	void _SB_Marker_Draw();                           // 描画
 	
 	// トレース用マクロ
-	#define SCRBAR_MARKCACHE_TRACE 1
+	#define SCRBAR_MARKCACHE_TRACE  (0)
 	#if SCRBAR_MARKCACHE_TRACE
+		#define SB_Marker_Trace(...)              si::logln(__VA_ARGS__);
 		#define SB_Marker_CallPaint(foo)          _SB_Marker_CallPaint(foo); DebugOutputCaller("    <- Caller, CallPaint")
 		#define SB_Marker_Clear(foo)              _SB_Marker_Clear(foo); DebugOutputCaller("    <- Caller, Clear")
 		#define SB_Marker_Build(bCacheClear, foo) _SB_Marker_Build(bCacheClear, foo); DebugOutputCaller("    <- Caller, Build")
 		#define SB_Marker_DrawRequest()           _SB_Marker_DrawRequest(); DebugOutputCaller("    <- Caller, DrawRequest")
 		#define SB_Marker_Draw()                  _SB_Marker_Draw(); DebugOutputCaller("    <- Caller, Draw")
 	#else
+		#define SB_Marker_Trace(...)              
 		#define SB_Marker_CallPaint(foo)          _SB_Marker_CallPaint(foo)
 		#define SB_Marker_Clear(foo)              _SB_Marker_Clear(foo)
 		#define SB_Marker_Build(bCacheClear, foo) _SB_Marker_Build(bCacheClear, foo)

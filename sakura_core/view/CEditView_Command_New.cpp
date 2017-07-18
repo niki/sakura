@@ -357,10 +357,10 @@ void CEditView::InsertData_CEditView(
 		pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(ptLogic.y);
 		if (SBMarker_->IsFoundLine(pCDocLine)) {
 			SBMarker_->Add(pptNewPos->y, UZ_SCRBAR_FOUND_MAGIC);
-			si::logln(L"SBMarker_::Add 703");
+			SB_Marker_Trace(L"SBMarker_::Add 703");
 		} else {
 			SBMarker_->Del(pptNewPos->y, UZ_SCRBAR_FOUND_MAGIC);
-			si::logln(L"SBMarker_::Del 703");
+			SB_Marker_Trace(L"SBMarker_::Del 703");
 		}
 	} else {
 		SB_Marker_Clear(703);
