@@ -463,7 +463,7 @@ void CEditView::DeleteData2(
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 	SB_Marker_Clear(700);  // キャッシュのクリア
-	AdjustScrollBars();
+	//-AdjustScrollBars();
 #endif  // UZ_
 }
 
@@ -700,7 +700,7 @@ end_of_func:;
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 	SB_Marker_Clear(701);  // キャッシュのクリア
-	AdjustScrollBars();
+	//-AdjustScrollBars();
 #endif  // UZ_
 	return;
 }
