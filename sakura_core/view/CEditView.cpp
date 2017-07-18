@@ -61,6 +61,9 @@
 #include "util/module.h"
 #include "debug/CRunningTimer.h"
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef _OEPNMP
+#include <omp.h>
+#endif
 #include <process.h>
 #include "_main/CAppMode.h"
 #include "CEditApp.h"
@@ -3108,9 +3111,6 @@ unsigned __stdcall SB_Marker_DrawThread(void *arg) {
 	int nBarHeight = pEditView->SBMarker_->sbi_.rcScrollBar.bottom - pEditView->SBMarker_->sbi_.rcScrollBar.top -
 	                 (nCyVScroll /*pEditView->SBMarker_->sbi_.dxyLineButton*/ * 2);
 	
-	HDC hdc = ::GetDC(pEditView->m_hwndVScrollBar);
-	CGraphics gr(hdc);
-	
 	COLORREF clrSearch = si::ColorString::ToCOLORREF(
 	    RegKey(UZ_REGKEY).get_s(_T("EditViewScrBarFoundColor"), UZ_SCRBAR_FOUND_COLOR));
 	COLORREF clrMark = si::ColorString::ToCOLORREF(
@@ -3122,6 +3122,9 @@ unsigned __stdcall SB_Marker_DrawThread(void *arg) {
 start_thread:
 	// カーソル行
 	{
+		HDC hdc = ::GetDC(pEditView->m_hwndVScrollBar);
+		CGraphics gr(hdc);
+		
 		int x = 1;
 		int y;
 		if (bEnable) {
@@ -3135,7 +3138,16 @@ start_thread:
 		const int w = std::max(DpiScaleX(1), nCxVScroll);
 		const int h = std::max(DpiScaleY(1), DpiScaleY(2));
 		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor);
+		
+		::ReleaseDC(pEditView->m_hwndVScrollBar, hdc);
 	}
+
+	enum {
+		eLoopBreak_None = 0,
+		eLoopBreak_Restart,
+		eLoopBreak_Abort,
+	};
+	int loop_break = eLoopBreak_None;
 
 	// キャッシュを使用して描画
 	{
@@ -3147,60 +3159,85 @@ start_thread:
 		const int markWidth = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
 		const int markHeight = std::max(DpiScaleY(1), nCxVScroll / 3 * 1);
 
-		for (uint32_t ln : pEditView->SBMarker_->vLines_) {
-			int x = 1;
-			int y;
+		int size = (int)pEditView->SBMarker_->vLines_.size();
 
-			if (bEnable) {
-				y = nBarTop + (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight);
-			} else {
-				y = nBarTop +
-				    (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
-			}
+#ifdef _OPENMP
+		#pragma omp parallel num_threads(4)
+#endif
+		{
+			HDC hdc = ::GetDC(pEditView->m_hwndVScrollBar);
+			CGraphics gr(hdc);
 
-			// 検索行
-			if (ln & UZ_SCRBAR_FOUND_MAGIC) {
-				COLORREF clr = clrSearch;
-				int margin = 0;  // スクロールバーの領域を超えた時のマージン
-				int x2 = x + foundLeft;
-				int y2 = y - foundHeight / 2;  // 中央にくるように
-				// スクロールボックスに被らないように補正
-				if (y2 < nBarTop) {
-					margin = nBarTop - y2;
-				} else if (y2 + foundHeight > nBarTop + nBarHeight) {
-					margin = (nBarTop + nBarHeight) - (y2 + foundHeight); 
+#ifdef _OPENMP
+			#pragma omp for
+#endif
+			for (int i = 0; i < size; i++) {
+				if (loop_break == eLoopBreak_None) {
+					uint32_t ln = pEditView->SBMarker_->vLines_[i];
+					
+					int x = 1;
+					int y;
+
+					if (bEnable) {
+						y = nBarTop + (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight);
+					} else {
+						y = nBarTop +
+						    (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
+					}
+
+					// 検索行
+					if (ln & UZ_SCRBAR_FOUND_MAGIC) {
+						COLORREF clr = clrSearch;
+						int margin = 0;  // スクロールバーの領域を超えた時のマージン
+						int x2 = x + foundLeft;
+						int y2 = y - foundHeight / 2;  // 中央にくるように
+						// スクロールボックスに被らないように補正
+						if (y2 < nBarTop) {
+							margin = nBarTop - y2;
+						} else if (y2 + foundHeight > nBarTop + nBarHeight) {
+							margin = (nBarTop + nBarHeight) - (y2 + foundHeight); 
+						}
+						gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + foundWidth, y2 + foundHeight + margin}, clr);
+					}
+					// ブックマーク行
+					if (ln & UZ_SCRBAR_MARK_MAGIC) {
+						COLORREF clr = clrMark;
+						int margin = 0;  // スクロールバーの領域を超えた時のマージン
+						int x2 = x + markLeft;
+						int y2 = y - markHeight / 2;  // 中央にくるように
+						// スクロールボックスに被らないように補正
+						if (y2 < nBarTop) {
+							margin = nBarTop - y2;
+						} else if (y2 + markHeight > nBarTop + nBarHeight) {
+							margin = (nBarTop + nBarHeight) - (y2 + markHeight); 
+						}
+						gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + markWidth, y2 + markHeight + margin}, clr);
+					}
+					
+					if (pEditView->SBMarker_->bRestartRequestDrawThread_) {  // やり直し
+						loop_break = eLoopBreak_Restart;
+					}
+					if (pEditView->SBMarker_->bExitRequestDrawThread_) {  // 中断
+						loop_break = eLoopBreak_Abort;
+					}
 				}
-				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + foundWidth, y2 + foundHeight + margin}, clr);
-			}
-			// ブックマーク行
-			if (ln & UZ_SCRBAR_MARK_MAGIC) {
-				COLORREF clr = clrMark;
-				int margin = 0;  // スクロールバーの領域を超えた時のマージン
-				int x2 = x + markLeft;
-				int y2 = y - markHeight / 2;  // 中央にくるように
-				// スクロールボックスに被らないように補正
-				if (y2 < nBarTop) {
-					margin = nBarTop - y2;
-				} else if (y2 + markHeight > nBarTop + nBarHeight) {
-					margin = (nBarTop + nBarHeight) - (y2 + markHeight); 
-				}
-				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + markWidth, y2 + markHeight + margin}, clr);
 			}
 			
-			if (pEditView->SBMarker_->bRestartRequestDrawThread_) {  // やり直し
-				pEditView->SBMarker_->bRestartRequestDrawThread_ = false;
-				SB_Marker_Trace(L"  >>>> restart CacheDrawThread");
-				goto start_thread;
-			}
-			if (pEditView->SBMarker_->bExitRequestDrawThread_) {  // 中断
-				SB_Marker_Trace(L"  >>>> abort CacheDrawThread");
-				goto end_thread;
-			}
+			::ReleaseDC(pEditView->m_hwndVScrollBar, hdc);
 		}
 	}
-	
-	::ReleaseDC(pEditView->m_hwndVScrollBar, hdc);
 
+	if (loop_break == eLoopBreak_Abort) {
+		pEditView->SBMarker_->bExitRequestDrawThread_ = false;
+		SB_Marker_Trace(L"  >>>> abort CacheDrawThread");
+		goto end_thread;
+	}
+
+	if (loop_break == eLoopBreak_Restart) {
+		pEditView->SBMarker_->bRestartRequestDrawThread_ = false;
+		SB_Marker_Trace(L"  >>>> restart CacheDrawThread");
+		goto start_thread;
+	}
 
 end_thread:
 	if (!pEditView->SBMarker_->bExitRequestDrawThread_) {
