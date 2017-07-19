@@ -282,5 +282,8 @@ void CLoadAgent::OnFinalLoad(ELoadResult eLoadResult)
 	}
 	CCaret& cCaret = CEditWnd::getInstance()->GetActiveView().GetCaret();
 	cCaret.MoveCursor(cCaret.GetCaretLayoutPos(),true);
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+	CEditWnd::getInstance()->GetActiveView().SB_Marker_Clear(9000);
+#endif  // UZ_
 	CEditWnd::getInstance()->GetActiveView().AdjustScrollBars();
 }

@@ -448,12 +448,8 @@ CLayoutInt CCaret::MoveCursor(
 #endif  // UZ_
 		}
 
-#ifdef UZ_FIX_FLICKER
-		// 下でまとめて
-#else
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars(); // 2001/10/20 novice
-#endif  // UZ_
 	}
 
 	// 横スクロールが発生したら、ルーラー全体を再描画 2002.02.25 Add By KK
@@ -467,7 +463,7 @@ CLayoutInt CCaret::MoveCursor(
 
 	if (nFinalDrawFlag != 0) {
 		if (nFinalDrawFlag == PAINT_ALL) {
-			m_pEditView->Call_OnPaint(PAINT_ALL, false);
+			m_pEditView->Call_OnPaint(PAINT_ALL & ~PAINT_RULER, false);  // ※ルーラはあとで描画される
 			if (nScrollRowNum != 0) {
 				if (m_pEditView->m_pcEditWnd->GetMiniMap().GetHwnd()) {
 					m_pEditView->m_pcEditWnd->GetMiniMap().Call_OnPaint(PAINT_BODY, false);
@@ -516,13 +512,6 @@ CLayoutInt CCaret::MoveCursor(
 		m_pEditView->SyncScrollH( -nScrollColNum );	//	方向が逆なので符号反転が必要
 
 	}
-
-#ifdef UZ_FIX_FLICKER
-	if (bScroll) {
-		/* スクロールバーの状態を更新する */
-		m_pEditView->AdjustScrollBars();
-	}
-#endif  // UZ_
 
 // 02/09/18 対括弧の強調表示 ai Start	03/02/18 ai mod S
 #ifdef UZ_FIX_FLICKER
