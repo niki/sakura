@@ -499,6 +499,12 @@ LRESULT CEditView::DispatchEvent(
 			SB_Marker_Trace(L"WM_APP_SCRBAR_PAINT, RequestCount %d", SBMarker_->nDrawRequestCount_);
 			SBMarker_->WaitForBuild(false);
 			
+#ifdef UZ_FIX_FINDDLG
+			if (m_pcEditWnd->m_cDlgFind.GetHwnd() && SBMarker_->nSearchFoundLine_ > 0) {
+				m_pcEditWnd->m_cDlgFind.SetStatus(SBMarker_->nSearchFoundLine_);
+			}
+#endif  // UZ_
+			
 			// 再描画したいタイミングが複数あり, メッセージがたくさん飛んでくるので
 			// リクエストカウンタが残り１のときに描画処理をする
 			if (SBMarker_->nDrawRequestCount_ == 1) {
@@ -510,12 +516,6 @@ LRESULT CEditView::DispatchEvent(
 				}
 				
 				SB_Marker_Draw();
-
-#ifdef UZ_FIX_FINDDLG
-				if (m_pcEditWnd->m_cDlgFind.GetHwnd() && SBMarker_->nSearchFoundLine_ > 0) {
-					m_pcEditWnd->m_cDlgFind.SetStatus(SBMarker_->nSearchFoundLine_);
-				}
-#endif  // UZ_
 			}
 			
 			SBMarker_->nDrawRequestCount_ = std::max(SBMarker_->nDrawRequestCount_ - 1, 0);
@@ -3035,20 +3035,22 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg) {
 	pEditView->SBMarker_->nMarkFoundLine_ = 0;
 	pEditView->SBMarker_->nDrawRequestCount_ = 0;
 
-	std::vector<const CDocLine *> vLines;
-
 	// ラインの配列を作成
+	const CLayoutInt nAllLines = pEditView->m_pcEditDoc->m_cLayoutMgr.GetLineCount();
+	std::vector<const CDocLine *> vLines;
+	vLines.reserve(nAllLines + 1);
+
+	// 要素を詰め込む
 	{
-		const CLayoutInt nAllLines = pEditView->m_pcEditDoc->m_cLayoutMgr.GetLineCount();
-		vLines.reserve(nAllLines + 1);
-
 		const CDocLine *pCDocLine = pEditView->m_pcEditDoc->m_cDocLineMgr.GetDocLineTop();
-
 		while (pCDocLine) {
 			vLines.push_back(pCDocLine);
 			pCDocLine = pCDocLine->GetNextLine();
 		}
 	}
+	
+	// キャッシュ用
+	std::vector<uint32_t> vCache(nAllLines + 1, 0u);
 	
 	CEditView::ScrBarMarker &rSBMarker = *pEditView->SBMarker_;
 	
@@ -3061,17 +3063,17 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg) {
 	CLayoutInt nLineHint = CLogicInt(0);
 	bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
 
-	const int size = (int)vLines.size();
+	const int vsize = (int)vLines.size();
 
 	{
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < vsize; i++) {
 			if (loop_break == eLoopBreak_None) {
 				const CDocLine *pCDocLine = vLines[i];
 
-				uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? UZ_SCRBAR_FOUND_MAGIC : 0;
-				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? UZ_SCRBAR_MARK_MAGIC : 0;
+				uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? UZ_SCRBAR_FOUND_MAGIC : 0u;
+				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? UZ_SCRBAR_MARK_MAGIC : 0u;
 
-				if ((uFoundMagic | uMarkMagic) != 0) {
+				if ((uFoundMagic | uMarkMagic) != 0u) {
 					CLogicInt nLogicY = i;
 					CLayoutInt nLayoutY;
 					
@@ -3087,8 +3089,11 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg) {
 					}
 					
 					// キャッシュに登録
-					rSBMarker.Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
-					rSBMarker.Add(nLayoutY, uMarkMagic);   // ブックマーク
+					vCache[i] = (uint32_t)nLayoutY | (uFoundMagic | uMarkMagic);
+					if (uFoundMagic != 0u) rSBMarker.nSearchFoundLine_++;
+					if (uMarkMagic != 0u) rSBMarker.nMarkFoundLine_++;
+					//rSBMarker.Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
+					//rSBMarker.Add(nLayoutY, uMarkMagic);   // ブックマーク
 					
 					nLineHint = nLayoutY;
 				} else {
@@ -3107,6 +3112,8 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg) {
 		goto end_thread;
 	}
 
+	// キャッシュと入れ替え
+	rSBMarker.vLines_.swap(vCache);
 
 end_thread:
 	if (!rSBMarker.bExitRequestBuildThread_) {
@@ -3156,13 +3163,12 @@ start_thread:
 		CGraphics gr(hdc);
 		
 		int x = 1;
-		int y;
+		int y = nBarTop;
 		if (bEnable) {
-			y = nBarTop +
-			    (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines * nBarHeight);
+			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines * nBarHeight);
 		} else {
-			y = nBarTop + (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
-			                    pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
+			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
+			           pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
 		}
 		
 		const int w = std::max(DpiScaleX(1), nCxVScroll);
@@ -3182,17 +3188,17 @@ start_thread:
 	// キャッシュを使用して描画
 	{
 		const int foundLeft = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
-		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll / 3 * 2);
-		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(2));
+		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
+		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(3));
 		
 		const int markLeft = std::max(DpiScaleX(1), nCxVScroll / 3 * 0);
 		const int markWidth = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
 		const int markHeight = std::max(DpiScaleY(1), nCxVScroll / 3 * 1);
 
-		const int size = (int)rSBMarker.vLines_.size();
+		const int vsize = (int)rSBMarker.vLines_.size();
 
 #ifdef _OPENMP
-		#pragma omp parallel num_threads(4)
+		#pragma omp parallel num_threads(2)
 #endif
 		{
 			HDC hdc = ::GetDC(pEditView->m_hwndVScrollBar);
@@ -3201,17 +3207,17 @@ start_thread:
 #ifdef _OPENMP
 			#pragma omp for
 #endif
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < vsize; i++) {
 				if (loop_break == eLoopBreak_None) {
 					uint32_t ln = rSBMarker.vLines_[i];
 					
 					int x = 1;
-					int y;
+					int y = nBarTop;
 
 					if (bEnable) {
-						y = nBarTop + (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight);
+						y += (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight);
 					} else {
-						y = nBarTop +
+						y +=
 						    (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
 					}
 
@@ -3410,28 +3416,29 @@ bool CEditView::ScrBarMarker::Add(int nLayoutY, uint32_t magic) {
 	if (magic == 0) return false;
 
 	if (vLines_.empty()) {
-		vLines_.push_back(nLayoutY | magic);
+		vLines_.push_back(nLayoutY | magic); // 空なら先頭に追加
+		SB_Marker_Trace(L"ScrBarMarker::Add, Append first");
 	} else {
-		auto iter = std::find(vLines_.begin(), vLines_.end(), nLayoutY | magic);
-		if (iter != vLines_.end()) {
-			SB_Marker_Trace(L"ScrBarMarker::Add, Already registered");
-			return true;  // すでに登録済み
+		auto it = vLines_.begin();
+		while (it != vLines_.end()) {
+			if (((*it) & UZ_SCRBAR_LINEN_MASK) == nLayoutY) {  // すでに登録されている行がある
+				if ((*it) & magic) {  // すでに登録されているマジック (なにもしない)
+					SB_Marker_Trace(L"ScrBarMarker::Add, Already registered");
+					return true;
+				} else {
+					(*it) |= magic;  // 行は登録済みなのでマジックを追加
+					SB_Marker_Trace(L"ScrBarMarker::Add, Append magic");
+					goto func_end;
+				}
+			}
+			++it;
 		}
 		
-		if ((vLines_.back() & UZ_SCRBAR_LINEN_MASK) <= (uint32_t)nLayoutY) {
-			vLines_.push_back(nLayoutY | magic);  // 末尾に追加
-		} else {
-			auto it = vLines_.begin();
-			while (it != vLines_.end()) {
-				if ((uint32_t)nLayoutY < ((*it) & UZ_SCRBAR_LINEN_MASK)) {
-					vLines_.insert(it, nLayoutY | magic);
-					break;
-				}
-				++it;
-			}
-		}
+		vLines_.push_back(nLayoutY | magic);  // まだないので追加
+		SB_Marker_Trace(L"ScrBarMarker::Add, Append tail");
 	}
 	
+func_end:
 	if (magic & UZ_SCRBAR_FOUND_MAGIC) {
 		nSearchFoundLine_++;
 	}
@@ -3453,19 +3460,23 @@ bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic) {
 	} else {
 		auto it = vLines_.begin();
 		while (it != vLines_.end()) {
-			if ((*it) & magic) {
-				if (((*it) & UZ_SCRBAR_LINEN_MASK) == nLayoutY) {
+			if (((*it) & UZ_SCRBAR_LINEN_MASK) == nLayoutY) {
+				uint32_t m = (*it) & UZ_SCRBAR_MAGIC_MASK;
+				m &= ~magic;  // 指定のマジックを取り除く
+				
+				if (m == 0u) {  // マジックがなくなったら要素を削除
 					it = vLines_.erase(it);
-					bDelete = true;
-					
-					if (magic & UZ_SCRBAR_FOUND_MAGIC) {
-						nSearchFoundLine_ = std::max(nSearchFoundLine_ - 1, 0);
-					}
-					if (magic & UZ_SCRBAR_MARK_MAGIC) {
-						nMarkFoundLine_ = std::max(nMarkFoundLine_ - 1, 0);
-					}
-					continue;
 				}
+				
+				bDelete = true;
+				
+				if (magic & UZ_SCRBAR_FOUND_MAGIC) {
+					nSearchFoundLine_ = std::max(nSearchFoundLine_ - 1, 0);
+				}
+				if (magic & UZ_SCRBAR_MARK_MAGIC) {
+					nMarkFoundLine_ = std::max(nMarkFoundLine_ - 1, 0);
+				}
+				continue;
 			}
 			++it;
 		}
