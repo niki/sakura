@@ -2218,9 +2218,18 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 			break;
 		case NM_DBLCLK:
 			// 2002.02.16 hor Treeのダブルクリックでフォーカス移動できるように 3/4
+#ifdef UZ_FIX_OUTLINEDLG
+			if (OnJump()) {
+				m_bWaitTreeProcess=true;
+				::SetWindowLongPtr( GetHwnd(), DWLP_MSGRESULT, TRUE );	// ツリーの展開／縮小をしない
+			} else {
+				// ツリーの展開／縮小をする
+			}
+#else
 			OnJump();
 			m_bWaitTreeProcess=true;
 			::SetWindowLongPtr( GetHwnd(), DWLP_MSGRESULT, TRUE );	// ツリーの展開／縮小をしない
+#endif
 			return TRUE;
 			//return OnJump();
 		case TVN_KEYDOWN:
@@ -2735,6 +2744,11 @@ BOOL CDlgFuncList::OnJump( bool bCheckAutoClose, bool bFileJump )	//2002.02.08 h
 			}
 		}
 	}
+#ifdef UZ_FIX_OUTLINEDLG
+	else {
+		return FALSE;
+	}
+#endif  // UZ_
 	return TRUE;
 }
 
