@@ -499,12 +499,6 @@ LRESULT CEditView::DispatchEvent(
 			SB_Marker_Trace(L"WM_APP_SCRBAR_PAINT, RequestCount %d", SBMarker_->nDrawRequestCount_);
 			SBMarker_->WaitForBuild(false);
 			
-#ifdef UZ_FIX_FINDDLG
-			if (m_pcEditWnd->m_cDlgFind.GetHwnd() && SBMarker_->nSearchFoundLine_ > 0) {
-				m_pcEditWnd->m_cDlgFind.SetStatus(SBMarker_->nSearchFoundLine_);
-			}
-#endif  // UZ_
-			
 			// 再描画したいタイミングが複数あり, メッセージがたくさん飛んでくるので
 			// リクエストカウンタが残り１のときに描画処理をする
 			if (SBMarker_->nDrawRequestCount_ == 1) {
@@ -525,7 +519,13 @@ LRESULT CEditView::DispatchEvent(
 		{
 			SB_Marker_Trace(L"WM_APP_SCRBAR_ENDPAINT");
 			SBMarker_->WaitForDraw(false);
-			
+
+#ifdef UZ_FIX_FINDDLG
+			if (m_pcEditWnd->m_cDlgFind.GetHwnd() && SBMarker_->nSearchFoundLine_ > 0) {
+				m_pcEditWnd->m_cDlgFind.SetStatus(SBMarker_->nSearchFoundLine_);
+			}
+#endif  // UZ_
+
 			::UpdateWindow(m_hwndVScrollBar);
 		}
 		return 0L;
@@ -3054,62 +3054,48 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg) {
 	
 	CEditView::ScrBarMarker &rSBMarker = *pEditView->SBMarker_;
 	
-	enum {
-		eLoopBreak_None = 0,
-		eLoopBreak_Abort,
-	};
-	int loop_break = eLoopBreak_None;
-	
 	CLayoutInt nLineHint = CLogicInt(0);
 	bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
 
 	const int vsize = (int)vLines.size();
 
-	{
-		for (int i = 0; i < vsize; i++) {
-			if (loop_break == eLoopBreak_None) {
-				const CDocLine *pCDocLine = vLines[i];
+	for (int i = 0; i < vsize; i++) {
+		const CDocLine *pCDocLine = vLines[i];
 
-				uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? UZ_SCRBAR_FOUND_MAGIC : 0u;
-				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? UZ_SCRBAR_MARK_MAGIC : 0u;
+		uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? UZ_SCRBAR_FOUND_MAGIC : 0u;
+		uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? UZ_SCRBAR_MARK_MAGIC : 0u;
 
-				if ((uFoundMagic | uMarkMagic) != 0u) {
-					CLogicInt nLogicY = i;
-					CLayoutInt nLayoutY;
-					
-					if (bNoTextWrap) {  // 折り返しなし
-						// ロジック行＝レイアウト行
-						nLayoutY = nLogicY;
-					} else {
-						// ロジック行→レイアウト行
-						CLayoutPoint ptLayout;
-						pEditView->m_pcEditDoc->m_cLayoutMgr.LogicToLayout(/*CLogicPoint*/ {0, nLogicY}, &ptLayout,
-						                                                   nLineHint);
-						nLayoutY = ptLayout.y;
-					}
-					
-					// キャッシュに登録
-					vCache[i] = (uint32_t)nLayoutY | (uFoundMagic | uMarkMagic);
-					if (uFoundMagic != 0u) rSBMarker.nSearchFoundLine_++;
-					if (uMarkMagic != 0u) rSBMarker.nMarkFoundLine_++;
-					//rSBMarker.Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
-					//rSBMarker.Add(nLayoutY, uMarkMagic);   // ブックマーク
-					
-					nLineHint = nLayoutY;
-				} else {
-					nLineHint++;
-				}
-
-				if (rSBMarker.bExitRequestBuildThread_) {  // 中断
-					loop_break = eLoopBreak_Abort;
-				}
+		if ((uFoundMagic | uMarkMagic) != 0u) {
+			CLogicInt nLogicY = i;
+			CLayoutInt nLayoutY;
+			
+			if (bNoTextWrap) {  // 折り返しなし
+				// ロジック行＝レイアウト行
+				nLayoutY = nLogicY;
+			} else {
+				// ロジック行→レイアウト行
+				CLayoutPoint ptLayout;
+				pEditView->m_pcEditDoc->m_cLayoutMgr.LogicToLayout(/*CLogicPoint*/ {0, nLogicY}, &ptLayout,
+				                                                   nLineHint);
+				nLayoutY = ptLayout.y;
 			}
+			
+			// キャッシュに登録
+			vCache[i] = (uint32_t)nLayoutY | (uFoundMagic | uMarkMagic);
+			if (uFoundMagic != 0u) rSBMarker.nSearchFoundLine_++;
+			if (uMarkMagic != 0u) rSBMarker.nMarkFoundLine_++;
+			//rSBMarker.Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
+			//rSBMarker.Add(nLayoutY, uMarkMagic);   // ブックマーク
+			
+			nLineHint = nLayoutY;
+		} else {
+			nLineHint++;
 		}
-	}
 
-	if (loop_break == eLoopBreak_Abort) {  // 中断
-		SB_Marker_Trace(L"  >>>> abort CacheBuildThread");
-		goto end_thread;
+		if (rSBMarker.bExitRequestBuildThread_) {  // 中断
+			SB_Marker_Trace(L"  >>>> abort CacheBuildThread");
+			goto end_thread;
+		}
 	}
 
 	// キャッシュと入れ替え

@@ -312,9 +312,9 @@ end_of_func:;
 		if(NULL == pcSelectLogic && ((nLineNumOld > nLineNum)||(nLineNumOld == nLineNum && nIdxOld > nIdx)))
 			m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRNEXT1));
 #ifdef UZ_FIX_FINDDLG
-		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
-			GetEditWindow()->m_cDlgFind.SetStatus(0);
-		}
+		//if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
+		//	GetEditWindow()->m_cDlgFind.SetStatus(0);
+		//}
 #endif  // UZ_
 	}
 	else{
@@ -503,9 +503,9 @@ end_of_func:;
 		if((nLineNumOld < nLineNum)||(nLineNumOld == nLineNum && nIdxOld < nIdx))
 			m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRPREV1));
 #ifdef UZ_FIX_FINDDLG
-		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
-			GetEditWindow()->m_cDlgFind.SetStatus(0);
-		}
+		//if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
+		//	GetEditWindow()->m_cDlgFind.SetStatus(0);
+		//}
 #endif  // UZ_	}else{
 		m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRPREV2));
 // To Here 2002.01.26 hor
