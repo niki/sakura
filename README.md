@@ -23,8 +23,8 @@ Download & Setup
 
 |ファイル名||主な変更内容|サイズ|日付||
 |-|-|-|-|-|-|
-|sakura-uzuki-2.50.zip|32bit(x86)||776KB|2017.7.16|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.50.zip)|
-|sakura-uzuki-2.50-64.zip|64bit(x64)||---|----.--.--|[download]()|
+|sakura-uzuki-2.51.zip|32bit(x86)||776KB|2017.7.21|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.51.zip)|
+|~~sakura-uzuki-2.51-64.zip~~|64bit(x64)||---|----.--.--|[download]()|
 |keyword_pack.zip||patchunicode:#720対応|355KB|2017.6.16|[download](Publish/keyword_pack.zip)|
 
 - Visual C++ 2017 ランタイムが必要です  
