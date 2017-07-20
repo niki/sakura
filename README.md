@@ -23,9 +23,9 @@ Download & Setup
 
 |ファイル名||主な変更内容|サイズ|日付||
 |-|-|-|-|-|-|
-|sakura-uzuki-2.51.zip|32bit(x86)||776KB|2017.7.21|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.51.zip)|
-|~~sakura-uzuki-2.51-64.zip~~|64bit(x64)||---|----.--.--|[download]()|
-|keyword_pack.zip||patchunicode:#720対応|355KB|2017.6.16|[download](Publish/keyword_pack.zip)|
+|sakura-uzuki-2.51.zip|32bit(x86)||776KB|2017/07/21|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.51.zip)|
+|~~sakura-uzuki-2.51-64.zip~~|64bit(x64)||---|----/--/--|[download]()|
+|keyword_pack.zip||patchunicode:#720対応|355KB|2017/06/16|[download](Publish/keyword_pack.zip)|
 
 - Visual C++ 2017 ランタイムが必要です  
   [Visual Studio 2017 の Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/?q=#other-ja)  
@@ -46,7 +46,7 @@ Download & Setup
 Changed  
 -------
 
-<details open><summary>ファイ/設定/機能</summary>
+<details open><summary>ファイル/設定/機能</summary>
 <ul>
 <li>マクロ・プラグインに使用できる言語に `Lua`を追加
 <li>強調キーワードのセットファイル sakura.keywordset.csv の使用
