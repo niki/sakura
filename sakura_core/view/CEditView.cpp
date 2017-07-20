@@ -3442,30 +3442,34 @@ bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic) {
 	bool bDelete = false;
 	
 	if (vLines_.empty()) {
+		SB_Marker_Trace(L"ScrBarMarker::Del, Empty");
 		return false;
 	} else {
 		auto it = vLines_.begin();
 		while (it != vLines_.end()) {
 			if (((*it) & UZ_SCRBAR_LINEN_MASK) == nLayoutY) {
-				uint32_t m = (*it) & UZ_SCRBAR_MAGIC_MASK;
-				m &= ~magic;  // 指定のマジックを取り除く
+				(*it) &= ~magic;  // 指定のマジックを取り除く
 				
-				if (m == 0u) {  // マジックがなくなったら要素を削除
+				if (((*it) & UZ_SCRBAR_MAGIC_MASK) == 0u) {  // マジックがなくなったら要素を削除
 					it = vLines_.erase(it);
+					SB_Marker_Trace(L"ScrBarMarker::Del, Remove line");
+				} else {
+					SB_Marker_Trace(L"ScrBarMarker::Del, Remove magic");
 				}
 				
 				bDelete = true;
-				
-				if (magic & UZ_SCRBAR_FOUND_MAGIC) {
-					nSearchFoundLine_ = std::max(nSearchFoundLine_ - 1, 0);
-				}
-				if (magic & UZ_SCRBAR_MARK_MAGIC) {
-					nMarkFoundLine_ = std::max(nMarkFoundLine_ - 1, 0);
-				}
-				continue;
+				goto func_end;
 			}
 			++it;
 		}
+	}
+	
+func_end:
+	if (magic & UZ_SCRBAR_FOUND_MAGIC) {
+		nSearchFoundLine_ = std::max(nSearchFoundLine_ - 1, 0);
+	}
+	if (magic & UZ_SCRBAR_MARK_MAGIC) {
+		nMarkFoundLine_ = std::max(nMarkFoundLine_ - 1, 0);
 	}
 	
 	return bDelete;

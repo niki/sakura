@@ -286,12 +286,11 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLogicY);
 				
 				if (cBookmark.IsBookmarked()) {
-					// 登録
-					m_pCommanderView->SBMarker_->Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
+					m_pCommanderView->SBMarker_->Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);  // 登録
 				} else {
-					// 削除
-					m_pCommanderView->SBMarker_->Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
+					m_pCommanderView->SBMarker_->Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);  // 削除
 				}
+				m_pCommanderView->SB_Marker_CallPaint(4001);
 			}
 #endif  // UZ_
 		}
@@ -309,12 +308,11 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLogicY);
 			
 			if (cBookmark.IsBookmarked()) {
-				// 登録
-				m_pCommanderView->SBMarker_->Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
+				m_pCommanderView->SBMarker_->Add(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);  // 登録
 			} else {
-				// 削除
-				m_pCommanderView->SBMarker_->Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);
+				m_pCommanderView->SBMarker_->Del(ptLayout.y, UZ_SCRBAR_MARK_MAGIC);  // 削除
 			}
+			m_pCommanderView->SB_Marker_CallPaint(4002);
 		}
 #endif  // UZ_
 	}
