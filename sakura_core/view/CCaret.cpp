@@ -448,8 +448,10 @@ CLayoutInt CCaret::MoveCursor(
 #endif  // UZ_
 		}
 
+#ifndef UZ_FIX_FLICKER
 		/* スクロールバーの状態を更新する */
 		m_pEditView->AdjustScrollBars(); // 2001/10/20 novice
+#endif // UZ_
 	}
 
 	// 横スクロールが発生したら、ルーラー全体を再描画 2002.02.25 Add By KK
@@ -511,6 +513,10 @@ CLayoutInt CCaret::MoveCursor(
 		m_pEditView->SyncScrollV( -nScrollRowNum );	//	方向が逆なので符号反転が必要
 		m_pEditView->SyncScrollH( -nScrollColNum );	//	方向が逆なので符号反転が必要
 
+#ifdef UZ_FIX_FLICKER
+		/* スクロールバーの状態を更新する */
+		m_pEditView->AdjustScrollBars();
+#endif // UZ_
 	}
 
 // 02/09/18 対括弧の強調表示 ai Start	03/02/18 ai mod S
