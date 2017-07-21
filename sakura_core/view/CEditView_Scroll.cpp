@@ -312,7 +312,12 @@ void CEditView::AdjustScrollBars()
 		si.nPage = (Int)GetTextArea().m_nViewRowNum / nVScrollRate;	/* 表示域の行数 */
 		si.nPos  = (Int)GetTextArea().GetViewTopLine() / nVScrollRate;	/* 表示域の一番上の行(0開始) */
 		si.nTrackPos = 0;
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+		// @@ スクロールバーマーカーを描画する際にスクロールバーを更新する 20170721 
+		::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, FALSE );
+#else
 		::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, TRUE );
+#endif // UZ_
 		m_nVScrollRate = nVScrollRate;				/* 垂直スクロールバーの縮尺 */
 		
 		//	Nov. 16, 2002 genta

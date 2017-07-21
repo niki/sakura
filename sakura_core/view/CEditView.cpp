@@ -3157,7 +3157,10 @@ start_thread:
 			           pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
 		}
 		
-		const int w = std::max(DpiScaleX(1), nCxVScroll);
+		//gr.FillSolidMyRect(/*RECT*/{x, nBarTop, x + nCxVScroll - 1, nBarTop + nBarHeight}, ::GetSysColor(COLOR_MENU));
+		//gr.FillSolidMyRect(/*RECT*/{x, nThumbTop, x + nCxVScroll - 1, nThumbBottom}, ::GetSysColor(COLOR_SCROLLBAR));
+		
+		const int w = std::max(DpiScaleX(1), nCxVScroll - 1);
 		const int h = std::max(DpiScaleY(1), DpiScaleY(2));
 		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor);
 		
@@ -3384,6 +3387,17 @@ void CEditView::ScrBarMarker::Draw() {
 		hDrawThread_ = 0;
 		SB_Marker_Trace(L" *** %s: CloseHandle(hDrawThread_)", _T(__FUNCTION__));
 	}
+	
+#if 1 // @@ 描画する際にスクロールバーを更新する 20170721 
+	SCROLLINFO si;
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	::GetScrollInfo(pEditView_->m_hwndVScrollBar, SB_CTL, &si);
+
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
+	::SetScrollInfo(pEditView_->m_hwndVScrollBar, SB_CTL, &si, TRUE);
+#endif // @@
 	
 	// スクロールバーの情報を取得
 	sbi_.cbSize = sizeof(sbi_);
