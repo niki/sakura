@@ -1,8 +1,8 @@
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 
-copy Lua.Makefile.nmake .\lua\src\Makefile.nmake
+copy Lua.Makefile.nmake .\src\Makefile.nmake
 
-cd .\lua\src
+pushd .\src
 
 nmake /f Makefile.nmake clean
 
@@ -12,5 +12,7 @@ copy lua53_64.dll ..
 
 nmake /f Makefile.nmake lib x64=1
 copy liblua53_64.lib ..
+
+popd
 
 pause
