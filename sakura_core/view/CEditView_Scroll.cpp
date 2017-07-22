@@ -29,6 +29,12 @@
 #include "window/CEditWnd.h"
 #include "types/CTypeSupport.h"
 #include <limits.h>
+#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#include "_main/CAppMode.h"
+#include "CEditApp.h"
+#include "CGrepAgent.h" // use CEditApp.h
+#endif  // UZ_
+
 
 /*! スクロールバー作成
 	@date 2006.12.19 ryoji 新規作成（CEditView::Createから分離）
@@ -313,8 +319,12 @@ void CEditView::AdjustScrollBars()
 		si.nPos  = (Int)GetTextArea().GetViewTopLine() / nVScrollRate;	/* 表示域の一番上の行(0開始) */
 		si.nTrackPos = 0;
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
+		BOOL bRedraw = FALSE;
+		if (m_bMiniMap) bRedraw = TRUE;
+		if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) bRedraw = TRUE;
+		
 		// @@ スクロールバーマーカーを描画する際にスクロールバーを更新する 20170721 
-		::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, FALSE );
+		::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, bRedraw );
 #else
 		::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, TRUE );
 #endif // UZ_
