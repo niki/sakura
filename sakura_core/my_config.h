@@ -53,7 +53,7 @@
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 // 修正者
-#define UZ_AUTHOR       "Uzuki"
+#define UZ_AUTHOR       "遊月(Uzuki)"
 #define UZ_AUTHOR_PAGE  "https://github.com/uzuki3/sakura"
 
 // 拡張用レジストリキー
@@ -63,8 +63,8 @@
 // バージョン情報ダイアログの変更 20170315
 //------------------------------------------------------------------
 #define UZ_FIX_VERDLG
-	#define PR_VER      2,51,0,0
-	#define PR_VER_STR "2.51"
+	#define PR_VER      2,52,0,0
+	#define PR_VER_STR "2.52"
 	#define BASE_REV    4192
 
 //-------------------------------------------------------------------------

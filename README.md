@@ -23,7 +23,7 @@ Download & Setup
 
 |ファイル名||主な変更内容|サイズ|日付||
 |-|-|-|-|-|-|
-|sakura-uzuki-2.51.zip|32bit(x86)||776KB|2017/07/21|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.51.zip)|
+|sakura-uzuki-2.52.zip|32bit(x86)|縦スクロールバーの再描画回数を減らす|775KB|2017/07/21|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.52.zip)|
 |keyword_pack.zip||patchunicode:#720対応|355KB|2017/06/16|[download](Publish/keyword_pack.zip)|
 
 - Visual C++ 2017 ランタイムが必要です  
