@@ -420,14 +420,6 @@ void CDlgFuncList::SetData()
 	hwndList = ::GetDlgItem( GetHwnd(), IDC_LIST_FL );
 	hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
 
-#ifdef UZ_FIX_OUTLINEDLG
-	SetWindowTheme(hwndList, L"Explorer", NULL);
-	//::SetWindowLongPtr(hwndList, GWL_STYLE, ::GetWindowLongPtr(hwndList, GWL_STYLE) & ~TVS_HASLINES);
-	
-	SetWindowTheme(hwndTree, L"Explorer", NULL);
-	//::SetWindowLongPtr(hwndTree, GWL_STYLE, ::GetWindowLongPtr(hwndTree, GWL_STYLE) & ~TVS_HASLINES);
-#endif  // UZ_
-
 	m_bDummyLParamMode = false;
 	m_vecDummylParams.clear();
 

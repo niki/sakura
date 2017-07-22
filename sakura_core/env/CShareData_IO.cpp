@@ -146,7 +146,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 //	MYTRACE( _T("Iniファイル処理-1 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
-#ifdef UZ_FIX_PROFILES
+#if defined(UZ_FIX_PROFILES) && UZ_USE_KEYWORDSET_CSV
 	std::tstring keywordset_fname =
 	    si::file::dirname(szIniFileName) +
 	    si::file::basename(szIniFileName) + _T(".keywordset.csv");
@@ -157,7 +157,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			/* 設定ファイルが存在しない */
 
 			// キーワードファイルのインポート
-#ifdef UZ_FIX_PROFILES
+#if defined(UZ_FIX_PROFILES) && UZ_USE_KEYWORDSET_CSV
 			if (si::file::exist(keywordset_fname)) {
 				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
 			} else {
@@ -169,7 +169,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #endif  // UZ_
 			return false;
 		}
-#ifdef UZ_FIX_PROFILES
+#if defined(UZ_FIX_PROFILES) && UZ_USE_KEYWORDSET_CSV
 		else {
 			// キーワードファイルのインポート
 			if (si::file::exist(keywordset_fname)) {
@@ -208,7 +208,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 
 	// Feb. 12, 2006 D.S.Koba
-#ifdef UZ_FIX_PROFILES
+#if defined(UZ_FIX_PROFILES) && UZ_SEPARATE_HISTORY
 	do {
 		CDataProfile cProfileRecent;
 
@@ -254,7 +254,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_Grep( cProfile );
 #endif  // UZ_
 	ShareData_IO_Folders( cProfile );
-#ifndef UZ_FIX_PROFILES
+#if defined(UZ_FIX_PROFILES) && UZ_SEPARATE_HISTORY
+#else
 	ShareData_IO_Cmd( cProfile );
 #endif  // UZ_
 	ShareData_IO_Nickname( cProfile );
@@ -266,7 +267,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_KeyBind( cProfile );
 	ShareData_IO_Print( cProfile );
 	ShareData_IO_Types( cProfile );
-#ifdef UZ_FIX_PROFILES
+#if defined(UZ_FIX_PROFILES) && UZ_USE_KEYWORDSET_CSV
 	if (!si::file::exist(keywordset_fname)) {
 		ShareData_IO_KeyWords( cProfile );
 	}
@@ -375,10 +376,8 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				std::wstring path = GetTokenStringW(stream, ',');
 
 #if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
-					if (!fexist(path.c_str())) {
-						return false;
-					}
+				if (!fexist(path.c_str())) {
+					return false;
 				}
 #endif  // UZ_
 
@@ -452,10 +451,8 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				std::wstring dir = GetTokenStringW(stream, ',');
 
 #if UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!!RegKey(UZ_REGKEY).get(_T("DeleteHistoryNotExistAtStartup"), 1)) {
-					if (!fexist(dir.c_str())) {
-						return false;
-					}
+				if (!fexist(dir.c_str())) {
+					return false;
 				}
 #endif  // UZ_
 

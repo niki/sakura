@@ -96,7 +96,7 @@ public:
 	static CMutex& GetMutexShareWork();
 
 	void InitKeyword(DLLSHAREDATA*, bool);
-#ifdef UZ_FIX_PROFILES
+#if defined(UZ_FIX_PROFILES) && UZ_USE_KEYWORDSET_CSV
 	void InitKeywordFromList(DLLSHAREDATA*, const std::tstring&);
 #endif  // UZ_
 

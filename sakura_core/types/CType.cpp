@@ -30,7 +30,7 @@
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "typeprop/CImpExpManager.h"
-#ifdef UZ_FIX_PROFILES
+#if defined(UZ_FIX_PROFILES) && UZ_USE_KEYWORDSET_CSV
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -258,7 +258,7 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 #undef PopulateKeyword2
 #undef PopulateKeyword
 }
-#ifdef UZ_FIX_PROFILES
+#if defined(UZ_FIX_PROFILES) && UZ_USE_KEYWORDSET_CSV
 void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstring &fname)
 {
 	/* 強調キーワードのテストデータ */

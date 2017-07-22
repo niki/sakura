@@ -6,44 +6,38 @@
 
 /*
 ●やりたいこと.
-- [?] 20150605
-  bug, カーソル移動したときに移動前の状態が一瞬残る
+- [?] 20150605 bug, カーソル移動したときに移動前の状態が一瞬残る
   \view\CEditView_Scroll.cpp:void CEditView::ScrollDraw() があやしい?
   ScrollWindowEx() で行われる更新をなんとかすればいい?
 
-- [ ] 20150702
-  開いているタブのファイル名をコピー.
+- [ ] 20150702 開いているタブのファイル名をコピー
 
-- [ ] 20150804
-  タスクバーアイコンのちらつき
+- [ ] 20150804 タスクバーアイコンのちらつき
   \window\CTabWnd.cpp:CTabWnd::ShowHideWindow()
   SendMessageTimeout() と TabWnd_ActivateFrameWindow() の関係
 
-- [ ] 20170110
-  bug?, 画面上端下端でキャレットが消えたタイミングでスクロールさせるとキャレットが消えたままスクロールする
+- [ ] 20170110 bug?, 画面上端下端でキャレットが消えたタイミングでスクロールさせるとキャレットが消えたままスクロールする
 
-- [ ] 20170303
-  テキスト描画、文字の右端が欠ける
+- [ ] 20170303 テキスト描画、文字の右端が欠ける
   [patchunicode:#588]をあてて目立たなくはしている, 続けて描画されれば欠けない
   [patchunicode:#860]をあてれば解消しそう
     sakura_core\view\CEditView_Paint.cpp
     pcFigureManager->GetTextFigure().DrawImp(pInfo, nPosBgn, pInfo->GetPosInLogic() - nPosBgn);
 
-- [ ] 20170404
-  BkSpを押したときにタブ入力文字だけしかない場合は逆TABにする
+- [ ] 20170404 BkSpを押したときにタブ入力文字だけしかない場合は逆TABにする
 
-- [x] 20170513 , 20170620 
-  せっかくいろいろなデフォルトタイプがあるのだから任意のタイプを追加できるようにしたい
+- [x] 20170513@20170620 せっかくいろいろなデフォルトタイプがあるのだから任意のタイプを追加できるようにしたい
 
-- [ ] 20170607
-  #RRGGBB を色付け
+- [ ] 20170607 #RRGGBB を色付け
 
-- [ ] 20170611 
-  空白タブ改行行番号の表示切替
+- [ ] 20170611 空白タブ改行行番号の表示切替 
 
-- [x] 20170611 , 20170620 
-  Grep, Exclude dirsの追加、検索時に # をつけて「ファイル」につなげる
+- [x] 20170611@20170620 Grep, Exclude dirsの追加、検索時に # をつけて「ファイル」につなげる
   Grep, 「$cpp」を「*.c *.cpp *.cc *.cxx *.c++ *.h *.hpp」などに展開する機能 
+
+- [ ] 20170722 同じファイルのウィンドウを複製する
+
+- [ ] 20170722 アンドゥ, リドゥが遅いのをなんとかしたい
 */
 
 // ● フォント
@@ -194,7 +188,7 @@
 
 //------------------------------------------------------------------
 // 半角空白文字
-// - 半角空白文字を "・" で描画 (Imitate 'Sublime Text') 20130602
+// - 半角空白文字を '・' で描画 (Imitate 'Sublime Text') 20130602
 // - Non-Breaking-Spaceを半角空白として表示する 20170415
 //------------------------------------------------------------------
 #define UZ_FIX_HAN_SPACE
@@ -202,7 +196,7 @@
 //------------------------------------------------------------------
 // タブ文字（矢印）の鏃(>)は表示しない (Imitate 'Sublime Text') 20150525
 //  - 「長い矢印」「短い矢印」→「線」 20160819
-//  -> タブ表示の文字指定廃止, 表示は線のみ 20170329
+//    -> タブ表示の文字指定廃止, 表示は線のみ 20170329
 //------------------------------------------------------------------
 #define UZ_FIX_TAB_MARK
 
@@ -294,24 +288,23 @@
 //------------------------------------------------------------------
 // PPAを使用する
 //  - 64bit版のときはPPAの処理を無効にする
+//  - 古いものなので無効にする 20170722 
 //------------------------------------------------------------------
-#ifndef _WIN64
-#define UZ_USE_PPA
-#endif
+//#ifndef _WIN64
+//#define UZ_USE_PPA
+//#endif
 
 //------------------------------------------------------------------
 // プロファイル
-//  - 起動時に存在しないファイル・フォルダの履歴は削除する 20170410
-//    (REG/DeleteHistoryNotExistAtStartup:1)
-//  - 履歴は別ファイルで扱う (sakura.recent) 20170502
 //  - カラー設定のインポートはカラー情報だけを適用させる 20170504
 //  - カラー設定の色に名前を付ける (fg,bg,white,blackなど) 20170510
-//  - sakura.keywordset.csvを用意し、強調キーワードの管理はこのファイルで行う 20170513
 //  - プライグインの設定書き込み時、未定義値を無視する 20170612 
 //  - 印刷設定書き込み時、未定義値を無視する 20170612 
 //------------------------------------------------------------------
 #define UZ_FIX_PROFILES
-	#define UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP (1)
+	#define UZ_SEPARATE_HISTORY                    (1)  // 履歴は別ファイルで扱う (sakura.recent) 20170502
+	#define UZ_DELETE_HISTORY_NOT_EXIST_AT_STARTUP (1)  // 起動時に存在しないファイル・フォルダの履歴は削除する 20170410
+	#define UZ_USE_KEYWORDSET_CSV                  (1)  // sakura.keywordset.csvを用意し、強調キーワードの管理はこのファイルで行う 20170513
 
 //------------------------------------------------------------------
 // メインメニューはデフォルトを使用する 20170515
@@ -322,33 +315,19 @@
 //------------------------------------------------------------------
 // 開かれているファイルを自己管理する前提で多重オープンの許可 20130619
 //  - Shiftを押しながらファイルドロップで多重オープン
+//    -> 開いているドキュメントを複製する機能をつけたい
 //------------------------------------------------------------------
 #define UZ_MULTIPLE_OPEN_FILES
 
 //------------------------------------------------------------------
 // 最大数 20131002, 20161213, 20170618 
 // \sakura_core\config\maxdata.h
-// (REG/RecentSearchKeyMax:20)
-// (REG/RecentReplaceKeyMax:20)
-// (REG/RecentGrepFileMax:10)
-// (REG/RecentGrepFolderMax:20)
 //------------------------------------------------------------------
 #define UZ_FIX_MAXDATA
-	#define UZ_MAX_SEARCHKEY  (20) // 検索キー
-	#define UZ_MAX_REPLACEKEY (20) // 置換キー
-	#define UZ_MAX_GREPFILE   (10)  // Grepファイル
-	#define UZ_MAX_GREPFOLDER (20) // Grepフォルダ
-
-//------------------------------------------------------------------
-// メニューアイコン
-//  - ビットマップメニュー
-//      ::InsertMenuItem( hMenu, 0xFFFFFFFF, TRUE, &mii );
-//      http://home.a00.itscom.net/hatada/windows/introduction/menu01.html
-//      http://eternalwindows.jp/winbase/menu/menu10.html
-//    起動時にアイコンの数だけHBITMAPを生成する
-//      \sakura_core\uiparts\CImageListMgr.cpp
-//------------------------------------------------------------------
-#define UZ_FIX_MENUICON
+	#define UZ_MAX_SEARCHKEY  (20) // 検索キー (REG/RecentSearchKeyMax:20)
+	#define UZ_MAX_REPLACEKEY (20) // 置換キー (REG/RecentReplaceKeyMax:20)
+	#define UZ_MAX_GREPFILE   (10)  // Grepファイル (REG/RecentGrepFileMax:10)
+	#define UZ_MAX_GREPFOLDER (20) // Grepフォルダ (REG/RecentGrepFolderMax:20)
 
 //------------------------------------------------------------------
 // 最近使ったファイル
@@ -363,7 +342,7 @@
 //   cMRU.CreateMenu( hMenu, &m_cMenuDrawer );	//	ファイルメニュー
 //------------------------------------------------------------------
 #define UZ_FIX_RECENT_FILE_DISP_NAME
-	#define UZ_FILEPATH_COMPACT_LENGTH (50)
+	#define UZ_FILEPATH_COMPACT_LENGTH (60)
 
 //------------------------------------------------------------------
 // タイプ別設定一覧の「追加」から任意のタイプを追加できるようにする 20170620 
@@ -380,6 +359,17 @@
 // PHPの preg_quote みたいなもの
 //------------------------------------------------------------------
 #define UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+
+//------------------------------------------------------------------
+// メニューアイコン
+//  ! ビットマップメニュー
+//      ::InsertMenuItem( hMenu, 0xFFFFFFFF, TRUE, &mii );
+//      http://home.a00.itscom.net/hatada/windows/introduction/menu01.html
+//      http://eternalwindows.jp/winbase/menu/menu10.html
+//    起動時にアイコンの数だけHBITMAPを生成する
+//      \sakura_core\uiparts\CImageListMgr.cpp
+//------------------------------------------------------------------
+//#define UZ_FIX_MENUICON
 
 //------------------------------------------------------------------
 // 検索
@@ -411,7 +401,7 @@
 //  - CLSID_FileOpenDialogを使用する
 //    使用するには Vista以降にする必要がある
 //      -  WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0501
-//      -> WINVER=0x0601;_WIN32_WINNT=0x0601;_WIN32_IE=0x0800
+//        -> WINVER=0x0601;_WIN32_WINNT=0x0601;_WIN32_IE=0x0800
 // http://eternalwindows.jp/installer/originalinstall/originalinstall02.html
 // https://msdn.microsoft.com/ja-jp/library/windows/desktop/ff485843(v=vs.85).aspx Minimum supported client
 // http://qiita.com/hkuno/items/7b8daa37d9b68e390d7e _WIN32_WINNTの設定値
@@ -423,6 +413,7 @@
 
 //------------------------------------------------------------------
 // ダイアログを編集ウィンドウに配置 20170404
+// (デスクトップではなくサクラエディタのウィンドウの位置の影響を受けます)
 //  - アウトライン解析
 //  - 外部コマンド実行
 //  - 検索
@@ -464,20 +455,20 @@
 //  - フォントをメインフォントにする
 //  - ドッキング時、ウィンドウカラーにシステムカラーを使う
 //    (REG/OutlineDockSystemColor:1)
-//  - アウトライン解析ダイアログツリーのテーマに 'Explorer' を使用する 20170501
 //  - ルールファイル解析で「デフォルト」だとソートしていないため逆順になる 20170509
 //  - ダブルクリックでツリーの展開／縮小をできるようにする 20170720
+//  ? SetWindowTheme(hwndList, L"Explorer", NULL);
+//  ? ::SetWindowLongPtr(hwndList, GWL_STYLE, ::GetWindowLongPtr(hwndList, GWL_STYLE) & ~TVS_HASLINES);
 //------------------------------------------------------------------
 #define UZ_FIX_OUTLINEDLG
 
 //------------------------------------------------------------------
 // 検索ダイアログ 
-//  - インクリメンタル検索をする 20170621 
-//  - レイアウトをダイアログを開いたままでも邪魔にならないようにコンパクト化 20170622 
 //  - ダイアログにフォーカスがあるときも「次を検索」「前を検索」キーを使用できるようにする 20170624 
-//  - VisualStudioの検索を模倣 20170624 
-//  - 「検索ダイアログを自動的に閉じる」を排除 20170711 
-//  - 「見つからないときにメッセージを表示」を排除 20170711 
+//  - レイアウト,検索方法を VisualStudio の検索を模倣 20170624 
+//    - インクリメンタル検索をする 20170621 
+//    - 「検索ダイアログを自動的に閉じる」を排除 20170711 
+//    - 「見つからないときにメッセージを表示」を排除 20170711 
 //------------------------------------------------------------------
 #define UZ_FIX_FINDDLG
 
