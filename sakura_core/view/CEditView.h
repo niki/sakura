@@ -789,7 +789,7 @@ public:
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 public:
-	// --- スクロールバーマーカー関連 ---
+	//! スクロールバーマーカークラス
 	class ScrBarMarker {
 	public:
 		explicit ScrBarMarker(CEditView *pEditView);
@@ -838,7 +838,6 @@ public:
 	};
 	
 	std::unique_ptr<ScrBarMarker> SBMarker_;
-	// --------------------------
 	
 	void _SB_Marker_CallPaint(int foo);               // 描画要求 foo:マーキング用
 	void _SB_Marker_Clear(int foo);                   // クリア (再構築要求) foo:マーキング用

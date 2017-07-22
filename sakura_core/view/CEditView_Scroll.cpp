@@ -339,6 +339,30 @@ void CEditView::AdjustScrollBars()
 	}
 	if( NULL != m_hwndHScrollBar ){
 		/* 水平スクロールバー */
+#if UZ_EDITVIEW_H_SCRBAR_REDRAW_TIMING
+		bEnable = ( GetTextArea().m_nViewColNum < GetRightEdgeForScrollBar() );
+		
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_ALL;
+		::GetScrollInfo(m_hwndHScrollBar, SB_CTL, &si);
+		
+		if (!bEnable ||
+		    (si.nPage == (Int)GetTextArea().m_nViewColNum &&
+		     si.nPos == (Int)GetTextArea().GetViewLeftCol())
+		) {
+			// 更新しない
+		} else {
+			si.cbSize = sizeof( si );
+			si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
+			si.nMin  = 0;
+			si.nMax  = (Int)GetRightEdgeForScrollBar() - 1;		// 2009.08.28 nasukoji	スクロールバー制御用の右端座標を取得
+			si.nPage = (Int)GetTextArea().m_nViewColNum;			/* 表示域の桁数 */
+			si.nPos  = (Int)GetTextArea().GetViewLeftCol();		/* 表示域の一番左の桁(0開始) */
+			si.nTrackPos = 1;
+			::SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE );
+			//si::logln(L"SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE )");
+		}
+#else
 		si.cbSize = sizeof( si );
 		si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
 		si.nMin  = 0;
@@ -347,6 +371,7 @@ void CEditView::AdjustScrollBars()
 		si.nPos  = (Int)GetTextArea().GetViewLeftCol();		/* 表示域の一番左の桁(0開始) */
 		si.nTrackPos = 1;
 		::SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE );
+#endif  // UZ_
 
 		//	2006.1.28 aroka 判定条件誤り修正 (バーが消えてもスクロールしない)
 		bEnable = ( GetTextArea().m_nViewColNum < GetRightEdgeForScrollBar() );

@@ -173,6 +173,8 @@
 	// キャレットのある行の色
 	// (REG/EditViewScrBarMarkColor:#d80000)
 	#define UZ_SCRBAR_CURSOR_COLOR _T("#0026ff") //_T("#0000cd") //_T("#00d800")
+	
+	#define UZ_EDITVIEW_H_SCRBAR_REDRAW_TIMING  (1)  // 水平スクロールバーの更新タイミングを修正
 
 //------------------------------------------------------------------
 // 行を中央ぞろえにする 20140326 - 20150724
