@@ -347,7 +347,8 @@ void CEditView::AdjustScrollBars()
 		::GetScrollInfo(m_hwndHScrollBar, SB_CTL, &si);
 		
 		if (!bEnable ||
-		    (si.nPage == (Int)GetTextArea().m_nViewColNum &&
+		    (nMaxLineKetas_ == m_pcEditDoc->m_cLayoutMgr.GetMaxLineKetas() &&
+		     si.nPage == (Int)GetTextArea().m_nViewColNum &&
 		     si.nPos == (Int)GetTextArea().GetViewLeftCol())
 		) {
 			// 更新しない
@@ -361,6 +362,8 @@ void CEditView::AdjustScrollBars()
 			si.nTrackPos = 1;
 			::SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE );
 			//si::logln(L"SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE )");
+			
+			nMaxLineKetas_ = m_pcEditDoc->m_cLayoutMgr.GetMaxLineKetas();
 		}
 #else
 		si.cbSize = sizeof( si );

@@ -863,6 +863,8 @@ public:
 		#define SB_Marker_Draw()                  _SB_Marker_Draw()
 	#endif
 
+	CKetaXInt nMaxLineKetas_ = 0;  // 前更新時の折り返し桁数
+
 #endif  // UZ_
 };
 
