@@ -459,7 +459,9 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 			RECT rcClip2 = {0,0,0,0};
 			ScrollDraw(nScrollRowNum, CLayoutInt(0), rcScrol, rcClip, rcClip2);
 #ifdef UZ_FIX_FLICKER
-			if (!m_ignore_update_window) {
+			if (m_ignore_update_window > 0) {
+				RequestUpdateWindow();
+			} else {
 				::UpdateWindow( GetHwnd() );
 			}
 #else
@@ -547,7 +549,9 @@ CLayoutInt CEditView::ScrollAtH( CLayoutInt nPos )
 			RECT rcClip = {0,0,0,0};
 			ScrollDraw(CLayoutInt(0), nScrollColNum, rcScrol, rcClip, rcClip2);
 #ifdef UZ_FIX_FLICKER
-			if (!m_ignore_update_window) {
+			if (m_ignore_update_window > 0) {
+				RequestUpdateWindow();
+			} else {
 				::UpdateWindow( GetHwnd() );
 			}
 #else

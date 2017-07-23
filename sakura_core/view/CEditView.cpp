@@ -169,9 +169,6 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_cHistory(NULL)
 , m_cRegexKeyword(NULL)
 , m_hAtokModule(NULL)
-#ifdef UZ_FIX_FLICKER
-, m_ignore_update_window(0)
-#endif  // UZ_
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
 , SBMarker_(new ScrBarMarker(this))
 #endif  // UZ_
@@ -3010,10 +3007,16 @@ void CEditView::BeginIgnoreUpdateWindow() {
 	m_ignore_update_window++;
 }
 void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
-	m_ignore_update_window--;
-	if (m_ignore_update_window == 0 && bUpdate) {
-		::UpdateWindow(GetHwnd());
+	if (m_ignore_update_window == 1 && bUpdate) {
+		if (m_request_update_window) {
+			m_request_update_window = false;
+			::UpdateWindow(GetHwnd());
+		}
 	}
+	m_ignore_update_window = std::max(m_ignore_update_window - 1, 0);
+}
+void CEditView::RequestUpdateWindow() {
+	m_request_update_window = true;
 }
 #endif  // UZ_
 #ifdef UZ_FIX_EDITVIEW_SCRBAR

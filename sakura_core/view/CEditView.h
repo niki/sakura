@@ -784,7 +784,9 @@ private:
 public:
 	void BeginIgnoreUpdateWindow();
 	void EndIgnoreUpdateWindow(bool bUpdate = true);
-	int m_ignore_update_window;  // UpdateWindowを無視する
+	void RequestUpdateWindow();
+	int m_ignore_update_window = 0;  // UpdateWindowを無視する
+	bool m_request_update_window = false;
 #endif  // UZ_
 
 #ifdef UZ_FIX_EDITVIEW_SCRBAR
