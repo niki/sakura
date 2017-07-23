@@ -322,6 +322,12 @@ void CViewCommander::Command_UNDO( void )
 
 	CLayoutPoint ptCaretPos_After;
 
+#ifdef UZ_FIX_UNDOREDO
+	// 処理前の物理行位置
+	CLogicPoint ptCaretPos_Start = GetCaret().GetCaretLogicPos();
+	CLayoutInt nViewLeftCol = m_pCommanderView->GetTextArea().GetViewLeftCol();
+#endif // UZ_
+
 	/* 各種モードの取り消し */
 	Command_CANCEL_MODE();
 
@@ -534,7 +540,30 @@ void CViewCommander::Command_UNDO( void )
 		// ・行番号表示に必要な幅は OPE_INSERT/OPE_DELETE 処理内で更新されており変更があればルーラー再描画フラグに反映されている
 		// ・水平スクロールもルーラー再描画フラグに反映されている
 		const bool bRedrawRuler = m_pCommanderView->GetRuler().GetRedrawFlag();
+#ifdef UZ_FIX_UNDOREDO
+		CLogicPoint ptCaretPos_End = GetCaret().GetCaretLogicPos();
+		
+		// 物理行が同じ場合は必要な行だけを再描画する
+		if (ptCaretPos_Start.y == ptCaretPos_End.y &&
+		    nViewLeftCol == m_pCommanderView->GetTextArea().GetViewLeftCol()
+		) {
+			CLayoutMgr &cLayoutMgr = GetDocument()->m_cLayoutMgr;
+			
+			CLayoutPoint ptCaretPos_Start2;
+			cLayoutMgr.LogicToLayout(ptCaretPos_Start, &ptCaretPos_Start2);
+			
+			CLayoutPoint ptCaretPos_End2;
+			cLayoutMgr.LogicToLayout({ptCaretPos_End.x, ptCaretPos_End.x + 1},
+			                         &ptCaretPos_End2);
+			
+			m_pCommanderView->RedrawLines(ptCaretPos_Start2.y, ptCaretPos_End2.y);
+		} else {
+			m_pCommanderView->Call_OnPaint( PAINT_LINENUMBER | PAINT_BODY | (bRedrawRuler? PAINT_RULER: 0), false );
+			si::logln(L"    *** UNDO: m_pCommanderView->Call_OnPaint");
+		}
+#else
 		m_pCommanderView->Call_OnPaint( PAINT_LINENUMBER | PAINT_BODY | (bRedrawRuler? PAINT_RULER: 0), false );
+#endif // UZ_
 		if( !bRedrawRuler ){
 			// ルーラーのキャレットのみを再描画
 			HDC hdc = m_pCommanderView->GetDC();
@@ -599,6 +628,11 @@ void CViewCommander::Command_REDO( void )
 	CLayoutPoint ptCaretPos_To;
 	CLayoutPoint ptCaretPos_After;
 
+#ifdef UZ_FIX_UNDOREDO
+	// 処理前の物理行位置
+	CLogicPoint ptCaretPos_Start = GetCaret().GetCaretLogicPos();
+	CLayoutInt nViewLeftCol = m_pCommanderView->GetTextArea().GetViewLeftCol();
+#endif // UZ_
 
 	/* 各種モードの取り消し */
 	Command_CANCEL_MODE();
@@ -797,7 +831,30 @@ void CViewCommander::Command_REDO( void )
 		// ・行番号表示に必要な幅は OPE_INSERT/OPE_DELETE 処理内で更新されており変更があればルーラー再描画フラグに反映されている
 		// ・水平スクロールもルーラー再描画フラグに反映されている
 		const bool bRedrawRuler = m_pCommanderView->GetRuler().GetRedrawFlag();
+#ifdef UZ_FIX_UNDOREDO
+		CLogicPoint ptCaretPos_End = GetCaret().GetCaretLogicPos();
+		
+		// 物理行が同じ場合は必要な行だけを再描画する
+		if (ptCaretPos_Start.y == ptCaretPos_End.y &&
+		    nViewLeftCol == m_pCommanderView->GetTextArea().GetViewLeftCol()
+		) {
+			CLayoutMgr &cLayoutMgr = GetDocument()->m_cLayoutMgr;
+			
+			CLayoutPoint ptCaretPos_Start2;
+			cLayoutMgr.LogicToLayout(ptCaretPos_Start, &ptCaretPos_Start2);
+			
+			CLayoutPoint ptCaretPos_End2;
+			cLayoutMgr.LogicToLayout({ptCaretPos_End.x, ptCaretPos_End.x + 1},
+			                         &ptCaretPos_End2);
+			
+			m_pCommanderView->RedrawLines(ptCaretPos_Start2.y, ptCaretPos_End2.y);
+		} else {
+			m_pCommanderView->Call_OnPaint( PAINT_LINENUMBER | PAINT_BODY | (bRedrawRuler? PAINT_RULER: 0), false );
+			si::logln(L"    *** REDO: m_pCommanderView->Call_OnPaint");
+		}
+#else
 		m_pCommanderView->Call_OnPaint( PAINT_LINENUMBER | PAINT_BODY | (bRedrawRuler? PAINT_RULER: 0), false );
+#endif // UZ_
 		if( !bRedrawRuler ){
 			// ルーラーのキャレットのみを再描画
 			HDC hdc = m_pCommanderView->GetDC();
