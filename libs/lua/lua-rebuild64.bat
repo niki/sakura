@@ -10,8 +10,8 @@ nmake /f Makefile.nmake dll x64=1
 copy lua53_64.lib ..
 copy lua53_64.dll ..
 
-nmake /f Makefile.nmake lib x64=1
-copy liblua53_64.lib ..
+::nmake /f Makefile.nmake lib x64=1
+::copy liblua53_64.lib ..
 
 popd
 
