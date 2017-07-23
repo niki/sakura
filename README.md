@@ -23,19 +23,14 @@ Download & Setup
 
 |ファイル名||主な変更内容|サイズ|日付||
 |-|-|-|-|-|-|
-|sakura-uzuki-2.52.zip|32bit(x86)|縦スクロールバーの再描画回数を減らす|775KB|2017/07/21|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.52.zip)|
+|sakura-uzuki-2.53.zip|32bit(x86)|スクロールバーまわりの修正<br>実行ファイルを静的リンクにする|956KB|2017/07/23|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.53.zip)|
 |keyword_pack.zip||patchunicode:#720対応|355KB|2017/06/16|[download](Publish/keyword_pack.zip)|
-
-- Visual C++ 2017 ランタイムが必要です  
-  [Visual Studio 2017 の Microsoft Visual C++ 再頒布可能パッケージ](https://www.visualstudio.com/ja/downloads/?q=#other-ja)  
-  使用するバージョン(32bit,64bit)に合わせてダウンロードしてください.  
-  - [vc_redist.x64.exe](https://go.microsoft.com/fwlink/?LinkId=746572)  
-  - [vc_redist.x86.exe](https://go.microsoft.com/fwlink/?LinkId=746571)  
 
 - sakura.keywordset.csv  
   [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードを外部ファイルを使用して設定する定義ファイルです.  
   「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
   このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
+  使用しない場合はいつも通りの動作です (sakura.iniに埋め込まれる)  
 
 - 変更履歴はコミットログ([link](https://github.com/uzuki3/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([link](sakura_core/my_config.h)) を見てね.  
 
