@@ -59,6 +59,9 @@ void CEditView_Paint::Call_OnPaint(
 	bool bUseMemoryDC //!< メモリDCを使用する
 )
 {
+#ifdef UZ_OUTPUT_DEBUG_STRING
+  si::logln(L"Call_OnPaint");
+#endif  // UZ_
 	CEditView* pView = GetEditView();
 
 	//各要素

@@ -330,7 +330,11 @@ void CViewCommander::Command_UNDO( void )
 	/* 現在のUndo対象の操作ブロックを返す */
 	if( NULL != ( pcOpeBlk = GetDocument()->m_cDocEditor.m_cOpeBuf.DoUndo( &bIsModified ) ) ){
 		nOpeBlkNum = pcOpeBlk->GetNum();
+#ifdef UZ_FIX_UNDOREDO
+		bool bDraw = false;  // 最後に Call_OnPaint が呼ばれるので.
+#else
 		bool bDraw = (nOpeBlkNum < 5) && m_pCommanderView->GetDrawSwitch();
+#endif  // UZ_
 		bool bDrawAll = false;
 		const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(bDraw);	// hor
 
@@ -357,7 +361,11 @@ void CViewCommander::Command_UNDO( void )
 				);
 
 				/* カーソルを移動 */
+#ifdef UZ_FIX_UNDOREDO
+				GetCaret().MoveCursorFastMode2(ptCaretPos_After);
+#else
 				GetCaret().MoveCursor( ptCaretPos_After, false );
+#endif // UZ_
 			}
 
 			switch( pcOpe->GetCode() ){
@@ -452,7 +460,11 @@ void CViewCommander::Command_UNDO( void )
 				if( bFastMode ){
 					GetCaret().MoveCursorFastMode( pcOpe->m_ptCaretPos_PHY_After );
 				}else{
+#ifdef UZ_FIX_UNDOREDO
+					GetCaret().MoveCursorFastMode2(ptCaretPos_After);
+#else
 					GetCaret().MoveCursor( ptCaretPos_After, false );
+#endif // UZ_
 				}
 				break;
 			}
@@ -484,7 +496,11 @@ void CViewCommander::Command_UNDO( void )
 					GetCaret().MoveCursor( ptCaretPos_Before, true );
 				}else{
 					/* カーソルを移動 */
+#ifdef UZ_FIX_UNDOREDO
+					GetCaret().MoveCursorFastMode2(ptCaretPos_Before);
+#else
 					GetCaret().MoveCursor( ptCaretPos_Before, false );
+#endif // UZ_
 				}
 			}
 			if( hwndProgress && (i % 100) == 0 ){
@@ -592,7 +608,11 @@ void CViewCommander::Command_REDO( void )
 	/* 現在のRedo対象の操作ブロックを返す */
 	if( NULL != ( pcOpeBlk = GetDocument()->m_cDocEditor.m_cOpeBuf.DoRedo( &bIsModified ) ) ){
 		nOpeBlkNum = pcOpeBlk->GetNum();
+#ifdef UZ_FIX_UNDOREDO
+		bool bDraw = false;  // 最後に Call_OnPaint が呼ばれるので.
+#else
 		bool bDraw = (nOpeBlkNum < 5) && m_pCommanderView->GetDrawSwitch();
+#endif // UZ_
 		bool bDrawAll = false;
 		const bool bDrawSwitchOld = m_pCommanderView->SetDrawSwitch(bDraw);	// 2007.07.22 ryoji
 
@@ -624,7 +644,11 @@ void CViewCommander::Command_REDO( void )
 				if( i == 0 ){
 					GetCaret().MoveCursor( ptCaretPos_Before, true );
 				}else{
+#ifdef UZ_FIX_UNDOREDO
+					GetCaret().MoveCursorFastMode2(ptCaretPos_Before);
+#else
 					GetCaret().MoveCursor( ptCaretPos_Before, false );
+#endif // UZ_
 				}
 			}
 			switch( pcOpe->GetCode() ){
@@ -738,7 +762,11 @@ void CViewCommander::Command_REDO( void )
 				if( i == nOpeBlkNum - 1	){
 					GetCaret().MoveCursor( ptCaretPos_After, true );
 				}else{
+#ifdef UZ_FIX_UNDOREDO
+					GetCaret().MoveCursorFastMode2(ptCaretPos_After);
+#else
 					GetCaret().MoveCursor( ptCaretPos_After, false );
+#endif // UZ_
 				}
 			}
 			if( hwndProgress && (i % 100) == 0 ){

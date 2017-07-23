@@ -144,6 +144,11 @@ public:
 	CLayoutInt MoveCursorFastMode(
 		const CLogicPoint&	pptWk_CaretPosLogic							//!< [in] 移動先ロジック位置
 	);
+#ifdef UZ_FIX_UNDOREDO
+	CLayoutInt CCaret::MoveCursorFastMode2(
+		CLayoutPoint&	ptWk_CaretPos		//!< [in] 移動先レイアウト位置
+	);
+#endif // UZ_
 	CLayoutInt MoveCursorProperly( CLayoutPoint ptNewXY, bool, bool = false, CLayoutPoint* = NULL, int = _CARETMARGINRATE, int = 0 );	/* 行桁指定によるカーソル移動（座標調整付き） */
 
 	//$ 設計思想的に微妙

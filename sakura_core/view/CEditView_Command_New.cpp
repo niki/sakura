@@ -985,10 +985,21 @@ bool CEditView::ReplaceData_CEditView3(
 	if( bFastMode ){
 		GetCaret().MoveCursorFastMode(DLRArg.ptNewPos);
 	}else{
+#ifdef UZ_FIX_UNDOREDO
+		if (bRedraw) {
+			GetCaret().MoveCursor(
+				LRArg.ptLayoutNew,	// 挿入された部分の次の位置
+				bRedraw
+			);
+		} else {
+			GetCaret().MoveCursorFastMode2(LRArg.ptLayoutNew);	// 挿入された部分の次の位置
+		}
+#else
 		GetCaret().MoveCursor(
 			LRArg.ptLayoutNew,	// 挿入された部分の次の位置
 			bRedraw
 		);
+#endif  // UZ_
 		GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX();
 	}
 
