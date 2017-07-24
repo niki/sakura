@@ -570,6 +570,7 @@ CLayoutInt CCaret::MoveCursorFastMode2(
 	);
 	/* キャレット移動 */
 	SetCaretLayoutPos(ptWk_CaretPos);
+	return CLayoutInt(0);
 }
 #endif  // UZ_
 
