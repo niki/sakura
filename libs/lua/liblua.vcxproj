@@ -105,6 +105,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;_MBCS;LUA_COMPAT_5_2;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <ProgramDataBaseFileName>$(SolutionDir)$(TargetName)53.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -125,6 +126,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;_MBCS;LUA_COMPAT_5_2;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <ProgramDataBaseFileName>$(SolutionDir)$(TargetName)53_64.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
