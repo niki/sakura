@@ -448,6 +448,7 @@ void CTextDrawer::DispLineNumber(
 		//DIFF色設定
 		CDiffLineGetter(pCDocLine).GetDiffColor(&nColorIndex);
 
+#ifndef UZ_FIX_BOOKMARK_DRAW_VLINE
 		// 02/10/16 ai
 		// ブックマークの表示
 		if(CBookmarkGetter(pCDocLine).IsBookmarked()){
@@ -455,6 +456,7 @@ void CTextDrawer::DispLineNumber(
 				nColorIndex = COLORIDX_MARK;
 			}
 		}
+#endif // UZ_
 	}
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -656,20 +658,21 @@ void CTextDrawer::DispLineNumber(
 	{
 		// 2001.12.03 hor
 		/* とりあえずブックマークに縦線 */
-#ifdef UZ_FIX_DRAW_BOOKMARK_LINE_NOGYOU
-		bool bookmark_line = false;
-		bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp();
-		bookmark_line |= CBookmarkGetter(pCDocLine).IsBookmarked() && !CTypeSupport(pView,COLORIDX_GYOU).IsDisp();
-		if (bookmark_line)
+#ifdef UZ_FIX_BOOKMARK_DRAW_VLINE
+		if(CBookmarkGetter(pCDocLine).IsBookmarked())
+		{
+			RECT rcMark = {1, y + 1, 4, y + nLineHeight - 1};
+			gr.FillSolidMyRect(rcMark, cMarkType.GetBackColor());
+		}
 #else
 		if(CBookmarkGetter(pCDocLine).IsBookmarked() && !cMarkType.IsDisp() )
-#endif  // UZ_
 		{
 			gr.PushPen(cColorType.GetTextColor(),2);
 			::MoveToEx( gr, 1, y, NULL );
 			::LineTo( gr, 1, y + nLineHeight );
 			gr.PopPen();
 		}
+#endif  // UZ_
 
 		//DIFFマーク描画
 		if( !pView->m_bMiniMap ){

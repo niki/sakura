@@ -464,7 +464,11 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("DFA"), 0},	//DIFF追加	//@@@ 2002.06.01 MIK
 	{_T("DFC"), 0},	//DIFF変更	//@@@ 2002.06.01 MIK
 	{_T("DFD"), 0},	//DIFF削除	//@@@ 2002.06.01 MIK
+#ifdef UZ_FIX_BOOKMARK_DRAW_VLINE
+	{_T("MRK"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},	//ブックマーク	// 02/10/16 ai Add
+#else
 	{_T("MRK"), 0},	//ブックマーク	// 02/10/16 ai Add
+#endif // UZ_
 	{_T("PGV"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("LAST"), 0}	// Not Used
 };
