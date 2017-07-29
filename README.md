@@ -23,7 +23,7 @@ Download & Setup
 
 |ファイル名|主な変更内容|サイズ|日付||
 |-|-|-|-|-|
-|sakura-uzuki-2.55.zip (32bit)|アンドゥ,リドゥの高速化<br>ブックマークを縦線表示に修正|---KB|2017/--/--||
+|sakura-uzuki-2.55.zip (32bit)|アンドゥ,リドゥの高速化<br>ブックマークを縦線表示に修正|959KB|2017/07/29|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.55.zip)|
 |sakura-uzuki-2.54.zip (32bit)|アンドゥ,リドゥの高速化|959KB|2017/07/25|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.54.zip)|
 |sakura-uzuki-2.53.zip (32bit)|スクロールバーまわりの修正<br>実行ファイルを静的リンクにする|956KB|2017/07/23|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.53.zip)|
 ||||||
