@@ -21,11 +21,13 @@ Introduction
 Download & Setup  
 ----------------
 
-|ファイル名||主な変更内容|サイズ|日付||
-|-|-|-|-|-|-|
-|sakura-uzuki-2.54.zip|32bit|アンドゥ,リドゥの高速化|959KB|2017/07/25|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.54.zip)|
-|sakura-uzuki-2.53.zip|32bit|スクロールバーまわりの修正<br>実行ファイルを静的リンクにする|956KB|2017/07/23|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.53.zip)|
-|keyword_pack.zip||patchunicode:#720対応|355KB|2017/06/16|[download](Publish/keyword_pack.zip)|
+|ファイル名|主な変更内容|サイズ|日付||
+|-|-|-|-|-|
+|sakura-uzuki-2.55.zip (32bit)|アンドゥ,リドゥの高速化<br>ブックマークを縦線表示に修正|---KB|2017/--/--||
+|sakura-uzuki-2.54.zip (32bit)|アンドゥ,リドゥの高速化|959KB|2017/07/25|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.54.zip)|
+|sakura-uzuki-2.53.zip (32bit)|スクロールバーまわりの修正<br>実行ファイルを静的リンクにする|956KB|2017/07/23|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.53.zip)|
+||||||
+|keyword_pack.zip|patchunicode:#720対応|355KB|2017/06/16|[download](Publish/keyword_pack.zip)|
 
 - sakura.keywordset.csv  
   [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードを外部ファイルを使用して設定する定義ファイルです.  
