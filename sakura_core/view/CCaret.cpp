@@ -531,29 +531,6 @@ CLayoutInt CCaret::MoveCursorFastMode(
 	return CLayoutInt(0);
 }
 
-#ifdef UZ_FIX_UNDOREDO
-CLayoutInt CCaret::MoveCursorFastMode2(
-	CLayoutPoint		&ptWk_CaretPos		//!< [in] 移動先レイアウト位置
-)
-{
-	CTextArea& area = m_pEditView->GetTextArea();
-
-	if( 0 >= m_pEditView->GetTextArea().m_nViewColNum ){
-		return CLayoutInt(0);
-	}
-
-	// 2004.04.02 Moca 行だけ有効な座標に修正するのを厳密に処理する
-	GetAdjustCursorPos( &ptWk_CaretPos );
-	m_pEditDoc->m_cLayoutMgr.LayoutToLogic(
-		ptWk_CaretPos,
-		&m_ptCaretPos_Logic	//カーソル位置。ロジック単位。
-	);
-	/* キャレット移動 */
-	SetCaretLayoutPos(ptWk_CaretPos);
-	return CLayoutInt(0);
-}
-#endif  // UZ_
-
 
 /* マウス等による座標指定によるカーソル移動
 || 必要に応じて縦/横スクロールもする
