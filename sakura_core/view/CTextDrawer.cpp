@@ -438,7 +438,9 @@ void CTextDrawer::DispLineNumber(
 
 		if( pView->GetDocument()->m_cDocEditor.IsModified() && CModifyVisitor().IsLineModified(pCDocLine, pView->GetDocument()->m_cDocEditor.m_cOpeBuf.GetNoModifiedSeq()) ){		/* 変更フラグ */
 			if( CTypeSupport(pView,COLORIDX_GYOU_MOD).IsDisp() ){	// 2006.12.12 ryoji
+#ifndef UZ_FIX_MODGYOU_DRAW_VLINE
 				nColorIndex = COLORIDX_GYOU_MOD;	/* 行番号（変更行） */
+#endif // UZ_
 				bGyouMod = true;
 			}
 		}
@@ -485,6 +487,7 @@ void CTextDrawer::DispLineNumber(
 	COLORREF bgcolor = cColorType.GetBackColor();
 	CTypeSupport cGyouType(pView,COLORIDX_GYOU);
 	CTypeSupport cGyouModType(pView,COLORIDX_GYOU_MOD);
+#ifndef UZ_FIX_MODGYOU_DRAW_VLINE
 	if( bGyouMod && nColorIndex != COLORIDX_GYOU_MOD ){
 		if( cGyouType.GetTextColor() == cColorType.GetTextColor() ){
 			fgcolor = cGyouModType.GetTextColor();
@@ -494,6 +497,7 @@ void CTextDrawer::DispLineNumber(
 			bTrans = pView->IsBkBitmap() && cTextType.GetBackColor() == cGyouModType.GetBackColor();
 		}
 	}
+#endif // UZ_
 	// 2014.01.29 Moca 背景色がテキストと同じなら、透過色として行背景色を適用
 	if( bgcolor == cTextType.GetBackColor() ){
 		bgcolor = cBackType.GetBackColor();
@@ -561,6 +565,7 @@ void CTextDrawer::DispLineNumber(
 	}
 	else if( CTypeSupport(pView,COLORIDX_GYOU).IsDisp() ){ /* 行番号表示／非表示 */
 		SFONT sFont = cColorType.GetTypeFont();
+#ifndef UZ_FIX_MODGYOU_DRAW_VLINE
 	 	// 2013.12.30 変更行の色・フォント属性をDIFFブックマーク行に継承するように
 		if( bGyouMod && nColorIndex != COLORIDX_GYOU_MOD ){
 			bool bChange = true;
@@ -576,6 +581,7 @@ void CTextDrawer::DispLineNumber(
 				sFont.m_hFont = pView->GetFontset().ChooseFontHandle( 0, sFont.m_sFontAttr );
 			}
 		}
+#endif // UZ_
 		gr.PushTextForeColor(fgcolor);	//テキスト：行番号の色
 		gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
 		gr.PushMyFont(sFont);	//フォント：行番号のフォント
@@ -656,12 +662,19 @@ void CTextDrawer::DispLineNumber(
 	//行属性描画 ($$$分離予定)
 	if(pCDocLine)
 	{
+#ifdef UZ_FIX_MODGYOU_DRAW_VLINE
+		if (bGyouMod) {
+			RECT rcMark = {nLineNumAreaWidth - 6, y + 1, nLineNumAreaWidth - 3, y + nLineHeight - 1};
+			gr.FillSolidMyRect(rcMark, cGyouModType.GetBackColor());
+		}
+#endif // UZ_
+		
 		// 2001.12.03 hor
 		/* とりあえずブックマークに縦線 */
 #ifdef UZ_FIX_BOOKMARK_DRAW_VLINE
 		if(CBookmarkGetter(pCDocLine).IsBookmarked())
 		{
-			RECT rcMark = {1, y + 1, 4, y + nLineHeight - 1};
+			RECT rcMark = {0, y + 1, 3, y + nLineHeight - 1};
 			gr.FillSolidMyRect(rcMark, cMarkType.GetBackColor());
 		}
 #else
