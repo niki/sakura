@@ -10,6 +10,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
 -     	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
+ r4194	Keep: 再帰テンプレートでべき乗を計算 [patchunicode:#1108]
  r4192	Fix: SpecialFolderPath()関数更新 [patchunicode:#1107]
  r4190	Keep: CViewCommanderクラス整理 [patchunicode:#1106]
  r4189	Fix: 未定義のコマンドがある場合にバッファが未初期化になる [patchunicode:#1101] Contributed by Moca
