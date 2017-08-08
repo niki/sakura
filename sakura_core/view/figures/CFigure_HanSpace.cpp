@@ -56,25 +56,27 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //#  ifdef UZ_LINE_CENTERING
 //		y += pcView->GetLineMargin();
 //#  endif  // UZ_
-		gr.SetPen( gr.GetCurrentTextForeColor() );
 		x--; // 少し左め
 #ifdef UZ_FIX_HAN_SPACE
 		if (m_nbsp) {
+			gr.SetPen( gr.GetCurrentTextForeColor() );
 			::MoveToEx( gr, x-1, y-2, NULL );
 			::LineTo(   gr, x+4, y+3 );
 			::MoveToEx( gr, x+3, y-2, NULL );
 			::LineTo(   gr, x-2, y+3 );
 		} else {
-			::MoveToEx( gr, x, y-1, NULL );
-			::LineTo(   gr, x+2, y-1 );
-			::MoveToEx( gr, x, y, NULL );
-			::LineTo(   gr, x+2, y );
+			gr.FillSolidMyRect({x, y - 1, x + 2, y + 1}, gr.GetCurrentTextForeColor());
+			//::MoveToEx( gr, x, y-1, NULL );
+			//::LineTo(   gr, x+2, y-1 );
+			//::MoveToEx( gr, x, y, NULL );
+			//::LineTo(   gr, x+2, y );
 		}
 #else
-		::MoveToEx( gr, x, y-1, NULL );
-		::LineTo(   gr, x+2, y-1 );
-		::MoveToEx( gr, x, y, NULL );
-		::LineTo(   gr, x+2, y );
+		gr.FillSolidMyRect({x, y - 1, x + 2, y + 1}, gr.GetCurrentTextForeColor());
+		//::MoveToEx( gr, x, y-1, NULL );
+		//::LineTo(   gr, x+2, y-1 );
+		//::MoveToEx( gr, x, y, NULL );
+		//::LineTo(   gr, x+2, y );
 #endif  // UZ_
 #else
 		//小文字"o"の下半分を出力
