@@ -996,7 +996,7 @@ void CCaret::ShowCaretPosInfo()
 	else{
 #ifdef UZ_FIX_STATUSBAR
 		TCHAR	szText_1[64];
-		auto_sprintf( szText_1, _T("Ln %d Col %d"), ptCaret.y, ptCaret.x );
+		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), ptCaret.y, ptCaret.x );	//Oct. 30, 2000 JEPRO 千万行も要らん
 
 		TCHAR	szText_6[16];
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
