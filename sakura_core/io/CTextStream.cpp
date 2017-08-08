@@ -158,11 +158,7 @@ void CTextOutputStream::WriteString(
 void CTextOutputStream::WriteF(const wchar_t* format, ...)
 {
 	//テキスト整形 -> buf
-#ifdef UZ_FIX_ADJUST_LARGE_STATIC_BUFFER_SIZE
-	static wchar_t buf[UZ_WRITEF_BUFF_SIZE];
-#else
 	static wchar_t buf[16*1024]; //$$ 確保しすぎかも？
-#endif  // UZ_
 	va_list v;
 	va_start(v,format);
 	auto_vsprintf_s(buf,_countof(buf),format,v);

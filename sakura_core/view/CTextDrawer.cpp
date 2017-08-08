@@ -471,11 +471,7 @@ void CTextDrawer::DispLineNumber(
 	//該当行の行番号エリア矩形
 	RECT	rcLineNum;
 	rcLineNum.left = 0;
-#ifdef UZ_FIX_LINE_BG_OVERFLOW
-	rcLineNum.right = nLineNumAreaWidth - 1;
-#else
 	rcLineNum.right = nLineNumAreaWidth;
-#endif  // UZ_
 	rcLineNum.top = y;
 	rcLineNum.bottom = y + nLineHeight;
 	
@@ -640,11 +636,7 @@ void CTextDrawer::DispLineNumber(
 			rc.top = y;
 			rc.right = nLineNumAreaWidth - 1;
 			rc.bottom = y + nLineHeight;
-#ifdef UZ_FIX_LINE_TERM_TYPE
-			gr.FillSolidMyRect(rc, cGyouType.GetTextColor());
-#else
 			gr.FillSolidMyRect(rc, fgcolor);
-#endif  // UZ_
 		}
 
 		gr.PopTextForeColor();
