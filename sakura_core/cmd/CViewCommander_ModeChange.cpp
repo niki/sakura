@@ -157,4 +157,20 @@ void CViewCommander::Command_CANCEL_MODE( int whereCursorIs )
 			m_pCommanderView->GetSelectionInfo().PrintSelectionInfoMsg();
 		}
 	}
+#if defined(UZ_FIX_DLG) && UZ_CLOSE_DIALOG_WITH_MODE_CANCELLATION
+	{
+		CEditWnd *pEditWnd = m_pCommanderView->m_pcEditWnd;
+		if (pEditWnd->m_cDlgFind.GetHwnd()) { // 「検索」ダイアログ
+			pEditWnd->m_cDlgFind.CloseDialog(0);
+		} else if (pEditWnd->m_cDlgFuncList.GetHwnd()) { // 「アウトライン」ダイアログ
+			pEditWnd->m_cDlgFuncList.CloseDialog(0);
+		} else if (pEditWnd->m_cDlgReplace.GetHwnd()) { // 「置換」ダイアログ
+			pEditWnd->m_cDlgReplace.CloseDialog(0);
+		} else if (pEditWnd->m_cDlgGrep.GetHwnd()) { // 「Grep」ダイアログ
+			pEditWnd->m_cDlgGrep.CloseDialog(0);
+		} else if (pEditWnd->m_cHokanMgr.GetHwnd()) { // 「入力補完」
+			pEditWnd->m_cHokanMgr.CloseDialog(0);
+		}
+	}
+#endif // UZ_
 }
