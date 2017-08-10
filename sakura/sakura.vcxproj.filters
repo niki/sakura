@@ -2,122 +2,122 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Other Files">
-      <UniqueIdentifier>{ae9f876a-8466-4a5c-aa91-148cfc276e25}</UniqueIdentifier>
+      <UniqueIdentifier>{c25a7896-a5e6-4a65-b507-4666f16fd9e6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{d88e5d12-0eff-49a5-a22b-83c2b5d5e667}</UniqueIdentifier>
+      <UniqueIdentifier>{7dc1adea-1af6-402f-b53a-9738ac16223b}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
     <Filter Include="C Source Files">
-      <UniqueIdentifier>{620d1821-accd-4287-840f-b5fba1b18823}</UniqueIdentifier>
+      <UniqueIdentifier>{375c40c0-858e-4c2a-8224-0b5273af4323}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files">
-      <UniqueIdentifier>{d7653e9a-813f-46fd-99c8-04229addabe8}</UniqueIdentifier>
+      <UniqueIdentifier>{099ccf22-168e-437c-8582-90c4a6decd26}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\apiwrap">
-      <UniqueIdentifier>{93d8c4d4-2680-413d-9b12-20f68b95fa39}</UniqueIdentifier>
+      <UniqueIdentifier>{f89135a9-64d7-49f0-a1ed-0cb7d2274a3d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\charset">
-      <UniqueIdentifier>{69660e29-cc43-4e8b-86bb-de1cb1eb525e}</UniqueIdentifier>
+      <UniqueIdentifier>{9486ca2e-1775-434c-9400-e8e993fc1a57}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\config">
-      <UniqueIdentifier>{c6c225a9-56d7-49be-9870-a91f1d64bc83}</UniqueIdentifier>
+      <UniqueIdentifier>{d3b566ef-601c-4755-be41-6efe9ba15884}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\convert">
-      <UniqueIdentifier>{ab2fc179-45bf-434a-a3f2-45a827ace54d}</UniqueIdentifier>
+      <UniqueIdentifier>{399e545e-ff95-4ff4-a9cd-543e2b542361}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\io">
-      <UniqueIdentifier>{0539dfc1-1c0f-4410-b3ab-36dae15798ad}</UniqueIdentifier>
+      <UniqueIdentifier>{d02d74f7-c8de-4efe-aa03-4d96c43feca8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\mem">
-      <UniqueIdentifier>{ea0fcec1-e1bd-4c8b-965d-aab7eaa65c3f}</UniqueIdentifier>
+      <UniqueIdentifier>{dd4c82d6-7064-422a-a66a-5b3f14ef7bad}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\parse">
-      <UniqueIdentifier>{04e07d83-3d41-4753-a7a8-c7b06e71f980}</UniqueIdentifier>
+      <UniqueIdentifier>{c630b8f6-93bc-4bc0-a194-e5357d0f1194}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\env">
-      <UniqueIdentifier>{80ee1789-6b2d-4338-b30b-21b3633f27f8}</UniqueIdentifier>
+      <UniqueIdentifier>{e609c48f-c1a5-45b0-8d29-e456d432c9e2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\util">
-      <UniqueIdentifier>{70676e12-885b-4188-bf34-98d853b75640}</UniqueIdentifier>
+      <UniqueIdentifier>{cead17cd-1e5f-4de1-8bb1-3f777237096d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\basis">
-      <UniqueIdentifier>{3c1f970e-7cce-4e94-9c5c-a5b8d3f496b8}</UniqueIdentifier>
+      <UniqueIdentifier>{3e3d1ae0-16f0-40ea-bd19-9bf931046c4a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\typeprop">
-      <UniqueIdentifier>{b2d24693-45f8-4d4a-9e58-88cc516b8e7e}</UniqueIdentifier>
+      <UniqueIdentifier>{8e9865f1-00ab-45c0-8c21-2ee09d7544cf}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\types">
-      <UniqueIdentifier>{10c9ea0e-c5ca-4e2c-8be6-0d31ccd9d5b0}</UniqueIdentifier>
+      <UniqueIdentifier>{97007811-10cd-4aae-8d5d-bb67659220a0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\view">
-      <UniqueIdentifier>{958dee2a-8791-4489-80f5-d57ca8271416}</UniqueIdentifier>
+      <UniqueIdentifier>{27df771b-5ac1-4a34-b63a-cedc0b8ac2c7}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\view\colors">
-      <UniqueIdentifier>{1177f848-c21d-4dfe-9c51-48870821d4ba}</UniqueIdentifier>
+      <UniqueIdentifier>{d12e79ba-9824-47d8-9a2d-ececba619fe8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\view\figures">
-      <UniqueIdentifier>{cf0750bb-4e39-4f05-a836-c205a84592bf}</UniqueIdentifier>
+      <UniqueIdentifier>{a119f5f0-d6ee-4882-841a-44bfcd8cd780}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\prop">
-      <UniqueIdentifier>{9fdff5e8-301e-4466-abf8-d64cdc3e5e29}</UniqueIdentifier>
+      <UniqueIdentifier>{976c818b-6a41-4f92-9dd0-1946edf799c2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\recent">
-      <UniqueIdentifier>{f6d7cb8d-f165-4b7b-99e9-7810acff6849}</UniqueIdentifier>
+      <UniqueIdentifier>{e1124232-3f8d-429a-ac0b-f15821eeaa41}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\doc">
-      <UniqueIdentifier>{ee6dfe3e-06f7-4a0a-9ea1-db7cac2fa2f5}</UniqueIdentifier>
+      <UniqueIdentifier>{51ede53f-658a-450a-92fb-2db85c63c32e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\doc\layout">
-      <UniqueIdentifier>{8420adf0-4f77-4166-9e8f-b62637811de6}</UniqueIdentifier>
+      <UniqueIdentifier>{6b4ae6b6-3fba-46b8-8951-a82ff4d9b34c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\doc\logic">
-      <UniqueIdentifier>{3b91285a-51eb-4c40-be7e-e4a47628e93a}</UniqueIdentifier>
+      <UniqueIdentifier>{5096eeeb-6de2-442d-809f-54f480de31c6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\macro">
-      <UniqueIdentifier>{17e5966d-e5ae-4045-9e1a-a5e191100557}</UniqueIdentifier>
+      <UniqueIdentifier>{0ba0176c-13d2-4d19-8dcd-52fd6d936a47}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\dlg">
-      <UniqueIdentifier>{de1f9ae3-df1b-4966-8d6d-afa3a0f396d1}</UniqueIdentifier>
+      <UniqueIdentifier>{bbf34ff9-4457-40c5-9067-7f117df3549a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\window">
-      <UniqueIdentifier>{407d7f2e-f5a5-41bb-be3b-a4b8b4b45ea4}</UniqueIdentifier>
+      <UniqueIdentifier>{274d37f3-ce98-4f1e-ab03-ba5b5380b2b6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\docplus">
-      <UniqueIdentifier>{53c473bb-d171-43b9-b0a2-20e20db85d36}</UniqueIdentifier>
+      <UniqueIdentifier>{45fded87-e8c8-4091-a6a7-ce49f08274f3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\debug">
-      <UniqueIdentifier>{7df9441e-1a53-4e56-bf0d-51d570449b67}</UniqueIdentifier>
+      <UniqueIdentifier>{38dbb76c-9d8a-450c-b905-c2a9d0bdfcef}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\_main">
-      <UniqueIdentifier>{74964fee-c5a8-4fb4-a39f-53d0afcffddd}</UniqueIdentifier>
+      <UniqueIdentifier>{d83ec867-7c57-46eb-a553-273201c26901}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\_os">
-      <UniqueIdentifier>{6dded083-b3ad-4084-9689-8ca8902ad409}</UniqueIdentifier>
+      <UniqueIdentifier>{85722f98-479d-40be-9f22-cf901e72bf0d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\outline">
-      <UniqueIdentifier>{7dbb1147-011b-4ce9-94cc-6522975f6ef9}</UniqueIdentifier>
+      <UniqueIdentifier>{92c6357d-3e87-4656-91d3-aa56d1b350c8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\func">
-      <UniqueIdentifier>{c1639cfa-4dfa-4f5e-bd37-1273930bd4bb}</UniqueIdentifier>
+      <UniqueIdentifier>{4d5bba4b-009f-40e0-a758-47368470fd89}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\plugin">
-      <UniqueIdentifier>{413ff1f5-8de9-4753-8975-6466e962da3e}</UniqueIdentifier>
+      <UniqueIdentifier>{9bf755aa-f5da-46f7-b0d0-17b69a5d0329}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\mfclike">
-      <UniqueIdentifier>{c713575f-065c-4986-aef9-edad58f135b3}</UniqueIdentifier>
+      <UniqueIdentifier>{18f06fd8-51a4-43fb-b0c3-95599c9e1b00}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\cmd">
-      <UniqueIdentifier>{0deb1f59-b062-4b83-8572-fb1e2a64800e}</UniqueIdentifier>
+      <UniqueIdentifier>{a7915cd4-2231-45e3-a30c-11b4c9555973}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\extmodule">
-      <UniqueIdentifier>{f2aee246-9e54-4be4-9c84-2b86ecf38d68}</UniqueIdentifier>
+      <UniqueIdentifier>{724a9e89-fa88-43cd-a566-24282dcf825a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\print">
-      <UniqueIdentifier>{bd683eba-74d0-420f-b99a-a712edd10917}</UniqueIdentifier>
+      <UniqueIdentifier>{8ff72c97-f5df-4791-a052-af14e6c3c3cc}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files\uiparts">
-      <UniqueIdentifier>{6c24204a-b087-4013-9394-6c0f62f5c365}</UniqueIdentifier>
+      <UniqueIdentifier>{766aac58-6f27-451d-bd26-b847e0405e93}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -136,10 +136,10 @@
     <ClInclude Include="..\sakura_core\StdAfx.h">
       <Filter>Other Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\svnrev.h">
+    <ClInclude Include="..\sakura_core\String_define.h">
       <Filter>Other Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\String_define.h">
+    <ClInclude Include="..\sakura_core\svnrev.h">
       <Filter>Other Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\CAutoReloadAgent.h">
@@ -577,9 +577,6 @@
     <ClInclude Include="..\sakura_core\types\CType.h">
       <Filter>Cpp Source Files\types</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\types\CTypeInit.h">
-      <Filter>Cpp Source Files\types</Filter>
-    </ClInclude>
     <ClInclude Include="..\sakura_core\types\CTypeSupport.h">
       <Filter>Cpp Source Files\types</Filter>
     </ClInclude>
@@ -648,6 +645,9 @@
     </ClInclude>
     <ClInclude Include="..\sakura_core\view\colors\EColorIndexType.h">
       <Filter>Cpp Source Files\view\colors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\view\figures\CFigure_Comma.h">
+      <Filter>Cpp Source Files\view\figures</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\view\figures\CFigure_CtrlCode.h">
       <Filter>Cpp Source Files\view\figures</Filter>
@@ -767,6 +767,9 @@
       <Filter>Cpp Source Files\doc\layout</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\doc\layout\CLayoutMgr.h">
+      <Filter>Cpp Source Files\doc\layout</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\doc\layout\CTsvModeInfo.h">
       <Filter>Cpp Source Files\doc\layout</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\doc\logic\CDocLine.h">
@@ -1081,16 +1084,17 @@
     <ClInclude Include="..\sakura_core\uiparts\HandCursor.h">
       <Filter>Cpp Source Files\uiparts</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\view\figures\CFigure_Comma.h" />
-    <ClInclude Include="..\sakura_core\dlg\CDlgWindowList.h" />
-    <ClInclude Include="..\sakura_core\macro\CLuaMacroMgr.h">
+    <ClInclude Include="..\sakura_core\macro\CLua.h">
       <Filter>Cpp Source Files\macro</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\macro\CLua.h">
+    <ClInclude Include="..\sakura_core\macro\CLuaMacroMgr.h">
       <Filter>Cpp Source Files\macro</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\plugin\CLuaPlugin.h">
       <Filter>Cpp Source Files\plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\dlg\CDlgWindowList.h">
+      <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1572,12 +1576,6 @@
     <ClCompile Include="..\sakura_core\types\CType_Cpp.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
-    <ClCompile Include="..\sakura_core\types\CType_Csharp.cpp">
-      <Filter>Cpp Source Files\types</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sakura_core\types\CType_Css.cpp">
-      <Filter>Cpp Source Files\types</Filter>
-    </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Dos.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
@@ -1593,9 +1591,6 @@
     <ClCompile Include="..\sakura_core\types\CType_Java.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
-    <ClCompile Include="..\sakura_core\types\CType_JavaScript.cpp">
-      <Filter>Cpp Source Files\types</Filter>
-    </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Others.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
@@ -1605,16 +1600,10 @@
     <ClCompile Include="..\sakura_core\types\CType_Perl.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
-    <ClCompile Include="..\sakura_core\types\CType_Php.cpp">
-      <Filter>Cpp Source Files\types</Filter>
-    </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Python.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Rich.cpp">
-      <Filter>Cpp Source Files\types</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sakura_core\types\CType_Ruby.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Sql.cpp">
@@ -1627,9 +1616,6 @@
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Vb.cpp">
-      <Filter>Cpp Source Files\types</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sakura_core\types\CType_Xml.cpp">
       <Filter>Cpp Source Files\types</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\types\CTypeSupport.cpp">
@@ -1733,6 +1719,9 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\view\colors\CColorStrategy.cpp">
       <Filter>Cpp Source Files\view\colors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\view\figures\CFigure_Comma.cpp">
+      <Filter>Cpp Source Files\view\figures</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\view\figures\CFigure_CtrlCode.cpp">
       <Filter>Cpp Source Files\view\figures</Filter>
@@ -1912,6 +1901,9 @@
       <Filter>Cpp Source Files\doc\layout</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\doc\layout\CLayoutMgr_New2.cpp">
+      <Filter>Cpp Source Files\doc\layout</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\doc\layout\CTsvModeInfo.cpp">
       <Filter>Cpp Source Files\doc\layout</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\doc\logic\CDocLine.cpp">
@@ -2268,17 +2260,35 @@
     <ClCompile Include="..\sakura_core\uiparts\CWaitCursor.cpp">
       <Filter>Cpp Source Files\uiparts</Filter>
     </ClCompile>
-    <ClCompile Include="..\sakura_core\doc\layout\CTsvModeInfo.cpp" />
-    <ClCompile Include="..\sakura_core\view\figures\CFigure_Comma.cpp" />
-    <ClCompile Include="..\sakura_core\dlg\CDlgWindowList.cpp" />
-    <ClCompile Include="..\sakura_core\macro\CLuaMacroMgr.cpp">
+    <ClCompile Include="..\sakura_core\macro\CLua.cpp">
       <Filter>Cpp Source Files\macro</Filter>
     </ClCompile>
-    <ClCompile Include="..\sakura_core\macro\CLua.cpp">
+    <ClCompile Include="..\sakura_core\macro\CLuaMacroMgr.cpp">
       <Filter>Cpp Source Files\macro</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\plugin\CLuaPlugin.cpp">
       <Filter>Cpp Source Files\plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Ruby.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Csharp.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Css.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_JavaScript.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Php.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Xml.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\dlg\CDlgWindowList.cpp">
+      <Filter>Cpp Source Files\dlg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
