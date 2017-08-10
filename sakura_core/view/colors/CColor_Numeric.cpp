@@ -6,7 +6,7 @@
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
 #ifdef UZ_FIX_NUMERIC_COLOR
-#define REGEX_MODE (2)  // 0:std::regex
+#define REGEX_MODE (0)  // 0:std::regex
                         // 1:boost::regex
                         // 2:BREGEXP
                         // 3:RE2
@@ -197,9 +197,10 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 		return pos;
 	} else {
 		// 正規表現ライブラリが読み込まれていない
-		// そのまま通常の方法で判定する
+		// xxx そのまま通常の方法で判定する
+		return 0;
 	}
-#endif  // UZ_
+#else
 
 	register const wchar_t* p;
 	register const wchar_t* q;
@@ -715,5 +716,6 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 
 	/* 数値ではない */
 	return 0;
+#endif  // UZ_
 }
 //@@@ 2001.11.07 End by MIK
