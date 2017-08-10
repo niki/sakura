@@ -11,7 +11,7 @@ Introduction
 <li>OS: Windows10 Home 1703
 <li>CPU: Celeron 3215U 1.7GHz
 <li>Memory: 8GB
-<li>Compiler: Visual Studio Community 2017
+<li>Compiler: Visual Studio 2015
 <li>Heavy software used: MacType, ESET
 </details>
 
@@ -21,13 +21,14 @@ Introduction
 Download & Setup  
 ----------------
 
-|ファイル名|主な変更内容|サイズ|日付||
+|Version|主な変更内容|日付|32bit|64bit|
 |-|-|-|-|-|
-|sakura-uzuki-2.55.zip (32bit)|アンドゥ,リドゥの高速化<br>ブックマークを縦線表示に修正|959KB|2017/07/29|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.55.zip)|
-|sakura-uzuki-2.54.zip (32bit)|アンドゥ,リドゥの高速化|959KB|2017/07/25|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.54.zip)|
-|sakura-uzuki-2.53.zip (32bit)|スクロールバーまわりの修正<br>実行ファイルを静的リンクにする|956KB|2017/07/23|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.53.zip)|
+|2.56|VS2015に変更,他|2017/08/10|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.56.zip)|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.56-64.zip)|
+|2.55|アンドゥ,リドゥの高速化<br>ブックマークを縦線表示に修正|2017/07/29|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.55.zip)||
+|2.54|アンドゥ,リドゥの高速化|2017/07/25|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.54.zip)||
+|2.53|スクロールバーまわりの修正<br>実行ファイルを静的リンクにする|2017/07/23|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.53.zip)||
 ||||||
-|keyword_pack.zip|patchunicode:#720対応|355KB|2017/06/16|[download](Publish/keyword_pack.zip)|
+|keyword_pack.zip|patchunicode:#720対応|2017/06/16|[download](Publish/keyword_pack.zip)||
 
 - sakura.keywordset.csv  
   [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードを外部ファイルを使用して設定する定義ファイルです.  
@@ -36,6 +37,8 @@ Download & Setup
   使用しない場合はいつも通りの動作です (sakura.iniに埋め込まれる)  
 
 - 変更履歴はコミットログ([link](https://github.com/uzuki3/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([link](sakura_core/my_config.h)) を見てね.  
+
+- FastCopyと相性が悪いようで起動中にサクラエディタを実行するとプロセス起動エラーが発生します (環境?)  
 
 
 <br>
@@ -71,7 +74,7 @@ Changed
 <li>EOFのみの行 (起動時とか)にも行番号を表示
 <li>コメント行の背景カラーを改行以降もその色で描画
 <li>空白, タブ, 改行, EOF, ノート線のカラーは現在のテキストカラーから自動で設定
-<li>数値の色付け判定を正規表現で行う (表現力の向上). 正規表現が使用できない場合は通常処理
+<li>数値の色付け判定を正規表現で行う (表現力の向上)
 <li>選択範囲カラーは元のテキストカラーをそのまま使用し、背景のみ描画する
 <li>カーソル行アンダーラインを行番号から引っ張る
 <li>偶数行背景はEOF以降は適用しない
@@ -84,6 +87,7 @@ Changed
 <li>Grep フォルダの指定BOXを３つに増やし, 除外フォルダを別ボックスで指定できるようにする
 <li>タブをダブルクリックで閉じられるようにする
 <li>タブ選択のアクティブ化をマウス押下時に行いレスポンス向上
+<li>モード取り消し時にダイアログ(検索やGrep,アウトライン解析など)にフォーカスがなくても閉じる
 <li>Grep パターン変数を使用できるようにする (レジストリ 'HKEY_CURRENT_USER\Software\sakura-uzuki' への追加が必要です)
 <li>メインメニューは常にデフォルトを使用する
 <li>置換ダイアログの置換後テキストに置換前テキストを設定
@@ -128,8 +132,8 @@ Changed
 
 **<a name="patchunicode">マージ済みパッチ**  
 
-- [patchunicode:#1065](https://sourceforge.net/p/sakura-editor/patchunicode/1065/) ~~他のドキュメントから入力補完~~
-- [patchunicode:#1050](https://sourceforge.net/p/sakura-editor/patchunicode/1050/) ~~エンコーディング名による文字コードの設定の修正~~
+- ~~[patchunicode:#1065](https://sourceforge.net/p/sakura-editor/patchunicode/1065/) 他のドキュメントから入力補完~~
+- ~~[patchunicode:#1050](https://sourceforge.net/p/sakura-editor/patchunicode/1050/) エンコーディング名による文字コードの設定の修正~~
 - [patchunicode:#1047](https://sourceforge.net/p/sakura-editor/patchunicode/1047/) プロポーショナル版で変更された単語単位移動を戻す
 - [patchunicode:#1006](https://sourceforge.net/p/sakura-editor/patchunicode/1006/) 改行文字部分とそれより後ろのキャレット移動に関して
 - [patchunicode:#830](https://sourceforge.net/p/sakura-editor/patchunicode/830/) マクロの文字列コピーを減らす
