@@ -23,10 +23,10 @@ Download & Setup
 
 |Version|主な変更内容|日付|32bit|64bit|
 |-|-|-|-|-|
-|2.56|VS2015に変更,他|2017/08/10|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.56.zip)|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.56-64.zip)|
-|2.55|アンドゥ,リドゥの高速化<br>ブックマークを縦線表示に修正|2017/07/29|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.55.zip)||
-|2.54|アンドゥ,リドゥの高速化|2017/07/25|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.54.zip)||
-|2.53|スクロールバーまわりの修正<br>実行ファイルを静的リンクにする|2017/07/23|[download](http://mimix.sakura.ne.jp/release/sakura-uzuki-2.53.zip)||
+|2.56|VS2015に変更,他|2017/08/10|[download](http://konru.org/release/sakura-uzuki-2.56.zip)|[download](http://konru.org/release/sakura-uzuki-2.56-64.zip)|
+|2.55|アンドゥ,リドゥの高速化<br>ブックマークを縦線表示に修正|2017/07/29|[download](http://konru.org/release/sakura-uzuki-2.55.zip)||
+|2.54|アンドゥ,リドゥの高速化|2017/07/25|[download](http://konru.org/release/sakura-uzuki-2.54.zip)||
+|2.53|スクロールバーまわりの修正<br>実行ファイルを静的リンクにする|2017/07/23|[download](http://konru.org/release/sakura-uzuki-2.53.zip)||
 ||||||
 |keyword_pack.zip|patchunicode:#720対応|2017/06/16|[download](Publish/keyword_pack.zip)||
 
