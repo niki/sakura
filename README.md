@@ -24,11 +24,10 @@ Download & Setup
 |Version|主な変更内容|日付|32bit|64bit|
 |-|-|-|-|-|
 |2.56|VS2015に変更,他|2017/08/10|[download](http://konru.org/release/sakura-uzuki-2.56.zip)|[download](http://konru.org/release/sakura-uzuki-2.56-64.zip)|
-|2.55|アンドゥ,リドゥの高速化<br>ブックマークを縦線表示に修正|2017/07/29|[download](http://konru.org/release/sakura-uzuki-2.55.zip)||
-|2.54|アンドゥ,リドゥの高速化|2017/07/25|[download](http://konru.org/release/sakura-uzuki-2.54.zip)||
-|2.53|スクロールバーまわりの修正<br>実行ファイルを静的リンクにする|2017/07/23|[download](http://konru.org/release/sakura-uzuki-2.53.zip)||
-||||||
-|keyword_pack.zip|patchunicode:#720対応|2017/06/16|[download](Publish/keyword_pack.zip)||
+
+|ファイル名|主な変更内容|日付||
+|-|-|-|-|
+|keyword_pack.zip|patchunicode:#720対応|2017/06/16|[download](Publish/keyword_pack.zip)|
 
 - sakura.keywordset.csv  
   [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードを外部ファイルを使用して設定する定義ファイルです.  
@@ -71,6 +70,7 @@ Changed
 <li>タブ文字を線のみで描画 (Sublime Textみたいな)
 <li>ブックマークを行番号左に縦線で表示する (背景色使用)
 <li>変更行を行番号右に縦線で表示する (背景色使用)
+<li>アンドゥ,リドゥの高速化
 <li>EOFのみの行 (起動時とか)にも行番号を表示
 <li>コメント行の背景カラーを改行以降もその色で描画
 <li>空白, タブ, 改行, EOF, ノート線のカラーは現在のテキストカラーから自動で設定
