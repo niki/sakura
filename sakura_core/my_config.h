@@ -59,7 +59,7 @@
 #define UZ_FIX_VERDLG
 	#define PR_VER      2,56,0,0
 	#define PR_VER_STR "2.56"
-	#define BASE_REV    4194
+	#define BASE_REV    4195
 
 //-------------------------------------------------------------------------
 // デバッグ出力 20150324
