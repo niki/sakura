@@ -23,7 +23,7 @@ Download & Setup
 
 |Version|主な変更内容|日付|32bit|64bit|
 |-|-|-|-|-|
-|2.56|VS2015に変更,他|2017/08/10|[download](http://konru.org/release/sakura-uzuki-2.56.zip)|[download](http://konru.org/release/sakura-uzuki-2.56-64.zip)|
+|2.57||2017/09/15|[download](http://konru.org/release/sakura-uzuki-2.57.zip)|[download](http://konru.org/release/sakura-uzuki-2.57-64.zip)|
 
 |ファイル名|主な変更内容|日付||
 |-|-|-|-|
