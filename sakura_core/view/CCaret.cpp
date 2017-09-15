@@ -1288,13 +1288,13 @@ POINT CCaret::CalcCaretDrawPos(const CLayoutPoint& ptCaretPos) const
 		nPosY = m_pEditView->GetTextArea().GetAreaTop()
 			+ (Int)(nY) * m_pEditView->GetTextMetrics().GetHankakuDy()
 			+ m_pEditView->GetTextMetrics().GetHankakuHeight() - GetCaretSize().cy; //下寄せ
+#if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT == 1
+		// ※アンダーラインと交差する個所にゴミが残る
+		nPosY += m_pEditView->GetLineSpace();
+#endif // UZ_
 	}
-#ifdef UZ_LINE_CENTERING
-  #if UZ_CENTERINLG_WITH_CARET_HEIGHT
-	nPosY += m_pEditView->GetLineSpace() / 2;    // 行間隔を含む高さにする場合
-  #else
+#if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT == 0
 	nPosY += m_pEditView->GetLineMargin();  // 文字の高さにする場合
-  #endif // UZ_
 #endif // UZ_
 
 	return CMyPoint(nPosX,nPosY);
