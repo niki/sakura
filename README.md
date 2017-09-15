@@ -68,6 +68,8 @@ Changed
 <li>半角スペースを '･' で表示 (Sublime Textみたいな)
 <li>NBSPも半角スペースとして '×' で表示
 <li>タブ文字を線のみで描画 (Sublime Textみたいな)
+<li><del>キャレットの高さを行の高さにする</del>
+<li>キャレットの幅を入力タイプで変更する (半角:1px, 全角:2px)
 <li>ブックマークを行番号左に縦線で表示する (背景色使用)
 <li>変更行を行番号右に縦線で表示する (背景色使用)
 <li>アンドゥ,リドゥの高速化
@@ -132,8 +134,8 @@ Changed
 
 **<a name="patchunicode">マージ済みパッチ**  
 
-- [patchunicode:#1065](https://sourceforge.net/p/sakura-editor/patchunicode/1065/) ~~他のドキュメントから入力補完~~
-- [patchunicode:#1050](https://sourceforge.net/p/sakura-editor/patchunicode/1050/) ~~エンコーディング名による文字コードの設定の修正~~
+- [patchunicode:#1065](https://sourceforge.net/p/sakura-editor/patchunicode/1065/) <del>他のドキュメントから入力補完</del>
+- [patchunicode:#1050](https://sourceforge.net/p/sakura-editor/patchunicode/1050/) <del>エンコーディング名による文字コードの設定の修正</del>
 - [patchunicode:#1047](https://sourceforge.net/p/sakura-editor/patchunicode/1047/) プロポーショナル版で変更された単語単位移動を戻す
 - [patchunicode:#1006](https://sourceforge.net/p/sakura-editor/patchunicode/1006/) 改行文字部分とそれより後ろのキャレット移動に関して
 - [patchunicode:#830](https://sourceforge.net/p/sakura-editor/patchunicode/830/) マクロの文字列コピーを減らす
