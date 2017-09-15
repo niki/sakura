@@ -10,6 +10,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
 -     	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
+ r4196	Fix: 文字の間隔が改行文字の文字数以上の時、空行の削除に失敗したり、行末(/$/)の置換が無限ループしたりする。 [patchunicode:#1014]
  r4195	Fix: プラグインのReadMe表示時にハンドルリーク [patchunicode:#1109] Contributed by berryzplus
  r4194	Keep: 再帰テンプレートでべき乗を計算 [patchunicode:#1108]
  r4192	Fix: SpecialFolderPath()関数更新 [patchunicode:#1107]
