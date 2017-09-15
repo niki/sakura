@@ -647,9 +647,9 @@ void CCaret::ShowEditCaret()
 	int				nCaretHeight = 0;
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();
-//#ifdef UZ_LINE_CENTERING // Caretの高さ
-//		nCaretHeight += m_pEditView->GetLineSpace();
-//#endif  // UZ_
+#if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT // Caretの高さ
+		nCaretHeight += m_pEditView->GetLineSpace();
+#endif  // UZ_
 		if( m_pEditView->IsInsMode() ){
 			nCaretWidth = 2;
 		}else{
@@ -678,9 +678,9 @@ void CCaret::ShowEditCaret()
 	// カーソルのタイプ = win
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();					/* キャレットの高さ */
-//#ifdef UZ_LINE_CENTERING // Caretの高さ
-//		nCaretHeight += m_pEditView->GetLineSpace();
-//#endif  // UZ_
+#if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT // Caretの高さ
+		nCaretHeight += m_pEditView->GetLineSpace();
+#endif  // UZ_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
 			nCaretWidth = 2; //2px
 			// 2011.12.22 システムの設定に従う(けど2px以上)
@@ -1282,9 +1282,12 @@ POINT CCaret::CalcCaretDrawPos(const CLayoutPoint& ptCaretPos) const
 			+ m_pEditView->GetTextMetrics().GetHankakuHeight() - GetCaretSize().cy; //下寄せ
 	}
 #ifdef UZ_LINE_CENTERING
-	//nPosY += m_pEditView->GetLineSpace();    // 行間隔を含む高さにする場合
+  #if UZ_CENTERINLG_WITH_CARET_HEIGHT
+	nPosY += m_pEditView->GetLineSpace() / 2;    // 行間隔を含む高さにする場合
+  #else
 	nPosY += m_pEditView->GetLineMargin();  // 文字の高さにする場合
-#endif  // UZ_
+  #endif // UZ_
+#endif // UZ_
 
 	return CMyPoint(nPosX,nPosY);
 }
