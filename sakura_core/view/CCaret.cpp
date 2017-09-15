@@ -682,7 +682,15 @@ void CCaret::ShowEditCaret()
 		nCaretHeight += m_pEditView->GetLineSpace();
 #endif  // UZ_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
+#ifdef UX_FIX_CARET_WIDTH
+			if (m_pEditView->IsImeON()) {
+				nCaretWidth = 2;
+			} else {
+				nCaretWidth = 1;
+			}
+#else
 			nCaretWidth = 2; //2px
+#endif // UZ_
 			// 2011.12.22 システムの設定に従う(けど2px以上)
 			DWORD dwWidth;
 			if( ::SystemParametersInfo(SPI_GETCARETWIDTH, 0, &dwWidth, 0) && 2 < dwWidth){
