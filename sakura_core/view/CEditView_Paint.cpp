@@ -1257,7 +1257,12 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
 				cBackType.FillBack(pInfo->m_gr,rcClip);
 			} else if (comment_mode) {
-				cComment.FillBack(pInfo->m_gr,rcClip);
+				if (cComment.GetBackColor() == cTextType.GetBackColor()) {
+					// カーソル行背景色とテキスト背景色が同じ場合は背景色で塗りつぶす
+					cBackType.FillBack(pInfo->m_gr,rcClip);
+				} else {
+					cComment.FillBack(pInfo->m_gr,rcClip);
+				}
 			} else
 #endif  // UZ_
 			cBackType.FillBack(pInfo->m_gr,rcClip);
