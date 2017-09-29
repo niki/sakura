@@ -647,8 +647,14 @@ void CCaret::ShowEditCaret()
 	int				nCaretHeight = 0;
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();
-#if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT // Caretの高さ
-		nCaretHeight += m_pEditView->GetLineSpace();
+#if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT == 1 // Caretの高さ
+		{ // ※アンダーラインと交差する個所にゴミが残る
+			// カーソル行アンダーラインが非表示の時はキャレットを行の高さにする
+			bool bUnderLine = m_pEditView->m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_bDisp;
+			if (!bUnderLine) {
+				nCaretHeight += m_pEditView->GetLineSpace();
+			}
+		}
 #endif  // UZ_
 		if( m_pEditView->IsInsMode() ){
 			nCaretWidth = 2;
@@ -678,8 +684,14 @@ void CCaret::ShowEditCaret()
 	// カーソルのタイプ = win
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();					/* キャレットの高さ */
-#if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT // Caretの高さ
-		nCaretHeight += m_pEditView->GetLineSpace();
+#if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT == 1 // Caretの高さ
+		{ // ※アンダーラインと交差する個所にゴミが残る
+			// カーソル行アンダーラインが非表示の時はキャレットを行の高さにする
+			bool bUnderLine = m_pEditView->m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_bDisp;
+			if (!bUnderLine) {
+				nCaretHeight += m_pEditView->GetLineSpace();
+			}
+		}
 #endif  // UZ_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
 #ifdef UX_FIX_CARET_WIDTH
@@ -1289,8 +1301,13 @@ POINT CCaret::CalcCaretDrawPos(const CLayoutPoint& ptCaretPos) const
 			+ (Int)(nY) * m_pEditView->GetTextMetrics().GetHankakuDy()
 			+ m_pEditView->GetTextMetrics().GetHankakuHeight() - GetCaretSize().cy; //下寄せ
 #if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT == 1
-		// ※アンダーラインと交差する個所にゴミが残る
-		nPosY += m_pEditView->GetLineSpace();
+		{ // ※アンダーラインと交差する個所にゴミが残る
+			// カーソル行アンダーラインが非表示の時はキャレットを行の高さにする
+			bool bUnderLine = m_pEditView->m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_bDisp;
+			if (!bUnderLine) {
+				nPosY += m_pEditView->GetLineSpace();
+			}
+		}
 #endif // UZ_
 	}
 #if defined(UZ_LINE_CENTERING) && UZ_CENTERINLG_WITH_CARET_HEIGHT == 0
