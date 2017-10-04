@@ -813,6 +813,12 @@ void CCaret::ShowEditCaret()
 	m_crCaret = crCaret;	//	2006.12.07 ryoji
 	m_pEditView->m_crBack2 = crBack;		//	2006.12.07 ryoji
 	m_pEditView->SetIMECompFormPos();
+
+#ifdef UX_FIX_CUR_BACK_DRAW
+	// 行番号の再描画
+	m_pEditView->Call_OnPaint( PAINT_LINENUMBER, false );
+#endif
+
 }
 
 

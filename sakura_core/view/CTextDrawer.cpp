@@ -593,11 +593,35 @@ void CTextDrawer::DispLineNumber(
 				if( NULL == pcLayout || 0 != pcLayout->GetLogicOffset() ){ //折り返しレイアウト行
 					wcscpy( szLineNum, L" " );
 				}else{
+#ifdef UX_FIX_CUR_BACK_DRAW
+					//CLayoutRange sSelect = pView->GetSelectionInfo().m_sSelect;
+					//if (pcLayout->GetLogicLineNo() >= sSelect.GetFrom().y && pcLayout->GetLogicLineNo() <= sSelect.GetTo().y) {
+					//	fnColor_CurBack();
+					//} else 
+					if (pcLayout->GetLogicLineNo() == pView->GetCaret().GetCaretLogicPos().y) {
+						gr.PopTextBackColor();
+						CTypeSupport cColor(pView,COLORIDX_CARETLINEBG);
+						gr.PushTextBackColor(cColor.GetBackColor());
+					}
+#endif // UZ_
+
 					_itow( pcLayout->GetLogicLineNo() + 1, szLineNum, 10 );	/* 対応する論理行番号 */
 //###デバッグ用
 //					_itow( CModifyVisitor().GetLineModifiedSeq(pCDocLine), szLineNum, 10 );	// 行の変更番号
 				}
 			}else{
+#ifdef UX_FIX_CUR_BACK_DRAW
+				//CLayoutRange sSelect = pView->GetSelectionInfo().m_sSelect;
+				//if ((Int)nLineNum >= sSelect.GetFrom().y && (Int)nLineNum <= sSelect.GetTo().y) {
+				//	fnColor_CurBack();
+				//} else
+				if ((Int)nLineNum == pView->GetCaret().GetCaretLayoutPos().GetY()) {
+					gr.PopTextBackColor();
+					CTypeSupport cColor(pView,COLORIDX_CARETLINEBG);
+					gr.PushTextBackColor(cColor.GetBackColor());
+				}
+#endif // UZ_
+
 				/* 物理行（レイアウト行）番号表示モード */
 				_itow( (Int)nLineNum + 1, szLineNum, 10 );
 			}
