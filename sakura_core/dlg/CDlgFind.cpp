@@ -166,20 +166,24 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 			if (nFuncCode == F_UP) {
 				pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
 				                                         (LPARAM)GetHwnd(), 0, 0, 0);
+				pcEditView->Redraw();
 			} else if (nFuncCode == F_DOWN) {
 				pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
 				                                         (LPARAM)GetHwnd(), 0, 0, 0);
+				pcEditView->Redraw();
 			} else if (nFuncCode == F_SEARCH_PREV) {
 				int nRet = GetData();
 				if (0 < nRet) {
 					pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
 					                                         (LPARAM)GetHwnd(), 0, 0, 0);
+					pcEditView->Redraw();
 				}
 			} else if (nFuncCode == F_SEARCH_NEXT) {
 				int nRet = GetData();
 				if (0 < nRet) {
 					pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
 					                                         (LPARAM)GetHwnd(), 0, 0, 0);
+					pcEditView->Redraw();
 				}
 			}
 			break;
