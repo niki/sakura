@@ -3180,7 +3180,7 @@ start_thread:
 	// キャッシュを使用して描画
 	{
 		const int foundLeft = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
-		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
+		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll / 4 * 2);
 		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(3));
 		
 		const int markLeft = std::max(DpiScaleX(1), nCxVScroll / 3 * 0);
