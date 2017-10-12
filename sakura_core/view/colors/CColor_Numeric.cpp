@@ -9,7 +9,6 @@
 #define REGEX_MODE (0)  // 0:std::regex
                         // 1:boost::regex
                         // 2:BREGEXP
-                        // 3:RE2
 #if REGEX_MODE == 0
   #include <regex>
   using namespace std;
@@ -19,9 +18,6 @@
   using namespace boost;
 #elif REGEX_MODE == 2
   #include "window/CEditWnd.h"
-#elif REGEX_MODE == 3
-  #pragma comment(lib, "re2.lib")
-  #include <re2/re2.h>
 #endif
 #endif  // UZ_
 
@@ -89,29 +85,24 @@ bool CColor_Numeric::EndColor(const CStringRef& cStr, int nPos)
 static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*, int length*/)
 {
 #ifdef UZ_FIX_NUMERIC_COLOR
-#if REGEX_MODE == 3  // RE2
-	register const std::string p2(to_achar(cStr.GetPtr() + offset));
-	register const wchar_t *q2 = nullptr;
-#else
 	register const wchar_t *p2 = cStr.GetPtr() + offset;
 	register const wchar_t *q2 = cStr.GetPtr() + cStr.GetLength();
-#endif
 
 #if REGEX_MODE == 0  // std::regex
-	using _regex = wregex;
-	using _match = wcmatch;
-	#define _re_is_available() (1)
-	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))
+	using _regex = wregex;                                    // 照合パターン
+	using _match = wcmatch;                                   // 文字列のパターン マッチング
+	#define _re_is_available() (1)                            // 正規表現が有効か
+	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))     // パターンマッチングを行うか
 	#define _re_search(pt, p, q, match, msg) \
-	                           regex_search(p, q, match, pt)
-	#define _re_startp(p)      (0)
-	#define _re_endp(match)    match.length(0)
+	                           regex_search(p, q, match, pt)  // 正規表現がマッチする部分が存在するか
+	#define _re_startp(p)      (0)                            // 文字列の先頭位置
+	#define _re_endp(match)    match.length(0)                // 文字列の終端位置
 	#define _re_init(p)        
 	#define _re_free(p)        
-	#define PREFIX             ""
-	#define SUFIX              ""
-	#define REGSTR(x)          L##x
-	#define REGEX(x)           _regex(REGSTR(x))
+	#define PREFIX                                            // 正規表現文字列に付加するプリフィックス
+	#define SUFIX                                             // 正規表現文字列に付加するサフィックス
+	#define REGSTR(x)          L##x                           // 文字列型
+	#define REGEX(x)           _regex(REGSTR(x))              // 正規表現ライブラリが扱う型
 #elif REGEX_MODE == 1  // boost::regex
 	using _regex = wregex;
 	using _match = wcmatch;
@@ -123,8 +114,8 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	#define _re_endp(match)    match.length(0)
 	#define _re_init(p)        
 	#define _re_free(p)        
-	#define PREFIX             ""
-	#define SUFIX              ""
+	#define PREFIX             
+	#define SUFIX              
 	#define REGSTR(x)          L##x
 	#define REGEX(x)           _regex(REGSTR(x))
 #elif REGEX_MODE == 2  // BREGEXP
@@ -142,21 +133,6 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	#define SUFIX              "/k"
 	#define REGSTR(x)          L"" PREFIX ##x SUFIX
 	#define REGEX(x)           _regex(REGSTR(x))
-#elif REGEX_MODE == 3  // RE2
-	using _regex = re2::RE2;
-	using _match = re2::StringPiece;
-	#define _re_is_available() (1)
-	#define _re_entry(p, c)    (c == 0 || ::wcschr(p.c_str(), c))
-	#define _re_search(pt, p, q, match, msg) \
-	                           re2::RE2::PartialMatch(p, pt, &(match))
-	#define _re_startp(p)      p.data()
-	#define _re_endp(match)    match.data()
-	#define _re_init(p)        
-	#define _re_free(p)        
-	#define PREFIX             ""
-	#define SUFIX              ""
-	#define REGSTR(x)          x
-	#define REGEX(x)           REGSTR(x)
 #else  // std::regex
 	static_assert(0);
 #endif
