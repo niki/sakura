@@ -249,7 +249,11 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 
 	// フォント設定	2012/11/27 Uchi
 	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT ), WM_GETFONT, 0, 0 );
+#ifdef UZ_FIX_GREP
+	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ), 2 );
+#else
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ) );
+#endif // UZ_
 	m_cFontText.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT ) );
 
 	/* 基底クラスメンバ */
