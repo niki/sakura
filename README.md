@@ -1,18 +1,22 @@
 Introduction  
 ------------
 
-サクラエディタのリポジトリ([link](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2))の[追っかけ](Publish/changes_from_r4011.txt). パッチ([link](#patchunicode))のマージ.  
-
-使っていて気になった点の修正や他のエディタのまねっこしているのでそれなりに良くなっているかと思います.  
-個人的な趣味でマクロとプラグインに **Lua** を使用できます. 将来的には **Python** も使えるようにしたいです.  
-
-<details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています.</summary>
+<details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
 <ul>
 <li>OS: Windows10 Home 1703
 <li>CPU: Celeron 3215U 1.7GHz
 <li>Memory: 8GB
 <li>Compiler: Visual Studio 2015
 <li>Heavy software used: MacType, ESET
+</details>
+
+<details open><summary>Policy</summary>
+<ul>
+<li>互換性は気にしないで, 新しい開発環境で修正を行う
+<li>サクラエディタのリポジトリ([link](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2))の[追っかけ](Publish/changes_from_r4011.txt). 良いパッチ([link](#patchunicode))のマージ
+<li>使っていて気になった点をとりあえず自分色に修正, 気に入らなかったらペンディング or オミット
+<li>他のエディタを参考にまねっこ
+<li>ミニマップの改良, 修正は諦めました (コミットログに残骸あり)
 </details>
 
 
@@ -23,8 +27,7 @@ Download & Setup
 
 |Version|主な変更内容|日付|32bit|64bit|
 |-|-|-|-|-|
-|2.58||2017/10/04|[download](http://konru.org/release/sakura-uzuki-2.58.zip)|[download](http://konru.org/release/sakura-uzuki-2.58-64.zip)|
-|2.57||2017/09/15|[download](http://konru.org/release/sakura-uzuki-2.57.zip)|[download](http://konru.org/release/sakura-uzuki-2.57-64.zip)|
+|2.59||2017/10/15|[download](http://konru.org/release/sakura-uzuki-2.59.zip)|[download](http://konru.org/release/sakura-uzuki-2.59-64.zip)|
 
 |ファイル名|主な変更内容|日付||
 |-|-|-|-|
@@ -63,7 +66,7 @@ Changed
 <ul>
 <li>スクロールバーに検索結果とブックマーク, カーソル位置を表示:star:
 <li>垂直, 水平スクロールの挙動をメモ帳の挙動と同じにする (端でスクロールするようになります)
-<li>検索時に画面外へ移動するときカーソル行を中央表示
+<li>検索時に画面が切り替わる場合カーソル行を中央に表示
 <li>タブ入力文字の切り替え機能 ('S_ChangeTabWidth' マクロを修正, 負の値を設定で入力文字をタブと空白で相互に切り替え)
 <li>行を中央揃えにする (行の間隔を上下に配分)
 <li>半角スペースを '･' で表示 (Sublime Textみたいな)
@@ -86,12 +89,13 @@ Changed
 
 <details open><summary>UI</summary>
 <ul>
-<li>検索ダイアログを VisualStudio のような挙動にする
-<li>Grep フォルダの指定BOXを３つに増やし, 除外フォルダを別ボックスで指定できるようにする
-<li>タブをダブルクリックで閉じられるようにする
+<li>検索ダイアログを VisualStudio のような挙動にする:star:
+<li>Grep フォルダの指定BOXを３つに増やし, 除外フォルダを別ボックスで指定できるようにする:star:
+<li>タブをダブルクリックで閉じられるようにする:star:
 <li>タブ選択のアクティブ化をマウス押下時に行いレスポンス向上
 <li>モード取り消し時にダイアログ(検索やGrep,アウトライン解析など)にフォーカスがなくても閉じる
 <li>Grep パターン変数を使用できるようにする (レジストリ 'HKEY_CURRENT_USER\Software\sakura-uzuki' への追加が必要です)
+<li>Grep 条件テキストボックスのフォントを少し大きくする
 <li>メインメニューは常にデフォルトを使用する
 <li>置換ダイアログの置換後テキストに置換前テキストを設定
 <li>正規表現検索のときに正規表現記号をクォート ('^abc$' を検索する場合 '\^abc\$' にする)
@@ -116,6 +120,7 @@ Changed
 <li>行番号が非表示でブックマークが表示のときブックマークは線で描画するように修正 (表示されていなかった)
 <li>アウトライン解析ダイアログのツリーをダブルクリックで展開/縮小できるように修正
 <li>ルールファイルを設定してアウトライン解析をするとデフォルトが逆順になっているのを修正
+<li>行番号背景描画が行番号縦線をはみ出しているバグを修正
 </details>
 
 <details open><summary>その他</summary>
