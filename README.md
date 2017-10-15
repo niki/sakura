@@ -13,7 +13,7 @@ Introduction
 <details open><summary>Policy</summary>
 <ul>
 <li>互換性は気にしないで, 新しい開発環境で修正を行う
-<li>サクラエディタのリポジトリ([link](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2))の[追っかけ](Publish/changes_from_r4011.txt). 良いパッチ([link](#patchunicode))のマージ
+<li>サクラエディタのリポジトリ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2 の追っかけ. 良さげなパッチのマージ
 <li>使っていて気になった点をとりあえず自分色に修正, 気に入らなかったらペンディング or オミット
 <li>他のエディタを参考にまねっこ
 <li>ミニマップの改良, 修正は諦めました (コミットログに残骸あり)
