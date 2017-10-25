@@ -89,50 +89,50 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	register const wchar_t *q2 = cStr.GetPtr() + cStr.GetLength();
 
 #if REGEX_MODE == 0  // std::regex
-	using _regex = wregex;                                    // 照合パターン
-	using _match = wcmatch;                                   // 文字列のパターン マッチング
-	#define _re_is_available() (1)                            // 正規表現が有効か
-	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))     // パターンマッチングを行うか
-	#define _re_search(pt, p, q, match, msg) \
-	                           regex_search(p, q, match, pt)  // 正規表現がマッチする部分が存在するか
-	#define _re_startp(p)      (0)                            // 文字列の先頭位置
-	#define _re_endp(match)    match.length(0)                // 文字列の終端位置
-	#define _re_init(p)        
-	#define _re_free(p)        
-	#define PREFIX                                            // 正規表現文字列に付加するプリフィックス
-	#define SUFIX                                             // 正規表現文字列に付加するサフィックス
-	#define REGSTR(x)          L##x                           // 文字列型
-	#define REGEX(x)           _regex(REGSTR(x))              // 正規表現ライブラリが扱う型
+	using _regex = wregex;                                     // 照合パターン
+	using _match = wcmatch;                                    // 文字列のパターン マッチング
+	#define _REG_IS_AVAILABLE() (1)                            // 正規表現が有効か
+	#define _REG_ENTRY(p, c)    (c == 0 || ::wcschr(p, c))     // パターンマッチングを行うか
+	#define _REG_SEARCH(pt, p, q, match, msg) \
+	                            regex_search(p, q, match, pt)  // 正規表現がマッチする部分が存在するか
+	#define _REG_STARTP(p)      (0)                            // 文字列の先頭位置
+	#define _REG_ENDP(match)    match.length(0)                // 文字列の終端位置
+	#define _REG_INIT(p)        
+	#define _REG_FREE(p)        
+	#define PREFIX                                             // 正規表現文字列に付加するプリフィックス
+	#define SUFIX                                              // 正規表現文字列に付加するサフィックス
+	#define REGSTR(x)           L##x                           // 文字列型
+	#define REGEX(x)            _regex(REGSTR(x))              // 正規表現ライブラリが扱う型
 #elif REGEX_MODE == 1  // boost::regex
 	using _regex = wregex;
 	using _match = wcmatch;
-	#define _re_is_available() (1)
-	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))
-	#define _re_search(pt, p, q, match, msg) \
-	                           regex_search(p, q, match, pt)
-	#define _re_startp(p)      (0)
-	#define _re_endp(match)    match.length(0)
-	#define _re_init(p)        
-	#define _re_free(p)        
-	#define PREFIX             
-	#define SUFIX              
-	#define REGSTR(x)          L##x
-	#define REGEX(x)           _regex(REGSTR(x))
+	#define _REG_IS_AVAILABLE() (1)
+	#define _REG_ENTRY(p, c)    (c == 0 || ::wcschr(p, c))
+	#define _REG_SEARCH(pt, p, q, match, msg) \
+	                            regex_search(p, q, match, pt)
+	#define _REG_STARTP(p)      (0)
+	#define _REG_ENDP(match)    match.length(0)
+	#define _REG_INIT(p)        
+	#define _REG_FREE(p)        
+	#define PREFIX              
+	#define SUFIX               
+	#define REGSTR(x)           L##x
+	#define REGEX(x)            _regex(REGSTR(x))
 #elif REGEX_MODE == 2  // BREGEXP
 	using _regex = std::wstring;
 	using _match = BREGEXP_W*;
-	#define _re_is_available() CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.IsAvailable()
-	#define _re_entry(p, c)    (c == 0 || ::wcschr(p, c))
-	#define _re_search(pt, p, q, match, msg) \
-	                           CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.BMatch(pt.c_str(), p, q, &(match), msg)
-	#define _re_startp(p)      p
-	#define _re_endp(match)    match->endp[0]
-	#define _re_init(p)        p = nullptr
-	#define _re_free(p)        if (p) { CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.BRegfree(p); }
-	#define PREFIX             "/"
-	#define SUFIX              "/k"
-	#define REGSTR(x)          L"" PREFIX ##x SUFIX
-	#define REGEX(x)           _regex(REGSTR(x))
+	#define _REG_IS_AVAILABLE() CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.IsAvailable()
+	#define _REG_ENTRY(p, c)    (c == 0 || ::wcschr(p, c))
+	#define _REG_SEARCH(pt, p, q, match, msg) \
+	                            CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.BMatch(pt.c_str(), p, q, &(match), msg)
+	#define _REG_STARTP(p)      p
+	#define _REG_ENDP(match)    match->endp[0]
+	#define _REG_INIT(p)        p = nullptr
+	#define _REG_FREE(p)        if (p) { CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.BRegfree(p); }
+	#define PREFIX              "/"
+	#define SUFIX               "/k"
+	#define REGSTR(x)           L"" PREFIX ##x SUFIX
+	#define REGEX(x)            _regex(REGSTR(x))
 #else  // std::regex
 	static_assert(0);
 #endif
@@ -152,16 +152,16 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 		{0,    true,  REGEX("^[0-9]+([uUlL]{0,2})")},                     // 123
 	};
 
-	if (_re_is_available()) {
+	if (_REG_IS_AVAILABLE()) {
 		int pos = 0;
 		wchar_t szMsg[80] = {}; //!< エラーメッセージ
 		_match match;
-		_re_init(match);
+		_REG_INIT(match);
 
 		for (auto && re : sPattern) {
-			if (_re_entry(p2, re.enter)) {
-				if (_re_search(re.exp, p2, q2, match, szMsg)) {
-					pos = std::max<int>(_re_endp(match) - _re_startp(p2), pos);
+			if (_REG_ENTRY(p2, re.enter)) {
+				if (_REG_SEARCH(re.exp, p2, q2, match, szMsg)) {
+					pos = std::max<int>(_REG_ENDP(match) - _REG_STARTP(p2), pos);
 				}
 				if (re.term) {
 					if (pos > 0) break;
@@ -169,7 +169,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 			}
 		}
 
-		_re_free(match);
+		_REG_FREE(match);
 		return pos;
 	} else {
 		// 正規表現ライブラリが読み込まれていない
