@@ -10,6 +10,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
 -     	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
+ r4197	Keep: CDlgFileUpdateQueryクラス整理 [patchunicode:#1111]
  r4196	Fix: 文字の間隔が改行文字の文字数以上の時、空行の削除に失敗したり、行末(/$/)の置換が無限ループしたりする。 [patchunicode:#1014]
  r4195	Fix: プラグインのReadMe表示時にハンドルリーク [patchunicode:#1109] Contributed by berryzplus
  r4194	Keep: 再帰テンプレートでべき乗を計算 [patchunicode:#1108]
@@ -17,8 +18,8 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
  r4190	Keep: CViewCommanderクラス整理 [patchunicode:#1106]
  r4189	Fix: 未定義のコマンドがある場合にバッファが未初期化になる [patchunicode:#1101] Contributed by Moca
  r4186	Keep: CDlgTagJumpListクラス整理  [patchunicode:#1105]
+--------------------------------------------------------------------------- 2.3.2.0
  r4180	update version 2.3.2.0
---- 2.3.2.0 ---------------------------------------------------------------
  r4178	Fix: UnicodeをUTF-16表記に変更  [patchunicode:#1102] Contributed by Moca
  r4176	New: ウィンドウ一覧ダイアログ [patchunicode:#1072] Contributed by Moca
  r4175	Imp: キーワードヘルプメニューのオプション [patchunicode:#1066] Contributed by Moca
@@ -49,7 +50,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
  r4133	Fix: アウトライン解析C++/Javaのソート順がおかしいバグの修正  [patchunicode:#1031]
  r4131	Keep: typo修正(Doxygenコメント)
  r4130	Fix: C++アウトラインでのK&R引数定義対策  [patchunicode:#1012]
---- 2.3.1.0 ---------------------------------------------------------------
+--------------------------------------------------------------------------- 2.3.1.0
  r4125	Fix: アウトライン解析C++/Javaツリーのクラス名の最大長の修正  [patchunicode:#1030]
  r4124	Chg: 英語リソースでなるべくアクセスキーで括弧を使わないように変更 [patchunicode:#911] Contributed by Moca
  r4123	Fix: 外部コマンド実行の標準出力を得るUTF-8で文字化け [patchunicode:#1077] Contributed by Moca
@@ -99,7 +100,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
  r4063	Keep: typo修正(Doxygenコメント)
  r4061	Fix: 共通・タイプ別設定変更後にタイトルバー更新  [patchunicode:#1013] 
  r4055	Keep: コメント追記(コマンドラインオプション用定数)
---- 2.3.0.0 ---------------------------------------------------------------
+--------------------------------------------------------------------------- 2.3.0.0
  r4048	Fix: スクロールできないときマウスキャプチャされたままになる
  r4047	New: XMLアウトラインとHTMLの修正
  r4046	Fix: 文字の間隔の適用値が今までと異なる [patchunicode:#1003] Contributed by Moca 文字間隔回りがおかしいのを修正します。 1. プロポーショナル版で全角の文字間隔が2倍になるように 2. CTextMetrics::CalcTextWidth2/3の文字間隔の引数がずれてたバグの修正 3. CLayoutMgr::getIndentOffsetの文字幅にさらに文字間隔が足されていたバグの修正
@@ -128,5 +129,5 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
  r4018	Fix: TCITEMの cchTextMaxメンバが初期化されていなかった。 関連 BBS [unicode:2263]
  r4017	Fix: EBCDIC typo修正 [patchunicode:#987]
  r4016	Fix: (選択)前の変更行へが追加されるときにもセパレータが余分に追加される [patchunicode:#983]
---- 2.2.0.1 ---------------------------------------------------------------
+--------------------------------------------------------------------------- 2.2.0.1
  r4011	base.
