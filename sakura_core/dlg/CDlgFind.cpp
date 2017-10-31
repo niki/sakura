@@ -24,10 +24,10 @@
 #include "util/shell.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 #include "window/CEditWnd.h"
 #include "uiparts/CMenuDrawer.h"
-#endif  // UZ_
+#endif  // NK_
 
 //検索 CDlgFind.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//11800
@@ -52,7 +52,7 @@ CDlgFind::CDlgFind()
 {
 	m_sSearchOption.Reset();
 
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	HWND hwndBtn = GetDlgItem(GetHwnd(), IDC_BUTTON_SEARCHNEXT);
 	CMenuDrawer cMenuDrawer;
 	cMenuDrawer.Create(G_AppInstance(), hwndBtn, NULL);
@@ -84,17 +84,17 @@ CDlgFind::CDlgFind()
 	}
 	
 	m_hMenuPopUp = hMenuPopUp;
-#endif  // UZ_
+#endif  // NK_
 	return;
 }
 
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 CDlgFind::~CDlgFind() {
 	::DestroyMenu(m_hMenuPopUp);
 }
-#endif  // UZ_
+#endif  // NK_
 
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 /** 標準以外のメッセージを捕捉する
 	@date 2008.05.28 ryoji 新規作成
 */
@@ -308,7 +308,7 @@ void CDlgFind::SetStatus(int stat) {
 	
 	//si::logln(L"   **** SetStatus stat=%d", stat);
 }
-#endif  // UZ_
+#endif  // NK_
 
 /*!
 	コンボボックスのドロップダウンメッセージを捕捉する
@@ -358,11 +358,11 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 
 	// フォント設定	2012/11/27 Uchi
 	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT ), WM_GETFONT, 0, 0 );
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ), 2 );
 #else
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ) );
-#endif  // UZ_
+#endif  // NK_
 	m_cFontText.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT ) );
 	return bRet;
 }
@@ -371,12 +371,12 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 
 BOOL CDlgFind::OnDestroy()
 {
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	// 最後に入力した文字列を履歴に追加する
 	if (!m_inputText.empty()) {  // 入力中の検索は履歴に残さない
 		CSearchKeywordManager().AddToSearchKeyArr( m_strText.c_str() );
 	}
-#endif  // UZ_
+#endif  // NK_
 	m_cFontText.ReleaseOnDestroy();
 	return CDialog::OnDestroy();
 }
@@ -416,11 +416,11 @@ void CDlgFind::SetData( void )
 	::CheckDlgButton( GetHwnd(), IDC_CHK_WORD, m_sSearchOption.bWordOnly );
 
 	/* 検索／置換  見つからないときメッセージを表示 */
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_NOTIFYNOTFOUND, FALSE );
 #else
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_NOTIFYNOTFOUND, m_bNOTIFYNOTFOUND );
-#endif  // UZ_
+#endif  // NK_
 
 	// From Here Jun. 29, 2001 genta
 	// 正規表現ライブラリの差し替えに伴う処理の見直し
@@ -444,29 +444,29 @@ void CDlgFind::SetData( void )
 	// To Here Jun. 29, 2001 genta
 
 	/* 検索ダイアログを自動的に閉じる */
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_bAutoCloseDlgFind, FALSE );
 #else
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_bAutoCloseDlgFind, m_pShareData->m_Common.m_sSearch.m_bAutoCloseDlgFind );
-#endif  // UZ_
+#endif  // NK_
 
 	/* 先頭（末尾）から再検索 2002.01.26 hor */
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_SEARCHALL, m_pShareData->m_Common.m_sSearch.m_bSearchAll );
 
-#ifdef UZ_FIX_DIALOG_POS
+#ifdef NK_FIX_DIALOG_POS
 	{
 		RECT rcView;
 		CEditView* pcEditView=(CEditView*)m_lParam;
 		::GetWindowRect(pcEditView->GetHwnd(), &rcView);
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 		SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView, CDialog::DLGPLACE_TR);
 #else
 		SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
 #endif
 	}
-#endif  // UZ_
+#endif  // NK_
 
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	// 最後に検索した文字列をマークする 2017.6.28 
 	{
 		CEditView* pcEditView=(CEditView*)m_lParam;
@@ -485,11 +485,11 @@ void CDlgFind::SetData( void )
 			pcEditView->ChangeCurRegexp(false);
 		}
 		pcEditView->Redraw();
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 		pcEditView->SB_Marker_Clear(1701);
-#endif  // UZ_
+#endif  // NK_
 	}
-#endif  // UZ_
+#endif  // NK_
 
 	return;
 }
@@ -583,7 +583,7 @@ int CDlgFind::GetData( void )
 		return 0;
 	}
 }
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 int CDlgFind::InstantInput( void )
 {
 //	MYTRACE( _T("CDlgFind::GetData()") );
@@ -628,9 +628,9 @@ int CDlgFind::InstantInput( void )
 			// 失敗!!
 			pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 			pcEditView->Redraw();
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 			//pcEditView->SB_Marker_CallPaint(1502);
-#endif  // UZ_
+#endif  // NK_
 			return -1;
 		} else {
 			// nop
@@ -652,23 +652,23 @@ int CDlgFind::InstantInput( void )
 		pcEditView->m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
 		//-pcEditView->ChangeCurRegexp(false);
 		//-pcEditView->Redraw();
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 		//pcEditView->SB_Marker_CallPaint(1503);
-#endif  // UZ_
+#endif  // NK_
 		pcEditView->GetCommander().HandleCommand((EFunctionCode)(F_SEARCH_NEXT | FA_FROMKEYBOARD), true,
 		                                         (LPARAM)GetHwnd(), 0, 0, 0);
 		return 1;
 	}else{
 		pcEditView->m_bCurSrchKeyMark = false;	/* 検索文字列のマーク */
 		pcEditView->Redraw();
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 		//pcEditView->SB_Marker_CallPaint(1504);
-#endif  // UZ_
+#endif  // NK_
 		SetStatus(0);
 		return 0;
 	}
 }
-#endif  // UZ_
+#endif  // NK_
 
 
 
@@ -715,7 +715,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), TRUE );
 		}
 		break;
-#ifndef UZ_FIX_FINDDLG
+#ifndef NK_FIX_FINDDLG
 	case IDC_BUTTON_SEARCHPREV:	/* 上検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDC_BUTTON1]→[IDC_BUTTON_SERACHPREV]に変更
 		/* ダイアログデータの取得 */
 		nRet = GetData();
@@ -748,7 +748,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			OkMessage( GetHwnd(), LS(STR_DLGFIND1) );	// 検索条件を指定してください。
 		}
 		return TRUE;
-#endif  // UZ_
+#endif  // NK_
 	case IDC_BUTTON_SEARCHNEXT:		/* 下検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDOK]→[IDC_BUTTON_SERACHNEXT]に変更
 		/* ダイアログデータの取得 */
 		nRet = GetData();
@@ -780,7 +780,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			OkMessage( GetHwnd(), LS(STR_DLGFIND1) );	// 検索条件を指定してください。
 		}
 		return TRUE;
-#ifndef UZ_FIX_FINDDLG
+#ifndef NK_FIX_FINDDLG
 	case IDC_BUTTON_SETMARK:	//2002.01.16 hor 該当行マーク
 		if( 0 < GetData() ){
 			if( m_bModal ){		/* モーダルダイアログか */
@@ -797,7 +797,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			}
 		}
 		return TRUE;
-#endif  // UZ_
+#endif  // NK_
 	case IDCANCEL:
 		CloseDialog( 0 );
 		return TRUE;

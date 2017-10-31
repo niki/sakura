@@ -82,7 +82,7 @@ void CEditView::SetIMECompFormPos( void )
 	CompForm.dwStyle = CFS_POINT;
 	CompForm.ptCurrentPos.x = (long) point.x;
 	CompForm.ptCurrentPos.y = (long) point.y + GetCaret().GetCaretSize().cy - GetTextMetrics().GetHankakuHeight();
-#ifdef UZ_LINE_CENTERING && UZ_CENTERINLG_WITH_CARET_HEIGHT == 1 // 変換位置
+#ifdef NK_LINE_CENTERING && NK_CENTERINLG_WITH_CARET_HEIGHT == 1 // 変換位置
 	{ // ※アンダーラインと交差する個所にゴミが残る
 		// カーソル行アンダーラインが非表示の時はキャレットを行の高さにする
 		bool bUnderLine = m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_bDisp;
@@ -91,7 +91,7 @@ void CEditView::SetIMECompFormPos( void )
 			                           (GetLineSpace() & 1);
 		}
 	}
-#endif  // UZ_
+#endif  // NK_
 
 	if ( hIMC ){
 		::ImmSetCompositionWindow( hIMC, &CompForm );

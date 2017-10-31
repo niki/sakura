@@ -22,9 +22,9 @@
 COpeBlk::COpeBlk()
 {
 	m_refCount = 0;
-#ifdef UZ_FIX_UNDOREDO
+#ifdef NK_FIX_UNDOREDO
 	m_ppCOpeArr.reserve(1000);
-#endif // UZ_
+#endif // NK_
 }
 
 COpeBlk::~COpeBlk()

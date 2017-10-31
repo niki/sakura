@@ -43,11 +43,11 @@ public:
 	bool GetTypeConfig(CTypeConfig cDocumentType, STypeConfig& type);
 	bool SetTypeConfig(CTypeConfig cDocumentType, const STypeConfig& type);
 	bool GetTypeConfigMini(CTypeConfig cDocumentType, const STypeConfigMini** type);
-#ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+#ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
 	bool AddTypeConfig(CTypeConfig cDocumentType, int nId = 0);
 #else
 	bool AddTypeConfig(CTypeConfig cDocumentType);
-#endif  // UZ_
+#endif  // NK_
 	bool DelTypeConfig(CTypeConfig cDocumentType);
 
 	static bool IsFileNameMatch(const TCHAR* pszTypeExts, const TCHAR* pszFileName);	// タイプ別拡張子にファイル名がマッチするか

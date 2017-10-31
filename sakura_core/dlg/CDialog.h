@@ -153,9 +153,9 @@ public:
 	DLLSHAREDATA*	m_pShareData;
 	BOOL			m_bInited;
 	HINSTANCE		m_hLangRsrcInstance;		// メッセージリソースDLLのインスタンスハンドル	// 2011.04.10 nasukoji
-#ifdef UZ_FIX_DIALOG_POS
+#ifdef NK_FIX_DIALOG_POS
 	HWND			m_hwndPlaceOfWindow;
-#endif  // UZ_
+#endif  // NK_
 
 protected:
 	void CreateSizeBox( void );
@@ -164,13 +164,13 @@ protected:
 	HWND GetItemHwnd(int nID){ return ::GetDlgItem( GetHwnd(), nID ); }
 
 	// コントロールに画面のフォントを設定	2012/11/27 Uchi
-#ifdef UZ_FIX_SETMAINFONT
+#ifdef NK_FIX_SETMAINFONT
 	HFONT SetMainFont( HWND hTarget, int ptOfs = 0 );
 #else
 	HFONT SetMainFont( HWND hTarget );
-#endif  // UZ_
+#endif  // NK_
 
-#ifdef UZ_FIX_DIALOG_POS
+#ifdef NK_FIX_DIALOG_POS
 	void SetPlaceOfWindow();
 	
 	enum eDLGPLACE {
@@ -185,7 +185,7 @@ protected:
 		DLGPLACE_BR,  // 右下
 	};
 	void SetPlaceOfWindow(HWND hWnd, const RECT *prcView = nullptr, eDLGPLACE place = DLGPLACE_CC);
-#endif  // UZ_
+#endif  // NK_
 };
 
 

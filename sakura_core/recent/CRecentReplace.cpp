@@ -39,11 +39,11 @@ CRecentReplace::CRecentReplace()
 		GetShareData()->m_sSearchKeywords.m_aReplaceKeys.dataPtr()->GetBufferCount(),
 		&GetShareData()->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef(),
 		NULL,
-#ifdef UZ_FIX_MAXDATA
-		RegKey(UZ_REGKEY).get(_T("RecentReplaceKeyMax"), UZ_MAX_REPLACEKEY),
+#ifdef NK_FIX_MAXDATA
+		RegKey(NK_REGKEY).get(_T("RecentReplaceKeyMax"), NK_MAX_REPLACEKEY),
 #else
 		MAX_REPLACEKEY,
-#endif  // UZ_
+#endif  // NK_
 		NULL
 	);
 }

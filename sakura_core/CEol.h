@@ -92,9 +92,9 @@ public:
 	EEolType		GetType()	const{ return m_eEolType; }		//!< 現在のTypeを取得
 	CLogicInt		GetLen()	const;	//!< 現在のEOL長を取得。文字単位。
 	const TCHAR*	GetName()	const;	//!< 現在のEOLの名称取得
-#ifdef UZ_FIX_STATUSBAR
+#ifdef NK_FIX_STATUSBAR
 	const TCHAR*	GetName2()	const;	//!< 現在のEOLの名称取得
-#endif  // UZ_
+#endif  // NK_
 	const wchar_t*	GetValue2()	const;	//!< 現在のEOL文字列先頭へのポインタを取得
 	//#####
 

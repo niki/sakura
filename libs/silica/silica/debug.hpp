@@ -3,7 +3,7 @@
 //! @file  debug.hpp
 //! @brief デバッグ用
 //!
-//! @author (C) 2017, Uzuki.
+//! @author (C) 2017, Niki.
 //====================================================================
 #ifndef SILICA_DEBUG_HPP
 #define SILICA_DEBUG_HPP

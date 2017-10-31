@@ -24,22 +24,20 @@ Introduction
 
 Download & Setup  
 ----------------
+- Version 2.60 - 2017.10.31, 32bit [download](http://konru.org/release/sakura-fix_2.60.zip), 64bit [download](http://konru.org/release/sakura-fix_2.60_64.zip)  
+    - Merge sakura-trunk2 r4197  
+    - Minor fixes  
 
-|Version|主な変更内容|日付|32bit|64bit|
-|-|-|-|-|-|
-|2.59||2017/10/15|[download](http://konru.org/release/sakura-uzuki-2.59.zip)|[download](http://konru.org/release/sakura-uzuki-2.59-64.zip)|
-
-|ファイル名|主な変更内容|日付||
-|-|-|-|-|
-|keyword_pack.zip|patchunicode:#720対応|2017/06/16|[download](Publish/keyword_pack.zip)|
+- keyword_pack.zip  
+  キーワードセット集 (patchunicode:#720対応) 2017.06.16 [download](Publish/keyword_pack.zip)  
 
 - sakura.keywordset.csv  
-  [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードを外部ファイルを使用して設定する定義ファイルです.  
+  [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
   「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
   このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
   使用しない場合はいつも通りの動作です (sakura.iniに埋め込まれる)  
 
-- 変更履歴はコミットログ([link](https://github.com/uzuki3/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([link](sakura_core/my_config.h)) を見てね.  
+- 変更履歴はコミットログ([link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([link](sakura_core/my_config.h)) を見てね.  
 
 - FastCopyと相性が悪いようで起動中にサクラエディタを実行するとプロセス起動エラーが発生します (環境?)  
 
@@ -94,7 +92,7 @@ Changed
 <li>タブをダブルクリックで閉じられるようにする:star:
 <li>タブ選択のアクティブ化をマウス押下時に行いレスポンス向上
 <li>モード取り消し時にダイアログ(検索やGrep,アウトライン解析など)にフォーカスがなくても閉じる
-<li>Grep パターン変数を使用できるようにする (レジストリ 'HKEY_CURRENT_USER\Software\sakura-uzuki' への追加が必要です)
+<li>Grep パターン変数を使用できるようにする (レジストリ 'HKEY_CURRENT_USER\Software\sakura-niki' への追加が必要です)
 <li>Grep 条件テキストボックスのフォントを少し大きくする
 <li>メインメニューは常にデフォルトを使用する
 <li>置換ダイアログの置換後テキストに置換前テキストを設定
@@ -131,9 +129,9 @@ Changed
 </details>
 
 
-<img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201707130016.png" width="75%" alt="検索マーク/検索ダイアログ">
-<img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041845.png" width="50%" alt="Luaマクロ">
-<img src="https://raw.github.com/wiki/uzuki3/sakura/images/sakura_201706041815.png" width="50%" alt="Grep">
+<img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201707130016.png" width="75%" alt="検索マーク/検索ダイアログ">
+<img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201706041845.png" width="50%" alt="Luaマクロ">
+<img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201706041815.png" width="50%" alt="Grep">
 
 
 <br>
@@ -158,4 +156,4 @@ Cregit
   [License](http://www.lua.org/license.html)  
 
 ---
-(C) 2017, 遊月(Uzuki).
+(C) 2017, Niki.

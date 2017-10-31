@@ -96,14 +96,14 @@ public:
 	static CMutex& GetMutexShareWork();
 
 	void InitKeyword(DLLSHAREDATA*, bool);
-#if defined(UZ_FIX_PROFILES) && UZ_USE_KEYWORDSET_CSV
+#if defined(NK_FIX_PROFILES) && NK_USE_KEYWORDSET_CSV
 	void InitKeywordFromList(DLLSHAREDATA*, const std::tstring&);
-#endif  // UZ_
+#endif  // NK_
 
-#ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+#ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
 	STypeConfig *CreateTypeConfig(int nIdx);  // 指定タイプを作成
 	void GetTypeNames(std::vector<std::tstring>&);  // タイプ設定の名前を取得する
-#endif  // UZ_
+#endif  // NK_
 
 protected:
 	/*

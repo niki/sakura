@@ -24,9 +24,9 @@
 #include <Windows.h>
 #include "dlg/CDialog.h"
 #include "doc/CEditDoc.h"
-#ifdef UZ_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINEDLG
 #include "util/window.h"
-#endif  //UZ_
+#endif  //NK_
 
 class CFuncInfo;
 class CFuncInfoArr; // 2002/2/10 aroka
@@ -227,9 +227,9 @@ private:
 	POINT				m_ptDefaultSizeClient;
 	RECT				m_rcItems[12];
 	
-#ifdef UZ_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINEDLG
 	CFontAutoDeleter		m_cFontText[2];
-#endif  // UZ_
+#endif  // NK_
 };
 
 

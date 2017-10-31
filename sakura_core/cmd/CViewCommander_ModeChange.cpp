@@ -157,7 +157,7 @@ void CViewCommander::Command_CANCEL_MODE( int whereCursorIs )
 			m_pCommanderView->GetSelectionInfo().PrintSelectionInfoMsg();
 		}
 	}
-#if defined(UZ_FIX_DLG) && UZ_CLOSE_DIALOG_WITH_MODE_CANCELLATION
+#if defined(NK_FIX_DLG) && NK_CLOSE_DIALOG_WITH_MODE_CANCELLATION
 	{
 		CEditWnd *pEditWnd = m_pCommanderView->m_pcEditWnd;
 		if (pEditWnd->m_cDlgFind.GetHwnd()) { // 「検索」ダイアログ
@@ -172,5 +172,5 @@ void CViewCommander::Command_CANCEL_MODE( int whereCursorIs )
 			pEditWnd->m_cHokanMgr.CloseDialog(0);
 		}
 	}
-#endif // UZ_
+#endif // NK_
 }

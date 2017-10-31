@@ -30,7 +30,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 	const CLayoutXInt nCol = CLayoutXInt(Dx);
 	if(pcView->GetTextArea().GenerateClipRect(&rcClip,*pDispPos,nCol))
 	{
-#ifdef UZ_FIX_HAN_SPACE
+#ifdef NK_FIX_HAN_SPACE
 		// 塗りつぶしで消去
 		gr.FillSolidMyRect(rcClip, gr.GetTextBackColor());
 //		// 空白で消去
@@ -38,9 +38,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //		::ExtTextOutW_AnyBuild(
 //			gr,
 //			pDispPos->GetDrawPos().x,
-//#  ifdef UZ_LINE_CENTERING
+//#  ifdef NK_LINE_CENTERING
 //			pcView->GetLineMargin() +
-//#  endif  // UZ_
+//#  endif  // NK_
 //			pDispPos->GetDrawPos().y,
 //			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 //			&rcClipBottom,
@@ -53,11 +53,11 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
 		y++; // 少し下め
-//#  ifdef UZ_LINE_CENTERING
+//#  ifdef NK_LINE_CENTERING
 //		y += pcView->GetLineMargin();
-//#  endif  // UZ_
+//#  endif  // NK_
 		x--; // 少し左め
-#ifdef UZ_FIX_HAN_SPACE
+#ifdef NK_FIX_HAN_SPACE
 		if (m_nbsp) {
 			gr.SetPen( gr.GetCurrentTextForeColor() );
 			::MoveToEx( gr, x-1, y-2, NULL );
@@ -77,7 +77,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		//::LineTo(   gr, x+2, y-1 );
 		//::MoveToEx( gr, x, y, NULL );
 		//::LineTo(   gr, x+2, y );
-#endif  // UZ_
+#endif  // NK_
 #else
 		//小文字"o"の下半分を出力
 		CMyRect rcClipBottom=rcClip;
@@ -85,9 +85,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#  ifdef UZ_LINE_CENTERING
+#  ifdef NK_LINE_CENTERING
 			pcView->GetLineMargin() +
-#  endif  // UZ_
+#  endif  // NK_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipBottom,
@@ -103,9 +103,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#  ifdef UZ_LINE_CENTERING
+#  ifdef NK_LINE_CENTERING
 			pcView->GetLineMargin() +
-#  endif  // UZ_
+#  endif  // NK_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipTop,
@@ -113,7 +113,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			1,
 			&Dx
 		);
-#endif  // UZ_
+#endif  // NK_
 	}
 
 	//位置進める
@@ -121,7 +121,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 }
 
 
-#ifdef  UZ_FIX_HAN_SPACE
+#ifdef  NK_FIX_HAN_SPACE
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                     CFigure_NBSP                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -133,4 +133,4 @@ bool CFigure_NBSP::Match(const wchar_t* pText, int nTextLen) const
 	}
 	return false;
 }
-#endif  // UZ_
+#endif  // NK_

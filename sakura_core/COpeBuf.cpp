@@ -24,9 +24,9 @@ COpeBuf::COpeBuf()
 {
 	m_nCurrentPointer = 0;	/* 現在位置 */
 	m_nNoModifiedIndex = 0;	/* 無変更な状態になった位置 */
-#ifdef UZ_FIX_UNDOREDO
+#ifdef NK_FIX_UNDOREDO
 	m_vCOpeBlkArr.reserve(1000);
-#endif  // UZ_
+#endif  // NK_
 }
 
 /* COpeBufクラス消滅 */

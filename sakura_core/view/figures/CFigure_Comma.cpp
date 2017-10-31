@@ -61,18 +61,18 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 	}
 	rcClip2.top = sPos.GetDrawPos().y;
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
-#ifndef UZ_FIX_TAB_MARK
+#ifndef NK_FIX_TAB_MARK
 	int nLen = wcslen( m_pTypeData->m_szTabViewString );
-#endif  // UZ_
+#endif  // NK_
 
 	if( pArea->IsRectIntersected(rcClip2) ){
 		if( cTabType.IsDisp() ){	//CSVモード
 			::ExtTextOutW_AnyBuild(
 				gr,
 				sPos.GetDrawPos().x,
-#ifdef UZ_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 				pcView->GetLineMargin() +
-#endif  // UZ_
+#endif  // NK_
 				sPos.GetDrawPos().y,
 				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 				&rcClip2,

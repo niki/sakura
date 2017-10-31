@@ -60,7 +60,7 @@
 #include "util/os.h" //WM_MOUSEWHEEL,IMR_RECONVERTSTRING,WM_XBUTTON*,IMR_CONFIRMRECONVERTSTRING
 #include "util/module.h"
 #include "debug/CRunningTimer.h"
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 #ifdef _OEPNMP
 #include <omp.h>
 #endif
@@ -68,7 +68,7 @@
 #include "_main/CAppMode.h"
 #include "CEditApp.h"
 #include "CGrepAgent.h" // use CEditApp.h
-#endif  // UZ_
+#endif  // NK_
 
 #ifndef IMR_DOCUMENTFEED
 #define IMR_DOCUMENTFEED 0x0007
@@ -169,9 +169,9 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_cHistory(NULL)
 , m_cRegexKeyword(NULL)
 , m_hAtokModule(NULL)
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 , SBMarker_(new ScrBarMarker(this))
-#endif  // UZ_
+#endif  // NK_
 {
 }
 
@@ -490,7 +490,7 @@ LRESULT CEditView::DispatchEvent(
 //	int			nPosY;
 
 	switch ( uMsg ){
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 	case WM_APP_SCRBAR_PAINT: // スクロールバー描画
 		{
 			SB_Marker_Trace(L"WM_APP_SCRBAR_PAINT, RequestCount %d", SBMarker_->nDrawRequestCount_);
@@ -517,16 +517,16 @@ LRESULT CEditView::DispatchEvent(
 			SB_Marker_Trace(L"WM_APP_SCRBAR_ENDPAINT");
 			SBMarker_->WaitForDraw(false);
 
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 			if (m_pcEditWnd->m_cDlgFind.GetHwnd() && SBMarker_->nSearchFoundLine_ > 0) {
 				m_pcEditWnd->m_cDlgFind.SetStatus(SBMarker_->nSearchFoundLine_);
 			}
-#endif  // UZ_
+#endif  // NK_
 
 			::UpdateWindow(m_hwndVScrollBar);
 		}
 		return 0L;
-#endif  // UZ_
+#endif  // NK_
 	case WM_MOUSEWHEEL:
 		if( m_pcEditWnd->DoMouseWheel( wParam, lParam ) ){
 			return 0L;
@@ -845,10 +845,10 @@ LRESULT CEditView::DispatchEvent(
 		}
 		return 0L;
 
-#ifdef UZ_FIX_SUPPRESSION_OF_WM_ERASEBKGND
+#ifdef NK_FIX_SUPPRESSION_OF_WM_ERASEBKGND
 	case WM_ERASEBKGND:  // 背景の描画を処理したことにする
 		return 1L;
-#endif  // UZ_
+#endif  // NK_
 
 	case WM_CLOSE:
 //		MYTRACE( _T("	WM_CLOSE\n") );
@@ -1136,9 +1136,9 @@ void CEditView::OnSize( int cx, int cy )
 			MiniMapRedraw(true);
 		}
 	}
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 	SB_Marker_CallPaint(1901);
-#endif  // UZ_
+#endif  // NK_
 	return;
 }
 
@@ -1182,9 +1182,9 @@ void CEditView::OnSetFocus( void )
 		}
 	}
 
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 	SB_Marker_CallPaint(1900);
-#endif  // UZ_
+#endif  // NK_
 }
 
 
@@ -1475,9 +1475,9 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 	const wchar_t*	pLine;
 	CLogicInt		nLineLen;
 	CLogicInt		nLineLen2;
-#ifndef UZ_FIX_WAITCUESOR
+#ifndef NK_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // UZ_
+#endif  // NK_
 
 
 	/* テキストが選択されているか */
@@ -1485,9 +1485,9 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 		return;
 	}
 
-#ifdef UZ_FIX_WAITCUESOR
+#ifdef NK_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // UZ_
+#endif  // NK_
 
 	CLogicPoint ptFromLogic;	// 2009.07.18 ryoji Logicで記憶するように変更
 	m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
@@ -2607,9 +2607,9 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 	if( bUnderLine ){
 		nUnderLineY = GetTextArea().GetAreaTop() + (Int)(GetCaret().GetCaretLayoutPos().GetY2() - GetTextArea().GetViewTopLine())
 			 * GetTextMetrics().GetHankakuDy() + GetTextMetrics().GetHankakuHeight();
-#ifdef UZ_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 		nUnderLineY += GetLineMargin();
-#endif  // UZ_
+#endif  // NK_
 	}
 	// To Here 2007.09.09 Moca
 
@@ -2634,11 +2634,11 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			gr.SetPen( m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_sColorAttr.m_cTEXT );
 			::MoveToEx(
 				gr,
-#ifdef UZ_FIX_CUR_UL
+#ifdef NK_FIX_CUR_UL
 				0,//GetTextArea().GetLeftYohaku(),
 #else
 				GetTextArea().GetAreaLeft(),
-#endif  // UZ_
+#endif  // NK_
 				nUnderLineY,
 				NULL
 			);
@@ -2674,35 +2674,35 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				nUnderLineY = -1;
 			}else if( GetTextArea().m_nViewRowNum < nY ){
 				nUnderLineY = GetTextArea().GetAreaBottom() + 1;
-#ifdef UZ_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += GetLineMargin();
 				}
-#endif  // UZ_
+#endif  // NK_
 			}else{
 				nUnderLineY = GetTextArea().GetAreaTop() + (Int)(nY) * GetTextMetrics().GetHankakuDy();
-#ifdef UZ_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
 				// 背景色の描画領域全体に影響してしまう
 				// アンダーライン処理とごっちゃになっていてわかりにくい
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += GetLineMargin();
 				}
-#endif  // UZ_
+#endif  // NK_
 			}
 
 			GetCaret().m_cUnderLine.Lock();
 
 			PAINTSTRUCT ps;
-#ifdef UZ_FIX_CUR_UL
+#ifdef NK_FIX_CUR_UL
 			//ps.rcPaint.left = GetTextArea().GetAreaLeft();
 			ps.rcPaint.left = 0;//GetTextArea().GetLeftYohaku();
 #else
 			ps.rcPaint.left = 0;
-#endif  // UZ_
+#endif  // NK_
 			ps.rcPaint.right = GetTextArea().GetAreaRight();
 			int height;
 			if( bDrawPaint && m_nOldUnderLineYHeight != 0 ){
@@ -3002,7 +3002,7 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 	}
 }
 
-#ifdef UZ_FIX_FLICKER
+#ifdef NK_FIX_FLICKER
 void CEditView::BeginIgnoreUpdateWindow() {
 	m_ignore_update_window++;
 }
@@ -3018,8 +3018,8 @@ void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
 void CEditView::RequestUpdateWindow() {
 	m_request_update_window = true;
 }
-#endif  // UZ_
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#endif  // NK_
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 //----------------------
 // キャッシュ作成
 //----------------------
@@ -3065,8 +3065,8 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg) {
 	for (int i = 0; i < vsize; i++) {
 		const CDocLine *pCDocLine = vLines[i];
 
-		uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? UZ_SCRBAR_FOUND_MAGIC : 0u;
-		uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? UZ_SCRBAR_MARK_MAGIC : 0u;
+		uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? NK_SCRBAR_FOUND_MAGIC : 0u;
+		uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? NK_SCRBAR_MARK_MAGIC : 0u;
 
 		if ((uFoundMagic | uMarkMagic) != 0u) {
 			CLogicInt nLogicY = i;
@@ -3138,11 +3138,11 @@ unsigned __stdcall SB_Marker_DrawThread(void *arg) {
 	                 (nCyVScroll /*rSBMarker.sbi_.dxyLineButton*/ * 2);
 	
 	COLORREF clrSearch = si::ColorString::ToCOLORREF(
-	    RegKey(UZ_REGKEY).get_s(_T("EditViewScrBarFoundColor"), UZ_SCRBAR_FOUND_COLOR));
+	    RegKey(NK_REGKEY).get_s(_T("EditViewScrBarFoundColor"), NK_SCRBAR_FOUND_COLOR));
 	COLORREF clrMark = si::ColorString::ToCOLORREF(
-	    RegKey(UZ_REGKEY).get_s(_T("EditViewScrBarMarkColor"), UZ_SCRBAR_MARK_COLOR));
+	    RegKey(NK_REGKEY).get_s(_T("EditViewScrBarMarkColor"), NK_SCRBAR_MARK_COLOR));
 	COLORREF clrCursor = si::ColorString::ToCOLORREF(
-	    RegKey(UZ_REGKEY).get_s(_T("EditViewScrBarCursorColor"), UZ_SCRBAR_CURSOR_COLOR));
+	    RegKey(NK_REGKEY).get_s(_T("EditViewScrBarCursorColor"), NK_SCRBAR_CURSOR_COLOR));
 	
 	
 start_thread:
@@ -3207,14 +3207,14 @@ start_thread:
 					int y = nBarTop;
 
 					if (bEnable) {
-						y += (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight);
+						y += (int)((float)(ln & NK_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight);
 					} else {
 						y +=
-						    (int)((float)(ln & UZ_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
+						    (int)((float)(ln & NK_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
 					}
 
 					// 検索行
-					if (ln & UZ_SCRBAR_FOUND_MAGIC) {
+					if (ln & NK_SCRBAR_FOUND_MAGIC) {
 						COLORREF clr = clrSearch;
 						int margin = 0;  // スクロールバーの領域を超えた時のマージン
 						int x2 = x + foundLeft;
@@ -3228,7 +3228,7 @@ start_thread:
 						gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + foundWidth, y2 + foundHeight + margin}, clr);
 					}
 					// ブックマーク行
-					if (ln & UZ_SCRBAR_MARK_MAGIC) {
+					if (ln & NK_SCRBAR_MARK_MAGIC) {
 						COLORREF clr = clrMark;
 						int margin = 0;  // スクロールバーの領域を超えた時のマージン
 						int x2 = x + markLeft;
@@ -3424,7 +3424,7 @@ bool CEditView::ScrBarMarker::Add(int nLayoutY, uint32_t magic) {
 	} else {
 		auto it = vLines_.begin();
 		while (it != vLines_.end()) {
-			if (((*it) & UZ_SCRBAR_LINEN_MASK) == nLayoutY) {  // すでに登録されている行がある
+			if (((*it) & NK_SCRBAR_LINEN_MASK) == nLayoutY) {  // すでに登録されている行がある
 				if ((*it) & magic) {  // すでに登録されているマジック (なにもしない)
 					SB_Marker_Trace(L"ScrBarMarker::Add, Already registered");
 					return true;
@@ -3442,10 +3442,10 @@ bool CEditView::ScrBarMarker::Add(int nLayoutY, uint32_t magic) {
 	}
 	
 func_end:
-	if (magic & UZ_SCRBAR_FOUND_MAGIC) {
+	if (magic & NK_SCRBAR_FOUND_MAGIC) {
 		nSearchFoundLine_++;
 	}
-	if (magic & UZ_SCRBAR_MARK_MAGIC) {
+	if (magic & NK_SCRBAR_MARK_MAGIC) {
 		nMarkFoundLine_++;
 	}
 	
@@ -3464,10 +3464,10 @@ bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic) {
 	} else {
 		auto it = vLines_.begin();
 		while (it != vLines_.end()) {
-			if (((*it) & UZ_SCRBAR_LINEN_MASK) == nLayoutY) {
+			if (((*it) & NK_SCRBAR_LINEN_MASK) == nLayoutY) {
 				(*it) &= ~magic;  // 指定のマジックを取り除く
 				
-				if (((*it) & UZ_SCRBAR_MAGIC_MASK) == 0u) {  // マジックがなくなったら要素を削除
+				if (((*it) & NK_SCRBAR_MAGIC_MASK) == 0u) {  // マジックがなくなったら要素を削除
 					it = vLines_.erase(it);
 					SB_Marker_Trace(L"ScrBarMarker::Del, Remove line");
 				} else {
@@ -3482,10 +3482,10 @@ bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic) {
 	}
 	
 func_end:
-	if (magic & UZ_SCRBAR_FOUND_MAGIC) {
+	if (magic & NK_SCRBAR_FOUND_MAGIC) {
 		nSearchFoundLine_ = std::max(nSearchFoundLine_ - 1, 0);
 	}
-	if (magic & UZ_SCRBAR_MARK_MAGIC) {
+	if (magic & NK_SCRBAR_MARK_MAGIC) {
 		nMarkFoundLine_ = std::max(nMarkFoundLine_ - 1, 0);
 	}
 	
@@ -3569,4 +3569,4 @@ void CEditView::_SB_Marker_DrawRequest() {
 void CEditView::_SB_Marker_Draw() {
 	SBMarker_->Draw();
 }
-#endif  // UZ_
+#endif  // NK_

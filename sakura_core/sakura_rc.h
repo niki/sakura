@@ -828,7 +828,7 @@
 #define IDD_PLUGIN_OPTION               5221
 #define IDD_PROFILEMGR                  5222
 #define IDD_FILETREE                    5223
-#ifdef UZ_FIX_GREP
+#ifdef NK_FIX_GREP
 #define IDC_COMBO_FOLDER2               7000
 #define IDC_COMBO_FOLDER3               7001
 #define IDC_CHK_FOLDER99                7010
@@ -840,10 +840,10 @@
 #define IDC_BUTTON_FOLDER4              7022
 #define IDC_EDIT_EXCLUDEDIRS            7030
 #define IDC_CHK_CPP                     7500
-#endif  // UZ_
-#ifdef UZ_FIX_FINDDLG
+#endif  // NK_
+#ifdef NK_FIX_FINDDLG
 #define IDC_FIND_RESULT                 7600
-#endif  // UZ_
+#endif  // NK_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

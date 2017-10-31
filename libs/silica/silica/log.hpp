@@ -3,7 +3,7 @@
 //! @file  log.hpp
 //! @brief ログ
 //!
-//! @author (C) 2017, Uzuki.
+//! @author (C) 2017, Niki.
 //====================================================================
 #ifndef SILICA_LOG_HPP
 #define SILICA_LOG_HPP

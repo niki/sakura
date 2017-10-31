@@ -41,7 +41,7 @@ CBregexpDll2::~CBregexpDll2()
 */
 LPCTSTR CBregexpDll2::GetDllNameImp( int index )
 {
-#ifdef UZ_BREGONIG_NAME_SEARCH
+#ifdef NK_BREGONIG_NAME_SEARCH
 	TCHAR szPath[_MAX_PATH + 1];
 	GetExedir(szPath);
 	std::wstring fname = szPath;
@@ -56,7 +56,7 @@ LPCTSTR CBregexpDll2::GetDllNameImp( int index )
 		return _T("bregonig32.dll");
 	}
 #endif  // _WIN64
-#endif  // UZ_
+#endif  // NK_
 	return _T("bregonig.dll");
 }
 

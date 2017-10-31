@@ -389,19 +389,19 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("CBK"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("UND"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("CVL"), COLOR_ATTRIB_NO_BACK | ( COLOR_ATTRIB_NO_EFFECTS & ~COLOR_ATTRIB_NO_BOLD )}, // 2007.09.09 Moca カーソル位置縦線
-#ifdef UZ_FIX_WS_COLOR
+#ifdef NK_FIX_WS_COLOR
 	{_T("NOT"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("NOT"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
-#endif  // UZ_
+#endif  // NK_
 	{_T("LNO"), 0},
-#ifdef UZ_FIX_MODGYOU_DRAW_VLINE
+#ifdef NK_FIX_MODGYOU_DRAW_VLINE
 	{_T("MOD"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("MOD"), 0},
-#endif // UZ_
+#endif // NK_
 	{_T("EBK"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
-#ifdef UZ_FIX_WS_COLOR
+#ifdef NK_FIX_WS_COLOR
 	{_T("TAB"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("SPC"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},	//2002.04.28 Add By KK
 	{_T("ZEN"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
@@ -409,32 +409,32 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("TAB"), 0},
 	{_T("SPC"), 0},	//2002.04.28 Add By KK
 	{_T("ZEN"), 0},
-#endif  // UZ_
+#endif  // NK_
 	{_T("CTL"), 0},
-#ifdef UZ_FIX_WS_COLOR
+#ifdef NK_FIX_WS_COLOR
 	{_T("EOL"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("EOL"), 0},
-#endif  // UZ_
-#ifdef UZ_FIX_COLOR_STRATEGY
+#endif  // NK_
+#ifdef NK_FIX_COLOR_STRATEGY
 	{_T("RAP"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("VER"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("RAP"), 0},
 	{_T("VER"), 0},  // 2005.11.08 Moca 指定桁縦線
-#endif  // UZ_
-#ifdef UZ_FIX_WS_COLOR
+#endif  // NK_
+#ifdef NK_FIX_WS_COLOR
 	{_T("EOF"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("EOF"), 0},
-#endif  // UZ_
+#endif  // NK_
 	{_T("NUM"), 0},	//@@@ 2001.02.17 by MIK 半角数値の強調
 	{_T("BRC"), 0},	//対括弧	// 02/09/18 ai Add
-#ifdef UZ_FIX_SELAREA
+#ifdef NK_FIX_SELAREA
 	{_T("SEL"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("SEL"), 0},
-#endif  // UZ_
+#endif  // NK_
 	{_T("FND"), 0},
 	{_T("FN2"), 0},
 	{_T("FN3"), 0},
@@ -468,11 +468,11 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("DFA"), 0},	//DIFF追加	//@@@ 2002.06.01 MIK
 	{_T("DFC"), 0},	//DIFF変更	//@@@ 2002.06.01 MIK
 	{_T("DFD"), 0},	//DIFF削除	//@@@ 2002.06.01 MIK
-#ifdef UZ_FIX_BOOKMARK_DRAW_VLINE
+#ifdef NK_FIX_BOOKMARK_DRAW_VLINE
 	{_T("MRK"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},	//ブックマーク	// 02/10/16 ai Add
 #else
 	{_T("MRK"), 0},	//ブックマーク	// 02/10/16 ai Add
-#endif // UZ_
+#endif // NK_
 	{_T("PGV"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("LAST"), 0}	// Not Used
 };

@@ -2,7 +2,7 @@
 //
 #define SAKURA_LANG_RESOURCE
 
-#include "my_config.h" // UZ_
+#include "my_config.h" // NK_
 #ifndef SAKURA_LANG_RESOURCE
 	#include "sakura_rc.h"
 	#include "Funccode_define.h"
@@ -36,10 +36,10 @@ LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
 #endif //_WIN32
 
 #define	S_COPYRIGHT	"Copyright (C) 2011-2017  by Lucien & Collaborators"
-#ifndef UZ_FIX_VERDLG
+#ifndef NK_FIX_VERDLG
 #define PR_VER		2,3,2,0
 #define PR_VER_STR	"2.3.2.0"
-#endif  // UZ_
+#endif  // NK_
 #define FL_VER		PR_VER
 #define FL_VER_STR	PR_VER_STR
 
@@ -77,7 +77,7 @@ END
 // Dialog
 //
 
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 IDD_FIND DIALOGEX 30, 0, 216, 63
 STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_CONTEXTHELP
@@ -86,11 +86,11 @@ IDD_FIND DIALOGEX 30, 0, 284, 93
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
     WS_SYSMENU
 EXSTYLE WS_EX_CONTEXTHELP
-#endif  // UZ_
+#endif  // NK_
 CAPTION "Search"
 FONT 9, "Tahoma"
 BEGIN
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 //    LTEXT           "èåè(&N)",IDC_STATIC,65,6,26,8
     COMBOBOX        IDC_COMBO_TEXT,67,4,131,150,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
@@ -140,7 +140,7 @@ BEGIN
     PUSHBUTTON      "&Bookmark",IDC_BUTTON_SETMARK,221,38,58,14
     PUSHBUTTON      "Cancel(&X)",IDCANCEL,221,57,58,14,WS_GROUP
     PUSHBUTTON      "&Help",IDC_BUTTON_HELP,221,73,58,14
-#endif  // UZ_
+#endif  // NK_
 END
 
 IDD_ABOUT DIALOG DISCARDABLE  0, 0, 245, 203
@@ -232,17 +232,17 @@ BEGIN
                     CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
-#ifdef UZ_FIX_GREP
+#ifdef NK_FIX_GREP
 IDD_GREP DIALOGEX 0, 0, 308, 216
 #else
 IDD_GREP DIALOGEX 0, 0, 308, 171
-#endif // UZ_
+#endif // NK_
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTEXTHELP
 CAPTION "Grep Term Input"
 FONT 9, "Tahoma"
 BEGIN
-#ifdef UZ_FIX_GREP
+#ifdef NK_FIX_GREP
     LTEXT           "Term(&N)",IDC_STATIC,5,5,26,8
     COMBOBOX        IDC_COMBO_TEXT,46,2,257,120,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
@@ -382,7 +382,7 @@ BEGIN
     DEFPUSHBUTTON   "&Find",IDOK,253,76,49,14,WS_GROUP
     PUSHBUTTON      "Cancel(&X)",IDCANCEL,253,130,49,14
     PUSHBUTTON      "&Help",IDC_BUTTON_HELP,253,147,49,14
-#endif  // UZ_
+#endif  // NK_
 END
 
 IDD_GREP_REPLACE DIALOGEX 0, 0, 308, 193
@@ -1058,11 +1058,11 @@ BEGIN
     PUSHBUTTON      "Dupli&cate",IDC_BUTTON_COPY_TYPE,130,127,50,14
     PUSHBUTTON      "&Up",IDC_BUTTON_UP_TYPE,130,143,50,14
     PUSHBUTTON      "D&own",IDC_BUTTON_DOWN_TYPE,130,159,50,14
-#ifdef UZ_FIX_TYPELIST_ADD_ANY_TYPE
+#ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
     PUSHBUTTON      "&Add",IDC_BUTTON_ADD_TYPE,130,175,50,14,BS_SPLITBUTTON
 #else
     PUSHBUTTON      "&Add",IDC_BUTTON_ADD_TYPE,130,175,50,14
-#endif  // UZ_
+#endif  // NK_
     PUSHBUTTON      "&Del",IDC_BUTTON_DEL_TYPE,130,191,50,14
     CONTROL         "Add to Context Menu",IDC_CHECK_EXT_RMENU,"Button",BS_AUTOCHECKBOX |
                     BS_MULTILINE | WS_DISABLED | WS_TABSTOP,130,207,54,28
@@ -1130,11 +1130,11 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,117,93,7,
                     12
     LTEXT           "T&AB Symbol",IDC_STATIC,8,110,56,8,NOT WS_GROUP
-#ifndef UZ_FIX_TAB
+#ifndef NK_FIX_TAB
     COMBOBOX        IDC_CHECK_TAB_ARROW,48,108,50,80,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_EDIT_TABVIEWSTRING,103,108,40,12,ES_AUTOHSCROLL
-#endif  // UZ_
+#endif  // NK_
     CONTROL         "Insert S&PACE",IDC_CHECK_INS_SPACE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,70,123,57,10
     COMBOBOX        IDC_COMBO_TSV_MODE,16,123,46,40,CBS_DROPDOWNLIST | 
@@ -3669,7 +3669,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_AUTHOR_PAGE         "http://sakura-editor.sourceforge.net/"
-#ifdef UZ_FIX_VERDLG
+#ifdef NK_FIX_VERDLG
     IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n\
 \r\n\
 * Build : %ts (%d)\r\n\
@@ -3680,7 +3680,7 @@ BEGIN
 "
 #else
     IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n"
-#endif  // UZ_
+#endif  // NK_
 END
 
 STRINGTABLE DISCARDABLE 
@@ -3912,11 +3912,11 @@ BEGIN
 	STR_DLGFLPROP_FILENAME		"Filename  "
 	STR_DLGFLPROP_FILETYPE		"File Type  "
 	STR_DLGFLPROP_ENCODING		"Character Encoding  "
-#ifdef UZ_FIX_WITH_BOM_TEXT
+#ifdef NK_FIX_WITH_BOM_TEXT
 	STR_DLGFLPROP_WITH_BOM		" BOM"
 #else
 	STR_DLGFLPROP_WITH_BOM		" with BOM"
-#endif  // UZ_
+#endif  // NK_
 	STR_DLGFLPROP_LINE_COUNT	"Total Lines  %d\r\n"
 	STR_DLGFLPROP_LAYOUT_LINE	"Total including wrapped lines  %d\r\n"
 	STR_DLGFLPROP_VIEW_MODE		"Opened in View-Mode mode.\r\n"

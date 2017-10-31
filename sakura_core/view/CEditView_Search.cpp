@@ -289,11 +289,11 @@ bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 }
 
 /* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
-#ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef NK_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */, bool bRegQuote /* = false */ )
 #else
 void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */ )
-#endif  // UZ_
+#endif  // NK_
 {
 
 	int				i;
@@ -349,7 +349,7 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 		}
 	}
 
-#ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef NK_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	// 正規表現文字をクォートする
 	// (PHP 4, PHP 5) string preg_quote ( string $str [, string $delimiter = NULL ] )
 	auto preg_quote = [](const CNativeW &str) -> CNativeW {
@@ -378,7 +378,7 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 	if (bRegQuote) {
 		cmemTopic = preg_quote(cmemTopic);
 	}
-#endif  // UZ_
+#endif  // NK_
 
 	wchar_t *pTopic2 = cmemTopic.GetStringPtr();
 	if( bTrimSpaceTab ){
@@ -416,32 +416,32 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 	@date 2006.08.23 ryoji 新規作成
 	@date 2014.07.01 Moca bGetHistory追加、戻り値をboolに変更
 */
-#ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef NK_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHistory, bool bRegQuote /* = false */ )
 #else
 bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHistory )
-#endif  // UZ_
+#endif  // NK_
 {
 	bool bStripMaxPath = false;
 	cmemCurText.SetString(L"");
 
 	if( GetSelectionInfo().IsTextSelected() ){	// テキストが選択されている
-#ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef NK_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 		GetCurrentTextForSearch( cmemCurText, bStripMaxPath, false, bRegQuote );
 #else
 		GetCurrentTextForSearch( cmemCurText, bStripMaxPath );
-#endif  // UZ_
+#endif  // NK_
 	}
 	else{	// テキストが選択されていない
 		bool bGet = false;
 		if( GetDllShareData().m_Common.m_sSearch.m_bCaretTextForSearch ){
-#ifdef UZ_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef NK_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 			GetCurrentTextForSearch( cmemCurText, bStripMaxPath, true, bRegQuote );	// カーソル位置単語を取得
 				// 正規表現検索の時は文字列をクォートする
 				// 空白タブは自動取得の対象としない 2017.6.28 
 #else
 			GetCurrentTextForSearch( cmemCurText, bStripMaxPath );	// カーソル位置単語を取得
-#endif  // UZ_
+#endif  // NK_
 			if( cmemCurText.GetStringLength() == 0 && bGetHistory ){
 				bGet = true;
 			}

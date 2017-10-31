@@ -191,9 +191,9 @@ INT_PTR CDlgWindowList::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARA
 
 BOOL CDlgWindowList::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
 {
-#ifdef UZ_FIX_DIALOG_POS
+#ifdef NK_FIX_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // UZ_
+#endif  // NK_
 
 	_SetHwnd(hwndDlg);
 

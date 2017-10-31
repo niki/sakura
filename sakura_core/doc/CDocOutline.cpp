@@ -365,7 +365,7 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 					break;
 				}
 			}
-#ifdef UZ_FIX_OUTLINE
+#ifdef NK_FIX_OUTLINE
 			if (bRegex) {
 				strText.assign( pszText, pRegex[j].GetIndex(), pRegex[j].GetMatchLen() );
 			} else {
@@ -373,7 +373,7 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 			}
 #else
 			strText.assign( pszText, i );
-#endif  // UZ_
+#endif  // NK_
 			pszText = strText.c_str();
 		}
 

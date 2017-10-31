@@ -3,7 +3,7 @@
 //! @file  csv.hpp
 //! @brief CSV操作
 //!
-//! @author (C) 2017, Uzuki.
+//! @author (C) 2017, Niki.
 //====================================================================
 #ifndef SILICA_CSV_HPP
 #define SILICA_CSV_HPP

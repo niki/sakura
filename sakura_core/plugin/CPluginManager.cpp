@@ -30,9 +30,9 @@
 #include "plugin/CJackManager.h"
 #include "plugin/CWSHPlugin.h"
 #include "plugin/CDllPlugin.h"
-#ifdef UZ_USE_LUA
+#ifdef NK_USE_LUA
 #include "plugin/CLuaPlugin.h"
-#endif // UZ_
+#endif // NK_
 #include "util/module.h"
 #include "io/CZipFile.h"
 
@@ -551,10 +551,10 @@ CPlugin* CPluginManager::LoadPlugin( const TCHAR* pszPluginDir, const TCHAR* psz
 
 	if( wcsicmp( sPlugType.c_str(), L"wsh" ) == 0 ){
 		plugin = new CWSHPlugin( tstring(pszBasePath) );
-#ifdef UZ_USE_LUA
+#ifdef NK_USE_LUA
 	}else if( wcsicmp( sPlugType.c_str(), L"lua" ) == 0 ){
 		plugin = new CLuaPlugin( tstring(pszBasePath) );
-#endif // UZ_
+#endif // NK_
 	}else if( wcsicmp( sPlugType.c_str(), L"dll" ) == 0 ){
 		plugin = new CDllPlugin( tstring(pszBasePath) );
 	}else{

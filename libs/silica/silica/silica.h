@@ -3,7 +3,7 @@
 //! @file  silica.h
 //! @brief silica library
 //!
-//! @author (C) 2017, Uzuki.
+//! @author (C) 2017, Niki.
 //====================================================================
 #ifndef SILICA_H
 #define SILICA_H

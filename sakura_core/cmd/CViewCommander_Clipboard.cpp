@@ -611,9 +611,9 @@ void CViewCommander::Command_INSTEXT(
 
 end_of_func:
 
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 	m_pCommanderView->SB_Marker_Clear(2000);
-#endif  // UZ_
+#endif  // NK_
 	return;
 }
 

@@ -73,10 +73,10 @@ typedef const StringBufferW_ StringBufferW;
 //2007.09.24 kobake データ変換部を子クラスに分離
 //!各種データ変換付きCProfile
 class CDataProfile : public CProfile{
-#ifdef UZ_FIX_PROFILES
+#ifdef NK_FIX_PROFILES
 public:
 	void *tag_;
-#endif  // UZ_
+#endif  // NK_
 private:
 	//専用型
 	typedef std::wstring wstring;

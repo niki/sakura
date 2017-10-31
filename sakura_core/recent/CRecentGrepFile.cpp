@@ -39,11 +39,11 @@ CRecentGrepFile::CRecentGrepFile()
 		GetShareData()->m_sSearchKeywords.m_aGrepFiles.dataPtr()->GetBufferCount(),
 		&GetShareData()->m_sSearchKeywords.m_aGrepFiles._GetSizeRef(),
 		NULL,
-#ifdef UZ_FIX_MAXDATA
-		RegKey(UZ_REGKEY).get(_T("RecentGrepFileMax"), UZ_MAX_GREPFILE),
+#ifdef NK_FIX_MAXDATA
+		RegKey(NK_REGKEY).get(_T("RecentGrepFileMax"), NK_MAX_GREPFILE),
 #else
 		MAX_GREPFILE,
-#endif  // UZ_
+#endif  // NK_
 		NULL
 	);
 }

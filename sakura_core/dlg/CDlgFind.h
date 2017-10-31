@@ -29,19 +29,19 @@ public:
 	||  Constructors
 	*/
 	CDlgFind();
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	~CDlgFind();
-#endif  // UZ_
+#endif  // NK_
 	/*
 	||  Attributes & Operations
 	*/
 //	int DoModal( HINSTANCE, HWND, LPARAM );	/* モーダルダイアログの表示 */
 	HWND DoModeless( HINSTANCE, HWND, LPARAM );	/* モードレスダイアログの表示 */
 
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* ダイアログのメッセージ処理 *//* BOOL->INT_PTR 2008/7/18 Uchi*/
 	void SetStatus(int stat);
-#endif  // UZ_
+#endif  // NK_
 
 	void ChangeView( LPARAM );
 
@@ -55,10 +55,10 @@ public:
 	SComboBoxItemDeleter	m_comboDel;
 	CFontAutoDeleter		m_cFontText;
 
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	std::wstring m_inputText;  // 入力中の文字列
 	HMENU m_hMenuPopUp;
-#endif  // UZ_
+#endif  // NK_
 
 protected:
 //@@@ 2002.2.2 YAZAKI CShareDataに移動
@@ -66,9 +66,9 @@ protected:
 	/* オーバーライド? */
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID );
 	int GetData( void );		/* ダイアログデータの取得 */
-#ifdef UZ_FIX_FINDDLG
+#ifdef NK_FIX_FINDDLG
 	int InstantInput( void );
-#endif  // UZ_
+#endif  // NK_
 	void SetCombosList( void );	/* 検索文字列/置換後文字列リストの設定 */
 	void SetData( void );		/* ダイアログデータの設定 */
 	BOOL OnInitDialog( HWND, WPARAM, LPARAM );

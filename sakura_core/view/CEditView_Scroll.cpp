@@ -29,11 +29,11 @@
 #include "window/CEditWnd.h"
 #include "types/CTypeSupport.h"
 #include <limits.h>
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 #include "_main/CAppMode.h"
 #include "CEditApp.h"
 #include "CGrepAgent.h" // use CEditApp.h
-#endif  // UZ_
+#endif  // NK_
 
 
 /*! スクロールバー作成
@@ -318,7 +318,7 @@ void CEditView::AdjustScrollBars()
 		si.nPage = (Int)GetTextArea().m_nViewRowNum / nVScrollRate;	/* 表示域の行数 */
 		si.nPos  = (Int)GetTextArea().GetViewTopLine() / nVScrollRate;	/* 表示域の一番上の行(0開始) */
 		si.nTrackPos = 0;
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 		BOOL bRedraw = FALSE;
 		if (m_bMiniMap) bRedraw = TRUE;
 		if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) bRedraw = TRUE;
@@ -327,7 +327,7 @@ void CEditView::AdjustScrollBars()
 		::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, bRedraw );
 #else
 		::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, TRUE );
-#endif // UZ_
+#endif // NK_
 		m_nVScrollRate = nVScrollRate;				/* 垂直スクロールバーの縮尺 */
 		
 		//	Nov. 16, 2002 genta
@@ -342,14 +342,14 @@ void CEditView::AdjustScrollBars()
 			ScrollAtV( CLayoutInt(0) );
 		}
 
-#ifdef UZ_FIX_EDITVIEW_SCRBAR
+#ifdef NK_FIX_EDITVIEW_SCRBAR
 		//SB_Marker_Build(/*bCacheClear = */ false, 3000);
 		SB_Marker_CallPaint(10000);
-#endif  // UZ_
+#endif  // NK_
 	}
 	if( NULL != m_hwndHScrollBar ){
 		/* 水平スクロールバー */
-#if UZ_EDITVIEW_H_SCRBAR_REDRAW_TIMING
+#if NK_EDITVIEW_H_SCRBAR_REDRAW_TIMING
 		bEnable = ( GetTextArea().m_nViewColNum < GetRightEdgeForScrollBar() );
 		
 		si.cbSize = sizeof(si);
@@ -384,7 +384,7 @@ void CEditView::AdjustScrollBars()
 		si.nPos  = (Int)GetTextArea().GetViewLeftCol();		/* 表示域の一番左の桁(0開始) */
 		si.nTrackPos = 1;
 		::SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE );
-#endif  // UZ_
+#endif  // NK_
 
 		//	2006.1.28 aroka 判定条件誤り修正 (バーが消えてもスクロールしない)
 		bEnable = ( GetTextArea().m_nViewColNum < GetRightEdgeForScrollBar() );
@@ -458,7 +458,7 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip2 = {0,0,0,0};
 			ScrollDraw(nScrollRowNum, CLayoutInt(0), rcScrol, rcClip, rcClip2);
-#ifdef UZ_FIX_FLICKER
+#ifdef NK_FIX_FLICKER
 			if (m_ignore_update_window > 0) {
 				RequestUpdateWindow();
 			} else {
@@ -466,7 +466,7 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 			}
 #else
 			::UpdateWindow( GetHwnd() );
-#endif  // UZ_
+#endif  // NK_
 		}
 	}
 
@@ -548,7 +548,7 @@ CLayoutInt CEditView::ScrollAtH( CLayoutInt nPos )
 		if( GetDrawSwitch() ){
 			RECT rcClip = {0,0,0,0};
 			ScrollDraw(CLayoutInt(0), nScrollColNum, rcScrol, rcClip, rcClip2);
-#ifdef UZ_FIX_FLICKER
+#ifdef NK_FIX_FLICKER
 			if (m_ignore_update_window > 0) {
 				RequestUpdateWindow();
 			} else {
@@ -556,7 +556,7 @@ CLayoutInt CEditView::ScrollAtH( CLayoutInt nPos )
 			}
 #else
 			::UpdateWindow( GetHwnd() );
-#endif  // UZ_
+#endif  // NK_
 		}
 	}
 	//	2006.1.28 aroka 判定条件誤り修正 (バーが消えてもスクロールしない)

@@ -293,7 +293,7 @@ bool CShareData::InitShareData()
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
 
-#ifdef UZ_FIX_TAB_CAPTION_COLOR
+#ifdef NK_FIX_TAB_CAPTION_COLOR
 			_tcscpy( sWindow.m_szWindowCaptionActive, 
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
 				_T(" $A ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
@@ -309,7 +309,7 @@ bool CShareData::InitShareData()
 			_tcscpy( sWindow.m_szWindowCaptionInactive, 
 				_T("${w?$h$:アウトプット$:$f$n$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-#endif  // UZ_
+#endif  // NK_
 		}
 
 		// [タブバー]タブ
@@ -320,11 +320,11 @@ bool CShareData::InitShareData()
 			sTabBar.m_bDispTabWndMultiWin = FALSE;	//タブウインドウ表示	//@@@ 2003.05.31 MIK
 			wcscpy(	//@@@ 2003.06.13 MIK
 				sTabBar.m_szTabWndCaption,
-#ifdef UZ_FIX_TAB_CAPTION_COLOR
+#ifdef NK_FIX_TAB_CAPTION_COLOR
 				L"${w?【Grep】$h$:【アウトプット】$:$f$}${U?*$}${R?(ビューモード)$:(上書き禁止)$}"
 #else
 				L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
-#endif  // UZ_
+#endif  // NK_
 			);
 			sTabBar.m_bSameTabWidth = FALSE;			//タブを等幅にする			//@@@ 2006.01.28 ryoji
 			sTabBar.m_bDispTabIcon = FALSE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
@@ -703,14 +703,14 @@ bool CShareData::InitShareData()
 			m_pShareData->m_sSearchKeywords.m_aGrepFiles.clear();
 			m_pShareData->m_sSearchKeywords.m_aGrepFiles.push_back(_T("*.*"));
 			m_pShareData->m_sSearchKeywords.m_aGrepFolders.clear();
-#ifdef UZ_FIX_GREP
+#ifdef NK_FIX_GREP
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders99 = true;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders2 = false;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders3 = false;
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders2 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders3 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs = _T(".vs .svn .git .hg obj Debug Release");
-#endif  // UZ_
+#endif  // NK_
 
 			// 2004/06/21 novice タグジャンプ機能追加
 			m_pShareData->m_sTagJump.m_TagJumpNum = 0;
@@ -940,11 +940,11 @@ BOOL CShareData::IsPathOpened( const TCHAR* pszPath, HWND* phwndOwner )
 
 			// 同一パスのファイルが既に開かれているか
 			if( 0 == _tcsicmp( pfi->m_szPath, pszPath ) ){
-#ifdef UZ_MULTIPLE_OPEN_FILES
+#ifdef NK_MULTIPLE_OPEN_FILES
 				if (::GetAsyncKeyState(VK_SHIFT)) {
 					return FALSE;
 				}
-#endif  // UZ_
+#endif  // NK_
 				*phwndOwner = m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd;
 				return TRUE;
 			}

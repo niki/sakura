@@ -51,9 +51,9 @@ void CFigure_ZenSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#ifdef UZ_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 			pcView->GetLineMargin() +
-#endif  // UZ_
+#endif  // NK_
 			pDispPos->GetDrawPos().y + nHeightMargin,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rc,

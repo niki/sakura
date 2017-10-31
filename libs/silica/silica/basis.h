@@ -3,7 +3,7 @@
 //! @file  basis.h
 //! @brief 基本
 //!
-//! @author (C) 2017, Uzuki.
+//! @author (C) 2017, Niki.
 //====================================================================
 #ifndef SILICA_BASIS_H
 #define SILICA_BASIS_H

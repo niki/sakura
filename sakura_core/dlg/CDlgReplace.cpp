@@ -184,12 +184,12 @@ void CDlgReplace::SetData( void )
 	}
 	// To Here 2001.12.03 hor
 
-#ifdef UZ_FIX_DIALOG_POS
+#ifdef NK_FIX_DIALOG_POS
 	RECT rcView;
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	::GetWindowRect(pcEditView->GetHwnd(), &rcView);
 	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
-#endif  // UZ_
+#endif  // NK_
 
 	return;
 }
