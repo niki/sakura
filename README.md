@@ -24,7 +24,7 @@ Introduction
 
 Download & Setup  
 ----------------
-- Version 2.60 - 2017.10.31, 32bit [download](http://konru.org/release/sakura-fix_2.60.zip), 64bit [download](http://konru.org/release/sakura-fix_2.60_64.zip)  
+- Version 2.60 - 2017.10.31, [32bit download](http://konru.org/release/sakura-fix_2.60.zip), [64bit download](http://konru.org/release/sakura-fix_2.60_64.zip)  
     - Merge sakura-trunk2 r4197  
     - Minor fixes  
 
