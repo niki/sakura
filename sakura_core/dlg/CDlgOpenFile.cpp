@@ -773,7 +773,12 @@ bool CDlgOpenFile::DoModal_GetOpenFileName( TCHAR* pszPath, EFilter eAddFiler )
 		cFileExt.AppendExtRaw( _T("Macros"), _T("*.js;*.vbs;*.ppa;*.mac") );
 		cFileExt.AppendExtRaw( _T("JScript"), _T("*.js") );
 		cFileExt.AppendExtRaw( _T("VBScript"), _T("*.vbs") );
+#ifdef NK_USE_LUA
+		cFileExt.AppendExtRaw( _T("Lua"), _T("*.lua") );
+#endif // NK_
+#ifdef NK_USE_PPA
 		cFileExt.AppendExtRaw( _T("Pascal"), _T("*.ppa") );
+#endif // NK_
 		cFileExt.AppendExtRaw( _T("Key Macro"), _T("*.mac") );
 		break;
 	case EFITER_NONE:
