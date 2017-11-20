@@ -24,7 +24,9 @@ Introduction
 
 Download & Setup  
 ----------------
-- Version 2.60 - 2017.10.31, [32bit download](http://konru.org/release/sakura-fix_2.60.zip), [64bit download](http://konru.org/release/sakura-fix_2.60_64.zip)  
+- Version 2.60 - 2017.10.31  
+    [sakura-fix_2.60.zip](http://konru.org/release/sakura-fix_2.60.zip) (32-bit)  
+    [sakura-fix_2.60_64.zip](http://konru.org/release/sakura-fix_2.60_64.zip) (64-bit)  
     - Merge sakura-trunk2 r4197  
     - Minor fixes  
 
@@ -71,7 +73,7 @@ Changed
 <li>NBSPも半角スペースとして '×' で表示
 <li>タブ文字を線のみで描画 (Sublime Textみたいな)
 <li>キャレットの高さを行の高さにする (カーソル行アンダーライン非表示時のみ)
-<li>キャレットの幅を入力タイプで変更する (半角:1px, 全角:2px)
+<li><del>キャレットの幅を入力タイプで変更する (半角:1px, 全角:2px)</del>
 <li>ブックマークを行番号左に縦線で表示する (背景色使用)
 <li>変更行を行番号右に縦線で表示する (背景色使用)
 <li>アンドゥ,リドゥの高速化
