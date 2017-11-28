@@ -80,22 +80,27 @@ const DWORD p_helpids[] = {	//12900
 #  define COMPILER_VER __DMC__
 #elif defined(_MSC_VER)
 #  ifdef NK_FIX_VERDLG
-#    if (_MSC_VER == 1910)
-#      define COMPILER_TYPE2 "MSVC 2017"
+//https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
+#    if (_MSC_VER == 1912)
+#      define COMPILER_TYPE2 "MSVS 2017 Update 5"
+#    elif (_MSC_VER == 1911)
+#      define COMPILER_TYPE2 "MSVS 2017 Update 3 & 4"
+#    elif (_MSC_VER == 1910)
+#      define COMPILER_TYPE2 "MSVS 2017 Update 1 & 2"
 #    elif (_MSC_VER == 1900)
 #      if (_MSC_FULL_VER >= 190024210)
-#        define COMPILER_TYPE2 "MSVC 2015 Update 3"
+#        define COMPILER_TYPE2 "MSVS 2015 Update 3"
 #      elif (_MSC_FULL_VER == 190023918)
-#        define COMPILER_TYPE2 "MSVC 2015 Update 2"
+#        define COMPILER_TYPE2 "MSVS 2015 Update 2"
 #      elif (_MSC_FULL_VER == 190023506)
-#        define COMPILER_TYPE2 "MSVC 2015 Update 1"
+#        define COMPILER_TYPE2 "MSVS 2015 Update 1"
 #      elif (_MSC_FULL_VER == 190023026)
-#        define COMPILER_TYPE2 "MSVC 2015"
+#        define COMPILER_TYPE2 "MSVS 2015"
 #      else
-#        define COMPILER_TYPE2 "MSVC 2015"
+#        define COMPILER_TYPE2 "MSVS 2015"
 #      endif
 #    else
-#      define COMPILER_TYPE2 "MSVC (Unknown ver.)"
+#      define COMPILER_TYPE2 "MSVS (Any of ver.)"
 #    endif
 #    define COMPILER_VER2 _MSC_FULL_VER
 #  endif  // NK_FIX_VERDLG
