@@ -771,11 +771,11 @@ bool CDlgOpenFile::DoModal_GetOpenFileName( TCHAR* pszPath, EFilter eAddFiler )
 		break;
 	case EFITER_MACRO:
 #ifdef NK_USE_LUA
-# ifdef NK_USE_PPA
+#ifdef NK_USE_PPA
 		cFileExt.AppendExtRaw( _T("Macros"), _T("*.js;*.vbs;*.ppa;*.lua;*.mac") );
-# else
+#else
 		cFileExt.AppendExtRaw( _T("Macros"), _T("*.js;*.vbs;*.lua;*.mac") );
-# endif
+#endif // NK_USE_PPA
 #else
 		cFileExt.AppendExtRaw( _T("Macros"), _T("*.js;*.vbs;*.ppa;*.mac") );
 #endif // NK_

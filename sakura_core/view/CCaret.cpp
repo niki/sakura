@@ -461,9 +461,11 @@ CLayoutInt CCaret::MoveCursor(
 	}
 
 #ifdef NK_FIX_FLICKER
+	// ここで元の状態に戻す
 	m_pEditView->SetDrawSwitch(oldDraw);
 
 	if (m_pEditView->GetDrawSwitch()) {
+		// 必要であれば全描画
 		if (nFinalDrawFlag == PAINT_ALL) {
 			m_pEditView->Call_OnPaint(PAINT_ALL & ~PAINT_RULER, false);  // ※ルーラはあとで描画される
 			if (nScrollRowNum != 0) {

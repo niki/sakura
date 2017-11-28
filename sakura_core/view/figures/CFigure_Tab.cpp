@@ -88,9 +88,9 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 //#endif  // NK_
 				sPos.GetDrawPos().y,
 				nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
-#  ifdef NK_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 				pcView->GetLineSpace() +
-#  endif  // NK_
+#endif  // NK_LINE_CENTERING
 				pMetrics->GetHankakuHeight(),
 				gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 				gr.GetCurrentTextForeColor()
@@ -151,9 +151,9 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 //#endif  // NK_
 							sPos.GetDrawPos().y,
 							pMetrics->GetHankakuWidth(),
-#  ifdef NK_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 							pcView->GetLineSpace() +
-#  endif  // NK_
+#endif  // NK_LINE_CENTERING
 							pMetrics->GetHankakuHeight(),
 							gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 							gr.GetCurrentTextForeColor()
@@ -169,9 +169,9 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 //#endif  // NK_
 						sPos.GetDrawPos().y,
 						nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
-#  ifdef NK_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 						pcView->GetLineSpace() +
-#  endif  // NK_
+#endif  // NK_LINE_CENTERING
 						pMetrics->GetHankakuHeight(),
 						gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 						gr.GetCurrentTextForeColor()

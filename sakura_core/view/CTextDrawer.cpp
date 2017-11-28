@@ -508,55 +508,55 @@ void CTextDrawer::DispLineNumber(
 		bDispLineNumTrans = true;
 
 #ifdef NK_FIX_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
-    bool disp = false;
-    CLayoutMgr &layout_mgr = CEditDoc::GetInstance(0)->m_cLayoutMgr;
-    CLayoutInt line_count = layout_mgr.GetLineCount();
-    
-    // 起動時の何もない状態を判定
-    if (line_count == 0 && y < nLineHeight + m_pEditView->GetTextArea().GetTopYohaku()) {
-      disp = true;
-      nLineNum = 0;
-    }
-    
-    // EOFだけの行を判定
-    if (line_count == nLineNum) {
-      const CLayout* pcLayout = layout_mgr.SearchLineByLayoutY(nLineNum - 1);
-      if( pcLayout && pcLayout->GetLayoutEol() != EOL_NONE ){  // EOFだけの行
-        disp = true;
-      }
-    }
-    
-    if (disp) {
-      SFONT sFont = cColorType.GetTypeFont();
-      gr.PushTextForeColor(fgcolor);	//テキスト：行番号の色
-      gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
-      gr.PushMyFont(sFont);	//フォント：行番号のフォント
-      
-      wchar_t szLineNum[18];
-      _itow( (Int)nLineNum + 1, szLineNum, 10 );
-      int nLineCols = wcslen( szLineNum );
-      int nLineNumCols = nLineCols; // 2010.08.17 Moca 位置決定に行番号区切りは含めない
-      
-      int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
-      ::ExtTextOutW_AnyBuild( gr,
-        drawNumTop,
-#  ifdef NK_LINE_CENTERING
-        pView->GetLineMargin() +
-#  endif  // NK_
-        y,
-        ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-        &rcLineNum,
-        szLineNum,
-        nLineCols,
-        pView->GetTextMetrics().GetDxArray_AllHankaku()
-      );
-      
-      gr.PopTextForeColor();
-      gr.PopTextBackColor();
-      gr.PopMyFont();
-      
-      bDispLineNumTrans = false;
-    }
+		bool disp = false;
+		CLayoutMgr &layout_mgr = CEditDoc::GetInstance(0)->m_cLayoutMgr;
+		CLayoutInt line_count = layout_mgr.GetLineCount();
+		
+		// 起動時の何もない状態を判定
+		if (line_count == 0 && y < nLineHeight + m_pEditView->GetTextArea().GetTopYohaku()) {
+			disp = true;
+			nLineNum = 0;
+		}
+		
+		// EOFだけの行を判定
+		if (line_count == nLineNum) {
+			const CLayout* pcLayout = layout_mgr.SearchLineByLayoutY(nLineNum - 1);
+			if( pcLayout && pcLayout->GetLayoutEol() != EOL_NONE ){  // EOFだけの行
+				disp = true;
+			}
+		}
+		
+		if (disp) {
+			SFONT sFont = cColorType.GetTypeFont();
+			gr.PushTextForeColor(fgcolor);	//テキスト：行番号の色
+			gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
+			gr.PushMyFont(sFont);	//フォント：行番号のフォント
+			
+			wchar_t szLineNum[18];
+			_itow( (Int)nLineNum + 1, szLineNum, 10 );
+			int nLineCols = wcslen( szLineNum );
+			int nLineNumCols = nLineCols; // 2010.08.17 Moca 位置決定に行番号区切りは含めない
+			
+			int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
+			::ExtTextOutW_AnyBuild( gr,
+				drawNumTop,
+#ifdef NK_LINE_CENTERING
+				pView->GetLineMargin() +
+#endif  // NK_
+				y,
+				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+				&rcLineNum,
+				szLineNum,
+				nLineCols,
+				pView->GetTextMetrics().GetDxArray_AllHankaku()
+			);
+			
+			gr.PopTextForeColor();
+			gr.PopTextBackColor();
+			gr.PopMyFont();
+			
+			bDispLineNumTrans = false;
+		}
 #endif  // NK_
 	}
 	else if( CTypeSupport(pView,COLORIDX_GYOU).IsDisp() ){ /* 行番号表示／非表示 */

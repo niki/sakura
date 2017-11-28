@@ -38,9 +38,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //		::ExtTextOutW_AnyBuild(
 //			gr,
 //			pDispPos->GetDrawPos().x,
-//#  ifdef NK_LINE_CENTERING
+//#ifdef NK_LINE_CENTERING
 //			pcView->GetLineMargin() +
-//#  endif  // NK_
+//#endif  // NK_LINE_CENTERING
 //			pDispPos->GetDrawPos().y,
 //			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 //			&rcClipBottom,
@@ -53,9 +53,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
 		y++; // 少し下め
-//#  ifdef NK_LINE_CENTERING
+//#ifdef NK_LINE_CENTERING
 //		y += pcView->GetLineMargin();
-//#  endif  // NK_
+//#endif  // NK_LINE_CENTERING
 		x--; // 少し左め
 #ifdef NK_FIX_HAN_SPACE
 		if (m_nbsp) {
@@ -85,9 +85,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#  ifdef NK_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 			pcView->GetLineMargin() +
-#  endif  // NK_
+#endif  // NK_LINE_CENTERING
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipBottom,
@@ -103,9 +103,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#  ifdef NK_LINE_CENTERING
+#ifdef NK_LINE_CENTERING
 			pcView->GetLineMargin() +
-#  endif  // NK_
+#endif  // NK_LINE_CENTERING
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipTop,

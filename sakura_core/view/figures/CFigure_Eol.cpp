@@ -86,9 +86,9 @@ bool CFigure_Eol::DrawImp(SColorStrategyInfo* pInfo)
 		bool blendColor = bSelecting && cCurrentType.GetTextColor() == cCurrentType.GetBackColor(); // 選択混合色
 		CTypeSupport& currentStyle = blendColor ? cCurrentType2 : cCurrentType;
 		CTypeSupport *pcText, *pcBack;
-#  ifdef NK_FIX_SELAREA
+#ifdef NK_FIX_SELAREA
 		blendColor = true;
-#  endif  // NK_
+#endif  // NK_FIX_SELAREA
 		if( bSelecting && !blendColor ){
 			// 選択文字色固定指定
 			pcText = &cCurrentType;
