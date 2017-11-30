@@ -89,7 +89,7 @@ CFuncKeyWnd::CFuncKeyWnd()
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
 #ifdef NK_FIX_UI_FONT
-	_tcscpy( lf.lfFaceName, _T("MS Shell Dlg") );
+	_tcscpy( lf.lfFaceName, _T(NK_RES_FONT_NAME) );
 #else
 	_tcscpy( lf.lfFaceName, _T("ＭＳ Ｐゴシック") );
 #endif  // NK_

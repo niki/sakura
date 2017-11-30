@@ -94,10 +94,16 @@
 
 //------------------------------------------------------------------
 // UIフォント
-//  - "ＭＳ Ｐゴシック" -> "MS Shell Dlg"
+//  - "ＭＳ Ｐゴシック" -> "MS Shell Dlg" or "MS Shell Dlg 2"
 //  - .rcファイルは数が多いので置換対応
+//  - Vista以降ではMS Shell Dlgを使わず直接Fontを指定したほうがいいらしい
 //------------------------------------------------------------------
 #define NK_FIX_UI_FONT
+	#if (WINVER >= _WIN32_WINNT_VISTA)
+		#define NK_RES_FONT_NAME "MS Shell Dlg"
+	#else
+		#define NK_RES_FONT_NAME "MS Shell Dlg"
+	#endif // NK_
 
 //------------------------------------------------------------------
 // SetMainFontにポイントのオフセット引数を追加 20170622 
@@ -327,6 +333,8 @@
 //   HMENU CMRUFile::CreateMenu( HMENU	hMenuPopUp, CMenuDrawer* pCMenuDrawer ) const
 // \sakura_core\window\CEditWnd.cpp
 //   cMRU.CreateMenu( hMenu, &m_cMenuDrawer );	//	ファイルメニュー
+// - ディレクトリの場合はサイズ表示はなし
+//   →IsDirectory()を使ったがうまくいかなかったので::PathIsDirectory()を使用
 //------------------------------------------------------------------
 #define NK_FIX_RECENT_FILE_DISP_NAME
 	#define NK_FILEPATH_COMPACT_LENGTH (60)

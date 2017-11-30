@@ -596,7 +596,7 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 			memset(&hp, 0, sizeof(hp));	// 構造体をゼロクリア
 			hp.cbStruct = sizeof(hp);
 #ifdef NK_FIX_UI_FONT
-			hp.pszFont = _T("MS Shell Dlg, 9");
+			hp.pszFont = _T(NK_RES_FONT_NAME ", 9");
 #else
 			hp.pszFont = _T("ＭＳ Ｐゴシック, 9");
 #endif  // NK_
