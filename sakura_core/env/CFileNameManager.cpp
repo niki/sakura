@@ -470,26 +470,35 @@ bool CFileNameManager::GetMenuFullLabel(
 			TCHAR temp[_MAX_PATH] = {};
 			::PathCompactPathEx(temp, szFileName, compactlen, L'\\');
 			
-			HANDLE hFile;
 			DWORD size_low, size_high;
-			hFile = CreateFile(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-			if (hFile != INVALID_HANDLE_VALUE) {
-				size_low = GetFileSize(hFile,&size_high);
-				CloseHandle(hFile);
+			bool isDir = false;
+			
+			if (::PathIsDirectory(szFileName)) {
+				isDir = true;
 			} else {
-				size_low = 0;
+				HANDLE hFile;
+				hFile = CreateFile(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (hFile != INVALID_HANDLE_VALUE) {
+					size_low = GetFileSize(hFile,&size_high);
+					CloseHandle(hFile);
+				} else {
+					size_low = 0;
+				}
 			}
 			
-			if ( size_low < 1024) {
+			if (isDir) {
+				// フォルダ
+				_stprintf_s( szFileName, _T("%s"), temp);
+			} else if (size_low < 1024) {
 				// 1KB未満
 				_stprintf_s( szFileName, _T("%s [1 KB]"), temp);
-			} else if ( size_low < 1024 * 1024) {
+			} else if (size_low < 1024 * 1024) {
 				// 1MB未満
 				_stprintf_s( szFileName, _T("%s [%d KB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024));
-			} else if ( size_low < 1024 * 1024 * 10) {
+			} else if (size_low < 1024 * 1024 * 10) {
 				// 10MB未満
 				_stprintf_s( szFileName, _T("%s [%.2f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
-			} else if ( size_low < 1024 * 1024 * 100) {
+			} else if (size_low < 1024 * 1024 * 100) {
 				// 100MB未満
 				_stprintf_s( szFileName, _T("%s [%.1f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
 			} else {
