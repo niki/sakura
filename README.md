@@ -25,9 +25,13 @@ Introduction
 Download & Setup  
 ----------------
 - Version 2.60 - 2017.10.31  
-    [sakura-fix_2.60.zip](http://konru.org/release/sakura-fix_2.60.zip) (32-bit)  
-    [sakura-fix_2.60_64.zip](http://konru.org/release/sakura-fix_2.60_64.zip) (64-bit)  
-    - Merge sakura-trunk2 r4197  
+    [sakura-fix_2.061.zip](http://konru.org/release/sakura-fix_2.061.zip) (32-bit)  
+    [sakura-fix_2.061_64.zip](http://konru.org/release/sakura-fix_2.061_64.zip) (64-bit)  
+    - Merge sakura-trunk2 r4199
+    - Fix VisualStudioのバージョン情報
+    - Fix 最近使ったフォルダにファイルサイズが表示されていたバグを修正
+    - Fix バージョン表記をちょい修正
+    - Fix Luaを動的リンクに変更  
     - Minor fixes  
 
 - keyword_pack.zip  
