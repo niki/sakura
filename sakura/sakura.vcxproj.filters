@@ -1096,6 +1096,7 @@
     <ClInclude Include="..\sakura_core\dlg\CDlgWindowList.h">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\types\CTypeInit.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\sakura_core\Funccode_x.hsrc">
