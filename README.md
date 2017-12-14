@@ -24,15 +24,12 @@ Introduction
 
 Download & Setup  
 ----------------
-- Version 2.061 - 2017.12.1  
-    [sakura-fix_2.061.zip](http://konru.org/release/sakura-fix_2.061.zip) (32-bit)  
-    [sakura-fix_2.061_64.zip](http://konru.org/release/sakura-fix_2.061_64.zip) (64-bit)  
-    - Merge sakura-trunk2 r4199
-    - Fix VisualStudioのバージョン情報
-    - Fix 最近使ったフォルダにファイルサイズが表示されていたバグを修正
-    - Fix バージョン表記をちょい修正
-    - Fix Luaを動的リンクに変更  
-    - Minor fixes  
+- Version 2.062 - 2017.12.14  
+    [sakura-fix_2.062.zip](http://konru.org/release/sakura-fix_2.062.zip) (32-bit)  
+    [sakura-fix_2.062_64.zip](http://konru.org/release/sakura-fix_2.062_64.zip) (64-bit)  
+    - Merge sakura-trunk2 r4201
+    - Fix LuaのビルドをMultiThreadに変更  
+    - <del>Minor fixes<\del>  
 
 - keyword_pack.zip  
   キーワードセット集 (patchunicode:#720対応) 2017.06.16 [download](Publish/keyword_pack.zip)  
