@@ -10,6 +10,7 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
 -     	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
+ r4201	Fix: 矩形選択置換が範囲を守っていなかった。 [patchunicode:#1028] by Moca [patchunicode:#1113] by ds14050
  r4199	Fix: マクロのファイル選択でフィルターを設定する [patchunicode:#1100]
  r4197	Keep: CDlgFileUpdateQueryクラス整理 [patchunicode:#1111]
  r4196	Fix: 文字の間隔が改行文字の文字数以上の時、空行の削除に失敗したり、行末(/$/)の置換が無限ループしたりする。 [patchunicode:#1014]

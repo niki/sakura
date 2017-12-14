@@ -59,7 +59,7 @@
 #define NK_FIX_VERDLG
 	#define PR_VER      2,61,0,0
 	#define PR_VER_STR "2.061"
-	#define BASE_REV    4199
+	#define BASE_REV    4201
 
 //-------------------------------------------------------------------------
 // デバッグ出力 20150324
