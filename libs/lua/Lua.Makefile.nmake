@@ -34,8 +34,8 @@ RESULT  = $(LUALIB) $(LUADLL) $(LUADLLLIB) $(LUADLLEXP)
 # ----------------------------------------------------------------------
 
 WARN    = /W4
-#RUNTIME = /MT
-RUNTIME = /MD
+RUNTIME = /MT
+#RUNTIME = /MD
 !ifdef debug
 OPTIM   = /Od
 !else
