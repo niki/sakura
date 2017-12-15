@@ -3390,8 +3390,12 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 	#ifdef SAKURA_LANG_EN_US_EXPORTS
 		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("99999 Ln 9999 Col"), _T("U+AAAAAAAA"), _T("UTF-16 BOM"), _T("Unix"), _T("INS"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●") };
 	#else
+		#ifdef NK_FIX_WITH_BOM_TEXT
 		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("99999 行 9999 列"), _T("U+AAAAAAAA"), _T("UTF-16 BOM"), _T("Unix"), _T("上書"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●") };
-	#endif
+		#else
+		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("99999 行 9999 列"), _T("U+AAAAAAAA"), _T("UTF-16 BOM付"), _T("Unix"), _T("上書"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●") };
+		#endif // NK_FIX_WITH_BOM_TEXT
+	#endif // SAKURA_LANG_EN_US_EXPORTS
 #else
 		const TCHAR*	pszLabel[7] = { _T(""), _T("99999 行 9999 列"), _T("CRLF"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM付"), _T("REC"), _T("上書") };	//Oct. 30, 2000 JEPRO 千万行も要らん	文字コード枠を広げる 2008/6/21	Uchi
 		int			nStArrNum = 7;

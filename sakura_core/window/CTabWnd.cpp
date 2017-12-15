@@ -83,7 +83,7 @@
 #define CY_SMICON			DpiScaleY(16)
 
 static const RECT rcBtnBase = { 0, 0, 16, 16 };
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
 static const RECT rcBtnBaseTab = { 0, 2, 12, 14 };
 #endif  // NK_
 
@@ -1462,7 +1462,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 					if( nTabIndex == nSelIndex - 1 ){
 						rcFullItem.right -= DpiScaleX(1);
 					}else if( nTabIndex == nSelIndex + 1 ){
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_BUGFIX_TAB_EDGE == 1
 						rcFullItem.left += DpiScaleX(2);  // 2でないとエッヂが描画されない
 #else
 						rcFullItem.left += DpiScaleX(1);
@@ -1575,11 +1575,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 			rcText.right = rcClose.left;
 		}
 
-#ifdef NK_FIX_TABWND
-		::DrawText( gr, szBuf, -1, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_NOCLIP );
-#else
 		::DrawText( gr, szBuf, -1, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER );
-#endif  // NK_
 
 		gr.PopTextForeColor();
 
@@ -2253,7 +2249,7 @@ void CTabWnd::AdjustWindowPlacement( void )
 			SetCarmWindowPlacement( hwnd, &wp );	// 位置を復元する
 			::UpdateWindow( hwnd );	// 強制描画
 			
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TABWND_FLICKER == 1
 			::Sleep(10);  // ウィンドウ切り替え時のちらつき抑制
 #endif  // NK_
 		}
@@ -2523,7 +2519,7 @@ void CTabWnd::LayoutTab( void )
 	cx = 6;
 	if( bDispTabClose == DISPTABCLOSE_ALLWAYS ){
 		// 閉じるボタンの分だけパディングを追加して横幅を広げる
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
 		int nWidth = rcBtnBaseTab.right - rcBtnBaseTab.left;
 #else
 		int nWidth = rcBtnBase.right - rcBtnBase.left;
@@ -2752,13 +2748,13 @@ HIMAGELIST CTabWnd::ImageList_Duplicate( HIMAGELIST himl )
 /*! ボタン背景描画処理
 	@date 2006.10.21 ryoji 新規作成
 */
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
 void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted, bool tab )
 #else
 void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 #endif  // NK_
 {
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
 	auto MakeColor2 = [](COLORREF a, COLORREF b, int alpha) {
 		const int ap = alpha;
 		const int bp = 256 - ap;
@@ -2795,7 +2791,7 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 	if( bBtnHilighted )
 	{
 		CGraphics gr(hdc);
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
 		if (tab) {
 			static const DWORD tbl[] = {
 				0x853838b5,0xf93838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xf93838b5,0x853838b5,
@@ -2824,7 +2820,7 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 		::Rectangle( gr, lprcBtn->left, lprcBtn->top, lprcBtn->right, lprcBtn->bottom );
 #endif  // NK_
 	}
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
 	else {
 		if (tab) {
 			static const DWORD tbl[] = {
@@ -2978,7 +2974,7 @@ void CTabWnd::DrawTabCloseBtn( CGraphics& gr, const LPRECT lprcClient, bool sele
 	RECT rcBtn;
 	GetTabCloseBtnRect( lprcClient, &rcBtn, selected );
 
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
 	DrawTabBtnBkgnd( gr, &rcBtn, bHover );
 	return;
 #else
@@ -3032,7 +3028,7 @@ void CTabWnd::GetCloseBtnRect( const LPRECT lprcClient, LPRECT lprc )
 */
 void CTabWnd::GetTabCloseBtnRect( const LPRECT lprcTab, LPRECT lprc, bool selected )
 {
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
 	*lprc = rcBtnBaseTab;
 	DpiScaleRect(lprc);	// 2009.10.01 ryoji 高DPI対応スケーリング
 	::OffsetRect(lprc,

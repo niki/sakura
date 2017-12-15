@@ -140,7 +140,7 @@ protected:
 	HIMAGELIST ImageList_Duplicate( HIMAGELIST himl );	/*!< イメージリストの複製処理 */
 
 	// 2006.02.01 ryoji タブ一覧を追加
-#ifdef NK_FIX_TABWND
+#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
 	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted, bool tab = false );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
 	void DrawTabBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted ) {
 		DrawBtnBkgnd(hdc, lprcBtn, bBtnHilighted, true);
