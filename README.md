@@ -24,11 +24,10 @@ Introduction
 
 Download & Setup  
 ----------------
-- Version 2.062 - 2017.12.14  
-    [sakura-fix_2.062.zip](http://konru.org/release/sakura-fix_2.062.zip) (32-bit)  
-    [sakura-fix_2.062_64.zip](http://konru.org/release/sakura-fix_2.062_64.zip) (64-bit)  
-    - Merge sakura-trunk2 r4201
-    - Fix LuaのビルドをMultiThreadに変更  
+- Version 2.063 - 2017.12.21  
+    [sakura-fix_2.063.zip](http://konru.org/release/sakura-fix_2.063.zip) (32-bit)  
+    [sakura-fix_2.063_64.zip](http://konru.org/release/sakura-fix_2.063_64.zip) (64-bit)  
+    - いったん区切り
     - <del>Minor fixes  
 
 - keyword_pack.zip  
