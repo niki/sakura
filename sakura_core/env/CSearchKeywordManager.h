@@ -45,7 +45,7 @@ struct SShare_SearchKeywords{
 	SFilePath	m_szGrepFolders2;
 	SFilePath	m_szGrepFolders3;
 	SFilePath	m_szGrepExcludeDirs;
-#endif  // NK_
+#endif // NK_
 #ifdef NK_FIX_MAXDATA
 	SShare_SearchKeywords() {
 		m_aSearchKeys.resize(RegKey(NK_REGKEY).get(_T("RecentSearchKeyMax"), NK_MAX_SEARCHKEY));
@@ -54,7 +54,7 @@ struct SShare_SearchKeywords{
 		m_aGrepFolders.resize(RegKey(NK_REGKEY).get(_T("RecentGrepFolderMax"), NK_MAX_GREPFOLDER));
 		//ここ、呼ばれてない。。。？ MessageBoxW(NULL, L"",L"",MB_OK);
 	}
-#endif  // NK_
+#endif // NK_
 };
 
 //! 検索キーワード管理

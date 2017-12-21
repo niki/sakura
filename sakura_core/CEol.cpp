@@ -66,7 +66,7 @@ static const SEolDefinition g_aEolTable[] = {
 	{ _T("CRLF"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
 	{ _T("LF"),		L"\x0a",		"\x0a",		1 },
 	{ _T("CR"),		L"\x0d",		"\x0d",		1 },
-#endif  // NK_
+#endif // NK_
 	{ _T("NEL"),	L"\x85",		"",			1 },
 	{ _T("LS"),		L"\u2028",		"",			1 },
 	{ _T("PS"),		L"\u2029",		"",			1 },
@@ -82,7 +82,7 @@ static const SEolDefinition g_aEolTable2[] = {
 	{ _T("u2028(LS)"),		L"\u2028",		"",			1 },
 	{ _T("u2029(PS)"),		L"\u2029",		"",			1 },
 };
-#endif  // NK_
+#endif // NK_
 
 
 struct SEolDefinitionForUniFile{
@@ -171,7 +171,7 @@ const TCHAR* CEol::GetName2() const
 {
 	return g_aEolTable2[ m_eEolType ].m_szName;
 }
-#endif  // NK_
+#endif // NK_
 
 //!< 現在のEOL文字列先頭へのポインタを取得
 const wchar_t* CEol::GetValue2() const

@@ -358,15 +358,17 @@ void CEditView::InsertData_CEditView(
 		if (SBMarker_->IsFoundLine(pCDocLine)) {
 			SBMarker_->Add(pptNewPos->y, NK_SCRBAR_FOUND_MAGIC);
 			SB_Marker_Trace(L"SBMarker_::Add 703");
-		} else {
+		}
+		else {
 			SBMarker_->Del(pptNewPos->y, NK_SCRBAR_FOUND_MAGIC);
 			SB_Marker_Trace(L"SBMarker_::Del 703");
 		}
-	} else {
+	}
+	else {
 		SB_Marker_Clear(703);
 	}
 	//AdjustScrollBars();
-#endif  // NK_
+#endif // NK_
 
 }
 
@@ -464,7 +466,7 @@ void CEditView::DeleteData2(
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	SB_Marker_Clear(700);  // キャッシュのクリア
 	//-AdjustScrollBars();
-#endif  // NK_
+#endif // NK_
 }
 
 
@@ -520,7 +522,7 @@ void CEditView::DeleteData(
 	if( GetSelectionInfo().IsTextSelected() ){
 #ifndef NK_FIX_WAITCUESOR
 		CWaitCursor cWaitCursor( this->GetHwnd() );  // 2002.02.05 hor
-#endif  // NK_
+#endif // NK_
 		if( !m_bDoing_UndoRedo ){	/* アンドゥ・リドゥの実行中か */
 			/* 操作の追加 */
 			m_cCommander.GetOpeBlk()->AppendOpe(
@@ -701,7 +703,7 @@ end_of_func:;
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	SB_Marker_Clear(701);  // キャッシュのクリア
 	//-AdjustScrollBars();
-#endif  // NK_
+#endif // NK_
 	return;
 }
 

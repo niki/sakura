@@ -47,7 +47,7 @@ CRecentSearch::CRecentSearch()
 		RegKey(NK_REGKEY).get(_T("RecentSearchKeyMax"), NK_MAX_SEARCHKEY),
 #else
 		MAX_SEARCHKEY,
-#endif  // NK_
+#endif // NK_
 		NULL
 	);
 }

@@ -43,7 +43,7 @@ CRecentGrepFolder::CRecentGrepFolder()
 		RegKey(NK_REGKEY).get(_T("RecentGrepFolderMax"), NK_MAX_GREPFOLDER),
 #else
 		MAX_GREPFOLDER,
-#endif  // NK_
+#endif // NK_
 		NULL
 	);
 }

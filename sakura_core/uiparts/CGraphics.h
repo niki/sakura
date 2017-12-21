@@ -227,7 +227,7 @@ public:
 		PushTextBackColor(color);
 		FillMyRectTextBackColor(rc);
 		PopTextBackColor();
-#endif  // NK_
+#endif // NK_
 	}
 	//! 矩形塗り潰し
 	void FillMyRectTextBackColor(const RECT& rc)

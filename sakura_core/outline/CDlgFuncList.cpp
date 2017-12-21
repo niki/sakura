@@ -52,7 +52,7 @@
 #ifdef NK_FIX_OUTLINEDLG
 #include <Uxtheme.h>
 #pragma comment(lib, "uxtheme.lib")
-#endif  // NK_
+#endif // NK_
 
 // 画面ドッキング用の定義	// 2010.06.05 ryoji
 #define DEFINE_SYNCCOLOR
@@ -782,7 +782,7 @@ void CDlgFuncList::SetData()
 		if( SORTTYPE_DEFAULT < m_nSortType ){
 			SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
 		}
-#endif  // NK_
+#endif // NK_
 	}else if( m_nListType == OUTLINE_FILETREE ){
 		::ShowWindow( GetItemHwnd(IDC_COMBO_nSortType), SW_HIDE );
 		::ShowWindow( GetItemHwnd(IDC_STATIC_nSortType), SW_HIDE );
@@ -1544,7 +1544,7 @@ void CDlgFuncList::SetTree(bool tagjump, bool nolabel)
 		cTVInsertStruct.item.pszText = funcName;
 #else
 		cTVInsertStruct.item.pszText = pcFuncInfo->m_cmemFuncName.GetStringPtr();
-#endif  // NK_
+#endif // NK_
 		cTVInsertStruct.item.lParam = i;	//	あとでこの数値（＝m_pcFuncInfoArrの何番目のアイテムか）を見て、目的地にジャンプするぜ!!。
 
 		/*	親子関係をチェック
@@ -1772,7 +1772,7 @@ void CDlgFuncList::SetTreeFile()
 		TreeView_Expand( hwndTree, htiClass, TVE_EXPAND );
 		htiClass = TreeView_GetNextSibling( hwndTree, htiClass );
 	}
-#endif  // NK_
+#endif // NK_
 }
 
 
@@ -1955,7 +1955,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 			::GetWindowRect(pcEditView->GetHwnd(), &rcView);
 			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
 		}
-#endif  // NK_
+#endif // NK_
 	}
 
 	if( !m_bInChangeLayout ){	// ChangeLayout() 処理中は設定変更しない
@@ -2085,7 +2085,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		//HFONT hFont = SetMainFont(GetItemHwnd(IDC_LIST_FL));
 		m_cFontText[1].SetFont(hFontOld, hFont, GetItemHwnd(IDC_LIST_FL));
 	}
-#endif  // NK_
+#endif // NK_
 
 	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 }
@@ -2214,14 +2214,15 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 			if (OnJump()) {
 				m_bWaitTreeProcess=true;
 				::SetWindowLongPtr( GetHwnd(), DWLP_MSGRESULT, TRUE );	// ツリーの展開／縮小をしない
-			} else {
+			}
+			else {
 				// ツリーの展開／縮小をする
 			}
 #else
 			OnJump();
 			m_bWaitTreeProcess=true;
 			::SetWindowLongPtr( GetHwnd(), DWLP_MSGRESULT, TRUE );	// ツリーの展開／縮小をしない
-#endif
+#endif // NK_
 			return TRUE;
 			//return OnJump();
 		case TVN_KEYDOWN:
@@ -2283,9 +2284,9 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 
 #ifdef DEFINE_SYNCCOLOR
 #ifdef NK_FIX_OUTLINEDLG
-  bool dock_color_sync = !RegKey(NK_REGKEY).get(_T("OutlineDockSystemColor"), 1);
-  if (dock_color_sync)
-#endif  // NK_
+	bool dock_color_sync = !RegKey(NK_REGKEY).get(_T("OutlineDockSystemColor"), 1);
+	if (dock_color_sync)
+#endif // NK_
 	if( IsDocking() ){
 		if( hwndList == pnmh->hwndFrom || hwndTree == pnmh->hwndFrom ){
 			if( pnmh->code == NM_CUSTOMDRAW ){
@@ -2504,7 +2505,7 @@ BOOL CDlgFuncList::OnDestroy( void )
 #ifdef NK_FIX_OUTLINEDLG
 	m_cFontText[0].ReleaseOnDestroy();
 	m_cFontText[1].ReleaseOnDestroy();
-#endif  // NK_
+#endif // NK_
 	CDialog::OnDestroy();
 
 	/* アウトライン ■位置とサイズを記憶する */ // 20060201 aroka
@@ -2740,7 +2741,7 @@ BOOL CDlgFuncList::OnJump( bool bCheckAutoClose, bool bFileJump )	//2002.02.08 h
 	else {
 		return FALSE;
 	}
-#endif  // NK_
+#endif // NK_
 	return TRUE;
 }
 
@@ -2836,7 +2837,7 @@ void CDlgFuncList::SyncColor( void )
 #ifdef NK_FIX_OUTLINEDLG
   bool dock_color_sync = !RegKey(NK_REGKEY).get(_T("OutlineDockSystemColor"), 1);
   if (!dock_color_sync) return;
-#endif  // NK_
+#endif // NK_
 	// テキスト色・背景色をビューと同色にする
 	CEditView* pcEditView = (CEditView*)m_lParam;
 	const STypeConfig	*TypeDataPtr = &(pcEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute());

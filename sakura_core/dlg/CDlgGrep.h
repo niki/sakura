@@ -62,7 +62,7 @@ public:
 	SFilePath	m_szFolder2;				/*!< 検索フォルダ */
 	SFilePath	m_szFolder3;				/*!< 検索フォルダ */
 	SFilePath	m_szExcludeDirs;		/*!< Exclude dirs */
-#endif  // NK_
+#endif // NK_
 	SFilePath	m_szCurrentFilePath;
 protected:
 	SComboBoxItemDeleter	m_comboDelText;

@@ -38,7 +38,7 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 #ifndef NK_FIX_VERDLG
 #define PR_VER		2,3,2,0
 #define PR_VER_STR	"2.3.2.0"
-#endif  // NK_
+#endif // NK_
 #define FL_VER		PR_VER
 #define FL_VER_STR	PR_VER_STR
 
@@ -85,7 +85,7 @@ IDD_FIND DIALOGEX 30, 0, 284, 93
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
     WS_SYSMENU
 EXSTYLE WS_EX_CONTEXTHELP
-#endif  // NK_
+#endif // NK_
 CAPTION "検索"
 FONT 9, NK_RES_FONT_NAME
 BEGIN
@@ -139,7 +139,7 @@ BEGIN
     PUSHBUTTON      "該当行マーク(&B)",IDC_BUTTON_SETMARK,221,38,58,14
     PUSHBUTTON      "キャンセル(&X)",IDCANCEL,221,57,58,14,WS_GROUP
     PUSHBUTTON      "ヘルプ(&H)",IDC_BUTTON_HELP,221,73,58,14
-#endif  // NK_
+#endif // NK_
 END
 
 IDD_ABOUT DIALOG DISCARDABLE  0, 0, 245, 203
@@ -235,7 +235,7 @@ END
 IDD_GREP DIALOGEX 0, 0, 308, 216
 #else
 IDD_GREP DIALOGEX 0, 0, 308, 171
-#endif  // NK_
+#endif // NK_
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTEXTHELP
 CAPTION "Grep条件入力"
@@ -380,7 +380,7 @@ BEGIN
     DEFPUSHBUTTON   "検索(&F)",IDOK,253,88,49,14,WS_GROUP
     PUSHBUTTON      "キャンセル(&X)",IDCANCEL,253,130,49,14
     PUSHBUTTON      "ヘルプ(&H)",IDC_BUTTON_HELP,253,147,49,14
-#endif  // NK_
+#endif // NK_
 END
 
 IDD_GREP_REPLACE DIALOGEX 0, 0, 308, 193
@@ -1060,7 +1060,7 @@ BEGIN
     PUSHBUTTON      "追加(&A)",IDC_BUTTON_ADD_TYPE,130,175,50,14,BS_SPLITBUTTON
 #else
     PUSHBUTTON      "追加(&A)",IDC_BUTTON_ADD_TYPE,130,175,50,14
-#endif  // NK_
+#endif // NK_
     PUSHBUTTON      "削除(&D)",IDC_BUTTON_DEL_TYPE,130,191,50,14
     CONTROL         "右クリックメニューに追加",IDC_CHECK_EXT_RMENU,"Button",BS_AUTOCHECKBOX |
                     BS_MULTILINE | WS_DISABLED | WS_TABSTOP,130,207,50,28
@@ -1132,7 +1132,7 @@ BEGIN
     COMBOBOX        IDC_CHECK_TAB_ARROW,48,108,46,80,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_EDIT_TABVIEWSTRING,102,108,40,12,ES_AUTOHSCROLL
-#endif  // NK_
+#endif // NK_
     CONTROL         "S&PACEの挿入",IDC_CHECK_INS_SPACE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,70,123,57,10
     COMBOBOX        IDC_COMBO_TSV_MODE,16,123,46,40,CBS_DROPDOWNLIST | 
@@ -3677,7 +3677,7 @@ BEGIN
 "
 #else
     IDS_ABOUT_DESCRIPTION   "このソフトウェアは「テキストエディタ(共同開発版)」を改称したものです．\r\n商用・非商用を問わず無償で利用できますが，ソースコードの著作権は各箇所を記述した人が留保しています．\r\nこのソフトウェアは無保証です．\r\n"
-#endif  // NK_
+#endif // NK_
 END
 
 STRINGTABLE DISCARDABLE 
@@ -4056,7 +4056,7 @@ BEGIN
 	STR_CARET_WITHBOM			" BOM"
 #else
 	STR_CARET_WITHBOM			" BOM付"
-#endif  // NK_
+#endif // NK_
 
 	// CEditView.cpp
 	STR_VIEW_TIMER				"CEditView::Create()\nタイマーが起動できません。\nシステムリソースが不足しているのかもしれません。"
@@ -4216,7 +4216,7 @@ BEGIN
 	STR_ERR_DLGEDITWND23		"UTF-16 BOM"
 #else
 	STR_ERR_DLGEDITWND23		"UTF-16 BOM付"
-#endif  // NK_
+#endif // NK_
 	STR_ERR_DLGEDITWND24		"REC"
 	STR_ERR_DLGEDITWND25		"上書"
 	STR_WRAP_WIDTH_FULL			"折り返し桁数: %d 桁（最大）"

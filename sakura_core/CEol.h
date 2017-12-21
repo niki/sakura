@@ -94,7 +94,7 @@ public:
 	const TCHAR*	GetName()	const;	//!< 現在のEOLの名称取得
 #ifdef NK_FIX_STATUSBAR
 	const TCHAR*	GetName2()	const;	//!< 現在のEOLの名称取得
-#endif  // NK_
+#endif // NK_
 	const wchar_t*	GetValue2()	const;	//!< 現在のEOL文字列先頭へのポインタを取得
 	//#####
 

@@ -379,7 +379,7 @@ BOOL CDlgFavorite::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 #ifdef NK_FIX_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // NK_
+#endif // NK_
 
 	HWND		hwndList;
 	HWND		hwndBaseList;

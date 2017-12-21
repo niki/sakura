@@ -39,10 +39,11 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#endif  // NK_
+#endif // NK_
 
 #ifdef NK_FIX_PROFILES
-static std::string chomp(const std::string s) {
+static std::string chomp(const std::string s)
+{
 	std::string tmp(s);
 	std::string::reverse_iterator ritr;
 	std::string::size_type n = 0;
@@ -58,7 +59,8 @@ static std::string chomp(const std::string s) {
 	return tmp;
 }
 
-static std::wstring wchomp(const std::string s) {
+static std::wstring wchomp(const std::string s)
+{
 	std::string tmp(s);
 	std::string::reverse_iterator ritr;
 	std::string::size_type n = 0;
@@ -74,22 +76,25 @@ static std::wstring wchomp(const std::string s) {
 	return si::util::from_bytes(tmp.c_str());
 }
 
-static std::wstring GetTokenStringW(std::istringstream &stream, char delim) {
+static std::wstring GetTokenStringW(std::istringstream &stream, char delim)
+{
 	std::string token;
 	getline(stream, token, delim);
 	return si::util::from_bytes(token.c_str());
 }
 
-static int GetTokenInt(std::istringstream &stream, char delim) {
+static int GetTokenInt(std::istringstream &stream, char delim)
+{
 	std::string token;
 	getline(stream, token, delim);
 	return std::stoi(chomp(token));
 }
 
-static bool GetTokenBool(std::istringstream &stream, char delim) {
+static bool GetTokenBool(std::istringstream &stream, char delim)
+{
 	return GetTokenInt(stream, ',') ? true : false;
 }
-#endif  // NK_
+#endif // NK_
 
 void ShareData_IO_Sub_LogFont( CDataProfile& cProfile, const WCHAR* pszSecName,
 	const WCHAR* pszKeyLf, const WCHAR* pszKeyPointSize, const WCHAR* pszKeyFaceName, LOGFONT& lf, INT& nPointSize );
@@ -150,7 +155,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	std::tstring keywordset_fname =
 	    si::file::dirname(szIniFileName) +
 	    si::file::basename(szIniFileName) + _T(".keywordset.csv");
-#endif
+#endif // NK_
 
 	if( bRead ){
 		if( !cProfile.ReadProfile( szIniFileName ) ){
@@ -166,7 +171,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #else
 			// キーワードファイルのインポート
 			pcShare->InitKeyword( &GetDllShareData(), true );
-#endif  // NK_
+#endif // NK_
 			return false;
 		}
 #if defined(NK_FIX_PROFILES) && NK_USE_KEYWORDSET_CSV
@@ -176,7 +181,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
 			}
 		}
-#endif  // NK_
+#endif // NK_
 
 		// バージョンアップ時はバックアップファイルを作成する	// 2011.01.28 ryoji
 		TCHAR iniVer[256];
@@ -214,7 +219,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 		if (bRead) {
 			cProfileRecent.SetReadingMode();
-		} else {
+		}
+		else {
 			cProfileRecent.SetWritingMode();
 		}
 
@@ -237,7 +243,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			
 			ifs.open(si::util::to_bytes(fname).c_str(), std::ios::in);
 			cProfileRecent.tag_ = &ifs;
-		} else {
+		}
+		else {
 			ofs.open(si::util::to_bytes(fname).c_str(), std::ios::out | std::ios::trunc);
 			ofs << "; Recent file" << std::endl;
 			cProfileRecent.tag_ = &ofs;
@@ -252,12 +259,12 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_Mru( cProfile );
 	ShareData_IO_Keys( cProfile );
 	ShareData_IO_Grep( cProfile );
-#endif  // NK_
+#endif // NK_
 	ShareData_IO_Folders( cProfile );
 #if defined(NK_FIX_PROFILES) && NK_SEPARATE_HISTORY
 #else
 	ShareData_IO_Cmd( cProfile );
-#endif  // NK_
+#endif // NK_
 	ShareData_IO_Nickname( cProfile );
 	ShareData_IO_Common( cProfile );
 	ShareData_IO_Plugin( cProfile, pcMenuDrawer );		// Move here	2010/6/24 Uchi
@@ -273,7 +280,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 #else
 	ShareData_IO_KeyWords( cProfile );
-#endif  // NK_
+#endif // NK_
 	ShareData_IO_Macro( cProfile );
 	ShareData_IO_Statusbar( cProfile );		// 2008/6/21 Uchi
 	ShareData_IO_MainMenu( cProfile );		// 2010/5/15 Uchi
@@ -371,7 +378,8 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		int i = EachIStreamLines(ifs, "#MRU", "#end",
 			[]{},  // begin
 			[]{},  // end
-			[&hist](int index, const std::string &line_buffer) {  // block
+			[&hist](int index, const std::string &line_buffer) // block
+			{
 				std::istringstream stream(line_buffer);
 				std::wstring path = GetTokenStringW(stream, ',');
 
@@ -379,7 +387,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				if (!fexist(path.c_str())) {
 					return false;
 				}
-#endif  // NK_
+#endif // NK_
 
 				EditInfo *pfiWork = &hist.m_fiMRUArr[index];
 				_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
@@ -399,7 +407,8 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 
 		hist.m_nMRUArrNum = i;
 		SetValueLimit( hist.m_nMRUArrNum, MAX_MRU );
-	} else {
+	}
+	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
 		
 		EachOStreamLines(ofs, "#MRU", "#end", hist.m_nMRUArrNum,
@@ -423,7 +432,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	}
 
 	//@@@ 2001.12.26 YAZAKI 残りのm_fiMRUArrを初期化。
-	if ( cProfile.IsReadingMode() ){
+	if (cProfile.IsReadingMode()) {
 		EditInfo	fiInit;
 		//	残りをfiInitで初期化しておく。
 		fiInit.m_nCharCode = CODE_DEFAULT;
@@ -454,7 +463,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				if (!fexist(dir.c_str())) {
 					return false;
 				}
-#endif  // NK_
+#endif // NK_
 
 				hist.m_szOPENFOLDERArr[index].Assign(dir.c_str());
 				hist.m_bOPENFOLDERArrFavorite[index] = GetTokenBool(stream, ',');
@@ -464,7 +473,8 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 
 		hist.m_nOPENFOLDERArrNum = i;
 		SetValueLimit( hist.m_nOPENFOLDERArrNum, MAX_OPENFOLDER );
-	} else {
+	}
+	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
 
 		EachOStreamLines(ofs, "#Folder", "#end", hist.m_nOPENFOLDERArrNum,
@@ -480,7 +490,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	}
 
 	//読み込み時は残りを初期化
-	if ( cProfile.IsReadingMode() ){
+	if (cProfile.IsReadingMode()) {
 		for (int i = hist.m_nOPENFOLDERArrNum; i < MAX_OPENFOLDER; ++i) {
 			// 2005.04.05 D.S.Koba
 			hist.m_szOPENFOLDERArr[i][0] = L'\0';
@@ -502,7 +512,8 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 
 		hist.m_aExceptMRU._GetSizeRef() = i;
 		hist.m_aExceptMRU.SetSizeLimit();
-	} else {
+	}
+	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
 		
 		EachOStreamLines(ofs, "#except_MRU", "#end", hist.m_aExceptMRU._GetSizeRef(),
@@ -598,7 +609,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("ExceptMRU[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aExceptMRU[i] );
 	}
-#endif  // NK_
+#endif // NK_
 }
 
 /*!
@@ -628,7 +639,8 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		
 		skwd.m_aSearchKeys._GetSizeRef() = i;
 		skwd.m_aSearchKeys.SetSizeLimit();
-	} else {
+	}
+	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
 		
 		EachOStreamLines(ofs, "#SearchKey", "#end", skwd.m_aSearchKeys._GetSizeRef(),
@@ -656,7 +668,8 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 
 		skwd.m_aReplaceKeys._GetSizeRef() = i;
 		skwd.m_aReplaceKeys.SetSizeLimit();
-	} else {
+	}
+	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
 		
 		EachOStreamLines(ofs, "#ReplaceKey", "#end", skwd.m_aReplaceKeys._GetSizeRef(),
@@ -691,7 +704,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("REPLACEKEY[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aReplaceKeys[i] );
 	}
-#endif  // NK_
+#endif // NK_
 }
 
 /*!
@@ -721,7 +734,8 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 
 		skwd.m_aGrepFiles._GetSizeRef() = i;
 		skwd.m_aGrepFiles.SetSizeLimit();
-	} else {
+	}
+	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
 		
 		EachOStreamLines(ofs, "#GrepFile", "#end", skwd.m_aGrepFiles._GetSizeRef(),
@@ -742,29 +756,29 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 			[&ifs, &skwd]{  // begin
 				std::string line_buffer;
 				if (std::getline(ifs, line_buffer)) {
-  				skwd.m_bGrepFolders99 = std::stoi(chomp(line_buffer)) ? true : false;
-  			}
-  			if (std::getline(ifs, line_buffer)) {
-  				skwd.m_bGrepFolders2 = std::stoi(chomp(line_buffer)) ? true : false;
-  			}
-  			if (std::getline(ifs, line_buffer)) {
-  				skwd.m_bGrepFolders3 = std::stoi(chomp(line_buffer)) ? true : false;
-  			}
-  			while (std::getline(ifs, line_buffer)) {
-  				if (line_buffer == "---") break;
-  			}
-  			if (std::getline(ifs, line_buffer)) {
-  				skwd.m_szGrepFolders2.Assign(wchomp(line_buffer).c_str());
-  			}
-  			if (std::getline(ifs, line_buffer)) {
-  				skwd.m_szGrepFolders3.Assign(wchomp(line_buffer).c_str());
-  			}
-  			if (std::getline(ifs, line_buffer)) {
-  				skwd.m_szGrepExcludeDirs.Assign(wchomp(line_buffer).c_str());
-  			}
-  			while (std::getline(ifs, line_buffer)) {
-  				if (line_buffer == "---") break;
-  			}
+				skwd.m_bGrepFolders99 = std::stoi(chomp(line_buffer)) ? true : false;
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_bGrepFolders2 = std::stoi(chomp(line_buffer)) ? true : false;
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_bGrepFolders3 = std::stoi(chomp(line_buffer)) ? true : false;
+				}
+				while (std::getline(ifs, line_buffer)) {
+					if (line_buffer == "---") break;
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_szGrepFolders2.Assign(wchomp(line_buffer).c_str());
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_szGrepFolders3.Assign(wchomp(line_buffer).c_str());
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_szGrepExcludeDirs.Assign(wchomp(line_buffer).c_str());
+				}
+				while (std::getline(ifs, line_buffer)) {
+					if (line_buffer == "---") break;
+				}
 			},
 			[]{},  // end
 			[&skwd](int index, const std::string &line_buffer) {  // block
@@ -775,7 +789,8 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 
 		skwd.m_aGrepFolders._GetSizeRef() = i;
 		skwd.m_aGrepFolders.SetSizeLimit();
-	} else {
+	}
+	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
 		
 		EachOStreamLines(ofs, "#GrepFolder", "#end", skwd.m_aGrepFolders._GetSizeRef(),
@@ -789,7 +804,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 				ofs << si::util::to_bytes(skwd.m_szGrepFolders3.c_str()) << std::endl;
 				ofs << si::util::to_bytes(skwd.m_szGrepExcludeDirs.c_str()) << std::endl;
 				ofs << "---" << std::endl;
-#endif  // NK_
+#endif // NK_
 			},
 			[]{},  // end
 			[&ofs, &skwd](int index) {  // block
@@ -828,8 +843,8 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Path"), pShare->m_sSearchKeywords.m_szGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Path"), pShare->m_sSearchKeywords.m_szGrepFolders3 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPEXCLUDEDIRS.Path"), pShare->m_sSearchKeywords.m_szGrepExcludeDirs );
-#endif  // NK_
-#endif  // NK_
+#endif // NK_
+#endif // NK_
 }
 
 /*!
@@ -876,7 +891,8 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 
 		hist.m_aCommands._GetSizeRef() = i;
 		hist.m_aCommands.SetSizeLimit();
-	} else {
+	}
+	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
 		
 		EachOStreamLines(ofs, "#Cmd", "#end", hist.m_aCommands._GetSizeRef(),
@@ -904,7 +920,8 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 
 		hist.m_aCurDirs._GetSizeRef() = i;
 		hist.m_aCurDirs.SetSizeLimit();
-	} else {
+	}
+	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
 		
 		EachOStreamLines(ofs, "#CmdCurDir", "#end", hist.m_aCurDirs._GetSizeRef(),
@@ -938,7 +955,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("szCurDirArr[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aCurDirs[i] );
 	}
-#endif  // NK_
+#endif // NK_
 }
 
 /*!
@@ -1157,7 +1174,7 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 #ifndef NK_FIX_TABBAR_FONT
 	ShareData_IO_Sub_LogFont( cProfile, pszSecName, L"lfTabFont", L"lfTabFontPs", L"lfTabFaceName",
 		common.m_sTabBar.m_lf, common.m_sTabBar.m_nPointSize );
-#endif  // NK_
+#endif // NK_
 	
 	cProfile.IOProfileData( pszSecName, LTEXT("nTabMaxWidth")			, common.m_sTabBar.m_nTabMaxWidth );
 	cProfile.IOProfileData( pszSecName, LTEXT("nTabMinWidth")			, common.m_sTabBar.m_nTabMinWidth );
@@ -1605,7 +1622,7 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 	// OldVerの切り捨て
 	bOldVer = false;
 	sKeyBind.m_nKeyNameArrNum = KEYNAME_SIZE;
-#endif  // NK_
+#endif // NK_
 
 	for( i = 0; i < sKeyBind.m_nKeyNameArrNum; ++i ){
 		// 2005.04.07 D.S.Koba
@@ -1774,7 +1791,7 @@ void CShareData_IO::ShareData_IO_Print( CDataProfile& cProfile )
 #ifdef NK_FIX_PROFILES
 		// 未定義値を無視
 		if (!cProfile.IsReadingMode() && printsetting.m_mdmDevMode.m_szPrinterDeviceName[0] == _T('\0')) continue;
-#endif  // NK_
+#endif // NK_
 		auto_sprintf( szKeyName, LTEXT("PS[%02d].nInts"), i );
 		static const WCHAR* pszForm = LTEXT("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d");
 		if( cProfile.IsReadingMode() ){
@@ -2045,7 +2062,7 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 #ifndef NK_FIX_TAB_MARK
 	cProfile.IOProfileData( pszSecName, LTEXT("szTabViewString"), MakeStringBufferW(types.m_szTabViewString) );
 	cProfile.IOProfileData_WrapInt( pszSecName, LTEXT("bTabArrow")	, types.m_bTabArrow );	//@@@ 2003.03.26 MIK
-#endif  // NK_
+#endif // NK_
 	cProfile.IOProfileData( pszSecName, LTEXT("bInsSpace")			, types.m_bInsSpace );	// 2001.12.03 hor
 
 	cProfile.IOProfileData( pszSecName, LTEXT("nTextWrapMethod"), types.m_nTextWrapMethod );		// 2008.05.30 nasukoji
@@ -2517,7 +2534,7 @@ void CShareData_IO::ShareData_IO_Plugin( CDataProfile& cProfile, CMenuDrawer* pc
 #ifdef NK_FIX_PROFILES
 		// 未定義値を無視
 		if (!cProfile.IsReadingMode() && pluginrec.m_szName[0] == _T('\0') && pluginrec.m_szId[0] == _T('\0')) continue;
-#endif  // NK_
+#endif // NK_
 		auto_sprintf( szKeyName, LTEXT("P[%02d].Name"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW(pluginrec.m_szName) );
 		auto_sprintf( szKeyName, LTEXT("P[%02d].Id"), i );
@@ -2667,7 +2684,7 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 			}
 		}
 	}
-#endif  // NK_
+#endif // NK_
 }
 
 
@@ -2696,7 +2713,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 
 #ifdef NK_FIX_PROFILES
 	std::vector<std::wstring> default_data;
-#endif  // NK_
+#endif // NK_
 
 	if (cProfile.IsReadingMode()) {
 		int menuNum = 0;
@@ -2723,8 +2740,8 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 		cProfileDef.SetReadingMode();
 		cProfileDef.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &default_data );
 	}
-#endif  // NK_
-#endif  // NK_FIX_MAINMENU_FORCE_DEFAULT
+#endif // NK_
+#endif // NK_FIX_MAINMENU_FORCE_DEFAULT
 
 	if( pData ){
 		mainmenu.m_bMainMenuKeyParentheses = (_wtoi(data[dataNum++].c_str()) != 0);
@@ -2732,7 +2749,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 		cProfile.IOProfileData( pszSecName, LTEXT("bKeyParentheses"), mainmenu.m_bMainMenuKeyParentheses );
 #ifdef NK_FIX_PROFILES
 		dataNum++;
-#endif  // NK_
+#endif // NK_
 	}
 
 	if (cProfile.IsReadingMode()) {
@@ -2768,7 +2785,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 				dataNum++;
 #else
 				cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
-#endif  // NK_
+#endif // NK_
 			}
 
 			// レベル
@@ -2857,8 +2874,8 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 			if (!bSkip) cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
 #else
 			cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
-#endif  // NK_
-#endif  // NK_FIX_MAINMENU_FORCE_DEFAULT
+#endif // NK_
+#endif // NK_FIX_MAINMENU_FORCE_DEFAULT
 		}
 
 		if (cProfile.IsReadingMode() && pcMenu->m_nLevel == 0) {
@@ -2947,7 +2964,7 @@ void CShareData_IO::ShareData_IO_Other( CDataProfile& cProfile )
 void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr, bool bColorOnly )
 #else
 void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr )
-#endif  // NK_
+#endif // NK_
 {
 	WCHAR	szKeyName[256];
 	WCHAR	szKeyData[1024];
@@ -2985,7 +3002,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sColorAttr.m_cTEXT     = buf[2];
 				pColorInfoArr[j].m_sColorAttr.m_cBACK     = buf[3];
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine = (buf[4]!=0);
-#endif  // NK_
+#endif // NK_
 			}
 			else{
 				// 2006.12.07 ryoji
@@ -3000,12 +3017,9 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 #ifdef NK_FIX_PROFILES
 			if (!bColorOnly) {
 				ColorInfo *info = &pColorInfoArr[j];
-				if( 0 != (fAttribute & COLOR_ATTRIB_FORCE_DISP) )
-					info->m_bDisp = true;
-				if( 0 != (fAttribute & COLOR_ATTRIB_NO_BOLD) )
-					info->m_sFontAttr.m_bBoldFont = false;
-				if( 0 != (fAttribute & COLOR_ATTRIB_NO_UNDERLINE) )
-					info->m_sFontAttr.m_bUnderLine = false;
+				if (0 != (fAttribute & COLOR_ATTRIB_FORCE_DISP))   info->m_bDisp = true;
+				if (0 != (fAttribute & COLOR_ATTRIB_NO_BOLD))      info->m_sFontAttr.m_bBoldFont = false;
+				if (0 != (fAttribute & COLOR_ATTRIB_NO_UNDERLINE)) info->m_sFontAttr.m_bUnderLine = false;
 			}
 #else
 			if( 0 != (fAttribute & COLOR_ATTRIB_FORCE_DISP) )
@@ -3014,7 +3028,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sFontAttr.m_bBoldFont = false;
 			if( 0 != (fAttribute & COLOR_ATTRIB_NO_UNDERLINE) )
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine = false;
-#endif  // NK_
+#endif // NK_
 		}
 		else{
 #ifdef NK_FIX_PROFILES
@@ -3022,7 +3036,8 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 			unsigned int fAttribute = g_ColorAttributeArr[j].fAttribute;
 			if (fAttribute == (COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS)) {
 				auto_sprintf( szKeyData, L"%d,", info->m_bDisp?1:0 );
-			} else {
+			}
+			else {
 				auto fnColorToName = [pColorInfoArr, j](COLORREF c, int attr) -> std::tstring {
 					if (j == 0/* txt */) return si::ColorString::FromCOLORREF(c, true);
 					if (attr != 0)       return L"none";
@@ -3047,7 +3062,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sColorAttr.m_cBACK,
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine?1:0
 			);
-#endif  // NK_
+#endif // NK_
 			pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) );
 		}
 	}

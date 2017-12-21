@@ -531,7 +531,7 @@ void CViewCommander::Command_UNDO( void )
 		}
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 		m_pCommanderView->SB_Marker_Clear(1000);
-#endif  // NK_
+#endif // NK_
 		m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);	//	hor
 		m_pCommanderView->AdjustScrollBars(); // 2007.07.22 ryoji
 		if (!bDraw) {

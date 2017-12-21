@@ -607,4 +607,4 @@ void __stdcall CPPA::stdFinishProc()
 #endif
 
 
-#endif  // NK_USE_PPA
+#endif // NK_USE_PPA

@@ -34,7 +34,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#endif  // NK_
+#endif // NK_
 
 void _DefaultConfig(STypeConfig* pType);
 
@@ -55,7 +55,7 @@ void CType::InitTypeConfig(int nIdx, STypeConfig& type)
 		bLoadedDefault=true;
 	}
 	type = sDefault;
-#endif  // NK_
+#endif // NK_
 
 	//インデックスを設定
 	type.m_nIdx = nIdx;
@@ -121,7 +121,8 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConf
 
 #ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
 // 指定タイプを作成
-STypeConfig *CShareData::CreateTypeConfig(int nIdx) {
+STypeConfig *CShareData::CreateTypeConfig(int nIdx)
+{
 	CType* table[] = {
 		(nIdx == 0) ? new CType_Basis() : nullptr,	//基本
 		(nIdx == 1) ? new CType_Text() : nullptr,	//テキスト
@@ -159,7 +160,8 @@ STypeConfig *CShareData::CreateTypeConfig(int nIdx) {
 	return type;
 }
 // タイプ名を取得するためだけにnewをしている、冗長だけど仕方ない
-void CShareData::GetTypeNames(std::vector<std::tstring>& names) {
+void CShareData::GetTypeNames(std::vector<std::tstring>& names)
+{
 	names.clear();
 	for (int i = 0; ; i++) {
 		std::unique_ptr<STypeConfig> type(CreateTypeConfig(i));
@@ -169,7 +171,7 @@ void CShareData::GetTypeNames(std::vector<std::tstring>& names) {
 		names.push_back(type->m_szTypeName);
 	}
 }
-#endif  // NK_
+#endif // NK_
 
 
 /*!	@brief 共有メモリ初期化/強調キーワード
@@ -294,7 +296,7 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 		fnPopulateKeyword(name, case_sensitive, file);
 	}
 }
-#endif  // NK_
+#endif // NK_
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                        デフォルト                           //
@@ -319,7 +321,7 @@ void _DefaultConfig(STypeConfig* pType)
 #ifndef NK_FIX_TAB_MARK
 	wcscpy( pType->m_szTabViewString, _EDITL("^       ") );	/* TAB表示文字列 */
 	pType->m_bTabArrow = TABARROW_STRING;	/* タブ矢印表示 */	// 2001.12.03 hor	// default on 2013/4/11 Uchi
-#endif  // NK_
+#endif // NK_
 	pType->m_bInsSpace = false;				/* スペースの挿入 */	// 2001.12.03 hor
 	
 	//@@@ 2002.09.22 YAZAKI 以下、m_cLineCommentとm_cBlockCommentsを使うように修正
@@ -356,7 +358,7 @@ void _DefaultConfig(STypeConfig* pType)
 	pType->m_encoding.m_eDefaultCodetype = CODE_UTF8;
 #else
 	pType->m_encoding.m_eDefaultCodetype = CODE_SJIS;
-#endif  // NK_
+#endif // NK_
 	pType->m_encoding.m_eDefaultEoltype = EOL_CRLF;
 	pType->m_encoding.m_bDefaultBom = false;
 

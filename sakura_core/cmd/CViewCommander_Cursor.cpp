@@ -959,7 +959,7 @@ void CViewCommander::Command_WndScrollDown( void )
 		nCaretMarginY = CLayoutInt(1);
 
 	nCaretMarginY += 2;
-#endif  // NK_
+#endif // NK_
 
 	bool bCaretOff = false;
 	if( GetCaret().GetCaretLayoutPos().GetY() > m_pCommanderView->GetTextArea().m_nViewRowNum + m_pCommanderView->GetTextArea().GetViewTopLine() - (nCaretMarginY + 1) ){
@@ -1005,7 +1005,7 @@ void CViewCommander::Command_WndScrollUp(void)
 	nCaretMarginY = m_pCommanderView->GetTextArea().m_nViewRowNum / _CARETMARGINRATE;
 	if( nCaretMarginY < 1 )
 		nCaretMarginY = 1;
-#endif
+#endif // NK_
 
 	bool bCaretOff = false;
 	if( GetCaret().GetCaretLayoutPos().GetY2() < m_pCommanderView->GetTextArea().GetViewTopLine() + (nCaretMarginY + 1) ){

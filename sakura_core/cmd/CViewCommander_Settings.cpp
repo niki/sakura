@@ -386,7 +386,7 @@ void CViewCommander::Command_WRAPWINDOWWIDTH( void )	//	Oct. 7, 2000 JEPRO WRAPW
 #ifdef NK_FIX_WRAP_MODE
 	// GetWrapMode()はトグルになる次のモードが返ってくることに注意
 	// 現在の折り返しモードでないなら NextWrapMode()とかのほうがいいのではないか
-	switch( nWrapMode ){
+	switch (nWrapMode) {
 	case CEditView::TGWRAP_FULL:		// 折り返さない
 		GetDocument()->m_nTextWrapMethodCur = WRAP_NO_TEXT_WRAP;
 		break;
@@ -401,7 +401,7 @@ void CViewCommander::Command_WRAPWINDOWWIDTH( void )	//	Oct. 7, 2000 JEPRO WRAPW
 	}
 #else
 	GetDocument()->m_nTextWrapMethodCur = WRAP_SETTING_WIDTH;
-#endif  // NK_
+#endif // NK_
 	GetDocument()->m_bTextWrapMethodCurTemp = !( GetDocument()->m_nTextWrapMethodCur == m_pCommanderView->m_pTypeData->m_nTextWrapMethod );
 	if( nWrapMode == CEditView::TGWRAP_NONE ){
 		return;	// 折り返し桁は元のまま
@@ -417,7 +417,7 @@ void CViewCommander::Command_WRAPWINDOWWIDTH( void )	//	Oct. 7, 2000 JEPRO WRAPW
 //	m_pCommanderView->GetTextArea().SetViewLeftCol( CLayoutInt(0) );		/* 表示域の一番左の桁(0開始) */
 
 #ifdef NK_FIX_WRAP_MODE
-	switch( nWrapMode ){
+	switch (nWrapMode) {
 	case CEditView::TGWRAP_FULL:		// 折り返さない
 		GetDocument()->m_cLayoutMgr.CalculateTextWidth();		// テキスト最大幅を算出する
 		GetEditWindow()->RedrawAllViews( NULL );		// スクロールバーの更新が必要なので再表示を実行する
@@ -431,7 +431,7 @@ void CViewCommander::Command_WRAPWINDOWWIDTH( void )	//	Oct. 7, 2000 JEPRO WRAPW
 		GetDocument()->m_cLayoutMgr.ClearLayoutLineWidth();		// 各行のレイアウト行長の記憶をクリアする
 		break;
 	}
-#endif
+#endif // NK_
 
 	/* フォーカス移動時の再描画 */
 	m_pCommanderView->RedrawAll();

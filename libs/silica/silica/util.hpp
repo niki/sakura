@@ -25,17 +25,20 @@ namespace util {
 //! @param s
 //! @return true/false
 //------------------------------------------------------------------
-SILICA_INLINE bool to_b(const std::string &s) {
+SILICA_INLINE bool to_b(const std::string &s)
+{
 	return !(s == "false" || s == "False" || s == "0");
 }
-SILICA_INLINE bool to_b(const std::wstring &s) {
+SILICA_INLINE bool to_b(const std::wstring &s)
+{
 	return !(s == L"false" || s == L"False" || s == L"0");
 }
 
 //------------------------------------------------------------------
 //! wstring を string に変換
 //------------------------------------------------------------------
-SILICA_INLINE std::string to_bytes(const std::wstring &s) {
+SILICA_INLINE std::string to_bytes(const std::wstring &s)
+{
 	if (s.empty()) return "";
 	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
 	return cv.to_bytes(s.c_str()); //wstring→string
@@ -44,7 +47,8 @@ SILICA_INLINE std::string to_bytes(const std::wstring &s) {
 //------------------------------------------------------------------
 //! string を wstring に変換
 //------------------------------------------------------------------
-SILICA_INLINE std::wstring from_bytes(const std::string &s) {
+SILICA_INLINE std::wstring from_bytes(const std::string &s)
+{
 	if (s.empty()) return L"";
 	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
 	return cv.from_bytes(s.c_str()); //string→wstring
@@ -55,7 +59,8 @@ SILICA_INLINE std::wstring from_bytes(const std::string &s) {
 //! @param s
 //! @param c
 //------------------------------------------------------------------
-SILICA_INLINE std::tstring ltrim(const std::tstring &s, const TCHAR c) {
+SILICA_INLINE std::tstring ltrim(const std::tstring &s, const TCHAR c)
+{
 	const TCHAR *p = s.c_str();
 	while (*p == c) {
 		p++;
@@ -68,7 +73,8 @@ SILICA_INLINE std::tstring ltrim(const std::tstring &s, const TCHAR c) {
 //! @param s
 //! @param c
 //------------------------------------------------------------------
-SILICA_INLINE std::tstring rtrim(const std::tstring &s, const TCHAR c) {
+SILICA_INLINE std::tstring rtrim(const std::tstring &s, const TCHAR c)
+{
 	const TCHAR *p = s.c_str() + s.length() - 1;
 	while (*p == c) {
 		p--;
@@ -79,7 +85,8 @@ SILICA_INLINE std::tstring rtrim(const std::tstring &s, const TCHAR c) {
 //------------------------------------------------------------------
 //! 文字列の置換
 //------------------------------------------------------------------
-SILICA_INLINE int replace(std::tstring &s, const std::tstring &from, const std::tstring &to) {
+SILICA_INLINE int replace(std::tstring &s, const std::tstring &from, const std::tstring &to)
+{
 	int repcnt = 0;
 	std::tstring::size_type pos = s.find(from);
 	while (pos != std::tstring::npos) {
@@ -90,8 +97,8 @@ SILICA_INLINE int replace(std::tstring &s, const std::tstring &from, const std::
 	return repcnt;
 }
 
-} /* namespace of util */
+} // namespace util
 
-} /* namespace of si */
+} // namespace si
 
 #endif /* SILICA_UTIL_HPP */

@@ -10,16 +10,16 @@
                         // 1:boost::regex
                         // 2:BREGEXP
 #if REGEX_MODE == 0
-  #include <regex>
-  using namespace std;
+	#include <regex>
+	using namespace std;
 #elif REGEX_MODE == 1
-  #pragma comment(lib, "libboost_regex.lib")
-  #include <boost/regex.hpp>
-  using namespace boost;
+	#pragma comment(lib, "libboost_regex.lib")
+	#include <boost/regex.hpp>
+	using namespace boost;
 #elif REGEX_MODE == 2
-  #include "window/CEditWnd.h"
+	#include "window/CEditWnd.h"
 #endif
-#endif  // NK_
+#endif // NK_
 
 static int IsNumber( const CStringRef& cStr, int offset );/* 数値ならその長さを返す */	//@@@ 2001.02.17 by MIK
 
@@ -692,6 +692,6 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 
 	/* 数値ではない */
 	return 0;
-#endif  // NK_
+#endif // NK_
 }
 //@@@ 2001.11.07 End by MIK

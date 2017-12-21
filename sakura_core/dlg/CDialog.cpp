@@ -29,7 +29,7 @@
 #include "util/module.h"
 #ifdef NK_FIX_SETMAINFONT
 #include "util/window.h"
-#endif  // NK_
+#endif // NK_
 
 /* ダイアログプロシージャ */
 INT_PTR CALLBACK MyDialogProc(
@@ -84,7 +84,7 @@ CDialog::CDialog(bool bSizable, bool bCheckShareData)
 
 #ifdef NK_FIX_DIALOG_POS
 	m_hwndPlaceOfWindow = NULL;
-#endif  // NK_
+#endif // NK_
 
 	return;
 
@@ -215,7 +215,7 @@ void CDialog::SetDialogPosSize()
 	if (m_hwndPlaceOfWindow != NULL) {
 		SetPlaceOfWindow(m_hwndPlaceOfWindow);
 	}
-#endif  // NK_
+#endif // NK_
 
 	if( -1 != m_xPos && -1 != m_yPos ){
 		/* ウィンドウ位置・サイズを再現 */
@@ -631,7 +631,7 @@ bool CDialog::DirectoryUp( TCHAR* szDir )
 HFONT CDialog::SetMainFont( HWND hTarget, int ptOfs )
 #else
 HFONT CDialog::SetMainFont( HWND hTarget )
-#endif  // NK_
+#endif // NK_
 {
 	if (hTarget == NULL)	return NULL;
 
@@ -645,7 +645,7 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 	LONG nfHeight = lf.lfHeight + DpiPointsToPixels(-ptOfs);
 #else
 	LONG nfHeight = lf.lfHeight;
-#endif  // NK_
+#endif // NK_
 
 	// LOGFONTの作成
 	lf = m_pShareData->m_Common.m_sView.m_lf;
@@ -674,10 +674,12 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 }
 
 #ifdef NK_FIX_DIALOG_POS
-void CDialog::SetPlaceOfWindow() {
+void CDialog::SetPlaceOfWindow()
+{
 	m_hwndPlaceOfWindow = m_hwndParent;
 }
-void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place) {
+void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place)
+{
 	RECT rc;
 	::GetWindowRect(GetHwnd(), &rc);
 
@@ -690,7 +692,8 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place) 
 
 	if (prcView) {
 		rcView = *prcView;
-	} else {
+	}
+	else {
 		rcView = rc;
 	}
 	int viewWidth = rcView.right - rcView.left;
@@ -707,11 +710,13 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place) 
 	if (place == DLGPLACE_TL || place == DLGPLACE_TC || place == DLGPLACE_TR) {  // 左上, 中央上, 右上
 		m_yPos += rcView.top;
 		m_yPos += 20;  // offset
-	} else if (place == DLGPLACE_BL || place == DLGPLACE_BC || place == DLGPLACE_BR) {  // 左下, 中央下, 右下
+	}
+	else if (place == DLGPLACE_BL || place == DLGPLACE_BC || place == DLGPLACE_BR) {  // 左下, 中央下, 右下
 		m_yPos += rcView.bottom;
 		m_yPos -= m_nHeight;
 		m_yPos -= 20;  // offset
-	} else {  // 中央
+	}
+	else {  // 中央
 		m_yPos += rcView.top;
 		m_yPos += viewHeight / top_denominator * top_molecule;
 		m_yPos -= m_nHeight / 2;
@@ -724,18 +729,20 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place) 
 	if (place == DLGPLACE_TL || place == DLGPLACE_CL || place == DLGPLACE_BL) {  // 左下, 中央左, 左上
 		m_xPos += rcView.left;
 		m_xPos += 50;  // offset
-	} else if (place == DLGPLACE_TR || place == DLGPLACE_CR || place == DLGPLACE_BR) {  // 右下, 中央右, 右上
+	}
+	else if (place == DLGPLACE_TR || place == DLGPLACE_CR || place == DLGPLACE_BR) {  // 右下, 中央右, 右上
 		m_xPos += rcView.right;
 		m_xPos -= m_nWidth;
 		m_xPos -= 20;  // offset
-	} else {  // 中央
+	}
+	else {  // 中央
 		m_xPos += rcView.left;
 		m_xPos += viewWidth / left_denominator * left_molecule;
 		m_xPos -= m_nWidth / 2;
 	}
 #endif
 }
-#endif  // NK_
+#endif // NK_
 
 void CDialog::ResizeItem( HWND hTarget, const POINT& ptDlgDefault, const POINT& ptDlgNew, const RECT& rcItemDefault, EAnchorStyle anchor, bool bUpdate)
 {
@@ -833,8 +840,9 @@ LRESULT CALLBACK SubEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			} else {
 				return 1;
 			}
-		} else 
-#endif  // NK_
+		}
+		else 
+#endif // NK_
 		if( wParam == VK_DELETE ){
 			HWND hwndCombo = data->hwndCombo;
 			BOOL bShow = Combo_GetDroppedState(hwndCombo);

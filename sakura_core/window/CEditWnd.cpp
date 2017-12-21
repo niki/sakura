@@ -1134,7 +1134,7 @@ void CEditWnd::MessageLoop( void )
 		}
 #else
 		else if( MyIsDialogMessage( m_cDlgFind.GetHwnd(),								&msg ) ){}	//!<「検索」ダイアログ
-#endif  // NK_
+#endif // NK_
 		else if( MyIsDialogMessage( m_cDlgFuncList.GetHwnd(),							&msg ) ){}	//!<「アウトライン」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgReplace.GetHwnd(),							&msg ) ){}	//!<「置換」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgGrep.GetHwnd(),								&msg ) ){}	//!<「Grep」ダイアログ
@@ -1261,7 +1261,7 @@ LRESULT CEditWnd::DispatchEvent(
 			if( 8 == lpdis->itemID ){
 #else
 			if( 5 == lpdis->itemID ){ // 2003.08.26 Moca idがずれて作画されなかった
-#endif  // NK_
+#endif // NK_
 				int	nColor;
 				if( m_pShareData->m_sFlags.m_bRecordingKeyMacro	/* キーボードマクロの記録中 */
 				 && m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == GetHwnd()	/* キーボードマクロを記録中のウィンドウ */
@@ -1275,7 +1275,7 @@ LRESULT CEditWnd::DispatchEvent(
 				if( COLOR_BTNTEXT == nColor ){
 					::SetTextColor( lpdis->hDC, RGB(255, 0, 0) );
 				}
-#endif  // NK_
+#endif // NK_
 				::SetBkMode( lpdis->hDC, TRANSPARENT );
 				
 				// 2003.08.26 Moca 上下中央位置に作画
@@ -1285,7 +1285,8 @@ LRESULT CEditWnd::DispatchEvent(
 #ifdef NK_FIX_STATUSBAR
 				if( COLOR_BTNTEXT == nColor ){
 					::TextOut( lpdis->hDC, lpdis->rcItem.left, y, _T("●"), _tcslen( _T("●") ) );
-				} else {
+				}
+				else {
 					::TextOut( lpdis->hDC, lpdis->rcItem.left, y, _T("    "), _tcslen( _T("    ") ) );
 				}
 #else
@@ -1293,7 +1294,7 @@ LRESULT CEditWnd::DispatchEvent(
 				if( COLOR_BTNTEXT == nColor ){
 					::TextOut( lpdis->hDC, lpdis->rcItem.left + 1, y, _T("REC"), _tcslen( _T("REC") ) );
 				}
-#endif  // NK_
+#endif // NK_
 			}
 			return 0;
 		}else{
@@ -1524,7 +1525,9 @@ LRESULT CEditWnd::DispatchEvent(
 					}
 					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, 1, _T("Indent Using Spaces"), _T(""), FALSE);
 					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_SEPARATOR, 2, _T(""), _T(""), FALSE);
+					
 					const int width_tbl[] = {2, 3, 4, 5, 6, 8};
+					
 					for (int nIdx = 0; nIdx < sizeof(width_tbl) / sizeof(width_tbl[0]); ++nIdx) {
 						nFlag = MF_BYPOSITION | MF_STRING;
 						if (width_tbl[nIdx] == pLayoutMgr->GetTabSpace()) {
@@ -1548,8 +1551,8 @@ LRESULT CEditWnd::DispatchEvent(
 					if (nId == 1) {
 						GetDocument()->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
 						GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );
-					} else if (nId >= 3) {
-					  const int width_tbl[] = {2, 3, 4, 5, 6, 8};
+					}
+					else if (nId >= 3) {
 						GetDocument()->m_pcEditWnd->ChangeLayoutParam(false, CLayoutInt(width_tbl[nId - 3]),
 						                                              pLayoutMgr->m_tsvInfo.m_nTsvMode,
 						                                              pLayoutMgr->GetMaxLineKetas());
@@ -1560,7 +1563,8 @@ LRESULT CEditWnd::DispatchEvent(
 						}
 						GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );		// TAB幅が変わったので再描画が必要
 					}
-				} else if( mp->dwItemSpec == 7/*8*/ ){	//	タイプ
+				}
+				else if( mp->dwItemSpec == 7/*8*/ ){	//	タイプ
 					m_cMenuDrawer.ResetContents();
 					HMENU hMenuPopUp = ::CreatePopupMenu();
 					int type_count = GetDllShareData().m_nTypesCount;
@@ -1592,9 +1596,11 @@ LRESULT CEditWnd::DispatchEvent(
 					//OutputDebugStringW(szMsg);
 					if (nId == type_count + 2) {
 						GetActiveView().GetCommander().HandleCommand( F_OPTION_TYPE, true, 0, 0, 0, 0 );
-					} else if (nId == type_count + 3) {
+					}
+					else if (nId == type_count + 3) {
 						GetActiveView().GetCommander().HandleCommand( F_TYPE_LIST, true, 0, 0, 0, 0 );
-					} else if (nId != 0) {
+					}
+					else if (nId != 0) {
 						GetActiveView().GetCommander().HandleCommand( F_CHANGETYPE, true, (LPARAM)nId, 0, 0, 0 );
 					}
 				}
@@ -1727,7 +1733,7 @@ LRESULT CEditWnd::DispatchEvent(
 					}
 				}
 			}
-#endif  // NK_
+#endif // NK_
 			return 0L;
 		}
 		//	To Here Feb. 15, 2004 genta 
@@ -2102,7 +2108,7 @@ LRESULT CEditWnd::DispatchEvent(
 		{
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 			GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 
 			//	2006.07.09 genta LPARAMに新たな意味を追加
 			//	bit 0 (MASK 1): (bit 1==0のとき) 0/選択クリア, 1/選択開始・変更
@@ -3399,7 +3405,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 #else
 		const TCHAR*	pszLabel[7] = { _T(""), _T("99999 行 9999 列"), _T("CRLF"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM付"), _T("REC"), _T("上書") };	//Oct. 30, 2000 JEPRO 千万行も要らん	文字コード枠を広げる 2008/6/21	Uchi
 		int			nStArrNum = 7;
-#endif  // NK_
+#endif // NK_
 		//	To Here
 		int			nAllWidth = rc.right - rc.left;
 		int			nSbxWidth = ::GetSystemMetrics(SM_CXVSCROLL) + ::GetSystemMetrics(SM_CXEDGE); // サイズボックスの幅
@@ -4218,7 +4224,7 @@ void CEditWnd::InitMenubarMessageFont(void)
 	_tcscpy( lf.lfFaceName, _T(NK_RES_FONT_NAME) );
 #else
 	_tcscpy( lf.lfFaceName, _T("ＭＳ ゴシック") );
-#endif  // NK_
+#endif // NK_
 	m_hFontCaretPosInfo = ::CreateFontIndirect( &lf );
 
 	hdc = ::GetDC( ::GetDesktopWindow() );
@@ -4349,7 +4355,7 @@ void CEditWnd::ChangeFileNameNotify( const TCHAR* pszTabCaption, const TCHAR* _p
 			p->m_bIsRecMacro =
 			    (GetDllShareData().m_sFlags.m_bRecordingKeyMacro &&
 			     GetDllShareData().m_sFlags.m_hwndRecordingKeyMacro == CEditWnd::getInstance()->GetHwnd());
-#endif  // NK_
+#endif // NK_
 		}
 	}
 	cRecentEditNode.Terminate();
@@ -4699,13 +4705,13 @@ void CEditWnd::Views_Redraw()
 		if( m_nActivePaneIndex != v )
 			GetView(v).AdjustScrollBars();
 	}
-#endif  // NK_
+#endif // NK_
 	GetMiniMap().Redraw();
 	//アクティブを再描画
 	GetActiveView().Redraw();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	GetActiveView().AdjustScrollBars();
-#endif  // NK_
+#endif // NK_
 }
 
 

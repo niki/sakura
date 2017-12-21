@@ -92,7 +92,7 @@ CFuncKeyWnd::CFuncKeyWnd()
 	_tcscpy( lf.lfFaceName, _T(NK_RES_FONT_NAME) );
 #else
 	_tcscpy( lf.lfFaceName, _T("ＭＳ Ｐゴシック") );
-#endif  // NK_
+#endif // NK_
 	m_hFont = ::CreateFontIndirect( &lf );
 
 	m_bSizeBox = false;

@@ -26,7 +26,7 @@
 #include "doc/CEditDoc.h"
 #ifdef NK_FIX_OUTLINEDLG
 #include "util/window.h"
-#endif  //NK_
+#endif //NK_
 
 class CFuncInfo;
 class CFuncInfoArr; // 2002/2/10 aroka
@@ -229,7 +229,7 @@ private:
 	
 #ifdef NK_FIX_OUTLINEDLG
 	CFontAutoDeleter		m_cFontText[2];
-#endif  // NK_
+#endif // NK_
 };
 
 

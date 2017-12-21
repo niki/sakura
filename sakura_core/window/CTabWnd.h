@@ -147,7 +147,7 @@ protected:
 	}
 #else
 	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
-#endif  // NK_
+#endif // NK_
 	void DrawListBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 一覧ボタン描画処理 */
 	void DrawCloseFigure( CGraphics& gr, const RECT &btnRect );			/*!< 閉じるマーク描画処理 */
 	void DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 閉じるボタン描画処理 */		// 2006.10.21 ryoji
@@ -168,19 +168,22 @@ protected:
 
 #ifdef NK_FIX_TABWND
 	// タブ間クリックの設定をする
-	void SetInterTabClk(int nTab) {
+	void SetInterTabClk(int nTab)
+	{
 		m_pShareData->m_sFlags.m_nInterTabClk = nTab;
 	}
 	// タブ間クリックを取得をする
-	int GetInterTabClk() const {
+	int GetInterTabClk() const
+	{
 		return m_pShareData->m_sFlags.m_nInterTabClk;
 	}
 	// タブ間クリックを解除する
-	void BreakInterTabClk() {
+	void BreakInterTabClk()
+	{
 		::KillTimer(m_hwndTab, 2);  // タイマーを殺す
 		m_pShareData->m_sFlags.m_nInterTabClk = 0;
 	}
-#endif  // NK_
+#endif // NK_
 
 protected:
 	enum DragState { DRAG_NONE, DRAG_CHECK, DRAG_DRAG };

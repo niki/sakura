@@ -31,7 +31,7 @@ public:
 	CDlgFind();
 #ifdef NK_FIX_FINDDLG
 	~CDlgFind();
-#endif  // NK_
+#endif // NK_
 	/*
 	||  Attributes & Operations
 	*/
@@ -41,7 +41,7 @@ public:
 #ifdef NK_FIX_FINDDLG
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* ダイアログのメッセージ処理 *//* BOOL->INT_PTR 2008/7/18 Uchi*/
 	void SetStatus(int stat);
-#endif  // NK_
+#endif // NK_
 
 	void ChangeView( LPARAM );
 
@@ -58,7 +58,7 @@ public:
 #ifdef NK_FIX_FINDDLG
 	std::wstring m_inputText;  // 入力中の文字列
 	HMENU m_hMenuPopUp;
-#endif  // NK_
+#endif // NK_
 
 protected:
 //@@@ 2002.2.2 YAZAKI CShareDataに移動
@@ -68,7 +68,7 @@ protected:
 	int GetData( void );		/* ダイアログデータの取得 */
 #ifdef NK_FIX_FINDDLG
 	int InstantInput( void );
-#endif  // NK_
+#endif // NK_
 	void SetCombosList( void );	/* 検索文字列/置換後文字列リストの設定 */
 	void SetData( void );		/* ダイアログデータの設定 */
 	BOOL OnInitDialog( HWND, WPARAM, LPARAM );

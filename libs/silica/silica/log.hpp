@@ -23,7 +23,8 @@ namespace si {
 //------------------------------------------------------------------
 //! 出力
 //------------------------------------------------------------------
-SILICA_INLINE void log(const TCHAR *fmt, ...) {
+SILICA_INLINE void log(const TCHAR *fmt, ...)
+{
 	TCHAR buf[1024];
 
 	va_list arg;
@@ -41,7 +42,8 @@ SILICA_INLINE void log(const TCHAR *fmt, ...) {
 //------------------------------------------------------------------
 //! 出力 (改行つき)
 //------------------------------------------------------------------
-SILICA_INLINE void logln(const TCHAR *fmt, ...) {
+SILICA_INLINE void logln(const TCHAR *fmt, ...)
+{
 	TCHAR buf[1024];
 
 	va_list arg;
@@ -58,6 +60,6 @@ SILICA_INLINE void logln(const TCHAR *fmt, ...) {
 #endif
 }
 
-} /* namespace of si */
+} // namespace si
 
 #endif /* SILICA_LOG_HPP */

@@ -379,7 +379,7 @@ static void GetAccessKeyLabelByIndex(TCHAR* pszLabel, bool bEspaceAmp, int index
 #else
 			pszLabel[2] = _T(' ');
 			pszLabel[3] = _T('\0');
-#endif  // NK_
+#endif // NK_
 		}else{
 			pszLabel[0] = c;
 #ifdef NK_FIX_RECENT_FILE_DISP_NAME
@@ -387,7 +387,7 @@ static void GetAccessKeyLabelByIndex(TCHAR* pszLabel, bool bEspaceAmp, int index
 #else
 			pszLabel[1] = _T(' ');
 			pszLabel[2] = _T('\0');
-#endif  // NK_
+#endif // NK_
 		}
 	}else{
 		pszLabel[0] = _T('\0');
@@ -475,13 +475,15 @@ bool CFileNameManager::GetMenuFullLabel(
 			
 			if (::PathIsDirectory(szFileName)) {
 				isDir = true;
-			} else {
+			}
+			else {
 				HANDLE hFile;
 				hFile = CreateFile(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 				if (hFile != INVALID_HANDLE_VALUE) {
 					size_low = GetFileSize(hFile,&size_high);
 					CloseHandle(hFile);
-				} else {
+				}
+				else {
 					size_low = 0;
 				}
 			}
@@ -489,24 +491,29 @@ bool CFileNameManager::GetMenuFullLabel(
 			if (isDir) {
 				// フォルダ
 				_stprintf_s( szFileName, _T("%s"), temp);
-			} else if (size_low < 1024) {
+			}
+			else if (size_low < 1024) {
 				// 1KB未満
 				_stprintf_s( szFileName, _T("%s [1 KB]"), temp);
-			} else if (size_low < 1024 * 1024) {
+			}
+			else if (size_low < 1024 * 1024) {
 				// 1MB未満
 				_stprintf_s( szFileName, _T("%s [%d KB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024));
-			} else if (size_low < 1024 * 1024 * 10) {
+			}
+			else if (size_low < 1024 * 1024 * 10) {
 				// 10MB未満
 				_stprintf_s( szFileName, _T("%s [%.2f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
-			} else if (size_low < 1024 * 1024 * 100) {
+			}
+			else if (size_low < 1024 * 1024 * 100) {
 				// 100MB未満
 				_stprintf_s( szFileName, _T("%s [%.1f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
-			} else {
+			}
+			else {
 				// 100MB以上 (ケアなし)
 				_stprintf_s( szFileName, _T("%s [%d MB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024 / 1024));
 			}
 		}
-#endif  // NK_
+#endif // NK_
 
 		// szFileName → szMenu2
 		//	Jan. 19, 2002 genta
@@ -544,7 +551,7 @@ bool CFileNameManager::GetMenuFullLabel(
 		szAccKey, (bFavorite ? _T("★ ") : _T("")), pszName,
 		(bModified ? _T("*"):_T(" ")), pszCharset
 	);
-#endif  // NK_
+#endif // NK_
 	return 0 < ret;
 }
 

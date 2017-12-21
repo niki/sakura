@@ -155,7 +155,7 @@ public:
 	HINSTANCE		m_hLangRsrcInstance;		// メッセージリソースDLLのインスタンスハンドル	// 2011.04.10 nasukoji
 #ifdef NK_FIX_DIALOG_POS
 	HWND			m_hwndPlaceOfWindow;
-#endif  // NK_
+#endif // NK_
 
 protected:
 	void CreateSizeBox( void );
@@ -168,7 +168,7 @@ protected:
 	HFONT SetMainFont( HWND hTarget, int ptOfs = 0 );
 #else
 	HFONT SetMainFont( HWND hTarget );
-#endif  // NK_
+#endif // NK_
 
 #ifdef NK_FIX_DIALOG_POS
 	void SetPlaceOfWindow();
@@ -185,7 +185,7 @@ protected:
 		DLGPLACE_BR,  // 右下
 	};
 	void SetPlaceOfWindow(HWND hWnd, const RECT *prcView = nullptr, eDLGPLACE place = DLGPLACE_CC);
-#endif  // NK_
+#endif // NK_
 };
 
 

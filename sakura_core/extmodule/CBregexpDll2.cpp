@@ -55,8 +55,8 @@ LPCTSTR CBregexpDll2::GetDllNameImp( int index )
 	if (fexist(fname.c_str())) {
 		return _T("bregonig32.dll");
 	}
-#endif  // _WIN64
-#endif  // NK_
+#endif // _WIN64
+#endif // NK_
 	return _T("bregonig.dll");
 }
 

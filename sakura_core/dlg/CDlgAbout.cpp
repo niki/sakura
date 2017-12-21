@@ -29,7 +29,7 @@
 #include "sakura.hh"
 #ifdef NK_FIX_VERDLG
   #include <lua.hpp>            // Lua
-#endif  // NK_
+#endif // NK_
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//12900
@@ -64,7 +64,7 @@ const DWORD p_helpids[] = {	//12900
 #else
 #  define TARGET_M_SUFFIX2 ""
 #endif
-#endif  // NK_
+#endif // NK_
 
 #if defined(__BORLANDC__)
 #  define COMPILER_TYPE "B"
@@ -103,7 +103,7 @@ const DWORD p_helpids[] = {	//12900
 #      define COMPILER_TYPE2 "MSVS (Any of ver.)"
 #    endif
 #    define COMPILER_VER2 _MSC_FULL_VER
-#  endif  // NK_FIX_VERDLG
+#  endif // NK_FIX_VERDLG
 #  define COMPILER_TYPE "V"
 #  define COMPILER_VER _MSC_VER
 #else
@@ -156,7 +156,7 @@ const DWORD p_helpids[] = {	//12900
 #  else
 #    define MY_RTL ""
 #  endif
-#endif  // NK_
+#endif // NK_
 
 //	From Here Nov. 7, 2000 genta
 /*!
@@ -224,7 +224,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	cmemMsg.AppendString(_T(" "));
 #else
 	cmemMsg.AppendString(_T("   "));
-#endif  // NK_
+#endif // NK_
 
 	// バージョン&リビジョン情報
 	DWORD dwVersionMS, dwVersionLS;
@@ -251,7 +251,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		LOWORD( dwVersionLS )
 	);
 #endif
-#endif  // NK_
+#endif // NK_
 	cmemMsg.AppendString( szMsg );
 
 	cmemMsg.AppendString( _T("\r\n") );
@@ -311,7 +311,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		);
 #else
 		_tcsncpy( szMsg, pszDesc, _countof(szMsg) - 1 );
-#endif  // NK_
+#endif // NK_
 		szMsg[_countof(szMsg) - 1] = 0;
 		::DlgItem_SetText( GetHwnd(), IDC_EDIT_ABOUT, szMsg );
 	}

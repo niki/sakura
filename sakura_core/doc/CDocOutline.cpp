@@ -368,12 +368,13 @@ void CDocOutline::MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr, std::tstri
 #ifdef NK_FIX_OUTLINE
 			if (bRegex) {
 				strText.assign( pszText, pRegex[j].GetIndex(), pRegex[j].GetMatchLen() );
-			} else {
+			}
+			else {
 				strText.assign( pszText, i );
 			}
 #else
 			strText.assign( pszText, i );
-#endif  // NK_
+#endif // NK_
 			pszText = strText.c_str();
 		}
 

@@ -91,7 +91,7 @@ void CEditView::SetIMECompFormPos( void )
 			                           (GetLineSpace() & 1);
 		}
 	}
-#endif  // NK_
+#endif // NK_
 
 	if ( hIMC ){
 		::ImmSetCompositionWindow( hIMC, &CompForm );

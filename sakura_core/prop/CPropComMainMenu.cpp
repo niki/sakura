@@ -1382,4 +1382,4 @@ bool CPropMainMenu::Check_MainMenu_Sub(
 	}
 	return bRet;
 }
-#endif  // NK_
+#endif // NK_

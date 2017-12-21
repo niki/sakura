@@ -39,9 +39,9 @@ struct EditNode {
 	SFilePath		m_szFilePath;				//!< タブウインドウ用：ファイル名			//@@@ 2006.01.28 ryoji
 	bool			m_bIsGrep;					//!< Grepのウィンドウか						//@@@ 2006.01.28 ryoji
 #ifdef NK_FIX_TAB_CAPTION_COLOR
-	bool m_bIsModified;  // 変更したか
-	bool m_bIsRecMacro;  // キーマクロ記録中か
-#endif  // NK_
+	bool			m_bIsModified;  // 変更したか
+	bool			m_bIsRecMacro;  // キーマクロ記録中か
+#endif // NK_
 	UINT			m_showCmdRestore;			//!< 元のサイズに戻すときのサイズ種別		//@@@ 2007.06.20 ryoji
 	BOOL			m_bClosing;					//!< 終了中か（「最後のファイルを閉じても(無題)を残す」用）	//@@@ 2007.06.20 ryoji
 

@@ -33,7 +33,7 @@
 #include "_main/CAppMode.h"
 #include "CEditApp.h"
 #include "CGrepAgent.h" // use CEditApp.h
-#endif  // NK_
+#endif // NK_
 
 
 /*! スクロールバー作成
@@ -345,7 +345,7 @@ void CEditView::AdjustScrollBars()
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 		//SB_Marker_Build(/*bCacheClear = */ false, 3000);
 		SB_Marker_CallPaint(10000);
-#endif  // NK_
+#endif // NK_
 	}
 	if( NULL != m_hwndHScrollBar ){
 		/* 水平スクロールバー */
@@ -384,7 +384,7 @@ void CEditView::AdjustScrollBars()
 		si.nPos  = (Int)GetTextArea().GetViewLeftCol();		/* 表示域の一番左の桁(0開始) */
 		si.nTrackPos = 1;
 		::SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE );
-#endif  // NK_
+#endif // NK_
 
 		//	2006.1.28 aroka 判定条件誤り修正 (バーが消えてもスクロールしない)
 		bEnable = ( GetTextArea().m_nViewColNum < GetRightEdgeForScrollBar() );
@@ -461,12 +461,13 @@ CLayoutInt CEditView::ScrollAtV( CLayoutInt nPos )
 #ifdef NK_FIX_FLICKER
 			if (m_ignore_update_window > 0) {
 				RequestUpdateWindow();
-			} else {
+			}
+			else {
 				::UpdateWindow( GetHwnd() );
 			}
 #else
 			::UpdateWindow( GetHwnd() );
-#endif  // NK_
+#endif // NK_
 		}
 	}
 
@@ -551,12 +552,13 @@ CLayoutInt CEditView::ScrollAtH( CLayoutInt nPos )
 #ifdef NK_FIX_FLICKER
 			if (m_ignore_update_window > 0) {
 				RequestUpdateWindow();
-			} else {
+			}
+			else {
 				::UpdateWindow( GetHwnd() );
 			}
 #else
 			::UpdateWindow( GetHwnd() );
-#endif  // NK_
+#endif // NK_
 		}
 	}
 	//	2006.1.28 aroka 判定条件誤り修正 (バーが消えてもスクロールしない)

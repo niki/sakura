@@ -41,7 +41,7 @@ public:
 
 protected:
 	bool m_nbsp;
-#endif  // NK_
+#endif // NK_
 };
 
 #ifdef NK_FIX_HAN_SPACE
@@ -52,7 +52,7 @@ public:
 	//traits
 	bool Match(const wchar_t* pText, int nTextLen) const;
 };
-#endif  // NK_
+#endif // NK_
 
 #endif /* SAKURA_CFIGURE_HANSPACE_5C46367B_9CE4_47DF_A1A1_7AF7BB1D5C92_H_ */
 /*[EOF]*/

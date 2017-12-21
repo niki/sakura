@@ -349,7 +349,7 @@ void CDlgTagJumpList::UpdateData( bool bInit )
 		ListView_SetItemText( hwndList, nIndex, 4, item->filename );
 
 		ListView_SetItemText( hwndList, nIndex, 5, item->note );
-#endif  // NK_
+#endif // NK_
 
 		ListView_SetItemState( hwndList, nIndex, 0, LVIS_SELECTED | LVIS_FOCUSED );
 	}
@@ -443,7 +443,7 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 #ifdef NK_FIX_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // NK_
+#endif // NK_
 
 	HWND		hwndList;
 	LV_COLUMN	col;
@@ -556,7 +556,7 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	col.pszText  = const_cast<TCHAR*>(LS(STR_DLGTAGJMP_LIST6));
 	col.iSubItem = 5;
 	ListView_InsertColumn( hwndList, 5, &col );
-#endif  // NK_
+#endif // NK_
 
 	/* 行選択 */
 	lngStyle = ListView_GetExtendedListViewStyle( hwndList );

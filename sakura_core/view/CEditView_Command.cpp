@@ -56,7 +56,7 @@ bool CEditView::TagJumpSub(
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 
 	HWND	hwndOwner;
 	POINT	poCaret;
@@ -398,7 +398,7 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 				m_bCurSrchKeyMark = false;
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 				//SB_Marker_Clear(600);
-#endif  // NK_
+#endif // NK_
 				return FALSE;
 		}
 		m_bCurSrchKeyMark = true;
@@ -406,7 +406,7 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 			Redraw();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 			//SB_Marker_Clear(601);
-#endif  // NK_
+#endif // NK_
 		}
 		m_pcEditWnd->m_cToolbar.AcceptSharedSearchKey();
 		return TRUE;
@@ -418,7 +418,7 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 			Redraw(); // 自View再描画
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 			//SB_Marker_Clear(602);
-#endif  // NK_
+#endif // NK_
 		}
 	}
 

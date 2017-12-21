@@ -40,7 +40,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 //			pDispPos->GetDrawPos().x,
 //#ifdef NK_LINE_CENTERING
 //			pcView->GetLineMargin() +
-//#endif  // NK_LINE_CENTERING
+//#endif // NK_LINE_CENTERING
 //			pDispPos->GetDrawPos().y,
 //			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 //			&rcClipBottom,
@@ -55,7 +55,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		y++; // 少し下め
 //#ifdef NK_LINE_CENTERING
 //		y += pcView->GetLineMargin();
-//#endif  // NK_LINE_CENTERING
+//#endif // NK_LINE_CENTERING
 		x--; // 少し左め
 #ifdef NK_FIX_HAN_SPACE
 		if (m_nbsp) {
@@ -64,7 +64,8 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			::LineTo(   gr, x+4, y+3 );
 			::MoveToEx( gr, x+3, y-2, NULL );
 			::LineTo(   gr, x-2, y+3 );
-		} else {
+		}
+		else {
 			gr.FillSolidMyRect({x, y - 1, x + 2, y + 1}, gr.GetCurrentTextForeColor());
 			//::MoveToEx( gr, x, y-1, NULL );
 			//::LineTo(   gr, x+2, y-1 );
@@ -77,7 +78,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		//::LineTo(   gr, x+2, y-1 );
 		//::MoveToEx( gr, x, y, NULL );
 		//::LineTo(   gr, x+2, y );
-#endif  // NK_
+#endif // NK_
 #else
 		//小文字"o"の下半分を出力
 		CMyRect rcClipBottom=rcClip;
@@ -87,7 +88,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			pDispPos->GetDrawPos().x,
 #ifdef NK_LINE_CENTERING
 			pcView->GetLineMargin() +
-#endif  // NK_LINE_CENTERING
+#endif // NK_LINE_CENTERING
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipBottom,
@@ -105,7 +106,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			pDispPos->GetDrawPos().x,
 #ifdef NK_LINE_CENTERING
 			pcView->GetLineMargin() +
-#endif  // NK_LINE_CENTERING
+#endif // NK_LINE_CENTERING
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipTop,
@@ -113,7 +114,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			1,
 			&Dx
 		);
-#endif  // NK_
+#endif // NK_
 	}
 
 	//位置進める
@@ -121,7 +122,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 }
 
 
-#ifdef  NK_FIX_HAN_SPACE
+#ifdef NK_FIX_HAN_SPACE
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                     CFigure_NBSP                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -133,4 +134,4 @@ bool CFigure_NBSP::Match(const wchar_t* pText, int nTextLen) const
 	}
 	return false;
 }
-#endif  // NK_
+#endif // NK_

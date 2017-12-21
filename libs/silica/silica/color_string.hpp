@@ -17,11 +17,21 @@ namespace si {
 
 class ColorString {
 public:
-	ColorString() : color_code_(_T("")) {}
-	explicit ColorString(const std::tstring &color_code) : color_code_(color_code) {}
-	ColorString(int r, int g, int b, bool bName = false) : ColorString(ToColorCode(r, g, b, bName)) {}
+	ColorString()
+	    : color_code_(_T(""))
+	{
+	}
+	explicit ColorString(const std::tstring &color_code)
+	    : color_code_(color_code)
+	{
+	}
+	ColorString(int r, int g, int b, bool bName = false)
+	    : ColorString(ToColorCode(r, g, b, bName))
+	{
+	}
 
-	static std::tstring ToColorCode(int r, int g, int b, bool bName = false) {
+	static std::tstring ToColorCode(int r, int g, int b, bool bName = false)
+	{
 		if (bName) {
 			uint32_t rgb = _RGB(r, g, b);
 			if (rgb == _RGB(255, 0, 0)) return _T("red");
@@ -50,7 +60,8 @@ public:
 
 	enum eENDIAN { eENDIAN_RGB, eENDIAN_BGR };
 
-	static uint32_t ToColor(const std::tstring &color_code, eENDIAN endian = eENDIAN_RGB) {
+	static uint32_t ToColor(const std::tstring &color_code, eENDIAN endian = eENDIAN_RGB)
+	{
 		if (color_code.empty()) return 0;
 
 		TCHAR *pEnd;
@@ -60,41 +71,59 @@ public:
 
 		if (*color_code.c_str() == _T('#')) {
 			rgb = ::_tcstol(color_code.c_str() + 1, &pEnd, 16); // カラーコード
-		} else if (color_code == _T("red")) {
+		}
+		else if (color_code == _T("red")) {
 			rgb = _RGB(255, 0, 0);
-		} else if (color_code == _T("yellow")) {
+		}
+		else if (color_code == _T("yellow")) {
 			rgb = _RGB(255, 255, 0);
-		} else if (color_code == _T("lime")) {
+		}
+		else if (color_code == _T("lime")) {
 			rgb = _RGB(0, 255, 0);
-		} else if (color_code == _T("aqua")) {
+		}
+		else if (color_code == _T("aqua")) {
 			rgb = _RGB(0, 255, 255);
-		} else if (color_code == _T("blue")) {
+		}
+		else if (color_code == _T("blue")) {
 			rgb = _RGB(0, 0, 255);
-		} else if (color_code == _T("fuchsia")) {
+		}
+		else if (color_code == _T("fuchsia")) {
 			rgb = _RGB(255, 0, 255);
-		} else if (color_code == _T("maroon")) {
+		}
+		else if (color_code == _T("maroon")) {
 			rgb = _RGB(128, 0, 0);
-		} else if (color_code == _T("olive")) {
+		}
+		else if (color_code == _T("olive")) {
 			rgb = _RGB(128, 128, 0);
-		} else if (color_code == _T("green")) {
+		}
+		else if (color_code == _T("green")) {
 			rgb = _RGB(0, 128, 0);
-		} else if (color_code == _T("teal")) {
+		}
+		else if (color_code == _T("teal")) {
 			rgb = _RGB(0, 128, 128);
-		} else if (color_code == _T("navy")) {
+		}
+		else if (color_code == _T("navy")) {
 			rgb = _RGB(0, 0, 128);
-		} else if (color_code == _T("purple")) {
+		}
+		else if (color_code == _T("purple")) {
 			rgb = _RGB(128, 0, 128);
-		} else if (color_code == _T("black")) {
+		}
+		else if (color_code == _T("black")) {
 			rgb = _RGB(0, 0, 0);
-		} else if (color_code == _T("gray")) {
+		}
+		else if (color_code == _T("gray")) {
 			rgb = _RGB(128, 128, 128);
-		} else if (color_code == _T("silver")) {
+		}
+		else if (color_code == _T("silver")) {
 			rgb = _RGB(192, 192, 192);
-		} else if (color_code == _T("white")) {
+		}
+		else if (color_code == _T("white")) {
 			rgb = _RGB(255, 255, 255);
-		} else if (color_code == _T("orange")) {
+		}
+		else if (color_code == _T("orange")) {
 			rgb = _RGB(255, 165, 0);
-		} else {
+		}
+		else {
 			rgb = ::_tcstol(color_code.c_str(), &pEnd, 16); // 16進数
 			if (endian == eENDIAN_BGR) {
 				int r = rgb & 0xff;
@@ -107,7 +136,8 @@ public:
 		return rgb;
 	}
 
-	static uint32_t ToCOLORREF(const std::tstring &color_code, eENDIAN endian = eENDIAN_RGB) {
+	static uint32_t ToCOLORREF(const std::tstring &color_code, eENDIAN endian = eENDIAN_RGB)
+	{
 		uint32_t rgb = ToColor(color_code, endian);
 
 		// COLORREF形式にする
@@ -117,7 +147,8 @@ public:
 		return _BGR(r, g, b);
 	}
 
-	static std::tstring FromCOLORREF(uint32_t colorref, bool bName = false) {
+	static std::tstring FromCOLORREF(uint32_t colorref, bool bName = false)
+	{
 		return ToColorCode(colorref & 0xff, (colorref >> 8) & 0xff, (colorref >> 16) & 0xff, bName);
 	}
 
@@ -125,6 +156,6 @@ private:
 	std::tstring color_code_;
 };
 
-} /* namespace of si */
+} // namespace si
 
 #endif /* SILICA_COLOR_STRING_HPP */

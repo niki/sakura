@@ -284,6 +284,6 @@ void CLoadAgent::OnFinalLoad(ELoadResult eLoadResult)
 	cCaret.MoveCursor(cCaret.GetCaretLayoutPos(),true);
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	CEditWnd::getInstance()->GetActiveView().SB_Marker_Clear(9000);
-#endif  // NK_
+#endif // NK_
 	CEditWnd::getInstance()->GetActiveView().AdjustScrollBars();
 }

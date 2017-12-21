@@ -27,7 +27,7 @@
 #include "macro/CPPAMacroMgr.h"
 #ifdef NK_USE_LUA
 #include "macro/CLuaMacroMgr.h"
-#endif  // NK_
+#endif // NK_
 #include "macro/CWSHManager.h"
 #include "macro/CMacroFactory.h"
 #include "env/CShareData.h"
@@ -494,10 +494,10 @@ CSMacroMgr::CSMacroMgr()
 	
 #ifdef NK_USE_PPA
 	CPPAMacroMgr::declare();
-#endif  // NK_USE_PPA
+#endif // NK_USE_PPA
 #ifdef NK_USE_LUA
 	CLuaMacroMgr::declare();
-#endif  // NK_
+#endif // NK_
 	CKeyMacroMgr::declare();
 	CWSHMacroManager::declare();
 	

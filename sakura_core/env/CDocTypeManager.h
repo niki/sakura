@@ -47,7 +47,7 @@ public:
 	bool AddTypeConfig(CTypeConfig cDocumentType, int nId = 0);
 #else
 	bool AddTypeConfig(CTypeConfig cDocumentType);
-#endif  // NK_
+#endif // NK_
 	bool DelTypeConfig(CTypeConfig cDocumentType);
 
 	static bool IsFileNameMatch(const TCHAR* pszTypeExts, const TCHAR* pszFileName);	// タイプ別拡張子にファイル名がマッチするか

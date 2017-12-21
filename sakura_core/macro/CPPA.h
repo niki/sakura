@@ -297,4 +297,4 @@ private:
 
 #endif
 
-#endif  // NK_USE_PPA
+#endif // NK_USE_PPA

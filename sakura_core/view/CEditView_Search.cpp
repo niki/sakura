@@ -293,7 +293,7 @@ bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */, bool bRegQuote /* = false */ )
 #else
 void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */ )
-#endif  // NK_
+#endif // NK_
 {
 
 	int				i;
@@ -352,7 +352,8 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 #ifdef NK_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	// 正規表現文字をクォートする
 	// (PHP 4, PHP 5) string preg_quote ( string $str [, string $delimiter = NULL ] )
-	auto preg_quote = [](const CNativeW &str) -> CNativeW {
+	auto preg_quote = [](const CNativeW &str) -> CNativeW
+	{
 		const wchar_t *pStr = str.GetStringPtr();
 
 		CNativeW out = L"";
@@ -362,8 +363,8 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 			    *pStr == L'?' || *pStr == L'[' || *pStr == L'^' || *pStr == L']' ||
 			    *pStr == L'$' || *pStr == L'(' || *pStr == L')' || *pStr == L'{' ||
 			    *pStr == L'}' || *pStr == L'=' || *pStr == L'!' || *pStr == L'<' ||
-			    *pStr == L'>' || *pStr == L'|' || *pStr == L':' || *pStr == L'-'
-			){
+			    *pStr == L'>' || *pStr == L'|' || *pStr == L':' || *pStr == L'-')
+			{
 				// 正規表現文字をクォートする . \ + * ? [ ^ ] $ ( ) { } = ! < > | : -
 				out += L"\\";
 			}
@@ -378,7 +379,7 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 	if (bRegQuote) {
 		cmemTopic = preg_quote(cmemTopic);
 	}
-#endif  // NK_
+#endif // NK_
 
 	wchar_t *pTopic2 = cmemTopic.GetStringPtr();
 	if( bTrimSpaceTab ){
@@ -420,7 +421,7 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHistory, bool bRegQuote /* = false */ )
 #else
 bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHistory )
-#endif  // NK_
+#endif // NK_
 {
 	bool bStripMaxPath = false;
 	cmemCurText.SetString(L"");
@@ -430,7 +431,7 @@ bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHist
 		GetCurrentTextForSearch( cmemCurText, bStripMaxPath, false, bRegQuote );
 #else
 		GetCurrentTextForSearch( cmemCurText, bStripMaxPath );
-#endif  // NK_
+#endif // NK_
 	}
 	else{	// テキストが選択されていない
 		bool bGet = false;
@@ -441,7 +442,7 @@ bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHist
 				// 空白タブは自動取得の対象としない 2017.6.28 
 #else
 			GetCurrentTextForSearch( cmemCurText, bStripMaxPath );	// カーソル位置単語を取得
-#endif  // NK_
+#endif // NK_
 			if( cmemCurText.GetStringLength() == 0 && bGetHistory ){
 				bGet = true;
 			}

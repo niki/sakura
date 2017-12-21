@@ -393,7 +393,7 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("NOT"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("NOT"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
-#endif  // NK_
+#endif // NK_
 	{_T("LNO"), 0},
 #ifdef NK_FIX_MODGYOU_DRAW_VLINE
 	{_T("MOD"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
@@ -409,32 +409,32 @@ const SColorAttributeData g_ColorAttributeArr[] =
 	{_T("TAB"), 0},
 	{_T("SPC"), 0},	//2002.04.28 Add By KK
 	{_T("ZEN"), 0},
-#endif  // NK_
+#endif // NK_
 	{_T("CTL"), 0},
 #ifdef NK_FIX_WS_COLOR
 	{_T("EOL"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("EOL"), 0},
-#endif  // NK_
+#endif // NK_
 #ifdef NK_FIX_COLOR_STRATEGY
 	{_T("RAP"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("VER"), COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("RAP"), 0},
 	{_T("VER"), 0},  // 2005.11.08 Moca 指定桁縦線
-#endif  // NK_
+#endif // NK_
 #ifdef NK_FIX_WS_COLOR
 	{_T("EOF"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("EOF"), 0},
-#endif  // NK_
+#endif // NK_
 	{_T("NUM"), 0},	//@@@ 2001.02.17 by MIK 半角数値の強調
 	{_T("BRC"), 0},	//対括弧	// 02/09/18 ai Add
 #ifdef NK_FIX_SELAREA
 	{_T("SEL"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 #else
 	{_T("SEL"), 0},
-#endif  // NK_
+#endif // NK_
 	{_T("FND"), 0},
 	{_T("FN2"), 0},
 	{_T("FN3"), 0},

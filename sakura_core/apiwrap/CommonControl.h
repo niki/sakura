@@ -36,12 +36,13 @@ namespace ApiWrap
 	{
 		if (0 < ::SendMessage(hwndStatus, SB_GETTEXTLENGTH, opt & 0xFF, (LPARAM)str)) {
 			return ::SendMessage(hwndStatus, SB_GETTEXT, opt & 0xFF, (LPARAM)str);
-		} else {
+		}
+		else {
 			if (str) str[0] = _T('\0');
 			return 0L;
 		}
 	}
-#endif  // NK_
+#endif // NK_
 	inline LRESULT StatusBar_SetText(HWND hwndStatus, WPARAM opt, const TCHAR* str)
 	{
 #ifdef NK_FIX_STATUSBAR
@@ -50,11 +51,12 @@ namespace ApiWrap
 			TCHAR	temp[256] = {};
 			if (0 < ::StatusBar_GetText(hwndStatus, opt, temp)) {
 				if (::_tcscmp(temp, str) == 0) return 1L;  // 同じ場合は処理しない
-			} else {
+			}
+			else {
 				if (temp[0] == _T('\0') && str[0] == _T('\0')) return 1L;  // 同じ場合は処理しない
 			}
 		}
-#endif  // NK_
+#endif // NK_
 		return ::SendMessage( hwndStatus, SB_SETTEXT, opt, (LPARAM)str );
 	}
 

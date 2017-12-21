@@ -71,7 +71,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
 #ifndef NK_FIX_TAB_MARK
 	int nLen = wcslen( m_pTypeData->m_szTabViewString );
-#endif  // NK_
+#endif // NK_
 
 	if( pArea->IsRectIntersected(rcClip2) ){
 #ifdef NK_FIX_TAB_MARK
@@ -85,12 +85,12 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				nPosLeft,
 //#ifdef NK_LINE_CENTERING
 //			pcView->GetLineMargin() +
-//#endif  // NK_
+//#endif // NK_
 				sPos.GetDrawPos().y,
 				nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
 #ifdef NK_LINE_CENTERING
 				pcView->GetLineSpace() +
-#endif  // NK_LINE_CENTERING
+#endif // NK_LINE_CENTERING
 				pMetrics->GetHankakuHeight(),
 				gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 				gr.GetCurrentTextForeColor()
@@ -148,12 +148,12 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 							sPos.GetDrawPos().x,
 //#ifdef NK_LINE_CENTERING
 //							pcView->GetLineMargin() +
-//#endif  // NK_
+//#endif // NK_
 							sPos.GetDrawPos().y,
 							pMetrics->GetHankakuWidth(),
 #ifdef NK_LINE_CENTERING
 							pcView->GetLineSpace() +
-#endif  // NK_LINE_CENTERING
+#endif // NK_LINE_CENTERING
 							pMetrics->GetHankakuHeight(),
 							gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 							gr.GetCurrentTextForeColor()
@@ -166,12 +166,12 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 						nPosLeft,
 //#ifdef NK_LINE_CENTERING
 //						pcView->GetLineMargin() +
-//#endif  // NK_
+//#endif // NK_
 						sPos.GetDrawPos().y,
 						nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
 #ifdef NK_LINE_CENTERING
 						pcView->GetLineSpace() +
-#endif  // NK_LINE_CENTERING
+#endif // NK_LINE_CENTERING
 						pMetrics->GetHankakuHeight(),
 						gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 						gr.GetCurrentTextForeColor()
@@ -179,7 +179,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				}
 			}
 		}
-#endif  // NK_
+#endif // NK_
 	}
 
 	//Xを進める
@@ -242,7 +242,7 @@ void _DrawTabArrow(
 		pt[4].y += 1;
 		::PolyPolyline( gr, pt, pp, _countof(pp));
 	}
-#endif  // NK_
+#endif // NK_
 
 	gr.PopPen();
 }

@@ -68,17 +68,19 @@ namespace reg {
 //------------------------------------------------------------------
 //! ini形式のキー情報からレジストリキー名作成
 //------------------------------------------------------------------
-SILICA_INLINE std::tstring genkey(const std::tstring &prof, const std::tstring &section = _T("")) {
+SILICA_INLINE std::tstring genkey(const std::tstring &prof, const std::tstring &section = _T(""))
+{
 	if (section.empty()) {
 		return _T("Software\\") + si::file::fname(prof);
-	} else {
+	}
+	else {
 		return _T("Software\\") + si::file::fname(prof) + _T("\\") + section;
 	}
 }
 
-} // namespace of reg
+} // namespace reg
 
-} // namespace of si
+} // namespace si
 
 //------------------------------------------------------------------
 //! レジストリクラス
@@ -87,17 +89,22 @@ class RegKey {
 public:
 	//RegKey() : hKey(0) {}
 	explicit RegKey(const std::tstring &key_name, bool write_ok = false)
-	    : hKey(0), dwDisposition_((DWORD)-1), key_name_(key_name) {
+	    : hKey(0)
+	    , dwDisposition_((DWORD)-1)
+	    , key_name_(key_name)
+	{
 		if (write_ok) {
 			DWORD dwDisposition;
 			::RegCreateKeyEx(HKEY_CURRENT_USER, key_name.c_str(), 0, NULL, REG_OPTION_NON_VOLATILE,
 			                 KEY_ALL_ACCESS, NULL, &hKey, &dwDisposition);
 			dwDisposition_ = dwDisposition;
-		} else {
+		}
+		else {
 			::RegOpenKeyEx(HKEY_CURRENT_USER, key_name.c_str(), 0, KEY_ALL_ACCESS, &hKey);
 		}
 	}
-	virtual ~RegKey() {
+	virtual ~RegKey()
+	{
 		if (hKey != 0) {
 			::RegCloseKey(hKey);
 		}
@@ -108,7 +115,8 @@ public:
 	bool valid() const { return hKey != 0; }
 
 	//! エントリーの種類を取得
-	bool getType(const std::tstring &entry, DWORD *pdwType, DWORD *pdwByte) const {
+	bool getType(const std::tstring &entry, DWORD *pdwType, DWORD *pdwByte) const
+	{
 		if (!valid()) return false;
 
 		DWORD &dwType = *pdwType;
@@ -117,7 +125,8 @@ public:
 	}
 
 	//! DWORDの読み込み
-	bool read(const std::tstring &entry, DWORD *data) const {
+	bool read(const std::tstring &entry, DWORD *data) const
+	{
 		if (!valid()) return false;
 
 		DWORD dwType = REG_DWORD;
@@ -127,17 +136,20 @@ public:
 	}
 
 	//! DWORDの読み込み
-	DWORD get(const std::tstring &entry, DWORD dwDefault) const {
+	DWORD get(const std::tstring &entry, DWORD dwDefault) const
+	{
 		DWORD dwData;
 		if (read(entry, &dwData)) {
 			return dwData;
-		} else {
+		}
+		else {
 			return dwDefault;
 		}
 	}
 
 	//! 文字列の読み込み
-	bool read(const std::tstring &entry, LPCTSTR data) const {
+	bool read(const std::tstring &entry, LPCTSTR data) const
+	{
 		if (!valid()) return false;
 
 		DWORD dwType;
@@ -155,17 +167,20 @@ public:
 	}
 
 	//! 文字列の読み込み
-	LPCTSTR get_s(const std::tstring &entry, LPCTSTR pszDefault) const {
+	LPCTSTR get_s(const std::tstring &entry, LPCTSTR pszDefault) const
+	{
 		static TCHAR tempBuff[512] = {};
 		if (read(entry, tempBuff)) {
 			return tempBuff;
-		} else {
+		}
+		else {
 			return pszDefault;
 		}
 	}
 
 	//! DWORDの書き込み
-	bool write(const std::tstring &entry, DWORD data) {
+	bool write(const std::tstring &entry, DWORD data)
+	{
 		if (!valid()) return false;
 
 		return ::RegSetValueEx(hKey, entry.c_str(), NULL, REG_DWORD, (CONST BYTE *)&data,
@@ -173,24 +188,28 @@ public:
 	}
 
 	//! 文字列の書き込み
-	bool write(const std::tstring &entry, LPCTSTR data, size_t size) {
+	bool write(const std::tstring &entry, LPCTSTR data, size_t size)
+	{
 		if (!valid()) return false;
 
 		return ::RegSetValueEx(hKey, entry.c_str(), NULL, REG_SZ, (CONST BYTE *)data, (int)size) ==
 		       ERROR_SUCCESS;
 	}
 
-	bool write(const std::tstring &entry, const std::tstring &data) {
+	bool write(const std::tstring &entry, const std::tstring &data)
+	{
 		return write(entry, data.c_str(), (data.length() + 1) * sizeof(TCHAR));
 	}
 
 	//! キーの削除
-	bool deleteKey(const std::tstring &key) {
+	bool deleteKey(const std::tstring &key)
+	{
 		return ::RegDeleteKey(hKey, key.c_str()) == ERROR_SUCCESS;
 	}
 
 	//! エントリの削除
-	bool deleteEntry(const std::tstring &entry) {
+	bool deleteEntry(const std::tstring &entry)
+	{
 		return ::RegDeleteValue(hKey, entry.c_str()) == ERROR_SUCCESS;
 	}
 
@@ -203,14 +222,21 @@ protected:
 //! 書き込み可能なレジストリ
 class RegKeyRW : public RegKey {
 public:
-	explicit RegKeyRW(const std::tstring &key_name) : RegKey(key_name, true) {}
+	explicit RegKeyRW(const std::tstring &key_name)
+	    : RegKey(key_name, true)
+	{
+	}
 };
 
 //! スコープ内のみで有効なレジストリ (スコープから外れるとキーは削除されます)
 class ScopedRegKey : public RegKey {
 public:
-	explicit ScopedRegKey(const std::tstring &key_name) : RegKey(key_name, true) {}
-	~ScopedRegKey() {
+	explicit ScopedRegKey(const std::tstring &key_name)
+	    : RegKey(key_name, true)
+	{
+	}
+	~ScopedRegKey()
+	{
 		if (hKey != 0 && dwDisposition_ == REG_CREATED_NEW_KEY) { // 作成元のみ削除
 			deleteKey(key_name_);
 		}
@@ -221,7 +247,8 @@ public:
 //! レジストリキーのエントリ列挙
 //------------------------------------------------------------------
 SILICA_INLINE bool EnumRegKeyEntry(const std::tstring &key, std::vector<std::tstring> &e,
-                                   std::vector<std::tstring> *v = nullptr) {
+                                   std::vector<std::tstring> *v = nullptr)
+{
 	RegKey hKey(key);
 
 	TCHAR szValueName[256];
@@ -277,7 +304,8 @@ SILICA_INLINE bool EnumRegKeyEntry(const std::tstring &key, std::vector<std::tst
 //! @param data データ
 //------------------------------------------------------------------
 SILICA_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstring &section,
-                                       const std::tstring &entry, std::tstring &data) {
+                                       const std::tstring &entry, std::tstring &data)
+{
 	DWORD dwType;
 	DWORD dwByte;
 
@@ -298,7 +326,8 @@ SILICA_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstr
 		}
 
 		return ret;
-	} else if (dwByte > 0) {
+	}
+	else if (dwByte > 0) {
 		TCHAR *buffer = new TCHAR[dwByte + 1];
 		buffer[0] = L'\0';
 
@@ -310,7 +339,8 @@ SILICA_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstr
 
 		delete[] buffer;
 		return ret;
-	} else {
+	}
+	else {
 		return true;
 	}
 }
@@ -323,11 +353,13 @@ SILICA_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstr
 //! @param data データ
 //------------------------------------------------------------------
 SILICA_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
-                                       const std::tstring &entry, const std::tstring &data) {
+                                       const std::tstring &entry, const std::tstring &data)
+{
 	if (data.empty()) {
 		//return RegKeyRW(si::reg::genkey(prof, section)).deleteEntry(entry);  // 空のときは削除
 		return RegKeyRW(si::reg::genkey(prof, section)).write(entry, _T(""));
-	} else {
+	}
+	else {
 		int i = 0;
 		bool is_num = false;
 		TCHAR *endptr;
@@ -339,7 +371,8 @@ SILICA_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstr
 
 		if (is_num) {
 			return RegKeyRW(si::reg::genkey(prof, section)).write(entry, (DWORD)i);
-		} else {
+		}
+		else {
 			return RegKeyRW(si::reg::genkey(prof, section)).write(entry, data);
 		}
 	}

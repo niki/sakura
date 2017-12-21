@@ -65,7 +65,7 @@ void CViewCommander::Command_JUMP( void )
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 	const wchar_t*	pLine;
 	int			nMode;
 	int			bValidLine;
@@ -287,12 +287,13 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				
 				if (cBookmark.IsBookmarked()) {
 					m_pCommanderView->SBMarker_->Add(ptLayout.y, NK_SCRBAR_MARK_MAGIC);  // 登録
-				} else {
+				}
+				else {
 					m_pCommanderView->SBMarker_->Del(ptLayout.y, NK_SCRBAR_MARK_MAGIC);  // 削除
 				}
 				m_pCommanderView->SB_Marker_CallPaint(4001);
 			}
-#endif  // NK_
+#endif // NK_
 		}
 	}
 	else{
@@ -309,12 +310,13 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			
 			if (cBookmark.IsBookmarked()) {
 				m_pCommanderView->SBMarker_->Add(ptLayout.y, NK_SCRBAR_MARK_MAGIC);  // 登録
-			} else {
+			}
+			else {
 				m_pCommanderView->SBMarker_->Del(ptLayout.y, NK_SCRBAR_MARK_MAGIC);  // 削除
 			}
 			m_pCommanderView->SB_Marker_CallPaint(4002);
 		}
-#endif  // NK_
+#endif // NK_
 	}
 
 	// 2002.01.16 hor 分割したビューも更新
@@ -329,7 +331,7 @@ void CViewCommander::Command_BOOKMARK_NEXT(void)
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
 	BOOL		bRedo	=	TRUE;	// hor
@@ -375,7 +377,7 @@ void CViewCommander::Command_BOOKMARK_PREV(void)
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
 	BOOL		bRedo	=	TRUE;	// hor
@@ -423,7 +425,7 @@ void CViewCommander::Command_BOOKMARK_RESET(void)
 	CBookmarkManager(&GetDocument()->m_cDocLineMgr).ResetAllBookMark();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	m_pCommanderView->SB_Marker_Clear(203);
-#endif  // NK_
+#endif // NK_
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();
 }
@@ -452,7 +454,7 @@ void CViewCommander::Command_FUNCLIST_NEXT(void)
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 	CLogicPoint	ptXY(0, GetCaret().GetCaretLogicPos().y);
 	int			nYOld = ptXY.y;
 
@@ -485,7 +487,7 @@ void CViewCommander::Command_FUNCLIST_PREV(void)
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 
 	CLogicPoint	ptXY(0,GetCaret().GetCaretLogicPos().y);
 	int			nYOld = ptXY.y;

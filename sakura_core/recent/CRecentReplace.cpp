@@ -43,7 +43,7 @@ CRecentReplace::CRecentReplace()
 		RegKey(NK_REGKEY).get(_T("RecentReplaceKeyMax"), NK_MAX_REPLACEKEY),
 #else
 		MAX_REPLACEKEY,
-#endif  // NK_
+#endif // NK_
 		NULL
 	);
 }

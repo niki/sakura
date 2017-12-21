@@ -1,21 +1,14 @@
 BasedOnStyle: LLVM
+SortIncludes: false
+AlignEscapedNewlinesLeft: true
+AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
-AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: true
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
-DerivePointerAlignment: true
-
-IndentCaseLabels: false
-IndentWidth: 2
-KeepEmptyLinesAtTheStartOfBlocks: true
-
-TabWidth: 2
-UseTab: ForIndentation
-
-Standard: Auto
-AllowShortFunctionsOnASingleLine: Inline
-SortIncludes: false
-ColumnLimit: 100
+BreakBeforeBraces : Stroustrup
 BreakConstructorInitializersBeforeComma: true
+Standard: Auto
+ColumnLimit: 100
+UseTab: ForIndentation
+TabWidth : 2
 CommentPragmas: '^'

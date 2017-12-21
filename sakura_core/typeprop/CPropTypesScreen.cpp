@@ -118,7 +118,7 @@ TYPE_NAME_ID<ETabArrow> TabArrowArr[] = {
 	{ TABARROW_SHORT,	STR_TAB_SYMBOL_SHORT_ARROW },	//_T("短い矢印")
 	{ TABARROW_LONG,	STR_TAB_SYMBOL_LONG_ARROW },	//_T("長い矢印")
 };
-#endif  // NK_
+#endif // NK_
 
 TYPE_NAME_ID<ESmartIndentType> SmartIndentArr[] = {
 	{ SMARTINDENT_NONE,	STR_SMART_INDENT_NONE },
@@ -196,7 +196,7 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 		EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_INDENTCHARS     ), _countof( m_Types.m_szIndentChars   ) - 1 );
 #ifndef NK_FIX_TAB_MARK
 		EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_TABVIEWSTRING   ), _countof( m_Types.m_szTabViewString ) - 1 );
-#endif  // NK_
+#endif // NK_
 		EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_OUTLINERULEFILE ), _countof2( m_Types.m_szOutlineRuleFilename ) - 1 );	//	Oct. 5, 2002 genta 画面上でも入力制限
 
 		if( 0 == m_Types.m_nIdx ){
@@ -228,7 +228,7 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 				}
 				break;
 			}
-#endif  // NK_
+#endif // NK_
 			break;
 
 		/* ボタン／チェックボックスがクリックされた */
@@ -487,7 +487,7 @@ void CPropTypesScreen::SetData( HWND hwndDlg )
 			}
 		}
 		Combo_SetCurSel( hwndCombo, nSelPos );
-#endif  // NK_
+#endif // NK_
 
 		::CheckDlgButtonBool( hwndDlg, IDC_CHECK_INS_SPACE, m_Types.m_bInsSpace );				// SPACEの挿入 [チェックボックス]	// From Here 2001.12.03 hor
 
@@ -681,7 +681,7 @@ int CPropTypesScreen::GetData( HWND hwndDlg )
 		hwndCombo = ::GetDlgItem( hwndDlg, IDC_CHECK_TAB_ARROW );
 		nSelPos = Combo_GetCurSel( hwndCombo );
 		m_Types.m_bTabArrow = TabArrowArr[nSelPos].nMethod;		// テキストの折り返し方法
-#endif  // NK_
+#endif // NK_
 
 		// SPACEの挿入
 		m_Types.m_bInsSpace = ::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_INS_SPACE );

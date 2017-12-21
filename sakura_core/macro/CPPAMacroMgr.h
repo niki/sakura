@@ -59,4 +59,4 @@ protected:
 
 
 	
-#endif  // NK_USE_PPA
+#endif // NK_USE_PPA

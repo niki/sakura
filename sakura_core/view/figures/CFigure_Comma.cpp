@@ -63,7 +63,7 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
 #ifndef NK_FIX_TAB_MARK
 	int nLen = wcslen( m_pTypeData->m_szTabViewString );
-#endif  // NK_
+#endif // NK_
 
 	if( pArea->IsRectIntersected(rcClip2) ){
 		if( cTabType.IsDisp() ){	//CSVモード
@@ -72,7 +72,7 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 				sPos.GetDrawPos().x,
 #ifdef NK_LINE_CENTERING
 				pcView->GetLineMargin() +
-#endif  // NK_
+#endif // NK_
 				sPos.GetDrawPos().y,
 				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 				&rcClip2,

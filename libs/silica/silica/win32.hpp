@@ -17,15 +17,16 @@ namespace si {
 //==================================================================
 namespace win32 {
 
-SILICA_INLINE void FillSolidRect(HDC hdc, COLORREF clr, RECT *pRect) {
+SILICA_INLINE void FillSolidRect(HDC hdc, COLORREF clr, RECT *pRect)
+{
 	::SetBkColor(hdc, clr);
 	::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, pRect, NULL, 0, NULL);
 }
 
 //
 
-} /* namespace of win32 */
+} // namespace win32
 
-} /* namespace of si */
+} // namespace si
 
 #endif /* SILICA_WIN32_HPP */

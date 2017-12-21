@@ -256,7 +256,7 @@ void CEditView::ISearchExit()
 	///
 #else
 	GetDllShareData().m_Common.m_sSearch.m_sSearchOption = m_sCurSearchOption;
-#endif  // NK_
+#endif // NK_
 	m_pcEditWnd->m_cToolbar.AcceptSharedSearchKey();
 	m_nISearchDirection = SEARCH_BACKWARD;
 	m_nISearchMode = SEARCH_NONE;
@@ -436,7 +436,7 @@ void CEditView::ISearchExec(bool bNext)
 	}else{
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 		GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 		//検索結果あり
 		//キャレット移動
 		GetCaret().MoveCursor( sMatchRange.GetFrom(), true, _CARETMARGINRATE / 3 );
@@ -450,7 +450,7 @@ void CEditView::ISearchExec(bool bNext)
 
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	SB_Marker_CallPaint(500);
-#endif  // NK_
+#endif // NK_
 	m_bCurSrchKeyMark = true;
 
 	Redraw();	

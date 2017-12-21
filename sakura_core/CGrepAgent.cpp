@@ -215,7 +215,7 @@ DWORD CGrepAgent::DoGrep(
 
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	pcViewDst->SB_Marker_CallPaint(100);
-#endif  // NK_
+#endif // NK_
 	pcViewDst->m_bCurSrchKeyMark = true;								/* 検索文字列のマーク */
 	pcViewDst->m_strCurSearchKey = pcmGrepKey->GetStringPtr();				/* 検索文字列 */
 	pcViewDst->m_sCurSearchOption = sSearchOption;						// 検索オプション

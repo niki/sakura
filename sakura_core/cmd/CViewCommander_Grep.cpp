@@ -40,7 +40,7 @@ void CViewCommander::Command_GREP_DIALOG( void )
 	    GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp);
 #else
 	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText, bGetHistory );	// 2006.08.23 ryoji ダイアログ専用関数に変更
-#endif  // NK_
+#endif // NK_
 
 	if( bSet ){
 		GetEditWindow()->m_cDlgGrep.m_strText = cmemCurText.GetStringPtr();
@@ -126,7 +126,8 @@ void CViewCommander::Command_GREP( void )
 			cmWork2.AppendString(exdirs.c_str());
 		}
 		cmWork3.SetString( temp.GetStringPtr() );
-	} else {
+	}
+	else {
 		TCHAR	szWorkFolder[MAX_PATH];
 		TCHAR	szWorkFile[MAX_PATH];
 		// 2003.08.01 Moca ファイル名はスペースなどは区切り記号になるので、""で囲い、エスケープする
@@ -139,7 +140,7 @@ void CViewCommander::Command_GREP( void )
 #else
 	cmWork2.SetString( GetEditWindow()->m_cDlgGrep.m_szFile );
 	cmWork3.SetString( GetEditWindow()->m_cDlgGrep.m_szFolder );
-#endif  // NK_
+#endif // NK_
 
 	/*	今のEditViewにGrep結果を表示する。
 		Grepモードのとき、または未編集で無題かつアウトプットでない場合。
@@ -174,7 +175,7 @@ void CViewCommander::Command_GREP( void )
 			(count > 0) ? GetEditWindow()->m_cDlgGrep.m_bSubFolder : false,
 #else
 			GetEditWindow()->m_cDlgGrep.m_bSubFolder,
-#endif  // NK_
+#endif // NK_
 			false,
 			true, // Header
 			GetEditWindow()->m_cDlgGrep.m_sSearchOption,

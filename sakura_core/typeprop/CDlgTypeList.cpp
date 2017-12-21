@@ -190,7 +190,7 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 	switch( wMsg ){
 #ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
 	case WM_NOTIFY:
-	  // 任意のタイプ設定を追加する
+		// 任意のタイプ設定を追加する
 		if (((LPNMHDR)lParam)->code ==  BCN_DROPDOWN) {
 			HWND hwndBtn = GetDlgItem(GetHwnd(), IDC_BUTTON_ADD_TYPE);
 			CMenuDrawer cMenuDrawer;
@@ -227,7 +227,7 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 			}
 		}
 		break;
-#endif  // NK_
+#endif // NK_
 	case WM_COMMAND:
 		{
 		HWND hwndList = GetDlgItem( GetHwnd(), IDC_LIST_TYPES );

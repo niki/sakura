@@ -194,7 +194,7 @@ void CDlgJump::SetData( void )
 {
 #ifdef NK_FIX_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // NK_
+#endif // NK_
 
 	CEditDoc*		pCEditDoc = (CEditDoc*)m_lParam;
 	CFuncInfoArr	cFuncInfoArr;

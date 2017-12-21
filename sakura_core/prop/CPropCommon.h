@@ -56,7 +56,7 @@ enum PropComSheetOrder {
 	ID_PROPCOM_PAGENUM_WIN,				//!< ウィンドウ
 #ifndef NK_FIX_MAINMENU_FORCE_DEFAULT
 	ID_PROPCOM_PAGENUM_MAINMENU,		//!< メインメニュー
-#endif  // NK_
+#endif // NK_
 	ID_PROPCOM_PAGENUM_TOOLBAR,			//!< ツールバー
 	ID_PROPCOM_PAGENUM_TAB,				//!< タブバー
 	ID_PROPCOM_PAGENUM_STATUSBAR,		//!< ステータスバー
@@ -546,7 +546,7 @@ private:
 	bool Check_MainMenu( HWND, std::wstring& );						// メニューの検査
 	bool Check_MainMenu_Sub( HWND, HTREEITEM, int, std::wstring& );	// メニューの検査
 };
-#endif  // NK_
+#endif // NK_
 
 
 

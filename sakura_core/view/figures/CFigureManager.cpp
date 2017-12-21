@@ -38,7 +38,7 @@ CFigureManager::CFigureManager()
 	m_vFigures.push_back(new CFigure_HanSpace());
 #ifdef NK_FIX_HAN_SPACE
 	m_vFigures.push_back(new CFigure_NBSP());
-#endif  // NK_
+#endif // NK_
 	m_vFigures.push_back(new CFigure_ZenSpace());
 	m_vFigures.push_back(new CFigure_Eol());
 	m_vFigures.push_back(new CFigure_CtrlCode());

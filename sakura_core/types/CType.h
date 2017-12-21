@@ -40,7 +40,7 @@ enum ETabArrow {
 	TABARROW_SHORT,			//!< 短い矢印
 	TABARROW_LONG,			//!< 長い矢印
 };
-#endif  // NK_
+#endif // NK_
 
 //! アウトライン解析の種類
 enum EOutlineType{
@@ -143,7 +143,7 @@ struct STypeConfig{
 #ifndef NK_FIX_TAB_MARK
 	ETabArrow			m_bTabArrow;					//!< タブ矢印表示		//@@@ 2003.03.26 MIK
 	EDIT_CHAR			m_szTabViewString[8+1];			//!< TAB表示文字列	// 2003.1.26 aroka サイズ拡張	// 2009.02.11 ryoji サイズ戻し(17->8+1)
-#endif  // NK_
+#endif // NK_
 	bool				m_bInsSpace;					//!< スペースの挿入	// 2001.12.03 hor
 	int					m_nTsvMode;						//!< TSVモード	// 2015.05.02 syat
 	// 2005.01.13 MIK 配列化

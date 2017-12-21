@@ -76,7 +76,7 @@ class CDataProfile : public CProfile{
 #ifdef NK_FIX_PROFILES
 public:
 	void *tag_;
-#endif  // NK_
+#endif // NK_
 private:
 	//専用型
 	typedef std::wstring wstring;

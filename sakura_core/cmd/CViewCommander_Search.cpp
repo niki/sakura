@@ -57,7 +57,7 @@ void CViewCommander::Command_SEARCH_DIALOG( void )
 	    GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp);
 #else
 	m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText );	// 2006.08.23 ryoji ダイアログ専用関数に変更
-#endif  // NK_
+#endif // NK_
 
 	/* 検索文字列を初期化 */
 	if( 0 < cmemCurText.GetStringLength() ){
@@ -93,13 +93,13 @@ void CViewCommander::Command_SEARCH_NEXT(
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	bool bSBClear = false;
 	if (!m_pCommanderView->m_bCurSrchKeyMark) {
 		bSBClear = true;
 	}
-#endif  // NK_
+#endif // NK_
 	bool		bSelecting;
 	bool		bFlag1 = false;
 	bool		bSelectingLock_Old = false;
@@ -315,7 +315,7 @@ end_of_func:;
 		//if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
 		//	GetEditWindow()->m_cDlgFind.SetStatus(0);
 		//}
-#endif  // NK_
+#endif // NK_
 	}
 	else{
 		GetCaret().ShowEditCaret();	// 2002/04/18 YAZAKI
@@ -347,14 +347,14 @@ end_of_func:;
 		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
 			GetEditWindow()->m_cDlgFind.SetStatus(-2);
 		}
-#endif  // NK_
+#endif // NK_
 	}
 
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	if (bSBClear) {
 		m_pCommanderView->SB_Marker_Clear(801);
 	}
-#endif  // NK_
+#endif // NK_
 }
 
 
@@ -364,13 +364,13 @@ void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	bool bSBClear = false;
 	if (!m_pCommanderView->m_bCurSrchKeyMark) {
 		bSBClear = true;
 	}
-#endif  // NK_
+#endif // NK_
 	bool		bSelecting;
 	bool		bSelectingLock_Old = false;
 	bool		bFound = false;
@@ -506,7 +506,7 @@ end_of_func:;
 		//if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
 		//	GetEditWindow()->m_cDlgFind.SetStatus(0);
 		//}
-#endif  // NK_	}else{
+#endif // NK_	}else{
 		m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRPREV2));
 // To Here 2002.01.26 hor
 
@@ -530,13 +530,13 @@ end_of_func:;
 			GetEditWindow()->m_cDlgFind.SetStatus(-3);
 		}
 	}
-#endif  // NK_
+#endif // NK_
 
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	if (bSBClear) {
 		m_pCommanderView->SB_Marker_Clear(802);
 	}
-#endif  // NK_
+#endif // NK_
 
 	return;
 }
@@ -557,7 +557,7 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 	    GetDllShareData().m_Common.m_sSearch.m_sSearchOption.bRegularExp);
 #else
 	m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText );	// 2006.08.23 ryoji ダイアログ専用関数に変更
-#endif  // NK_
+#endif // NK_
 
 	/* 検索文字列を初期化 */
 	if( 0 < cmemCurText.GetStringLength() ){
@@ -566,7 +566,7 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 #ifdef NK_FIX_REPLACE
 	// 置換後文字列に置換前文字列を設定する
 	GetEditWindow()->m_cDlgReplace.m_strText2 = GetEditWindow()->m_cDlgReplace.m_strText;
-#endif  // NK_
+#endif // NK_
 	if( 0 < GetDllShareData().m_sSearchKeywords.m_aReplaceKeys.size() ){
 		if( GetEditWindow()->m_cDlgReplace.m_nReplaceKeySequence < GetDllShareData().m_Common.m_sSearch.m_nReplaceKeySequence ){
 			GetEditWindow()->m_cDlgReplace.m_strText2 = GetDllShareData().m_sSearchKeywords.m_aReplaceKeys[0];	// 2006.08.23 ryoji 前回の置換後文字列を引き継ぐ
@@ -1612,7 +1612,7 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 			///
 #else
 			GetDllShareData().m_Common.m_sSearch.m_sSearchOption = m_pCommanderView->m_sCurSearchOption;
-#endif  // NK_
+#endif // NK_
 		}
 		m_pCommanderView->m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
 		m_pCommanderView->m_bCurSearchUpdate = true;
@@ -1623,7 +1623,7 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 		m_pCommanderView->RedrawAll();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 		m_pCommanderView->SB_Marker_Clear(301);
-#endif  // NK_
+#endif // NK_
 		return;
 	}
 // To Here 2001.12.03 hor
@@ -1635,7 +1635,7 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 	m_pCommanderView->RedrawAll();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	m_pCommanderView->SB_Marker_Clear(302);
-#endif  // NK_
+#endif // NK_
 	return;
 }
 

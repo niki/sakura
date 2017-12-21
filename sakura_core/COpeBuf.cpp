@@ -26,7 +26,7 @@ COpeBuf::COpeBuf()
 	m_nNoModifiedIndex = 0;	/* 無変更な状態になった位置 */
 #ifdef NK_FIX_UNDOREDO
 	m_vCOpeBlkArr.reserve(1000);
-#endif  // NK_
+#endif // NK_
 }
 
 /* COpeBufクラス消滅 */

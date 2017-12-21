@@ -309,7 +309,7 @@ bool CShareData::InitShareData()
 			_tcscpy( sWindow.m_szWindowCaptionInactive, 
 				_T("${w?$h$:アウトプット$:$f$n$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-#endif  // NK_
+#endif // NK_
 		}
 
 		// [タブバー]タブ
@@ -324,7 +324,7 @@ bool CShareData::InitShareData()
 				L"${w?【Grep】$h$:【アウトプット】$:$f$}${U?*$}${R?(ビューモード)$:(上書き禁止)$}"
 #else
 				L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
-#endif  // NK_
+#endif // NK_
 			);
 			sTabBar.m_bSameTabWidth = FALSE;			//タブを等幅にする			//@@@ 2006.01.28 ryoji
 			sTabBar.m_bDispTabIcon = FALSE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
@@ -710,7 +710,7 @@ bool CShareData::InitShareData()
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders2 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders3 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs = _T(".vs .svn .git .hg obj Debug Release");
-#endif  // NK_
+#endif // NK_
 
 			// 2004/06/21 novice タグジャンプ機能追加
 			m_pShareData->m_sTagJump.m_TagJumpNum = 0;
@@ -944,7 +944,7 @@ BOOL CShareData::IsPathOpened( const TCHAR* pszPath, HWND* phwndOwner )
 				if (::GetAsyncKeyState(VK_SHIFT)) {
 					return FALSE;
 				}
-#endif  // NK_
+#endif // NK_
 				*phwndOwner = m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd;
 				return TRUE;
 			}

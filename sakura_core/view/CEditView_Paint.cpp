@@ -61,7 +61,7 @@ void CEditView_Paint::Call_OnPaint(
 {
 #ifdef NK_OUTPUT_DEBUG_STRING
   si::logln(L"Call_OnPaint");
-#endif  // NK_
+#endif // NK_
 	CEditView* pView = GetEditView();
 
 	//各要素
@@ -149,7 +149,7 @@ void CEditView::Redraw()
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	// スクロールバーの状態を更新する
 	AdjustScrollBars();
-#endif  // NK_
+#endif // NK_
 }
 // 2001/06/21 End
 
@@ -543,13 +543,13 @@ COLORREF CEditView::GetTextColorByColorInfo2(const ColorInfo& info, const ColorI
 	if( info.m_sColorAttr.m_cBACK == m_crBack ){
 		return  info2.m_sColorAttr.m_cTEXT ^ 0x00FFFFFF;
 	}
-#endif  // NK_
+#endif // NK_
 #ifdef NK_FIX_SELAREA
 	static int nBlendPer = RegKey(NK_REGKEY).get(_T("SelectAreaTextBlendPer"), NK_SELAREA_TEXT_BLEND_PER);
 	int alpha = 255 * nBlendPer / 100;
 #else
 	int alpha = 255*30/100; // 30%
-#endif  // NK_
+#endif // NK_
 	return MakeColor2(info.m_sColorAttr.m_cTEXT, info2.m_sColorAttr.m_cTEXT, alpha);
 }
 
@@ -563,7 +563,7 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 	if( info.m_sColorAttr.m_cBACK == m_crBack ){
 		return  info2.m_sColorAttr.m_cBACK ^ 0x00FFFFFF;
 	}
-#endif  // NK_
+#endif // NK_
 #ifdef NK_FIX_SELAREA
 	static int nBlendPer = RegKey(NK_REGKEY).get(_T("SelectAreaBackBlendPer"), NK_SELAREA_BACK_BLEND_PER);
 	static int nBlendPer2 = RegKey(NK_REGKEY).get(_T("SelectAreaBackBlendPer2"), NK_SELAREA_BACK_BLEND_PER2);
@@ -577,14 +577,14 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 			 info2.m_nColorIdx == COLORIDX_SEARCH3 ||
 			 info2.m_nColorIdx == COLORIDX_SEARCH4 ||
 			 info2.m_nColorIdx == COLORIDX_SEARCH5)
-#endif
+#endif // @1
 	){
 		nBlendPer3 = (int)( (float)nBlendPer * nBlendPer2 * 0.01f );
 	}
 	int alpha = 255 * nBlendPer3 / 100;
 #else
 	int alpha = 255*30/100; // 30%
-#endif  // NK_
+#endif // NK_
 	return MakeColor2(info.m_sColorAttr.m_cBACK, info2.m_sColorAttr.m_cBACK, alpha);
 }
 
@@ -664,7 +664,7 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	} else {
 	  si::logln(L"OnPaint2 start");
 	}
-#endif  // NK_
+#endif // NK_
 	if( m_hdcCompatDC && NULL == m_hbmpCompatBMP
 		 || m_nCompatBMPWidth < (pPs->rcPaint.right - pPs->rcPaint.left)
 		 || m_nCompatBMPHeight < (pPs->rcPaint.bottom - pPs->rcPaint.top) ){
@@ -764,7 +764,7 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 #else
 			gr.SetTextBackColor(m_pTypeData->m_ColorInfoArr[COLORIDX_GYOU].m_sColorAttr.m_cBACK);
 			gr.FillMyRectTextBackColor(rc);
-#endif  // NK_
+#endif // NK_
 		}
 	}
 	//	To Here Sep. 7, 2001 genta
@@ -914,7 +914,7 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	} else {
 	  si::logln(L"OnPaint2 finish");
 	}
-#endif  // NK_
+#endif // NK_
 	return;
 }
 
@@ -1072,7 +1072,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 #ifdef NK_FIX_COMMENT
 	int comment_mode = 0;
 	CTypeSupport cComment(this, COLORIDX_COMMENT);
-#endif  // NK_
+#endif // NK_
 	CEditView& cActiveView = m_pcEditWnd->GetActiveView();
 	CTypeSupport&	cBackType = (cCaretLineBg.IsDisp() &&
 		GetCaret().GetCaretLayoutPos().GetY() == pInfo->m_pDispPos->GetLayoutLineRef() && !m_bMiniMap
@@ -1081,7 +1081,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1 && !m_bMiniMap
 #else
 			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1 && !m_bMiniMap
-#endif  // NK_
+#endif // NK_
 				? cEvenLineBg
 				: (cPageViewBg.IsDisp() && m_bMiniMap
 					&& cActiveView.GetTextArea().GetViewTopLine() <= pInfo->m_pDispPos->GetLayoutLineRef()
@@ -1104,7 +1104,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			}
 		}
 	}
-#endif  // NK_
+#endif // NK_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                        行番号描画                           //
@@ -1165,7 +1165,8 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 #ifdef NK_FIX_COMMENT
 				if (pInfo->m_pStrategyFound) {
 					comment_mode = 0;
-				} else {
+				}
+				else {
 					if (pInfo->m_pStrategy) {
 						switch (pInfo->m_pStrategy->GetStrategyColor()) {
 						case COLORIDX_COMMENT: comment_mode = 1; break;
@@ -1175,17 +1176,19 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 							if (comment_mode != 1) comment_mode = 0;
 							break;
 						}
-					} else {
+					}
+					else {
 						if (comment_mode != 1) comment_mode = 0;
 					}
 				}
-#endif  // NK_
+#endif // NK_
 			}
 
 #ifdef NK_FIX_COMMENT
 			if (pInfo->m_pStrategyFound) {
 				comment_mode = 0;
-			} else {
+			}
+			else {
 				if (pInfo->m_pStrategy) {
 					switch (pInfo->m_pStrategy->GetStrategyColor()) {
 					case COLORIDX_COMMENT: comment_mode = 1; break;
@@ -1195,7 +1198,8 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 						if (comment_mode != 1) comment_mode = 0;
 						break;
 					}
-				} else {
+				}
+				else {
 					if (comment_mode != 1) comment_mode = 0;
 				}
 
@@ -1212,7 +1216,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			{
 				pInfo->m_cIndex.eColorIndex = COLORIDX_COMMENT;
 			}
-#endif  // NK_
+#endif // NK_
 
 			//1文字情報取得 $$高速化可能
 			CFigure& cFigure = pcFigureManager->GetFigure(&cLineStr.GetPtr()[pInfo->GetPosInLogic()],
@@ -1256,15 +1260,17 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 #ifdef NK_FIX_COMMENT
 			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
 				cBackType.FillBack(pInfo->m_gr,rcClip);
-			} else if (comment_mode) {
+			}
+			else if (comment_mode) {
 				if (cComment.GetBackColor() == cTextType.GetBackColor()) {
 					// カーソル行背景色とテキスト背景色が同じ場合は背景色で塗りつぶす
 					cBackType.FillBack(pInfo->m_gr,rcClip);
-				} else {
+				}
+				else {
 					cComment.FillBack(pInfo->m_gr,rcClip);
 				}
 			} else
-#endif  // NK_
+#endif // NK_
 			cBackType.FillBack(pInfo->m_gr,rcClip);
 		}
 		CTypeSupport cSelectType(this, COLORIDX_SELECT);
@@ -1296,7 +1302,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	if( !m_bMiniMap && pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
 #else
 	if( !m_bMiniMap ){
-#endif  // NK_
+#endif // NK_
 		GetTextDrawer().DispNoteLine(
 			pInfo->m_gr,
 			pInfo->m_pDispPos->GetDrawPos().y,

@@ -71,47 +71,47 @@ BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TC
 	ChangeCurrentDirectoryToExeDir();
 
 #ifdef NK_FIX_SELECTDIR
-  IFileOpenDialog *pFileOpenDialog;
-  HRESULT hr;
-  IShellItem *psiFolder;
-  IShellItem *psiParent;
-  LPWSTR lpszItem;
-  DWORD dwOptions;
+	IFileOpenDialog *pFileOpenDialog;
+	HRESULT hr;
+	IShellItem *psiFolder;
+	IShellItem *psiParent;
+	LPWSTR lpszItem;
+	DWORD dwOptions;
 
-  hr = ::CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER,
-                          IID_PPV_ARGS(&pFileOpenDialog));
-  if (FAILED(hr)) {
-    return FALSE;
-  }
+	hr = ::CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER,
+	                        IID_PPV_ARGS(&pFileOpenDialog));
+	if (FAILED(hr)) {
+		return FALSE;
+	}
 
-  SHCreateItemFromParsingName(szInitFolder, NULL, IID_PPV_ARGS(&psiFolder));
-  psiFolder->GetParent(&psiParent);
-  psiFolder->GetDisplayName(SIGDN_NORMALDISPLAY, &lpszItem);
+	SHCreateItemFromParsingName(szInitFolder, NULL, IID_PPV_ARGS(&psiFolder));
+	psiFolder->GetParent(&psiParent);
+	psiFolder->GetDisplayName(SIGDN_NORMALDISPLAY, &lpszItem);
 
-  pFileOpenDialog->SetFolder(psiParent);
-  pFileOpenDialog->SetFileName(lpszItem);
-  pFileOpenDialog->GetOptions(&dwOptions);
-  pFileOpenDialog->SetOptions(dwOptions | FOS_PICKFOLDERS);
+	pFileOpenDialog->SetFolder(psiParent);
+	pFileOpenDialog->SetFileName(lpszItem);
+	pFileOpenDialog->GetOptions(&dwOptions);
+	pFileOpenDialog->SetOptions(dwOptions | FOS_PICKFOLDERS);
 
-  hr = pFileOpenDialog->Show(hWnd);
-  if (SUCCEEDED(hr)) {
-    LPWSTR lpszPath;
-    IShellItem *psi;
+	hr = pFileOpenDialog->Show(hWnd);
+	if (SUCCEEDED(hr)) {
+		LPWSTR lpszPath;
+		IShellItem *psi;
 
-    hr = pFileOpenDialog->GetResult(&psi);
-    if (SUCCEEDED(hr)) {
-      psi->GetDisplayName(SIGDN_FILESYSPATH, &lpszPath);
-      auto_strcpy(strFolderName, lpszPath);
-      ::CoTaskMemFree(lpszPath);
-      psi->Release();
-    }
-  }
+		hr = pFileOpenDialog->GetResult(&psi);
+		if (SUCCEEDED(hr)) {
+			psi->GetDisplayName(SIGDN_FILESYSPATH, &lpszPath);
+			auto_strcpy(strFolderName, lpszPath);
+			::CoTaskMemFree(lpszPath);
+			psi->Release();
+		}
+	}
 
-  ::CoTaskMemFree(lpszItem);
-  psiParent->Release();
-  pFileOpenDialog->Release();
+	::CoTaskMemFree(lpszItem);
+	psiParent->Release();
+	pFileOpenDialog->Release();
 
-  return SUCCEEDED(hr) ? TRUE : FALSE;
+	return SUCCEEDED(hr) ? TRUE : FALSE;
 #else
 	// SHBrowseForFolder()関数に渡す構造体
 	BROWSEINFO bi;
@@ -138,7 +138,7 @@ BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TC
 		}
 	}
 	return FALSE;
-#endif  // NK_
+#endif // NK_
 }
 
 
@@ -599,7 +599,7 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 			hp.pszFont = _T(NK_RES_FONT_NAME ", 9");
 #else
 			hp.pszFont = _T("ＭＳ Ｐゴシック, 9");
-#endif  // NK_
+#endif // NK_
 			hp.clrForeground = hp.clrBackground = -1;
 			hp.rcMargins.left = hp.rcMargins.top = hp.rcMargins.right = hp.rcMargins.bottom = -1;
 			if( uCommandOrg == HELP_CONTEXTMENU ){

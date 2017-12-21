@@ -161,7 +161,8 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 			cmWork2.AppendString(exdirs.c_str());
 		}
 		cmWork3.SetString( temp.GetStringPtr() );
-	} else {
+	}
+	else {
 		TCHAR	szWorkFolder[MAX_PATH];
 		TCHAR	szWorkFile[MAX_PATH];
 		// 2003.08.01 Moca ファイル名はスペースなどは区切り記号になるので、""で囲い、エスケープする
@@ -174,7 +175,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 #else
 	cmWork2.SetString( cDlgGrep.m_szFile );
 	cmWork3.SetString( cDlgGrep.m_szFolder );
-#endif  // NK_
+#endif // NK_
 	cmWork1.Replace( L"\"", L"\"\"" );
 	cmWork2.Replace( _T("\""), _T("\"\"") );
 	cmWork3.Replace( _T("\""), _T("\"\"") );
@@ -198,7 +199,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	if( (count > 0) && cDlgGrep.m_bSubFolder )_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
 #else
 	if( cDlgGrep.m_bSubFolder					)_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
-#endif  // NK_
+#endif // NK_
 	if( cDlgGrep.m_sSearchOption.bLoHiCase		)_tcscat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
 	if( cDlgGrep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// 正規表現
 	if( cDlgGrep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// 行を出力する
@@ -790,7 +791,8 @@ LRESULT CControlTray::DispatchEvent(
 						type->m_nColorInfoArrNum = types[0]->m_nColorInfoArrNum;  // 色設定配列の有効数
 						memcpy_raw(type->m_ColorInfoArr, types[0]->m_ColorInfoArr, sizeof(type->m_ColorInfoArr));
 						//si::logln(L"  *** add type : name %s, ext %s", type->m_szTypeName, type->m_szTypeExts);
-					} else {
+					}
+					else {
 						type = new STypeConfig();
 						*type = *types[0]; // 基本をコピー
 						//si::logln(L"  *** add type : common");
@@ -798,7 +800,7 @@ LRESULT CControlTray::DispatchEvent(
 #else
 					STypeConfig* type = new STypeConfig();
 					*type = *types[0]; // 基本をコピー
-#endif  // NK_
+#endif // NK_
 					type->m_nIdx = nInsert;
 					type->m_id = (::GetTickCount() & 0x3fffffff) + nInsert * 0x10000;
 #ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
@@ -827,7 +829,7 @@ LRESULT CControlTray::DispatchEvent(
 						}
 					}
 					auto_strcpy( type->m_szTypeExts, _T("") );
-#endif  // NK_
+#endif // NK_
 					type->m_nRegexKeyMagicNumber = CRegexKeyword::GetNewMagicNumber();
 					types.resize( m_pShareData->m_nTypesCount + 1 );
 					int nTypeSizeOld = m_pShareData->m_nTypesCount;
@@ -1239,7 +1241,7 @@ bool CControlTray::OpenNewEditor(
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 
 	/* 共有データ構造体のアドレスを返す */
 	DLLSHAREDATA*	pShareData = &GetDllShareData();
@@ -1462,7 +1464,7 @@ bool CControlTray::OpenNewEditor2(
 {
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif  // NK_
+#endif // NK_
 
 	DLLSHAREDATA*	pShareData;
 

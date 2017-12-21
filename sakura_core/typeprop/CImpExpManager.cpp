@@ -585,7 +585,7 @@ bool CImpExpColors::Import( const wstring& sFileName, wstring& sErrMsg )
 	CShareData_IO::IO_ColorSet( &cProfile, szSecColor, m_ColorInfoArr, true );
 #else
 	CShareData_IO::IO_ColorSet( &cProfile, szSecColor, m_ColorInfoArr );
-#endif  // NK_
+#endif // NK_
 
 	return true;
 }

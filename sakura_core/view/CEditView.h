@@ -69,7 +69,7 @@
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 //#include <mutex>
 #include <process.h>
-#endif  // NK_
+#endif // NK_
 
 class CViewFont;
 class CRuler;
@@ -481,7 +481,7 @@ public:
 #else
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
-#endif  // NK_
+#endif // NK_
 
 private:
 	/* インクリメンタルサーチ */ 
@@ -596,7 +596,7 @@ public:
 	int GetLineMargin() const {
 		return GetLineSpace() / 2;
 	}
-#endif  // NK_
+#endif // NK_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         アクセサ                            //
@@ -787,7 +787,7 @@ public:
 	void RequestUpdateWindow();
 	int m_ignore_update_window = 0;  // UpdateWindowを無視する
 	bool m_request_update_window = false;
-#endif  // NK_
+#endif // NK_
 
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 public:
@@ -867,7 +867,7 @@ public:
 
 	CKetaXInt nMaxLineKetas_ = 0;  // 前更新時の折り返し桁数
 
-#endif  // NK_
+#endif // NK_
 };
 
 

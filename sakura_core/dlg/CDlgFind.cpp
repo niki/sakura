@@ -27,7 +27,7 @@
 #ifdef NK_FIX_FINDDLG
 #include "window/CEditWnd.h"
 #include "uiparts/CMenuDrawer.h"
-#endif  // NK_
+#endif // NK_
 
 //検索 CDlgFind.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//11800
@@ -84,7 +84,7 @@ CDlgFind::CDlgFind()
 	}
 	
 	m_hMenuPopUp = hMenuPopUp;
-#endif  // NK_
+#endif // NK_
 	return;
 }
 
@@ -92,7 +92,7 @@ CDlgFind::CDlgFind()
 CDlgFind::~CDlgFind() {
 	::DestroyMenu(m_hMenuPopUp);
 }
-#endif  // NK_
+#endif // NK_
 
 #ifdef NK_FIX_FINDDLG
 /** 標準以外のメッセージを捕捉する
@@ -128,7 +128,8 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 						/* 次を検索 */
 						pcEditView->GetCommander().HandleCommand(F_SEARCH_NEXT, true, (LPARAM)GetHwnd(), 0, 0, 0);
 						pcEditView->Redraw();
-					} else if (nId == 2) {
+					}
+					else if (nId == 2) {
 						/* 前を検索 */
 						pcEditView->GetCommander().HandleCommand(F_SEARCH_PREV, true, (LPARAM)GetHwnd(), 0, 0, 0);
 						pcEditView->Redraw();
@@ -167,18 +168,21 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 				pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
 				                                         (LPARAM)GetHwnd(), 0, 0, 0);
 				pcEditView->Redraw();
-			} else if (nFuncCode == F_DOWN) {
+			}
+			else if (nFuncCode == F_DOWN) {
 				pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
 				                                         (LPARAM)GetHwnd(), 0, 0, 0);
 				pcEditView->Redraw();
-			} else if (nFuncCode == F_SEARCH_PREV) {
+			}
+			else if (nFuncCode == F_SEARCH_PREV) {
 				int nRet = GetData();
 				if (0 < nRet) {
 					pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
 					                                         (LPARAM)GetHwnd(), 0, 0, 0);
 					pcEditView->Redraw();
 				}
-			} else if (nFuncCode == F_SEARCH_NEXT) {
+			}
+			else if (nFuncCode == F_SEARCH_NEXT) {
 				int nRet = GetData();
 				if (0 < nRet) {
 					pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
@@ -217,8 +221,10 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 	return result;
 }
 
-void CDlgFind::SetStatus(int stat) {
-	auto fnClearBG = [](HDC hdc, int x, int y, int w, int h) {
+void CDlgFind::SetStatus(int stat)
+{
+	auto fnClearBG = [](HDC hdc, int x, int y, int w, int h)
+	{
 		HBRUSH hBrush = ::CreateSolidBrush(::GetSysColor(COLOR_BTNFACE));
 		HBRUSH hBrushOld = (HBRUSH)::SelectObject(hdc, hBrush);
 
@@ -228,7 +234,8 @@ void CDlgFind::SetStatus(int stat) {
 		::SelectClipRgn(hdc, NULL);
 	};
 	
-	auto fnDrawSysIcon = [](HDC hdc, int x, int y, LPCTSTR iconName) {
+	auto fnDrawSysIcon = [](HDC hdc, int x, int y, LPCTSTR iconName)
+	{
 		HICON hIcon = ::LoadIcon(NULL, iconName);
 		::DrawIcon(hdc, x, y, hIcon);
 		::DestroyIcon(hIcon);
@@ -254,7 +261,8 @@ void CDlgFind::SetStatus(int stat) {
 	HDC hdc = ::GetDC(GetHwnd());
 	int iStretchModeOld = ::SetStretchBltMode(hdc, HALFTONE);
 	
-	auto fnSrcCopyBlt = [=](HWND hwnd) {
+	auto fnSrcCopyBlt = [=](HWND hwnd)
+	{
 		::StretchBlt(hdc, iconX, iconY, toWidth, toHeight, hdc, baseIconX, baseIconY, fromWidth, fromHeight, SRCCOPY);
 		fnClearBG(hdc, baseIconX, baseIconY, fromWidth, fromHeight);  // 不要になった個所を消す
 		::UpdateWindow(hwnd);
@@ -270,7 +278,8 @@ void CDlgFind::SetStatus(int stat) {
 		
 		bClear = false;
 		
-	} else if (stat == -1) {  // 正規表現失敗
+	}
+	else if (stat == -1) {  // 正規表現失敗
 		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_ERROR);
 		fnSrcCopyBlt(GetHwnd());
 		
@@ -278,7 +287,8 @@ void CDlgFind::SetStatus(int stat) {
 		
 		bClear = false;
 		
-	} else if (stat == -2) {  // 前方
+	}
+	else if (stat == -2) {  // 前方
 		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_WARNING);
 		fnSrcCopyBlt(GetHwnd());
 		
@@ -286,7 +296,8 @@ void CDlgFind::SetStatus(int stat) {
 		
 		bClear = false;
 		
-	} else if (stat == -3) {  // 後方
+	}
+	else if (stat == -3) {  // 後方
 		fnDrawSysIcon(hdc, baseIconX, baseIconY, IDI_WARNING);
 		fnSrcCopyBlt(GetHwnd());
 		
@@ -308,7 +319,7 @@ void CDlgFind::SetStatus(int stat) {
 	
 	//si::logln(L"   **** SetStatus stat=%d", stat);
 }
-#endif  // NK_
+#endif // NK_
 
 /*!
 	コンボボックスのドロップダウンメッセージを捕捉する
@@ -362,7 +373,7 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ), 2 );
 #else
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ) );
-#endif  // NK_
+#endif // NK_
 	m_cFontText.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT ) );
 	return bRet;
 }
@@ -376,7 +387,7 @@ BOOL CDlgFind::OnDestroy()
 	if (!m_inputText.empty()) {  // 入力中の検索は履歴に残さない
 		CSearchKeywordManager().AddToSearchKeyArr( m_strText.c_str() );
 	}
-#endif  // NK_
+#endif // NK_
 	m_cFontText.ReleaseOnDestroy();
 	return CDialog::OnDestroy();
 }
@@ -420,7 +431,7 @@ void CDlgFind::SetData( void )
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_NOTIFYNOTFOUND, FALSE );
 #else
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_NOTIFYNOTFOUND, m_bNOTIFYNOTFOUND );
-#endif  // NK_
+#endif // NK_
 
 	// From Here Jun. 29, 2001 genta
 	// 正規表現ライブラリの差し替えに伴う処理の見直し
@@ -448,7 +459,7 @@ void CDlgFind::SetData( void )
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_bAutoCloseDlgFind, FALSE );
 #else
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_bAutoCloseDlgFind, m_pShareData->m_Common.m_sSearch.m_bAutoCloseDlgFind );
-#endif  // NK_
+#endif // NK_
 
 	/* 先頭（末尾）から再検索 2002.01.26 hor */
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_SEARCHALL, m_pShareData->m_Common.m_sSearch.m_bSearchAll );
@@ -462,9 +473,9 @@ void CDlgFind::SetData( void )
 		SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView, CDialog::DLGPLACE_TR);
 #else
 		SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
-#endif
+#endif // NK_
 	}
-#endif  // NK_
+#endif // NK_
 
 #ifdef NK_FIX_FINDDLG
 	// 最後に検索した文字列をマークする 2017.6.28 
@@ -487,9 +498,9 @@ void CDlgFind::SetData( void )
 		pcEditView->Redraw();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 		pcEditView->SB_Marker_Clear(1701);
-#endif  // NK_
+#endif // NK_
 	}
-#endif  // NK_
+#endif // NK_
 
 	return;
 }
@@ -630,7 +641,7 @@ int CDlgFind::InstantInput( void )
 			pcEditView->Redraw();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 			//pcEditView->SB_Marker_CallPaint(1502);
-#endif  // NK_
+#endif // NK_
 			return -1;
 		} else {
 			// nop
@@ -654,7 +665,7 @@ int CDlgFind::InstantInput( void )
 		//-pcEditView->Redraw();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 		//pcEditView->SB_Marker_CallPaint(1503);
-#endif  // NK_
+#endif // NK_
 		pcEditView->GetCommander().HandleCommand((EFunctionCode)(F_SEARCH_NEXT | FA_FROMKEYBOARD), true,
 		                                         (LPARAM)GetHwnd(), 0, 0, 0);
 		return 1;
@@ -663,12 +674,12 @@ int CDlgFind::InstantInput( void )
 		pcEditView->Redraw();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 		//pcEditView->SB_Marker_CallPaint(1504);
-#endif  // NK_
+#endif // NK_
 		SetStatus(0);
 		return 0;
 	}
 }
-#endif  // NK_
+#endif // NK_
 
 
 
@@ -748,7 +759,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			OkMessage( GetHwnd(), LS(STR_DLGFIND1) );	// 検索条件を指定してください。
 		}
 		return TRUE;
-#endif  // NK_
+#endif // NK_
 	case IDC_BUTTON_SEARCHNEXT:		/* 下検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDOK]→[IDC_BUTTON_SERACHNEXT]に変更
 		/* ダイアログデータの取得 */
 		nRet = GetData();
@@ -797,7 +808,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			}
 		}
 		return TRUE;
-#endif  // NK_
+#endif // NK_
 	case IDCANCEL:
 		CloseDialog( 0 );
 		return TRUE;

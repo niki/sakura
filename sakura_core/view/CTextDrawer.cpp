@@ -56,7 +56,7 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, int marginy, const wchar
 	}
 #ifdef NK_OUTPUT_DEBUG_STRING
 	//si::logln(L"DispText");
-#endif  // NK_
+#endif // NK_
 	int x=pDispPos->GetDrawPos().x;
 	int y=pDispPos->GetDrawPos().y;
 
@@ -145,7 +145,7 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, int marginy, const wchar
 			nDrawX,					//X
 #ifdef NK_LINE_CENTERING
 			m_pEditView->GetLineMargin() +
-#endif  // NK_
+#endif // NK_
 			y + marginy,			//Y
 			ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
 			&rcClip,
@@ -305,7 +305,8 @@ void CTextDrawer::DispNoteLine(
 	//! @param colText テキスト色
 	//! @param colBase ベースとなる色
 	//! @return 合成後の色
-	auto fnMeargeColor = [](COLORREF colText, COLORREF colBase, int blendPer) {
+	auto fnMeargeColor = [](COLORREF colText, COLORREF colBase, int blendPer)
+	{
 		COLORREF c1 = colText;
 		COLORREF c2 = colBase;
 		float blendPerN = 1.0f / 100.0f * blendPer;
@@ -325,7 +326,7 @@ void CTextDrawer::DispNoteLine(
 	COLORREF col1 = cTextType.GetTextColor();
 	COLORREF col2 = cTextType.GetBackColor();
 	COLORREF crText = fnMeargeColor(col1, col2, nBlendPer);
-#endif  // NK_
+#endif // NK_
 
 	CTypeSupport cNoteLine(pView, COLORIDX_NOTELINE);
 	if( cNoteLine.IsDisp() ){
@@ -333,7 +334,7 @@ void CTextDrawer::DispNoteLine(
 		gr.SetPen( crText );
 #else
 		gr.SetPen( cNoteLine.GetTextColor() );
-#endif  // NK_
+#endif // NK_
 		const int nLineHeight = pView->GetTextMetrics().GetHankakuDy();
 		const int left = nLeft;
 		const int right = nRight;
@@ -399,7 +400,7 @@ void CTextDrawer::DispLineNumber(
 {
 #ifdef NK_OUTPUT_DEBUG_STRING
 	//si::logln(L"DispLineNumber(%d)\n", nLineNum+1);
-#endif  // NK_
+#endif // NK_
 	//$$ 高速化：SearchLineByLayoutYにキャッシュを持たせる
 	const CLayout*	pcLayout = CEditDoc::GetInstance(0)->m_cLayoutMgr.SearchLineByLayoutY( nLineNum );
 
@@ -422,7 +423,7 @@ void CTextDrawer::DispLineNumber(
 			: cEvenLineBg.IsDisp() && nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() && nLineNum % 2 == 1
 #else
 			: cEvenLineBg.IsDisp() && nLineNum % 2 == 1
-#endif  // NK_
+#endif // NK_
 				? cEvenLineBg
 				: cTextType);
 
@@ -542,7 +543,7 @@ void CTextDrawer::DispLineNumber(
 				drawNumTop,
 #ifdef NK_LINE_CENTERING
 				pView->GetLineMargin() +
-#endif  // NK_
+#endif // NK_
 				y,
 				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 				&rcLineNum,
@@ -557,7 +558,7 @@ void CTextDrawer::DispLineNumber(
 			
 			bDispLineNumTrans = false;
 		}
-#endif  // NK_
+#endif // NK_
 	}
 	else if( CTypeSupport(pView,COLORIDX_GYOU).IsDisp() ){ /* 行番号表示／非表示 */
 		SFONT sFont = cColorType.GetTypeFont();
@@ -644,7 +645,7 @@ void CTextDrawer::DispLineNumber(
 			drawNumTop,
 #ifdef NK_LINE_CENTERING
 			pView->GetLineMargin() +
-#endif  // NK_
+#endif // NK_
 			y + nHeightMargin,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcLineNum,
@@ -701,7 +702,7 @@ void CTextDrawer::DispLineNumber(
 			::LineTo( gr, 1, y + nLineHeight );
 			gr.PopPen();
 		}
-#endif  // NK_
+#endif // NK_
 
 		//DIFFマーク描画
 		if( !pView->m_bMiniMap ){
@@ -724,7 +725,7 @@ void CTextDrawer::DispLineNumber(
 	if( !pView->m_bMiniMap && nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
 #else
 	if( !pView->m_bMiniMap ){
-#endif  // NK_
+#endif // NK_
 		int left   = bDispLineNumTrans ? 0 : rcLineNum.right;
 		int right  = pView->GetTextArea().GetAreaLeft();
 		int top    = y;

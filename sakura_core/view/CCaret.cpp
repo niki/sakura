@@ -177,7 +177,7 @@ CLayoutInt CCaret::MoveCursor(
 
 #ifdef NK_OUTPUT_DEBUG_STRING
 	si::logln(L"MoveCursor start");
-#endif  // NK_
+#endif // NK_
 
 	if( m_pEditView->GetSelectionInfo().IsMouseSelecting() ){	// 範囲選択中
 		nCaretMarginY = 0;
@@ -193,7 +193,7 @@ CLayoutInt CCaret::MoveCursor(
 		if( 1 > nCaretMarginY ){
 			nCaretMarginY = 1;
 		}
-#endif  // NK_
+#endif // NK_
 	}
 	// 2004.04.02 Moca 行だけ有効な座標に修正するのを厳密に処理する
 	GetAdjustCursorPos( &ptWk_CaretPos );
@@ -221,7 +221,7 @@ CLayoutInt CCaret::MoveCursor(
 #else
 	nScrollMarginRight = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(SCROLLMARGIN_RIGHT));
 	nScrollMarginLeft = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(SCROLLMARGIN_LEFT));
-#endif  // NK_
+#endif // NK_
 
 	// 2010.08.24 Moca 幅が狭い場合のマージンの調整
 	{
@@ -248,7 +248,7 @@ CLayoutInt CCaret::MoveCursor(
 				                    : (nScrollColNum + kSize - 1) / kSize * kSize;
 			}
 		}
-#endif  // NK_
+#endif // NK_
 	}
 	else if( 0 < area.GetViewLeftCol() &&
 		ptWk_CaretPos.GetX() < area.GetViewLeftCol() + nScrollMarginLeft
@@ -263,7 +263,7 @@ CLayoutInt CCaret::MoveCursor(
 				                    : (nScrollColNum + kSize - 1) / kSize * kSize;
 			}
 		}
-#endif  // NK_
+#endif // NK_
 		if( 0 > area.GetViewLeftCol() - nScrollColNum ){
 			nScrollColNum = area.GetViewLeftCol();
 		}
@@ -341,7 +341,7 @@ CLayoutInt CCaret::MoveCursor(
 			nScrollRowNum =
 				-(ptWk_CaretPos.y - m_pEditView->GetTextArea().GetViewTopLine()) + (m_pEditView->GetTextArea().m_nViewRowNum - nCaretMarginY - 2);
 		}
-#endif  // NK_
+#endif // NK_
 	}
 #ifdef NK_FIX_FLICKER
 	// 水平・垂直のスクロールがないときは画面内のカーソル移動として描画を行う
@@ -359,7 +359,7 @@ CLayoutInt CCaret::MoveCursor(
 		//	nFinalDrawFlag |= PAINT_LINENUMBER;
 		//}
 	}
-#endif  // NK_
+#endif // NK_
 	//	To Here 2007.07.28 じゅうじ
 	if( bScroll ){
 		/* スクロール */
@@ -374,7 +374,9 @@ CLayoutInt CCaret::MoveCursor(
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 
-				if (0 > nViewTopLine) nViewTopLine = CLayoutInt(0);
+				if (0 > nViewTopLine) {
+					nViewTopLine = CLayoutInt(0);
+				}
 				
 				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
@@ -383,7 +385,7 @@ CLayoutInt CCaret::MoveCursor(
 				nFinalDrawFlag |= PAINT_ALL;
 				
 			}
-#endif  // NK_
+#endif // NK_
 
 			if( m_pEditView->GetDrawSwitch() ){
 				m_pEditView->InvalidateRect( NULL );
@@ -400,7 +402,9 @@ CLayoutInt CCaret::MoveCursor(
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 
-				if (0 > nViewTopLine) nViewTopLine = CLayoutInt(0);
+				if (0 > nViewTopLine) {
+					nViewTopLine = CLayoutInt(0);
+				}
 				
 				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
@@ -409,7 +413,7 @@ CLayoutInt CCaret::MoveCursor(
 				nFinalDrawFlag |= PAINT_ALL;
 				
 			} else { // @1
-#endif  // NK_
+#endif // NK_
 			RECT	rcClip;
 			RECT	rcClip2;
 			RECT	rcScroll;
@@ -445,7 +449,7 @@ CLayoutInt CCaret::MoveCursor(
 			}
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 			} //@1
-#endif  // NK_
+#endif // NK_
 		}
 
 #ifndef NK_FIX_FLICKER
@@ -475,7 +479,7 @@ CLayoutInt CCaret::MoveCursor(
 			}
 		}
 	}
-#endif  // NK_
+#endif // NK_
 
 	/* カーソル行アンダーラインのON */
 	//CaretUnderLineON( bDraw ); //2002.02.27 Del By KK アンダーラインのちらつきを低減
@@ -485,7 +489,7 @@ CLayoutInt CCaret::MoveCursor(
 
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 		GetDllShareData().m_sFlags.m_nCenteringCursor = 0;
-#endif  // NK_
+#endif // NK_
 
 		/* ルーラの再描画 */
 		HDC		hdc = m_pEditView->GetDC();
@@ -517,7 +521,7 @@ CLayoutInt CCaret::MoveCursor(
 
 #ifdef NK_OUTPUT_DEBUG_STRING
 	si::logln(L"MoveCursor finish");
-#endif  // NK_
+#endif // NK_
 
 	return nScrollRowNum;
 
@@ -657,7 +661,7 @@ void CCaret::ShowEditCaret()
 				nCaretHeight += m_pEditView->GetLineSpace();
 			}
 		}
-#endif  // NK_
+#endif // NK_
 		if( m_pEditView->IsInsMode() ){
 			nCaretWidth = 2;
 		}else{
@@ -694,12 +698,13 @@ void CCaret::ShowEditCaret()
 				nCaretHeight += m_pEditView->GetLineSpace();
 			}
 		}
-#endif  // NK_
+#endif // NK_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
 #ifdef NK_FIX_CARET_WIDTH
 			if (m_pEditView->IsImeON()) {
 				nCaretWidth = 2;
-			} else {
+			}
+			else {
 				nCaretWidth = 1;
 			}
 #else
@@ -819,7 +824,7 @@ void CCaret::ShowEditCaret()
 #ifdef NK_FIX_CUR_BACK_DRAW
 	// 行番号の再描画
 	m_pEditView->Call_OnPaint( PAINT_LINENUMBER, false );
-#endif
+#endif // NK_
 
 }
 
@@ -958,7 +963,7 @@ void CCaret::ShowCaretPosInfo()
 				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName2());
 #else
 				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName());
-#endif  // NK_
+#endif // NK_
 			}
 		}
 	}
@@ -1066,7 +1071,8 @@ void CCaret::ShowCaretPosInfo()
 		CKetaXInt tabNum = m_pEditView->m_pcEditDoc->m_cLayoutMgr.GetTabSpaceKetas();
 		if (ins_space) {
 			auto_sprintf( szText_TabSize, _T("Spaces: %d"), tabNum );
-		} else {
+		}
+		else {
 			auto_sprintf( szText_TabSize, _T("Tab: %d"), tabNum );
 		}
 		::StatusBar_SetText( hwndStatusBar, 6/*7*/ | 0,             szText_TabSize );  //	タブサイズ
@@ -1094,7 +1100,7 @@ void CCaret::ShowCaretPosInfo()
 		::StatusBar_SetText( hwndStatusBar, 4 | 0,             pszCodeName );
 		::StatusBar_SetText( hwndStatusBar, 5 | SBT_OWNERDRAW, _T("") );
 		::StatusBar_SetText( hwndStatusBar, 6 | 0,             szText_6 );
-#endif  // NK_
+#endif // NK_
 	}
 
 }
@@ -1192,7 +1198,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 	}
 #ifdef NK_FIX_FLICKER
 	m_pEditView->BeginIgnoreUpdateWindow();
-#endif  // NK_
+#endif // NK_
 	const CLayoutInt nScrollLines = MoveCursor(	ptTo,
 								m_pEditView->GetDrawSwitch() /* TRUE */,
 								_CARETMARGINRATE,
@@ -1200,7 +1206,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 								bVertLineDoNotOFF );
 #ifdef NK_FIX_FLICKER
 	m_pEditView->EndIgnoreUpdateWindow();
-#endif  // NK_
+#endif // NK_
 	return nScrollLines;
 }
 

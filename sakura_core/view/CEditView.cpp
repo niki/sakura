@@ -63,12 +63,12 @@
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 #ifdef _OEPNMP
 #include <omp.h>
-#endif
+#endif // _OEPNMP
 #include <process.h>
 #include "_main/CAppMode.h"
 #include "CEditApp.h"
 #include "CGrepAgent.h" // use CEditApp.h
-#endif  // NK_
+#endif // NK_
 
 #ifndef IMR_DOCUMENTFEED
 #define IMR_DOCUMENTFEED 0x0007
@@ -171,7 +171,7 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 , m_hAtokModule(NULL)
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 , SBMarker_(new ScrBarMarker(this))
-#endif  // NK_
+#endif // NK_
 {
 }
 
@@ -512,6 +512,7 @@ LRESULT CEditView::DispatchEvent(
 			SBMarker_->nDrawRequestCount_ = std::max(SBMarker_->nDrawRequestCount_ - 1, 0);
 		}
 		return 0L;
+		
 	case WM_APP_SCRBAR_ENDPAINT: // スクロールバー描画終了
 		{
 			SB_Marker_Trace(L"WM_APP_SCRBAR_ENDPAINT");
@@ -521,12 +522,12 @@ LRESULT CEditView::DispatchEvent(
 			if (m_pcEditWnd->m_cDlgFind.GetHwnd() && SBMarker_->nSearchFoundLine_ > 0) {
 				m_pcEditWnd->m_cDlgFind.SetStatus(SBMarker_->nSearchFoundLine_);
 			}
-#endif  // NK_
+#endif // NK_
 
 			::UpdateWindow(m_hwndVScrollBar);
 		}
 		return 0L;
-#endif  // NK_
+#endif // NK_
 	case WM_MOUSEWHEEL:
 		if( m_pcEditWnd->DoMouseWheel( wParam, lParam ) ){
 			return 0L;
@@ -848,7 +849,7 @@ LRESULT CEditView::DispatchEvent(
 #ifdef NK_FIX_SUPPRESSION_OF_WM_ERASEBKGND
 	case WM_ERASEBKGND:  // 背景の描画を処理したことにする
 		return 1L;
-#endif  // NK_
+#endif // NK_
 
 	case WM_CLOSE:
 //		MYTRACE( _T("	WM_CLOSE\n") );
@@ -1138,7 +1139,7 @@ void CEditView::OnSize( int cx, int cy )
 	}
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	SB_Marker_CallPaint(1901);
-#endif  // NK_
+#endif // NK_
 	return;
 }
 
@@ -1184,7 +1185,7 @@ void CEditView::OnSetFocus( void )
 
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	SB_Marker_CallPaint(1900);
-#endif  // NK_
+#endif // NK_
 }
 
 
@@ -1477,7 +1478,7 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 	CLogicInt		nLineLen2;
 #ifndef NK_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // NK_
+#endif // NK_
 
 
 	/* テキストが選択されているか */
@@ -1487,7 +1488,7 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 
 #ifdef NK_FIX_WAITCUESOR
 	CWaitCursor cWaitCursor( GetHwnd() );
-#endif  // NK_
+#endif // NK_
 
 	CLogicPoint ptFromLogic;	// 2009.07.18 ryoji Logicで記憶するように変更
 	m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
@@ -2609,7 +2610,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			 * GetTextMetrics().GetHankakuDy() + GetTextMetrics().GetHankakuHeight();
 #ifdef NK_LINE_CENTERING
 		nUnderLineY += GetLineMargin();
-#endif  // NK_
+#endif // NK_
 	}
 	// To Here 2007.09.09 Moca
 
@@ -2638,7 +2639,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 				0,//GetTextArea().GetLeftYohaku(),
 #else
 				GetTextArea().GetAreaLeft(),
-#endif  // NK_
+#endif // NK_
 				nUnderLineY,
 				NULL
 			);
@@ -2681,7 +2682,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += GetLineMargin();
 				}
-#endif  // NK_
+#endif // NK_
 			}else{
 				nUnderLineY = GetTextArea().GetAreaTop() + (Int)(nY) * GetTextMetrics().GetHankakuDy();
 #ifdef NK_LINE_CENTERING
@@ -2691,7 +2692,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
 					nUnderLineY += GetLineMargin();
 				}
-#endif  // NK_
+#endif // NK_
 			}
 
 			GetCaret().m_cUnderLine.Lock();
@@ -2702,7 +2703,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 			ps.rcPaint.left = 0;//GetTextArea().GetLeftYohaku();
 #else
 			ps.rcPaint.left = 0;
-#endif  // NK_
+#endif // NK_
 			ps.rcPaint.right = GetTextArea().GetAreaRight();
 			int height;
 			if( bDrawPaint && m_nOldUnderLineYHeight != 0 ){
@@ -3003,10 +3004,12 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 }
 
 #ifdef NK_FIX_FLICKER
-void CEditView::BeginIgnoreUpdateWindow() {
+void CEditView::BeginIgnoreUpdateWindow()
+{
 	m_ignore_update_window++;
 }
-void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
+void CEditView::EndIgnoreUpdateWindow(bool bUpdate)
+{
 	if (m_ignore_update_window == 1 && bUpdate) {
 		if (m_request_update_window) {
 			m_request_update_window = false;
@@ -3015,21 +3018,24 @@ void CEditView::EndIgnoreUpdateWindow(bool bUpdate) {
 	}
 	m_ignore_update_window = std::max(m_ignore_update_window - 1, 0);
 }
-void CEditView::RequestUpdateWindow() {
+void CEditView::RequestUpdateWindow()
+{
 	m_request_update_window = true;
 }
-#endif  // NK_
+#endif // NK_
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 //----------------------
 // キャッシュ作成
 //----------------------
-unsigned __stdcall SB_Marker_BuildThread(void *arg) {
+unsigned __stdcall SB_Marker_BuildThread(void *arg)
+{
 	CEditView *pEditView = (CEditView *)arg;
 
 	// 構築時のキーを記録
 	if (pEditView->m_sSearchPattern.GetKey()) {
 		pEditView->SBMarker_->strKey_ = pEditView->m_sSearchPattern.GetKey();
-	} else {
+	}
+	else {
 		pEditView->SBMarker_->strKey_ = _T("");
 	}
 	
@@ -3075,7 +3081,8 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg) {
 			if (bNoTextWrap) {  // 折り返しなし
 				// ロジック行＝レイアウト行
 				nLayoutY = nLogicY;
-			} else {
+			}
+			else {
 				// ロジック行→レイアウト行
 				CLayoutPoint ptLayout;
 				pEditView->m_pcEditDoc->m_cLayoutMgr.LogicToLayout(/*CLogicPoint*/ {0, nLogicY}, &ptLayout,
@@ -3091,7 +3098,8 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg) {
 			//rSBMarker.Add(nLayoutY, uMarkMagic);   // ブックマーク
 			
 			nLineHint = nLayoutY;
-		} else {
+		}
+		else {
 			nLineHint++;
 		}
 
@@ -3118,7 +3126,8 @@ end_thread:
 //----------------------
 // キャッシュ描画
 //----------------------
-unsigned __stdcall SB_Marker_DrawThread(void *arg) {
+unsigned __stdcall SB_Marker_DrawThread(void *arg)
+{
 	CEditView *pEditView = (CEditView *)arg;
 
 	/* 垂直スクロールバー */
@@ -3155,7 +3164,8 @@ start_thread:
 		int y = nBarTop;
 		if (bEnable) {
 			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines * nBarHeight);
-		} else {
+		}
+		else {
 			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
 			           pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
 		}
@@ -3208,7 +3218,8 @@ start_thread:
 
 					if (bEnable) {
 						y += (int)((float)(ln & NK_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight);
-					} else {
+					}
+					else {
 						y +=
 						    (int)((float)(ln & NK_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
 					}
@@ -3222,7 +3233,8 @@ start_thread:
 						// スクロールボックスに被らないように補正
 						if (y2 < nBarTop) {
 							margin = nBarTop - y2;
-						} else if (y2 + foundHeight > nBarTop + nBarHeight) {
+						}
+						else if (y2 + foundHeight > nBarTop + nBarHeight) {
 							margin = (nBarTop + nBarHeight) - (y2 + foundHeight); 
 						}
 						gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + foundWidth, y2 + foundHeight + margin}, clr);
@@ -3236,7 +3248,8 @@ start_thread:
 						// スクロールボックスに被らないように補正
 						if (y2 < nBarTop) {
 							margin = nBarTop - y2;
-						} else if (y2 + markHeight > nBarTop + nBarHeight) {
+						}
+						else if (y2 + markHeight > nBarTop + nBarHeight) {
 							margin = (nBarTop + nBarHeight) - (y2 + markHeight); 
 						}
 						gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + markWidth, y2 + markHeight + margin}, clr);
@@ -3290,7 +3303,8 @@ CEditView::ScrBarMarker::ScrBarMarker(CEditView *pView)
 //----------------------
 //
 //----------------------
-CEditView::ScrBarMarker::~ScrBarMarker() {
+CEditView::ScrBarMarker::~ScrBarMarker()
+{
 	WaitForBuild(true);
 	WaitForDraw(true);
 }
@@ -3298,7 +3312,8 @@ CEditView::ScrBarMarker::~ScrBarMarker() {
 //----------------------
 // 更新要求
 //----------------------
-void CEditView::ScrBarMarker::CallPaint(int foo) {
+void CEditView::ScrBarMarker::CallPaint(int foo)
+{
 	SB_Marker_Trace(L"ScrBarMarker::CallPaint (%d)", foo);
 	if (!bBuildThreadRunning_) {
 		DrawRequest();
@@ -3308,7 +3323,8 @@ void CEditView::ScrBarMarker::CallPaint(int foo) {
 //----------------------
 // クリア
 //----------------------
-void CEditView::ScrBarMarker::Clear(int foo) {
+void CEditView::ScrBarMarker::Clear(int foo)
+{
 	SB_Marker_Trace(L"ScrBarMarker::Clear (%d)", foo);
 	Build(/*bCacheClear =*/ true, foo);
 }
@@ -3316,7 +3332,8 @@ void CEditView::ScrBarMarker::Clear(int foo) {
 //----------------------
 // 再構築
 //----------------------
-void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo) {
+void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo)
+{
 	if (pEditView_->m_bMiniMap) return;
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 	
@@ -3349,7 +3366,8 @@ void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo) {
 		hBuildThread_ = (HANDLE)_beginthreadex(NULL, 0, &SB_Marker_BuildThread, (void *)pEditView_, 0, NULL);
 		::Sleep(10);
 		SB_Marker_Trace(L"ScrBarMarker::Build (%d) start: %d", foo, vLines_.size());
-	} else {
+	}
+	else {
 		if (bBuildThreadRunning_) {
 			// キャッシュ作成中
 			SB_Marker_Trace(L"ScrBarMarker::Build (%d) create wait...", foo);
@@ -3365,7 +3383,8 @@ void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo) {
 //----------------------
 // 描画リクエスト
 //----------------------
-void CEditView::ScrBarMarker::DrawRequest() {
+void CEditView::ScrBarMarker::DrawRequest()
+{
 	nDrawRequestCount_++;
 	SB_Marker_Trace(L"  ? nDrawRequestCount_ = %d", nDrawRequestCount_);
 	::PostMessage(pEditView_->GetHwnd(), WM_APP_SCRBAR_PAINT, 0, 0);
@@ -3374,7 +3393,8 @@ void CEditView::ScrBarMarker::DrawRequest() {
 //----------------------
 // 描画
 //----------------------
-void CEditView::ScrBarMarker::Draw() {
+void CEditView::ScrBarMarker::Draw()
+{
 	if (pEditView_->m_bMiniMap) return;
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 
@@ -3415,20 +3435,23 @@ void CEditView::ScrBarMarker::Draw() {
 //----------------------
 // 登録
 //----------------------
-bool CEditView::ScrBarMarker::Add(int nLayoutY, uint32_t magic) {
+bool CEditView::ScrBarMarker::Add(int nLayoutY, uint32_t magic)
+{
 	if (magic == 0) return false;
 
 	if (vLines_.empty()) {
 		vLines_.push_back(nLayoutY | magic); // 空なら先頭に追加
 		SB_Marker_Trace(L"ScrBarMarker::Add, Append first");
-	} else {
+	}
+	else {
 		auto it = vLines_.begin();
 		while (it != vLines_.end()) {
 			if (((*it) & NK_SCRBAR_LINEN_MASK) == nLayoutY) {  // すでに登録されている行がある
 				if ((*it) & magic) {  // すでに登録されているマジック (なにもしない)
 					SB_Marker_Trace(L"ScrBarMarker::Add, Already registered");
 					return true;
-				} else {
+				}
+				else {
 					(*it) |= magic;  // 行は登録済みなのでマジックを追加
 					SB_Marker_Trace(L"ScrBarMarker::Add, Append magic");
 					goto func_end;
@@ -3455,13 +3478,15 @@ func_end:
 //----------------------
 // 削除
 //----------------------
-bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic) {
+bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic)
+{
 	bool bDelete = false;
 	
 	if (vLines_.empty()) {
 		SB_Marker_Trace(L"ScrBarMarker::Del, Empty");
 		return false;
-	} else {
+	}
+	else {
 		auto it = vLines_.begin();
 		while (it != vLines_.end()) {
 			if (((*it) & NK_SCRBAR_LINEN_MASK) == nLayoutY) {
@@ -3470,7 +3495,8 @@ bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic) {
 				if (((*it) & NK_SCRBAR_MAGIC_MASK) == 0u) {  // マジックがなくなったら要素を削除
 					it = vLines_.erase(it);
 					SB_Marker_Trace(L"ScrBarMarker::Del, Remove line");
-				} else {
+				}
+				else {
 					SB_Marker_Trace(L"ScrBarMarker::Del, Remove magic");
 				}
 				
@@ -3495,19 +3521,22 @@ func_end:
 //----------------------
 // 検索文字列のある行か確認
 //----------------------
-bool CEditView::ScrBarMarker::IsFoundLine(const CDocLine *pCDocLine) {
+bool CEditView::ScrBarMarker::IsFoundLine(const CDocLine *pCDocLine)
+{
 	if (pEditView_->m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
 		int nSearchStart, nSearchEnd;
 		int nResult = pEditView_->IsSearchString(
 		                  CStringRef(pCDocLine->GetPtr(), pCDocLine->GetLengthWithoutEOL()),
 		                  CLogicInt(0), &nSearchStart, &nSearchEnd);
 		return !!nResult;
-	} else {
+	}
+	else {
 		return false;
 	}
 }
 
-void CEditView::ScrBarMarker::WaitForBuild(bool abort) {
+void CEditView::ScrBarMarker::WaitForBuild(bool abort)
+{
 	if (bBuildThreadRunning_) {
 		if (abort) bExitRequestBuildThread_ = true;  // 中断
 		::WaitForSingleObject(hBuildThread_, INFINITE);
@@ -3521,7 +3550,8 @@ void CEditView::ScrBarMarker::WaitForBuild(bool abort) {
 	}
 }
 
-void CEditView::ScrBarMarker::WaitForDraw(bool abort) {
+void CEditView::ScrBarMarker::WaitForDraw(bool abort)
+{
 	if (bDrawThreadRunning_) {
 		if (abort) bExitRequestDrawThread_ = true;  // 中断
 		::WaitForSingleObject(hDrawThread_, INFINITE);
@@ -3538,35 +3568,40 @@ void CEditView::ScrBarMarker::WaitForDraw(bool abort) {
 //----------------------
 // 更新要求
 //----------------------
-void CEditView::_SB_Marker_CallPaint(int foo) {
+void CEditView::_SB_Marker_CallPaint(int foo)
+{
 	SBMarker_->CallPaint(foo);
 }
 
 //----------------------
 // クリア
 //----------------------
-void CEditView::_SB_Marker_Clear(int foo) {
+void CEditView::_SB_Marker_Clear(int foo)
+{
 	SBMarker_->Clear(foo);
 }
 
 //----------------------
 // 再構築
 //----------------------
-void CEditView::_SB_Marker_Build(bool bCacheClear, int foo) {
+void CEditView::_SB_Marker_Build(bool bCacheClear, int foo)
+{
 	SBMarker_->Build(bCacheClear, foo);
 }
 
 //----------------------
 // 描画リクエスト
 //----------------------
-void CEditView::_SB_Marker_DrawRequest() {
+void CEditView::_SB_Marker_DrawRequest()
+{
 	SBMarker_->DrawRequest();
 }
 
 //----------------------
 // 描画
 //----------------------
-void CEditView::_SB_Marker_Draw() {
+void CEditView::_SB_Marker_Draw()
+{
 	SBMarker_->Draw();
 }
-#endif  // NK_
+#endif // NK_

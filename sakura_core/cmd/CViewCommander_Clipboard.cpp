@@ -613,7 +613,7 @@ end_of_func:
 
 #ifdef NK_FIX_EDITVIEW_SCRBAR
 	m_pCommanderView->SB_Marker_Clear(2000);
-#endif  // NK_
+#endif // NK_
 	return;
 }
 

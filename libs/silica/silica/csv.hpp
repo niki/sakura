@@ -31,12 +31,16 @@ public:
 	//------------------------------------------------------------------
 	class Column {
 	public:
-		explicit Column(const std::string &s) : line_buffer_(s) {}
+		explicit Column(const std::string &s)
+		    : line_buffer_(s)
+		{
+		}
 
 		//------------------------------------------------------------------
 		// ｎ番目の列を取得
 		//------------------------------------------------------------------
-		std::string GetX(int n) {
+		std::string GetX(int n)
+		{
 			std::string token;
 			std::istringstream stream(line_buffer_);
 
@@ -52,16 +56,25 @@ public:
 	};
 
 public:
-	Csv() : lines_() {}
-	explicit Csv(const std::string &fname, bool writeMode = false) : Csv() { Open(fname, writeMode); }
+	Csv()
+	    : lines_()
+	{
+	}
+	explicit Csv(const std::string &fname, bool writeMode = false)
+	    : Csv()
+	{
+		Open(fname, writeMode);
+	}
 
 	//------------------------------------------------------------------
 	// CSVファイルを開く
 	//------------------------------------------------------------------
-	bool Open(const std::string &fname, bool writeMode = false) {
+	bool Open(const std::string &fname, bool writeMode = false)
+	{
 		if (writeMode) {
 			ofs_.open(fname.c_str(), std::ios::out | std::ios::trunc);
-		} else {
+		}
+		else {
 			ifs_.open(fname.c_str(), std::ios::in);
 
 			// 内容を読み込む
@@ -90,8 +103,8 @@ private:
 	std::vector<Column> lines_;
 };
 
-} /* namespace of csv */
+} // namespace csv
 
-} /* namespace of si */
+} // namespace si
 
 #endif /* SILICA_UTIL_HPP */

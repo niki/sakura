@@ -88,7 +88,7 @@ bool CFigure_Eol::DrawImp(SColorStrategyInfo* pInfo)
 		CTypeSupport *pcText, *pcBack;
 #ifdef NK_FIX_SELAREA
 		blendColor = true;
-#endif  // NK_FIX_SELAREA
+#endif // NK_FIX_SELAREA
 		if( bSelecting && !blendColor ){
 			// 選択文字色固定指定
 			pcText = &cCurrentType;
@@ -117,7 +117,7 @@ bool CFigure_Eol::DrawImp(SColorStrategyInfo* pInfo)
 		sFont.m_sFontAttr.m_bUnderLine = cSpaceType.HasUnderLine();
 		sFont.m_hFont = pInfo->m_pcView->GetFontset().ChooseFontHandle( 0, sFont.m_sFontAttr );
 		pInfo->m_gr.PushMyFont(sFont);
-#endif  // NK_
+#endif // NK_
 
 		DispPos sPos(*pInfo->m_pDispPos);	// 現在位置を覚えておく
 		_DispEOL(pInfo->m_gr, pInfo->m_pDispPos, cEol, pcView, bTrans);
@@ -162,7 +162,7 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 		bool bBgcolor = true;
 #else
 		bool bBgcolor = cWrapType.GetBackColor() == cTextType.GetBackColor();
-#endif  // NK_
+#endif // NK_
 		EColorIndexType eBgcolorOverwrite = COLORIDX_WRAP;
 		bool bTrans = pcView->IsBkBitmap();
 		if( cWrapType.IsDisp() ){
@@ -203,7 +203,7 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 			pDispPos->GetDrawPos().x,
 #ifdef NK_LINE_CENTERING
 			pcView->GetLineMargin() +
-#endif  // NK_
+#endif // NK_
 			pDispPos->GetDrawPos().y + nHeightMargin,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClip2,
@@ -247,7 +247,8 @@ void _DispEOF(
 	//! @param colText テキスト色
 	//! @param colBase ベースとなる色
 	//! @return 合成後の色
-	auto fnMeargeColor = [](COLORREF colText, COLORREF colBase, int blendPer) {
+	auto fnMeargeColor = [](COLORREF colText, COLORREF colBase, int blendPer)
+	{
 		COLORREF c1 = colText;
 		COLORREF c2 = colBase;
 		float blendPerN = 1.0f / 100.0f * blendPer;
@@ -268,7 +269,7 @@ void _DispEOF(
 	COLORREF col1 = cTextType.GetTextColor();
 	COLORREF col2 = crBack;	// 合成済みの色を使用する
 	crText = fnMeargeColor(col1, col2, nBlendPer);
-#endif  // NK_
+#endif // NK_
 
 	//必要なインターフェースを取得
 	const CTextMetrics* pMetrics=&pcView->GetTextMetrics();
@@ -284,12 +285,12 @@ void _DispEOF(
 #ifdef NK_FIX_WS_COLOR
 	gr.PushTextForeColor(crText);
 	gr.PushTextBackColor(crBack);
-#endif  // NK_
+#endif // NK_
 	pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szEof, nEofLen, bTrans);
 #ifdef NK_FIX_WS_COLOR
 	gr.PopTextForeColor();
 	gr.PopTextBackColor();
-#endif  // NK_
+#endif // NK_
 }
 
 
@@ -305,7 +306,7 @@ void _DrawEOL(
 	const CMyRect&	rcEol,
 #ifdef NK_LINE_CENTERING
 	int nMargin,
-#endif  // NK_
+#endif // NK_
 	CEol			cEol,
 	bool			bBold,
 	COLORREF		pColor
@@ -327,7 +328,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 			pDispPos->GetDrawPos().x,
 #ifdef NK_LINE_CENTERING
 			pcView->GetLineMargin() +
-#endif  // NK_
+#endif // NK_
 			pDispPos->GetDrawPos().y + nHeightMargin,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClip2,
@@ -356,7 +357,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 			_DrawEOL(gr, rcEol, pcView->GetLineMargin(), cEol, gr.GetCurrentMyFontBold(), gr.GetCurrentTextForeColor());
 #else
 			_DrawEOL(gr, rcEol, cEol, gr.GetCurrentMyFontBold(), gr.GetCurrentTextForeColor());
-#endif  // NK_
+#endif // NK_
 
 			// リージョン破棄
 			gr.PopClipping();
@@ -386,7 +387,7 @@ void _DrawEOL(
 	const CMyRect&	rcEol,		//!< 描画領域
 #ifdef NK_LINE_CENTERING
 	int nMargin,
-#endif  // NK_
+#endif // NK_
 	CEol			cEol,		//!< 行末コード種別
 	bool			bBold,		//!< TRUE: 太字
 	COLORREF		pColor		//!< 色
@@ -402,7 +403,7 @@ void _DrawEOL(
 			sy = rcEol.top + ( rcEol.Height() / 2);	//Y中心
 #ifdef NK_LINE_CENTERING
 			sy += nMargin;
-#endif  // NK_
+#endif // NK_
 			DWORD pp[] = { 3, 3 };
 			POINT pt[6];
 			pt[0].x = sx + rcEol.Width();	//	上へ
@@ -442,7 +443,7 @@ void _DrawEOL(
 			sy = rcEol.top + ( rcEol.Height() / 2 );
 #ifdef NK_LINE_CENTERING
 			sy += nMargin;
-#endif  // NK_
+#endif // NK_
 			DWORD pp[] = { 3, 2 };
 			POINT pt[5];
 			pt[0].x = sx + rcEol.Width();	//	右へ
@@ -479,7 +480,7 @@ void _DrawEOL(
 			sy = rcEol.top + ( rcEol.Height() * 3 / 4 );
 #ifdef NK_LINE_CENTERING
 			sy += nMargin;
-#endif  // NK_
+#endif // NK_
 			DWORD pp[] = { 3, 2 };
 			POINT pt[5];
 			pt[0].x = sx;	//	上へ
@@ -518,7 +519,7 @@ void _DrawEOL(
 			sy = rcEol.top + ( rcEol.Height() * 3 / 4 );	//Y上から3/4
 #ifdef NK_LINE_CENTERING
 			sy += nMargin;
-#endif  // NK_
+#endif // NK_
 			DWORD pp[] = { 2, 3 };
 			POINT pt[5];
 			int nWidth = t_min(rcEol.Width(), rcEol.Height() / 2);

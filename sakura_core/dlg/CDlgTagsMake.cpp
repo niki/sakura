@@ -67,15 +67,18 @@ int CDlgTagsMake::DoModal(
 )
 {
 #ifdef NK_FIX_TAGMAKEDLG
-	auto fnSearchTags = [](const std::tstring &path, const std::tstring &name) -> std::tstring {
+	auto fnSearchTags = [](const std::tstring &path, const std::tstring &name) -> std::tstring
+	{
 		std::tstring s(path);
 		while (1) {
 			s = si::util::rtrim(s, _T('\\'));
 			if (s.empty() || s.back() == _T(':')) {  // ドライブ文字まで来てしまった
 				break;
-			} else if (si::file::exist(s + _T("\\") + name)) {  // タグファイルが見つかった
+			}
+			else if (si::file::exist(s + _T("\\") + name)) {  // タグファイルが見つかった
 				return s.c_str();
-			} else {
+			}
+			else {
 				s = si::file::dirname(s);
 			}
 		}
@@ -91,7 +94,7 @@ int CDlgTagsMake::DoModal(
 	_tcscpy( m_szPath, path.c_str() );
 #else
 	_tcscpy( m_szPath, pszPath );
-#endif  // NK_
+#endif // NK_
 
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_TAG_MAKE, lParam );
 }
@@ -166,7 +169,7 @@ void CDlgTagsMake::SetData( void )
 {
 #ifdef NK_FIX_DIALOG_POS
 	SetPlaceOfWindow();
-#endif  // NK_
+#endif // NK_
 
 	//作成フォルダ
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_EDIT_TAG_MAKE_FOLDER ), _countof( m_szPath ) );
