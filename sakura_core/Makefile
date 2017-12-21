@@ -232,8 +232,6 @@ macro/CCookieManager.o \
 macro/CEditorIfObj.o \
 macro/CIfObj.o \
 macro/CKeyMacroMgr.o \
-macro/CLua.o \
-macro/CLuaMacroMgr.o \
 macro/CMacro.o \
 macro/CMacroFactory.o \
 macro/CMacroManagerBase.o \
@@ -256,7 +254,6 @@ outline/CFuncInfoArr.o \
 parse/CWordParse.o \
 plugin/CDllPlugin.o \
 plugin/CJackManager.o \
-plugin/CLuaPlugin.o \
 plugin/CPlugin.o \
 plugin/CPluginManager.o \
 plugin/CWSHPlugin.o \

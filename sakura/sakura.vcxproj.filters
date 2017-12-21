@@ -1084,15 +1084,6 @@
     <ClInclude Include="..\sakura_core\uiparts\HandCursor.h">
       <Filter>Cpp Source Files\uiparts</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\macro\CLua.h">
-      <Filter>Cpp Source Files\macro</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sakura_core\macro\CLuaMacroMgr.h">
-      <Filter>Cpp Source Files\macro</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sakura_core\plugin\CLuaPlugin.h">
-      <Filter>Cpp Source Files\plugin</Filter>
-    </ClInclude>
     <ClInclude Include="..\sakura_core\dlg\CDlgWindowList.h">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
@@ -2260,15 +2251,6 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\uiparts\CWaitCursor.cpp">
       <Filter>Cpp Source Files\uiparts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sakura_core\macro\CLua.cpp">
-      <Filter>Cpp Source Files\macro</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sakura_core\macro\CLuaMacroMgr.cpp">
-      <Filter>Cpp Source Files\macro</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sakura_core\plugin\CLuaPlugin.cpp">
-      <Filter>Cpp Source Files\plugin</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\types\CType_Ruby.cpp">
       <Filter>Cpp Source Files\types</Filter>

@@ -27,9 +27,6 @@
 #include "svnrev.h"
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "sakura.hh"
-#ifdef NK_FIX_VERDLG
-  #include <lua.hpp>            // Lua
-#endif // NK_
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//12900
@@ -306,8 +303,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 			_T(COMPILER_TYPE2), COMPILER_VER2,
 			TARGET_M_SUFFIX[0] ? _T("x64") : _T("x86"),
 			_T(MY_RTL),
-			_T(NK_AUTHOR), _T(NK_AUTHOR_PAGE),
-			_T(LUA_COPYRIGHT)
+			_T(NK_AUTHOR), _T(NK_AUTHOR_PAGE)
 		);
 #else
 		_tcsncpy( szMsg, pszDesc, _countof(szMsg) - 1 );

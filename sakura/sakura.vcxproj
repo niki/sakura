@@ -89,7 +89,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\lua\src;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -107,7 +107,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/NXCOMPAT /SAFESEH /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
@@ -115,7 +115,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;..\libs\lua;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
@@ -127,7 +127,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\lua\src;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -145,14 +145,14 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/NXCOMPAT /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;lua53_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;..\libs\lua;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
@@ -164,7 +164,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\lua\src;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -197,7 +197,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\lua\src;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -401,8 +401,6 @@
     <ClInclude Include="..\sakura_core\macro\CEditorIfObj.h" />
     <ClInclude Include="..\sakura_core\macro\CIfObj.h" />
     <ClInclude Include="..\sakura_core\macro\CKeyMacroMgr.h" />
-    <ClInclude Include="..\sakura_core\macro\CLua.h" />
-    <ClInclude Include="..\sakura_core\macro\CLuaMacroMgr.h" />
     <ClInclude Include="..\sakura_core\macro\CMacro.h" />
     <ClInclude Include="..\sakura_core\macro\CMacroFactory.h" />
     <ClInclude Include="..\sakura_core\macro\CMacroManagerBase.h" />
@@ -428,7 +426,6 @@
     <ClInclude Include="..\sakura_core\plugin\CComplementIfObj.h" />
     <ClInclude Include="..\sakura_core\plugin\CDllPlugin.h" />
     <ClInclude Include="..\sakura_core\plugin\CJackManager.h" />
-    <ClInclude Include="..\sakura_core\plugin\CLuaPlugin.h" />
     <ClInclude Include="..\sakura_core\plugin\COutlineIfObj.h" />
     <ClInclude Include="..\sakura_core\plugin\CPlugin.h" />
     <ClInclude Include="..\sakura_core\plugin\CPluginIfObj.h" />
@@ -760,8 +757,6 @@
     <ClCompile Include="..\sakura_core\macro\CEditorIfObj.cpp" />
     <ClCompile Include="..\sakura_core\macro\CIfObj.cpp" />
     <ClCompile Include="..\sakura_core\macro\CKeyMacroMgr.cpp" />
-    <ClCompile Include="..\sakura_core\macro\CLua.cpp" />
-    <ClCompile Include="..\sakura_core\macro\CLuaMacroMgr.cpp" />
     <ClCompile Include="..\sakura_core\macro\CMacro.cpp" />
     <ClCompile Include="..\sakura_core\macro\CMacroFactory.cpp" />
     <ClCompile Include="..\sakura_core\macro\CMacroManagerBase.cpp" />
@@ -784,7 +779,6 @@
     <ClCompile Include="..\sakura_core\parse\CWordParse.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CDllPlugin.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CJackManager.cpp" />
-    <ClCompile Include="..\sakura_core\plugin\CLuaPlugin.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CPlugin.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CPluginManager.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CWSHPlugin.cpp" />
