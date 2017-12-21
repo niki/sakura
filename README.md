@@ -24,10 +24,10 @@ Introduction
 
 Download & Setup  
 ----------------
-- Version 2.063 - 2017.12.21  
-    [sakura-fix_2.063.zip](http://konru.org/release/sakura-fix_2.063.zip) (32-bit)  
-    [sakura-fix_2.063_64.zip](http://konru.org/release/sakura-fix_2.063_64.zip) (64-bit)  
-    - いったん区切り
+- Version 2.064 - 2017.12.21  
+    [sakura-fix_2.064.zip](http://konru.org/release/sakura-fix_2.064.zip) (32-bit)  
+    [sakura-fix_2.064_64.zip](http://konru.org/release/sakura-fix_2.064_64.zip) (64-bit)  
+    - Lua機能を削除
     - <del>Minor fixes  
 
 - keyword_pack.zip  
@@ -51,7 +51,6 @@ Changed
 
 <details open><summary>ファイル/設定/機能</summary>
 <ul>
-<li>マクロ・プラグインに使用できる言語に Luaを追加:star:
 <li>強調キーワードのセットファイル sakura.keywordset.csv の使用
 <li>履歴を別ファイル ('sakura.recent')に出力
 <li>起動時に存在しないファイル・フォルダ履歴を削除する
@@ -132,7 +131,6 @@ Changed
 
 
 <img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201707130016.png" width="75%" alt="検索マーク/検索ダイアログ">
-<img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201706041845.png" width="50%" alt="Luaマクロ">
 <img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201706041815.png" width="50%" alt="Grep">
 
 
@@ -151,11 +149,6 @@ Changed
 Cregit  
 ------
 + サクラエディタ公式 http://sakura-editor.sourceforge.net/
-
-+ Lua http://www.lua.org/  
-  Copyright (C) 1994-2017 Lua.org, PUC-Rio  
-  R. Ierusalimschy, L. H. de Figueiredo, W. Celes  
-  [License](http://www.lua.org/license.html)  
 
 ---
 (C) 2017, Niki.
