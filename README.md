@@ -3,19 +3,17 @@ Introduction
 
 <details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
 <ul>
-<li>OS: Windows10 Home 1703
+<li>OS: Windows10 Home 1709
 <li>CPU: Celeron 3215U 1.7GHz
 <li>Memory: 8GB
 <li>Compiler: Visual Studio 2015
-<li>Heavy software used: MacType, ESET
 </details>
 
 <details open><summary>Policy</summary>
 <ul>
-<li>互換性は気にしないで, 新しい開発環境で修正を行う
-<li>サクラエディタのリポジトリ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2 の追っかけ. 良さげなパッチのマージ
-<li>使っていて気になった点をとりあえず自分色に修正, 気に入らなかったらペンディング or オミット
 <li>他のエディタを参考にまねっこ
+<li>サクラエディタのリポジトリ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2 の追っかけ. 良さげなパッチのマージ
+<li>使っていて気になった点をとりあえず修正, 気に入らなかったらペンディング or オミット
 <li>ミニマップの改良, 修正は諦めました (コミットログに残骸あり)
 </details>
 
@@ -24,7 +22,7 @@ Introduction
 
 Download & Setup  
 ----------------
-- Version 2.064 - 2017.12.21  
+- Version 2.064 - 2017.12.22  
     [sakura-fix_2.064.zip](http://konru.org/release/sakura-fix_2.064.zip) (32-bit)  
     [sakura-fix_2.064_64.zip](http://konru.org/release/sakura-fix_2.064_64.zip) (64-bit)  
     - Lua機能を削除
@@ -37,7 +35,7 @@ Download & Setup
   [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
   「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
   このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
-  使用しない場合はいつも通りの動作です (sakura.iniに埋め込まれる)  
+  使用しない場合はいつも通りの動作です (sakura.iniに書き込まれる)  
 
 - 変更履歴はコミットログ([link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([link](sakura_core/my_config.h)) を見てね.  
 
