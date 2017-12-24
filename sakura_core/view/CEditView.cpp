@@ -3155,31 +3155,6 @@ unsigned __stdcall SB_Marker_DrawThread(void *arg)
 	
 	
 start_thread:
-	// カーソル行
-	{
-		HDC hdc = ::GetDC(pEditView->m_hwndVScrollBar);
-		CGraphics gr(hdc);
-		
-		int x = 1;
-		int y = nBarTop;
-		if (bEnable) {
-			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines * nBarHeight);
-		}
-		else {
-			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
-			           pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
-		}
-		
-		//gr.FillSolidMyRect(/*RECT*/{x, nBarTop, x + nCxVScroll - 1, nBarTop + nBarHeight}, ::GetSysColor(COLOR_MENU));
-		//gr.FillSolidMyRect(/*RECT*/{x, nThumbTop, x + nCxVScroll - 1, nThumbBottom}, ::GetSysColor(COLOR_SCROLLBAR));
-		
-		const int w = std::max(DpiScaleX(1), nCxVScroll - 1);
-		const int h = std::max(DpiScaleY(1), DpiScaleY(2));
-		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor);
-		
-		::ReleaseDC(pEditView->m_hwndVScrollBar, hdc);
-	}
-
 	enum {
 		eLoopBreak_None = 0,
 		eLoopBreak_Restart,
@@ -3189,11 +3164,11 @@ start_thread:
 
 	// キャッシュを使用して描画
 	{
-		const int foundLeft = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
-		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll / 4 * 2);
-		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(3));
+		const int foundLeft = std::max(0, 0);
+		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll - DpiScaleX(1));
+		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(2));
 		
-		const int markLeft = std::max(DpiScaleX(1), nCxVScroll / 3 * 0);
+		const int markLeft = std::max(DpiScaleX(0), nCxVScroll / 3 * 0);
 		const int markWidth = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
 		const int markHeight = std::max(DpiScaleY(1), nCxVScroll / 3 * 1);
 
@@ -3266,6 +3241,31 @@ start_thread:
 			
 			::ReleaseDC(pEditView->m_hwndVScrollBar, hdc);
 		}
+	}
+
+	// カーソル行
+	{
+		HDC hdc = ::GetDC(pEditView->m_hwndVScrollBar);
+		CGraphics gr(hdc);
+		
+		int x = 1;
+		int y = nBarTop;
+		if (bEnable) {
+			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines * nBarHeight);
+		}
+		else {
+			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
+			           pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
+		}
+		
+		//gr.FillSolidMyRect(/*RECT*/{x, nBarTop, x + nCxVScroll - 1, nBarTop + nBarHeight}, ::GetSysColor(COLOR_MENU));
+		//gr.FillSolidMyRect(/*RECT*/{x, nThumbTop, x + nCxVScroll - 1, nThumbBottom}, ::GetSysColor(COLOR_SCROLLBAR));
+		
+		const int w = std::max(DpiScaleX(1), nCxVScroll - DpiScaleX(1));
+		const int h = std::max(DpiScaleY(1), DpiScaleY(2));
+		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor);
+		
+		::ReleaseDC(pEditView->m_hwndVScrollBar, hdc);
 	}
 
 	if (loop_break == eLoopBreak_Abort) {
