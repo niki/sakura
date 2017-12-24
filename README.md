@@ -3,19 +3,17 @@ Introduction
 
 <details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
 <ul>
-<li>OS: Windows10 Home 1703
+<li>OS: Windows10 Home 1709
 <li>CPU: Celeron 3215U 1.7GHz
 <li>Memory: 8GB
 <li>Compiler: Visual Studio 2015
-<li>Heavy software used: MacType, ESET
 </details>
 
 <details open><summary>Policy</summary>
 <ul>
-<li>互換性は気にしないで, 新しい開発環境で修正を行う
-<li>サクラエディタのリポジトリ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2 の追っかけ. 良さげなパッチのマージ
-<li>使っていて気になった点をとりあえず自分色に修正, 気に入らなかったらペンディング or オミット
 <li>他のエディタを参考にまねっこ
+<li>サクラエディタのリポジトリ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2 の追っかけ. 良さげなパッチのマージ
+<li>使っていて気になった点をとりあえず修正, 気に入らなかったらペンディング or オミット
 <li>ミニマップの改良, 修正は諦めました (コミットログに残骸あり)
 </details>
 
@@ -24,7 +22,7 @@ Introduction
 
 Download & Setup  
 ----------------
-- Version 2.064 - 2017.12.21  
+- Version 2.064 - 2017.12.22  
     [sakura-fix_2.064.zip](http://konru.org/release/sakura-fix_2.064.zip) (32-bit)  
     [sakura-fix_2.064_64.zip](http://konru.org/release/sakura-fix_2.064_64.zip) (64-bit)  
     - Lua機能を削除
@@ -37,7 +35,7 @@ Download & Setup
   [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
   「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
   このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
-  使用しない場合はいつも通りの動作です (sakura.iniに埋め込まれる)  
+  使用しない場合はいつも通りの動作です (sakura.iniに書き込まれる)  
 
 - 変更履歴はコミットログ([link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([link](sakura_core/my_config.h)) を見てね.  
 
@@ -57,15 +55,15 @@ Changed
 <li>タイプ別設定一覧の「追加」から任意のタイプを追加できるようにする
 <li>デフォルト文字コードを UTF8にする
 <li>カラー設定のインポートはカラー情報だけを適用させる
-<li>履歴 (検索, 置換, Grep)の値を変更
+<li>履歴 (検索, 置換, Grep)の最大値を変更
 <li>多重オープンの許可 (Shiftを押しながらファイルのドロップ)
 </details>
 
 <details open><summary>表示/編集</summary>
 <ul>
 <li>スクロールバーに検索結果とブックマーク, カーソル位置を表示:star:
-<li>垂直, 水平スクロールの挙動をメモ帳の挙動と同じにする (端でスクロールするようになります)
-<li>検索時に画面が切り替わる場合カーソル行を中央に表示
+<li>垂直, 水平スクロールの挙動をメモ帳の挙動と同じにする (縦:端でスクロール, 横画面端で半角16文字スクロール)
+<li>検索時に表示域が切り替わる場合カーソル行を中央に表示 (見やすくするため)
 <li>タブ入力文字の切り替え機能 ('S_ChangeTabWidth' マクロを修正, 負の値を設定で入力文字をタブと空白で相互に切り替え)
 <li>行を中央揃えにする (行の間隔を上下に配分)
 <li>半角スペースを '･' で表示 (Sublime Textみたいな)
@@ -78,9 +76,9 @@ Changed
 <li>アンドゥ,リドゥの高速化
 <li>EOFのみの行 (起動時とか)にも行番号を表示
 <li>コメント行の背景カラーを改行以降もその色で描画
-<li>空白, タブ, 改行, EOF, ノート線のカラーは現在のテキストカラーから自動で設定
-<li>数値の色付け判定を正規表現で行う (表現力の向上)
-<li>選択範囲カラーは元のテキストカラーをそのまま使用し、背景のみ描画する
+<li>空白, タブ, 改行, EOF, ノート線のカラーは現在のテキストカラーから自動で色付け
+<li>数値の色付け判定を正規表現で行う
+<li>選択範囲カラーは元のテキストカラーはそのまま使用し、背景カラーのみ使用する
 <li>カーソル行アンダーラインを行番号から引っ張る
 <li>偶数行背景はEOF以降は適用しない
 <li>ノート線はEOF以降は適用しない
