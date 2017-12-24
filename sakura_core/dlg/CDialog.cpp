@@ -84,6 +84,8 @@ CDialog::CDialog(bool bSizable, bool bCheckShareData)
 
 #ifdef NK_FIX_DIALOG_POS
 	m_hwndPlaceOfWindow = NULL;
+	m_bPlaceVertical = true;
+	m_bPlaceHorizontal = true;
 #endif // NK_
 
 	return;
@@ -674,6 +676,11 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 }
 
 #ifdef NK_FIX_DIALOG_POS
+void CDialog::SetPlaceSizeMode(bool bVertical, bool bHorizontal)
+{
+	m_bPlaceVertical = bVertical;
+	m_bPlaceHorizontal = bHorizontal;
+}
 void CDialog::SetPlaceOfWindow()
 {
 	m_hwndPlaceOfWindow = m_hwndParent;
@@ -683,8 +690,12 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place)
 	RECT rc;
 	::GetWindowRect(GetHwnd(), &rc);
 
-	m_nWidth  = rc.right - rc.left;
-	m_nHeight = rc.bottom - rc.top;
+	if (m_bPlaceHorizontal) {
+		m_nWidth  = rc.right - rc.left;
+	}
+	if (m_bPlaceVertical) {
+		m_nHeight = rc.bottom - rc.top;
+	}
 
 	::GetWindowRect(::GetParent(hWnd /*pcEditView->GetHwnd()*/), &rc);
 

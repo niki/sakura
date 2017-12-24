@@ -171,6 +171,16 @@ protected:
 #endif // NK_
 
 #ifdef NK_FIX_DIALOG_POS
+	/*!
+	 * 配置モード
+	 * @param bVertical 縦
+	 * @param bHorizontal 横
+	 */
+	void SetPlaceSizeMode(bool bVertical, bool bHorizontal);
+	
+	/*!
+	 * ウィンドウの位置を中央に設定 (すでに設定されているハンドルを使用する)
+	 */
 	void SetPlaceOfWindow();
 	
 	enum eDLGPLACE {
@@ -184,7 +194,18 @@ protected:
 		DLGPLACE_BC,  // 中央下
 		DLGPLACE_BR,  // 右下
 	};
+	/*!
+	 * ウィンドウの位置サイズを調整
+	 * @param hWnd ハンドル
+	 * @param prcView ビューウィンドウ矩形
+	 * @param place 表示位置
+	 * @param vertical 縦方向
+	 * @param horizontal 横方向
+	 */
 	void SetPlaceOfWindow(HWND hWnd, const RECT *prcView = nullptr, eDLGPLACE place = DLGPLACE_CC);
+	
+	bool m_bPlaceVertical;
+	bool m_bPlaceHorizontal;
 #endif // NK_
 };
 

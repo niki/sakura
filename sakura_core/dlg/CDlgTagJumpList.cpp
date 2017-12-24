@@ -442,6 +442,7 @@ int CDlgTagJumpList::GetData( void )
 BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 #ifdef NK_FIX_DIALOG_POS
+	SetPlaceSizeMode(false, true);
 	SetPlaceOfWindow();
 #endif // NK_
 
