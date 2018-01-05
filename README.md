@@ -6,7 +6,7 @@ Introduction
 <li>OS: Windows10 Home 1709
 <li>CPU: Celeron 3215U 1.7GHz
 <li>Memory: 8GB
-<li>Compiler: Visual Studio 2015
+<li>Compiler: Visual Studio 2017
 </details>
 
 <details open><summary>Policy</summary>
@@ -23,10 +23,10 @@ Introduction
 Download & Setup  
 ----------------
 - Version 2.064 - 2017.12.22  
-    [sakura-fix_2.064.zip](http://konru.org/release/sakura-fix_2.064.zip) (32-bit)  
-    [sakura-fix_2.064_64.zip](http://konru.org/release/sakura-fix_2.064_64.zip) (64-bit)  
-    - Lua機能を削除
-    - <del>Minor fixes  
+    [sakura-fix_2.065.zip](http://konru.org/release/sakura-fix_2.065.zip) (32-bit)  
+    [sakura-fix_2.065_64.zip](http://konru.org/release/sakura-fix_2.065_64.zip) (64-bit)  
+    - 開発環境をVS2017に変更
+    - Minor fixes  
 
 - keyword_pack.zip  
   キーワードセット集 (patchunicode:#720対応) 2017.06.16 [download](Publish/keyword_pack.zip)  
