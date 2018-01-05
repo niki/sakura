@@ -22,7 +22,7 @@ Introduction
 
 Download & Setup  
 ----------------
-- Version 2.064 - 2017.12.22  
+- Version 2.065 - 2018.1.6  
     [sakura-fix_2.065.zip](http://konru.org/release/sakura-fix_2.065.zip) (32-bit)  
     [sakura-fix_2.065_64.zip](http://konru.org/release/sakura-fix_2.065_64.zip) (64-bit)  
     - 開発環境をVS2017に変更
