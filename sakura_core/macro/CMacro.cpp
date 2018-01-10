@@ -1437,6 +1437,15 @@ bool CMacro::HandleCommand(
 			pcEditView->SyncScrollH( pcEditView->ScrollAtH( nColumn ) );
 		}
 		break;
+#ifdef NK_FIX_SWITCH_DISP_LINENR_MACRO
+	case F_SWITCH_DISP_LINE_NUMBER:
+		{
+			pcEditView->m_pcEditDoc->m_cDocType.GetDocumentAttributeWrite().
+			    m_ColorInfoArr[COLORIDX_GYOU].m_bDisp ^= 1;
+			pcEditView->GetTextArea().DetectWidthOfLineNumberArea(false);
+			pcEditView->RedrawAll();
+		}
+#endif // NK_
 	default:
 		//	引数なし。
 		pcEditView->GetCommander().HandleCommand( Index, true, 0, 0, 0, 0 );	//	標準

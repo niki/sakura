@@ -576,4 +576,8 @@ F_ISEARCH_ADD_CHAR	= 0xC001,	//	Incremental Searchへ1文字へ追加
 F_ISEARCH_ADD_STR	= 0xC002,	//	Incremental Searchへ文字列へ追加
 F_ISEARCH_DEL_BACK	= 0xC003,	//	Incremental Searchの末尾から1文字削除
 
+
+//NK_FIX_SWITCH_DISP_LINENR_MACRO
+F_SWITCH_DISP_LINE_NUMBER = 0xD001,	// 行番号表示切替マクロ
+
 //}; //end of enum EFunction
