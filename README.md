@@ -12,9 +12,8 @@ Introduction
 <details open><summary>Policy</summary>
 <ul>
 <li>他のエディタを参考にまねっこ
-<li>サクラエディタのリポジトリ http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2 の追っかけ. 良さげなパッチのマージ
+<li>サクラエディタの[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ, [パッチ](https://sourceforge.net/p/sakura-editor/patchunicode)のマージ
 <li>使っていて気になった点をとりあえず修正, 気に入らなかったらペンディング or オミット
-<li>ミニマップの改良, 修正は諦めました (コミットログに残骸あり)
 </details>
 
 
@@ -22,20 +21,20 @@ Introduction
 
 Download & Setup  
 ----------------
-- Version 2.065 - 2018.1.6  
-    [sakura-fix_2.065.zip](http://konru.org/release/sakura-fix_2.065.zip) (32-bit)  
-    [sakura-fix_2.065_64.zip](http://konru.org/release/sakura-fix_2.065_64.zip) (64-bit)  
-    - 開発環境をVS2017に変更
+- v2.066 - 2018.1.12  
+    [sakura-fix_2.066.zip](http://konru.org/release/sakura-fix_2.066.zip) (32-bit)  
+    [sakura-fix_2.066_64.zip](http://konru.org/release/sakura-fix_2.066_64.zip) (64-bit)  
+    - 行番号表示切替マクロ (S_SwitchDispLineNumber()) を追加
     - Minor fixes  
 
 - keyword_pack.zip  
-  キーワードセット集 (patchunicode:#720対応) 2017.06.16 [download](Publish/keyword_pack.zip)  
+    キーワードセット集 (patchunicode:#720対応) 2017.06.16 [download](Publish/keyword_pack.zip)  
 
 - sakura.keywordset.csv  
-  [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
-  「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
-  このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
-  使用しない場合はいつも通りの動作です (sakura.iniに書き込まれる)  
+    [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
+    「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
+    - このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
+    - 使用しない場合はいつも通りの動作です (sakura.iniに書き込まれる)  
 
 - 変更履歴はコミットログ([link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([link](sakura_core/my_config.h)) を見てね.  
 
@@ -150,4 +149,4 @@ Cregit
 + サクラエディタ公式 http://sakura-editor.sourceforge.net/
 
 ---
-(C) 2017 Niki.
+(C) 2017,2018 Niki.
