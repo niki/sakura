@@ -12,7 +12,7 @@ Introduction
 <details open><summary>Policy</summary>
 <ul>
 <li>他のエディタを参考にまねっこ
-<li>サクラエディタの[リポジトリ](http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2)の追っかけ, [パッチ](https://sourceforge.net/p/sakura-editor/patchunicode)のマージ
+<li>サクラエディタのリポジトリ(http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2) の追っかけ, パッチ(https://sourceforge.net/p/sakura-editor/patchunicode) のマージ
 <li>使っていて気になった点をとりあえず修正, 気に入らなかったらペンディング or オミット
 </details>
 
@@ -21,14 +21,14 @@ Introduction
 
 Download & Setup  
 ----------------
-- v2.066 - 2018.1.12  
+- v2.066 (2018.1.12)  
     [sakura-fix_2.066.zip](http://konru.org/release/sakura-fix_2.066.zip) (32-bit)  
     [sakura-fix_2.066_64.zip](http://konru.org/release/sakura-fix_2.066_64.zip) (64-bit)  
     - 行番号表示切替マクロ (S_SwitchDispLineNumber()) を追加
     - Minor fixes  
 
 - keyword_pack.zip  
-    キーワードセット集 (patchunicode:#720対応) 2017.06.16 [download](Publish/keyword_pack.zip)  
+    キーワードセット集 (patchunicode:#720対応) 2017.06.16 [Download](Publish/keyword_pack.zip)  
 
 - sakura.keywordset.csv  
     [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
@@ -36,7 +36,7 @@ Download & Setup
     - このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
     - 使用しない場合はいつも通りの動作です (sakura.iniに書き込まれる)  
 
-- 変更履歴はコミットログ([link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([link](sakura_core/my_config.h)) を見てね.  
+- 変更履歴はコミットログ([Link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([Link](sakura_core/my_config.h)) を見てね.  
 
 - FastCopyと相性が悪いようで起動中にサクラエディタを実行するとプロセス起動エラーが発生します (環境?)  
 
