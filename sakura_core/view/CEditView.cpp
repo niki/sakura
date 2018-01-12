@@ -3181,61 +3181,67 @@ start_thread:
 			HDC hdc = ::GetDC(pEditView->m_hwndVScrollBar);
 			CGraphics gr(hdc);
 
+			// 描画関数
+			auto fnDrawMark = [=, &gr](uint32_t ln, int left, int width, int height, COLORREF clr) {
+				int x = 1;
+				int y = nBarTop;
+				
+				y += bEnable ? ((int)((float)(ln & NK_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight))
+				             : ((int)((float)(ln & NK_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum *
+				                      nBarHeight));
+				
+				int margin = 0;  // スクロールバーの領域を超えた時のマージン
+				int x2 = x + left;
+				int y2 = y - height / 2;  // 中央にくるように
+				// スクロールボックスに被らないように補正
+				if (y2 < nBarTop) {
+					margin = nBarTop - y2;
+				}
+				else if (y2 + height > nBarTop + nBarHeight) {
+					margin = (nBarTop + nBarHeight) - (y2 + height); 
+				}
+				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + width, y2 + height + margin}, clr);
+			};
+
 #ifdef _OPENMP
 			#pragma omp for
 #endif
 			for (int i = 0; i < vsize; i++) {
-				if (loop_break == eLoopBreak_None) {
-					uint32_t ln = rSBMarker.vLines_[i];
-					
-					int x = 1;
-					int y = nBarTop;
-
-					if (bEnable) {
-						y += (int)((float)(ln & NK_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight);
-					}
-					else {
-						y +=
-						    (int)((float)(ln & NK_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
-					}
-
-					// 検索行
-					if (ln & NK_SCRBAR_FOUND_MAGIC) {
-						COLORREF clr = clrSearch;
-						int margin = 0;  // スクロールバーの領域を超えた時のマージン
-						int x2 = x + foundLeft;
-						int y2 = y - foundHeight / 2;  // 中央にくるように
-						// スクロールボックスに被らないように補正
-						if (y2 < nBarTop) {
-							margin = nBarTop - y2;
-						}
-						else if (y2 + foundHeight > nBarTop + nBarHeight) {
-							margin = (nBarTop + nBarHeight) - (y2 + foundHeight); 
-						}
-						gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + foundWidth, y2 + foundHeight + margin}, clr);
-					}
-					// ブックマーク行
-					if (ln & NK_SCRBAR_MARK_MAGIC) {
-						COLORREF clr = clrMark;
-						int margin = 0;  // スクロールバーの領域を超えた時のマージン
-						int x2 = x + markLeft;
-						int y2 = y - markHeight / 2;  // 中央にくるように
-						// スクロールボックスに被らないように補正
-						if (y2 < nBarTop) {
-							margin = nBarTop - y2;
-						}
-						else if (y2 + markHeight > nBarTop + nBarHeight) {
-							margin = (nBarTop + nBarHeight) - (y2 + markHeight); 
-						}
-						gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + markWidth, y2 + markHeight + margin}, clr);
-					}
-					
-					if (rSBMarker.bRestartRequestDrawThread_) {  // やり直し
-						loop_break = eLoopBreak_Restart;
-					}
-					if (rSBMarker.bExitRequestDrawThread_) {  // 中断
-						loop_break = eLoopBreak_Abort;
-					}
+				if (loop_break != eLoopBreak_None) break;
+				
+				uint32_t ln = rSBMarker.vLines_[i];
+				
+				// 検索行
+				if (ln & NK_SCRBAR_FOUND_MAGIC) {
+					fnDrawMark(ln, foundLeft, foundWidth, foundHeight, clrSearch);
+				}
+				
+				if (rSBMarker.bRestartRequestDrawThread_) {  // やり直し
+					loop_break = eLoopBreak_Restart;
+				}
+				if (rSBMarker.bExitRequestDrawThread_) {  // 中断
+					loop_break = eLoopBreak_Abort;
+				}
+			}
+			
+#ifdef _OPENMP
+			#pragma omp for
+#endif
+			for (int i = 0; i < vsize; i++) {
+				if (loop_break != eLoopBreak_None) break;
+				
+				uint32_t ln = rSBMarker.vLines_[i];
+				
+				// ブックマーク行
+				if (ln & NK_SCRBAR_MARK_MAGIC) {
+					fnDrawMark(ln, markLeft, markWidth, markHeight, clrMark);
+				}
+				
+				if (rSBMarker.bRestartRequestDrawThread_) {  // やり直し
+					loop_break = eLoopBreak_Restart;
+				}
+				if (rSBMarker.bExitRequestDrawThread_) {  // 中断
+					loop_break = eLoopBreak_Abort;
 				}
 			}
 			
@@ -3250,13 +3256,11 @@ start_thread:
 		
 		int x = 1;
 		int y = nBarTop;
-		if (bEnable) {
-			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines * nBarHeight);
-		}
-		else {
-			y += (int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
-			           pEditView->GetTextArea().m_nViewRowNum * nBarHeight);
-		}
+		
+		y += bEnable ? ((int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines *
+		                      nBarHeight))
+		             : ((int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
+		                      pEditView->GetTextArea().m_nViewRowNum * nBarHeight));
 		
 		//gr.FillSolidMyRect(/*RECT*/{x, nBarTop, x + nCxVScroll - 1, nBarTop + nBarHeight}, ::GetSysColor(COLOR_MENU));
 		//gr.FillSolidMyRect(/*RECT*/{x, nThumbTop, x + nCxVScroll - 1, nThumbBottom}, ::GetSysColor(COLOR_SCROLLBAR));
