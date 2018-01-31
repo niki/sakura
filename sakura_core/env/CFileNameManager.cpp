@@ -464,6 +464,10 @@ bool CFileNameManager::GetMenuFullLabel(
 		this->GetTransformFileNameFast( pszFile, szFileName, _MAX_PATH, hDC );
 
 #ifdef NK_FIX_RECENT_FILE_DISP_NAME
+	szAccKey[0] = L'\0';
+#endif // NK_
+
+#ifdef NK_FIX_RECENT_FILE_DISP_NAME
 		{
 			int compactlen = (int)RegKey(NK_REGKEY).get(_T("FilePathCompactLength"), NK_FILEPATH_COMPACT_LENGTH);
 			
