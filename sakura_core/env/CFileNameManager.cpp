@@ -472,6 +472,7 @@ bool CFileNameManager::GetMenuFullLabel(
 			
 			DWORD size_low, size_high;
 			bool isDir = false;
+			bool isInvalid = false;
 			
 			if (::PathIsDirectory(szFileName)) {
 				isDir = true;
@@ -485,10 +486,15 @@ bool CFileNameManager::GetMenuFullLabel(
 				}
 				else {
 					size_low = 0;
+					isInvalid = true;
 				}
 			}
 			
-			if (isDir) {
+			if (isInvalid) {
+				// フォルダでもファイルでもないと判断した場合はフォルダと同じ扱いにする
+				_stprintf_s( szFileName, _T("%s"), temp);
+			}
+			else if (isDir) {
 				// フォルダ
 				_stprintf_s( szFileName, _T("%s"), temp);
 			}
