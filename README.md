@@ -3,9 +3,7 @@ Introduction
 
 <details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
 <ul>
-<li>OS: Windows10 Home 1709
-<li>CPU: Celeron 3215U 1.7GHz
-<li>Memory: 8GB
+<li>Machine: Celeron 3215U 1.7GHz, Memory 8GB, Windows10 Home 1709
 <li>Compiler: Visual Studio 2017
 </details>
 
@@ -19,16 +17,13 @@ Introduction
 
 <br>
 
-Download & Setup  
-----------------
-- v2.066 (2018.1.12)  
-    [sakura-fix_2.066.zip](http://konru.org/release/sakura-fix_2.066.zip) (32-bit)  
-    [sakura-fix_2.066_64.zip](http://konru.org/release/sakura-fix_2.066_64.zip) (64-bit)  
-    - 行番号表示切替マクロ (S_SwitchDispLineNumber()) を追加
+Download  
+--------
+- v2.067 (2018/02/01)  
+    [sakura-fix_2.067.zip](http://konru.org/release/sakura-fix_2.067.zip) (32-bit)  
+    [sakura-fix_2.067_64.zip](http://konru.org/release/sakura-fix_2.067_64.zip) (64-bit)  
+    - Fix 最近使ったファイル/フォルダにアクセラレータ文字を使用しない  
     - Minor fixes  
-
-- keyword_pack.zip  
-    キーワードセット集 (patchunicode:#720対応) 2017.06.16 [Download](Publish/keyword_pack.zip)  
 
 - sakura.keywordset.csv  
     [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
@@ -36,9 +31,10 @@ Download & Setup
     - このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
     - 使用しない場合はいつも通りの動作です (sakura.iniに書き込まれる)  
 
-- 変更履歴はコミットログ([Link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([Link](sakura_core/my_config.h)) を見てね.  
+- keyword_pack.zip (2017/06/16)  
+    キーワードセット集 patchunicode:#720対応 [Download](Publish/keyword_pack.zip)  
 
-- FastCopyと相性が悪いようで起動中にサクラエディタを実行するとプロセス起動エラーが発生します (環境?)  
+- 変更履歴はコミットログ([Link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([Link](sakura_core/my_config.h)) を見てね.  
 
 
 <br>
@@ -93,17 +89,20 @@ Changed
 <li>モード取り消し時にダイアログ(検索やGrep,アウトライン解析など)にフォーカスがなくても閉じる
 <li>Grep パターン変数を使用できるようにする (レジストリ 'HKEY_CURRENT_USER\Software\sakura-niki' への追加が必要です)
 <li>Grep 条件テキストボックスのフォントを少し大きくする
-<li>メインメニューは常にデフォルトを使用する
+<li>メインメニューは常にデフォルトを使用する (項目喪失回避, カスタマイズの需要がなさそうなため)
 <li>置換ダイアログの置換後テキストに置換前テキストを設定
 <li>正規表現検索のときに正規表現記号をクォート ('^abc$' を検索する場合 '\^abc\$' にする)
-<li>ステータスバーのカスタマイズ
+<li>ステータスバーのカスタマイズ (左クリックでメニュー表示、タイプ名表示など)
 <li>タグファイル作成時にフォルダの初期値を 'tags', 'ctags.cnf' ファイルがあるところまで辿る
 <li><del>「タブを閉じる」ボタンをグラフィカルにする
 <li>リソース (ダイアログ)のフォントを 'MS Shell Dlg' へ変更
 <li>変更, キーマクロ記録中のタブ名のカラーを変更
-<li>アウトライン解析ダイアログのドッキング時はコントロールカラーのままにする
-<li>タグジャンプ一覧の表示カラムを選別
 <li>フォルダ選択ダイアログを今風にする
+<li>最近使ったファイル/フォルダ名が長い場合は短縮表示にする
+<li>最近使ったファイル/フォルダ名にアクセラレータ文字を表示しない
+<li>最近使ったファイルにファイルサイズを表示する
+<li>タグジャンプ一覧の表示カラムを選別
+<li>アウトライン解析ダイアログのドッキング時はコントロールカラーのままにする
 <li>各種ダイアログを編集ウィンドウの中央に配置
 </details>
 
