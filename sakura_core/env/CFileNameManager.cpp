@@ -518,6 +518,13 @@ bool CFileNameManager::GetMenuFullLabel(
 				}
 			}
 			
+			///
+//			std::tstring temp4 = si::file::fname(szFileName);
+//			std::tstring temp5 = si::file::dirname(szFileName, false);
+//			TCHAR temp6[_MAX_PATH] = {};
+//			::PathCompactPathEx(temp6, temp5.c_str(), compactlen, L'\\');
+			///
+			
 			if (isInvalid) {
 				// フォルダでもファイルでもないと判断した場合はフォルダと同じ扱いにする
 				_stprintf_s( szFileName, _T("%s"), temp);
@@ -529,22 +536,31 @@ bool CFileNameManager::GetMenuFullLabel(
 			else if (size_low < 1024) {
 				// 1KB未満
 				_stprintf_s( szFileName, _T("%s [1 KB]"), temp);
+//				_stprintf_s( szFileName, _T("%s (%s) [1 KB]"), temp4.c_str(), temp6);
 			}
 			else if (size_low < 1024 * 1024) {
 				// 1MB未満
 				_stprintf_s( szFileName, _T("%s [%d KB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024));
+//				_stprintf_s(szFileName, _T("%s (%s) [%d KB]"), temp4.c_str(), temp6,
+//				            (int32_t)(((double)size_low + 0.5) / 1024));
 			}
 			else if (size_low < 1024 * 1024 * 10) {
 				// 10MB未満
 				_stprintf_s( szFileName, _T("%s [%.2f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
+//				_stprintf_s(szFileName, _T("%s (%s) [%.2f MB]"), temp4.c_str(), temp6,
+//				            ((double)size_low + 0.5) / 1024 / 1024);
 			}
 			else if (size_low < 1024 * 1024 * 100) {
 				// 100MB未満
 				_stprintf_s( szFileName, _T("%s [%.1f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
+//				_stprintf_s(szFileName, _T("%s (%s) [%.1f MB]"), temp4.c_str(), temp6,
+//				            ((double)size_low + 0.5) / 1024 / 1024);
 			}
 			else {
 				// 100MB以上 (ケアなし)
 				_stprintf_s( szFileName, _T("%s [%d MB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024 / 1024));
+//				_stprintf_s(szFileName, _T("%s (%s) [%d MB]"), temp4.c_str(), temp6,
+//				            (int32_t)(((double)size_low + 0.5) / 1024 / 1024));
 			}
 		}
 #endif // NK_
