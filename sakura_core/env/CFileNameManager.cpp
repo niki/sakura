@@ -95,6 +95,26 @@ LPTSTR CFileNameManager::GetTransformFileNameFast( LPCTSTR pszSrc, LPTSTR pszDes
 	return pszDest;
 }
 
+#ifdef NK_FIX_RECENT_FILE_DISP_NAME
+/*!	共有データの設定に従ってパスを縮小表記を復元する
+	@param pszSrc   [in]  ファイル名
+	@param pszDest  [out] 変換後のファイル名の格納先
+	@param nDestLen [in]  終端のNULLを含むpszDestのTCHAR単位の長さ _MAX_PATH まで
+*/
+std::tstring CFileNameManager::RestoreFastFileName(const std::tstring &fname)
+{
+	std::tstring s(fname);
+	for (int i = 0; i < m_pShareData->m_Common.m_sFileName.m_nTransformFileNameArrNum; i++) {
+		if (L'\0' != m_pShareData->m_Common.m_sFileName.m_szTransformFileNameFrom[i][0]) {
+			std::tstring from(m_pShareData->m_Common.m_sFileName.m_szTransformFileNameTo[i]);
+			std::tstring to(m_pShareData->m_Common.m_sFileName.m_szTransformFileNameFrom[i]);
+			si::util::replace(s, from, to);
+		}
+	}
+	return s;
+}
+#endif // NK_
+
 /*!	展開済みメタ文字列のキャッシュを作成・更新する
 	@retval 有効な展開済み置換前文字列の数
 	@date 2003.01.27 Moca 新規作成
@@ -474,16 +494,20 @@ bool CFileNameManager::GetMenuFullLabel(
 			TCHAR temp[_MAX_PATH] = {};
 			::PathCompactPathEx(temp, szFileName, compactlen, L'\\');
 			
+			std::tstring temp2 = RestoreFastFileName(szFileName);  // 縮小表記を復元する
+			TCHAR temp3[_MAX_PATH] = {};
+			ExpandMetaToFolder(temp2.c_str(), temp3, _MAX_PATH);
+			
 			DWORD size_low, size_high;
 			bool isDir = false;
 			bool isInvalid = false;
 			
-			if (::PathIsDirectory(szFileName)) {
+			if (::PathIsDirectory(temp3)) {
 				isDir = true;
 			}
 			else {
 				HANDLE hFile;
-				hFile = CreateFile(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				hFile = CreateFile(temp3, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 				if (hFile != INVALID_HANDLE_VALUE) {
 					size_low = GetFileSize(hFile,&size_high);
 					CloseHandle(hFile);
