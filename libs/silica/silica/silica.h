@@ -11,6 +11,7 @@
 #include "basis.h"
 #include "using.h"
 #include "log.hpp"
+#include "split_string.hpp"
 #include "util.hpp"
 #include "file.hpp"
 #include "registry.hpp"

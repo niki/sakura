@@ -12,24 +12,21 @@
 
 namespace si {
 
-//==================================================================
-// file
-//==================================================================
 namespace file {
 
-//------------------------------------------------------------------
-//! 指定のファイルパスが存在するか
-//! @param path パス名
-//------------------------------------------------------------------
+/*!
+ * 指定のファイルパスが存在するか
+ * @param path パス名
+ */
 SILICA_INLINE BOOL exist(const std::tstring &path)
 {
 	return ::PathFileExists(path.c_str());
 }
 
-//------------------------------------------------------------------
-//! ファイル名の取得 (e.g. C:\Windows\System32\calc.exe => calc.exe)
-//! @param path パス名
-//------------------------------------------------------------------
+/*!
+ * ファイル名の取得 (e.g. C:\Windows\System32\calc.exe => calc.exe)
+ * @param path パス名
+ */
 SILICA_INLINE std::tstring fname(const std::tstring &path)
 {
 	size_t pos = path.rfind(_T('\\'));
@@ -45,10 +42,10 @@ SILICA_INLINE std::tstring fname(const std::tstring &path)
 	return path;
 }
 
-//------------------------------------------------------------------
-//! ディレクトリ名の取得 (e.g. C:\Windows\System32\calc.exe => C:\Windows\System32\)
-//! @param path パス名
-//------------------------------------------------------------------
+/*!
+ * ディレクトリ名の取得 (e.g. C:\Windows\System32\calc.exe => C:\Windows\System32\)
+ * @param path パス名
+ */
 SILICA_INLINE std::tstring dirname(const std::tstring &path, bool lastDelimiter = true)
 {
 	size_t pos = path.rfind(_T('\\'));
@@ -66,10 +63,10 @@ SILICA_INLINE std::tstring dirname(const std::tstring &path, bool lastDelimiter 
 	return _T("");
 }
 
-//------------------------------------------------------------------
-//! ベース名の取得 (e.g. C:\Windows\System32\calc.exe => C:\Windows\System32\calc)
-//! @param path パス名
-//------------------------------------------------------------------
+/*!
+ * ベース名の取得 (e.g. C:\Windows\System32\calc.exe => C:\Windows\System32\calc)
+ * @param path パス名
+ */
 SILICA_INLINE std::tstring basename(const std::tstring &path)
 {
 	std::tstring s = fname(path);
@@ -80,10 +77,10 @@ SILICA_INLINE std::tstring basename(const std::tstring &path)
 	return _T("");
 }
 
-//------------------------------------------------------------------
-//! 拡張子名の取得 (e.g. C:\Windows\System32\calc.exe => .exe)
-//! @param path パス名
-//------------------------------------------------------------------
+/*!
+ * 拡張子名の取得 (e.g. C:\Windows\System32\calc.exe => .exe)
+ * @param path パス名
+ */
 SILICA_INLINE std::tstring extname(const std::tstring &path)
 {
 	std::tstring s = fname(path);
@@ -92,6 +89,72 @@ SILICA_INLINE std::tstring extname(const std::tstring &path)
 		return s.substr(pos);
 	}
 	return _T("");
+}
+
+/*!
+ * ファイルパスの縮小
+ * @param dest 出力バッファ
+ * @param path パス
+ * @param cc_len 縮小する最大長
+ * @param sepa セパレータ
+ */
+SILICA_INLINE bool PathCompactPath(TCHAR *dest, const std::tstring &path, int cc_len, TCHAR sepa)
+{
+	std::tstring dir = dirname(path, false);
+	std::tstring file = fname(path);
+	
+	si::text::SplitString split(dir, sepa);
+	
+	if (split.Size() < 2) {
+		_tcscpy_s(dest, path.size() * sizeof(TCHAR), path.c_str());
+		return false;
+	}
+	
+	bool compact = false;
+	
+	while (1) {
+		int l = file.size();
+		
+		// 長さを計算
+		for (int i = 0; i < split.Size(); i++) {
+			l += split.At(i).size() + 1; /*セパレータ分*/;
+		}
+		
+		// 縮小サイズをオーバーしている
+		if (l > cc_len) {
+			int remove = split.Size() / 2;
+			split.IgnoreToken(remove);
+			compact = true;
+		}
+		else {
+			break;
+		}
+	}
+	
+	int center = -1;
+	
+	if (compact) {
+		center = split.Size() / 2;
+	}
+	
+	std::tstring result;
+	
+	for (int i = 0; i < split.Size(); i++) {
+		if (i == center) {
+			result += _T("...");
+			result += sepa;
+		}
+		else {
+			result += split.At(i);
+			result += sepa;
+		}
+	}
+	
+	result += file;
+	
+	_tcscpy_s(dest, _MAX_PATH, result.c_str());
+	
+	return true;
 }
 
 } // namespace file

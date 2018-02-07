@@ -492,7 +492,8 @@ bool CFileNameManager::GetMenuFullLabel(
 			int compactlen = (int)RegKey(NK_REGKEY).get(_T("FilePathCompactLength"), NK_FILEPATH_COMPACT_LENGTH);
 			
 			TCHAR temp[_MAX_PATH] = {};
-			::PathCompactPathEx(temp, szFileName, compactlen, L'\\');
+			//::PathCompactPathEx(temp, szFileName, compactlen, L'\\');
+			si::file::PathCompactPath(temp, szFileName, compactlen, L'\\');
 			
 			std::tstring temp2 = RestoreFastFileName(szFileName);  // 縮小表記を復元する
 			TCHAR temp3[_MAX_PATH] = {};
