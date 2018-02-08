@@ -19,7 +19,7 @@ Introduction
 
 Download  
 --------
-- v2.068 (2018/02/07)  
+- v2.068 (2018/02/08)  
     [sakura-fix_2.068.zip](http://konru.org/r/sakura-fix_2.068.zip) (32-bit)  
     [sakura-fix_2.068_64.zip](http://konru.org/r/sakura-fix_2.068_64.zip) (64-bit)  
     - Fix 最近使ったファイル/フォルダ名の短縮位置を中間あたりにする  
