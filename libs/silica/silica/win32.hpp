@@ -12,9 +12,6 @@
 
 namespace si {
 
-//==================================================================
-// win32
-//==================================================================
 namespace win32 {
 
 SILICA_INLINE void FillSolidRect(HDC hdc, COLORREF clr, RECT *pRect)

@@ -15,16 +15,13 @@
 
 namespace si {
 
-//==================================================================
-// util
-//==================================================================
 namespace util {
 
-//------------------------------------------------------------------
-//! 文字列を真偽値に変換
-//! @param s
-//! @return true/false
-//------------------------------------------------------------------
+/*!
+ * 文字列を真偽値に変換
+ * @param s
+ * @return true/false
+ */
 SILICA_INLINE bool to_b(const std::string &s)
 {
 	return !(s == "false" || s == "False" || s == "0");
@@ -34,9 +31,9 @@ SILICA_INLINE bool to_b(const std::wstring &s)
 	return !(s == L"false" || s == L"False" || s == L"0");
 }
 
-//------------------------------------------------------------------
-//! wstring を string に変換
-//------------------------------------------------------------------
+/*!
+ * wstring を string に変換
+ */
 SILICA_INLINE std::string to_bytes(const std::wstring &s)
 {
 	if (s.empty()) return "";
@@ -44,9 +41,9 @@ SILICA_INLINE std::string to_bytes(const std::wstring &s)
 	return cv.to_bytes(s.c_str()); //wstring→string
 }
 
-//------------------------------------------------------------------
-//! string を wstring に変換
-//------------------------------------------------------------------
+/*!
+ * string を wstring に変換
+ */
 SILICA_INLINE std::wstring from_bytes(const std::string &s)
 {
 	if (s.empty()) return L"";
@@ -54,11 +51,11 @@ SILICA_INLINE std::wstring from_bytes(const std::string &s)
 	return cv.from_bytes(s.c_str()); //string→wstring
 }
 
-//------------------------------------------------------------------
-//! 文字列の左端から指定の文字を取り除く
-//! @param s
-//! @param c
-//------------------------------------------------------------------
+/*!
+ * 文字列の左端から指定の文字を取り除く
+ * @param s
+ * @param c
+ */
 SILICA_INLINE std::tstring ltrim(const std::tstring &s, const TCHAR c)
 {
 	const TCHAR *p = s.c_str();
@@ -68,11 +65,11 @@ SILICA_INLINE std::tstring ltrim(const std::tstring &s, const TCHAR c)
 	return p;
 }
 
-//------------------------------------------------------------------
-//! 文字列の右端から指定の文字を取り除く
-//! @param s
-//! @param c
-//------------------------------------------------------------------
+/*!
+ * 文字列の右端から指定の文字を取り除く
+ * @param s
+ * @param c
+ */
 SILICA_INLINE std::tstring rtrim(const std::tstring &s, const TCHAR c)
 {
 	const TCHAR *p = s.c_str() + s.length() - 1;
@@ -82,9 +79,9 @@ SILICA_INLINE std::tstring rtrim(const std::tstring &s, const TCHAR c)
 	return s.substr(0, ((size_t)p - (size_t)s.c_str()) / sizeof(TCHAR) + 1);
 }
 
-//------------------------------------------------------------------
-//! 文字列の置換
-//------------------------------------------------------------------
+/*!
+ * 文字列の置換
+ */
 SILICA_INLINE int replace(std::tstring &s, const std::tstring &from, const std::tstring &to)
 {
 	int repcnt = 0;

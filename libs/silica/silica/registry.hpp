@@ -60,14 +60,11 @@
 
 namespace si {
 
-//==================================================================
-// reg
-//==================================================================
 namespace reg {
 
-//------------------------------------------------------------------
-//! ini形式のキー情報からレジストリキー名作成
-//------------------------------------------------------------------
+/*!
+ * ini形式のキー情報からレジストリキー名作成
+ */
 SILICA_INLINE std::tstring genkey(const std::tstring &prof, const std::tstring &section = _T(""))
 {
 	if (section.empty()) {
@@ -82,9 +79,9 @@ SILICA_INLINE std::tstring genkey(const std::tstring &prof, const std::tstring &
 
 } // namespace si
 
-//------------------------------------------------------------------
-//! レジストリクラス
-//------------------------------------------------------------------
+/*!
+ * レジストリクラス
+ */
 class RegKey {
 public:
 	//RegKey() : hKey(0) {}
@@ -243,9 +240,9 @@ public:
 	}
 };
 
-//------------------------------------------------------------------
-//! レジストリキーのエントリ列挙
-//------------------------------------------------------------------
+/*!
+ * レジストリキーのエントリ列挙
+ */
 SILICA_INLINE bool EnumRegKeyEntry(const std::tstring &key, std::vector<std::tstring> &e,
                                    std::vector<std::tstring> *v = nullptr)
 {
@@ -296,13 +293,13 @@ SILICA_INLINE bool EnumRegKeyEntry(const std::tstring &key, std::vector<std::tst
 	return true;
 }
 
-//------------------------------------------------------------------
-//! レジストリキーの読み取り(SZ)
-//! @param prof プロファイル名
-//! @param section セクション名
-//! @param entry エントリー名
-//! @param data データ
-//------------------------------------------------------------------
+/*!
+ * レジストリキーの読み取り(SZ)
+ * @param prof プロファイル名
+ * @param section セクション名
+ * @param entry エントリー名
+ * @param data データ
+ */
 SILICA_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstring &section,
                                        const std::tstring &entry, std::tstring &data)
 {
@@ -345,13 +342,13 @@ SILICA_INLINE bool RegGetProfileString(const std::tstring &prof, const std::tstr
 	}
 }
 
-//------------------------------------------------------------------
-//! レジストリキーの書き込み(SZ)
-//! @param prof プロファイル名
-//! @param section セクション名
-//! @param entry エントリー名
-//! @param data データ
-//------------------------------------------------------------------
+/*!
+ * レジストリキーの書き込み(SZ)
+ * @param prof プロファイル名
+ * @param section セクション名
+ * @param entry エントリー名
+ * @param data データ
+ */
 SILICA_INLINE bool RegSetProfileString(const std::tstring &prof, const std::tstring &section,
                                        const std::tstring &entry, const std::tstring &data)
 {
