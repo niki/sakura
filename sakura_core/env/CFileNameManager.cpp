@@ -528,11 +528,13 @@ bool CFileNameManager::GetMenuFullLabel(
 			
 			if (isInvalid) {
 				// フォルダでもファイルでもないと判断した場合はフォルダと同じ扱いにする
-				_stprintf_s( szFileName, _T("%s"), temp);
+				std::tstring temp7 = si::util::rtrim(temp, _T('\\'));
+				_stprintf_s( szFileName, _T("%s"), temp7.c_str());
 			}
 			else if (isDir) {
 				// フォルダ
-				_stprintf_s( szFileName, _T("%s"), temp);
+				std::tstring temp7 = si::util::rtrim(temp, _T('\\'));
+				_stprintf_s( szFileName, _T("%s"), temp7.c_str());
 			}
 			else if (size_low < 1024) {
 				// 1KB未満
