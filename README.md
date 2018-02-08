@@ -3,7 +3,7 @@ Introduction
 
 <details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
 <ul>
-<li>Machine: Celeron 3215U 1.7GHz, Memory 8GB, Windows10 Home 1709
+<li>Machine: Celeron 3215U 1.7GHz / Memory 8GB / Windows10 Home 1709
 <li>Compiler: Visual Studio 2017
 </details>
 
@@ -19,10 +19,11 @@ Introduction
 
 Download  
 --------
-- v2.067 (2018/02/01)  
-    [sakura-fix_2.067.zip](http://konru.org/release/sakura-fix_2.067.zip) (32-bit)  
-    [sakura-fix_2.067_64.zip](http://konru.org/release/sakura-fix_2.067_64.zip) (64-bit)  
-    - Fix 最近使ったファイル/フォルダにアクセラレータ文字を使用しない  
+- v2.068 (2018/02/07)  
+    [sakura-fix_2.068.zip](http://konru.org/r/sakura-fix_2.068.zip) (32-bit)  
+    [sakura-fix_2.068_64.zip](http://konru.org/r/sakura-fix_2.068_64.zip) (64-bit)  
+    - Fix 最近使ったファイル/フォルダ名の短縮位置を中間あたりにする  
+    - Fix 最近使ったフォルダ名の終端にセパレータはつけない
     - Minor fixes  
 
 - sakura.keywordset.csv  
