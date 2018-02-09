@@ -44,9 +44,17 @@ const DWORD p_helpids[] = {	//12900
 // 2006.01.17 Moca COMPILER_VERを追加
 // 2010.04.15 Moca icc/dmcを追加しCPUを分離
 #if defined(_M_IA64)
+#ifdef NK_FIX_VERDLG
+#  define TARGET_M_SUFFIX "_I64 "
+#else
 #  define TARGET_M_SUFFIX "_I64"
+#endif // NK_
 #elif defined(_M_AMD64)
+#ifdef NK_FIX_VERDLG
+#  define TARGET_M_SUFFIX "_A64 "
+#else
 #  define TARGET_M_SUFFIX "_A64"
+#endif // NK_
 #else
 #  define TARGET_M_SUFFIX ""
 #endif
@@ -76,31 +84,6 @@ const DWORD p_helpids[] = {	//12900
 #  define COMPILER_TYPE "D"
 #  define COMPILER_VER __DMC__
 #elif defined(_MSC_VER)
-#  ifdef NK_FIX_VERDLG
-//https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
-#    if (_MSC_VER == 1912)
-#      define COMPILER_TYPE2 "MSVS 2017 Update 5"
-#    elif (_MSC_VER == 1911)
-#      define COMPILER_TYPE2 "MSVS 2017 Update 3 & 4"
-#    elif (_MSC_VER == 1910)
-#      define COMPILER_TYPE2 "MSVS 2017 Update 1 & 2"
-#    elif (_MSC_VER == 1900)
-#      if (_MSC_FULL_VER >= 190024210)
-#        define COMPILER_TYPE2 "MSVS 2015 Update 3"
-#      elif (_MSC_FULL_VER == 190023918)
-#        define COMPILER_TYPE2 "MSVS 2015 Update 2"
-#      elif (_MSC_FULL_VER == 190023506)
-#        define COMPILER_TYPE2 "MSVS 2015 Update 1"
-#      elif (_MSC_FULL_VER == 190023026)
-#        define COMPILER_TYPE2 "MSVS 2015"
-#      else
-#        define COMPILER_TYPE2 "MSVS 2015"
-#      endif
-#    else
-#      define COMPILER_TYPE2 "MSVS (Any of ver.)"
-#    endif
-#    define COMPILER_VER2 _MSC_FULL_VER
-#  endif // NK_FIX_VERDLG
 #  define COMPILER_TYPE "V"
 #  define COMPILER_VER _MSC_VER
 #else
@@ -227,7 +210,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef NK_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%03d (") _T(TARGET_M_SUFFIX2) _T("), Based on Revision %d\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%03d (" TARGET_M_SUFFIX2 "/" MY_RTL ") by " NK_AUTHOR ", Based on r%d\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		BASE_REV
@@ -298,16 +281,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// 2011.06.01 nasukoji	各国語メッセージリソース対応
 	LPCTSTR pszDesc = LS( IDS_ABOUT_DESCRIPTION );
 	if( _tcslen(pszDesc) > 0 ){
-#ifdef NK_FIX_VERDLG
-		auto_sprintf( szMsg, pszDesc,
-			_T(COMPILER_TYPE2), COMPILER_VER2,
-			TARGET_M_SUFFIX[0] ? _T("x64") : _T("x86"),
-			_T(MY_RTL),
-			_T(NK_AUTHOR), _T(NK_AUTHOR_PAGE)
-		);
-#else
 		_tcsncpy( szMsg, pszDesc, _countof(szMsg) - 1 );
-#endif // NK_
 		szMsg[_countof(szMsg) - 1] = 0;
 		::DlgItem_SetText( GetHwnd(), IDC_EDIT_ABOUT, szMsg );
 	}

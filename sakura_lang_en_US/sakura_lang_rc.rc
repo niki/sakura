@@ -3669,17 +3669,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_AUTHOR_PAGE         "http://sakura-editor.sourceforge.net/"
-#ifdef NK_FIX_VERDLG
-    IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n\
-\r\n\
-* Build : %ts (%d)\r\n\
-* Platform : %ts, %ts\r\n\
-\r\n\
-* Author : %ts (%ts)\r\n\
-"
-#else
     IDS_ABOUT_DESCRIPTION   "This software is the renamed [Text Editor(Joint Development Version)].\r\nIt is free for use irrespective of use commercially or not but,Source Code Copyright reserved by the person as described in each section.\r\nThis software is distributed without guarantee.\r\n"
-#endif  // NK_
 END
 
 STRINGTABLE DISCARDABLE 
