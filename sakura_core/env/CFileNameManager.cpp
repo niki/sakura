@@ -493,7 +493,8 @@ bool CFileNameManager::GetMenuFullLabel(
 			
 			TCHAR temp[_MAX_PATH] = {};
 			//::PathCompactPathEx(temp, szFileName, compactlen, L'\\');
-			si::file::PathCompactPath(temp, szFileName, compactlen, L'\\');
+			//si::file::PathCompactPath(temp, szFileName, compactlen, L'\\');
+			si::file::PathCompactPath2(temp, szFileName, compactlen, L'\\');
 			
 			std::tstring temp2 = RestoreFastFileName(szFileName);  // 縮小表記を復元する
 			TCHAR temp3[_MAX_PATH] = {};

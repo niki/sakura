@@ -49,7 +49,7 @@ public:
 	 * @param index インデックス (無視されたトークンはスキップします)
 	 * @return トークン
 	 */
-	std::tstring At(int index) const
+	std::tstring &At(int index)
 	{
 		int c = 0;
 
