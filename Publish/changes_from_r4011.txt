@@ -10,6 +10,8 @@ Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
 -     	Imp: 文字列を一度にExtTextOutで描画する  [patchunicode:#588]
 ---------------------------------------------------------------------------
 Mearge from http://svn.code.sf.net/p/sakura-editor/code/sakura/trunk2
+ r4205	Keep: Jscriptマクロ高速化 [patchunicode:#1015]
+ r4204	Keep: IsFilePath()整理 [patchunicode:#1114]
  r4201	Fix: 矩形選択置換が範囲を守っていなかった。 [patchunicode:#1028] by Moca [patchunicode:#1113] by ds14050
  r4199	Fix: マクロのファイル選択でフィルターを設定する [patchunicode:#1100]
  r4197	Keep: CDlgFileUpdateQueryクラス整理 [patchunicode:#1111]
