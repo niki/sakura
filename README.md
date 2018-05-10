@@ -4,7 +4,7 @@ Introduction
 <details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
 <ul>
 <li>Machine: Celeron 3215U 1.7GHz / Memory 8GB / Windows10 Home 1709
-<li>Compiler: Visual Studio 2017
+<li>Compiler: Visual Studio 2017 (v15.7.1)
 </details>
 
 <details open><summary>Policy</summary>
@@ -19,11 +19,12 @@ Introduction
 
 Download  
 --------
-- v2.068 (2018/02/08)  
-    [sakura-fix_2.068.zip](http://konru.org/r/sakura-fix_2.068.zip) (32-bit)  
-    [sakura-fix_2.068_64.zip](http://konru.org/r/sakura-fix_2.068_64.zip) (64-bit)  
-    - Fix 最近使ったファイル/フォルダ名の短縮位置を中間あたりにする  
-    - Fix 最近使ったフォルダ名の終端にセパレータはつけない
+- v2.069 (2018/04/??)  
+    [sakura-fix_2.069.zip](http://konru.org/r/sakura-fix_2.069.zip) (32-bit)  
+    [sakura-fix_2.069_64.zip](http://konru.org/r/sakura-fix_2.069_64.zip) (64-bit)  
+    - Fix 最近使ったファイル/フォルダ名の短縮処理の改良  
+    - Merge sakura r4204, r4205  
+    - Viual Studio の更新
     - Minor fixes  
 
 - sakura.keywordset.csv  
