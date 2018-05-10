@@ -19,7 +19,7 @@ Introduction
 
 Download  
 --------
-- v2.069 (2018/04/??)  
+- v2.069 (2018/05/10)  
     [sakura-fix_2.069.zip](http://konru.org/r/sakura-fix_2.069.zip) (32-bit)  
     [sakura-fix_2.069_64.zip](http://konru.org/r/sakura-fix_2.069_64.zip) (64-bit)  
     - Fix 最近使ったファイル/フォルダ名の短縮処理の改良  
