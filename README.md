@@ -24,7 +24,7 @@ Download
     [sakura-fix_2.069_64.zip](http://konru.org/r/sakura-fix_2.069_64.zip) (64-bit)  
     - Fix 最近使ったファイル/フォルダ名の短縮処理の改良  
     - Merge sakura r4204, r4205  
-    - Viual Studio の更新
+    - Visual Studio の更新 (to v15.7.1)
     - Minor fixes  
 
 - sakura.keywordset.csv  
