@@ -10,7 +10,7 @@ start /w /MIN MakefileMake -file=..\sakura_core\Makefile -dir=..\sakura_core
 ::   echo You can safely ignore this message - see svnrev.h for details.
 ::   copy /Y "..\sakura_core\svnrev_unknown.h" "..\sakura_core\svnrev.h"
 :: )
-copy /Y "..\sakura_core\svnrev_unknown.h" "..\sakura_core\svnrev.h"
+:: copy /Y "..\sakura_core\svnrev_unknown.h" "..\sakura_core\svnrev.h"
 
 ENDLOCAL
 :: Always return an errorlevel of 0 -- this allows compilation to continue if SubWCRev failed.

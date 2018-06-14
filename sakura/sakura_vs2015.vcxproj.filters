@@ -139,9 +139,6 @@
     <ClInclude Include="..\sakura_core\String_define.h">
       <Filter>Other Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\svnrev.h">
-      <Filter>Other Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sakura_core\CAutoReloadAgent.h">
       <Filter>Cpp Source Files</Filter>
     </ClInclude>

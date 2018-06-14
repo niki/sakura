@@ -24,7 +24,6 @@
 #include "uiparts/HandCursor.h"
 #include "util/file.h"
 #include "util/module.h"
-#include "svnrev.h"
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "sakura.hh"
 
@@ -210,27 +209,17 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef NK_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%03d (" TARGET_M_SUFFIX2 "/" MY_RTL ") by " NK_AUTHOR ", Based on r%d\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%03d (" TARGET_M_SUFFIX2 "/" MY_RTL ") by " NK_AUTHOR "\r\n"),
 		HIWORD( dwVersionMS ),
-		LOWORD( dwVersionMS ),
-		BASE_REV
+		LOWORD( dwVersionMS )
 	);
 #else
-#if (SVN_REV == 0)
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		HIWORD( dwVersionLS ),
 		LOWORD( dwVersionLS )
 	);
-#else
-	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (Rev.") _T(SVN_REV_STR) _T(")\r\n"),
-		HIWORD( dwVersionMS ),
-		LOWORD( dwVersionMS ),
-		HIWORD( dwVersionLS ),
-		LOWORD( dwVersionLS )
-	);
-#endif
 #endif // NK_
 	cmemMsg.AppendString( szMsg );
 
