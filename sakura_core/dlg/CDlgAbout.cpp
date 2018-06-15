@@ -209,7 +209,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef NK_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%03d (" TARGET_M_SUFFIX2 "/" MY_RTL ") by " NK_AUTHOR "\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%d (" TARGET_M_SUFFIX2 "/" MY_RTL ") by " NK_AUTHOR "\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS )
 	);
