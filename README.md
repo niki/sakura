@@ -31,7 +31,7 @@ Download
     - Minor fixes  
 
 - sakura.keywordset.csv  
-    [sakura.keywordset.csv](Publish/sakura.keywordset.csv)は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
+    [sakura.keywordset.csv](Publish/sakura.keywordset.csv) は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
     「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
     - このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
     - 使用しない場合はいつも通りの動作です (sakura.iniに書き込まれる)  
@@ -131,13 +131,6 @@ Changed
 <li>WM_ERASEBKGNDの抑制
 </details>
 
-
-<img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201707130016.png" width="75%" alt="検索マーク/検索ダイアログ">
-<img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201706041815.png" width="50%" alt="Grep">
-
-
-<br>
-
 **<a name="patchunicode">マージ済みパッチ**  
 
 - [patchunicode:#1047](https://sourceforge.net/p/sakura-editor/patchunicode/1047/) プロポーショナル版で変更された単語単位移動を戻す
@@ -147,6 +140,14 @@ Changed
 
 
 <br>
+<br>
+
+<img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201707130016.png" width="75%" alt="検索マーク/検索ダイアログ">
+<img src="https://raw.github.com/wiki/niki/sakura/images/sakura_201706041815.png" width="50%" alt="Grep">
+
+
+<br>
+
 
 Cregit  
 ------
