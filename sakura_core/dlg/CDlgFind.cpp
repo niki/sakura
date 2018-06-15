@@ -165,14 +165,16 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 				m_pShareData->m_Common.m_sKeyBind.m_pKeyNameArr
 			);
 			if (nFuncCode == F_UP) {
-				pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
-				                                         (LPARAM)GetHwnd(), 0, 0, 0);
-				pcEditView->Redraw();
+				//pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
+				//                                         (LPARAM)GetHwnd(), 0, 0, 0);
+				//pcEditView->Redraw();
+				::SetFocus( pcEditView->GetHwnd() );  // エディタにフォーカスを戻す 20180615
 			}
 			else if (nFuncCode == F_DOWN) {
-				pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
-				                                         (LPARAM)GetHwnd(), 0, 0, 0);
-				pcEditView->Redraw();
+				//pcEditView->GetCommander().HandleCommand((EFunctionCode)(nFuncCode | FA_FROMKEYBOARD), true,
+				//                                         (LPARAM)GetHwnd(), 0, 0, 0);
+				//pcEditView->Redraw();
+				::SetFocus( pcEditView->GetHwnd() );  // エディタにフォーカスを戻す 20180615
 			}
 			else if (nFuncCode == F_SEARCH_PREV) {
 				int nRet = GetData();
