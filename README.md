@@ -18,12 +18,11 @@ Introduction
 
 Download  
 --------
-- v2.069 (2018/05/10)  
-    [sakura-fix_2.069.zip](http://konru.org/r/sakura-fix_2.069.zip) (32-bit)  
-    [sakura-fix_2.069_64.zip](http://konru.org/r/sakura-fix_2.069_64.zip) (64-bit)  
-    - Fix 最近使ったファイル/フォルダ名の短縮処理の改良  
-    - Merge sakura r4204, r4205  
-    - Visual Studio の更新 (to v15.7.1)
+- v2.70 (2018/06/15)  
+    [sakura-fix_2.70.zip](http://nekomimix.jp/r/sakura-fix_2.70.zip) (32-bit)  
+    [sakura-fix_2.70_64.zip](http://nekomimix.jp/r/sakura-fix_2.70_64.zip) (64-bit)  
+    - Fix Svn関連の削除
+    - Merge [sakura-editor/sakura] pull request #77 from beru/grep_speed_up
     - Minor fixes  
 
 - sakura.keywordset.csv  
