@@ -30,6 +30,8 @@ Download
     - Merge [sakura-editor/sakura] pull request #77 from beru/grep_speed_up
     - Minor fixes  
 
+---
+
 - sakura.keywordset.csv  
     [sakura.keywordset.csv](Publish/sakura.keywordset.csv) は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
     「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
@@ -37,9 +39,9 @@ Download
     - 使用しない場合はいつも通りの動作です (sakura.iniに書き込まれる)  
 
 - keyword_pack.zip (2017/06/16)  
-    キーワードセット集 patchunicode:#720対応 [Download](Publish/keyword_pack.zip)  
+    キーワードセット集 patchunicode:#720 対応 [Download](Publish/keyword_pack.zip)  
 
-- 変更履歴はコミットログ([Link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([Link](sakura_core/my_config.h)) を見てね.  
+※ 変更履歴はコミットログ([Link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([Link](sakura_core/my_config.h)) を見てね.  
 
 
 <br>
