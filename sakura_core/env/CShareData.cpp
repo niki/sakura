@@ -222,8 +222,13 @@ bool CShareData::InitShareData()
 		{
 			CommonSetting_General& sGeneral = m_pShareData->m_Common.m_sGeneral;
 
+#ifdef NK_FIX_DEFAULT_VALUE
+			sGeneral.m_nMRUArrNum_MAX = 36;	/* ファイルの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
+			sGeneral.m_nOPENFOLDERArrNum_MAX = 20;	/* フォルダの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
+#else
 			sGeneral.m_nMRUArrNum_MAX = 15;	/* ファイルの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
 			sGeneral.m_nOPENFOLDERArrNum_MAX = 15;	/* フォルダの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
+#endif // NK_
 
 			sGeneral.m_nCaretType = 0;					/* カーソルのタイプ 0=win 1=dos */
 			sGeneral.m_bIsINSMode = true;				/* 挿入／上書きモード */
@@ -235,12 +240,20 @@ bool CShareData::InitShareData()
 			sGeneral.m_bCloseAllConfirm = FALSE;		/* [すべて閉じる]で他に編集用のウィンドウがあれば確認する */	// 2006.12.25 ryoji
 			sGeneral.m_bExitConfirm = FALSE;			/* 終了時の確認をする */
 			sGeneral.m_nRepeatedScrollLineNum = CLayoutInt(3);	/* キーリピート時のスクロール行数 */
+#ifdef NK_FIX_DEFAULT_VALUE
+			sGeneral.m_nRepeatedMoveCaretNum = 1;		// キーリピート時の左右移動数
+#else
 			sGeneral.m_nRepeatedMoveCaretNum = 2;		// キーリピート時の左右移動数
+#endif // NK_
 			sGeneral.m_nRepeatedScroll_Smooth = FALSE;	/* キーリピート時のスクロールを滑らかにするか */
 			sGeneral.m_nPageScrollByWheel = 0;			/* キー/マウスボタン + ホイールスクロールでページスクロールする */	// 2009.01.17 nasukoji
 			sGeneral.m_nHorizontalScrollByWheel = 0;	/* キー/マウスボタン + ホイールスクロールで横スクロールする */		// 2009.01.17 nasukoji
 
+#ifdef NK_FIX_DEFAULT_VALUE
+			sGeneral.m_bUseTaskTray = FALSE;
+#else
 			sGeneral.m_bUseTaskTray = TRUE;				/* タスクトレイのアイコンを使う */
+#endif // NK_
 #ifdef _DEBUG
 			sGeneral.m_bStayTaskTray = FALSE;				/* タスクトレイのアイコンを常駐 */
 #else
@@ -375,7 +388,11 @@ bool CShareData::InitShareData()
 			CommonSetting_File& sFile = m_pShareData->m_Common.m_sFile;
 
 			//ファイルの排他制御
+#ifdef NK_FIX_DEFAULT_VALUE
+			sFile.m_nFileShareMode = SHAREMODE_NOT_EXCLUSIVE;	// ファイルの排他制御モード
+#else
 			sFile.m_nFileShareMode = SHAREMODE_DENY_WRITE;	// ファイルの排他制御モード
+#endif // NK_
 			sFile.m_bCheckFileTimeStamp = true;			// 更新の監視
 			sFile.m_nAutoloadDelay = 0;					// 自動読込時遅延
 			sFile.m_bUneditableIfUnwritable = true;		// 上書き禁止検出時は編集禁止にする
