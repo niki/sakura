@@ -18,14 +18,10 @@ Introduction
 
 Download  
 --------
-- v2.71 (2018/06/15)  
-    [sakura-fix_2.71.zip](http://nekomimix.jp/r/sakura-fix_2.71.zip) (32-bit)  
-    [sakura-fix_2.71_64.zip](http://nekomimix.jp/r/sakura-fix_2.71_64.zip) (64-bit)  
+- v2.71 (2018/06/15) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.71.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.71_64.zip)  
     - Fix Windows SDK バージョンを変更 (10.0.16299.0 -> 10.0.17134.0)
 
-- v2.70 (2018/06/15)  
-    [sakura-fix_2.70.zip](http://nekomimix.jp/r/sakura-fix_2.70.zip) (32-bit)  
-    [sakura-fix_2.70_64.zip](http://nekomimix.jp/r/sakura-fix_2.70_64.zip) (64-bit)  
+- v2.70 (2018/06/15) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.70.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.70_64.zip)  
     - Fix Svn関連の削除
     - Merge [sakura-editor/sakura] pull request #77 from beru/grep_speed_up
     - Minor fixes  
