@@ -18,6 +18,9 @@ Introduction
 
 Download  
 --------
+- v2.72 (2018/07/01) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.72.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.72_64.zip)  
+    - Fix [デフォルト値を変更](https://github.com/niki/sakura/commit/c65dbe559311068a63d84c7f9e4368d7926a253e)
+
 - v2.71 (2018/06/15) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.71.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.71_64.zip)  
     - Fix Windows SDK バージョンを変更 (10.0.16299.0 -> 10.0.17134.0)
 
