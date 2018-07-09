@@ -49,7 +49,7 @@
 #include "typeprop/CImpExpManager.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 #include <Uxtheme.h>
 #pragma comment(lib, "uxtheme.lib")
 #endif // NK_
@@ -776,7 +776,7 @@ void CDlgFuncList::SetData()
 		Combo_SetCurSel( hWnd_Combo_Sort , m_nSortType );
 		::ShowWindow( GetDlgItem( GetHwnd(), IDC_STATIC_nSortType ), SW_SHOW );
 		// 2002.11.10 Moca 追加 ソートする
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 		SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
 #else
 		if( SORTTYPE_DEFAULT < m_nSortType ){
@@ -1535,7 +1535,7 @@ void CDlgFuncList::SetTree(bool tagjump, bool nolabel)
 		// 2016.04.24 TVI_LASTは要素数が多いとすごく遅い。TVI_FIRSTを使い後でソートしなおす
 		cTVInsertStruct.hInsertAfter = TVI_FIRST;
 		cTVInsertStruct.item.mask = TVIF_TEXT | TVIF_PARAM;
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 		// 先頭の空白は無視する
 		TCHAR *funcName = pcFuncInfo->m_cmemFuncName.GetStringPtr();
 		while (!(*funcName != _T(' ') && *funcName != _T('\t'))) {
@@ -1766,7 +1766,7 @@ void CDlgFuncList::SetTreeFile()
 			hParentTree.push_back(hParent);
 		}
 	}
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 	HTREEITEM		htiClass = TreeView_GetFirstVisible( hwndTree );
 	while( NULL != htiClass ){
 		TreeView_Expand( hwndTree, htiClass, TVE_EXPAND );
@@ -2059,7 +2059,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 	// フォント設定
 	{
 		HFONT hFontOld = (HFONT)::SendMessageAny(GetItemHwnd(IDC_TREE_FL), WM_GETFONT, 0, 0);
@@ -2210,7 +2210,7 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 			break;
 		case NM_DBLCLK:
 			// 2002.02.16 hor Treeのダブルクリックでフォーカス移動できるように 3/4
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 			if (OnJump()) {
 				m_bWaitTreeProcess=true;
 				::SetWindowLongPtr( GetHwnd(), DWLP_MSGRESULT, TRUE );	// ツリーの展開／縮小をしない
@@ -2283,7 +2283,7 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 	}
 
 #ifdef DEFINE_SYNCCOLOR
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 	bool dock_color_sync = !RegKey(NK_REGKEY).get(_T("OutlineDockSystemColor"), 1);
 	if (dock_color_sync)
 #endif // NK_
@@ -2502,7 +2502,7 @@ static int CALLBACK Compare_by_ItemTextDesc(LPARAM lParam1, LPARAM lParam2, LPAR
 
 BOOL CDlgFuncList::OnDestroy( void )
 {
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 	m_cFontText[0].ReleaseOnDestroy();
 	m_cFontText[1].ReleaseOnDestroy();
 #endif // NK_
@@ -2737,7 +2737,7 @@ BOOL CDlgFuncList::OnJump( bool bCheckAutoClose, bool bFileJump )	//2002.02.08 h
 			}
 		}
 	}
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 	else {
 		return FALSE;
 	}
@@ -2834,7 +2834,7 @@ void CDlgFuncList::SyncColor( void )
 	if( !IsDocking() )
 		return;
 #ifdef DEFINE_SYNCCOLOR
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
   bool dock_color_sync = !RegKey(NK_REGKEY).get(_T("OutlineDockSystemColor"), 1);
   if (!dock_color_sync) return;
 #endif // NK_

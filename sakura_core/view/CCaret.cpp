@@ -184,7 +184,7 @@ CLayoutInt CCaret::MoveCursor(
 	}
 	else{
 #ifdef NK_FIX_SCROLL
-		nCaretMarginY = NK_VERTICAL_SCR;
+		nCaretMarginY = NK_VERTICAL_SCROLL_MARGIN;
 		if( nCaretMarginY < 0 )
 			nCaretMarginY = CLayoutInt(0);
 #else
@@ -241,7 +241,7 @@ CLayoutInt CCaret::MoveCursor(
 			( area.GetViewLeftCol() + area.m_nViewColNum - nScrollMarginRight ) - ptWk_CaretPos.GetX2();
 #ifdef NK_FIX_SCROLL
 		if (nScrollColNum != 0) {
-			static const int kSize = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(NK_HORIZONTAL_SCR));
+			static const int kSize = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(NK_HORIZONTAL_SCROLL_MARGIN));
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize
@@ -256,7 +256,7 @@ CLayoutInt CCaret::MoveCursor(
 		nScrollColNum = area.GetViewLeftCol() + nScrollMarginLeft - ptWk_CaretPos.GetX2();
 #ifdef NK_FIX_SCROLL
 		if (nScrollColNum != 0) {
-			static const int kSize = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(NK_HORIZONTAL_SCR));
+			static const int kSize = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(NK_HORIZONTAL_SCROLL_MARGIN));
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize

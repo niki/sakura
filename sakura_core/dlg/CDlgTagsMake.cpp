@@ -66,7 +66,7 @@ int CDlgTagsMake::DoModal(
 	const TCHAR*	pszPath		//パス
 )
 {
-#ifdef NK_FIX_TAGMAKEDLG
+#ifdef NK_FIX_TAGMAKE_DIALOG
 	auto fnSearchTags = [](const std::tstring &path, const std::tstring &name) -> std::tstring
 	{
 		std::tstring s(path);

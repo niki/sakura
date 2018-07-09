@@ -950,7 +950,7 @@ void CViewCommander::Command_WndScrollDown( void )
 	CLayoutInt	nCaretMarginY;
 
 #ifdef NK_FIX_SCROLL
-	nCaretMarginY = NK_VERTICAL_SCR;
+	nCaretMarginY = NK_VERTICAL_SCROLL_MARGIN;
 	if( nCaretMarginY < 1 )
 		nCaretMarginY = CLayoutInt(1);
 #else
@@ -998,7 +998,7 @@ void CViewCommander::Command_WndScrollUp(void)
 	CLayoutInt	nCaretMarginY;
 
 #ifdef NK_FIX_SCROLL
-	nCaretMarginY = NK_VERTICAL_SCR;
+	nCaretMarginY = NK_VERTICAL_SCROLL_MARGIN;
 	if( nCaretMarginY < 0 )
 		nCaretMarginY = CLayoutInt(0);
 #else

@@ -311,7 +311,7 @@ end_of_func:;
 	if(bFound){
 		if(NULL == pcSelectLogic && ((nLineNumOld > nLineNum)||(nLineNumOld == nLineNum && nIdxOld > nIdx)))
 			m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRNEXT1));
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 		//if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
 		//	GetEditWindow()->m_cDlgFind.SetStatus(0);
 		//}
@@ -343,7 +343,7 @@ end_of_func:;
 		else{
 			AlertNotFound(hwndParent, bReplaceAll, _T("%ls"), pszNotFoundMessage);
 		}
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
 			GetEditWindow()->m_cDlgFind.SetStatus(-2);
 		}
@@ -502,7 +502,7 @@ end_of_func:;
 	if(bFound){
 		if((nLineNumOld < nLineNum)||(nLineNumOld == nLineNum && nIdxOld < nIdx))
 			m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRPREV1));
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 		//if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
 		//	GetEditWindow()->m_cDlgFind.SetStatus(0);
 		//}
@@ -524,7 +524,7 @@ end_of_func:;
 			KeyName.GetStringPtr()
 		);
 	}
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	else {
 		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
 			GetEditWindow()->m_cDlgFind.SetStatus(-3);

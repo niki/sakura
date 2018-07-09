@@ -24,7 +24,7 @@
 #include "util/shell.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 #include "window/CEditWnd.h"
 #include "uiparts/CMenuDrawer.h"
 #endif // NK_
@@ -52,7 +52,7 @@ CDlgFind::CDlgFind()
 {
 	m_sSearchOption.Reset();
 
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	HWND hwndBtn = GetDlgItem(GetHwnd(), IDC_BUTTON_SEARCHNEXT);
 	CMenuDrawer cMenuDrawer;
 	cMenuDrawer.Create(G_AppInstance(), hwndBtn, NULL);
@@ -88,13 +88,13 @@ CDlgFind::CDlgFind()
 	return;
 }
 
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 CDlgFind::~CDlgFind() {
 	::DestroyMenu(m_hMenuPopUp);
 }
 #endif // NK_
 
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 /** 標準以外のメッセージを捕捉する
 	@date 2008.05.28 ryoji 新規作成
 */
@@ -371,7 +371,7 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 
 	// フォント設定	2012/11/27 Uchi
 	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT ), WM_GETFONT, 0, 0 );
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ), 2 );
 #else
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ) );
@@ -384,7 +384,7 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 
 BOOL CDlgFind::OnDestroy()
 {
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	// 最後に入力した文字列を履歴に追加する
 	if (!m_inputText.empty()) {  // 入力中の検索は履歴に残さない
 		CSearchKeywordManager().AddToSearchKeyArr( m_strText.c_str() );
@@ -429,7 +429,7 @@ void CDlgFind::SetData( void )
 	::CheckDlgButton( GetHwnd(), IDC_CHK_WORD, m_sSearchOption.bWordOnly );
 
 	/* 検索／置換  見つからないときメッセージを表示 */
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_NOTIFYNOTFOUND, FALSE );
 #else
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_NOTIFYNOTFOUND, m_bNOTIFYNOTFOUND );
@@ -457,7 +457,7 @@ void CDlgFind::SetData( void )
 	// To Here Jun. 29, 2001 genta
 
 	/* 検索ダイアログを自動的に閉じる */
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_bAutoCloseDlgFind, FALSE );
 #else
 	::CheckDlgButton( GetHwnd(), IDC_CHECK_bAutoCloseDlgFind, m_pShareData->m_Common.m_sSearch.m_bAutoCloseDlgFind );
@@ -471,7 +471,7 @@ void CDlgFind::SetData( void )
 		RECT rcView;
 		CEditView* pcEditView=(CEditView*)m_lParam;
 		::GetWindowRect(pcEditView->GetHwnd(), &rcView);
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 		SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView, CDialog::DLGPLACE_TR);
 #else
 		SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
@@ -479,7 +479,7 @@ void CDlgFind::SetData( void )
 	}
 #endif // NK_
 
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	// 最後に検索した文字列をマークする 2017.6.28 
 	{
 		CEditView* pcEditView=(CEditView*)m_lParam;
@@ -596,7 +596,7 @@ int CDlgFind::GetData( void )
 		return 0;
 	}
 }
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 int CDlgFind::InstantInput( void )
 {
 //	MYTRACE( _T("CDlgFind::GetData()") );
@@ -728,7 +728,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHK_WORD ), TRUE );
 		}
 		break;
-#ifndef NK_FIX_FINDDLG
+#ifndef NK_FIX_FIND_DIALOG
 	case IDC_BUTTON_SEARCHPREV:	/* 上検索 */	//Feb. 13, 2001 JEPRO ボタン名を[IDC_BUTTON1]→[IDC_BUTTON_SERACHPREV]に変更
 		/* ダイアログデータの取得 */
 		nRet = GetData();
@@ -793,7 +793,7 @@ BOOL CDlgFind::OnBnClicked( int wID )
 			OkMessage( GetHwnd(), LS(STR_DLGFIND1) );	// 検索条件を指定してください。
 		}
 		return TRUE;
-#ifndef NK_FIX_FINDDLG
+#ifndef NK_FIX_FIND_DIALOG
 	case IDC_BUTTON_SETMARK:	//2002.01.16 hor 該当行マーク
 		if( 0 < GetData() ){
 			if( m_bModal ){		/* モーダルダイアログか */

@@ -29,7 +29,7 @@ public:
 	||  Constructors
 	*/
 	CDlgFind();
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	~CDlgFind();
 #endif // NK_
 	/*
@@ -38,7 +38,7 @@ public:
 //	int DoModal( HINSTANCE, HWND, LPARAM );	/* モーダルダイアログの表示 */
 	HWND DoModeless( HINSTANCE, HWND, LPARAM );	/* モードレスダイアログの表示 */
 
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* ダイアログのメッセージ処理 *//* BOOL->INT_PTR 2008/7/18 Uchi*/
 	void SetStatus(int stat);
 #endif // NK_
@@ -55,7 +55,7 @@ public:
 	SComboBoxItemDeleter	m_comboDel;
 	CFontAutoDeleter		m_cFontText;
 
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	std::wstring m_inputText;  // 入力中の文字列
 	HMENU m_hMenuPopUp;
 #endif // NK_
@@ -66,7 +66,7 @@ protected:
 	/* オーバーライド? */
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID );
 	int GetData( void );		/* ダイアログデータの取得 */
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 	int InstantInput( void );
 #endif // NK_
 	void SetCombosList( void );	/* 検索文字列/置換後文字列リストの設定 */

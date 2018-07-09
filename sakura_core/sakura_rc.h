@@ -841,7 +841,7 @@
 #define IDC_EDIT_EXCLUDEDIRS            7030
 #define IDC_CHK_CPP                     7500
 #endif // NK_
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 #define IDC_FIND_RESULT                 7600
 #endif // NK_
 #define IDC_STATIC                      -1

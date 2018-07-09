@@ -24,7 +24,7 @@
 #include <Windows.h>
 #include "dlg/CDialog.h"
 #include "doc/CEditDoc.h"
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 #include "util/window.h"
 #endif //NK_
 
@@ -227,7 +227,7 @@ private:
 	POINT				m_ptDefaultSizeClient;
 	RECT				m_rcItems[12];
 	
-#ifdef NK_FIX_OUTLINEDLG
+#ifdef NK_FIX_OUTLINE_DIALOG
 	CFontAutoDeleter		m_cFontText[2];
 #endif // NK_
 };

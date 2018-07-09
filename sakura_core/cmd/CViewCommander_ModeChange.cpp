@@ -157,7 +157,7 @@ void CViewCommander::Command_CANCEL_MODE( int whereCursorIs )
 			m_pCommanderView->GetSelectionInfo().PrintSelectionInfoMsg();
 		}
 	}
-#if defined(NK_FIX_DLG) && NK_CLOSE_DIALOG_WITH_MODE_CANCELLATION
+#if defined(NK_FIX_DIALOG) && NK_CLOSE_DIALOG_WITH_MODE_CANCELLATION
 	{
 		CEditWnd *pEditWnd = m_pCommanderView->m_pcEditWnd;
 		if (pEditWnd->m_cDlgFind.GetHwnd()) { // 「検索」ダイアログ

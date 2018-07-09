@@ -957,7 +957,7 @@ BOOL CShareData::IsPathOpened( const TCHAR* pszPath, HWND* phwndOwner )
 
 			// 同一パスのファイルが既に開かれているか
 			if( 0 == _tcsicmp( pfi->m_szPath, pszPath ) ){
-#ifdef NK_MULTIPLE_OPEN_FILES
+#ifdef NK_FIX_MULTIPLE_OPEN_FILES
 				if (::GetAsyncKeyState(VK_SHIFT)) {
 					return FALSE;
 				}

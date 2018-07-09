@@ -841,7 +841,7 @@ LRESULT CALLBACK SubEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch( uMsg ){
 	case WM_KEYDOWN:
 	{
-#if defined(NK_FIX_DLG) && NK_COMBO_DROP_ALT_AND_UPDOWN_ONLY
+#if defined(NK_FIX_DIALOG) && NK_COMBO_DROP_ALT_AND_UPDOWN_ONLY
 		if (wParam == VK_UP || wParam == VK_DOWN) {  // 上下キーでドロップダウンさせない 2017.7.4 
 			// リストボックスが表示されているときはデフォルト処理
 			HWND hwndCombo = data->hwndCombo;

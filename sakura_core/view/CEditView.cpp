@@ -518,7 +518,7 @@ LRESULT CEditView::DispatchEvent(
 			SB_Marker_Trace(L"WM_APP_SCRBAR_ENDPAINT");
 			SBMarker_->WaitForDraw(false);
 
-#ifdef NK_FIX_FINDDLG
+#ifdef NK_FIX_FIND_DIALOG
 			if (m_pcEditWnd->m_cDlgFind.GetHwnd() && SBMarker_->nSearchFoundLine_ > 0) {
 				m_pcEditWnd->m_cDlgFind.SetStatus(SBMarker_->nSearchFoundLine_);
 			}
@@ -2635,7 +2635,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			gr.SetPen( m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_sColorAttr.m_cTEXT );
 			::MoveToEx(
 				gr,
-#ifdef NK_FIX_CUR_UL
+#ifdef NK_FIX_CUR_UNDERLINE
 				0,//GetTextArea().GetLeftYohaku(),
 #else
 				GetTextArea().GetAreaLeft(),
@@ -2698,7 +2698,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 			GetCaret().m_cUnderLine.Lock();
 
 			PAINTSTRUCT ps;
-#ifdef NK_FIX_CUR_UL
+#ifdef NK_FIX_CUR_UNDERLINE
 			//ps.rcPaint.left = GetTextArea().GetAreaLeft();
 			ps.rcPaint.left = 0;//GetTextArea().GetLeftYohaku();
 #else
