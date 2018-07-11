@@ -4,7 +4,7 @@ Introduction
 <details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
 <ul>
 <li>Machine: Celeron 3215U 1.7GHz / Memory 8GB / Windows10 Home 1803
-<li>Compiler: Visual Studio 2017 (v15.7.1)
+<li>Compiler: Visual Studio 2017 (v15.7.4)
 </details>
 
 <details open><summary>Policy</summary>
@@ -18,6 +18,14 @@ Introduction
 
 Download  
 --------
+- v2.73 (2018/07/12) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.73.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.73_64.zip)  
+    - Merge sakura-editor/sakura, pull request #137 from berryzplus/bugfix/fix_of_typeprop_import
+    - Merge sakura-editor/sakura, pull request #211 from beru/no_hwndProgress_when_bGrepRunning
+    - Merge sakura-editor/sakura, pull request #232 from m-tmatma/feature/copyright-2018
+    - Merge sakura-editor/sakura, pull request #125 from beru/file_loading_speed_up
+    - Merge sakura-editor/sakura, pull request #236 from yoshinrt/fixup_dogrep_localvar_init
+    - Minor fixes  
+
 - v2.72 (2018/07/01) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.72.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.72_64.zip)  
     - Fix [デフォルト値を変更](https://github.com/niki/sakura/commit/c65dbe559311068a63d84c7f9e4368d7926a253e)
 
@@ -26,7 +34,7 @@ Download
 
 - v2.70 (2018/06/15) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.70.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.70_64.zip)  
     - Fix Svn関連の削除
-    - Merge [sakura-editor/sakura] pull request #77 from beru/grep_speed_up
+    - Merge sakura-editor/sakura, pull request #77 from beru/grep_speed_up
     - Minor fixes  
 
 ---
