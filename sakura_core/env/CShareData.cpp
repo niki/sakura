@@ -388,11 +388,7 @@ bool CShareData::InitShareData()
 			CommonSetting_File& sFile = m_pShareData->m_Common.m_sFile;
 
 			//ファイルの排他制御
-#ifdef NK_FIX_DEFAULT_VALUE
 			sFile.m_nFileShareMode = SHAREMODE_NOT_EXCLUSIVE;	// ファイルの排他制御モード
-#else
-			sFile.m_nFileShareMode = SHAREMODE_DENY_WRITE;	// ファイルの排他制御モード
-#endif // NK_
 			sFile.m_bCheckFileTimeStamp = true;			// 更新の監視
 			sFile.m_nAutoloadDelay = 0;					// 自動読込時遅延
 			sFile.m_bUneditableIfUnwritable = true;		// 上書き禁止検出時は編集禁止にする
