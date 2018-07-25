@@ -19,15 +19,14 @@ Introduction
 Download  
 --------
 - v2.74 (2018/07/25) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.74.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.74_64.zip)  
-    - Merge sakura-editor/sakura, pull request #137 from berryzplus/bugfix/fix_of_typeprop_import
-    - Merge sakura-editor/sakura, pull request #211 from beru/no_hwndProgress_when_bGrepRunning
-    - Merge sakura-editor/sakura, pull request #232 from m-tmatma/feature/copyright-2018
-    - Merge sakura-editor/sakura, pull request #125 from beru/file_loading_speed_up
-    - Merge sakura-editor/sakura, pull request #236 from yoshinrt/fixup_dogrep_localvar_init
+    - Merge sakura-editor/sakura, pull request #263 from m-tmatma/feature/share-mode-not-exclusive
+    - Merge sakura-editor/sakura, pull request #267 from m-tmatma/feature/no-wrap-text-default
     - <del>Minor fixes  
 
 <details><summary>Merge sakura-editor/sakura</summary>
 <ul>
+<li>pull request #263 from m-tmatma/feature/share-mode-not-exclusive
+<li>pull request #267 from m-tmatma/feature/no-wrap-text-default
 <li>pull request #137 from berryzplus/bugfix/fix_of_typeprop_import
 <li>pull request #211 from beru/no_hwndProgress_when_bGrepRunning
 <li>pull request #232 from m-tmatma/feature/copyright-2018
