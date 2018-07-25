@@ -26,16 +26,15 @@ Download
     - Merge sakura-editor/sakura, pull request #236 from yoshinrt/fixup_dogrep_localvar_init
     - Minor fixes  
 
-- v2.72 (2018/07/01) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.72.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.72_64.zip)  
-    - Fix [デフォルト値を変更](https://github.com/niki/sakura/commit/c65dbe559311068a63d84c7f9e4368d7926a253e)
-
-- v2.71 (2018/06/15) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.71.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.71_64.zip)  
-    - Fix Windows SDK バージョンを変更 (10.0.16299.0 -> 10.0.17134.0)
-
-- v2.70 (2018/06/15) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.70.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.70_64.zip)  
-    - Fix Svn関連の削除
-    - Merge sakura-editor/sakura, pull request #77 from beru/grep_speed_up
-    - Minor fixes  
+<details><summary>Merge sakura-editor/sakura</summary>
+<ul>
+<li>pull request #137 from berryzplus/bugfix/fix_of_typeprop_import
+<li>pull request #211 from beru/no_hwndProgress_when_bGrepRunning
+<li>pull request #232 from m-tmatma/feature/copyright-2018
+<li>pull request #125 from beru/file_loading_speed_up
+<li>pull request #236 from yoshinrt/fixup_dogrep_localvar_init
+<li>pull request #77 from beru/grep_speed_up
+</details>
 
 ---
 
