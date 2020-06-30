@@ -1,18 +1,18 @@
 Introduction  
 ------------
 
+<details open><summary>Policy</summary>
+<ul>
+<li>v2.3.2.0をベースに修正、機能追加を行っています
+<li>他のエディタを参考にまねっこ
+<li>使っていて気になった点をとりあえず修正してみる
+</details>
+    
 <details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
 <ul>
 <li>Machine: Celeron 3215U 1.7GHz / Memory 8GB / Windows10 Home 1803
 <li>Compiler: Visual Studio 2017 (v15.7.5)
 </details>
-
-<details open><summary>Policy</summary>
-<ul>
-<li>他のエディタを参考にまねっこ
-<li>使っていて気になった点をとりあえず修正してみる
-</details>
-
 
 <br>
 
