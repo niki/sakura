@@ -10,15 +10,19 @@ Introduction
     
 <details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
 <ul>
-<li>Machine: Celeron 3215U 1.7GHz / Memory 8GB / Windows10 Home 1803
-<li>Compiler: Visual Studio 2017 (v15.7.5)
+<li>Machine: Celeron 3215U 1.7GHz / Memory 8GB / Windows10 Home 1903
+<li>Compiler: Visual Studio 2017 Version 15.9.25
 </details>
 
 <br>
 
 Download  
 --------
-- v2.74 (2018/07/25) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.74.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.74_64.zip)  
+- v2.4205.2020.75 (2020-??-??) | [32-bit](http://nekomimix.jp/r/sakura-fix_75.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_75_64.zip)  
+    - Used Visual Studio 2017 Version 15.9.25
+    - Used Windows SDK 10.0.17763.0
+    - バージョン表記の変更
+- v2.74 (2018-07-25) | [32-bit](http://nekomimix.jp/r/sakura-fix_2.74.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.74_64.zip)  
     - Merge sakura-editor/sakura, pull request #263 from m-tmatma/feature/share-mode-not-exclusive
     - Merge sakura-editor/sakura, pull request #267 from m-tmatma/feature/no-wrap-text-default
     - <del>Minor fixes  
