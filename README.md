@@ -159,6 +159,7 @@ Changed
 Cregit  
 ------
 + サクラエディタ公式 https://sakura-editor.github.io/
++ サクラエディタ(Old) https://sourceforge.net/p/sakura-editor/code/HEAD/tree/
 
 ---
 (C) 2017-2020 遊月 @niki.
