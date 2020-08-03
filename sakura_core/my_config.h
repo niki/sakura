@@ -47,7 +47,7 @@
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 // 修正者
-#define NK_AUTHOR       "Niki"
+#define NK_AUTHOR       "yuzuki@niki"
 #define NK_AUTHOR_PAGE  "https://github.com/niki/sakura"
 
 // 拡張用レジストリキー
@@ -57,8 +57,8 @@
 // バージョン情報ダイアログの変更 20170315
 //------------------------------------------------------------------
 #define NK_FIX_VERDLG
-	#define PR_VER      2,74,0,0
-	#define PR_VER_STR "2.74"
+	#define PR_VER      2,4205,2020,74
+	#define PR_VER_STR "2.4205.2020.74"
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------

@@ -60,11 +60,11 @@ const DWORD p_helpids[] = {	//12900
 
 #ifdef NK_FIX_VERDLG
 #if defined(_M_IA64)
-#  define TARGET_M_SUFFIX2 "64bit Itanium"
+#  define TARGET_M_SUFFIX2 "64-bit Itanium"
 #elif defined(_M_AMD64)
-#  define TARGET_M_SUFFIX2 "64bit"
+#  define TARGET_M_SUFFIX2 "64-bit"
 #elif defined(_M_IX86)
-#  define TARGET_M_SUFFIX2 "32bit"
+#  define TARGET_M_SUFFIX2 "32-bit"
 #else
 #  define TARGET_M_SUFFIX2 ""
 #endif
@@ -209,9 +209,11 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef NK_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d (" TARGET_M_SUFFIX2 "/" MY_RTL ") by " NK_AUTHOR "\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (" TARGET_M_SUFFIX2 "/" MY_RTL ") by " NK_AUTHOR "\r\n"),
 		HIWORD( dwVersionMS ),
-		LOWORD( dwVersionMS )
+		LOWORD( dwVersionMS ),
+		HIWORD( dwVersionLS ),
+		LOWORD( dwVersionLS )
 	);
 #else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d\r\n"),
