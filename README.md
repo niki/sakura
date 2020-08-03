@@ -3,7 +3,7 @@ Introduction
 
 <details open><summary>Policy</summary>
 <ul>
-<li>v2.3.2.0をベースに修正、機能追加を行っています
+<li>v2.3.2.0をベースに機能の追加や修正を行っています。現在の本流からは離れます。
 <li>他のエディタを参考にまねっこ
 <li>使っていて気になった点をとりあえず修正してみる
 </details>
@@ -161,4 +161,4 @@ Cregit
 + サクラエディタ公式 https://sakura-editor.github.io/
 
 ---
-(C) 2017,2018 Niki.
+(C) 2017-2020 遊月 @niki.
