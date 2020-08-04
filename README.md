@@ -18,7 +18,7 @@ Introduction
 
 Download  
 --------
-- v2.4205.2020.75 (2020-??-??) | [32-bit](http://nekomimix.jp/r/sakura-fix_75.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_75_64.zip)  
+- v2.4205.2020.75 (2020-??-??) | [Download](http://nekomimix.jp/r/sakura-fix_75.zip)
     - Used Visual Studio 2017 Version 15.9.25
     - Used Windows SDK 10.0.17763.0
     - バージョン表記の変更
