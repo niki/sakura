@@ -18,7 +18,7 @@ Introduction
 
 Download  
 --------
-- v2.4205.2020.75 (2020-??-??) | [Download](https://shorturl.at/wFOW8)
+- v2.4205.2020.75 (2020-08-19) | [Download](https://shorturl.at/wFOW8)
     - Used Visual Studio 2017 Version 15.9.25
     - Used Windows SDK 10.0.17763.0
     - バージョン表記の変更
