@@ -18,6 +18,7 @@ Introduction
 
 Download  
 --------
+:star:実行ファイル単体のみなので既存の実行ファイルを上書きしてください（念のためバックアップ推奨）<br>
 - v2<b>.</b>4205<b>.</b>2020<b>.</b>75 (2020-08-19) | [Download](https://helixteamhub.cloud/api/projects/sakura/repositories/public/commits/webdav/files/sakura-fix_75.zip?api_signing_key=95648202-93a2-4469-9aaf-62f1afb4be1f&expires_at=2120-08-19T09%3A36%3A59.447Z&signature=9d894f4353eca42639623423c593e318115e8393888056902094e678596f6184)
     - Used Visual Studio 2017 Version 15.9.25
     - Used Windows SDK 10.0.17763.0
@@ -40,7 +41,7 @@ Download
 </details>
 
 ---
-
+:star:必要に応じて使用してください<br>
 - sakura.keywordset.csv  
     [sakura.keywordset.csv](Publish/sakura.keywordset.csv) は強調キーワードに keyword フォルダのファイルを使用する定義ファイルです.  
     「sakura」の部分は実行ファイルと同じ名前で同じ場所に配置してください.  
