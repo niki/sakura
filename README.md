@@ -3,9 +3,9 @@ Introduction
 
 <details open><summary>Policy</summary>
 <ul>
-<li>v2.3.2.0をベースに機能の追加や修正を行っています。現在の本流からは離れます。
-<li>他のエディタを参考にまねっこ
-<li>使っていて気になった点をとりあえず修正してみる
+<li>v2.3.2.0をベースに機能の追加や修正を行っています（現在の本流からは離れます）
+<li>他のエディタを参考にまねっこ, 気になった点を修正してみる
+<li>正常動作率８０％を目標に修正
 </details>
     
 <details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
@@ -51,7 +51,7 @@ Download
 - keyword_pack.zip (2017/06/16)  
     キーワードセット集 patchunicode:#720 対応 [Download](Publish/keyword_pack.zip)  
 
-※ 変更履歴はコミットログ([Link](https://github.com/niki/sakura/commits/master))を, ソースレベルで気になる人は my_config.h([Link](sakura_core/my_config.h)) を見てね.  
+※ 変更履歴はコミットログ（[Link](https://github.com/niki/sakura/commits/master)）を, ソースレベルで気になる人は my_config.h（[Link](sakura_core/my_config.h)） を見てね.  
 
 
 <br>
@@ -61,21 +61,21 @@ Changed
 
 <details open><summary>ファイル/設定/機能</summary>
 <ul>
-<li>履歴を別ファイル ('sakura.recent')に出力
+<li>履歴を別ファイル（'sakura.recent'）に出力
 <li>強調キーワードのセットファイル sakura.keywordset.csv の使用
 <li>起動時に存在しないファイル・フォルダ履歴を削除する
-<li>多重オープンの許可 (Shiftを押しながらファイルのドロップ)
+<li>多重オープンの許可（Shiftを押しながらファイルのドロップ）
 <li>タイプ別設定一覧の「追加」から任意のタイプを追加できるようにする
 <li>デフォルト文字コードを UTF8にする
 <li>カラー設定のインポートはカラー情報だけを適用させる
-<li>履歴 (検索, 置換, Grep)の最大値を変更
+<li>履歴（検索, 置換, Grep）の最大値を変更
 </details>
 
 <details open><summary>表示/編集</summary>
 <ul>
 <li>スクロールバーに検索結果とブックマーク, カーソル位置を表示:star:
-<li>垂直, 水平スクロールの挙動を【メモ帳】の挙動と同じにする（縦:端でスクロール, 横画面端で半角16文字スクロール）
-<li>行番号の表示切り替えマクロ追加 ('S_SwitchDispLineNumber()'):star:
+<li>垂直, 水平スクロールの挙動を【メモ帳】の挙動と同じにする（縦画面端でスクロール, 横画面端で半角16文字スクロール）
+<li>行番号の表示切り替えマクロ追加（'S_SwitchDispLineNumber()'）:star:
 <li>検索時に表示域が切り替わる場合見つけた文字列（カーソル行）を中央に表示（見やすくするため）
 <li>タブ入力文字の切り替え機能（'S_ChangeTabWidth()' マクロを修正, 負の値を設定で入力文字をタブと空白で相互に切り替え）
 <li>行を中央揃えにする（行のマージンを上下に配分）:star:
