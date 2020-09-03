@@ -38,6 +38,7 @@ Download
 <li>pull request #125 from beru/file_loading_speed_up
 <li>pull request #236 from yoshinrt/fixup_dogrep_localvar_init
 <li>pull request #77 from beru/grep_speed_up
+</ul>
 </details>
 
 ---
@@ -64,6 +65,7 @@ Future
 <li>ステータスバーにファイル名を表示（Ctrl+左クリック：ファイルの場所を開く, 右クリック：ファイル名をコピー）
 <li>プラグインについて再考する
 <li>ミニマップについて再考する
+</ul>
 
 
 <br>
@@ -82,6 +84,7 @@ Changed
 <li>デフォルト文字コードを UTF8にする
 <li>カラー設定のインポートはカラー情報だけを適用させる
 <li>履歴（検索, 置換, Grep）の最大値を変更
+</ul>
 </details>
 
 <details open><summary>表示/編集</summary>
@@ -108,6 +111,7 @@ Changed
 <li>カーソル行アンダーラインを行番号から引っ張る
 <li>偶数行背景はEOF以降は適用しない
 <li>ノート線はEOF以降は適用しない
+</ul>
 </details>
 
 <details open><summary>UI</summary>
@@ -134,6 +138,7 @@ Changed
 <li>タグジャンプ一覧の表示カラムを選別
 <li>アウトライン解析ダイアログのドッキング時はコントロールカラーのままにする
 <li>各種ダイアログを編集ウィンドウの中央に配置
+</ul>
 </details>
 
 <details open><summary>バグ:bug:（またはバグに近いモノ）の修正</summary>
@@ -147,6 +152,7 @@ Changed
 <li>アウトライン解析ダイアログのツリーをダブルクリックで展開/縮小できるように修正
 <li>ルールファイルを設定してアウトライン解析をするとデフォルトが逆順になっているのを修正
 <li>行番号背景描画が行番号縦線をはみ出しているバグを修正
+</ul>
 </details>
 
 <details open><summary>その他</summary>
@@ -154,6 +160,7 @@ Changed
 <li>スクロールバーの更新頻度を少なくする
 <li>ExtTextOutによる塗りつぶしをPatBltに変更
 <li>WM_ERASEBKGNDの抑制
+</ul>
 </details>
 
 **<a name="patchunicode">マージ済みパッチ**  
