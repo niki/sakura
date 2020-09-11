@@ -5,13 +5,19 @@ Introduction
 <ul>
 <li>v2.3.2.0をベースに機能の追加や修正を行っています（現在の本流からは離れます）
 <li>他のエディタを参考にまねっこ, 気になった点を修正してみる
-<li>正常動作率８０％を目標に修正
+<li>正常動作率 80% を目標に修正
 </details>
-    
-<details open><summary>修正は以下の開発環境を基準に快適に動かせる範囲で行っています</summary>
+
+<details open><summary>Requirements</summary>
 <ul>
-<li>Machine: Celeron 3215U 1.7GHz / Memory 8GB / Windows10 Home 1903
-<li>Compiler: Visual Studio 2017 Version 15.9.25
+<li>OS : Windows 7 or Later
+<li>Memory : Isn't it appropriate?
+</details>
+
+<details open><summary>Development environment</summary>
+<ul>
+<li>Machine: Celeron 3215U 1.7GHz / Memory 8GB / Windows10 Home 1909
+<li>Compiler: Visual Studio 2017 Version 15.9.27
 </details>
 
 <br>
@@ -49,7 +55,7 @@ Download
     - このキーワードセットを使用した場合は 'sakura.ini' には書き出されなくなり, iniファイルの肥大化抑制にもなります.  
     - 使用しない場合はいつも通りの動作です (sakura.iniに書き込まれる)  
 
-- keyword_pack.zip (2017/06/16)  
+- keyword_pack.zip (2017-06-16)  
     キーワードセット集 patchunicode:#720 対応 [Download](Publish/keyword_pack.zip)  
 
 ※ 変更履歴はコミットログ（[Link](https://github.com/niki/sakura/commits/master)）を, ソースレベルで気になる人は my_config.h（[Link](sakura_core/my_config.h)） を見てね.  
