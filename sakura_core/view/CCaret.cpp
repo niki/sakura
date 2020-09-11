@@ -1038,7 +1038,7 @@ void CCaret::ShowCaretPosInfo()
 			_tcscpy( szText_6, LS( STR_INS_MODE_OVR ) );	// "上書"
 		}
 		if (!m_pEditView->GetSelectionInfo().IsTextSelected()) {
-#if 1
+#if 0
 			if( m_bClearStatus ){
 				::StatusBar_SetText( hwndStatusBar, 0 | SBT_NOBORDERS, _T("") );
 			}

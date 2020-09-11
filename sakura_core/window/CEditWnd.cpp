@@ -1465,9 +1465,11 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case WM_EXITMENULOOP:
 //		MYTRACE( _T("WM_EXITMENULOOP\n") );
+#ifndef NK_FIX_STATUSBAR
 		if( NULL != m_cStatusBar.GetStatusHwnd() ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, _T(""));
 		}
+#endif  // NK_
 		m_cMenuDrawer.EndDrawMenu();
 		/* メッセージの配送 */
 		return Views_DispatchEvent( hwnd, uMsg, wParam, lParam );
@@ -1653,6 +1655,13 @@ LRESULT CEditWnd::DispatchEvent(
 					if( nEOLCode != -1 ){
 						GetActiveView().GetCommander().HandleCommand( F_CHGMOD_EOL, true, nEOLCode, 0, 0, 0 );
 					}
+				}
+			}
+			else if( pnmh->code == NM_RCLICK )  // 右クリック
+			{
+				LPNMMOUSE mp = (LPNMMOUSE) lParam;
+				if( mp->dwItemSpec == 0 ){	// ファイル名コピー
+					GetDocument()->HandleCommand( F_COPYPATH );
 				}
 			}
 #else
@@ -3426,6 +3435,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 			nStArr[i - 1] = nStArr[i] - ( sz.cx + nBdrWidth );
 		}
 
+#ifndef NK_FIX_STATUSBAR
 		//	Nov. 8, 2003 genta
 		//	初期状態ではすべての部分が「枠あり」だが，メッセージエリアは枠を描画しないようにしている
 		//	ため，初期化時の枠が変な風に残ってしまう．初期状態で枠を描画させなくするため，
@@ -3433,6 +3443,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		if( bUpdateStatus ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, _T(""));
 		}
+#endif  // NK_
 
 		StatusBar_SetParts( m_cStatusBar.GetStatusHwnd(), nStArrNum, nStArr );
 		if (hFont != NULL)
