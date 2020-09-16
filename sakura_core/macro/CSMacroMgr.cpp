@@ -401,6 +401,7 @@ MacroFuncInfo CSMacroMgr::m_MacroFuncInfoCommandArr[] =
 	{F_CLIPBOARDEMPTY,			LTEXT("ClipboardEmpty"),	{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL},
 	{F_SETVIEWTOP,				L"SetViewTop",				{VT_I4,    VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, // ビューの上の行数を設定
 	{F_SETVIEWLEFT,				L"SetViewLeft",				{VT_I4,    VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, // ビューの左端の桁数を設定
+	{F_GETVIEWTOP,				L"GetViewTop",				{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, // ビューの上の行数を取得
 
 #ifdef NK_FIX_SWITCH_DISP_LINENR_MACRO
 	{F_SWITCH_DISP_LINE_NUMBER,	L"SwitchDispLineNumber",	{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, // 行番号表示切替

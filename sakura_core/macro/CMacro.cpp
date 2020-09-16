@@ -2467,6 +2467,13 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 			}
 			return false;
 		}
+	case F_GETVIEWTOP:
+		{
+			int nLine = (Int)View->GetTextArea().GetViewTopLine();
+			Wrap( &Result )->Receive( nLine + 1 );
+			return true;
+		}
+		break;
 	default:
 		return false;
 	}
