@@ -1502,7 +1502,20 @@ LRESULT CEditWnd::DispatchEvent(
 #ifdef NK_FIX_STATUSBAR
 			if( pnmh->code == NM_CLICK ){  // 左クリックに変更する
 				LPNMMOUSE mp = (LPNMMOUSE) lParam;
-				if( mp->dwItemSpec == 5/*6*/ ){	//	上書き/挿入
+				if (mp->dwItemSpec == 0)	// ファイルの場所をエクスプローラで開く
+				{
+					if (ApiWrap::GetKeyState_Control())
+					{
+						if( GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() ){
+							const WCHAR* pszFile = to_wchar(GetDocument()->m_cDocFile.GetFileName());
+							WCHAR temp[256];
+							wcscpy_s(temp, pszFile);
+							::PathRemoveFileSpec(temp);
+							::ShellExecute(NULL, L"explore", temp, NULL, NULL, SW_SHOWNORMAL);
+						}
+					}
+				}
+				else if( mp->dwItemSpec == 5/*6*/ ){	//	上書き/挿入
 					GetDocument()->HandleCommand( F_CHGMOD_INS );
 				}
 				else if( mp->dwItemSpec == 8/*5*/ ){	//	マクロの記録開始・終了
