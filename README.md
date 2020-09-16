@@ -3,7 +3,7 @@ Introduction
 
 <details open><summary>Policy</summary>
 <ul>
-<li>v2.3.2.0をベースに機能の追加や修正を行っています（現在の本流からは離れます）
+<li>SVN Ver. v2.3.2.0をベースに機能の追加や修正を行っています（現在の本流からは離れますが、機能はちょいちょい持ってくる予定）
 <li>他のエディタを参考にまねっこ, 気になった点を修正してみる
 <li>正常動作率 80% を目標に修正
 </details>
@@ -24,15 +24,15 @@ Introduction
 
 Download  
 --------
-:star:実行ファイル単体のみなので既存の実行ファイルを上書きしてください（念のためバックアップ推奨）<br>
+:star:実行ファイル単体のみです。既存の実行ファイルを上書きしてください（念のためバックアップ推奨）<br>
+- v2<b>.</b>4205<b>.</b>2020<b>.</b>76（2020-09-16） | [Download](https://helixteamhub.cloud/api/projects/sakura/repositories/public/commits/webdav/files/sakura-fix_76.zip?api_signing_key=95648202-93a2-4469-9aaf-62f1afb4be1f&expires_at=2120-09-16T05%3A01%3A42.780Z&signature=8d42e5ff7ef54fa527b35ac3c2e2d951f2862b783f33d119c8e584e8c9b6fdb3)
+    - ステータスバーにファイル名を表示（Ctrl+左クリック：ファイルの場所を開く, 右クリック：ファイル名をコピー）
+    - Add GetViewTop macro.
+    - 折り返し時に EOF行の行番号が論理行数になっていたのを修正
 - v2<b>.</b>4205<b>.</b>2020<b>.</b>75（2020-08-19） | [Download](https://helixteamhub.cloud/api/projects/sakura/repositories/public/commits/webdav/files/sakura-fix_75.zip?api_signing_key=95648202-93a2-4469-9aaf-62f1afb4be1f&expires_at=2120-08-19T09%3A36%3A59.447Z&signature=9d894f4353eca42639623423c593e318115e8393888056902094e678596f6184)
     - Used Visual Studio 2017 Version 15.9.25
     - Used Windows SDK 10.0.17763.0
     - バージョン表記の変更
-- v2.74（2018-07-25） | [32-bit](http://nekomimix.jp/r/sakura-fix_2.74.zip) | [64-bit](http://nekomimix.jp/r/sakura-fix_2.74_64.zip)  
-    - Merge sakura-editor/sakura, pull request #263 from m-tmatma/feature/share-mode-not-exclusive
-    - Merge sakura-editor/sakura, pull request #267 from m-tmatma/feature/no-wrap-text-default
-    - <del>Minor fixes  
 
 <details><summary>Merge sakura-editor/sakura</summary>
 <ul>
@@ -78,8 +78,7 @@ Temporary built-in
 ------------------
 
 <ul>
-<li>ステータスバーにファイル名を表示（Ctrl+左クリック：ファイルの場所を開く, 右クリック：ファイル名をコピー）
-<li>Add GetViewTop macro.
+<li>なし
 </ul>
 
 
@@ -107,6 +106,7 @@ Changed
 <li>スクロールバーに検索結果とブックマーク, カーソル位置を表示:star:
 <li>垂直, 水平スクロールの挙動を【メモ帳】の挙動と同じにする（縦画面端でスクロール, 横画面端で半角16文字スクロール）
 <li>行番号の表示切り替えマクロ追加（'S_SwitchDispLineNumber()'）:star:
+<li>先頭行番号取得マクロ追加（'S_GetViewTop()'）
 <li>検索時に表示域が切り替わる場合見つけた文字列（カーソル行）を中央に表示（見やすくするため）
 <li>タブ入力文字の切り替え機能（'S_ChangeTabWidth()' マクロを修正, 負の値を設定で入力文字をタブと空白で相互に切り替え）
 <li>行を中央揃えにする（行のマージンを上下に配分）:star:
