@@ -533,8 +533,9 @@ void CTextDrawer::DispLineNumber(
 			gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
 			gr.PushMyFont(sFont);	//フォント：行番号のフォント
 			
+			int nAllLines = pView->m_pcEditDoc->m_cDocLineMgr.GetLineCount();
 			wchar_t szLineNum[18];
-			_itow( (Int)nLineNum + 1, szLineNum, 10 );
+			_itow( (Int)nAllLines + 1, szLineNum, 10 );
 			int nLineCols = wcslen( szLineNum );
 			int nLineNumCols = nLineCols; // 2010.08.17 Moca 位置決定に行番号区切りは含めない
 			
