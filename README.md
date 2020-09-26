@@ -11,12 +11,13 @@ Introduction
 <details open><summary>Requirements</summary>
 <ul>
 <li>OS : Windows 7 or Later
-<li>Memory : Isn't it appropriate?
+<li>Memory : 4GB
 </details>
-
+<li>Machine: Celeron 3215U @ 1.7GHz / Memory 8GB / Windows10 Home 1909
+<li>Machine: Core i5-6300U @ 2.40GHz 2.50GHz / Memory 16GB / Windows10 Pro 1909
 <details open><summary>Development environment</summary>
 <ul>
-<li>Machine: Celeron 3215U 1.7GHz / Memory 8GB / Windows10 Home 1909
+
 <li>Compiler: Visual Studio 2017 Version 15.9.27
 </details>
 
