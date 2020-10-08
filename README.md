@@ -3,8 +3,9 @@ Introduction
 
 <details open><summary>Policy</summary>
 <ul>
-<li>v2.3.2.0の拡張修正版です。機能の追加や修正を行っています（現在の本流からは離れますが、機能はちょいちょい持ってくる予定）
-<li>他のエディタを参考にまねっこ, 気になった点を修正してみる
+<li>v2.3.2.0の拡張修正版です。機能の追加修正を行っています（現在の公式からは離れますが、追加機能はちょいちょい持ってくる予定です）
+<li>だけどシンプルにしたい【メモ帳】。なのでIDEなどのようにはしたくない。
+<li>他のエディタを参考にまねっこ、気になった点を修正してみる
 <li>正常動作率 80% を目標に修正
 </details>
 
@@ -25,7 +26,7 @@ Introduction
 
 Download  
 --------
-:star:実行ファイル単体のみです。既存の実行ファイルを上書きしてください（念のためバックアップ推奨）<br>
+:star:実行ファイル単体のみなので、既存の実行ファイルに上書きしてください（念のためバックアップ推奨）<br>
 - v2<b>.</b>4205<b>.</b>2020<b>.</b>76（2020-09-16） | [Download](https://helixteamhub.cloud/api/projects/sakura/repositories/public/commits/webdav/files/sakura-fix_76.zip?api_signing_key=95648202-93a2-4469-9aaf-62f1afb4be1f&expires_at=2120-09-16T05%3A01%3A42.780Z&signature=8d42e5ff7ef54fa527b35ac3c2e2d951f2862b783f33d119c8e584e8c9b6fdb3)
     - ステータスバーにファイル名を表示（Ctrl+左クリック：ファイルの場所を開く, 右クリック：ファイル名をコピー）
     - Add GetViewTop macro.
