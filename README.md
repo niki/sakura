@@ -1,7 +1,6 @@
-こちらに整えて書かれています。<br>
+noteにも整えて書いてます。<br>
 https://note.com/nekomimix_jp/n/n7463242cc326
 
-<br>
 <br>
 
 Introduction  
