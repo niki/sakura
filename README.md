@@ -1,3 +1,9 @@
+こちらに整えて書かれています。<br>
+https://note.com/nekomimix_jp/n/n7463242cc326
+
+<br>
+<br>
+
 Introduction  
 ------------
 
@@ -204,4 +210,4 @@ Cregit
 + サクラエディタ(Old) https://sourceforge.net/p/sakura-editor/code/HEAD/tree/
 
 ---
-(C) 2017-2020 遊月 @niki.
+(C) 2017-2020 yuu@niki.
