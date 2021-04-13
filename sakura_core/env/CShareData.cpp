@@ -409,7 +409,7 @@ bool CShareData::InitShareData()
 			sFile.m_bQueryIfCodeChange = true;		// 前回と異なる文字コードの時に問い合わせを行うか	Oct. 03, 2004 genta
 			sFile.m_bAlertIfFileNotExist = false;	// 開こうとしたファイルが存在しないとき警告する	Oct. 09, 2004 genta
 			sFile.m_bAlertIfLargeFile = false;		// 開こうとしたファイルが大きい場合に警告する
-			sFile.m_nAlertFileSize = 10;			// 警告を始めるファイルサイズ（MB単位）
+			sFile.m_nAlertFileSize = 100;//NK_ 10;			// 警告を始めるファイルサイズ（MB単位）
 		}
 
 		// [バックアップ]タブ
@@ -462,13 +462,13 @@ bool CShareData::InitShareData()
 
 			sSearch.m_bGrepSubFolder = TRUE;			/* Grep: サブフォルダも検索 */
 			sSearch.m_nGrepOutputLineType = 1;			// Grep: 行を出力/該当部分/否マッチ行 を出力
-			sSearch.m_nGrepOutputStyle = 1;			/* Grep: 出力形式 */
+			sSearch.m_nGrepOutputStyle = 2;//NK_ 1;			/* Grep: 出力形式 */
 			sSearch.m_bGrepOutputFileOnly = false;
 			sSearch.m_bGrepOutputBaseFolder = false;
 			sSearch.m_bGrepSeparateFolder = false;
 			sSearch.m_bGrepBackup = true;
 
-			sSearch.m_bGrepDefaultFolder=FALSE;		/* Grep: フォルダの初期値をカレントフォルダにする */
+			sSearch.m_bGrepDefaultFolder=TRUE;//NK_ FALSE;		/* Grep: フォルダの初期値をカレントフォルダにする */
 			sSearch.m_nGrepCharSet = CODE_AUTODETECT;	/* Grep: 文字コードセット */
 			sSearch.m_bGrepRealTimeView = FALSE;		/* 2003.06.28 Moca Grep結果のリアルタイム表示 */
 			sSearch.m_bCaretTextForSearch = TRUE;		/* 2006.08.23 ryoji カーソル位置の文字列をデフォルトの検索文字列にする */

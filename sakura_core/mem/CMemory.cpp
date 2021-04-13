@@ -111,7 +111,9 @@ void CMemory::_AddData( const void* pData, int nDataLen )
 	if( NULL == m_pRawData ){
 		return;
 	}
-	memcpy( &m_pRawData[m_nRawLen], pData, nDataLen );
+//NK https://www.it-mure.jp.net/ja/c++/memmove%E3%81%8Cmemcpy%E3%82%88%E3%82%8A%E9%80%9F%E3%81%84%E3%81%AE%E3%81%AF%E3%81%AA%E3%81%9C%E3%81%A7%E3%81%99%E3%81%8B%EF%BC%9F/1051231767/
+//NK	memcpy( &m_pRawData[m_nRawLen], pData, nDataLen );
+	memmove( &m_pRawData[m_nRawLen], pData, nDataLen );
 	m_nRawLen += nDataLen;
 	m_pRawData[m_nRawLen]   = '\0';
 	m_pRawData[m_nRawLen+1] = '\0'; //終端'\0'を2つ付加する('\0''\0'==L'\0')。 2007.08.13 kobake 追加
