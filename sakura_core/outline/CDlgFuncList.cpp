@@ -2881,10 +2881,6 @@ void CDlgFuncList::GetDockSpaceRect( LPRECT pRect )
 		hwnd[nCount] = GetHwnd();
 		nCount++;
 	}
-	hwnd[nCount] = pcEditView->m_pcEditWnd->GetMiniMap().GetHwnd();
-	if( hwnd[nCount] != NULL ){
-		nCount++;
-	}
 	for( int i = 0; i < nCount; i++ ){
 		::GetWindowRect(hwnd[i], &rc[i]);
 	}

@@ -117,7 +117,6 @@ static const SFuncMenuName	sFuncMenuName[] = {
 	{F_SHOWFUNCKEY,			{F_SHOWFUNCKEY_ON,				F_SHOWFUNCKEY_OFF}},
 	{F_SHOWTAB,				{F_SHOWTAB_ON,					F_SHOWTAB_OFF}},
 	{F_SHOWSTATUSBAR,		{F_SHOWSTATUSBAR_ON,			F_SHOWSTATUSBAR_OFF}},
-	{F_SHOWMINIMAP,			{F_SHOWMINIMAP_ON,				F_SHOWMINIMAP_OFF}},
 	{F_TOGGLE_KEY_SEARCH,	{F_TOGGLE_KEY_SEARCH_ON,		F_TOGGLE_KEY_SEARCH_OFF}},
 };
 
@@ -241,14 +240,8 @@ CEditWnd::~CEditWnd()
 	}
 	m_pcEditView = NULL;
 
-	delete m_pcEditViewMiniMap;
-	m_pcEditViewMiniMap = NULL;
-
 	delete m_pcViewFont;
 	m_pcViewFont = NULL;
-
-	delete m_pcViewFontMiniMap;
-	m_pcViewFontMiniMap = NULL;
 
 	delete[] m_pszMenubarMessage;
 	delete[] m_pszLastCaption;
@@ -633,10 +626,6 @@ HWND CEditWnd::Create(
 
 	m_pcViewFont = new CViewFont(&GetLogfont());
 
-	m_pcEditViewMiniMap = new CEditView(this);
-
-	m_pcViewFontMiniMap = new CViewFont(&GetLogfont(), true);
-
 	auto_memset( m_pszMenubarMessage, _T(' '), MENUBAR_MESSAGE_MAX_LEN );	// null終端は不要
 
 	//	Dec. 4, 2002 genta
@@ -692,8 +681,6 @@ HWND CEditWnd::Create(
 	// プラグインコマンドを登録する
 	RegisterPluginCommand();
 
-	SelectCharWidthCache( CWM_FONT_MINIMAP, CWM_CACHE_LOCAL ); // Init
-	InitCharWidthCache( m_pcViewFontMiniMap->GetLogfont(), CWM_FONT_MINIMAP );
 	SelectCharWidthCache( CWM_FONT_EDIT, GetLogfontCacheMode() );
 	InitCharWidthCache( GetLogfont() );
 
@@ -732,9 +719,6 @@ HWND CEditWnd::Create(
 
 	/* タブウインドウ */
 	LayoutTabBar();
-
-	// ミニマップ
-	LayoutMiniMap();
 
 	/* バーの配置終了 */
 	EndLayoutBars( FALSE );
@@ -1041,22 +1025,6 @@ void CEditWnd::LayoutTabBar( void )
 	}
 }
 
-/*! ミニマップの配置処理
-	@date 2014.07.14 新規作成
-*/
-void CEditWnd::LayoutMiniMap( void )
-{
-	if( m_pShareData->m_Common.m_sWindow.m_bDispMiniMap ){	/* タブバーを表示する */
-		if( NULL == GetMiniMap().GetHwnd() ){
-			GetMiniMap().Create( GetHwnd(), GetDocument(), -1, FALSE, true );
-		}
-	}else{
-		if( NULL != GetMiniMap().GetHwnd() ){
-			GetMiniMap().Close();
-		}
-	}
-}
-
 /*! バーの配置終了処理
 	@date 2006.12.19 ryoji 新規作成
 	@date 2007.03.04 ryoji 印刷プレビュー時はバーを隠す
@@ -1081,9 +1049,6 @@ void CEditWnd::EndLayoutBars( BOOL bAdjust/* = TRUE*/ )
 		// メニューから[ファンクションキーを表示]/[ステータスバーを表示]を実行して非表示のバーをアウトライン直下に表示したり、
 		// その後、ウィンドウの下部境界を上下ドラッグしてサイズ変更するとゴミが現れることがあった。
 		::SetWindowPos( m_cDlgFuncList.GetHwnd(), HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE );
-	}
-	if (NULL != GetMiniMap().GetHwnd()) {
-		::ShowWindow(GetMiniMap().GetHwnd(), nCmdShow);
 	}
 
 	if( bAdjust )
@@ -1981,8 +1946,6 @@ LRESULT CEditWnd::DispatchEvent(
 				}
 			}
 
-			LayoutMiniMap();
-
 			// バー変更で画面が乱れないように	// 2006.12.19 ryoji
 			EndLayoutBars();
 
@@ -2278,9 +2241,6 @@ LRESULT CEditWnd::DispatchEvent(
 				break;
 			case MYBCN_STATUSBAR:
 				LayoutStatusBar();		// 2006.12.19 ryoji
-				break;
-			case MYBCN_MINIMAP:
-				LayoutMiniMap();
 				break;
 			}
 			EndLayoutBars();	// 2006.12.19 ryoji
@@ -2792,10 +2752,6 @@ void CEditWnd::InitMenu_Function(HMENU hMenu, EFunctionCode eFunc, const wchar_t
 			SetMenuFuncSel( hMenu, eFunc, pszKey, 
 				!m_pShareData->m_Common.m_sWindow.m_bMenuIcon | !m_cStatusBar.GetStatusHwnd() );
 			break;
-		case F_SHOWMINIMAP:
-			SetMenuFuncSel( hMenu, eFunc, pszKey, 
-				!m_pShareData->m_Common.m_sWindow.m_bMenuIcon | !GetMiniMap().GetHwnd() );
-			break;
 		case F_TOGGLE_KEY_SEARCH:
 			SetMenuFuncSel( hMenu, eFunc, pszKey, 
 				!m_pShareData->m_Common.m_sWindow.m_bMenuIcon | !IsFuncChecked( GetDocument(), m_pShareData, F_TOGGLE_KEY_SEARCH ) );
@@ -3241,9 +3197,6 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 		::ShowWindow( m_cFuncKeyWnd.GetHwnd(), SW_SHOW );
 		::ShowWindow( m_cTabWnd.GetHwnd(), SW_SHOW );	//@@@ 2003.06.25 MIK
 		::ShowWindow( m_cDlgFuncList.GetHwnd(), SW_SHOW );	// 2010.06.25 ryoji
-		if (NULL != GetMiniMap().GetHwnd()) {
-			::ShowWindow(GetMiniMap().GetHwnd(), SW_SHOW);
-		}
 
 		// その他のモードレスダイアログも戻す	// 2010.06.25 ryoji
 		::ShowWindow( m_cDlgFind.GetHwnd(), SW_SHOW );
@@ -3275,9 +3228,6 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 		::ShowWindow( m_cFuncKeyWnd.GetHwnd(), SW_HIDE );
 		::ShowWindow( m_cTabWnd.GetHwnd(), SW_HIDE );	//@@@ 2003.06.25 MIK
 		::ShowWindow( m_cDlgFuncList.GetHwnd(), SW_HIDE );	// 2010.06.25 ryoji
-		if (NULL != GetMiniMap().GetHwnd()) {
-			::ShowWindow(GetMiniMap().GetHwnd(), SW_HIDE);
-		}
 
 		// その他のモードレスダイアログも隠す	// 2010.06.25 ryoji
 		::ShowWindow( m_cDlgFind.GetHwnd(), SW_HIDE );
@@ -3395,12 +3345,6 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		::GetWindowRect( m_cFuncKeyWnd.GetHwnd(), &rc );
 		nFuncKeyWndHeight = rc.bottom - rc.top;
 	}
-	//@@@ From Here 2003.05.31 MIK
-	//@@@ To Here 2003.05.31 MIK
-	bool bMiniMapSizeBox = true;
-	if( wParam == SIZE_MAXIMIZED ){
-		bMiniMapSizeBox = false;
-	}
 	nStatusBarHeight = 0;
 	if( NULL != m_cStatusBar.GetStatusHwnd() ){
 		::SendMessage( m_cStatusBar.GetStatusHwnd(), WM_SIZE, wParam, lParam );
@@ -3468,7 +3412,6 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		::UpdateWindow( m_cStatusBar.GetStatusHwnd() );	// 2006.06.17 ryoji 即時描画でちらつきを減らす
 		::GetWindowRect( m_cStatusBar.GetStatusHwnd(), &rc );
 		nStatusBarHeight = rc.bottom - rc.top;
-		bMiniMapSizeBox = false;
 	}
 	::GetClientRect( GetHwnd(), &rcClient );
 
@@ -3539,7 +3482,6 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 			}
 			nTabHeightBottom = rc.bottom - rc.top;
 			nTabWndHeight = 0;
-			bMiniMapSizeBox = false;
 		}
 		if( bHidden ){
 			::ShowWindow( m_cTabWnd.GetHwnd(), SW_SHOW );
@@ -3576,7 +3518,6 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 				bSizeBox = false;
 			}
 			m_cFuncKeyWnd.SizeBox_ONOFF( bSizeBox );
-			bMiniMapSizeBox = false;
 		}
 		::UpdateWindow( m_cFuncKeyWnd.GetHwnd() );	// 2006.06.17 ryoji 即時描画でちらつきを減らす
 	}
@@ -3606,30 +3547,13 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 			(eDockSideFL == DOCKSIDE_TOP || eDockSideFL == DOCKSIDE_BOTTOM)? nFuncListHeight: nHeight,
 			TRUE
 		);
-		if( eDockSideFL == DOCKSIDE_RIGHT || eDockSideFL == DOCKSIDE_BOTTOM ){
-			bMiniMapSizeBox = false;
-		}
-	}
-
-	// ミニマップ
-	int nMiniMapWidth = 0;
-	if( GetMiniMap().GetHwnd() ){
-		nMiniMapWidth = GetDllShareData().m_Common.m_sWindow.m_nMiniMapWidth;
-		::MoveWindow( m_pcEditViewMiniMap->GetHwnd(), 
-			(eDockSideFL == DOCKSIDE_RIGHT)? cx - nFuncListWidth - nMiniMapWidth: cx - nMiniMapWidth,
-			(eDockSideFL == DOCKSIDE_TOP)? nTop + nFuncListHeight: nTop,
-			nMiniMapWidth,
-			(eDockSideFL == DOCKSIDE_TOP || eDockSideFL == DOCKSIDE_BOTTOM)? nHeight - nFuncListHeight: nHeight,
-			TRUE
-		);
-		GetMiniMap().SplitBoxOnOff( FALSE, FALSE, bMiniMapSizeBox );
 	}
 
 	::MoveWindow(
 		m_cSplitterWnd.GetHwnd(),
 		(eDockSideFL == DOCKSIDE_LEFT)? nFuncListWidth: 0,
 		(eDockSideFL == DOCKSIDE_TOP)? nTop + nFuncListHeight: nTop,	//@@@ 2003.05.31 MIK
-		((eDockSideFL == DOCKSIDE_LEFT || eDockSideFL == DOCKSIDE_RIGHT)? cx - nFuncListWidth: cx) - nMiniMapWidth,
+		((eDockSideFL == DOCKSIDE_LEFT || eDockSideFL == DOCKSIDE_RIGHT)? cx - nFuncListWidth: cx),
 		(eDockSideFL == DOCKSIDE_TOP || eDockSideFL == DOCKSIDE_BOTTOM)? nHeight - nFuncListHeight: nHeight,	//@@@ 2003.05.31 MIK
 		TRUE
 	);
@@ -4631,7 +4555,6 @@ void CEditWnd::Views_DeleteCompatibleBitmap()
 			GetView(i).DeleteCompatibleBitmap();
 		}
 	}
-	GetMiniMap().DeleteCompatibleBitmap();
 }
 
 LRESULT CEditWnd::Views_DispatchEvent(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -4696,7 +4619,6 @@ void CEditWnd::InitAllViews()
 		GetView(i).GetCaret().MoveCursor( CLayoutPoint(0, 0), true );
 		GetView(i).GetCaret().m_nCaretPosX_Prev = CLayoutInt(0);
 	}
-	GetMiniMap().OnChangeSetting();
 }
 
 
@@ -4708,7 +4630,6 @@ void CEditWnd::Views_RedrawAll()
 			GetView(v).RedrawAll();
 		}
 	}
-	GetMiniMap().RedrawAll();
 	//アクティブを再描画
 	GetActiveView().RedrawAll();
 }
@@ -4726,7 +4647,6 @@ void CEditWnd::Views_Redraw()
 			GetView(v).AdjustScrollBars();
 	}
 #endif // NK_
-	GetMiniMap().Redraw();
 	//アクティブを再描画
 	GetActiveView().Redraw();
 #ifdef NK_FIX_EDITVIEW_SCRBAR
@@ -4805,7 +4725,6 @@ bool CEditWnd::SetDrawSwitchOfAllViews( bool bDraw )
 	for( i = 0; i < GetAllViewCount(); i++ ){
 		GetView(i).SetDrawSwitch( bDraw );
 	}
-	GetMiniMap().SetDrawSwitch( bDraw );
 	return bDrawSwitchOld;
 }
 
@@ -4834,8 +4753,6 @@ void CEditWnd::RedrawAllViews( CEditView* pcViewExclude )
 			pcView->AdjustScrollBars();
 		}
 	}
-	GetMiniMap().Redraw();
-	GetMiniMap().AdjustScrollBars();
 }
 
 
@@ -4916,9 +4833,6 @@ BOOL CEditWnd::UpdateTextWrap( void )
 			for( int i = 0; i < GetAllViewCount(); i++ ){
 				::UpdateWindow( GetView(i).GetHwnd() );
 			}
-			if( GetMiniMap().GetHwnd() ){
-				::UpdateWindow( GetMiniMap().GetHwnd() );
-			}
 		}
 		return bWrap;	// 画面更新＝折り返し変更
 	}
@@ -4963,10 +4877,6 @@ void CEditWnd::ChangeLayoutParam( bool bShowProgress, CKetaXInt nTabSize, int nT
 			InvalidateRect( GetView(i).GetHwnd(), NULL, TRUE );
 			GetView(i).AdjustScrollBars();	// 2008.06.18 ryoji
 		}
-	}
-	if( GetMiniMap().GetHwnd() ){
-		InvalidateRect( GetMiniMap().GetHwnd(), NULL, TRUE );
-		GetMiniMap().AdjustScrollBars();
 	}
 	GetActiveView().GetCaret().ShowCaretPosInfo();	// 2009.07.25 ryoji
 

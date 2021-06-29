@@ -177,9 +177,6 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 					eBgcolorOverwrite = COLORIDX_EVENLINEBG;
 					bTrans = bTrans && cEvenBgLineType.GetBackColor() == cTextType.GetBackColor();
 				}
-			}else if( pcView->m_bMiniMap && cActiveView.GetTextArea().GetViewTopLine() <= nLineNum && nLineNum < cActiveView.GetTextArea().GetBottomLine() ){
-				eBgcolorOverwrite = COLORIDX_PAGEVIEW;
-				bTrans = bTrans && cPageViewBgLineType.GetBackColor() == cTextType.GetBackColor();
 			}
 		}
 		bool bChangeColor = false;

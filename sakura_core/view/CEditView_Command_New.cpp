@@ -329,7 +329,6 @@ void CEditView::InsertData_CEditView(
 					}
 					pcView->RedrawLines(nLayoutTop, nLayoutBottom);
 				}
-				m_pcEditWnd->GetMiniMap().RedrawLines(nLayoutTop, nLayoutBottom);
 				if( !m_bDoing_UndoRedo && pcOpe ){
 					GetDocument()->m_cDocEditor.m_nOpeBlkRedawCount++;
 				}
@@ -950,7 +949,6 @@ bool CEditView::ReplaceData_CEditView3(
 					}
 					pcView->RedrawLines(nLayoutTop, nLayoutBottom);
 				}
-				m_pcEditWnd->GetMiniMap().RedrawLines(nLayoutTop, nLayoutBottom);
 				if( !m_bDoing_UndoRedo && pcOpeBlk ){
 					GetDocument()->m_cDocEditor.m_nOpeBlkRedawCount++;
 				}

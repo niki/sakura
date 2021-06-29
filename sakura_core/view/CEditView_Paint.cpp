@@ -598,10 +598,6 @@ void CEditView::OnPaint( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp 
 	if (m_pcEditWnd->m_pPrintPreview) {
 		return;
 	}
-	bool bChangeFont = m_bMiniMap;
-	if( bChangeFont ){
-		SelectCharWidthCache( CWM_FONT_MINIMAP, CWM_CACHE_LOCAL );
-	}
 	OnPaint2( _hdc, pPs, bDrawFromComptibleBmp );
 	if( bChangeFont ){
 		SelectCharWidthCache( CWM_FONT_EDIT, m_pcEditWnd->GetLogfontCacheMode() );
@@ -659,11 +655,7 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		return;
 	}
 #ifdef NK_OUTPUT_DEBUG_STRING
-	if (m_bMiniMap) {
-	  si::logln(L"OnPaint2 start minimap");
-	} else {
-	  si::logln(L"OnPaint2 start");
-	}
+	si::logln(L"OnPaint2 start");
 #endif // NK_
 	if( m_hdcCompatDC && NULL == m_hbmpCompatBMP
 		 || m_nCompatBMPWidth < (pPs->rcPaint.right - pPs->rcPaint.left)
@@ -909,11 +901,7 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		GetCaret().ShowCaret_( this->GetHwnd() ); // 2002/07/22 novice
 	
 #ifdef NK_OUTPUT_DEBUG_STRING
-	if (m_bMiniMap) {
-	  si::logln(L"OnPaint2 finish minimap");
-	} else {
-	  si::logln(L"OnPaint2 finish");
-	}
+	si::logln(L"OnPaint2 finish");
 #endif // NK_
 	return;
 }
@@ -1075,19 +1063,15 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 #endif // NK_
 	CEditView& cActiveView = m_pcEditWnd->GetActiveView();
 	CTypeSupport&	cBackType = (cCaretLineBg.IsDisp() &&
-		GetCaret().GetCaretLayoutPos().GetY() == pInfo->m_pDispPos->GetLayoutLineRef() && !m_bMiniMap
+		GetCaret().GetCaretLayoutPos().GetY() == pInfo->m_pDispPos->GetLayoutLineRef()
 			? cCaretLineBg
 #ifdef NK_FIX_NOT_EVEN_LINE_FROM_EOF
-			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1 && !m_bMiniMap
+			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1
 #else
-			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1 && !m_bMiniMap
+			: cEvenLineBg.IsDisp() && pInfo->m_pDispPos->GetLayoutLineRef() % 2 == 1
 #endif // NK_
 				? cEvenLineBg
-				: (cPageViewBg.IsDisp() && m_bMiniMap
-					&& cActiveView.GetTextArea().GetViewTopLine() <= pInfo->m_pDispPos->GetLayoutLineRef()
-					&& pInfo->m_pDispPos->GetLayoutLineRef() < cActiveView.GetTextArea().GetBottomLine())
-						? cPageViewBg
-						: cTextType);
+				: cTextType);
 	bool bTransText = IsBkBitmap();
 	if( bTransText ){
 		bTransText = cBackType.GetBackColor() == cTextType.GetBackColor();
@@ -1299,9 +1283,9 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 
 	// ノート線描画
 #ifdef NK_FIX_NOT_NOTE_LINE_FROM_EOF
-	if( !m_bMiniMap && pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
+	if( pInfo->m_pDispPos->GetLayoutLineRef() < m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
 #else
-	if( !m_bMiniMap ){
+	{
 #endif // NK_
 		GetTextDrawer().DispNoteLine(
 			pInfo->m_gr,
@@ -1322,7 +1306,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	);
 
 	// 折り返し桁縦線描画
-	if( !m_bMiniMap ){
+	{
 		GetTextDrawer().DispWrapLine(
 			pInfo->m_gr,
 			pInfo->m_pDispPos->GetDrawPos().y,

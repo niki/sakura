@@ -44,13 +44,6 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 	// これから描画するタブ幅
 	CLayoutXInt tabDispWidthLayout = pcView->m_pcEditDoc->m_cLayoutMgr.GetActualTsvSpace( sPos.GetDrawCol(), L',' );
 	int tabDispWidth = (Int)tabDispWidthLayout;
-	if( pcView->m_bMiniMap ){
-		CLayoutMgr mgrTemp;
-		mgrTemp.SetTabSpaceInfo(pcView->m_pcEditDoc->m_cLayoutMgr.GetTabSpaceKetas(),
-			CLayoutXInt(pcView->GetTextMetrics().GetHankakuWidth()) );
-		tabDispWidthLayout = mgrTemp.GetActualTabSpace(sPos.GetDrawCol());
-		tabDispWidth = (Int)tabDispWidthLayout;
-	}
 
 	// タブ記号領域
 	RECT rcClip2;

@@ -3437,19 +3437,16 @@ BEGIN
     F_SHOWFUNCKEY           "ファンクションキーの表示／非表示"
     F_SHOWSTATUSBAR         "ステータスバーの表示／非表示"
     F_SHOWTAB               "タブバーの表示／非表示"
-    F_SHOWMINIMAP           "ミニマップの表示／非表示"
 
 	F_SHOWTOOLBAR_ON		"ツールバーを表示"
 	F_SHOWFUNCKEY_ON		"ファンクションキーを表示"
 	F_SHOWTAB_ON			"タブバーを表示"
 	F_SHOWSTATUSBAR_ON		"ステータスバーを表示"
-    F_SHOWMINIMAP_ON        "ミニマップを表示"
 
 	F_SHOWTOOLBAR_OFF		"表示中のツールバーを隠す"
 	F_SHOWFUNCKEY_OFF		"表示中のファンクションキーを隠す"
 	F_SHOWTAB_OFF			"表示中のタブバーを隠す"
 	F_SHOWSTATUSBAR_OFF		"表示中のステータスバーを隠す"
-    F_SHOWMINIMAP_OFF       "表示中のミニマップを隠す"
 
 END
 

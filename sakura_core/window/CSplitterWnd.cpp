@@ -298,9 +298,6 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 			bSizeBox = FALSE;
 		}
 	}
-	if( pCEditWnd->GetMiniMap().GetHwnd() ){
-		bSizeBox = FALSE;
-	}
 
 	/* メインウィンドウが最大化されている場合はサイズボックスを表示しない */
 	WINDOWPLACEMENT	wp;
@@ -872,9 +869,6 @@ LRESULT CSplitterWnd::OnSize( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		if( eDockSideFL == DOCKSIDE_RIGHT || eDockSideFL == DOCKSIDE_BOTTOM ){
 			bSizeBox = FALSE;
 		}
-	}
-	if( pCEditWnd->GetMiniMap().GetHwnd() ){
-		bSizeBox = FALSE;
 	}
 
 	/* メインウィンドウが最大化されている場合はサイズボックスを表示しない */

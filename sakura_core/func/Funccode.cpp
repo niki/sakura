@@ -388,7 +388,6 @@ const EFunctionCode pnFuncList_Set[] = {	//Oct. 16, 2000 JEPRO 変数名変更(L
 	F_SHOWFUNCKEY		,	/* ファンクションキーの表示 */	//Sept. 14, 2000 JEPRO ファンクションキーとステータスバーを入れ替え
 	F_SHOWTAB			,	/* タブの表示 */	//@@@ 2003.06.10 MIK
 	F_SHOWSTATUSBAR		,	/* ステータスバーの表示 */
-	F_SHOWMINIMAP		,	// ミニマップの表示
 	F_TYPE_LIST			,	/* タイプ別設定一覧 */			//Sept. 17, 2000 JEPRO 設定系に入ってなかったので追加
 	F_OPTION_TYPE		,	/* タイプ別設定 */
 	F_OPTION			,	/* 共通設定 */
@@ -852,7 +851,6 @@ int FuncID_To_HelpContextID( EFunctionCode nFuncID )
 	case F_SHOWFUNCKEY:		return HLP000070;	/* ファンクションキーの表示 */
 	case F_SHOWTAB:			return HLP000282;	/* タブの表示 */	//@@@ 2003.06.10 MIK
 	case F_SHOWSTATUSBAR:	return HLP000134;	/* ステータスバーの表示 */
-	case F_SHOWMINIMAP:		return HLP000371;	// ミニマップの表示
 	case F_TYPE_LIST:		return HLP000072;	/* タイプ別設定一覧 */
 	case F_OPTION_TYPE:		return HLP000073;	/* タイプ別設定 */
 	case F_OPTION:			return HLP000076;	/* 共通設定 */
@@ -1294,7 +1292,6 @@ bool IsFuncChecked( const CEditDoc* pcEditDoc, const DLLSHAREDATA* pShareData, E
 	case F_SHOWFUNCKEY:			return pCEditWnd->m_cFuncKeyWnd.GetHwnd() != NULL;
 	case F_SHOWTAB:				return pCEditWnd->m_cTabWnd.GetHwnd() != NULL;	//@@@ 2003.06.10 MIK
 	case F_SHOWSTATUSBAR:		return pCEditWnd->m_cStatusBar.GetStatusHwnd() != NULL;
-	case F_SHOWMINIMAP:			return pCEditWnd->GetMiniMap().GetHwnd() != NULL;
 	// 2008.05.30 nasukoji	テキストの折り返し方法
 	case F_TMPWRAPNOWRAP:		return ( pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP );		// 折り返さない
 	case F_TMPWRAPSETTING:		return ( pcEditDoc->m_nTextWrapMethodCur == WRAP_SETTING_WIDTH );		// 指定桁で折り返す

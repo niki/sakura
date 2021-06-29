@@ -175,7 +175,6 @@ public:
 		CEditDoc*	pcEditDoc,	//!< 参照するドキュメント
 		int			nMyIndex,	//!< ビューのインデックス
 		BOOL		bShow,		//!< 作成時に表示するかどうか
-		bool		bMiniMap
 	);
 	void CopyViewStatus( CEditView* ) const;					/* 自分の表示状態を他のビューにコピー */
 
@@ -316,7 +315,6 @@ public:
 	CLayoutInt  ScrollByV( CLayoutInt vl ){	return ScrollAtV( GetTextArea().GetViewTopLine() + vl );}	/* 指定行スクロール*/
 	CLayoutInt  ScrollByH( CLayoutInt hl ){	return ScrollAtH( GetTextArea().GetViewLeftCol() + hl );}	/* 指定桁スクロール */
 	void ScrollDraw(CLayoutInt, CLayoutInt, const RECT&, const RECT&, const RECT&);
-	void MiniMapRedraw(bool);
 public:
 	void SyncScrollV( CLayoutInt );									/* 垂直同期スクロール */
 	void SyncScrollH( CLayoutInt );									/* 水平同期スクロール */
@@ -462,7 +460,6 @@ public:
 	bool IsISearchEnabled(int nCommand) const;
 
 	BOOL KeySearchCore( const CNativeW* pcmemCurText );	// 2006.04.10 fon
-	bool MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide );
 
 	/*!	CEditView::KeyWordHelpSearchDictのコール元指定用ローカルID
 		@date 2006.04.10 fon 新規作成
@@ -586,7 +583,7 @@ public:
 #ifdef NK_LINE_CENTERING
 	//! 行間のすきま取得
 	int GetLineSpace() const {
-		if (!m_bMiniMap && m_pTypeData) {
+		if (m_pTypeData) {
 			return m_pTypeData->m_nLineSpace;
 		} else {
 			return 0;
@@ -772,8 +769,6 @@ public:
 	CRegexKeyword*	m_cRegexKeyword;	//@@@ 2001.11.17 add MIK
 	int				m_nMyIndex;	/* 分割状態 */
 	CMigemo*		m_pcmigemo;
-	bool			m_bMiniMap;
-	bool			m_bMiniMapMouseDown;
 	CLayoutInt		m_nPageViewTop;
 	CLayoutInt		m_nPageViewBottom;
 

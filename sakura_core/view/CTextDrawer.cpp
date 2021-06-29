@@ -706,7 +706,7 @@ void CTextDrawer::DispLineNumber(
 #endif // NK_
 
 		//DIFFマーク描画
-		if( !pView->m_bMiniMap ){
+		{
 			CDiffLineGetter(pCDocLine).DrawDiffMark(gr,y,nLineHeight,fgcolor);
 		}
 	}
@@ -723,9 +723,9 @@ void CTextDrawer::DispLineNumber(
 
 	// 行番号部分のノート線描画
 #ifdef NK_FIX_NOT_NOTE_LINE_FROM_EOF
-	if( !pView->m_bMiniMap && nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
+	if( nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
 #else
-	if( !pView->m_bMiniMap ){
+	{
 #endif // NK_
 		int left   = bDispLineNumTrans ? 0 : rcLineNum.right;
 		int right  = pView->GetTextArea().GetAreaLeft();
