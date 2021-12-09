@@ -181,7 +181,7 @@ BOOL CEditView::Create(
 	HWND		hwndParent,	//!< 親
 	CEditDoc*	pcEditDoc,	//!< 参照するドキュメント
 	int			nMyIndex,	//!< ビューのインデックス
-	BOOL		bShow,		//!< 作成時に表示するかどうか
+	BOOL		bShow		//!< 作成時に表示するかどうか
 )
 {
 	m_pcTextArea = new CTextArea(this);

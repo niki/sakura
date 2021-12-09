@@ -691,7 +691,7 @@ HWND CEditWnd::Create(
 	m_cSplitterWnd.Create( G_AppInstance(), GetHwnd(), this );
 
 	/* ビュー */
-	GetView(0).Create( m_cSplitterWnd.GetHwnd(), GetDocument(), 0, TRUE, false  );
+	GetView(0).Create( m_cSplitterWnd.GetHwnd(), GetDocument(), 0, TRUE );
 	GetView(0).OnSetFocus();
 
 	/* 子ウィンドウの設定 */
@@ -4584,7 +4584,7 @@ bool CEditWnd::CreateEditViewBySplit(int nViewCount )
 		for( int i = GetAllViewCount(); i < nViewCount; i++ ){
 			assert( NULL == m_pcEditViewArr[i] );
 			m_pcEditViewArr[i] = new CEditView(this);
-			m_pcEditViewArr[i]->Create( m_cSplitterWnd.GetHwnd(), GetDocument(), i, FALSE, false );
+			m_pcEditViewArr[i]->Create( m_cSplitterWnd.GetHwnd(), GetDocument(), i, FALSE );
 		}
 		m_nEditViewCount = nViewCount;
 

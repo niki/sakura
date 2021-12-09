@@ -599,9 +599,6 @@ void CEditView::OnPaint( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp 
 		return;
 	}
 	OnPaint2( _hdc, pPs, bDrawFromComptibleBmp );
-	if( bChangeFont ){
-		SelectCharWidthCache( CWM_FONT_EDIT, m_pcEditWnd->GetLogfontCacheMode() );
-	}
 }
 
 /*! 通常の描画処理 new 
