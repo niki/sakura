@@ -1230,10 +1230,11 @@ LRESULT CEditView::OnMOUSEWHEEL2( WPARAM wParam, LPARAM lParam, bool bHorizontal
 //	MYTRACE( _T("CEditView::DispatchEvent() WM_MOUSEWHEEL fwKeys=%xh zDelta=%d xPos=%d yPos=%d \n"), fwKeys, zDelta, xPos, yPos );
 
 	if( bHorizontalMsg ){
+		//yū: 水平スクロールの方向が逆なので修正したよ
 		if( 0 < zDelta ){
-			nScrollCode = SB_LINEDOWN; // 右
-		}else{
 			nScrollCode = SB_LINEUP; // 左
+		}else{
+			nScrollCode = SB_LINEDOWN; // 右
 		}
 		zDelta *= -1; // 反対にする
 	}else{
@@ -1400,7 +1401,13 @@ LRESULT CEditView::OnMOUSEWHEEL2( WPARAM wParam, LPARAM lParam, bool bHorizontal
 */
 LRESULT CEditView::OnMOUSEWHEEL( WPARAM wParam, LPARAM lParam )
 {
-	return OnMOUSEWHEEL2( wParam, lParam, false, F_0 );
+	//yū: シフトを押しているときは水平に（強制）
+	if (GetKeyState_Shift()) {
+		return OnMOUSEWHEEL2(wParam, lParam, true, F_0);
+	}
+	else {
+		return OnMOUSEWHEEL2( wParam, lParam, false, F_0 );
+	}
 }
 
 /*! 水平マウススクロール
