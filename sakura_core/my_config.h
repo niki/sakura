@@ -47,7 +47,7 @@
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 // 修正者
-#define NK_AUTHOR       "niki@yu7.org"
+#define NK_AUTHOR       "Nictama & Co."
 #define NK_AUTHOR_PAGE  "https://github.com/niki/sakura"
 
 // 拡張用レジストリキー
@@ -164,8 +164,8 @@
 //  - デフォルトでは行は上揃えになっているので行間は下に付加される
 //  - キャレットを行間含む高さにする (カーソル行アンダーラインが表示されている場合は交差箇所が消せないので通常処理)
 //------------------------------------------------------------------
-#define NK_LINE_CENTERING
-	#define NK_CENTERINLG_WITH_CARET_HEIGHT (1)  // キャレットの高さを行の高さにする
+//〆 #define NK_LINE_CENTERING
+//	#define NK_CENTERINLG_WITH_CARET_HEIGHT (1)  // キャレットの高さを行の高さにする
 
 //------------------------------------------------------------------
 // キャレットの幅を入力タイプで変更する (半角:1px, 全角:2px)
