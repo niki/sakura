@@ -310,7 +310,7 @@ void _DefaultConfig(STypeConfig* pType)
 /************************/
 
 	pType->m_nTextWrapMethod = WRAP_NO_TEXT_WRAP;	// テキストの折り返し方法		// 2008.05.30 nasukoji
-	pType->m_nMaxLineKetas = CKetaXInt(MAXLINEKETAS);	/* 折り返し桁数 */
+    pType->m_nMaxLineKetas = CKetaXInt(DEFAULT_LINEKETAS); /* 折り返し桁数 */
 	pType->m_nColumnSpace = 0;					/* 文字と文字の隙間 */
 	pType->m_nLineSpace = 1;					/* 行間のすきま */
 	pType->m_nTabSpace = CKetaXInt(4);					/* TABの文字数 */

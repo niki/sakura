@@ -61,6 +61,7 @@ const int COLUMNSPACE_MAX = 64;
 // 2007.09.07 kobake 定数名変更: MINLINESIZE→MINLINEKETAS
 const int MAXLINEKETAS		= 32768;//10240;	//!< 1行の桁数の最大値
 const int MINLINEKETAS		= 10;		//!< 1行の桁数の最小値
+const int DEFAULT_LINEKETAS = 120;  // デフォルトにする1行の桁数 .niki
 
 // 2014.08.02 定数定義追加 katze
 const int LINENUMWIDTH_MIN = 2;
