@@ -133,13 +133,13 @@ CCaret::~CCaret()
 
 	必要に応じて縦/横スクロールもする．
 	垂直スクロールをした場合はその行数を返す（正／負）．
-	
+
 	@return 縦スクロール行数(負:上スクロール/正:下スクロール)
 
 	@note 不正な位置が指定された場合には適切な座標値に
 		移動するため，引数で与えた座標と移動後の座標は
 		必ずしも一致しない．
-	
+
 	@note bScrollがfalseの場合にはカーソル位置のみ移動する．
 		trueの場合にはスクロール位置があわせて変更される
 
@@ -212,7 +212,7 @@ CLayoutInt CCaret::MoveCursor(
 	m_cUnderLine.CaretUnderLineOFF( bScroll, bDrawPaint );	//	YAZAKI
 	m_cUnderLine.SetUnderLineDoNotOFF( false );
 	m_cUnderLine.SetVertLineDoNotOFF( false );
-	
+
 	// 水平スクロール量（文字数）の算出
 	nScrollColNum = CLayoutInt(0);
 #ifdef NK_FIX_SCROLL
@@ -233,7 +233,7 @@ CLayoutInt CCaret::MoveCursor(
 		nScrollMarginRight = t_min(nScrollMarginRight, nMin);
 		nScrollMarginLeft  = t_min(nScrollMarginLeft,  nMin);
 	}
-	
+
 	//	Aug. 14, 2005 genta 折り返し幅をLayoutMgrから取得するように
 	if( m_pEditDoc->m_cLayoutMgr.GetMaxLineLayout() > area.m_nViewColNum &&
 		ptWk_CaretPos.GetX() >area.GetViewLeftCol() + area.m_nViewColNum - nScrollMarginRight ){
@@ -370,20 +370,20 @@ CLayoutInt CCaret::MoveCursor(
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 			if (GetDllShareData().m_sFlags.m_nCenteringCursor > 0) { // CViewCommander::Command_CURLINECENTER()
 				GetDllShareData().m_sFlags.m_nCenteringCursor = 0;
-				
+
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 
 				if (0 > nViewTopLine) {
 					nViewTopLine = CLayoutInt(0);
 				}
-				
+
 				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
-				
+
 				m_pEditView->SetDrawSwitch(false);
 				nFinalDrawFlag |= PAINT_ALL;
-				
+
 			}
 #endif // NK_
 
@@ -395,20 +395,20 @@ CLayoutInt CCaret::MoveCursor(
 #ifdef NK_FIX_CENTERING_CURSOR_JUMP
 			if (GetDllShareData().m_sFlags.m_nCenteringCursor > 0) { // CViewCommander::Command_CURLINECENTER()
 				GetDllShareData().m_sFlags.m_nCenteringCursor = 0;
-				
+
 				CLayoutInt		nViewTopLine;
 				nViewTopLine = GetCaretLayoutPos().GetY2() - ( m_pEditView->GetTextArea().m_nViewRowNum / 2 );
 
 				if (0 > nViewTopLine) {
 					nViewTopLine = CLayoutInt(0);
 				}
-				
+
 				CLayoutInt nScrollLines = nViewTopLine - m_pEditView->GetTextArea().GetViewTopLine();
 				m_pEditView->GetTextArea().SetViewTopLine( nViewTopLine );
-				
+
 				m_pEditView->SetDrawSwitch(false);
 				nFinalDrawFlag |= PAINT_ALL;
-				
+
 			} else { // @1
 #endif // NK_
 			RECT	rcClip;
@@ -821,7 +821,7 @@ void CCaret::ShowEditCaret()
 
 	@note ステータスバーの状態の並び方の変更はメッセージを受信する
 		CEditWnd::DispatchEvent()のWM_NOTIFYにも影響があることに注意
-	
+
 	@note ステータスバーの出力内容の変更はCEditWnd::OnSize()の
 		カラム幅計算に影響があることに注意
 */
@@ -1109,6 +1109,9 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 		bVertLineDoNotOFF = false;		//選択状態ならカーソル位置縦線消去を行う
 	}
 
+    bool moveToTop = false;
+	bool moveToEnd = false;
+
 	// 現在のキャレットY座標 + nMoveLinesが正しいレイアウト行の範囲内に収まるように nMoveLinesを調整する。
 	if( nMoveLines > 0 ) { // 下移動。
 		const bool existsEOFOnlyLine = pLayoutMgr->GetBottomLayout() && pLayoutMgr->GetBottomLayout()->GetLayoutEol() != EOL_NONE
@@ -1122,9 +1125,16 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 			// EOFのみの行には移動しない。下移動でキャレットの X座標を動かしたくないので。
 			nMoveLines = t_max( CLayoutInt(0), nMoveLines - 1 ); // うっかり上移動しないように 0以上を守る。
 		}
+        else if (nMoveLines == 0) {
+			moveToEnd = true;
+        }
 	} else { // 上移動。
 		// 移動先が 0行目より小さくならないように移動量を規制。
 		nMoveLines = t_max( nMoveLines, - GetCaretLayoutPos().GetY() );
+
+        if (nMoveLines == 0) {
+			moveToTop = true;
+		}
 	}
 
 	if( bSelect && ! m_pEditView->GetSelectionInfo().IsTextSelected() ) {
@@ -1141,7 +1151,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 	}
 
 	// (これから求める)キャレットの移動先。
-	CLayoutPoint ptTo( CLayoutInt(0), ptCaret.y + nMoveLines );
+	CLayoutPoint ptTo(CLayoutInt(0), ptCaret.y + nMoveLines);
 
 	/* 移動先の行のデータを取得 */
 	const CLayout* const pLayout = pLayoutMgr->SearchLineByLayoutY( ptTo.y );
@@ -1166,6 +1176,17 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 			i = it.getIndex();
 		}
 	}
+
+    if (moveToTop) {
+		ptTo.x = CLayoutInt(0);
+	}
+
+	if (moveToEnd) {
+        ptTo.x = CLayoutInt(0);
+		const CLayout *pcLayout = GetDocument()->m_cLayoutMgr.SearchLineByLayoutY(ptTo.y);
+	    if (pcLayout) ptTo.x = pcLayout->CalcLayoutWidth(GetDocument()->m_cLayoutMgr);
+	}
+
 	if( i >= nLineLen ) {
 		/* フリーカーソルモードと矩形選択中は、キャレットの位置を改行や EOFの前に制限しない */
 		if( pCommon->m_sGeneral.m_bIsFreeCursorMode
@@ -1174,6 +1195,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 			ptTo.x = m_nCaretPosX_Prev;
 		}
 	}
+
 	if( ptTo.x != GetCaretLayoutPos().GetX() ){
 		bVertLineDoNotOFF = false;
 	}
@@ -1347,7 +1369,7 @@ CLayoutInt CCaret::MoveCursorProperly(
 	if( 0 > ptNewXY.y ){
 		ptNewXY.y = CLayoutInt(0);
 	}
-	
+
 	// 2011.12.26 EOF以下の行だった場合で矩形のときは、最終レイアウト行へ移動する
 	if( ptNewXY.y >= m_pEditDoc->m_cLayoutMgr.GetLineCount()
 	 && (m_pEditView->GetSelectionInfo().IsMouseSelecting() && m_pEditView->GetSelectionInfo().IsBoxSelecting()) ){
@@ -1419,7 +1441,7 @@ CLayoutInt CCaret::MoveCursorProperly(
 		}
 		ptNewXY.SetX( nPosX );
 	}
-	
+
 	if( ptNewXYNew ){
 		*ptNewXYNew = ptNewXY;
 		GetAdjustCursorPos( ptNewXYNew );
