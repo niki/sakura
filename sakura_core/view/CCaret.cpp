@@ -1109,8 +1109,8 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 		bVertLineDoNotOFF = false;		//選択状態ならカーソル位置縦線消去を行う
 	}
 
-    bool moveToHead = false;
-	bool moveToTail = false;
+    bool moveToTop = false;
+	bool moveToEnd = false;
 
 	// 現在のキャレットY座標 + nMoveLinesが正しいレイアウト行の範囲内に収まるように nMoveLinesを調整する。
 	if( nMoveLines > 0 ) { // 下移動。
@@ -1126,14 +1126,14 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 			nMoveLines = t_max( CLayoutInt(0), nMoveLines - 1 ); // うっかり上移動しないように 0以上を守る。
 		}
         else if (nMoveLines == 0) {
-			moveToTail = true;
+			moveToEnd = true;
         }
 	} else { // 上移動。
 		// 移動先が 0行目より小さくならないように移動量を規制。
 		nMoveLines = t_max( nMoveLines, - GetCaretLayoutPos().GetY() );
 
         if (nMoveLines == 0) {
-			moveToHead = true;
+			moveToTop = true;
 		}
 	}
 
@@ -1177,11 +1177,11 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 		}
 	}
 
-    if (moveToHead) {
+    if (moveToTop) {
 		ptTo.x = CLayoutInt(0);
 	}
 
-	if (moveToTail) {
+	if (moveToEnd) {
         ptTo.x = CLayoutInt(0);
 		const CLayout *pcLayout = GetDocument()->m_cLayoutMgr.SearchLineByLayoutY(ptTo.y);
 	    if (pcLayout) ptTo.x = pcLayout->CalcLayoutWidth(GetDocument()->m_cLayoutMgr);
