@@ -1179,12 +1179,16 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 
     if (moveToTop) {
 		ptTo.x = CLayoutInt(0);
+        m_nCaretPosX_Prev = ptTo.x;
 	}
 
 	if (moveToEnd) {
         ptTo.x = CLayoutInt(0);
 		const CLayout *pcLayout = GetDocument()->m_cLayoutMgr.SearchLineByLayoutY(ptTo.y);
-	    if (pcLayout) ptTo.x = pcLayout->CalcLayoutWidth(GetDocument()->m_cLayoutMgr);
+		if (pcLayout) {
+			ptTo.x = pcLayout->CalcLayoutWidth(GetDocument()->m_cLayoutMgr);
+			m_nCaretPosX_Prev = ptTo.x;
+		}
 	}
 
 	if( i >= nLineLen ) {
