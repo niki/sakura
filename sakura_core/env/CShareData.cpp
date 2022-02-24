@@ -237,9 +237,9 @@ bool CShareData::InitShareData()
 			sGeneral.m_bStopsBothEndsWhenSearchWord = FALSE;	/* 単語単位で移動するときに、単語の両端で止まるか */
 			sGeneral.m_bStopsBothEndsWhenSearchParagraph = FALSE;	/* 単語単位で移動するときに、単語の両端で止まるか */
 
-			sGeneral.m_bCloseAllConfirm = FALSE;		/* [すべて閉じる]で他に編集用のウィンドウがあれば確認する */	// 2006.12.25 ryoji
+			sGeneral.m_bCloseAllConfirm = TRUE;		/* [すべて閉じる]で他に編集用のウィンドウがあれば確認する */	// 2006.12.25 ryoji
 			sGeneral.m_bExitConfirm = FALSE;			/* 終了時の確認をする */
-			sGeneral.m_nRepeatedScrollLineNum = CLayoutInt(3);	/* キーリピート時のスクロール行数 */
+			sGeneral.m_nRepeatedScrollLineNum = CLayoutInt(1);	/* キーリピート時のスクロール行数 */
 #ifdef NK_FIX_DEFAULT_VALUE
 			sGeneral.m_nRepeatedMoveCaretNum = 1;		// キーリピート時の左右移動数
 #else
@@ -277,8 +277,8 @@ bool CShareData::InitShareData()
 			sWindow.m_nFUNCKEYWND_Place = 1;			/* ファンクションキー表示位置／0:上 1:下 */
 			sWindow.m_nFUNCKEYWND_GroupNum = 4;			// 2002/11/04 Moca ファンクションキーのグループボタン数
 
-			sWindow.m_bSplitterWndHScroll = TRUE;	// 2001/06/20 asa-o 分割ウィンドウの水平スクロールの同期をとる
-			sWindow.m_bSplitterWndVScroll = TRUE;	// 2001/06/20 asa-o 分割ウィンドウの垂直スクロールの同期をとる
+			sWindow.m_bSplitterWndHScroll = FALSE;	// 2001/06/20 asa-o 分割ウィンドウの水平スクロールの同期をとる
+			sWindow.m_bSplitterWndVScroll = FALSE;	// 2001/06/20 asa-o 分割ウィンドウの垂直スクロールの同期をとる
 
 			// 2001/06/14 asa-o 補完とキーワードヘルプはタイプ別に移動したので削除
 			//	2004.05.13 Moca ウィンドウサイズ固定指定追加に伴う指定方法変更
@@ -293,29 +293,29 @@ bool CShareData::InitShareData()
 			sWindow.m_nWinPosX = CW_USEDEFAULT;
 			sWindow.m_nWinPosY = 0;
 
-			sWindow.m_nRulerHeight = 13;					/* ルーラーの高さ */
-			sWindow.m_nRulerBottomSpace = 0;				/* ルーラーとテキストの隙間 */
+			sWindow.m_nRulerHeight = 12;					/* ルーラーの高さ */
+			sWindow.m_nRulerBottomSpace = 1;				/* ルーラーとテキストの隙間 */
 			sWindow.m_nRulerType = 0;					/* ルーラーのタイプ */
-			sWindow.m_nLineNumRightSpace = 0;			/* 行番号の右の隙間 */
+			sWindow.m_nLineNumRightSpace = 2;			/* 行番号の右の隙間 */
 			sWindow.m_nVertLineOffset = -1;			// 2005.11.10 Moca 指定桁縦線
 			sWindow.m_bUseCompatibleBMP = TRUE;		// 2007.09.09 Moca 画面キャッシュを使う	// 2009.06.09 ryoji FALSE->TRUE
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
 
 #ifdef NK_FIX_TAB_CAPTION_COLOR
-			_tcscpy( sWindow.m_szWindowCaptionActive, 
+			_tcscpy( sWindow.m_szWindowCaptionActive,
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
 				_T(" $A ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-			_tcscpy( sWindow.m_szWindowCaptionInactive, 
+			_tcscpy( sWindow.m_szWindowCaptionInactive,
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
 				_T(" $A ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
 #else
 			//	Apr. 05, 2003 genta ウィンドウキャプションの初期値
 			//	Aug. 16, 2003 genta $N(ファイル名省略表示)をデフォルトに変更
-			_tcscpy( sWindow.m_szWindowCaptionActive, 
+			_tcscpy( sWindow.m_szWindowCaptionActive,
 				_T("${w?$h$:アウトプット$:${I?$f$n$:$N$n$}$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-			_tcscpy( sWindow.m_szWindowCaptionInactive, 
+			_tcscpy( sWindow.m_szWindowCaptionInactive,
 				_T("${w?$h$:アウトプット$:$f$n$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
 #endif // NK_
@@ -325,8 +325,8 @@ bool CShareData::InitShareData()
 		{
 			CommonSetting_TabBar& sTabBar = m_pShareData->m_Common.m_sTabBar;
 
-			sTabBar.m_bDispTabWnd = FALSE;			//タブウインドウ表示	//@@@ 2003.05.31 MIK
-			sTabBar.m_bDispTabWndMultiWin = FALSE;	//タブウインドウ表示	//@@@ 2003.05.31 MIK
+			sTabBar.m_bDispTabWnd = TRUE;			//タブウインドウ表示	//@@@ 2003.05.31 MIK
+			sTabBar.m_bDispTabWndMultiWin = TRUE;	//タブウインドウ表示	//@@@ 2003.05.31 MIK
 			wcscpy(	//@@@ 2003.06.13 MIK
 				sTabBar.m_szTabWndCaption,
 #ifdef NK_FIX_TAB_CAPTION_COLOR
@@ -339,12 +339,12 @@ bool CShareData::InitShareData()
 			sTabBar.m_bDispTabIcon = FALSE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
 			sTabBar.m_bDispTabClose = DISPTABCLOSE_NO;	//タブに閉じるボタンを表示する	//@@@ 2012.04.14 syat
 			sTabBar.m_bSortTabList = TRUE;			//タブ一覧をソートする		//@@@ 2006.05.10 ryoji
-			sTabBar.m_bTab_RetainEmptyWin = TRUE;	// 最後のファイルが閉じられたとき(無題)を残す	// 2007.02.11 genta
+			sTabBar.m_bTab_RetainEmptyWin = FALSE;	// 最後のファイルが閉じられたとき(無題)を残す	// 2007.02.11 genta
 			sTabBar.m_bTab_CloseOneWin = FALSE;	// タブモードでもウィンドウの閉じるボタンで現在のファイルのみ閉じる	// 2007.02.11 genta
 			sTabBar.m_bTab_ListFull = FALSE;			//タブ一覧をフルパス表示する	//@@@ 2007.02.28 ryoji
 			sTabBar.m_bChgWndByWheel = FALSE;		//マウスホイールでウィンドウ切替	//@@@ 2006.03.26 ryoji
 			sTabBar.m_bNewWindow = FALSE;			// 外部から起動するときは新しいウインドウで開く
-			sTabBar.m_bTabMultiLine = false;		// タブ多段
+			sTabBar.m_bTabMultiLine = FALSE;		// タブ多段
 			sTabBar.m_eTabPosition = TabPosition_Top;		//タブ位置
 
 			sTabBar.m_lf = lfIconTitle;
@@ -358,22 +358,22 @@ bool CShareData::InitShareData()
 		{
 			CommonSetting_Edit& sEdit = m_pShareData->m_Common.m_sEdit;
 
-			sEdit.m_bAddCRLFWhenCopy = false;			/* 折り返し行に改行を付けてコピー */
+			sEdit.m_bAddCRLFWhenCopy = FALSE;			/* 折り返し行に改行を付けてコピー */
 
 			sEdit.m_bUseOLE_DragDrop = TRUE;			/* OLEによるドラッグ & ドロップを使う */
 			sEdit.m_bUseOLE_DropSource = TRUE;			/* OLEによるドラッグ元にするか */
 			sEdit.m_bSelectClickedURL = TRUE;			/* URLがクリックされたら選択するか */
 			sEdit.m_bCopyAndDisablSelection = FALSE;	/* コピーしたら選択解除 */
-			sEdit.m_bEnableNoSelectCopy = TRUE;		/* 選択なしでコピーを可能にする */	// 2007.11.18 ryoji
-			sEdit.m_bEnableLineModePaste = true;		/* ラインモード貼り付けを可能にする */	// 2007.10.08 ryoji
-			sEdit.m_bConvertEOLPaste = false;			/* 改行コードを変換して貼り付ける */	// 2009.02.28 salarm
-			sEdit.m_bEnableExtEol = false;
-			sEdit.m_bBoxSelectLock = true;
+			sEdit.m_bEnableNoSelectCopy = FALSE;		/* 選択なしでコピーを可能にする */	// 2007.11.18 ryoji
+			sEdit.m_bEnableLineModePaste = FALSE;		/* ラインモード貼り付けを可能にする */	// 2007.10.08 ryoji
+			sEdit.m_bConvertEOLPaste = FALSE;			/* 改行コードを変換して貼り付ける */	// 2009.02.28 salarm
+			sEdit.m_bEnableExtEol = FALSE;
+			sEdit.m_bBoxSelectLock = TRUE;
 
-			sEdit.m_bNotOverWriteCRLF = TRUE;			/* 改行は上書きしない */
-			sEdit.m_bOverWriteFixMode = false;			// 文字幅に合わせてスペースを詰める
+			sEdit.m_bNotOverWriteCRLF = FALSE;			/* 改行は上書きしない */
+			sEdit.m_bOverWriteFixMode = FALSE;			// 文字幅に合わせてスペースを詰める
 
-			sEdit.m_bOverWriteBoxDelete = false;
+			sEdit.m_bOverWriteBoxDelete = FALSE;
 			sEdit.m_eOpenDialogDir = OPENDIALOGDIR_CUR;
 			auto_strcpy(sEdit.m_OpenDialogSelDir, _T("%Personal%\\"));
 			sEdit.m_bAutoColumnPaste = TRUE;			/* 矩形コピーのテキストは常に矩形貼り付け */
@@ -385,36 +385,36 @@ bool CShareData::InitShareData()
 
 			//ファイルの排他制御
 			sFile.m_nFileShareMode = SHAREMODE_NOT_EXCLUSIVE;	// ファイルの排他制御モード
-			sFile.m_bCheckFileTimeStamp = true;			// 更新の監視
+			sFile.m_bCheckFileTimeStamp = TRUE;			// 更新の監視
 			sFile.m_nAutoloadDelay = 0;					// 自動読込時遅延
-			sFile.m_bUneditableIfUnwritable = true;		// 上書き禁止検出時は編集禁止にする
+			sFile.m_bUneditableIfUnwritable = TRUE;		// 上書き禁止検出時は編集禁止にする
 
 			//ファイルの保存
-			sFile.m_bEnableUnmodifiedOverwrite = false;	// 無変更でも上書きするか
+			sFile.m_bEnableUnmodifiedOverwrite = FALSE;	// 無変更でも上書きするか
 
 			// 「名前を付けて保存」でファイルの種類が[ユーザ指定]のときのファイル一覧表示	//ファイル保存ダイアログのフィルタ設定	// 2006.11.16 ryoji
-			sFile.m_bNoFilterSaveNew = true;		// 新規から保存時は全ファイル表示
-			sFile.m_bNoFilterSaveFile = true;		// 新規以外から保存時は全ファイル表示
+			sFile.m_bNoFilterSaveNew = TRUE;		// 新規から保存時は全ファイル表示
+			sFile.m_bNoFilterSaveFile = TRUE;		// 新規以外から保存時は全ファイル表示
 
 			//ファイルオープン
-			sFile.m_bDropFileAndClose = false;		// ファイルをドロップしたときは閉じて開く
+			sFile.m_bDropFileAndClose = FALSE;		// ファイルをドロップしたときは閉じて開く
 			sFile.m_nDropFileNumMax = 8;			// 一度にドロップ可能なファイル数
-			sFile.m_bRestoreCurPosition = true;	// カーソル位置復元	//	Oct. 27, 2000 genta
-			sFile.m_bRestoreBookmarks = true;		// ブックマーク復元	//2002.01.16 hor
-			sFile.m_bAutoMIMEdecode = false;		// ファイル読み込み時にMIMEのデコードを行うか	//Jul. 13, 2001 JEPRO
-			sFile.m_bQueryIfCodeChange = true;		// 前回と異なる文字コードの時に問い合わせを行うか	Oct. 03, 2004 genta
-			sFile.m_bAlertIfFileNotExist = false;	// 開こうとしたファイルが存在しないとき警告する	Oct. 09, 2004 genta
-			sFile.m_bAlertIfLargeFile = false;		// 開こうとしたファイルが大きい場合に警告する
-			sFile.m_nAlertFileSize = 100;//NK_ 10;			// 警告を始めるファイルサイズ（MB単位）
+			sFile.m_bRestoreCurPosition = TRUE;	// カーソル位置復元	//	Oct. 27, 2000 genta
+			sFile.m_bRestoreBookmarks = TRUE;		// ブックマーク復元	//2002.01.16 hor
+			sFile.m_bAutoMIMEdecode = FALSE;		// ファイル読み込み時にMIMEのデコードを行うか	//Jul. 13, 2001 JEPRO
+			sFile.m_bQueryIfCodeChange = FALSE;		// 前回と異なる文字コードの時に問い合わせを行うか	Oct. 03, 2004 genta
+			sFile.m_bAlertIfFileNotExist = TRUE;	// 開こうとしたファイルが存在しないとき警告する	Oct. 09, 2004 genta
+			sFile.m_bAlertIfLargeFile = TRUE;		// 開こうとしたファイルが大きい場合に警告する
+			sFile.m_nAlertFileSize = 20;//NK_ 10;			// 警告を始めるファイルサイズ（MB単位）
 		}
 
 		// [バックアップ]タブ
 		{
 			CommonSetting_Backup& sBackup = m_pShareData->m_Common.m_sBackup;
 
-			sBackup.m_bBackUp = false;										/* バックアップの作成 */
-			sBackup.m_bBackUpDialog = true;									/* バックアップの作成前に確認 */
-			sBackup.m_bBackUpFolder = false;								/* 指定フォルダにバックアップを作成する */
+			sBackup.m_bBackUp = FALSE;										/* バックアップの作成 */
+			sBackup.m_bBackUpDialog = FALSE;									/* バックアップの作成前に確認 */
+			sBackup.m_bBackUpFolder = FALSE;								/* 指定フォルダにバックアップを作成する */
 			sBackup.m_szBackUpFolder[0] = L'\0';							/* バックアップを作成するフォルダ */
 			sBackup.m_nBackUpType = 2;										/* バックアップファイル名のタイプ 1=(.bak) 2=*_日付.* */
 			sBackup.m_nBackUpType_Opt1 = BKUP_YEAR | BKUP_MONTH | BKUP_DAY;	/* バックアップファイル名：日付 */
@@ -423,8 +423,8 @@ bool CShareData::InitShareData()
 			sBackup.m_nBackUpType_Opt4 = 0;									/* バックアップファイル名：Option4 */
 			sBackup.m_nBackUpType_Opt5 = 0;									/* バックアップファイル名：Option5 */
 			sBackup.m_nBackUpType_Opt6 = 0;									/* バックアップファイル名：Option6 */
-			sBackup.m_bBackUpDustBox = false;								/* バックアップファイルをごみ箱に放り込む */	//@@@ 2001.12.11 add MIK
-			sBackup.m_bBackUpPathAdvanced = false;							/* 20051107 aroka バックアップ先フォルダを詳細設定する */
+			sBackup.m_bBackUpDustBox = FALSE;								/* バックアップファイルをごみ箱に放り込む */	//@@@ 2001.12.11 add MIK
+			sBackup.m_bBackUpPathAdvanced = FALSE;							/* 20051107 aroka バックアップ先フォルダを詳細設定する */
 			sBackup.m_szBackUpPathAdvanced[0] = _T('\0');					/* 20051107 aroka バックアップを作成するフォルダの詳細設定 */
 		}
 
@@ -433,7 +433,7 @@ bool CShareData::InitShareData()
 			CommonSetting_Format& sFormat = m_pShareData->m_Common.m_sFormat;
 
 			/* 見出し記号 */
-			wcscpy( sFormat.m_szMidashiKigou, L"１２３４５６７８９０（(［[「『【■□▲△▼▽◆◇○◎●§・※☆★第①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ一二三四五六七八九十壱弐参伍" );
+			wcscpy( sFormat.m_szMidashiKigou, L"１２３４５６７８９０（(［[「『【■□▲△▼▽◆◇○◎●§・･•※☆★第①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ一二三四五六七八九十壱弐参伍" );
 			/* 引用符 */
 			wcscpy( sFormat.m_szInyouKigou, L"> " );		/* 引用符 */
 
@@ -459,14 +459,14 @@ bool CShareData::InitShareData()
 			sSearch.m_bGrepSubFolder = TRUE;			/* Grep: サブフォルダも検索 */
 			sSearch.m_nGrepOutputLineType = 1;			// Grep: 行を出力/該当部分/否マッチ行 を出力
 			sSearch.m_nGrepOutputStyle = 2;//NK_ 1;			/* Grep: 出力形式 */
-			sSearch.m_bGrepOutputFileOnly = false;
-			sSearch.m_bGrepOutputBaseFolder = false;
-			sSearch.m_bGrepSeparateFolder = false;
-			sSearch.m_bGrepBackup = true;
+			sSearch.m_bGrepOutputFileOnly = TRUE;
+			sSearch.m_bGrepOutputBaseFolder = FALSE;
+			sSearch.m_bGrepSeparateFolder = FALSE;
+			sSearch.m_bGrepBackup = TRUE;
 
 			sSearch.m_bGrepDefaultFolder=TRUE;//NK_ FALSE;		/* Grep: フォルダの初期値をカレントフォルダにする */
 			sSearch.m_nGrepCharSet = CODE_AUTODETECT;	/* Grep: 文字コードセット */
-			sSearch.m_bGrepRealTimeView = FALSE;		/* 2003.06.28 Moca Grep結果のリアルタイム表示 */
+			sSearch.m_bGrepRealTimeView = TRUE;		/* 2003.06.28 Moca Grep結果のリアルタイム表示 */
 			sSearch.m_bCaretTextForSearch = TRUE;		/* 2006.08.23 ryoji カーソル位置の文字列をデフォルトの検索文字列にする */
 			sSearch.m_bInheritKeyOtherView = true;
 			sSearch.m_szRegexpLib[0] = _T('\0');		/* 2007.08.12 genta 正規表現DLL */
@@ -1056,7 +1056,7 @@ void CShareData::TraceOut( LPCTSTR lpFmt, ... )
 	LockGuard<CMutex> guard( CShareData::GetMutexShareWork() );
 	va_list argList;
 	va_start( argList, lpFmt );
-	int ret = tchar_vsnprintf_s( m_pShareData->m_sWorkBuffer.GetWorkBuffer<WCHAR>(), 
+	int ret = tchar_vsnprintf_s( m_pShareData->m_sWorkBuffer.GetWorkBuffer<WCHAR>(),
 		m_pShareData->m_sWorkBuffer.GetWorkBufferCount<WCHAR>(),
 		to_wchar(lpFmt), argList );
 	va_end( argList );
