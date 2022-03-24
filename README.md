@@ -2,6 +2,7 @@
 サクラエディタ 改修（2.3.2.0ベース）<br>
 
 （実行ファイルのみです）<br>
+Download：https://note.com/api/v2/attachments/download/bdad842eb16f49cbf2e0e8e2122b37d7
 
 <hr>
 
