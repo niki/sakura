@@ -222,13 +222,8 @@ bool CShareData::InitShareData()
 		{
 			CommonSetting_General& sGeneral = m_pShareData->m_Common.m_sGeneral;
 
-#ifdef NK_FIX_DEFAULT_VALUE
-			sGeneral.m_nMRUArrNum_MAX = 36;	/* ファイルの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
-			sGeneral.m_nOPENFOLDERArrNum_MAX = 20;	/* フォルダの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
-#else
-			sGeneral.m_nMRUArrNum_MAX = 15;	/* ファイルの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
-			sGeneral.m_nOPENFOLDERArrNum_MAX = 15;	/* フォルダの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
-#endif // NK_
+			sGeneral.m_nMRUArrNum_MAX = 10;	/* ファイルの履歴MAX */
+			sGeneral.m_nOPENFOLDERArrNum_MAX = 10;	/* フォルダの履歴MAX */
 
 			sGeneral.m_nCaretType = 0;					/* カーソルのタイプ 0=win 1=dos */
 			sGeneral.m_bIsINSMode = true;				/* 挿入／上書きモード */
@@ -240,20 +235,12 @@ bool CShareData::InitShareData()
 			sGeneral.m_bCloseAllConfirm = TRUE;		/* [すべて閉じる]で他に編集用のウィンドウがあれば確認する */	// 2006.12.25 ryoji
 			sGeneral.m_bExitConfirm = FALSE;			/* 終了時の確認をする */
 			sGeneral.m_nRepeatedScrollLineNum = CLayoutInt(1);	/* キーリピート時のスクロール行数 */
-#ifdef NK_FIX_DEFAULT_VALUE
 			sGeneral.m_nRepeatedMoveCaretNum = 1;		// キーリピート時の左右移動数
-#else
-			sGeneral.m_nRepeatedMoveCaretNum = 2;		// キーリピート時の左右移動数
-#endif // NK_
 			sGeneral.m_nRepeatedScroll_Smooth = FALSE;	/* キーリピート時のスクロールを滑らかにするか */
 			sGeneral.m_nPageScrollByWheel = 0;			/* キー/マウスボタン + ホイールスクロールでページスクロールする */	// 2009.01.17 nasukoji
 			sGeneral.m_nHorizontalScrollByWheel = 0;	/* キー/マウスボタン + ホイールスクロールで横スクロールする */		// 2009.01.17 nasukoji
 
-#ifdef NK_FIX_DEFAULT_VALUE
 			sGeneral.m_bUseTaskTray = FALSE;
-#else
-			sGeneral.m_bUseTaskTray = TRUE;				/* タスクトレイのアイコンを使う */
-#endif // NK_
 #ifdef _DEBUG
 			sGeneral.m_bStayTaskTray = FALSE;				/* タスクトレイのアイコンを常駐 */
 #else
@@ -433,7 +420,7 @@ bool CShareData::InitShareData()
 			CommonSetting_Format& sFormat = m_pShareData->m_Common.m_sFormat;
 
 			/* 見出し記号 */
-			wcscpy( sFormat.m_szMidashiKigou, L"１２３４５６７８９０（(［[「『【■□▲△▼▽◆◇○◎●§・･•※☆★第①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ一二三四五六七八九十壱弐参伍" );
+			wcscpy( sFormat.m_szMidashiKigou, L"１２３４５６７８９０(（[［「『【＜《≪■□▲△▼▽▶▷◆◇○◎●§・※☆★第①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳アイウエオロハニホヘト一二三四五六七八九十" );
 			/* 引用符 */
 			wcscpy( sFormat.m_szInyouKigou, L"> " );		/* 引用符 */
 
@@ -458,17 +445,17 @@ bool CShareData::InitShareData()
 
 			sSearch.m_bGrepSubFolder = TRUE;			/* Grep: サブフォルダも検索 */
 			sSearch.m_nGrepOutputLineType = 1;			// Grep: 行を出力/該当部分/否マッチ行 を出力
-			sSearch.m_nGrepOutputStyle = 2;//NK_ 1;			/* Grep: 出力形式 */
+			sSearch.m_nGrepOutputStyle = 2;			/* Grep: 出力形式 */
 			sSearch.m_bGrepOutputFileOnly = TRUE;
 			sSearch.m_bGrepOutputBaseFolder = FALSE;
 			sSearch.m_bGrepSeparateFolder = FALSE;
 			sSearch.m_bGrepBackup = TRUE;
 
-			sSearch.m_bGrepDefaultFolder=TRUE;//NK_ FALSE;		/* Grep: フォルダの初期値をカレントフォルダにする */
+			sSearch.m_bGrepDefaultFolder=TRUE;		/* Grep: フォルダの初期値をカレントフォルダにする */
 			sSearch.m_nGrepCharSet = CODE_AUTODETECT;	/* Grep: 文字コードセット */
 			sSearch.m_bGrepRealTimeView = TRUE;		/* 2003.06.28 Moca Grep結果のリアルタイム表示 */
 			sSearch.m_bCaretTextForSearch = TRUE;		/* 2006.08.23 ryoji カーソル位置の文字列をデフォルトの検索文字列にする */
-			sSearch.m_bInheritKeyOtherView = true;
+			sSearch.m_bInheritKeyOtherView = TRUE;
 			sSearch.m_szRegexpLib[0] = _T('\0');		/* 2007.08.12 genta 正規表現DLL */
 			sSearch.m_bGTJW_RETURN = TRUE;				/* エンターキーでタグジャンプ */
 			sSearch.m_bGTJW_LDBLCLK = TRUE;			/* ダブルクリックでタグジャンプ */
