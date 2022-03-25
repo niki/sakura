@@ -325,9 +325,9 @@ bool CShareData::InitShareData()
 			sTabBar.m_bSameTabWidth = FALSE;			//タブを等幅にする			//@@@ 2006.01.28 ryoji
 			sTabBar.m_bDispTabIcon = FALSE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
 			sTabBar.m_bDispTabClose = DISPTABCLOSE_NO;	//タブに閉じるボタンを表示する	//@@@ 2012.04.14 syat
-			sTabBar.m_bSortTabList = TRUE;			//タブ一覧をソートする		//@@@ 2006.05.10 ryoji
-			sTabBar.m_bTab_RetainEmptyWin = FALSE;	// 最後のファイルが閉じられたとき(無題)を残す	// 2007.02.11 genta
-			sTabBar.m_bTab_CloseOneWin = FALSE;	// タブモードでもウィンドウの閉じるボタンで現在のファイルのみ閉じる	// 2007.02.11 genta
+			sTabBar.m_bSortTabList = TRUE;			//fixme: タブ一覧をソートする		//@@@ 2006.05.10 ryoji
+			sTabBar.m_bTab_RetainEmptyWin = FALSE;	//fixme: 最後のファイルが閉じられたとき(無題)を残す	// 2007.02.11 genta
+			sTabBar.m_bTab_CloseOneWin = FALSE;	//fixme: タブモードでもウィンドウの閉じるボタンで現在のファイルのみ閉じる	// 2007.02.11 genta
 			sTabBar.m_bTab_ListFull = FALSE;			//タブ一覧をフルパス表示する	//@@@ 2007.02.28 ryoji
 			sTabBar.m_bChgWndByWheel = FALSE;		//マウスホイールでウィンドウ切替	//@@@ 2006.03.26 ryoji
 			sTabBar.m_bNewWindow = FALSE;			// 外部から起動するときは新しいウインドウで開く
@@ -351,13 +351,13 @@ bool CShareData::InitShareData()
 			sEdit.m_bUseOLE_DropSource = TRUE;			/* OLEによるドラッグ元にするか */
 			sEdit.m_bSelectClickedURL = TRUE;			/* URLがクリックされたら選択するか */
 			sEdit.m_bCopyAndDisablSelection = FALSE;	/* コピーしたら選択解除 */
-			sEdit.m_bEnableNoSelectCopy = FALSE;		/* 選択なしでコピーを可能にする */	// 2007.11.18 ryoji
+			sEdit.m_bEnableNoSelectCopy = TRUE;		/* 選択なしでコピーを可能にする */	// 2007.11.18 ryoji
 			sEdit.m_bEnableLineModePaste = FALSE;		/* ラインモード貼り付けを可能にする */	// 2007.10.08 ryoji
 			sEdit.m_bConvertEOLPaste = FALSE;			/* 改行コードを変換して貼り付ける */	// 2009.02.28 salarm
 			sEdit.m_bEnableExtEol = FALSE;
 			sEdit.m_bBoxSelectLock = TRUE;
 
-			sEdit.m_bNotOverWriteCRLF = FALSE;			/* 改行は上書きしない */
+			sEdit.m_bNotOverWriteCRLF = TRUE;			/* 改行は上書きしない */
 			sEdit.m_bOverWriteFixMode = FALSE;			// 文字幅に合わせてスペースを詰める
 
 			sEdit.m_bOverWriteBoxDelete = FALSE;
@@ -374,7 +374,7 @@ bool CShareData::InitShareData()
 			sFile.m_nFileShareMode = SHAREMODE_NOT_EXCLUSIVE;	// ファイルの排他制御モード
 			sFile.m_bCheckFileTimeStamp = TRUE;			// 更新の監視
 			sFile.m_nAutoloadDelay = 0;					// 自動読込時遅延
-			sFile.m_bUneditableIfUnwritable = TRUE;		// 上書き禁止検出時は編集禁止にする
+			sFile.m_bUneditableIfUnwritable = FALSE;	// 上書き禁止検出時は編集禁止にする
 
 			//ファイルの保存
 			sFile.m_bEnableUnmodifiedOverwrite = FALSE;	// 無変更でも上書きするか
@@ -389,10 +389,10 @@ bool CShareData::InitShareData()
 			sFile.m_bRestoreCurPosition = TRUE;	// カーソル位置復元	//	Oct. 27, 2000 genta
 			sFile.m_bRestoreBookmarks = TRUE;		// ブックマーク復元	//2002.01.16 hor
 			sFile.m_bAutoMIMEdecode = FALSE;		// ファイル読み込み時にMIMEのデコードを行うか	//Jul. 13, 2001 JEPRO
-			sFile.m_bQueryIfCodeChange = FALSE;		// 前回と異なる文字コードの時に問い合わせを行うか	Oct. 03, 2004 genta
-			sFile.m_bAlertIfFileNotExist = TRUE;	// 開こうとしたファイルが存在しないとき警告する	Oct. 09, 2004 genta
+			sFile.m_bQueryIfCodeChange = TRUE;		// 前回と異なる文字コードの時に問い合わせを行うか	Oct. 03, 2004 genta
+			sFile.m_bAlertIfFileNotExist = FALSE;	// 開こうとしたファイルが存在しないとき警告する	Oct. 09, 2004 genta
 			sFile.m_bAlertIfLargeFile = TRUE;		// 開こうとしたファイルが大きい場合に警告する
-			sFile.m_nAlertFileSize = 20;//NK_ 10;			// 警告を始めるファイルサイズ（MB単位）
+			sFile.m_nAlertFileSize = 20;			// 警告を始めるファイルサイズ（MB単位）
 		}
 
 		// [バックアップ]タブ
@@ -449,7 +449,7 @@ bool CShareData::InitShareData()
 			sSearch.m_bGrepOutputFileOnly = TRUE;
 			sSearch.m_bGrepOutputBaseFolder = FALSE;
 			sSearch.m_bGrepSeparateFolder = FALSE;
-			sSearch.m_bGrepBackup = TRUE;
+			sSearch.m_bGrepBackup = FALSE;
 
 			sSearch.m_bGrepDefaultFolder=TRUE;		/* Grep: フォルダの初期値をカレントフォルダにする */
 			sSearch.m_nGrepCharSet = CODE_AUTODETECT;	/* Grep: 文字コードセット */
