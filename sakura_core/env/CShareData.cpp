@@ -444,7 +444,7 @@ bool CShareData::InitShareData()
 			sFormat.m_nDateFormatType = 0;	//日付書式のタイプ
 			_tcscpy( sFormat.m_szDateFormat, _T("yyyy\'年\'M\'月\'d\'日(\'dddd\')\'") );	//日付書式
 			sFormat.m_nTimeFormatType = 0;	//時刻書式のタイプ
-			_tcscpy( sFormat.m_szTimeFormat, _T("tthh\'時\'mm\'分\'ss\'秒\'")  );			//時刻書式
+			_tcscpy( sFormat.m_szTimeFormat, _T("tthh\'時\'mm\'分\'")  );			//時刻書式
 		}
 
 		// [検索]タブ
