@@ -179,7 +179,7 @@ BOOL CAppNodeGroupHandle::AddEditWndList( HWND hWnd )
 		if( 0 == ::GetWindowLongPtr( hWnd, MY_GWLP_SEQUENCE ) )
 		{
 			pShare->m_sNodes.m_nSequences++;
-			::SetWindowLongPtr( hWnd, sizeof(LONG_PTR) , (LONG_PTR)pShare->m_sNodes.m_nSequences );
+			::SetWindowLongPtr( hWnd, MY_GWLP_SEQUENCE , (LONG_PTR)pShare->m_sNodes.m_nSequences );
 
 			//連番を更新する。
 			sMyEditNode.m_nIndex = pShare->m_sNodes.m_nSequences;
