@@ -371,9 +371,10 @@ HWND CEditWnd::_CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo)
 	wc.style			= CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
 	wc.lpfnWndProc		= CEditWndProc;
 	wc.cbClsExtra		= 0;
-	wc.cbWndExtra		= sizeof(LONG_PTR);	// WNDCLASSEX::cbWndExtraに必要サイズの修正（公式より）
-											// https://github.com/sakura-editor/sakura/issues/1845#issuecomment-1140412341
-											// https://github.com/sakura-editor/sakura/pull/1794#issuecomment-1035998066
+	wc.cbWndExtra		= sizeof(LONG_PTR) * 1;	// WNDCLASSEX::cbWndExtraに必要サイズの修正（公式より）
+												// commit 537d318be278beef6162cbbd319aa5fd3c46671f
+												// https://github.com/sakura-editor/sakura/issues/1845#issuecomment-1140412341
+												// https://github.com/sakura-editor/sakura/pull/1794#issuecomment-1035998066
 	wc.hInstance		= G_AppInstance();
 	//	Dec, 2, 2002 genta アイコン読み込み方法変更
 	wc.hIcon			= GetAppIcon( G_AppInstance(), ICON_DEFAULT_APP, FN_APP_ICON, false );

@@ -175,8 +175,8 @@ BOOL CAppNodeGroupHandle::AddEditWndList( HWND hWnd )
 		}
 
 		/* ウィンドウ連番 */
-
-		if( 0 == ::GetWindowLongPtr( hWnd, sizeof(LONG_PTR) ) )
+		constexpr auto MY_GWLP_SEQUENCE = sizeof(LONG_PTR) * 0; // 1個目の拡張領域。
+		if( 0 == ::GetWindowLongPtr( hWnd, MY_GWLP_SEQUENCE ) )
 		{
 			pShare->m_sNodes.m_nSequences++;
 			::SetWindowLongPtr( hWnd, sizeof(LONG_PTR) , (LONG_PTR)pShare->m_sNodes.m_nSequences );
