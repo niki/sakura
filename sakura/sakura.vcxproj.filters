@@ -1085,6 +1085,12 @@
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\types\CTypeInit.h" />
+    <ClInclude Include="..\sakura_core\my.h">
+      <Filter>Other Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\my_config.h">
+      <Filter>Other Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\sakura_core\Funccode_x.hsrc">
