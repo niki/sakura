@@ -575,6 +575,7 @@
 #define IDC_CHECK_NoFilterSaveNew       1507
 #define IDC_CHECK_NoFilterSaveFile      1508
 #define IDC_CHECK_CLOSEALLCONFIRM       1509
+#define IDC_CHECK_FILE_OPEN2OPEN        2000
 #define IDC_CHECK_ANTIALIAS             1510
 #define IDC_CHECK_RetainEmptyWindow     1511
 #define IDC_BUTTON_DIRECTPAGE           1512

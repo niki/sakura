@@ -1560,13 +1560,17 @@ BEGIN
                     8,157,131,8
     CONTROL         "HotKey1",IDC_HOTKEY_TRAYMENU,"msctls_hotkey32",
                     WS_BORDER | WS_TABSTOP,8,167,95,12
+    CONTROL         "既に開いているときは\n新しいウィンドウで開く(&D)",
+                    IDC_CHECK_FILE_OPEN2OPEN,"Button",BS_AUTOCHECKBOX | 
+                    BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,8,186,124,
+                    19
     CONTROL         "同時に複数の編集用ウィンドウを\n閉じるとき確認(&U)",
                     IDC_CHECK_CLOSEALLCONFIRM,"Button",BS_AUTOCHECKBOX | 
-                    BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,8,193,124,
+                    BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,8,205,124,
                     19
     CONTROL         "サクラエディタの全終了で編集用\nウィンドウを閉じるとき確認(&V)",
                     IDC_CHECK_EXITCONFIRM,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_GROUP | WS_TABSTOP,8,212,124,19
+                    BS_MULTILINE | WS_GROUP | WS_TABSTOP,8,224,124,19
     GROUPBOX        "スクロール",IDC_STATIC,158,3,130,125,WS_GROUP
     LTEXT           "行数(&N)",IDC_STATIC,163,19,29,8,NOT WS_GROUP
     EDITTEXT        IDC_EDIT_REPEATEDSCROLLLINENUM,196,17,40,12,

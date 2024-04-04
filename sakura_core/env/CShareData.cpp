@@ -237,6 +237,7 @@ bool CShareData::InitShareData()
 			sGeneral.m_bStopsBothEndsWhenSearchWord = FALSE;	/* 単語単位で移動するときに、単語の両端で止まるか */
 			sGeneral.m_bStopsBothEndsWhenSearchParagraph = FALSE;	/* 単語単位で移動するときに、単語の両端で止まるか */
 
+			sGeneral.m_bFileOpen2Open = FALSE;
 			sGeneral.m_bCloseAllConfirm = FALSE;		/* [すべて閉じる]で他に編集用のウィンドウがあれば確認する */	// 2006.12.25 ryoji
 			sGeneral.m_bExitConfirm = FALSE;			/* 終了時の確認をする */
 			sGeneral.m_nRepeatedScrollLineNum = CLayoutInt(3);	/* キーリピート時のスクロール行数 */
@@ -950,7 +951,7 @@ BOOL CShareData::IsPathOpened( const TCHAR* pszPath, HWND* phwndOwner )
 			// 同一パスのファイルが既に開かれているか
 			if( 0 == _tcsicmp( pfi->m_szPath, pszPath ) ){
 #ifdef NK_FIX_MULTIPLE_OPEN_FILES
-				if (::GetAsyncKeyState(VK_SHIFT)) {
+				if (m_pShareData->m_Common.m_sGeneral.m_bFileOpen2Open) {
 					return FALSE;
 				}
 #endif // NK_

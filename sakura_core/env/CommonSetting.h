@@ -86,6 +86,7 @@ struct CommonSetting_General
 	int		m_nOPENFOLDERArrNum_MAX;		//!< フォルダの履歴MAX
 
 	//ノーカテゴリ
+	BOOL	m_bFileOpen2Open;
 	BOOL	m_bCloseAllConfirm;				//!< [すべて閉じる]で他に編集用のウィンドウがあれば確認する	// 2006.12.25 ryoji
 	BOOL	m_bExitConfirm;					//!< 終了時の確認をする
 

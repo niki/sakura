@@ -555,6 +555,7 @@
 #define HIDC_CHECK_EXITCONFIRM					10916 //終了の確認
 #define HIDC_CHECK_STOPS_WORD					10917 //単語単位で移動するときに単語の両端に止まる
 #define HIDC_CHECK_STOPS_PARAGRAPH				10918 //段落単位で移動するときに段落の両端に止まる
+#define HIDC_CHECK_FILE_OPEN2OPEN     				10923 //既に開いているときは新しいウィンドウで開く
 #define HIDC_CHECK_CLOSEALLCONFIRM				10919 //[すべて閉じる]で他に編集用のウィンドウがあれば確認する	// 2006.12.25 ryoji
 #define HIDC_CHECK_NOMOVE_ACTIVATE_BY_MOUSE		10920 //マウスクリックでアクティブになったときはカーソルをクリック位置に移動しない 2007.10.08 genta
 #define HIDC_COMBO_WHEEL_PAGESCROLL				10921 //組み合わせてホイール操作した時ページスクロールする	// 2009.01.17 nasukoji

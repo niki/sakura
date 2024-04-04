@@ -39,6 +39,7 @@ static const DWORD p_helpids[] = {	//10900
 	IDC_CHECK_USETRAYICON,			HIDC_CHECK_USETRAYICON,				//タスクトレイを使う
 	IDC_CHECK_STAYTASKTRAY,			HIDC_CHECK_STAYTASKTRAY,			//タスクトレイに常駐
 	IDC_CHECK_REPEATEDSCROLLSMOOTH,	HIDC_CHECK_REPEATEDSCROLLSMOOTH,	//少し滑らかにする
+	IDC_CHECK_FILE_OPEN2OPEN,		HIDC_CHECK_FILE_OPEN2OPEN,			//既に開いているとき新しいウィンドウで開く
 	IDC_CHECK_CLOSEALLCONFIRM,		HIDC_CHECK_CLOSEALLCONFIRM,			//[すべて閉じる]で他に編集用のウィンドウがあれば確認する	// 2006.12.25 ryoji
 	IDC_CHECK_EXITCONFIRM,			HIDC_CHECK_EXITCONFIRM,				//終了の確認
 	IDC_CHECK_STOPS_BOTH_ENDS_WHEN_SEARCH_WORD, HIDC_CHECK_STOPS_WORD, //単語単位で移動するときに単語の両端に止まる
@@ -321,6 +322,9 @@ void CPropGeneral::SetData( HWND hwndDlg )
 	//	2007.10.08 genta マウスクリックでアクティブになったときはカーソルをクリック位置に移動しない (2007.10.02 by nasukoji)
 	::CheckDlgButton( hwndDlg, IDC_CHECK_NOMOVE_ACTIVATE_BY_MOUSE, m_Common.m_sGeneral.m_bNoCaretMoveByActivation );
 
+	// 既に開いているときは新しいウィンドウで開く
+	::CheckDlgButton( hwndDlg, IDC_CHECK_FILE_OPEN2OPEN, m_Common.m_sGeneral.m_bFileOpen2Open );
+
 	/* [すべて閉じる]で他に編集用のウィンドウがあれば確認する */	// 2006.12.25 ryoji
 	::CheckDlgButton( hwndDlg, IDC_CHECK_CLOSEALLCONFIRM, m_Common.m_sGeneral.m_bCloseAllConfirm );
 
@@ -415,6 +419,9 @@ int CPropGeneral::GetData( HWND hwndDlg )
 
 	/* 段落単位で移動するときに、段落の両端で止まるか */
 	m_Common.m_sGeneral.m_bStopsBothEndsWhenSearchParagraph = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_STOPS_BOTH_ENDS_WHEN_SEARCH_PARAGRAPH );
+
+	// 
+	m_Common.m_sGeneral.m_bFileOpen2Open = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_FILE_OPEN2OPEN );
 
 	/* [すべて閉じる]で他に編集用のウィンドウがあれば確認する */	// 2006.12.25 ryoji
 	m_Common.m_sGeneral.m_bCloseAllConfirm = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_CLOSEALLCONFIRM );
