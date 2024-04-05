@@ -4241,19 +4241,19 @@ BEGIN
 	STR_ERR_DLGFUNCLKUP19		"プラグイン"
 
 	// Related Commands Menu
-	STR_ERR_DLGFUNCLKUP04		"ファイル操作系"
-	STR_ERR_DLGFUNCLKUP05		"編集系"
-	STR_ERR_DLGFUNCLKUP06		"カーソル移動系"
-	STR_ERR_DLGFUNCLKUP07		"選択系"		//Oct. 15, 2000 JEPRO 「カーソル移動系」が多くなったので「選択系」として独立化(サブメニュー化は構造上できないので)
-	STR_ERR_DLGFUNCLKUP08		"矩形選択系"	//Oct. 17, 2000 JEPRO 「選択系」に一緒にすると多くなりすぎるので「矩形選択系」も独立させた
-	STR_ERR_DLGFUNCLKUP09		"クリップボード系"
-	STR_ERR_DLGFUNCLKUP10		"挿入系"
-	STR_ERR_DLGFUNCLKUP11		"変換系"
-	STR_ERR_DLGFUNCLKUP12		"検索系"
-	STR_ERR_DLGFUNCLKUP13		"モード切り替え系"
-	STR_ERR_DLGFUNCLKUP14		"設定系"
-	STR_ERR_DLGFUNCLKUP15		"マクロ系"
-	STR_ERR_DLGFUNCLKUP16		"ウィンドウ系"
+	STR_ERR_DLGFUNCLKUP04		"ファイル操作"
+	STR_ERR_DLGFUNCLKUP05		"編集"
+	STR_ERR_DLGFUNCLKUP06		"カーソル移動"
+	STR_ERR_DLGFUNCLKUP07		"選択"		//Oct. 15, 2000 JEPRO 「カーソル移動」が多くなったので「選択」として独立化(サブメニュー化は構造上できないので)
+	STR_ERR_DLGFUNCLKUP08		"矩形選択"	//Oct. 17, 2000 JEPRO 「選択」に一緒にすると多くなりすぎるので「矩形選択」も独立させた
+	STR_ERR_DLGFUNCLKUP09		"クリップボード"
+	STR_ERR_DLGFUNCLKUP10		"挿入"
+	STR_ERR_DLGFUNCLKUP11		"変換"
+	STR_ERR_DLGFUNCLKUP12		"検索"
+	STR_ERR_DLGFUNCLKUP13		"モード切り替え"
+	STR_ERR_DLGFUNCLKUP14		"設定"
+	STR_ERR_DLGFUNCLKUP15		"マクロ"
+	STR_ERR_DLGFUNCLKUP16		"ウィンドウ"
 	STR_ERR_DLGFUNCLKUP17		"支援"
 	STR_ERR_DLGFUNCLKUP18		"その他"
 
