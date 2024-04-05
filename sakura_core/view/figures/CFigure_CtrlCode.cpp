@@ -57,9 +57,9 @@ void CFigure_CtrlCode::DispSpaceEx(CGraphics& gr, DispPos* pDispPos, CEditView* 
 		ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#ifdef NK_LINE_CENTERING
+#ifdef NKMM_LINE_CENTERING
 			pcView->GetLineMargin() +
-#endif // NK_
+#endif // NKMM_
 			pDispPos->GetDrawPos().y + nHeightMargin,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rc,

@@ -62,12 +62,12 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 	}
 	rcClip2.top = sPos.GetDrawPos().y;
 	rcClip2.bottom = sPos.GetDrawPos().y + nLineHeight;
-#ifndef NK_FIX_TAB_MARK
+#ifndef NKMM_FIX_TAB_MARK
 	int nLen = wcslen( m_pTypeData->m_szTabViewString );
-#endif // NK_
+#endif // NKMM_
 
 	if( pArea->IsRectIntersected(rcClip2) ){
-#ifdef NK_FIX_TAB_MARK
+#ifdef NKMM_FIX_TAB_MARK
 		// 塗りつぶしで消去
 		gr.FillSolidMyRect(rcClip2, gr.GetTextBackColor());
 		
@@ -76,14 +76,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 			_DrawTabArrow(
 				gr,
 				nPosLeft,
-//#ifdef NK_LINE_CENTERING
+//#ifdef NKMM_LINE_CENTERING
 //			pcView->GetLineMargin() +
-//#endif // NK_
+//#endif // NKMM_
 				sPos.GetDrawPos().y,
 				nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
-#ifdef NK_LINE_CENTERING
+#ifdef NKMM_LINE_CENTERING
 				pcView->GetLineSpace() +
-#endif // NK_LINE_CENTERING
+#endif // NKMM_LINE_CENTERING
 				pMetrics->GetHankakuHeight(),
 				gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 				gr.GetCurrentTextForeColor()
@@ -139,14 +139,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 						_DrawTabArrow(
 							gr,
 							sPos.GetDrawPos().x,
-//#ifdef NK_LINE_CENTERING
+//#ifdef NKMM_LINE_CENTERING
 //							pcView->GetLineMargin() +
-//#endif // NK_
+//#endif // NKMM_
 							sPos.GetDrawPos().y,
 							pMetrics->GetHankakuWidth(),
-#ifdef NK_LINE_CENTERING
+#ifdef NKMM_LINE_CENTERING
 							pcView->GetLineSpace() +
-#endif // NK_LINE_CENTERING
+#endif // NKMM_LINE_CENTERING
 							pMetrics->GetHankakuHeight(),
 							gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 							gr.GetCurrentTextForeColor()
@@ -157,14 +157,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 					_DrawTabArrow(
 						gr,
 						nPosLeft,
-//#ifdef NK_LINE_CENTERING
+//#ifdef NKMM_LINE_CENTERING
 //						pcView->GetLineMargin() +
-//#endif // NK_
+//#endif // NKMM_
 						sPos.GetDrawPos().y,
 						nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
-#ifdef NK_LINE_CENTERING
+#ifdef NKMM_LINE_CENTERING
 						pcView->GetLineSpace() +
-#endif // NK_LINE_CENTERING
+#endif // NKMM_LINE_CENTERING
 						pMetrics->GetHankakuHeight(),
 						gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 						gr.GetCurrentTextForeColor()
@@ -172,7 +172,7 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 				}
 			}
 		}
-#endif // NK_
+#endif // NKMM_
 	}
 
 	//Xを進める
@@ -202,7 +202,7 @@ void _DrawTabArrow(
 	int sy = nPosY + ( nHeight / 2 );
 	int sa = nHeight / 4;								// 鏃のsize
 
-#ifdef NK_FIX_TAB_MARK
+#ifdef NKMM_FIX_TAB_MARK
 	sy++; // 少し下め
 	
 	::MoveToEx( gr, nPosX+1, sy, NULL );
@@ -235,7 +235,7 @@ void _DrawTabArrow(
 		pt[4].y += 1;
 		::PolyPolyline( gr, pt, pp, _countof(pp));
 	}
-#endif // NK_
+#endif // NKMM_
 
 	gr.PopPen();
 }

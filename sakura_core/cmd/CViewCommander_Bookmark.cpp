@@ -63,9 +63,9 @@ void CViewCommander::Command_JUMP_DIALOG( void )
 /* 指定行ヘジャンプ */
 void CViewCommander::Command_JUMP( void )
 {
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 	const wchar_t*	pLine;
 	int			nMode;
 	int			bValidLine;
@@ -277,7 +277,7 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			pCDocLine=GetDocument()->m_cDocLineMgr.GetLine( nY );
 			CBookmarkSetter cBookmark(pCDocLine);
 			if(pCDocLine)cBookmark.SetBookmark(!cBookmark.IsBookmarked());
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 			if (pCDocLine) {
 				// レイアウト行
 				CLogicInt nLogicY = nY;
@@ -286,21 +286,21 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLogicY);
 				
 				if (cBookmark.IsBookmarked()) {
-					m_pCommanderView->SBMarker_->Add(ptLayout.y, NK_SCRBAR_MARK_MAGIC);  // 登録
+					m_pCommanderView->SBMarker_->Add(ptLayout.y, NKMM_SCRBAR_MARK_MAGIC);  // 登録
 				}
 				else {
-					m_pCommanderView->SBMarker_->Del(ptLayout.y, NK_SCRBAR_MARK_MAGIC);  // 削除
+					m_pCommanderView->SBMarker_->Del(ptLayout.y, NKMM_SCRBAR_MARK_MAGIC);  // 削除
 				}
 				m_pCommanderView->SB_Marker_CallPaint(4001);
 			}
-#endif // NK_
+#endif // NKMM_
 		}
 	}
 	else{
 		pCDocLine=GetDocument()->m_cDocLineMgr.GetLine( GetCaret().GetCaretLogicPos().GetY2() );
 		CBookmarkSetter cBookmark(pCDocLine);
 		if(pCDocLine)cBookmark.SetBookmark(!cBookmark.IsBookmarked());
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 		if (pCDocLine) {
 			// レイアウト行
 			CLogicInt nLogicY = GetCaret().GetCaretLogicPos().GetY2();
@@ -309,14 +309,14 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLogicY);
 			
 			if (cBookmark.IsBookmarked()) {
-				m_pCommanderView->SBMarker_->Add(ptLayout.y, NK_SCRBAR_MARK_MAGIC);  // 登録
+				m_pCommanderView->SBMarker_->Add(ptLayout.y, NKMM_SCRBAR_MARK_MAGIC);  // 登録
 			}
 			else {
-				m_pCommanderView->SBMarker_->Del(ptLayout.y, NK_SCRBAR_MARK_MAGIC);  // 削除
+				m_pCommanderView->SBMarker_->Del(ptLayout.y, NKMM_SCRBAR_MARK_MAGIC);  // 削除
 			}
 			m_pCommanderView->SB_Marker_CallPaint(4002);
 		}
-#endif // NK_
+#endif // NKMM_
 	}
 
 	// 2002.01.16 hor 分割したビューも更新
@@ -329,9 +329,9 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 //! 次のブックマークを探し，見つかったら移動する
 void CViewCommander::Command_BOOKMARK_NEXT(void)
 {
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
 	BOOL		bRedo	=	TRUE;	// hor
@@ -375,9 +375,9 @@ re_do:;								// hor
 //! 前のブックマークを探し，見つかったら移動する．
 void CViewCommander::Command_BOOKMARK_PREV(void)
 {
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 	int			nYOld;				// hor
 	BOOL		bFound	=	FALSE;	// hor
 	BOOL		bRedo	=	TRUE;	// hor
@@ -423,9 +423,9 @@ re_do:;								// hor
 void CViewCommander::Command_BOOKMARK_RESET(void)
 {
 	CBookmarkManager(&GetDocument()->m_cDocLineMgr).ResetAllBookMark();
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 	m_pCommanderView->SB_Marker_Clear(203);
-#endif // NK_
+#endif // NKMM_
 	// 2002.01.16 hor 分割したビューも更新
 	GetEditWindow()->Views_Redraw();
 }
@@ -452,9 +452,9 @@ void CViewCommander::Command_BOOKMARK_PATTERN( void )
 //! 次の関数リストマークを探し，見つかったら移動する
 void CViewCommander::Command_FUNCLIST_NEXT(void)
 {
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 	CLogicPoint	ptXY(0, GetCaret().GetCaretLogicPos().y);
 	int			nYOld = ptXY.y;
 
@@ -485,9 +485,9 @@ void CViewCommander::Command_FUNCLIST_NEXT(void)
 //! 前のブックマークを探し，見つかったら移動する．
 void CViewCommander::Command_FUNCLIST_PREV(void)
 {
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 
 	CLogicPoint	ptXY(0,GetCaret().GetCaretLogicPos().y);
 	int			nYOld = ptXY.y;

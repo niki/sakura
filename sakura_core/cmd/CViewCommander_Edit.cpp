@@ -322,7 +322,7 @@ void CViewCommander::Command_UNDO( void )
 
 	CLayoutPoint ptCaretPos_After;
 
-#ifdef NK_FIX_UNDOREDO
+#ifdef NKMM_FIX_UNDOREDO
 	// 表示域の一番左の桁
 	CLayoutInt nViewLeftCol = m_pCommanderView->GetTextArea().GetViewLeftCol();
 	
@@ -339,7 +339,7 @@ void CViewCommander::Command_UNDO( void )
 		&ptCaretLayout_Next,
 		ptCaretLayout_Start.y
 	);
-#endif // NK_
+#endif // NKMM_
 
 	/* 各種モードの取り消し */
 	Command_CANCEL_MODE();
@@ -515,7 +515,7 @@ void CViewCommander::Command_UNDO( void )
 				}
 			}
 			
-#ifdef NK_FIX_UNDOREDO
+#ifdef NKMM_FIX_UNDOREDO
 			// nOpeBlkNum 分だけ必要になる
 			{
 				GetDocument()->m_cLayoutMgr.LogicToLayout(
@@ -527,11 +527,11 @@ void CViewCommander::Command_UNDO( void )
 				m_pCommanderView->RedrawLines(ptCaretPos_Before.y, ptCaretPos_After.y);
 				m_pCommanderView->SetDrawSwitch(bDraw);
 			}
-#endif // NK_
+#endif // NKMM_
 		}
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 		m_pCommanderView->SB_Marker_Clear(1000);
-#endif // NK_
+#endif // NKMM_
 		m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);	//	hor
 		m_pCommanderView->AdjustScrollBars(); // 2007.07.22 ryoji
 		if (!bDraw) {
@@ -551,7 +551,7 @@ void CViewCommander::Command_UNDO( void )
 		// ・行番号表示に必要な幅は OPE_INSERT/OPE_DELETE 処理内で更新されており変更があればルーラー再描画フラグに反映されている
 		// ・水平スクロールもルーラー再描画フラグに反映されている
 		const bool bRedrawRuler = m_pCommanderView->GetRuler().GetRedrawFlag();
-#ifdef NK_FIX_UNDOREDO
+#ifdef NKMM_FIX_UNDOREDO
 		{
 			// 変更後の行位置
 			CLogicPoint ptCaretLogic_Next2 = {GetCaret().GetCaretLogicPos().x, GetCaret().GetCaretLogicPos().y + 1};  // 次の行
@@ -568,7 +568,7 @@ void CViewCommander::Command_UNDO( void )
 		}
 #else
 		m_pCommanderView->Call_OnPaint( PAINT_LINENUMBER | PAINT_BODY | (bRedrawRuler? PAINT_RULER: 0), false );
-#endif // NK_
+#endif // NKMM_
 		if( !bRedrawRuler ){
 			// ルーラーのキャレットのみを再描画
 			HDC hdc = m_pCommanderView->GetDC();
@@ -633,7 +633,7 @@ void CViewCommander::Command_REDO( void )
 	CLayoutPoint ptCaretPos_To;
 	CLayoutPoint ptCaretPos_After;
 
-#ifdef NK_FIX_UNDOREDO
+#ifdef NKMM_FIX_UNDOREDO
 	// 表示域の一番左の桁
 	CLayoutInt nViewLeftCol = m_pCommanderView->GetTextArea().GetViewLeftCol();
 	
@@ -650,7 +650,7 @@ void CViewCommander::Command_REDO( void )
 		&ptCaretLayout_Next,
 		ptCaretLayout_Start.y
 	);
-#endif // NK_
+#endif // NKMM_
 
 	/* 各種モードの取り消し */
 	Command_CANCEL_MODE();
@@ -818,7 +818,7 @@ void CViewCommander::Command_REDO( void )
 				}
 			}
 			
-#ifdef NK_FIX_UNDOREDO
+#ifdef NKMM_FIX_UNDOREDO
 			// nOpeBlkNum 分だけ必要になる
 			{
 				GetDocument()->m_cLayoutMgr.LogicToLayout(
@@ -830,7 +830,7 @@ void CViewCommander::Command_REDO( void )
 				m_pCommanderView->RedrawLines(ptCaretPos_Before.y, ptCaretPos_After.y);
 				m_pCommanderView->SetDrawSwitch(bDraw);
 			}
-#endif // NK_
+#endif // NKMM_
 		}
 		m_pCommanderView->SetDrawSwitch(bDrawSwitchOld); // 2007.07.22 ryoji
 		m_pCommanderView->AdjustScrollBars(); // 2007.07.22 ryoji
@@ -851,7 +851,7 @@ void CViewCommander::Command_REDO( void )
 		// ・行番号表示に必要な幅は OPE_INSERT/OPE_DELETE 処理内で更新されており変更があればルーラー再描画フラグに反映されている
 		// ・水平スクロールもルーラー再描画フラグに反映されている
 		const bool bRedrawRuler = m_pCommanderView->GetRuler().GetRedrawFlag();
-#ifdef NK_FIX_UNDOREDO
+#ifdef NKMM_FIX_UNDOREDO
 		{
 			// 変更後の行位置
 			CLogicPoint ptCaretLogic_Next2 = {GetCaret().GetCaretLogicPos().x, GetCaret().GetCaretLogicPos().y + 1};  // 次の行
@@ -868,7 +868,7 @@ void CViewCommander::Command_REDO( void )
 		}
 #else
 		m_pCommanderView->Call_OnPaint( PAINT_LINENUMBER | PAINT_BODY | (bRedrawRuler? PAINT_RULER: 0), false );
-#endif // NK_
+#endif // NKMM_
 		if( !bRedrawRuler ){
 			// ルーラーのキャレットのみを再描画
 			HDC hdc = m_pCommanderView->GetDC();

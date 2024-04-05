@@ -54,9 +54,9 @@ bool CEditView::TagJumpSub(
 	bool*			pbJumpToSelf	//!< [out] オプションNULL可。自分にジャンプしたか
 )
 {
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 
 	HWND	hwndOwner;
 	POINT	poCaret;
@@ -396,17 +396,17 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 		if( !m_sSearchPattern.SetPattern(this->GetHwnd(), m_strCurSearchKey.c_str(), m_strCurSearchKey.size(),
 			m_sCurSearchOption, &m_CurRegexp) ){
 				m_bCurSrchKeyMark = false;
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 				//SB_Marker_Clear(600);
-#endif // NK_
+#endif // NKMM_
 				return FALSE;
 		}
 		m_bCurSrchKeyMark = true;
 		if( bRedrawIfChanged ){
 			Redraw();
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 			//SB_Marker_Clear(601);
-#endif // NK_
+#endif // NKMM_
 		}
 		m_pcEditWnd->m_cToolbar.AcceptSharedSearchKey();
 		return TRUE;
@@ -416,9 +416,9 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 		// 検索文字列のマークだけ設定
 		if( bRedrawIfChanged ){
 			Redraw(); // 自View再描画
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 			//SB_Marker_Clear(602);
-#endif // NK_
+#endif // NKMM_
 		}
 	}
 

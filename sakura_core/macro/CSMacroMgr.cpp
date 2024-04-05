@@ -402,9 +402,9 @@ MacroFuncInfo CSMacroMgr::m_MacroFuncInfoCommandArr[] =
 	{F_SETVIEWLEFT,				L"SetViewLeft",				{VT_I4,    VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, // ビューの左端の桁数を設定
 	{F_GETVIEWTOP,				L"GetViewTop",				{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, // ビューの上の行数を取得
 
-#ifdef NK_FIX_SWITCH_DISP_LINENR_MACRO
+#ifdef NKMM_FIX_SWITCH_DISP_LINENR_MACRO
 	{F_SWITCH_DISP_LINE_NUMBER,	L"SwitchDispLineNumber",	{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, // 行番号表示切替
-#endif // NK_
+#endif // NKMM_
 
 	//	終端
 	//	Jun. 27, 2002 genta
@@ -494,9 +494,9 @@ CSMacroMgr::CSMacroMgr()
 	
 	m_pShareData = &GetDllShareData();
 	
-#ifdef NK_USE_PPA
+#ifdef NKMM_USE_PPA
 	CPPAMacroMgr::declare();
-#endif // NK_
+#endif // NKMM_
 	CKeyMacroMgr::declare();
 	CWSHMacroManager::declare();
 	

@@ -219,7 +219,7 @@ public:
 	//! 矩形塗り潰し
 	void FillSolidMyRect(const RECT& rc, COLORREF color)
 	{
-#ifdef NK_FIX_EXTTEXTOUT_TO_PATBLT
+#ifdef NKMM_FIX_EXTTEXTOUT_TO_PATBLT
 		PushBrushColor(color);
 		::PatBlt(m_hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
 		PopBrushColor();
@@ -227,7 +227,7 @@ public:
 		PushTextBackColor(color);
 		FillMyRectTextBackColor(rc);
 		PopTextBackColor();
-#endif // NK_
+#endif // NKMM_
 	}
 	//! 矩形塗り潰し
 	void FillMyRectTextBackColor(const RECT& rc)

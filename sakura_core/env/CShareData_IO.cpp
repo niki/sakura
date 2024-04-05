@@ -34,14 +34,14 @@
 #include "plugin/CPlugin.h"
 #include "uiparts/CMenuDrawer.h"
 #include "_main/CCommandLine.h"
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 #include "sakura_rc.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#endif // NK_
+#endif // NKMM_
 
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 static std::string chomp(const std::string s)
 {
 	std::string tmp(s);
@@ -94,7 +94,7 @@ static bool GetTokenBool(std::istringstream &stream, char delim)
 {
 	return GetTokenInt(stream, ',') ? true : false;
 }
-#endif // NK_
+#endif // NKMM_
 
 void ShareData_IO_Sub_LogFont( CDataProfile& cProfile, const WCHAR* pszSecName,
 	const WCHAR* pszKeyLf, const WCHAR* pszKeyPointSize, const WCHAR* pszKeyFaceName, LOGFONT& lf, INT& nPointSize );
@@ -151,18 +151,18 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 //	MYTRACE( _T("Iniファイル処理-1 所要時間(ミリ秒) = %d\n"), cRunningTimer.Read() );
 
-#if defined(NK_FIX_PROFILES) && NK_USE_KEYWORDSET_CSV
+#if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 	std::tstring keywordset_fname =
 	    si::file::dirname(szIniFileName) +
 	    si::file::basename(szIniFileName) + _T(".keywordset.csv");
-#endif // NK_
+#endif // NKMM_
 
 	if( bRead ){
 		if( !cProfile.ReadProfile( szIniFileName ) ){
 			/* 設定ファイルが存在しない */
 
 			// キーワードファイルのインポート
-#if defined(NK_FIX_PROFILES) && NK_USE_KEYWORDSET_CSV
+#if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 			if (si::file::exist(keywordset_fname)) {
 				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
 			} else {
@@ -171,17 +171,17 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #else
 			// キーワードファイルのインポート
 			pcShare->InitKeyword( &GetDllShareData(), true );
-#endif // NK_
+#endif // NKMM_
 			return false;
 		}
-#if defined(NK_FIX_PROFILES) && NK_USE_KEYWORDSET_CSV
+#if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 		else {
 			// キーワードファイルのインポート
 			if (si::file::exist(keywordset_fname)) {
 				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
 			}
 		}
-#endif // NK_
+#endif // NKMM_
 
 		// バージョンアップ時はバックアップファイルを作成する	// 2011.01.28 ryoji
 		TCHAR iniVer[256];
@@ -213,7 +213,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 
 	// Feb. 12, 2006 D.S.Koba
-#if defined(NK_FIX_PROFILES) && NK_SEPARATE_HISTORY
+#if defined(NKMM_FIX_PROFILES) && NKMM_SEPARATE_HISTORY
 	do {
 		CDataProfile cProfileRecent;
 
@@ -259,12 +259,12 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_Mru( cProfile );
 	ShareData_IO_Keys( cProfile );
 	ShareData_IO_Grep( cProfile );
-#endif // NK_
+#endif // NKMM_
 	ShareData_IO_Folders( cProfile );
-#if defined(NK_FIX_PROFILES) && NK_SEPARATE_HISTORY
+#if defined(NKMM_FIX_PROFILES) && NKMM_SEPARATE_HISTORY
 #else
 	ShareData_IO_Cmd( cProfile );
-#endif // NK_
+#endif // NKMM_
 	ShareData_IO_Nickname( cProfile );
 	ShareData_IO_Common( cProfile );
 	ShareData_IO_Plugin( cProfile, pcMenuDrawer );		// Move here	2010/6/24 Uchi
@@ -274,13 +274,13 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_KeyBind( cProfile );
 	ShareData_IO_Print( cProfile );
 	ShareData_IO_Types( cProfile );
-#if defined(NK_FIX_PROFILES) && NK_USE_KEYWORDSET_CSV
+#if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 	if (!si::file::exist(keywordset_fname)) {
 		ShareData_IO_KeyWords( cProfile );
 	}
 #else
 	ShareData_IO_KeyWords( cProfile );
-#endif // NK_
+#endif // NKMM_
 	ShareData_IO_Macro( cProfile );
 	ShareData_IO_Statusbar( cProfile );		// 2008/6/21 Uchi
 	ShareData_IO_MainMenu( cProfile );		// 2010/5/15 Uchi
@@ -369,7 +369,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 	SShare_History &hist = pShare->m_sHistory;
 
 	if (cProfile.IsReadingMode()) {
@@ -383,11 +383,11 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				std::istringstream stream(line_buffer);
 				std::wstring path = GetTokenStringW(stream, ',');
 
-#if NK_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#if NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 				if (!fexist(path.c_str())) {
 					return false;
 				}
-#endif // NK_
+#endif // NKMM_
 
 				EditInfo *pfiWork = &hist.m_fiMRUArr[index];
 				_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
@@ -459,11 +459,11 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 
 				std::wstring dir = GetTokenStringW(stream, ',');
 
-#if NK_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#if NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 				if (!fexist(dir.c_str())) {
 					return false;
 				}
-#endif // NK_
+#endif // NKMM_
 
 				hist.m_szOPENFOLDERArr[index].Assign(dir.c_str());
 				hist.m_bOPENFOLDERArrFavorite[index] = GetTokenBool(stream, ',');
@@ -609,7 +609,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("ExceptMRU[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aExceptMRU[i] );
 	}
-#endif // NK_
+#endif // NKMM_
 }
 
 /*!
@@ -622,7 +622,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
 	if (cProfile.IsReadingMode()) {
@@ -704,7 +704,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("REPLACEKEY[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aReplaceKeys[i] );
 	}
-#endif // NK_
+#endif // NKMM_
 }
 
 /*!
@@ -717,7 +717,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
 	if (cProfile.IsReadingMode()) {
@@ -795,7 +795,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		
 		EachOStreamLines(ofs, "#GrepFolder", "#end", skwd.m_aGrepFolders._GetSizeRef(),
 			[&ofs, &skwd]{  // begin
-#ifdef NK_FIX_GREP
+#ifdef NKMM_FIX_GREP
 				ofs << (skwd.m_bGrepFolders99 ? "1" : "0") << std::endl;
 				ofs << (skwd.m_bGrepFolders2 ? "1" : "0") << std::endl;
 				ofs << (skwd.m_bGrepFolders3 ? "1" : "0") << std::endl;
@@ -804,7 +804,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 				ofs << si::util::to_bytes(skwd.m_szGrepFolders3.c_str()) << std::endl;
 				ofs << si::util::to_bytes(skwd.m_szGrepExcludeDirs.c_str()) << std::endl;
 				ofs << "---" << std::endl;
-#endif // NK_
+#endif // NKMM_
 			},
 			[]{},  // end
 			[&ofs, &skwd](int index) {  // block
@@ -836,15 +836,15 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("GREPFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFolders[i] );
 	}
-#ifdef NK_FIX_GREP
+#ifdef NKMM_FIX_GREP
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[*].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders99 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders3 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Path"), pShare->m_sSearchKeywords.m_szGrepFolders2 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Path"), pShare->m_sSearchKeywords.m_szGrepFolders3 );
 	cProfile.IOProfileData( pszSecName, LTEXT("GREPEXCLUDEDIRS.Path"), pShare->m_sSearchKeywords.m_szGrepExcludeDirs );
-#endif // NK_
-#endif // NK_
+#endif // NKMM_
+#endif // NKMM_
 }
 
 /*!
@@ -874,7 +874,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 	SShare_History &hist = pShare->m_sHistory;
 
 	if (cProfile.IsReadingMode()) {
@@ -955,7 +955,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("szCurDirArr[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aCurDirs[i] );
 	}
-#endif // NK_
+#endif // NKMM_
 }
 
 /*!
@@ -1168,10 +1168,10 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, L"bTabMultiLine"			, common.m_sTabBar.m_bTabMultiLine );	// タブ多段
 	cProfile.IOProfileData_WrapInt( pszSecName, L"eTabPosition"		, common.m_sTabBar.m_eTabPosition );	// タブ位置
 
-#ifndef NK_FIX_TABBAR_FONT
+#ifndef NKMM_FIX_TABBAR_FONT
 	ShareData_IO_Sub_LogFont( cProfile, pszSecName, L"lfTabFont", L"lfTabFontPs", L"lfTabFaceName",
 		common.m_sTabBar.m_lf, common.m_sTabBar.m_nPointSize );
-#endif // NK_
+#endif // NKMM_
 	
 	cProfile.IOProfileData( pszSecName, LTEXT("nTabMaxWidth")			, common.m_sTabBar.m_nTabMaxWidth );
 	cProfile.IOProfileData( pszSecName, LTEXT("nTabMinWidth")			, common.m_sTabBar.m_nTabMinWidth );
@@ -1615,11 +1615,11 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 		}
 	}
 
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 	// OldVerの切り捨て
 	bOldVer = false;
 	sKeyBind.m_nKeyNameArrNum = KEYNAME_SIZE;
-#endif // NK_
+#endif // NKMM_
 
 	for( i = 0; i < sKeyBind.m_nKeyNameArrNum; ++i ){
 		// 2005.04.07 D.S.Koba
@@ -1785,10 +1785,10 @@ void CShareData_IO::ShareData_IO_Print( CDataProfile& cProfile )
 	for( i = 0; i < MAX_PRINTSETTINGARR; ++i ){
 		// 2005.04.07 D.S.Koba
 		PRINTSETTING& printsetting = pShare->m_PrintSettingArr[i];
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 		// 未定義値を無視
 		if (!cProfile.IsReadingMode() && printsetting.m_mdmDevMode.m_szPrinterDeviceName[0] == _T('\0')) continue;
-#endif // NK_
+#endif // NKMM_
 		auto_sprintf( szKeyName, LTEXT("PS[%02d].nInts"), i );
 		static const WCHAR* pszForm = LTEXT("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d");
 		if( cProfile.IsReadingMode() ){
@@ -2056,10 +2056,10 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	if( types.m_id < 0 ){
 		types.m_id *= -1;
 	}
-#ifndef NK_FIX_TAB_MARK
+#ifndef NKMM_FIX_TAB_MARK
 	cProfile.IOProfileData( pszSecName, LTEXT("szTabViewString"), MakeStringBufferW(types.m_szTabViewString) );
 	cProfile.IOProfileData_WrapInt( pszSecName, LTEXT("bTabArrow")	, types.m_bTabArrow );	//@@@ 2003.03.26 MIK
-#endif // NK_
+#endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("bInsSpace")			, types.m_bInsSpace );	// 2001.12.03 hor
 
 	cProfile.IOProfileData( pszSecName, LTEXT("nTextWrapMethod"), types.m_nTextWrapMethod );		// 2008.05.30 nasukoji
@@ -2528,10 +2528,10 @@ void CShareData_IO::ShareData_IO_Plugin( CDataProfile& cProfile, CMenuDrawer* pc
 			pluginrec.m_szName[0] = L'\0';
 			pluginrec.m_szId[0] = L'\0';
 		}
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 		// 未定義値を無視
 		if (!cProfile.IsReadingMode() && pluginrec.m_szName[0] == _T('\0') && pluginrec.m_szId[0] == _T('\0')) continue;
-#endif // NK_
+#endif // NKMM_
 		auto_sprintf( szKeyName, LTEXT("P[%02d].Name"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW(pluginrec.m_szName) );
 		auto_sprintf( szKeyName, LTEXT("P[%02d].Id"), i );
@@ -2560,7 +2560,7 @@ struct SMainMenuAddItemInfo
 
 void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 {
-#ifdef NK_FIX_MAINMENU_FORCE_DEFAULT
+#ifdef NKMM_FIX_MAINMENU_FORCE_DEFAULT
 	//CDataProfile	cProfileDefault;
 	//std::vector<std::wstring> data;
 	//cProfileDefault.SetReadingMode();
@@ -2677,7 +2677,7 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 			}
 		}
 	}
-#endif // NK_
+#endif // NKMM_
 }
 
 
@@ -2704,9 +2704,9 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 	std::vector<std::wstring>& data = *pData;
 	int dataNum = 0;
 
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 	std::vector<std::wstring> default_data;
-#endif // NK_
+#endif // NKMM_
 
 	if (cProfile.IsReadingMode()) {
 		int menuNum = 0;
@@ -2725,24 +2725,24 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 		cProfile.IOProfileData( pszSecName, LTEXT("nMainMenuNum"), mainmenu.m_nMainMenuNum);
 	}
 
-#ifndef NK_FIX_MAINMENU_FORCE_DEFAULT
-#ifdef NK_FIX_PROFILES
+#ifndef NKMM_FIX_MAINMENU_FORCE_DEFAULT
+#ifdef NKMM_FIX_PROFILES
 	{
 		// デフォルト用にリソースの読み込み
 		CDataProfile cProfileDef;
 		cProfileDef.SetReadingMode();
 		cProfileDef.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &default_data );
 	}
-#endif // NK_
-#endif // NK_FIX_MAINMENU_FORCE_DEFAULT
+#endif // NKMM_
+#endif // NKMM_FIX_MAINMENU_FORCE_DEFAULT
 
 	if( pData ){
 		mainmenu.m_bMainMenuKeyParentheses = (_wtoi(data[dataNum++].c_str()) != 0);
 	}else{
 		cProfile.IOProfileData( pszSecName, LTEXT("bKeyParentheses"), mainmenu.m_bMainMenuKeyParentheses );
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 		dataNum++;
-#endif // NK_
+#endif // NKMM_
 	}
 
 	if (cProfile.IsReadingMode()) {
@@ -2769,7 +2769,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 			if( pData ){
 				wcscpy(szLine, data[dataNum++].c_str());
 			}else{
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 				if (!cProfile.IOProfileData(pszSecName, szKeyName, MakeStringBufferW(szLine))) {
 					if ((int)default_data.size() > dataNum) {
 						wcscpy(szLine, default_data[dataNum].c_str());  // デフォルト設定
@@ -2778,7 +2778,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 				dataNum++;
 #else
 				cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
-#endif // NK_
+#endif // NKMM_
 			}
 
 			// レベル
@@ -2830,7 +2830,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 			auto_strcpy_s( pcMenu->m_sName, MAX_MAIN_MENU_NAME_LEN+1, p );
 		}
 		else {
-#ifndef NK_FIX_MAINMENU_FORCE_DEFAULT
+#ifndef NKMM_FIX_MAINMENU_FORCE_DEFAULT
 			if (GetPlugCmdInfoByFuncCode( pcMenu->m_nFunc, szFuncName )) {
 				// Plugin
 			}
@@ -2856,7 +2856,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 				szFuncName, 
 				pcMenu->m_sKey, 
 				pcMenu->m_nFunc == F_NODE ? pcMenu->m_sName : L"" );
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 			bool bSkip = false;
 			if ((int)default_data.size() > dataNum) {
 				if (default_data[dataNum] == szLine) {
@@ -2867,8 +2867,8 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 			if (!bSkip) cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
 #else
 			cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW( szLine ) );
-#endif // NK_
-#endif // NK_FIX_MAINMENU_FORCE_DEFAULT
+#endif // NKMM_
+#endif // NKMM_FIX_MAINMENU_FORCE_DEFAULT
 		}
 
 		if (cProfile.IsReadingMode() && pcMenu->m_nLevel == 0) {
@@ -2953,11 +2953,11 @@ void CShareData_IO::ShareData_IO_Other( CDataProfile& cProfile )
 	@param[in]		pszSecName		セクション名
 	@param[in,out]	pColorInfoArr	書き出し、読み込み対象の色設定へのポインタ (入出力方向はbReadに依存)
 */
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr, bool bColorOnly )
 #else
 void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr )
-#endif // NK_
+#endif // NKMM_
 {
 	WCHAR	szKeyName[256];
 	WCHAR	szKeyData[1024];
@@ -2968,7 +2968,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 		if( pcProfile->IsReadingMode() ){
 			if( pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) ) ){
 				int buf[5];
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 				ColorInfo *info = &pColorInfoArr[j];
 				//int scan_num = scan_ints( szKeyData, pszForm, buf);
 				WCHAR text[32] = {};
@@ -2995,7 +2995,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sColorAttr.m_cTEXT     = buf[2];
 				pColorInfoArr[j].m_sColorAttr.m_cBACK     = buf[3];
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine = (buf[4]!=0);
-#endif // NK_
+#endif // NKMM_
 			}
 			else{
 				// 2006.12.07 ryoji
@@ -3007,7 +3007,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 			// 2006.12.18 ryoji
 			// 矛盾設定があれば修復する
 			unsigned int fAttribute = g_ColorAttributeArr[j].fAttribute;
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 			if (!bColorOnly) {
 				ColorInfo *info = &pColorInfoArr[j];
 				if (0 != (fAttribute & COLOR_ATTRIB_FORCE_DISP))   info->m_bDisp = true;
@@ -3021,10 +3021,10 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sFontAttr.m_bBoldFont = false;
 			if( 0 != (fAttribute & COLOR_ATTRIB_NO_UNDERLINE) )
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine = false;
-#endif // NK_
+#endif // NKMM_
 		}
 		else{
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 			ColorInfo *info = &pColorInfoArr[j];
 			unsigned int fAttribute = g_ColorAttributeArr[j].fAttribute;
 			if (fAttribute == (COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS)) {
@@ -3055,7 +3055,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				pColorInfoArr[j].m_sColorAttr.m_cBACK,
 				pColorInfoArr[j].m_sFontAttr.m_bUnderLine?1:0
 			);
-#endif // NK_
+#endif // NKMM_
 			pcProfile->IOProfileData( pszSecName, szKeyName, MakeStringBufferW(szKeyData) );
 		}
 	}

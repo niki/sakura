@@ -140,14 +140,14 @@ protected:
 	HIMAGELIST ImageList_Duplicate( HIMAGELIST himl );	/*!< イメージリストの複製処理 */
 
 	// 2006.02.01 ryoji タブ一覧を追加
-#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CLOSE_BTN_DRAW == 1
 	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted, bool tab = false );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
 	void DrawTabBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted ) {
 		DrawBtnBkgnd(hdc, lprcBtn, bBtnHilighted, true);
 	}
 #else
 	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
-#endif // NK_
+#endif // NKMM_
 	void DrawListBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 一覧ボタン描画処理 */
 	void DrawCloseFigure( CGraphics& gr, const RECT &btnRect );			/*!< 閉じるマーク描画処理 */
 	void DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 閉じるボタン描画処理 */		// 2006.10.21 ryoji
@@ -166,7 +166,7 @@ protected:
 		return ::CreateFontIndirect( &ncm.lfMenuFont );
 	}
 
-#ifdef NK_FIX_TABWND
+#ifdef NKMM_FIX_TABWND
 	// タブ間クリックの設定をする
 	void SetInterTabClk(int nTab)
 	{
@@ -183,7 +183,7 @@ protected:
 		::KillTimer(m_hwndTab, 2);  // タイマーを殺す
 		m_pShareData->m_sFlags.m_nInterTabClk = 0;
 	}
-#endif // NK_
+#endif // NKMM_
 
 protected:
 	enum DragState { DRAG_NONE, DRAG_CHECK, DRAG_DRAG };

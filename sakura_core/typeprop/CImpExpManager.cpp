@@ -582,11 +582,11 @@ bool CImpExpColors::Import( const wstring& sFileName, wstring& sErrMsg )
 	}
 
 	/* 色設定 I/O */
-#ifdef NK_FIX_PROFILES
+#ifdef NKMM_FIX_PROFILES
 	CShareData_IO::IO_ColorSet( &cProfile, szSecColor, m_ColorInfoArr, true );
 #else
 	CShareData_IO::IO_ColorSet( &cProfile, szSecColor, m_ColorInfoArr );
-#endif // NK_
+#endif // NKMM_
 
 	return true;
 }

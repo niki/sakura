@@ -43,22 +43,22 @@ const DWORD p_helpids[] = {	//12900
 // 2006.01.17 Moca COMPILER_VERを追加
 // 2010.04.15 Moca icc/dmcを追加しCPUを分離
 #if defined(_M_IA64)
-#ifdef NK_FIX_VERDLG
+#ifdef NKMM_FIX_VERDLG
 #  define TARGET_M_SUFFIX "_I64 "
 #else
 #  define TARGET_M_SUFFIX "_I64"
-#endif // NK_
+#endif // NKMM_
 #elif defined(_M_AMD64)
-#ifdef NK_FIX_VERDLG
+#ifdef NKMM_FIX_VERDLG
 #  define TARGET_M_SUFFIX "_A64 "
 #else
 #  define TARGET_M_SUFFIX "_A64"
-#endif // NK_
+#endif // NKMM_
 #else
 #  define TARGET_M_SUFFIX ""
 #endif
 
-#ifdef NK_FIX_VERDLG
+#ifdef NKMM_FIX_VERDLG
 #if defined(_M_IA64)
 #  define TARGET_M_SUFFIX2 "64bit Itanium"
 #elif defined(_M_AMD64)
@@ -68,7 +68,7 @@ const DWORD p_helpids[] = {	//12900
 #else
 #  define TARGET_M_SUFFIX2 ""
 #endif
-#endif // NK_
+#endif // NKMM_
 
 #if defined(__BORLANDC__)
 #  define COMPILER_TYPE "B"
@@ -117,7 +117,7 @@ const DWORD p_helpids[] = {	//12900
 	#define MY_WIN32_WINNT 0
 #endif
 
-#ifdef NK_FIX_VERDLG
+#ifdef NKMM_FIX_VERDLG
 #  ifdef _MT
 #    ifdef _DLL
 #      ifdef _DEBUG
@@ -135,7 +135,7 @@ const DWORD p_helpids[] = {	//12900
 #  else
 #    define MY_RTL ""
 #  endif
-#endif // NK_
+#endif // NKMM_
 
 //	From Here Nov. 7, 2000 genta
 /*!
@@ -199,18 +199,18 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	//      (あればSKR_PATCH_INFOの文字列がそのまま表示)
 	CNativeT cmemMsg;
 	cmemMsg.AppendString(LS(STR_DLGABOUT_APPNAME));
-#ifdef NK_FIX_VERDLG
+#ifdef NKMM_FIX_VERDLG
 	cmemMsg.AppendString(_T(" "));
 #else
 	cmemMsg.AppendString(_T("   "));
-#endif // NK_
+#endif // NKMM_
 
 	// バージョン&リビジョン情報
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
-#ifdef NK_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d L%02d (" TARGET_M_SUFFIX2 ") by " NK_AUTHOR "\r\n"),
-	//auto_sprintf( szMsg, _T("Ver. %d.%d.%d (" TARGET_M_SUFFIX2 ") by " NK_AUTHOR "\r\n"),
+#ifdef NKMM_FIX_VERDLG
+	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d L%02d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
+	//auto_sprintf( szMsg, _T("Ver. %d.%d.%d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		HIWORD( dwVersionLS ),
@@ -224,7 +224,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		HIWORD( dwVersionLS ),
 		LOWORD( dwVersionLS )
 	);
-#endif // NK_
+#endif // NKMM_
 	cmemMsg.AppendString( szMsg );
 
 	cmemMsg.AppendString( _T("\r\n") );

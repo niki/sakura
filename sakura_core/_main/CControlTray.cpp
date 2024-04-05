@@ -100,7 +100,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	CNativeT		cmWork2;
 	CNativeT		cmWork3;
 	cmWork1.SetString( cDlgGrep.m_strText.c_str() );
-#ifdef NK_FIX_GREP
+#ifdef NKMM_FIX_GREP
 	int count = 0;
 	CNativeT temp;
 	if (!cDlgGrep.m_bFromThisText) {
@@ -126,7 +126,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 		{
 			std::vector<std::tstring> entrys;
 			std::vector<std::tstring> values;
-			EnumRegKeyEntry(NK_REGKEY, entrys, &values);
+			EnumRegKeyEntry(NKMM_REGKEY, entrys, &values);
 			int i = 0;
 			for (auto e : entrys) {
 				if (e[0] == _T('$')) {
@@ -175,7 +175,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 #else
 	cmWork2.SetString( cDlgGrep.m_szFile );
 	cmWork3.SetString( cDlgGrep.m_szFolder );
-#endif // NK_
+#endif // NKMM_
 	cmWork1.Replace( L"\"", L"\"\"" );
 	cmWork2.Replace( _T("\""), _T("\"\"") );
 	cmWork3.Replace( _T("\""), _T("\"\"") );
@@ -195,11 +195,11 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 
 	//GOPTオプション
 	TCHAR pOpt[64] = _T("");
-#ifdef NK_FIX_GREP
+#ifdef NKMM_FIX_GREP
 	if( (count > 0) && cDlgGrep.m_bSubFolder )_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
 #else
 	if( cDlgGrep.m_bSubFolder					)_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
-#endif // NK_
+#endif // NKMM_
 	if( cDlgGrep.m_sSearchOption.bLoHiCase		)_tcscat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
 	if( cDlgGrep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// 正規表現
 	if( cDlgGrep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// 行を出力する
@@ -779,7 +779,7 @@ LRESULT CControlTray::DispatchEvent(
 				// "共通"の前には入れない
 				if( 0 < nInsert && nInsert <= m_pShareData->m_nTypesCount && nInsert < MAX_TYPES ){
 					std::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
-#ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
+#ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
 					STypeConfig* type;
 					//si::logln(L"  *** add type : LPAARAM %p", lParam);
 					if (lParam != 0) {
@@ -800,10 +800,10 @@ LRESULT CControlTray::DispatchEvent(
 #else
 					STypeConfig* type = new STypeConfig();
 					*type = *types[0]; // 基本をコピー
-#endif // NK_
+#endif // NKMM_
 					type->m_nIdx = nInsert;
 					type->m_id = (::GetTickCount() & 0x3fffffff) + nInsert * 0x10000;
-#ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
+#ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
 					if (lParam == 0) {
 						// 同じ名前のものがあったらその次にする
 						int nAddNameNum = nInsert + 1;
@@ -829,7 +829,7 @@ LRESULT CControlTray::DispatchEvent(
 						}
 					}
 					auto_strcpy( type->m_szTypeExts, _T("") );
-#endif // NK_
+#endif // NKMM_
 					type->m_nRegexKeyMagicNumber = CRegexKeyword::GetNewMagicNumber();
 					types.resize( m_pShareData->m_nTypesCount + 1 );
 					int nTypeSizeOld = m_pShareData->m_nTypesCount;
@@ -1239,9 +1239,9 @@ bool CControlTray::OpenNewEditor(
 	bool				bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 
 	/* 共有データ構造体のアドレスを返す */
 	DLLSHAREDATA*	pShareData = &GetDllShareData();
@@ -1462,9 +1462,9 @@ bool CControlTray::OpenNewEditor2(
 	bool			bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 
 	DLLSHAREDATA*	pShareData;
 

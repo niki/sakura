@@ -30,11 +30,11 @@
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "typeprop/CImpExpManager.h"
-#if defined(NK_FIX_PROFILES) && NK_USE_KEYWORDSET_CSV
+#if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#endif // NK_
+#endif // NKMM_
 
 void _DefaultConfig(STypeConfig* pType);
 
@@ -44,7 +44,7 @@ void _DefaultConfig(STypeConfig* pType);
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 void CType::InitTypeConfig(int nIdx, STypeConfig& type)
 {
-#ifdef NK_FIX_TYPE_CONFIG_DEFAULT
+#ifdef NKMM_FIX_TYPE_CONFIG_DEFAULT
 	_DefaultConfig(&type);
 #else
 	//規定値をコピー
@@ -55,7 +55,7 @@ void CType::InitTypeConfig(int nIdx, STypeConfig& type)
 		bLoadedDefault=true;
 	}
 	type = sDefault;
-#endif // NK_
+#endif // NKMM_
 
 	//インデックスを設定
 	type.m_nIdx = nIdx;
@@ -119,7 +119,7 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConf
 	pShareData->m_nTypesCount = (int)types.size();
 }
 
-#ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
+#ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
 // 指定タイプを作成
 STypeConfig *CShareData::CreateTypeConfig(int nIdx)
 {
@@ -171,7 +171,7 @@ void CShareData::GetTypeNames(std::vector<std::tstring>& names)
 		names.push_back(type->m_szTypeName);
 	}
 }
-#endif // NK_
+#endif // NKMM_
 
 
 /*!	@brief 共有メモリ初期化/強調キーワード
@@ -260,7 +260,7 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 #undef PopulateKeyword2
 #undef PopulateKeyword
 }
-#if defined(NK_FIX_PROFILES) && NK_USE_KEYWORDSET_CSV
+#if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstring &fname)
 {
 	/* 強調キーワードのテストデータ */
@@ -296,7 +296,7 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 		fnPopulateKeyword(name, case_sensitive, file);
 	}
 }
-#endif // NK_
+#endif // NKMM_
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                        デフォルト                           //
@@ -318,10 +318,10 @@ void _DefaultConfig(STypeConfig* pType)
 	for( int i = 0; i < MAX_KEYWORDSET_PER_TYPE; i++ ){
 		pType->m_nKeyWordSetIdx[i] = -1;
 	}
-#ifndef NK_FIX_TAB_MARK
+#ifndef NKMM_FIX_TAB_MARK
 	wcscpy( pType->m_szTabViewString, _EDITL("^       ") );	/* TAB表示文字列 */
 	pType->m_bTabArrow = TABARROW_STRING;	/* タブ矢印表示 */	// 2001.12.03 hor	// default on 2013/4/11 Uchi
-#endif // NK_
+#endif // NKMM_
 	pType->m_bInsSpace = false;				/* スペースの挿入 */	// 2001.12.03 hor
 	
 	//@@@ 2002.09.22 YAZAKI 以下、m_cLineCommentとm_cBlockCommentsを使うように修正
@@ -354,11 +354,11 @@ void _DefaultConfig(STypeConfig* pType)
 
 	// 文字コード設定
 	pType->m_encoding.m_bPriorCesu8 = false;
-#ifdef NK_FIX_DEFAULT_CHARCODE_TO_UTF8
+#ifdef NKMM_FIX_DEFAULT_CHARCODE_TO_UTF8
 	pType->m_encoding.m_eDefaultCodetype = CODE_UTF8;
 #else
 	pType->m_encoding.m_eDefaultCodetype = CODE_SJIS;
-#endif // NK_
+#endif // NKMM_
 	pType->m_encoding.m_eDefaultEoltype = EOL_CRLF;
 	pType->m_encoding.m_bDefaultBom = false;
 

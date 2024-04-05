@@ -54,9 +54,9 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, int marginy, const wchar
 	if( 0 >= nLength ){
 		return;
 	}
-#ifdef NK_OUTPUT_DEBUG_STRING
+#ifdef NKMM_OUTPUT_DEBUG_STRING
 	//si::logln(L"DispText");
-#endif // NK_
+#endif // NKMM_
 	int x=pDispPos->GetDrawPos().x;
 	int y=pDispPos->GetDrawPos().y;
 
@@ -143,9 +143,9 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, int marginy, const wchar
 		::ExtTextOutW_AnyBuild(
 			hdc,
 			nDrawX,					//X
-#ifdef NK_LINE_CENTERING
+#ifdef NKMM_LINE_CENTERING
 			m_pEditView->GetLineMargin() +
-#endif // NK_
+#endif // NKMM_
 			y + marginy,			//Y
 			ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
 			&rcClip,
@@ -299,8 +299,8 @@ void CTextDrawer::DispNoteLine(
 {
 	const CEditView* pView=m_pEditView;
 
-#ifdef NK_FIX_WS_COLOR
-	static int nBlendPer = RegKey(NK_REGKEY).get(_T("WhiteSpaceBlendPer"), NK_WS_BLEND_PER);
+#ifdef NKMM_FIX_WS_COLOR
+	static int nBlendPer = RegKey(NKMM_REGKEY).get(_T("WhiteSpaceBlendPer"), NKMM_WS_BLEND_PER);
 	//! 色をマージする
 	//! @param colText テキスト色
 	//! @param colBase ベースとなる色
@@ -326,15 +326,15 @@ void CTextDrawer::DispNoteLine(
 	COLORREF col1 = cTextType.GetTextColor();
 	COLORREF col2 = cTextType.GetBackColor();
 	COLORREF crText = fnMeargeColor(col1, col2, nBlendPer);
-#endif // NK_
+#endif // NKMM_
 
 	CTypeSupport cNoteLine(pView, COLORIDX_NOTELINE);
 	if( cNoteLine.IsDisp() ){
-#ifdef NK_FIX_WS_COLOR
+#ifdef NKMM_FIX_WS_COLOR
 		gr.SetPen( crText );
 #else
 		gr.SetPen( cNoteLine.GetTextColor() );
-#endif // NK_
+#endif // NKMM_
 		const int nLineHeight = pView->GetTextMetrics().GetHankakuDy();
 		const int left = nLeft;
 		const int right = nRight;
@@ -398,9 +398,9 @@ void CTextDrawer::DispLineNumber(
 	int				y
 ) const
 {
-#ifdef NK_OUTPUT_DEBUG_STRING
+#ifdef NKMM_OUTPUT_DEBUG_STRING
 	//si::logln(L"DispLineNumber(%d)\n", nLineNum+1);
-#endif // NK_
+#endif // NKMM_
 	//$$ 高速化：SearchLineByLayoutYにキャッシュを持たせる
 	const CLayout*	pcLayout = CEditDoc::GetInstance(0)->m_cLayoutMgr.SearchLineByLayoutY( nLineNum );
 
@@ -419,11 +419,11 @@ void CTextDrawer::DispLineNumber(
 	CTypeSupport &cBackType = (cCaretLineBg.IsDisp() &&
 		pView->GetCaret().GetCaretLayoutPos().GetY() == nLineNum
 			? cCaretLineBg
-#ifdef NK_FIX_NOT_EVEN_LINE_FROM_EOF
+#ifdef NKMM_FIX_NOT_EVEN_LINE_FROM_EOF
 			: cEvenLineBg.IsDisp() && nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() && nLineNum % 2 == 1
 #else
 			: cEvenLineBg.IsDisp() && nLineNum % 2 == 1
-#endif // NK_
+#endif // NKMM_
 				? cEvenLineBg
 				: cTextType);
 
@@ -439,9 +439,9 @@ void CTextDrawer::DispLineNumber(
 
 		if( pView->GetDocument()->m_cDocEditor.IsModified() && CModifyVisitor().IsLineModified(pCDocLine, pView->GetDocument()->m_cDocEditor.m_cOpeBuf.GetNoModifiedSeq()) ){		/* 変更フラグ */
 			if( CTypeSupport(pView,COLORIDX_GYOU_MOD).IsDisp() ){	// 2006.12.12 ryoji
-#ifndef NK_FIX_MODGYOU_DRAW_VLINE
+#ifndef NKMM_FIX_MODGYOU_DRAW_VLINE
 				nColorIndex = COLORIDX_GYOU_MOD;	/* 行番号（変更行） */
-#endif // NK_
+#endif // NKMM_
 				bGyouMod = true;
 			}
 		}
@@ -451,7 +451,7 @@ void CTextDrawer::DispLineNumber(
 		//DIFF色設定
 		CDiffLineGetter(pCDocLine).GetDiffColor(&nColorIndex);
 
-#ifndef NK_FIX_BOOKMARK_DRAW_VLINE
+#ifndef NKMM_FIX_BOOKMARK_DRAW_VLINE
 		// 02/10/16 ai
 		// ブックマークの表示
 		if(CBookmarkGetter(pCDocLine).IsBookmarked()){
@@ -459,7 +459,7 @@ void CTextDrawer::DispLineNumber(
 				nColorIndex = COLORIDX_MARK;
 			}
 		}
-#endif // NK_
+#endif // NKMM_
 	}
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -484,7 +484,7 @@ void CTextDrawer::DispLineNumber(
 	COLORREF bgcolor = cColorType.GetBackColor();
 	CTypeSupport cGyouType(pView,COLORIDX_GYOU);
 	CTypeSupport cGyouModType(pView,COLORIDX_GYOU_MOD);
-#ifndef NK_FIX_MODGYOU_DRAW_VLINE
+#ifndef NKMM_FIX_MODGYOU_DRAW_VLINE
 	if( bGyouMod && nColorIndex != COLORIDX_GYOU_MOD ){
 		if( cGyouType.GetTextColor() == cColorType.GetTextColor() ){
 			fgcolor = cGyouModType.GetTextColor();
@@ -494,7 +494,7 @@ void CTextDrawer::DispLineNumber(
 			bTrans = pView->IsBkBitmap() && cTextType.GetBackColor() == cGyouModType.GetBackColor();
 		}
 	}
-#endif // NK_
+#endif // NKMM_
 	// 2014.01.29 Moca 背景色がテキストと同じなら、透過色として行背景色を適用
 	if( bgcolor == cTextType.GetBackColor() ){
 		bgcolor = cBackType.GetBackColor();
@@ -508,7 +508,7 @@ void CTextDrawer::DispLineNumber(
 		}
 		bDispLineNumTrans = true;
 
-#ifdef NK_FIX_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
+#ifdef NKMM_FIX_EOFLN_DISP_NR  // EOFだけの行にも行番号をつける
 		bool disp = false;
 		CLayoutMgr &layout_mgr = CEditDoc::GetInstance(0)->m_cLayoutMgr;
 		CLayoutInt line_count = layout_mgr.GetLineCount();
@@ -542,9 +542,9 @@ void CTextDrawer::DispLineNumber(
 			int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
 			::ExtTextOutW_AnyBuild( gr,
 				drawNumTop,
-#ifdef NK_LINE_CENTERING
+#ifdef NKMM_LINE_CENTERING
 				pView->GetLineMargin() +
-#endif // NK_
+#endif // NKMM_
 				y,
 				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 				&rcLineNum,
@@ -559,11 +559,11 @@ void CTextDrawer::DispLineNumber(
 			
 			bDispLineNumTrans = false;
 		}
-#endif // NK_
+#endif // NKMM_
 	}
 	else if( CTypeSupport(pView,COLORIDX_GYOU).IsDisp() ){ /* 行番号表示／非表示 */
 		SFONT sFont = cColorType.GetTypeFont();
-#ifndef NK_FIX_MODGYOU_DRAW_VLINE
+#ifndef NKMM_FIX_MODGYOU_DRAW_VLINE
 	 	// 2013.12.30 変更行の色・フォント属性をDIFFブックマーク行に継承するように
 		if( bGyouMod && nColorIndex != COLORIDX_GYOU_MOD ){
 			bool bChange = true;
@@ -579,7 +579,7 @@ void CTextDrawer::DispLineNumber(
 				sFont.m_hFont = pView->GetFontset().ChooseFontHandle( 0, sFont.m_sFontAttr );
 			}
 		}
-#endif // NK_
+#endif // NKMM_
 		gr.PushTextForeColor(fgcolor);	//テキスト：行番号の色
 		gr.PushTextBackColor(bgcolor);	//テキスト：行番号背景の色
 		gr.PushMyFont(sFont);	//フォント：行番号のフォント
@@ -595,7 +595,7 @@ void CTextDrawer::DispLineNumber(
 				if( NULL == pcLayout || 0 != pcLayout->GetLogicOffset() ){ //折り返しレイアウト行
 					wcscpy( szLineNum, L" " );
 				}else{
-#ifdef NK_FIX_CUR_BACK_DRAW
+#ifdef NKMM_FIX_CUR_BACK_DRAW
 					//CLayoutRange sSelect = pView->GetSelectionInfo().m_sSelect;
 					//if (pcLayout->GetLogicLineNo() >= sSelect.GetFrom().y && pcLayout->GetLogicLineNo() <= sSelect.GetTo().y) {
 					//	fnColor_CurBack();
@@ -605,14 +605,14 @@ void CTextDrawer::DispLineNumber(
 						CTypeSupport cColor(pView,COLORIDX_CARETLINEBG);
 						gr.PushTextBackColor(cColor.GetBackColor());
 					}
-#endif // NK_
+#endif // NKMM_
 
 					_itow( pcLayout->GetLogicLineNo() + 1, szLineNum, 10 );	/* 対応する論理行番号 */
 //###デバッグ用
 //					_itow( CModifyVisitor().GetLineModifiedSeq(pCDocLine), szLineNum, 10 );	// 行の変更番号
 				}
 			}else{
-#ifdef NK_FIX_CUR_BACK_DRAW
+#ifdef NKMM_FIX_CUR_BACK_DRAW
 				//CLayoutRange sSelect = pView->GetSelectionInfo().m_sSelect;
 				//if ((Int)nLineNum >= sSelect.GetFrom().y && (Int)nLineNum <= sSelect.GetTo().y) {
 				//	fnColor_CurBack();
@@ -622,7 +622,7 @@ void CTextDrawer::DispLineNumber(
 					CTypeSupport cColor(pView,COLORIDX_CARETLINEBG);
 					gr.PushTextBackColor(cColor.GetBackColor());
 				}
-#endif // NK_
+#endif // NKMM_
 
 				/* 物理行（レイアウト行）番号表示モード */
 				_itow( (Int)nLineNum + 1, szLineNum, 10 );
@@ -644,9 +644,9 @@ void CTextDrawer::DispLineNumber(
 		int nHeightMargin = pView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
 		::ExtTextOutW_AnyBuild( gr,
 			drawNumTop,
-#ifdef NK_LINE_CENTERING
+#ifdef NKMM_LINE_CENTERING
 			pView->GetLineMargin() +
-#endif // NK_
+#endif // NKMM_
 			y + nHeightMargin,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcLineNum,
@@ -680,16 +680,16 @@ void CTextDrawer::DispLineNumber(
 	//行属性描画 ($$$分離予定)
 	if(pCDocLine)
 	{
-#ifdef NK_FIX_MODGYOU_DRAW_VLINE
+#ifdef NKMM_FIX_MODGYOU_DRAW_VLINE
 		if (bGyouMod) {
 			RECT rcMark = {nLineNumAreaWidth - 6, y + 1, nLineNumAreaWidth - 3, y + nLineHeight - 1};
 			gr.FillSolidMyRect(rcMark, cGyouModType.GetBackColor());
 		}
-#endif // NK_
+#endif // NKMM_
 		
 		// 2001.12.03 hor
 		/* とりあえずブックマークに縦線 */
-#ifdef NK_FIX_BOOKMARK_DRAW_VLINE
+#ifdef NKMM_FIX_BOOKMARK_DRAW_VLINE
 		if(CBookmarkGetter(pCDocLine).IsBookmarked())
 		{
 			RECT rcMark = {0, y + 1, 3, y + nLineHeight - 1};
@@ -703,7 +703,7 @@ void CTextDrawer::DispLineNumber(
 			::LineTo( gr, 1, y + nLineHeight );
 			gr.PopPen();
 		}
-#endif // NK_
+#endif // NKMM_
 
 		//DIFFマーク描画
 		{
@@ -722,11 +722,11 @@ void CTextDrawer::DispLineNumber(
 	}
 
 	// 行番号部分のノート線描画
-#ifdef NK_FIX_NOT_NOTE_LINE_FROM_EOF
+#ifdef NKMM_FIX_NOT_NOTE_LINE_FROM_EOF
 	if( nLineNum < pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount() ){
 #else
 	{
-#endif // NK_
+#endif // NKMM_
 		int left   = bDispLineNumTrans ? 0 : rcLineNum.right;
 		int right  = pView->GetTextArea().GetAreaLeft();
 		int top    = y;

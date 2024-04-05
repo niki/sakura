@@ -66,10 +66,10 @@
 #include "basis/SakuraBasis.h"	// CLogicInt, CLayoutInt
 #include "util/container.h"		// vector_ex
 #include "util/design_template.h"
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 //#include <mutex>
 #include <process.h>
-#endif // NK_
+#endif // NKMM_
 
 class CViewFont;
 class CRuler;
@@ -472,13 +472,13 @@ public:
 
 	int IsSearchString( const CStringRef& cStr, CLogicInt, CLogicInt*, CLogicInt* ) const;	/* 現在位置が検索文字列に該当するか */	//2002.02.08 hor 引数追加
 
-#ifdef NK_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+#ifdef NKMM_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false, bool bRegQuote = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false, bool bRegQuote = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
 #else
 	void GetCurrentTextForSearch( CNativeW&, bool bStripMaxPath = true, bool bTrimSpaceTab = false );			/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	bool GetCurrentTextForSearchDlg( CNativeW&, bool bGetHistory = false );		/* 現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用） 2006.08.23 ryoji */
-#endif // NK_
+#endif // NKMM_
 
 private:
 	/* インクリメンタルサーチ */ 
@@ -580,7 +580,7 @@ public:
 	void SetUndoBuffer( bool bPaintLineNumber = false );			// アンドゥバッファの処理
 	HWND StartProgress();
 
-#ifdef NK_LINE_CENTERING
+#ifdef NKMM_LINE_CENTERING
 	//! 行間のすきま取得
 	int GetLineSpace() const {
 		if (m_pTypeData) {
@@ -593,7 +593,7 @@ public:
 	int GetLineMargin() const {
 		return GetLineSpace() / 2;
 	}
-#endif // NK_
+#endif // NKMM_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         アクセサ                            //
@@ -775,16 +775,16 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(CEditView);
 	
-#ifdef NK_FIX_FLICKER
+#ifdef NKMM_FIX_FLICKER
 public:
 	void BeginIgnoreUpdateWindow();
 	void EndIgnoreUpdateWindow(bool bUpdate = true);
 	void RequestUpdateWindow();
 	int m_ignore_update_window = 0;  // UpdateWindowを無視する
 	bool m_request_update_window = false;
-#endif // NK_
+#endif // NKMM_
 
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 public:
 	//! スクロールバーマーカークラス
 	class ScrBarMarker {
@@ -862,7 +862,7 @@ public:
 
 	CKetaXInt nMaxLineKetas_ = 0;  // 前更新時の折り返し桁数
 
-#endif // NK_
+#endif // NKMM_
 };
 
 

@@ -27,9 +27,9 @@
 #include "util/os.h"
 #include "util/shell.h"
 #include "util/module.h"
-#ifdef NK_FIX_SETMAINFONT
+#ifdef NKMM_FIX_SETMAINFONT
 #include "util/window.h"
-#endif // NK_
+#endif // NKMM_
 
 /* ダイアログプロシージャ */
 INT_PTR CALLBACK MyDialogProc(
@@ -82,11 +82,11 @@ CDialog::CDialog(bool bSizable, bool bCheckShareData)
 	m_nWidth = -1;
 	m_nHeight = -1;
 
-#ifdef NK_FIX_DIALOG_POS
+#ifdef NKMM_FIX_DIALOG_POS
 	m_hwndPlaceOfWindow = NULL;
 	m_bPlaceVertical = true;
 	m_bPlaceHorizontal = true;
-#endif // NK_
+#endif // NKMM_
 
 	return;
 
@@ -213,11 +213,11 @@ void CDialog::SetDialogPosSize()
 	}
 #endif
 
-#ifdef NK_FIX_DIALOG_POS
+#ifdef NKMM_FIX_DIALOG_POS
 	if (m_hwndPlaceOfWindow != NULL) {
 		SetPlaceOfWindow(m_hwndPlaceOfWindow);
 	}
-#endif // NK_
+#endif // NKMM_
 
 	if( -1 != m_xPos && -1 != m_yPos ){
 		/* ウィンドウ位置・サイズを再現 */
@@ -629,11 +629,11 @@ bool CDialog::DirectoryUp( TCHAR* szDir )
 }
 
 // コントロールに画面のフォントを設定	2012/11/27 Uchi
-#ifdef NK_FIX_SETMAINFONT
+#ifdef NKMM_FIX_SETMAINFONT
 HFONT CDialog::SetMainFont( HWND hTarget, int ptOfs )
 #else
 HFONT CDialog::SetMainFont( HWND hTarget )
-#endif // NK_
+#endif // NKMM_
 {
 	if (hTarget == NULL)	return NULL;
 
@@ -643,11 +643,11 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 	// 設定するフォントの高さを取得
 	hFont = (HFONT)::SendMessage(hTarget, WM_GETFONT, 0, 0);
 	GetObject(hFont, sizeof(lf), &lf);
-#ifdef NK_FIX_SETMAINFONT
+#ifdef NKMM_FIX_SETMAINFONT
 	LONG nfHeight = lf.lfHeight + DpiPointsToPixels(-ptOfs);
 #else
 	LONG nfHeight = lf.lfHeight;
-#endif // NK_
+#endif // NKMM_
 
 	// LOGFONTの作成
 	lf = m_pShareData->m_Common.m_sView.m_lf;
@@ -675,7 +675,7 @@ HFONT CDialog::SetMainFont( HWND hTarget )
 	return hFont;
 }
 
-#ifdef NK_FIX_DIALOG_POS
+#ifdef NKMM_FIX_DIALOG_POS
 void CDialog::SetPlaceSizeMode(bool bVertical, bool bHorizontal)
 {
 	m_bPlaceVertical = bVertical;
@@ -753,7 +753,7 @@ void CDialog::SetPlaceOfWindow(HWND hWnd, const RECT *prcView, eDLGPLACE place)
 	}
 #endif
 }
-#endif // NK_
+#endif // NKMM_
 
 void CDialog::ResizeItem( HWND hTarget, const POINT& ptDlgDefault, const POINT& ptDlgNew, const RECT& rcItemDefault, EAnchorStyle anchor, bool bUpdate)
 {
@@ -841,7 +841,7 @@ LRESULT CALLBACK SubEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch( uMsg ){
 	case WM_KEYDOWN:
 	{
-#if defined(NK_FIX_DIALOG) && NK_COMBO_DROP_ALT_AND_UPDOWN_ONLY
+#if defined(NKMM_FIX_DIALOG) && NKMM_COMBO_DROP_ALT_AND_UPDOWN_ONLY
 		if (wParam == VK_UP || wParam == VK_DOWN) {  // 上下キーでドロップダウンさせない 2017.7.4 
 			// リストボックスが表示されているときはデフォルト処理
 			HWND hwndCombo = data->hwndCombo;
@@ -853,7 +853,7 @@ LRESULT CALLBACK SubEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		else 
-#endif // NK_
+#endif // NKMM_
 		if( wParam == VK_DELETE ){
 			HWND hwndCombo = data->hwndCombo;
 			BOOL bShow = Combo_GetDroppedState(hwndCombo);

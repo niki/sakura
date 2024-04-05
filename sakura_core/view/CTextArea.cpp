@@ -157,11 +157,11 @@ bool CTextArea::DetectWidthOfLineNumberArea( bool bRedraw )
 	if( pView->m_pTypeData->m_ColorInfoArr[COLORIDX_GYOU].m_bDisp ){
 		/* 行番号表示に必要な桁数を計算 */
 		int i = DetectWidthOfLineNumberArea_calculate(&pView->m_pcEditDoc->m_cLayoutMgr);
-#ifdef NK_FIX_MODGYOU_DRAW_VLINE
+#ifdef NKMM_FIX_MODGYOU_DRAW_VLINE
 		nViewAlignLeftNew = pView->GetTextMetrics().GetHankakuDx() * (i + 2);	/* 表示域の左端座標 */
 #else
 		nViewAlignLeftNew = pView->GetTextMetrics().GetHankakuDx() * (i + 1);	/* 表示域の左端座標 */
-#endif // NK_
+#endif // NKMM_
 		m_nViewAlignLeftCols = i + 1;
 	}else{
 		nViewAlignLeftNew = 8;

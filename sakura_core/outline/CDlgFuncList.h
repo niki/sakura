@@ -24,9 +24,9 @@
 #include <Windows.h>
 #include "dlg/CDialog.h"
 #include "doc/CEditDoc.h"
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 #include "util/window.h"
-#endif //NK_
+#endif //NKMM_
 
 class CFuncInfo;
 class CFuncInfoArr; // 2002/2/10 aroka
@@ -227,9 +227,9 @@ private:
 	POINT				m_ptDefaultSizeClient;
 	RECT				m_rcItems[12];
 	
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 	CFontAutoDeleter		m_cFontText[2];
-#endif // NK_
+#endif // NKMM_
 };
 
 

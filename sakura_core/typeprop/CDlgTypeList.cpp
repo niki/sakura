@@ -188,7 +188,7 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 	switch( wMsg ){
-#ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
+#ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
 	case WM_NOTIFY:
 		// 任意のタイプ設定を追加する
 		if (((LPNMHDR)lParam)->code ==  BCN_DROPDOWN) {
@@ -227,7 +227,7 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 			}
 		}
 		break;
-#endif // NK_
+#endif // NKMM_
 	case WM_COMMAND:
 		{
 		HWND hwndList = GetDlgItem( GetHwnd(), IDC_LIST_TYPES );

@@ -222,13 +222,13 @@ bool CShareData::InitShareData()
 		{
 			CommonSetting_General& sGeneral = m_pShareData->m_Common.m_sGeneral;
 
-#ifdef NK_FIX_DEFAULT_VALUE
+#ifdef NKMM_FIX_DEFAULT_VALUE
 			sGeneral.m_nMRUArrNum_MAX = 36;	/* ファイルの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
 			sGeneral.m_nOPENFOLDERArrNum_MAX = 20;	/* フォルダの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
 #else
 			sGeneral.m_nMRUArrNum_MAX = 15;	/* ファイルの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
 			sGeneral.m_nOPENFOLDERArrNum_MAX = 15;	/* フォルダの履歴MAX */	//Oct. 14, 2000 JEPRO 少し増やした(10→15)
-#endif // NK_
+#endif // NKMM_
 
 			sGeneral.m_nCaretType = 0;					/* カーソルのタイプ 0=win 1=dos */
 			sGeneral.m_bIsINSMode = true;				/* 挿入／上書きモード */
@@ -241,20 +241,20 @@ bool CShareData::InitShareData()
 			sGeneral.m_bCloseAllConfirm = FALSE;		/* [すべて閉じる]で他に編集用のウィンドウがあれば確認する */	// 2006.12.25 ryoji
 			sGeneral.m_bExitConfirm = FALSE;			/* 終了時の確認をする */
 			sGeneral.m_nRepeatedScrollLineNum = CLayoutInt(3);	/* キーリピート時のスクロール行数 */
-#ifdef NK_FIX_DEFAULT_VALUE
+#ifdef NKMM_FIX_DEFAULT_VALUE
 			sGeneral.m_nRepeatedMoveCaretNum = 1;		// キーリピート時の左右移動数
 #else
 			sGeneral.m_nRepeatedMoveCaretNum = 2;		// キーリピート時の左右移動数
-#endif // NK_
+#endif // NKMM_
 			sGeneral.m_nRepeatedScroll_Smooth = FALSE;	/* キーリピート時のスクロールを滑らかにするか */
 			sGeneral.m_nPageScrollByWheel = 0;			/* キー/マウスボタン + ホイールスクロールでページスクロールする */	// 2009.01.17 nasukoji
 			sGeneral.m_nHorizontalScrollByWheel = 0;	/* キー/マウスボタン + ホイールスクロールで横スクロールする */		// 2009.01.17 nasukoji
 
-#ifdef NK_FIX_DEFAULT_VALUE
+#ifdef NKMM_FIX_DEFAULT_VALUE
 			sGeneral.m_bUseTaskTray = FALSE;
 #else
 			sGeneral.m_bUseTaskTray = TRUE;				/* タスクトレイのアイコンを使う */
-#endif // NK_
+#endif // NKMM_
 #ifdef _DEBUG
 			sGeneral.m_bStayTaskTray = FALSE;				/* タスクトレイのアイコンを常駐 */
 #else
@@ -303,7 +303,7 @@ bool CShareData::InitShareData()
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
 
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 			_tcscpy( sWindow.m_szWindowCaptionActive, 
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
 				_T(" $A ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
@@ -319,7 +319,7 @@ bool CShareData::InitShareData()
 			_tcscpy( sWindow.m_szWindowCaptionInactive, 
 				_T("${w?$h$:アウトプット$:$f$n$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-#endif // NK_
+#endif // NKMM_
 		}
 
 		// [タブバー]タブ
@@ -330,11 +330,11 @@ bool CShareData::InitShareData()
 			sTabBar.m_bDispTabWndMultiWin = FALSE;	//タブウインドウ表示	//@@@ 2003.05.31 MIK
 			wcscpy(	//@@@ 2003.06.13 MIK
 				sTabBar.m_szTabWndCaption,
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 				L"${w?【Grep】$h$:【アウトプット】$:$f$}${U?*$}${R?(ビューモード)$:(上書き禁止)$}"
 #else
 				L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
-#endif // NK_
+#endif // NKMM_
 			);
 			sTabBar.m_bSameTabWidth = FALSE;			//タブを等幅にする			//@@@ 2006.01.28 ryoji
 			sTabBar.m_bDispTabIcon = FALSE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
@@ -406,7 +406,7 @@ bool CShareData::InitShareData()
 			sFile.m_bQueryIfCodeChange = true;		// 前回と異なる文字コードの時に問い合わせを行うか	Oct. 03, 2004 genta
 			sFile.m_bAlertIfFileNotExist = false;	// 開こうとしたファイルが存在しないとき警告する	Oct. 09, 2004 genta
 			sFile.m_bAlertIfLargeFile = false;		// 開こうとしたファイルが大きい場合に警告する
-			sFile.m_nAlertFileSize = 100;//NK_ 10;			// 警告を始めるファイルサイズ（MB単位）
+			sFile.m_nAlertFileSize = 100;//NKMM_ 10;			// 警告を始めるファイルサイズ（MB単位）
 		}
 
 		// [バックアップ]タブ
@@ -459,13 +459,13 @@ bool CShareData::InitShareData()
 
 			sSearch.m_bGrepSubFolder = TRUE;			/* Grep: サブフォルダも検索 */
 			sSearch.m_nGrepOutputLineType = 1;			// Grep: 行を出力/該当部分/否マッチ行 を出力
-			sSearch.m_nGrepOutputStyle = 2;//NK_ 1;			/* Grep: 出力形式 */
+			sSearch.m_nGrepOutputStyle = 2;//NKMM_ 1;			/* Grep: 出力形式 */
 			sSearch.m_bGrepOutputFileOnly = false;
 			sSearch.m_bGrepOutputBaseFolder = false;
 			sSearch.m_bGrepSeparateFolder = false;
 			sSearch.m_bGrepBackup = true;
 
-			sSearch.m_bGrepDefaultFolder=TRUE;//NK_ FALSE;		/* Grep: フォルダの初期値をカレントフォルダにする */
+			sSearch.m_bGrepDefaultFolder=TRUE;//NKMM_ FALSE;		/* Grep: フォルダの初期値をカレントフォルダにする */
 			sSearch.m_nGrepCharSet = CODE_AUTODETECT;	/* Grep: 文字コードセット */
 			sSearch.m_bGrepRealTimeView = FALSE;		/* 2003.06.28 Moca Grep結果のリアルタイム表示 */
 			sSearch.m_bCaretTextForSearch = TRUE;		/* 2006.08.23 ryoji カーソル位置の文字列をデフォルトの検索文字列にする */
@@ -713,14 +713,14 @@ bool CShareData::InitShareData()
 			m_pShareData->m_sSearchKeywords.m_aGrepFiles.clear();
 			m_pShareData->m_sSearchKeywords.m_aGrepFiles.push_back(_T("*.*"));
 			m_pShareData->m_sSearchKeywords.m_aGrepFolders.clear();
-#ifdef NK_FIX_GREP
+#ifdef NKMM_FIX_GREP
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders99 = true;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders2 = false;
 			m_pShareData->m_sSearchKeywords.m_bGrepFolders3 = false;
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders2 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepFolders3 = _T("");
 			m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs = _T(".vs .svn .git .hg obj Debug Release");
-#endif // NK_
+#endif // NKMM_
 
 			// 2004/06/21 novice タグジャンプ機能追加
 			m_pShareData->m_sTagJump.m_TagJumpNum = 0;
@@ -950,11 +950,11 @@ BOOL CShareData::IsPathOpened( const TCHAR* pszPath, HWND* phwndOwner )
 
 			// 同一パスのファイルが既に開かれているか
 			if( 0 == _tcsicmp( pfi->m_szPath, pszPath ) ){
-#ifdef NK_FIX_MULTIPLE_OPEN_FILES
+#ifdef NKMM_FIX_MULTIPLE_OPEN_FILES
 				if (m_pShareData->m_Common.m_sGeneral.m_bFileOpen2Open) {
 					return FALSE;
 				}
-#endif // NK_
+#endif // NKMM_
 				*phwndOwner = m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd;
 				return TRUE;
 			}

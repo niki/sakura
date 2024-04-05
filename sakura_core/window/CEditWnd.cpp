@@ -1089,7 +1089,7 @@ void CEditWnd::MessageLoop( void )
 
 		//ダイアログメッセージ
 		     if( MyIsDialogMessage( m_pPrintPreview->GetPrintPreviewBarHANDLE_Safe(),	&msg ) ){}	//!< 印刷プレビュー 操作バー
-#ifdef NK_FIX_FIND_DIALOG
+#ifdef NKMM_FIX_FIND_DIALOG
 		else if( MyIsDialogMessage( m_cDlgFind.GetHwnd(),								&msg ) ){	//!<「検索」ダイアログ
 		  MSG	msg2 = msg;
 		  msg2.hwnd = m_cDlgFind.GetHwnd();
@@ -1102,7 +1102,7 @@ void CEditWnd::MessageLoop( void )
 		}
 #else
 		else if( MyIsDialogMessage( m_cDlgFind.GetHwnd(),								&msg ) ){}	//!<「検索」ダイアログ
-#endif // NK_
+#endif // NKMM_
 		else if( MyIsDialogMessage( m_cDlgFuncList.GetHwnd(),							&msg ) ){}	//!<「アウトライン」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgReplace.GetHwnd(),							&msg ) ){}	//!<「置換」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgGrep.GetHwnd(),								&msg ) ){}	//!<「Grep」ダイアログ
@@ -1225,11 +1225,11 @@ LRESULT CEditWnd::DispatchEvent(
 		idCtl = (UINT) wParam;				/* コントロールのID */
 		lpdis = (DRAWITEMSTRUCT*) lParam;	/* 項目描画情報 */
 		if( IDW_STATUSBAR == idCtl ){
-#ifdef NK_FIX_STATUSBAR
+#ifdef NKMM_FIX_STATUSBAR
 			if( 8 == lpdis->itemID ){
 #else
 			if( 5 == lpdis->itemID ){ // 2003.08.26 Moca idがずれて作画されなかった
-#endif // NK_
+#endif // NKMM_
 				int	nColor;
 				if( m_pShareData->m_sFlags.m_bRecordingKeyMacro	/* キーボードマクロの記録中 */
 				 && m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == GetHwnd()	/* キーボードマクロを記録中のウィンドウ */
@@ -1239,18 +1239,18 @@ LRESULT CEditWnd::DispatchEvent(
 					nColor = COLOR_3DSHADOW;
 				}
 				::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
-#ifdef NK_FIX_STATUSBAR
+#ifdef NKMM_FIX_STATUSBAR
 				if( COLOR_BTNTEXT == nColor ){
 					::SetTextColor( lpdis->hDC, RGB(255, 0, 0) );
 				}
-#endif // NK_
+#endif // NKMM_
 				::SetBkMode( lpdis->hDC, TRANSPARENT );
 				
 				// 2003.08.26 Moca 上下中央位置に作画
 				TEXTMETRIC tm;
 				::GetTextMetrics( lpdis->hDC, &tm );
 				int y = ( lpdis->rcItem.bottom - lpdis->rcItem.top - tm.tmHeight + 1 ) / 2 + lpdis->rcItem.top;
-#ifdef NK_FIX_STATUSBAR
+#ifdef NKMM_FIX_STATUSBAR
 				if( COLOR_BTNTEXT == nColor ){
 					::TextOut( lpdis->hDC, lpdis->rcItem.left, y, _T("●"), _tcslen( _T("●") ) );
 				}
@@ -1262,7 +1262,7 @@ LRESULT CEditWnd::DispatchEvent(
 				if( COLOR_BTNTEXT == nColor ){
 					::TextOut( lpdis->hDC, lpdis->rcItem.left + 1, y, _T("REC"), _tcslen( _T("REC") ) );
 				}
-#endif // NK_
+#endif // NKMM_
 			}
 			return 0;
 		}else{
@@ -1433,11 +1433,11 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case WM_EXITMENULOOP:
 //		MYTRACE( _T("WM_EXITMENULOOP\n") );
-#ifndef NK_FIX_STATUSBAR
+#ifndef NKMM_FIX_STATUSBAR
 		if( NULL != m_cStatusBar.GetStatusHwnd() ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, _T(""));
 		}
-#endif  // NK_
+#endif  // NKMM_
 		m_cMenuDrawer.EndDrawMenu();
 		/* メッセージの配送 */
 		return Views_DispatchEvent( hwnd, uMsg, wParam, lParam );
@@ -1467,7 +1467,7 @@ LRESULT CEditWnd::DispatchEvent(
 		//	From Here Feb. 15, 2004 genta 
 		//	ステータスバーのダブルクリックでモード切替ができるようにする
 		if( m_cStatusBar.GetStatusHwnd() && pnmh->hwndFrom == m_cStatusBar.GetStatusHwnd() ){
-#ifdef NK_FIX_STATUSBAR
+#ifdef NKMM_FIX_STATUSBAR
 			if( pnmh->code == NM_CLICK ){  // 左クリックに変更する
 				LPNMMOUSE mp = (LPNMMOUSE) lParam;
 				if (mp->dwItemSpec == 0)	// ファイルの場所をエクスプローラで開く
@@ -1723,7 +1723,7 @@ LRESULT CEditWnd::DispatchEvent(
 					}
 				}
 			}
-#endif // NK_
+#endif // NKMM_
 			return 0L;
 		}
 		//	To Here Feb. 15, 2004 genta 
@@ -2094,9 +2094,9 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case MYWM_SETCARETPOS:	/* カーソル位置変更通知 */
 		{
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 			GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 
 			//	2006.07.09 genta LPARAMに新たな意味を追加
 			//	bit 0 (MASK 1): (bit 1==0のとき) 0/選択クリア, 1/選択開始・変更
@@ -3360,7 +3360,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		// 2004-02-28 yasu 文字列を出力時の書式に合わせる
 		// 幅を変えた場合にはCEditView::ShowCaretPosInfo()での表示方法を見直す必要あり．
 		// ※pszLabel[3]: ステータスバー文字コード表示領域は大きめにとっておく
-#ifdef NK_FIX_STATUSBAR
+#ifdef NKMM_FIX_STATUSBAR
 		constexpr int	nStArrNum = 9;
 	#ifdef SAKURA_LANG_EN_US_EXPORTS
 		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("99999 Ln 9999 Col"), _T("U+AAAAAAAA"), _T("UTF-16 BOM"), _T("Unix"), _T("INS"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●") };
@@ -3370,7 +3370,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 #else
 		const TCHAR*	pszLabel[7] = { _T(""), _T("99999 行 9999 列"), _T("CRLF"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM付"), _T("REC"), _T("上書") };	//Oct. 30, 2000 JEPRO 千万行も要らん	文字コード枠を広げる 2008/6/21	Uchi
 		int			nStArrNum = 7;
-#endif // NK_
+#endif // NKMM_
 		//	To Here
 		int			nAllWidth = rc.right - rc.left;
 		int			nSbxWidth = ::GetSystemMetrics(SM_CXVSCROLL) + ::GetSystemMetrics(SM_CXEDGE); // サイズボックスの幅
@@ -3395,7 +3395,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 			nStArr[i - 1] = nStArr[i] - ( sz.cx + nBdrWidth );
 		}
 
-#ifndef NK_FIX_STATUSBAR
+#ifndef NKMM_FIX_STATUSBAR
 		//	Nov. 8, 2003 genta
 		//	初期状態ではすべての部分が「枠あり」だが，メッセージエリアは枠を描画しないようにしている
 		//	ため，初期化時の枠が変な風に残ってしまう．初期状態で枠を描画させなくするため，
@@ -3403,7 +3403,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		if( bUpdateStatus ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, _T(""));
 		}
-#endif  // NK_
+#endif  // NKMM_
 
 		StatusBar_SetParts( m_cStatusBar.GetStatusHwnd(), nStArrNum, nStArr );
 		if (hFont != NULL)
@@ -4167,11 +4167,11 @@ void CEditWnd::InitMenubarMessageFont(void)
 	lf.lfClipPrecision	= 0x2;
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
-#ifdef NK_FIX_UI_FONT
-	_tcscpy( lf.lfFaceName, _T(NK_RES_FONT_NAME) );
+#ifdef NKMM_FIX_UI_FONT
+	_tcscpy( lf.lfFaceName, _T(NKMM_RES_FONT_NAME) );
 #else
 	_tcscpy( lf.lfFaceName, _T("ＭＳ ゴシック") );
-#endif // NK_
+#endif // NKMM_
 	m_hFontCaretPosInfo = ::CreateFontIndirect( &lf );
 
 	hdc = ::GetDC( ::GetDesktopWindow() );
@@ -4297,12 +4297,12 @@ void CEditWnd::ChangeFileNameNotify( const TCHAR* pszTabCaption, const TCHAR* _p
 
 			p->m_bIsGrep = bIsGrep;
 
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 			p->m_bIsModified = GetDocument()->m_cDocEditor.IsModified();
 			p->m_bIsRecMacro =
 			    (GetDllShareData().m_sFlags.m_bRecordingKeyMacro &&
 			     GetDllShareData().m_sFlags.m_hwndRecordingKeyMacro == CEditWnd::getInstance()->GetHwnd());
-#endif // NK_
+#endif // NKMM_
 		}
 	}
 	cRecentEditNode.Terminate();
@@ -4644,17 +4644,17 @@ void CEditWnd::Views_Redraw()
 		if( m_nActivePaneIndex != v )
 			GetView(v).Redraw();
 	}
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 	for( int v = 0; v < GetAllViewCount(); ++v ){
 		if( m_nActivePaneIndex != v )
 			GetView(v).AdjustScrollBars();
 	}
-#endif // NK_
+#endif // NKMM_
 	//アクティブを再描画
 	GetActiveView().Redraw();
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 	GetActiveView().AdjustScrollBars();
-#endif // NK_
+#endif // NKMM_
 }
 
 

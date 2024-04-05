@@ -28,7 +28,7 @@
 */
 
 #include "StdAfx.h"
-#ifndef NK_FIX_MAINMENU_FORCE_DEFAULT
+#ifndef NKMM_FIX_MAINMENU_FORCE_DEFAULT
 #include "prop/CPropCommon.h"
 #include "env/CShareData.h"
 #include "env/cShareData_IO.h"
@@ -1382,4 +1382,4 @@ bool CPropMainMenu::Check_MainMenu_Sub(
 	}
 	return bRet;
 }
-#endif // NK_
+#endif // NKMM_

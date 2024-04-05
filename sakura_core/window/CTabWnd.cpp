@@ -83,9 +83,9 @@
 #define CY_SMICON			DpiScaleY(16)
 
 static const RECT rcBtnBase = { 0, 0, 16, 16 };
-#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CLOSE_BTN_DRAW == 1
 static const RECT rcBtnBaseTab = { 0, 2, 12, 14 };
-#endif // NK_
+#endif // NKMM_
 
 // 2006.02.01 ryoji タブ一覧メニュー用データ
 typedef struct {
@@ -147,7 +147,7 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	// 2005.09.01 ryoji タブ部のメッセージ処理を個別に関数化し、タブ順序変更の処理を追加
 	switch( uMsg )
 	{
-#ifdef NK_FIX_TABWND
+#ifdef NKMM_FIX_TABWND
 	case WM_LBUTTONDBLCLK:
 		{ // @todo OnTabLButtonDblClkを作ること
 			//TCHAR szMsg[128];
@@ -163,7 +163,7 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 			::SendMessageAny( m_hwndTab, WM_LBUTTONDOWN, 0, lParam );
 			return 0L;
 		}
-#endif // NK_
+#endif // NKMM_
 
 	case WM_LBUTTONDOWN:
 		return OnTabLButtonDown( wParam, lParam );
@@ -220,7 +220,7 @@ LRESULT CTabWnd::OnTabLButtonDown( WPARAM wParam, LPARAM lParam )
 	if( 0 > nSrcTab )
 		return 1L;
 
-#ifdef NK_FIX_TABWND
+#ifdef NKMM_FIX_TABWND
 	{
 		TCITEM	tcitem;
 		tcitem.mask   = TCIF_PARAM;
@@ -271,7 +271,7 @@ LRESULT CTabWnd::OnTabLButtonDown( WPARAM wParam, LPARAM lParam )
 			}
 		}
 	}
-#endif // NK_
+#endif // NKMM_
 
 	// タブの閉じるボタン押下処理
 	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabClose ){
@@ -297,9 +297,9 @@ LRESULT CTabWnd::OnTabLButtonDown( WPARAM wParam, LPARAM lParam )
 
 	::SetCapture( m_hwndTab );
 
-#ifdef NK_FIX_TABWND
+#ifdef NKMM_FIX_TABWND
 	si::logln(L"CTabWnd::OnTabLButtonDown %d", m_hwndTab);
-#endif // NK_
+#endif // NKMM_
 
 	return 0L;
 }
@@ -332,7 +332,7 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 	switch( m_eDragState )
 	{
 	case DRAG_CHECK:
-#ifndef NK_FIX_TABWND
+#ifndef NKMM_FIX_TABWND
 		if ( m_nSrcTab == nDstTab && m_nSrcTab != nSelfTab ) {
 			//指定のウインドウをアクティブに
 			TCITEM	tcitem;
@@ -342,14 +342,14 @@ LRESULT CTabWnd::OnTabLButtonUp( WPARAM wParam, LPARAM lParam )
 
 			ShowHideWindow( (HWND)tcitem.lParam, TRUE );
 		}
-#endif // NK_
+#endif // NKMM_
 		break;
 
 	case DRAG_DRAG:
-#ifdef NK_FIX_TABWND
+#ifdef NKMM_FIX_TABWND
 		// ドラッグ時はタブ間ダブルクリックを解除する
 		BreakInterTabClk();
-#endif // NK_
+#endif // NKMM_
 		if ( 0 > nDstTab )	// タブの外でドロップ
 		{
 			// タブの分離処理
@@ -490,10 +490,10 @@ LRESULT CTabWnd::OnTabMouseMove( WPARAM wParam, LPARAM lParam )
 		// ここに来たらドラッグ開始なので break しないでそのまま DRAG_DRAG 処理に入る
 
 	case DRAG_DRAG:
-#ifdef NK_FIX_TABWND
+#ifdef NKMM_FIX_TABWND
 		// ドラッグ時はタブ間ダブルクリックを解除する
 		BreakInterTabClk();
-#endif // NK_
+#endif // NKMM_
 		// ドラッグ中のマウスカーソルを表示する
 		HINSTANCE hInstance;
 		LPCTSTR lpCursorName;
@@ -584,14 +584,14 @@ LRESULT CTabWnd::OnTabTimer( WPARAM wParam, LPARAM lParam )
 		if( nDstTab < 0 )
 			::SendMessageAny( m_hwndTab, WM_MOUSEMOVE, 0, MAKELONG( hitinfo.pt.x, hitinfo.pt.y ) );
 	}
-#ifdef NK_FIX_TABWND
+#ifdef NKMM_FIX_TABWND
 	if (wParam == 2) {
 		//TCHAR szMsg[128];
 		//auto_sprintf(szMsg, L"CTabWnd: ** Timeout, GetInterTabClk() = NULL\n"),
 		//OutputDebugStringW(szMsg);
 		BreakInterTabClk();
 	}
-#endif // NK_
+#endif // NKMM_
 
 
 	return 0L;
@@ -1388,12 +1388,12 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// アイコン描画
 		int cxIcon = CX_SMICON;
 		int cyIcon = CY_SMICON;
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 			cxIcon = 0;
 		}
 		else
-#endif // NK_
+#endif // NKMM_
 		if( NULL != m_hIml )
 		{
 			ImageList_GetIconSize( m_hIml, &cxIcon, &cyIcon );
@@ -1463,11 +1463,11 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 					if( nTabIndex == nSelIndex - 1 ){
 						rcFullItem.right -= DpiScaleX(1);
 					}else if( nTabIndex == nSelIndex + 1 ){
-#if defined(NK_FIX_TABWND) && NK_BUGFIX_TAB_EDGE == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_BUGFIX_TAB_EDGE == 1
 						rcFullItem.left += DpiScaleX(2);  // 2でないとエッヂが描画されない
 #else
 						rcFullItem.left += DpiScaleX(1);
-#endif // NK_
+#endif // NKMM_
 					}
 				}
 				bool bHotTracked = ::GetTextColor(hdc) == GetSysColor(COLOR_HOTLIGHT);
@@ -1515,12 +1515,12 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// アイコン描画
 		int cxIcon = CX_SMICON;
 		int cyIcon = CY_SMICON;
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 			cxIcon = 0;
 		}
 		else
-#endif // NK_
+#endif // NKMM_
 		if( NULL != m_hIml )
 		{
 			ImageList_GetIconSize( m_hIml, &cxIcon, &cyIcon );
@@ -1536,16 +1536,16 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// テキスト描画
 		COLORREF clrText;
 		clrText = ::GetSysColor(COLOR_MENUTEXT);
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 		if (clrText == ::GetSysColor(COLOR_MENUTEXT)) {
 			EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
 			if (p && p->m_bIsRecMacro) {
 				TCHAR szData[32];
-				if (RegKey(NK_REGKEY).read(_T("TabCaptionRecMacroColor"), (LPCTSTR)szData)) {
+				if (RegKey(NKMM_REGKEY).read(_T("TabCaptionRecMacroColor"), (LPCTSTR)szData)) {
 					clrText = si::ColorString::ToCOLORREF(szData);
 				}
 				else {
-					clrText = si::ColorString::ToCOLORREF(NK_RECMACRO_TAB_CAPTION_COLOR);
+					clrText = si::ColorString::ToCOLORREF(NKMM_RECMACRO_TAB_CAPTION_COLOR);
 				}
 			}
 		}
@@ -1553,15 +1553,15 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 			EditNode *p = CAppNodeManager::getInstance()->GetEditNode((HWND)item.lParam);
 			if (p && p->m_bIsModified) {
 				TCHAR szData[32];
-				if (RegKey(NK_REGKEY).read(_T("TabCaptionModifiedColor"), (LPCTSTR)szData)) {
+				if (RegKey(NKMM_REGKEY).read(_T("TabCaptionModifiedColor"), (LPCTSTR)szData)) {
 					clrText = si::ColorString::ToCOLORREF(szData);
 				}
 				else {
-					clrText = si::ColorString::ToCOLORREF(NK_MODIFIED_TAB_CAPTION_COLOR);
+					clrText = si::ColorString::ToCOLORREF(NKMM_MODIFIED_TAB_CAPTION_COLOR);
 				}
 			}
 		}
-#endif // NK_
+#endif // NKMM_
 		gr.PushTextForeColor( clrText );
 		gr.SetTextBackTransparent(true);
 		RECT rcText = rcItem;
@@ -2253,16 +2253,16 @@ void CTabWnd::AdjustWindowPlacement( void )
 			SetCarmWindowPlacement( hwnd, &wp );	// 位置を復元する
 			::UpdateWindow( hwnd );	// 強制描画
 			
-#if defined(NK_FIX_TABWND) && NK_TABWND_FLICKER == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_FLICKER == 1
 			::Sleep(10);  // ウィンドウ切り替え時のちらつき抑制
-#endif // NK_
+#endif // NKMM_
 		}
 	}
 
-#ifdef NK_FIX_TABWND
+#ifdef NKMM_FIX_TABWND
 	// タブ間ダブルクリック判定タイマー起動
 	::SetTimer( m_hwndTab, 2, ::GetDoubleClickTime(), NULL );
-#endif // NK_
+#endif // NKMM_
 }
 
 /*!	アクティブ化の少ない SetWindowPlacement() を実行する
@@ -2488,9 +2488,9 @@ void CTabWnd::LayoutTab( void )
 	// オーナードロー状態を共通設定に追随させる
 	BOOL bDispTabClose = m_pShareData->m_Common.m_sTabBar.m_bDispTabClose;
 	BOOL bOwnerDraw = bDispTabClose;
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 	bOwnerDraw = TRUE;  // 強制的にオーナードローにする
-#endif // NK_
+#endif // NKMM_
 	if( bOwnerDraw && !(lStyle & TCS_OWNERDRAWFIXED) ){
 		lStyle |= TCS_OWNERDRAWFIXED;
 	}else if( !bOwnerDraw && (lStyle & TCS_OWNERDRAWFIXED) ){
@@ -2523,11 +2523,11 @@ void CTabWnd::LayoutTab( void )
 	cx = 6;
 	if( bDispTabClose == DISPTABCLOSE_ALLWAYS ){
 		// 閉じるボタンの分だけパディングを追加して横幅を広げる
-#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CLOSE_BTN_DRAW == 1
 		int nWidth = rcBtnBaseTab.right - rcBtnBaseTab.left;
 #else
 		int nWidth = rcBtnBase.right - rcBtnBase.left;
-#endif // NK_
+#endif // NKMM_
 		cx += bDispTabIcon? (nWidth + 2)/3: (nWidth + 1)/2;	// それっぽく調整: ボタン幅の 1/3（アイコン有） or 1/2（アイコン無）
 	}
 	TabCtrl_SetPadding( m_hwndTab, DpiScaleX(cx), DpiScaleY(3) );
@@ -2578,9 +2578,9 @@ HIMAGELIST CTabWnd::InitImageList( void )
 	HIMAGELIST hImlNew;
 
 	hImlNew = NULL;
-#ifndef NK_FIX_TAB_CAPTION_COLOR
+#ifndef NKMM_FIX_TAB_CAPTION_COLOR
 	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon )
-#endif // NK_
+#endif // NKMM_
 	{
 		// システムイメージリストを取得する
 		// 注：複製後に差し替えて利用するアイコンには事前にアクセスしておかないとイメージが入らない
@@ -2628,12 +2628,12 @@ HIMAGELIST CTabWnd::InitImageList( void )
 
 l_end:
 	// タブに新しいアイコンイメージを設定する
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 	if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 		TabCtrl_SetImageList( m_hwndTab, NULL );
 	}
 	else
-#endif // NK_
+#endif // NKMM_
 	TabCtrl_SetImageList( m_hwndTab, hImlNew );
 
 	// 新しいイメージリストを記憶する
@@ -2753,13 +2753,13 @@ HIMAGELIST CTabWnd::ImageList_Duplicate( HIMAGELIST himl )
 /*! ボタン背景描画処理
 	@date 2006.10.21 ryoji 新規作成
 */
-#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CLOSE_BTN_DRAW == 1
 void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted, bool tab )
 #else
 void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
-#endif // NK_
+#endif // NKMM_
 {
-#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CLOSE_BTN_DRAW == 1
 	auto MakeColor2 = [](COLORREF a, COLORREF b, int alpha) {
 		const int ap = alpha;
 		const int bp = 256 - ap;
@@ -2791,12 +2791,12 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 	//		base_color = ::GetThemeSysColor(hTheme, COLOR_BTNFACE);
 	//	}
 	//}
-#endif // NK_
+#endif // NKMM_
 
 	if( bBtnHilighted )
 	{
 		CGraphics gr(hdc);
-#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CLOSE_BTN_DRAW == 1
 		if (tab) {
 			static const DWORD tbl[] = {
 				0x853838b5,0xf93838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xff3838b5,0xf93838b5,0x853838b5,
@@ -2824,9 +2824,9 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 		gr.SetPen( ::GetSysColor(COLOR_HIGHLIGHT) );
 		gr.SetBrushColor( ::GetSysColor(COLOR_MENU) );
 		::Rectangle( gr, lprcBtn->left, lprcBtn->top, lprcBtn->right, lprcBtn->bottom );
-#endif // NK_
+#endif // NKMM_
 	}
-#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CLOSE_BTN_DRAW == 1
 	else {
 		if (tab) {
 			static const DWORD tbl[] = {
@@ -2847,7 +2847,7 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 			DrawPixel(tbl, sizeof(tbl) / sizeof(tbl[0]));
 		}
 	}
-#endif // NK_
+#endif // NKMM_
 }
 
 /*! 一覧ボタン描画処理
@@ -2980,12 +2980,12 @@ void CTabWnd::DrawTabCloseBtn( CGraphics& gr, const LPRECT lprcClient, bool sele
 	RECT rcBtn;
 	GetTabCloseBtnRect( lprcClient, &rcBtn, selected );
 
-#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CLOSE_BTN_DRAW == 1
 	DrawTabBtnBkgnd( gr, &rcBtn, bHover );
 	return;
 #else
 	DrawBtnBkgnd( gr, &rcBtn, bHover );
-#endif // NK_
+#endif // NKMM_
 
 	// 描画イメージを矩形中央にもってくる	// 2009.10.01 ryoji
 	rcBtn.left = rcBtn.left + ((rcBtn.right - rcBtn.left) - (rcBtnBase.right - rcBtnBase.left)) / 2;
@@ -3034,7 +3034,7 @@ void CTabWnd::GetCloseBtnRect( const LPRECT lprcClient, LPRECT lprc )
 */
 void CTabWnd::GetTabCloseBtnRect( const LPRECT lprcTab, LPRECT lprc, bool selected )
 {
-#if defined(NK_FIX_TABWND) && NK_TAB_CLOSE_BTN_DRAW == 1
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CLOSE_BTN_DRAW == 1
 	*lprc = rcBtnBaseTab;
 	DpiScaleRect(lprc);	// 2009.10.01 ryoji 高DPI対応スケーリング
 	::OffsetRect(lprc,
@@ -3046,7 +3046,7 @@ void CTabWnd::GetTabCloseBtnRect( const LPRECT lprcTab, LPRECT lprc, bool select
 	::OffsetRect(lprc,
 		(lprcTab->right + (selected ? 0: -2)) - ((DpiScaleX(rcBtnBase.right) - DpiScaleX(rcBtnBase.left)) + DpiScaleX(2)),
 		(lprcTab->top + (selected ? -2: 0)) + DpiScaleY(2) );
-#endif // NK_
+#endif // NKMM_
 }
 
 
@@ -3201,20 +3201,20 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 		// 2007.02.28 ryoji 表示切替をメニューに追加
 		int iMenuSel = -1;
 		UINT uFlags = MF_BYPOSITION | (m_hIml? MF_OWNERDRAW: MF_STRING);
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 		if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 			uFlags &= ~MF_OWNERDRAW;
 		}
-#endif // NK_
+#endif // NKMM_
 		HMENU hMenu = ::CreatePopupMenu();
 		for( i = 0; i < nSelfTab; i++ )
 		{
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 			if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 				::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, pData[i].szText );
 			}
 			else
-#endif // NK_
+#endif // NKMM_
 			::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, m_hIml? (LPCTSTR)&pData[i]: pData[i].szText );
 			if( pData[i].hwnd == GetParentHwnd() )
 				iMenuSel = i;
@@ -3233,12 +3233,12 @@ LRESULT CTabWnd::TabListMenu( POINT pt, BOOL bSel/* = TRUE*/, BOOL bFull/* = FAL
 			{
 				for( i = nSelfTab; i < nTab; i++ )
 				{
-#ifdef NK_FIX_TAB_CAPTION_COLOR
+#ifdef NKMM_FIX_TAB_CAPTION_COLOR
 					if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) {
 						::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, pData[i].szText );
 					}
 					else
-#endif // NK_
+#endif // NKMM_
 					::InsertMenu( hMenu, i, uFlags, IDM_SELWINDOW + i, m_hIml? (LPCTSTR)&pData[i]: pData[i].szText );
 				}
 			}

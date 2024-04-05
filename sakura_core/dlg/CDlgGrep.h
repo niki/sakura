@@ -55,14 +55,14 @@ public:
 	bool			m_bSetText;				//!< 検索文字列を設定したか
 	SFilePathLong	m_szFile;				//!< 検索ファイル
 	SFilePathLong	m_szFolder;				//!< 検索フォルダ
-#ifdef NK_FIX_GREP
+#ifdef NKMM_FIX_GREP
 	bool		m_bFolder99;
 	bool		m_bFolder2;
 	bool		m_bFolder3;
 	SFilePath	m_szFolder2;				/*!< 検索フォルダ */
 	SFilePath	m_szFolder3;				/*!< 検索フォルダ */
 	SFilePath	m_szExcludeDirs;		/*!< Exclude dirs */
-#endif // NK_
+#endif // NKMM_
 	SFilePath	m_szCurrentFilePath;
 protected:
 	SComboBoxItemDeleter	m_comboDelText;

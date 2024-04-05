@@ -340,7 +340,7 @@ bool CNormalProcess::InitializeProcess()
 			//	Oct. 19, 2001 genta
 			//	未設定＝-1になるようにしたので，安全のため両者が指定されたときだけ
 			//	移動するようにする． || → &&
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 			GetDllShareData().m_sFlags.m_nCenteringCursor++;
 #else
 			if( ( CLayoutInt(0) <= fi.m_nViewTopLine && CLayoutInt(0) <= fi.m_nViewLeftCol )
@@ -348,7 +348,7 @@ bool CNormalProcess::InitializeProcess()
 				pEditWnd->GetActiveView().GetTextArea().SetViewTopLine( fi.m_nViewTopLine );
 				pEditWnd->GetActiveView().GetTextArea().SetViewLeftCol( fi.m_nViewLeftCol );
 			}
-#endif // NK_
+#endif // NKMM_
 
 			//	オプション指定がないときはカーソル位置設定を行わないようにする
 			//	Oct. 19, 2001 genta

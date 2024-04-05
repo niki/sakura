@@ -49,10 +49,10 @@
 #include "typeprop/CImpExpManager.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 #include <Uxtheme.h>
 #pragma comment(lib, "uxtheme.lib")
-#endif // NK_
+#endif // NKMM_
 
 // 画面ドッキング用の定義	// 2010.06.05 ryoji
 #define DEFINE_SYNCCOLOR
@@ -776,13 +776,13 @@ void CDlgFuncList::SetData()
 		Combo_SetCurSel( hWnd_Combo_Sort , m_nSortType );
 		::ShowWindow( GetDlgItem( GetHwnd(), IDC_STATIC_nSortType ), SW_SHOW );
 		// 2002.11.10 Moca 追加 ソートする
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 		SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
 #else
 		if( SORTTYPE_DEFAULT < m_nSortType ){
 			SortTree(::GetDlgItem( GetHwnd() , IDC_TREE_FL),TVI_ROOT);
 		}
-#endif // NK_
+#endif // NKMM_
 	}else if( m_nListType == OUTLINE_FILETREE ){
 		::ShowWindow( GetItemHwnd(IDC_COMBO_nSortType), SW_HIDE );
 		::ShowWindow( GetItemHwnd(IDC_STATIC_nSortType), SW_HIDE );
@@ -1535,7 +1535,7 @@ void CDlgFuncList::SetTree(bool tagjump, bool nolabel)
 		// 2016.04.24 TVI_LASTは要素数が多いとすごく遅い。TVI_FIRSTを使い後でソートしなおす
 		cTVInsertStruct.hInsertAfter = TVI_FIRST;
 		cTVInsertStruct.item.mask = TVIF_TEXT | TVIF_PARAM;
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 		// 先頭の空白は無視する
 		TCHAR *funcName = pcFuncInfo->m_cmemFuncName.GetStringPtr();
 		while (!(*funcName != _T(' ') && *funcName != _T('\t'))) {
@@ -1544,7 +1544,7 @@ void CDlgFuncList::SetTree(bool tagjump, bool nolabel)
 		cTVInsertStruct.item.pszText = funcName;
 #else
 		cTVInsertStruct.item.pszText = pcFuncInfo->m_cmemFuncName.GetStringPtr();
-#endif // NK_
+#endif // NKMM_
 		cTVInsertStruct.item.lParam = i;	//	あとでこの数値（＝m_pcFuncInfoArrの何番目のアイテムか）を見て、目的地にジャンプするぜ!!。
 
 		/*	親子関係をチェック
@@ -1766,13 +1766,13 @@ void CDlgFuncList::SetTreeFile()
 			hParentTree.push_back(hParent);
 		}
 	}
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 	HTREEITEM		htiClass = TreeView_GetFirstVisible( hwndTree );
 	while( NULL != htiClass ){
 		TreeView_Expand( hwndTree, htiClass, TVE_EXPAND );
 		htiClass = TreeView_GetNextSibling( hwndTree, htiClass );
 	}
-#endif // NK_
+#endif // NKMM_
 }
 
 
@@ -1949,13 +1949,13 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 				if( m_nHeight < DOCK_MIN_SIZE ) m_nHeight = DOCK_MIN_SIZE;
 			}
 		}
-#ifdef NK_FIX_DIALOG_POS
+#ifdef NKMM_FIX_DIALOG_POS
 		else {
 			RECT rcView;
 			::GetWindowRect(pcEditView->GetHwnd(), &rcView);
 			SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
 		}
-#endif // NK_
+#endif // NKMM_
 	}
 
 	if( !m_bInChangeLayout ){	// ChangeLayout() 処理中は設定変更しない
@@ -2059,7 +2059,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 	// フォント設定
 	{
 		HFONT hFontOld = (HFONT)::SendMessageAny(GetItemHwnd(IDC_TREE_FL), WM_GETFONT, 0, 0);
@@ -2085,7 +2085,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		//HFONT hFont = SetMainFont(GetItemHwnd(IDC_LIST_FL));
 		m_cFontText[1].SetFont(hFontOld, hFont, GetItemHwnd(IDC_LIST_FL));
 	}
-#endif // NK_
+#endif // NKMM_
 
 	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 }
@@ -2210,7 +2210,7 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 			break;
 		case NM_DBLCLK:
 			// 2002.02.16 hor Treeのダブルクリックでフォーカス移動できるように 3/4
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 			if (OnJump()) {
 				m_bWaitTreeProcess=true;
 				::SetWindowLongPtr( GetHwnd(), DWLP_MSGRESULT, TRUE );	// ツリーの展開／縮小をしない
@@ -2222,7 +2222,7 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 			OnJump();
 			m_bWaitTreeProcess=true;
 			::SetWindowLongPtr( GetHwnd(), DWLP_MSGRESULT, TRUE );	// ツリーの展開／縮小をしない
-#endif // NK_
+#endif // NKMM_
 			return TRUE;
 			//return OnJump();
 		case TVN_KEYDOWN:
@@ -2283,10 +2283,10 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 	}
 
 #ifdef DEFINE_SYNCCOLOR
-#ifdef NK_FIX_OUTLINE_DIALOG
-	bool dock_color_sync = !RegKey(NK_REGKEY).get(_T("OutlineDockSystemColor"), 1);
+#ifdef NKMM_FIX_OUTLINE_DIALOG
+	bool dock_color_sync = !RegKey(NKMM_REGKEY).get(_T("OutlineDockSystemColor"), 1);
 	if (dock_color_sync)
-#endif // NK_
+#endif // NKMM_
 	if( IsDocking() ){
 		if( hwndList == pnmh->hwndFrom || hwndTree == pnmh->hwndFrom ){
 			if( pnmh->code == NM_CUSTOMDRAW ){
@@ -2502,10 +2502,10 @@ static int CALLBACK Compare_by_ItemTextDesc(LPARAM lParam1, LPARAM lParam2, LPAR
 
 BOOL CDlgFuncList::OnDestroy( void )
 {
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 	m_cFontText[0].ReleaseOnDestroy();
 	m_cFontText[1].ReleaseOnDestroy();
-#endif // NK_
+#endif // NKMM_
 	CDialog::OnDestroy();
 
 	/* アウトライン ■位置とサイズを記憶する */ // 20060201 aroka
@@ -2737,11 +2737,11 @@ BOOL CDlgFuncList::OnJump( bool bCheckAutoClose, bool bFileJump )	//2002.02.08 h
 			}
 		}
 	}
-#ifdef NK_FIX_OUTLINE_DIALOG
+#ifdef NKMM_FIX_OUTLINE_DIALOG
 	else {
 		return FALSE;
 	}
-#endif // NK_
+#endif // NKMM_
 	return TRUE;
 }
 
@@ -2834,10 +2834,10 @@ void CDlgFuncList::SyncColor( void )
 	if( !IsDocking() )
 		return;
 #ifdef DEFINE_SYNCCOLOR
-#ifdef NK_FIX_OUTLINE_DIALOG
-  bool dock_color_sync = !RegKey(NK_REGKEY).get(_T("OutlineDockSystemColor"), 1);
+#ifdef NKMM_FIX_OUTLINE_DIALOG
+  bool dock_color_sync = !RegKey(NKMM_REGKEY).get(_T("OutlineDockSystemColor"), 1);
   if (!dock_color_sync) return;
-#endif // NK_
+#endif // NKMM_
 	// テキスト色・背景色をビューと同色にする
 	CEditView* pcEditView = (CEditView*)m_lParam;
 	const STypeConfig	*TypeDataPtr = &(pcEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute());

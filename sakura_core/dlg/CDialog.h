@@ -153,9 +153,9 @@ public:
 	DLLSHAREDATA*	m_pShareData;
 	BOOL			m_bInited;
 	HINSTANCE		m_hLangRsrcInstance;		// メッセージリソースDLLのインスタンスハンドル	// 2011.04.10 nasukoji
-#ifdef NK_FIX_DIALOG_POS
+#ifdef NKMM_FIX_DIALOG_POS
 	HWND			m_hwndPlaceOfWindow;
-#endif // NK_
+#endif // NKMM_
 
 protected:
 	void CreateSizeBox( void );
@@ -164,13 +164,13 @@ protected:
 	HWND GetItemHwnd(int nID){ return ::GetDlgItem( GetHwnd(), nID ); }
 
 	// コントロールに画面のフォントを設定	2012/11/27 Uchi
-#ifdef NK_FIX_SETMAINFONT
+#ifdef NKMM_FIX_SETMAINFONT
 	HFONT SetMainFont( HWND hTarget, int ptOfs = 0 );
 #else
 	HFONT SetMainFont( HWND hTarget );
-#endif // NK_
+#endif // NKMM_
 
-#ifdef NK_FIX_DIALOG_POS
+#ifdef NKMM_FIX_DIALOG_POS
 	/*!
 	 * 配置モード
 	 * @param bVertical 縦
@@ -206,7 +206,7 @@ protected:
 	
 	bool m_bPlaceVertical;
 	bool m_bPlaceHorizontal;
-#endif // NK_
+#endif // NKMM_
 };
 
 

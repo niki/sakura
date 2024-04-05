@@ -252,11 +252,11 @@ void CEditView::ISearchExit()
 		CSearchKeywordManager().AddToSearchKeyArr( m_strCurSearchKey.c_str() );
 	}
 	m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
-#ifdef NK_FIX_SEARCH_KEEP_REGEXP
+#ifdef NKMM_FIX_SEARCH_KEEP_REGEXP
 	///
 #else
 	GetDllShareData().m_Common.m_sSearch.m_sSearchOption = m_sCurSearchOption;
-#endif // NK_
+#endif // NKMM_
 	m_pcEditWnd->m_cToolbar.AcceptSharedSearchKey();
 	m_nISearchDirection = SEARCH_BACKWARD;
 	m_nISearchMode = SEARCH_NONE;
@@ -270,10 +270,10 @@ void CEditView::ISearchExit()
 	GetCursorPos(&point1);
 	OnMOUSEMOVE(0,point1.x,point1.y);
 
-#ifndef NK_FIX_STATUSBAR
+#ifndef NKMM_FIX_STATUSBAR
 	//ステータス表示エリアをクリア
 	SendStatusMessage(_T(""));
-#endif  // NK_
+#endif  // NKMM_
 
 }
 
@@ -436,9 +436,9 @@ void CEditView::ISearchExec(bool bNext)
 			m_sISearchHistory[m_nISearchHistoryCount].Set(GetCaret().GetCaretLayoutPos());
 		}
 	}else{
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 		GetDllShareData().m_sFlags.m_nCenteringCursor++;
-#endif // NK_
+#endif // NKMM_
 		//検索結果あり
 		//キャレット移動
 		GetCaret().MoveCursor( sMatchRange.GetFrom(), true, _CARETMARGINRATE / 3 );
@@ -450,9 +450,9 @@ void CEditView::ISearchExec(bool bNext)
 		m_sISearchHistory[m_nISearchHistoryCount] = sMatchRange;
 	}
 
-#ifdef NK_FIX_EDITVIEW_SCRBAR
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 	SB_Marker_CallPaint(500);
-#endif // NK_
+#endif // NKMM_
 	m_bCurSrchKeyMark = true;
 
 	Redraw();	

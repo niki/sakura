@@ -95,7 +95,7 @@ LPTSTR CFileNameManager::GetTransformFileNameFast( LPCTSTR pszSrc, LPTSTR pszDes
 	return pszDest;
 }
 
-#ifdef NK_FIX_RECENT_FILE_DISP_NAME
+#ifdef NKMM_FIX_RECENT_FILE_DISP_NAME
 /*!	共有データの設定に従ってパスを縮小表記を復元する
 	@param pszSrc   [in]  ファイル名
 	@param pszDest  [out] 変換後のファイル名の格納先
@@ -113,7 +113,7 @@ std::tstring CFileNameManager::RestoreFastFileName(const std::tstring &fname)
 	}
 	return s;
 }
-#endif // NK_
+#endif // NKMM_
 
 /*!	展開済みメタ文字列のキャッシュを作成・更新する
 	@retval 有効な展開済み置換前文字列の数
@@ -394,20 +394,20 @@ static void GetAccessKeyLabelByIndex(TCHAR* pszLabel, bool bEspaceAmp, int index
 		if( bEspaceAmp ){
 			pszLabel[0] = _T('&');
 			pszLabel[1] = c;
-#ifdef NK_FIX_RECENT_FILE_DISP_NAME
+#ifdef NKMM_FIX_RECENT_FILE_DISP_NAME
 			pszLabel[2] = _T('\0');
 #else
 			pszLabel[2] = _T(' ');
 			pszLabel[3] = _T('\0');
-#endif // NK_
+#endif // NKMM_
 		}else{
 			pszLabel[0] = c;
-#ifdef NK_FIX_RECENT_FILE_DISP_NAME
+#ifdef NKMM_FIX_RECENT_FILE_DISP_NAME
 			pszLabel[1] = _T('\0');
 #else
 			pszLabel[1] = _T(' ');
 			pszLabel[2] = _T('\0');
-#endif // NK_
+#endif // NKMM_
 		}
 	}else{
 		pszLabel[0] = _T('\0');
@@ -483,13 +483,13 @@ bool CFileNameManager::GetMenuFullLabel(
 	if( pszFile[0] ){
 		this->GetTransformFileNameFast( pszFile, szFileName, _MAX_PATH, hDC );
 
-#ifdef NK_FIX_RECENT_FILE_DISP_NAME
+#ifdef NKMM_FIX_RECENT_FILE_DISP_NAME
 	szAccKey[0] = L'\0';
-#endif // NK_
+#endif // NKMM_
 
-#ifdef NK_FIX_RECENT_FILE_DISP_NAME
+#ifdef NKMM_FIX_RECENT_FILE_DISP_NAME
 		{
-			int compactlen = (int)RegKey(NK_REGKEY).get(_T("FilePathCompactLength"), NK_FILEPATH_COMPACT_LENGTH);
+			int compactlen = (int)RegKey(NKMM_REGKEY).get(_T("FilePathCompactLength"), NKMM_FILEPATH_COMPACT_LENGTH);
 			
 			TCHAR temp[_MAX_PATH] = {};
 			//::PathCompactPathEx(temp, szFileName, compactlen, L'\\');
@@ -567,7 +567,7 @@ bool CFileNameManager::GetMenuFullLabel(
 //				            (int32_t)(((double)size_low + 0.5) / 1024 / 1024));
 			}
 		}
-#endif // NK_
+#endif // NKMM_
 
 		// szFileName → szMenu2
 		//	Jan. 19, 2002 genta
@@ -595,7 +595,7 @@ bool CFileNameManager::GetMenuFullLabel(
 		pszCharset = szCodePageName;
 	}
 	
-#ifdef NK_FIX_RECENT_FILE_DISP_NAME
+#ifdef NKMM_FIX_RECENT_FILE_DISP_NAME
 	int ret = auto_snprintf_s( pszOutput, nBuffSize, _T("%ts %ts%ts %ts"),
 		szAccKey, (bFavorite ? _T("★ ") : _T("")), pszName,
 		(bModified ? _T("*"):_T(""))
@@ -605,7 +605,7 @@ bool CFileNameManager::GetMenuFullLabel(
 		szAccKey, (bFavorite ? _T("★ ") : _T("")), pszName,
 		(bModified ? _T("*"):_T(" ")), pszCharset
 	);
-#endif // NK_
+#endif // NKMM_
 	return 0 < ret;
 }
 

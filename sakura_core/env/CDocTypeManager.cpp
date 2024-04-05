@@ -145,7 +145,7 @@ bool CDocTypeManager::GetTypeConfigMini(CTypeConfig cDocumentType, const STypeCo
 	return false;
 }
 
-#ifdef NK_FIX_TYPELIST_ADD_ANY_TYPE
+#ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
 bool CDocTypeManager::AddTypeConfig(CTypeConfig cDocumentType, int nId)
 {
 	LockGuard<CMutex> guard( g_cDocTypeMutex );
@@ -157,7 +157,7 @@ bool CDocTypeManager::AddTypeConfig(CTypeConfig cDocumentType)
 	LockGuard<CMutex> guard( g_cDocTypeMutex );
 	return FALSE != SendMessageAny( m_pShareData->m_sHandles.m_hwndTray, MYWM_ADD_TYPESETTING, (WPARAM)cDocumentType.GetIndex(), 0 );
 }
-#endif // NK_
+#endif // NKMM_
 
 bool CDocTypeManager::DelTypeConfig(CTypeConfig cDocumentType)
 {

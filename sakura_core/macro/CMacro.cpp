@@ -1437,7 +1437,7 @@ bool CMacro::HandleCommand(
 			pcEditView->SyncScrollH( pcEditView->ScrollAtH( nColumn ) );
 		}
 		break;
-#ifdef NK_FIX_SWITCH_DISP_LINENR_MACRO
+#ifdef NKMM_FIX_SWITCH_DISP_LINENR_MACRO
 	case F_SWITCH_DISP_LINE_NUMBER:
 		{
 			pcEditView->m_pcEditDoc->m_cDocType.GetDocumentAttributeWrite().
@@ -1445,7 +1445,7 @@ bool CMacro::HandleCommand(
 			pcEditView->GetTextArea().DetectWidthOfLineNumberArea(false);
 			pcEditView->RedrawAll();
 		}
-#endif // NK_
+#endif // NKMM_
 	default:
 		//	引数なし。
 		pcEditView->GetCommander().HandleCommand( Index, true, 0, 0, 0, 0 );	//	標準
@@ -1577,13 +1577,13 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 		{
 			if( ArgSize != 1 ) return false;
 			if(VariantChangeType(&varCopy.Data, const_cast<VARIANTARG*>( &(Arguments[0]) ), 0, VT_I4) != S_OK) return false;	// VT_I4として解釈
-#ifdef NK_FIX_CHANGE_TAB_WIDTH_MACRO
+#ifdef NKMM_FIX_CHANGE_TAB_WIDTH_MACRO
 			if (varCopy.Data.iVal < 0) {
 				View->m_pcEditDoc->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace ^= 1;
 				View->RedrawAll();
 				return false;
 			}
-#endif // NK_
+#endif // NKMM_
 			int nTab = (Int)View->m_pcEditDoc->m_cLayoutMgr.GetTabSpaceKetas();
 			Wrap( &Result )->Receive( nTab );
 			// 2013.04.30 Moca 条件追加。不要な場合はChangeLayoutParamを呼ばない

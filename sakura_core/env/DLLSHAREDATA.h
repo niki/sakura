@@ -91,12 +91,12 @@ struct SShare_Flags{
 	*/
 	BOOL				m_bRecordingKeyMacro;		/* キーボードマクロの記録中 */
 	HWND				m_hwndRecordingKeyMacro;	/* キーボードマクロを記録中のウィンドウ */
-#ifdef NK_FIX_TABWND
+#ifdef NKMM_FIX_TABWND
 	int					m_nInterTabClk = 0;	/* タブ間のクリック判定 */
-#endif // NK_
-#ifdef NK_FIX_CENTERING_CURSOR_JUMP
+#endif // NKMM_
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	int					m_nCenteringCursor = 0;	/* カーソルのセンタリングフラグ */
-#endif // NK_
+#endif // NKMM_
 };
 
 //! 共有ワークバッファ

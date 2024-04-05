@@ -160,12 +160,12 @@ void CDlgGrepReplace::SetData( void )
 
 	CDlgGrep::SetData();
 
-#ifdef NK_FIX_DIALOG_POS
+#ifdef NKMM_FIX_DIALOG_POS
 	RECT rcView;
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	::GetWindowRect(pcEditView->GetHwnd(), &rcView);
 	SetPlaceOfWindow(::GetParent(pcEditView->GetHwnd()), &rcView);
-#endif // NK_
+#endif // NKMM_
 }
 
 
