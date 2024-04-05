@@ -59,7 +59,7 @@
 #define NK_FIX_VERDLG
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
-	#define PR_LV		11
+	#define PR_LV		12
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
