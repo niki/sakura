@@ -59,7 +59,7 @@ int CALLBACK MYBrowseCallbackProc(
 /* フォルダ選択ダイアログ */
 BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TCHAR* strFolderName )
 {
-	BOOL	bRes;
+//	BOOL	bRes;
 	TCHAR	szInitFolder[MAX_PATH];
 
 	_tcscpy( szInitFolder, pszInitFolder );
@@ -655,7 +655,7 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 			dwData = 1;	// 目次ページ
 
 		TCHAR buf[256];
-		_stprintf( buf, _T("http://sakura-editor.sourceforge.net/cgi-bin/hid2.cgi?%d"), dwData );
+		_stprintf( buf, _T("http://sakura-editor.sourceforge.net/cgi-bin/hid2.cgi?%lld"), dwData );
 		ShellExecute( ::GetActiveWindow(), NULL, buf, NULL, NULL, SW_SHOWNORMAL );
 	}
 

@@ -64,6 +64,7 @@ public:
 
 			c++;
 		}
+		// xxx: トークンありき
 	}
 	std::tstring operator[](int index) { return At(index); }
 

@@ -2695,7 +2695,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 	const WCHAR*	pszSecName = LTEXT("MainMenu");
 	CMainMenu*		pcMenu;
 	WCHAR	szKeyName[64];
-	WCHAR	szFuncName[MAX_PLUGIN_ID+20];
+//	WCHAR	szFuncName[MAX_PLUGIN_ID+20];
 	EFunctionCode n;
 	int		nIdx;
 	WCHAR	szLine[1024];

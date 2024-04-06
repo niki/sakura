@@ -44,7 +44,7 @@ EConvertResult CCodeBase::UnicodeToHex(const wchar_t* cSrc, const int iSLen, TCH
 
 	@param[out] pcMem デコード済みの文字列を格納
 */
-bool CCodeBase::MIMEHeaderDecode( const char* pSrc, const int nSrcLen, CMemory* pcMem, const ECodeType eCodetype )
+bool CCodeBase::MIMEHeaderDecode( const char* pSrc, const int nSrcLen, CMemory* pcMem, ECodeType eCodetype )
 {
 	ECodeType ecodetype;
 	int nskip_bytes;
