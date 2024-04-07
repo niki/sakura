@@ -789,7 +789,7 @@ void CViewSelect::PrintSelectionInfoMsg() const
 				} else {	//	2行以上選択されている場合
 					select_sum =
 						pcLayout->GetLengthWithoutEOL()
-						+ pcLayout->GetLayoutEol().GetLen()
+/*nkmm					+ pcLayout->GetLayoutEol().GetLen()*/
 						- pView->LineColumnToIndex( pcLayout, m_sSelect.GetFrom().GetX2() );
 
 					//	GetSelectedDataと似ているが，先頭行と最終行は排除している
@@ -802,7 +802,8 @@ void CViewSelect::PrintSelectionInfoMsg() const
 						//	2006.06.06 ryoji 指定行のデータが存在しない場合の対策
 						if( NULL == pLine )
 							break;
-						select_sum += pcLayout->GetLengthWithoutEOL() + pcLayout->GetLayoutEol().GetLen();
+//nkmm					select_sum += pcLayout->GetLengthWithoutEOL() + pcLayout->GetLayoutEol().GetLen();
+						select_sum += pcLayout->GetLengthWithoutEOL();
 					}
 
 					//	最終行の処理
