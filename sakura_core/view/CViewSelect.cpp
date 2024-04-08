@@ -835,7 +835,8 @@ void CViewSelect::PrintSelectionInfoMsg() const
 			m_sSelect.GetFrom().x, m_sSelect.GetFrom().y,
 			m_sSelect.GetTo().x, m_sSelect.GetTo().y );
 #else
-		auto_sprintf( msg, _T("%d %ts (%d lines) selected."), select_sum, ( bCountByByte ? _T("bytes") : _T("chars") ), select_line );
+		// todo: ローカライズ対策ができていない nkmm.
+		auto_sprintf( msg, _T("%d %ts (%d 行) 選択."), select_sum, ( bCountByByte ? _T("bytes") : _T("字") ), select_line );
 #endif
 	}
 	const_cast<CEditView*>(pView)->GetCaret().m_bClearStatus = false;
