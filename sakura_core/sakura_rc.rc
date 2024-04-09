@@ -3032,30 +3032,30 @@ STRINGTABLE DISCARDABLE
 BEGIN
 	F_FILE_TOPMENU			"ファイル"
     F_FILENEW               "新規作成"
-    F_FILENEW_NEWWINDOW		"新規ウインドウを開く"
-    F_FILEOPEN              "開く..."
+    F_FILENEW_NEWWINDOW		"新規ウインドウ"
+    F_FILEOPEN              "開く"
     F_FILESAVE              "上書き保存"
-    F_FILESAVEAS_DIALOG     "名前を付けて保存..."
-    F_FILECLOSE             "閉じて(無題)"
-    F_FILECLOSE_OPEN        "閉じて開く..."
-    F_FILEOPEN_DROPDOWN     "開く(ドロップダウン)..."
+    F_FILESAVEAS_DIALOG     "名前を付けて保存"
+    F_FILECLOSE             "閉じて新しい（無題）"
+    F_FILECLOSE_OPEN        "閉じて開く"
+    F_FILEOPEN_DROPDOWN     "開く（ドロップダウン）"
     F_FILESAVECLOSE         "保存して閉じる"
-    F_FILE_REOPEN_SJIS      "SJISで開き直す"
+    F_FILE_REOPEN_SJIS      "SJIS で開き直す"
 	F_FILE_REOPEN_SUBMENU	"開き直す"
 	F_FILE_RCNTFILE_SUBMENU	"最近使ったファイル"
-	F_FILE_RCNTFLDR_SUBMENU	"最近使ったフォルダ"
+	F_FILE_RCNTFLDR_SUBMENU	"最近使ったフォルダー"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_FILE_REOPEN_JIS       "JISで開き直す"
-    F_FILE_REOPEN_EUC       "EUCで開き直す"
-    F_FILE_REOPEN_UNICODE   "UTF-16で開き直す"
-    F_FILE_REOPEN_UTF8      "UTF-8で開き直す"
-    F_FILE_REOPEN_UTF7      "UTF-7で開き直す"
-    F_FILE_REOPEN_UNICODEBE "UTF-16BEで開き直す"
-    F_FILE_REOPEN_CESU8     "CESU-8で開き直す"
-    F_FILE_REOPEN_LATIN1    "Latin1で開き直す"
+    F_FILE_REOPEN_JIS       "JIS"
+    F_FILE_REOPEN_EUC       "EUC"
+    F_FILE_REOPEN_UNICODE   "UTF-16"
+    F_FILE_REOPEN_UTF8      "UTF-8"
+    F_FILE_REOPEN_UTF7      "UTF-7"
+    F_FILE_REOPEN_UNICODEBE "UTF-16BE"
+    F_FILE_REOPEN_CESU8     "CESU-8"
+    F_FILE_REOPEN_LATIN1    "Latin1"
     F_FILE_REOPEN           "開き直す"
     F_FILESAVEALL           "すべて上書き保存"
 END
@@ -3069,7 +3069,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_OPEN_HfromtoC         "同名のC/C++ヘッダ(ソース)を開く"
+    F_OPEN_HfromtoC         "C/C++のヘッダ／ソースを切り替え"
     F_ACTIVATE_SQLPLUS      "SQL*Plusをアクティブ表示"
     F_PLSQL_COMPILE_ON_SQLPLUS "SQL*Plusで実行"
 END
@@ -3084,8 +3084,8 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_EXITALLEDITORS        "編集の全終了"
-    F_EXITALL               "サクラエディタの全終了"
+    F_EXITALLEDITORS        "編集をすべて終了"
+    F_EXITALL               "サクラエディタを終了"
     F_WCHAR                 "文字入力"
     F_IME_CHAR              "全角文字入力"
 END
@@ -3096,7 +3096,7 @@ BEGIN
     F_UNDO                  "元に戻す"
     F_REDO                  "やり直し"
     F_DELETE                "削除"
-    F_DELETE_BACK           "カーソル前を削除"
+    F_DELETE_BACK           "キャレットの前を削除"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -3109,13 +3109,13 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_LineCutToStart        "行頭まで切り取り(改行単位)"
-    F_LineCutToEnd          "行末まで切り取り(改行単位)"
-    F_LineDeleteToStart     "行頭まで削除(改行単位)"
-    F_LineDeleteToEnd       "行末まで削除(改行単位)"
-    F_CUT_LINE              "行切り取り(折り返し単位)"
-    F_DELETE_LINE           "行削除(折り返し単位)"
-    F_DUPLICATELINE         "行の二重化(折り返し単位)"
+    F_LineCutToStart        "行頭まで切り取り（改行単位）"
+    F_LineCutToEnd          "行末まで切り取り（改行単位）"
+    F_LineDeleteToStart     "行頭まで削除（改行単位）"
+    F_LineDeleteToEnd       "行末まで削除（改行単位）"
+    F_CUT_LINE              "行の切り取り（折り返し単位）"
+    F_DELETE_LINE           "行の削除（折り返し単位）"
+    F_DUPLICATELINE         "行の複製（折り返し単位）"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -3128,63 +3128,63 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_LTRIM                 "左(先頭)の空白を削除"
-    F_RTRIM                 "右(末尾)の空白を削除"
-    F_SORT_ASC              "選択行の昇順ソート"
-    F_SORT_DESC             "選択行の降順ソート"
-    F_MERGE                 "連続した重複行の削除(uniq)"
+    F_LTRIM                 "行頭の空白を削除"
+    F_RTRIM                 "行末の空白を削除"
+    F_SORT_ASC              "選択した行を昇順ソート"
+    F_SORT_DESC             "選択した行を降順ソート"
+    F_MERGE                 "連続した重複行の削除（uniq）"
     F_RECONVERT             "再変換"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_UP                    "カーソル上移動"
-    F_DOWN                  "カーソル下移動"
-    F_LEFT                  "カーソル左移動"
-    F_RIGHT                 "カーソル右移動"
-    F_UP2                   "カーソル上移動(２行ごと)"
-    F_DOWN2                 "カーソル下移動(２行ごと)"
+    F_UP                    "上移動"
+    F_DOWN                  "下移動"
+    F_LEFT                  "左移動"
+    F_RIGHT                 "右移動"
+    F_UP2                   "上移動（２行単位）"
+    F_DOWN2                 "下移動（２行単位）"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     F_WORDLEFT              "単語の左端に移動"
     F_WORDRIGHT             "単語の右端に移動"
-    F_GOLINETOP             "行頭に移動(折り返し単位)"
-    F_GOLINEEND             "行末に移動(折り返し単位)"
+    F_GOLINETOP             "行頭に移動（折り返し単位）"
+    F_GOLINEEND             "行末に移動（折り返し単位）"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_HalfPageUp            "半ページアップ"
-    F_HalfPageDown          "半ページダウン"
-    F_1PageUp               "１ページアップ"
-    F_1PageDown             "１ページダウン"
+    F_HalfPageUp            "半ページ上移動"
+    F_HalfPageDown          "半ページ下移動"
+    F_1PageUp               "１ページ上移動"
+    F_1PageDown             "１ページ下移動"
     F_GOFILETOP             "ファイルの先頭に移動"
-    F_GOFILEEND             "ファイルの最後に移動"
+    F_GOFILEEND             "ファイルの終端に移動"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_CURLINECENTER         "カーソル行をウィンドウ中央へ"
+    F_CURLINECENTER         "キャレット行をウィンドウ中央へ"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_JUMPHIST_PREV         "移動履歴: 前へ"
-    F_JUMPHIST_NEXT         "移動履歴: 次へ"
+    F_JUMPHIST_PREV         "移動履歴：前へ"
+    F_JUMPHIST_NEXT         "移動履歴：次へ"
     F_JUMPHIST_SET          "現在位置を移動履歴に登録"
-    F_WndScrollDown         "テキストを１行下へスクロール"
-    F_WndScrollUp           "テキストを１行上へスクロール"
-    F_GONEXTPARAGRAPH       "次の段落へ移動"
-    F_GOPREVPARAGRAPH       "前の段落へ移動"
+    F_WndScrollDown         "スクリーンを１行下にスクロール"
+    F_WndScrollUp           "スクリーンを１行上にスクロール"
+    F_GONEXTPARAGRAPH       "次の段落に移動"
+    F_GOPREVPARAGRAPH       "前の段落に移動"
     F_AUTOSCROLL            "オートスクロール"
-    F_WHEELUP               "ホイールアップ"
-    F_WHEELDOWN             "ホイールダウン"
+    F_WHEELUP               "ホイール上"
+    F_WHEELDOWN             "ホイール下"
     F_WHEELLEFT             "ホイール左"
     F_WHEELRIGHT            "ホイール右"
-    F_WHEELPAGEUP           "ホイールページアップ"
-    F_WHEELPAGEDOWN         "ホイールページダウン"
+    F_WHEELPAGEUP           "ホイールページ上"
+    F_WHEELPAGEDOWN         "ホイールページ下"
     F_WHEELPAGELEFT         "ホイールページ左"
     F_WHEELPAGERIGHT        "ホイールページ右"
     F_MODIFYLINE_NEXT       "次の変更行へ"
@@ -3195,66 +3195,66 @@ STRINGTABLE DISCARDABLE
 BEGIN
     F_SELECTWORD            "現在位置の単語選択"
     F_SELECTALL             "すべて選択"
-    F_SELECTLINE            "1行選択"
+    F_SELECTLINE            "１行選択"
     F_BEGIN_SEL             "範囲選択開始"
-    F_UP_SEL                "(選択)カーソル上移動"
-    F_DOWN_SEL              "(選択)カーソル下移動"
-    F_LEFT_SEL              "(選択)カーソル左移動"
-    F_RIGHT_SEL             "(選択)カーソル右移動"
-    F_UP2_SEL               "(選択)カーソル上移動(２行ごと)"
+    F_UP_SEL                "（選択）カーソルの上移動"
+    F_DOWN_SEL              "（選択）カーソルの下移動"
+    F_LEFT_SEL              "（選択）カーソルの左移動"
+    F_RIGHT_SEL             "（選択）カーソルの右移動"
+    F_UP2_SEL               "（選択）カーソルの上移動（２行ごと）"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_DOWN2_SEL             "(選択)カーソル下移動(２行ごと)"
-    F_WORDLEFT_SEL          "(選択)単語の左端に移動"
-    F_WORDRIGHT_SEL         "(選択)単語の右端に移動"
+    F_DOWN2_SEL             "（選択）カーソルの下移動（２行ごと）"
+    F_WORDLEFT_SEL          "（選択）単語の左端に移動"
+    F_WORDRIGHT_SEL         "（選択）単語の右端に移動"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_GOLINETOP_SEL         "(選択)行頭に移動(折り返し単位)"
-    F_GOLINEEND_SEL         "(選択)行末に移動(折り返し単位)"
-    F_HalfPageUp_Sel        "(選択)半ページアップ"
-    F_HalfPageDown_Sel      "(選択)半ページダウン"
-    F_1PageUp_Sel           "(選択)１ページアップ"
-    F_1PageDown_Sel         "(選択)１ページダウン"
+    F_GOLINETOP_SEL         "（選択）行頭に移動（折り返し単位）"
+    F_GOLINEEND_SEL         "（選択）行末に移動（折り返し単位）"
+    F_HalfPageUp_Sel        "（選択）半ページ上"
+    F_HalfPageDown_Sel      "（選択）半ページ下"
+    F_1PageUp_Sel           "（選択）１ページ上"
+    F_1PageDown_Sel         "（選択）１ページ下"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_GOFILETOP_SEL         "(選択)ファイルの先頭に移動"
-    F_GOFILEEND_SEL         "(選択)ファイルの最後に移動"
+    F_GOFILETOP_SEL         "（選択）ファイルの先頭に移動"
+    F_GOFILEEND_SEL         "（選択）ファイルの終端に移動"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_GONEXTPARAGRAPH_SEL   "(選択)次の段落へ移動"
-    F_GOPREVPARAGRAPH_SEL   "(選択)前の段落へ移動"
-    F_MODIFYLINE_NEXT_SEL   "(選択)次の変更行へ"
-    F_MODIFYLINE_PREV_SEL   "(選択)前の変更行へ"
+    F_GONEXTPARAGRAPH_SEL   "（選択）次の段落に移動"
+    F_GOPREVPARAGRAPH_SEL   "（選択）前の段落に移動"
+    F_MODIFYLINE_NEXT_SEL   "（選択）次の変更行へ"
+    F_MODIFYLINE_PREV_SEL   "（選択）前の変更行へ"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_BEGIN_BOX             "矩形範囲選択開始"
-    F_UP_BOX                "(矩形選択)カーソル上移動"
-    F_DOWN_BOX              "(矩形選択)カーソル下移動"
-    F_LEFT_BOX              "(矩形選択)カーソル左移動"
-    F_RIGHT_BOX             "(矩形選択)カーソル右移動"
-    F_UP2_BOX               "(矩形選択)カーソル上移動(２行ごと)"
-    F_DOWN2_BOX             "(矩形選択)カーソル下移動(２行ごと)"
-    F_WORDLEFT_BOX          "(矩形選択)単語の左端に移動"
-    F_WORDRIGHT_BOX         "(矩形選択)単語の右端に移動"
-    F_GOLOGICALLINETOP_BOX  "(矩形選択)行頭に移動(改行単位)"
-    F_GOLINETOP_BOX         "(矩形選択)行頭に移動(折り返し単位)"
-    F_GOLINEEND_BOX         "(矩形選択)行末に移動(折り返し単位)"
-    F_HalfPageUp_BOX        "(矩形選択)半ページアップ"
-    F_HalfPageDown_BOX      "(矩形選択)半ページダウン"
-    F_1PageUp_BOX           "(矩形選択)１ページアップ"
-    F_1PageDown_BOX         "(矩形選択)１ページダウン"
-    F_GOFILETOP_BOX         "(矩形選択)ファイルの先頭に移動"
-    F_GOFILEEND_BOX         "(矩形選択)ファイルの最後に移動"
+    F_BEGIN_BOX             "矩形選択の開始"
+    F_UP_BOX                "（矩形選択）カーソル上移動"
+    F_DOWN_BOX              "（矩形選択）カーソル下移動"
+    F_LEFT_BOX              "（矩形選択）カーソル左移動"
+    F_RIGHT_BOX             "（矩形選択）カーソル右移動"
+    F_UP2_BOX               "（矩形選択）カーソル上移動(２行ごと)"
+    F_DOWN2_BOX             "（矩形選択）カーソル下移動(２行ごと)"
+    F_WORDLEFT_BOX          "（矩形選択）単語の左端に移動"
+    F_WORDRIGHT_BOX         "（矩形選択）単語の右端に移動"
+    F_GOLOGICALLINETOP_BOX  "（矩形選択）行頭に移動(改行単位)"
+    F_GOLINETOP_BOX         "（矩形選択）行頭に移動(折り返し単位)"
+    F_GOLINEEND_BOX         "（矩形選択）行末に移動(折り返し単位)"
+    F_HalfPageUp_BOX        "（矩形選択）半ページアップ"
+    F_HalfPageDown_BOX      "（矩形選択）半ページダウン"
+    F_1PageUp_BOX           "（矩形選択）１ページアップ"
+    F_1PageDown_BOX         "（矩形選択）１ページダウン"
+    F_GOFILETOP_BOX         "（矩形選択）ファイルの先頭に移動"
+    F_GOFILEEND_BOX         "（矩形選択）ファイルの終端に移動"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -3263,7 +3263,7 @@ BEGIN
     F_COPY                  "コピー"
     F_COPY_CRLF             "CRLF改行でコピー"
     F_PASTE                 "貼り付け"
-    F_PASTEBOX              "矩形貼り付け"
+    F_PASTEBOX              "矩形で貼り付け"
     F_INSTEXT_W             "テキストを貼り付け"
 	F_EDIT_INS_SUBMENU		"挿入"
 	F_EDIT_HLV_SUBMENU		"高度な操作"
@@ -3276,14 +3276,14 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     F_COPY_ADDCRLF          "折り返し位置に改行をつけてコピー"
-    F_COPYLINES             "選択範囲内全行コピー"
-    F_COPYLINESASPASSAGE    "選択範囲内全行引用符付きコピー"
-    F_COPYLINESWITHLINENUMBER "選択範囲内全行行番号付きコピー"
-    F_COPY_COLOR_HTML       "選択範囲内色付きHTMLコピー"
-    F_COPY_COLOR_HTML_LINENUMBER "選択範囲内行番号色付きHTMLコピー"
-    F_COPYPATH              "このファイルのパス名をコピー"
-    F_COPYTAG               "このファイルのパス名とカーソル位置をコピー"
-    F_COPYFNAME             "このファイル名をコピー"
+    F_COPYLINES             "選択範囲行のコピー"
+    F_COPYLINESASPASSAGE    "選択範囲行の引用符付きコピー"
+    F_COPYLINESWITHLINENUMBER "選択範囲行の行番号付きコピー"
+    F_COPY_COLOR_HTML       "選択範囲の色付きHTMLコピー"
+    F_COPY_COLOR_HTML_LINENUMBER "選択範囲の行番号色付きHTMLコピー"
+    F_COPYPATH              "ドキュメントのパス名をコピー"
+    F_COPYTAG               "ドキュメントのパス名とキャレット位置をコピー"
+    F_COPYFNAME             "ドキュメント名をコピー"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -3293,8 +3293,8 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_INS_DATE              "日付挿入"
-    F_INS_TIME              "時刻挿入"
+    F_INS_DATE              "日付の挿入"
+    F_INS_TIME              "時刻の挿入"
     F_CTRL_CODE_DIALOG      "コントロールコード入力..."
 END
 
@@ -3322,22 +3322,22 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_CODECNV_AUTO2SJIS     "自動判別→SJISコード変換"
-    F_CODECNV_EMAIL         "E-Mail(JIS→SJIS)コード変換"
-    F_CODECNV_EUC2SJIS      "EUC→SJISコード変換"
-    F_CODECNV_UNICODE2SJIS  "UTF-16→SJISコード変換"
-    F_CODECNV_UTF82SJIS     "UTF-8→SJISコード変換"
-    F_CODECNV_UTF72SJIS     "UTF-7→SJISコード変換"
-    F_CODECNV_UNICODEBE2SJIS "UTF-16BE→SJISコード変換"
-    F_CODECNV_SJIS2JIS      "SJIS→JISコード変換"
-    F_CODECNV_SJIS2EUC      "SJIS→EUCコード変換"
-    F_CODECNV_SJIS2UTF8     "SJIS→UTF-8コード変換"
-    F_CODECNV_SJIS2UTF7     "SJIS→UTF-7コード変換"
+    F_CODECNV_AUTO2SJIS     "（コード変換）自動判別 → SJIS"
+    F_CODECNV_EMAIL         "（コード変換）E-Mail（JIS → SJIS）"
+    F_CODECNV_EUC2SJIS      "（コード変換）EUC → SJIS"
+    F_CODECNV_UNICODE2SJIS  "（コード変換）UTF-16 → SJIS"
+    F_CODECNV_UTF82SJIS     "（コード変換）UTF-8 → SJIS"
+    F_CODECNV_UTF72SJIS     "（コード変換）UTF-7 → SJIS"
+    F_CODECNV_UNICODEBE2SJIS "（コード変換）UTF-16BE → SJIS"
+    F_CODECNV_SJIS2JIS      "（コード変換）SJIS → JIS"
+    F_CODECNV_SJIS2EUC      "（コード変換）SJIS → EUC"
+    F_CODECNV_SJIS2UTF8     "（コード変換）SJIS → UTF-8"
+    F_CODECNV_SJIS2UTF7     "（コード変換）SJIS → UTF-7"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_BASE64DECODE          "Base64デコードして保存"
+    F_BASE64DECODE          "Base64にデコードして保存"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -3349,14 +3349,14 @@ STRINGTABLE DISCARDABLE
 BEGIN
     F_SEARCH_TOPMENU		"検索"
     F_SEARCH_DIALOG         "検索..."
-    F_SEARCH_NEXT           "次を検索"
-    F_SEARCH_PREV           "前を検索"
+    F_SEARCH_NEXT           "次の検索"
+    F_SEARCH_PREV           "前の検索"
     F_REPLACE_DIALOG        "置換..."
     F_SEARCH_CLEARMARK      "検索マークの切替え"
     F_REPLACE               "置換"
     F_REPLACE_ALL           "すべて置換"
     F_SEARCH_BOX            "検索 (ボックス)"
-    F_JUMP_SRCHSTARTPOS     "検索開始位置へ戻る"
+    F_JUMP_SRCHSTARTPOS     "検索開始位置に戻る"
     F_GREP_DIALOG           "Grep..."
     F_GREP                  "Grep"
     F_GREP_REPLACE_DLG      "Grep置換..."
@@ -3365,33 +3365,33 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_JUMP_DIALOG           "指定行へジャンプ..."
-    F_JUMP                  "指定行へジャンプ"
+    F_JUMP_DIALOG           "指定行に移動..."
+    F_JUMP                  "指定行に移動"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     F_OUTLINE               "アウトライン解析..."
-    F_OUTLINE_TOGGLE        "アウトライン解析(トグル)..."
-    F_TAGJUMP               "タグジャンプ"
-    F_TAGJUMPBACK           "タグジャンプバック"
+    F_OUTLINE_TOGGLE        "アウトライン解析（トグル）..."
+    F_TAGJUMP               "タグ移動"
+    F_TAGJUMPBACK           "タグ移動（戻る）"
     F_TAGS_MAKE             "タグファイルの作成..."
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_DIRECT_TAGJUMP        "ダイレクトタグジャンプ"
-    F_TAGJUMP_CLOSE         "閉じてタグジャンプ"
+    F_DIRECT_TAGJUMP        "ダイレクトタグ移動"
+    F_TAGJUMP_CLOSE         "閉じてタグ移動"
     F_TAGJUMP_KEYWORD       "キーワードを指定してタグジャンプ..."
-    F_COMPARE               "ファイル内容比較..."
+    F_COMPARE               "ファイル内容の比較..."
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     F_BRACKETPAIR           "対括弧の検索"
-    F_BOOKMARK_SET          "ブックマーク設定・解除"
+    F_BOOKMARK_SET          "ブックマークの設定・解除"
     F_BOOKMARK_NEXT         "次のブックマークへ"
-    F_BOOKMARK_PATTERN      "該当行マーク"
+    F_BOOKMARK_PATTERN      "該当行のマーク"
     F_BOOKMARK_PREV         "前のブックマークへ"
     F_BOOKMARK_RESET        "ブックマークの全解除"
     F_BOOKMARK_VIEW         "ブックマークの一覧..."
@@ -3423,14 +3423,14 @@ STRINGTABLE DISCARDABLE
 BEGIN
     F_OPTION_TOPMENU        "設定"
     F_CHGMOD_INS            "挿入／上書きモード切り替え"
-    F_CHG_CHARSET           "文字コードセット指定..."
+    F_CHG_CHARSET           "文字コードセットの指定..."
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_CHGMOD_EOL_CRLF       "入力改行コード指定(CRLF)"
-    F_CHGMOD_EOL_LF         "入力改行コード指定(LF)"
-    F_CHGMOD_EOL_CR         "入力改行コード指定(CR)"
+    F_CHGMOD_EOL_CRLF       "入力改行コード指定（CRLF）"
+    F_CHGMOD_EOL_LF         "入力改行コード指定（LF）"
+    F_CHGMOD_EOL_CR         "入力改行コード指定（CR）"
 	F_CHGMOD_EOL_SUBMENU	"入力改行コード指定"
 END
 
@@ -3442,10 +3442,10 @@ BEGIN
     F_SHOWSTATUSBAR         "ステータスバーの表示／非表示"
     F_SHOWTAB               "タブバーの表示／非表示"
 
-	F_SHOWTOOLBAR_ON		"ツールバーを表示"
-	F_SHOWFUNCKEY_ON		"ファンクションキーを表示"
-	F_SHOWTAB_ON			"タブバーを表示"
-	F_SHOWSTATUSBAR_ON		"ステータスバーを表示"
+	F_SHOWTOOLBAR_ON		"ツールバーの表示"
+	F_SHOWFUNCKEY_ON		"ファンクションキーの表示"
+	F_SHOWTAB_ON			"タブバーの表示"
+	F_SHOWSTATUSBAR_ON		"ステータスバーの表示"
 
 	F_SHOWTOOLBAR_OFF		"表示中のツールバーを隠す"
 	F_SHOWFUNCKEY_OFF		"表示中のファンクションキーを隠す"
@@ -3475,8 +3475,8 @@ BEGIN
     F_WRAPWINDOWWIDTH       "折り返し桁数"
     F_TMPWRAPNOWRAP         "折り返さない"
     F_TMPWRAPSETTING        "指定桁で折り返す"
-    F_TMPWRAPWINDOW         "右端で折り返す"
-    F_SELECT_COUNT_MODE     "文字カウント方法"
+    F_TMPWRAPWINDOW         "ウィンドウの端で折り返す"
+    F_SELECT_COUNT_MODE     "文字のカウント方法（byte）"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -3495,9 +3495,9 @@ BEGIN
     F_EXECKEYMACRO_REC		"キーマクロの実行"
 
     F_RECKEYMACRO_APPE		"キーマクロの記録終了"
-    F_SAVEKEYMACRO_APPE		"キーマクロの記録終了&&保存"
-    F_LOADKEYMACRO_APPE		"キーマクロの記録終了&&読み込み"
-    F_EXECKEYMACRO_APPE		"キーマクロの記録終了&&実行"
+    F_SAVEKEYMACRO_APPE		"キーマクロの記録終了と保存"
+    F_LOADKEYMACRO_APPE		"キーマクロの記録終了と読み込み"
+    F_EXECKEYMACRO_APPE		"キーマクロの記録終了と実行"
     
 	F_EXECKEYMACRO_REGD		"登録済みマクロ"
 	F_TOOL_CUSTOM_SUBMENU	"カスタムメニュー"
