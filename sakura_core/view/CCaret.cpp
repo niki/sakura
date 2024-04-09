@@ -1336,8 +1336,8 @@ POINT CCaret::CalcCaretDrawPos(const CLayoutPoint& ptCaretPos) const
 		}
 #endif // NKMM_
 	}
-#if defined(NKMM_LINE_CENTERING) && NKMM_CENTERINLG_WITH_CARET_HEIGHT == 0
-	nPosY += m_pEditView->GetLineMargin();  // 文字の高さにする場合
+#if defined(NKMM_LINE_TOP_ADJUST)
+	//nPosY += m_pEditView->GetLineMargin();  // 文字の高さにする場合
 #endif // NKMM_
 
 	return CMyPoint(nPosX,nPosY);

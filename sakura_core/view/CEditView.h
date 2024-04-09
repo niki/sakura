@@ -580,7 +580,7 @@ public:
 	void SetUndoBuffer( bool bPaintLineNumber = false );			// アンドゥバッファの処理
 	HWND StartProgress();
 
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_TOP_ADJUST
 	//! 行間のすきま取得
 	int GetLineSpace() const {
 		if (m_pTypeData) {
@@ -591,7 +591,7 @@ public:
 	}
 	//! 行間のマージン取得
 	int GetLineMargin() const {
-		return GetLineSpace() / 2;
+		return GetLineSpace();
 	}
 #endif // NKMM_
 
