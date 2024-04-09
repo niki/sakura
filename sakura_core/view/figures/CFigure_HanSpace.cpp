@@ -33,22 +33,23 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 #ifdef NKMM_FIX_HAN_SPACE
 		// 塗りつぶしで消去
 		gr.FillSolidMyRect(rcClip, gr.GetTextBackColor());
-//		// 空白で消去
-//		CMyRect rcClipBottom=rcClip;
-//		::ExtTextOutW_AnyBuild(
-//			gr,
-//			pDispPos->GetDrawPos().x,
+#if 1
+		// 空白で消去
+		CMyRect rcClipBottom=rcClip;
+		::ExtTextOutW_AnyBuild(
+			gr,
+			pDispPos->GetDrawPos().x,
 //#ifdef NKMM_LINE_CENTERING
 //			pcView->GetLineMargin() +
 //#endif // NKMM_LINE_CENTERING
-//			pDispPos->GetDrawPos().y,
-//			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-//			&rcClipBottom,
-//			L" ",//L"・",
-//			1,
-//			pcView->GetTextMetrics().GetDxArray_AllHankaku()
-//		);
-		
+			pDispPos->GetDrawPos().y,
+			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+			&rcClipBottom,
+			L"•",//L"・",
+			1,
+			pcView->GetTextMetrics().GetDxArray_AllHankaku()
+		);
+#else
 		// 半角スペースをドットで表現
 		int x = rcClip.left + (rcClip.right - rcClip.left) / 2;
 		int y = rcClip.top + (rcClip.bottom - rcClip.top) / 2;
@@ -78,6 +79,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		//::LineTo(   gr, x+2, y-1 );
 		//::MoveToEx( gr, x, y, NULL );
 		//::LineTo(   gr, x+2, y );
+#endif
 #endif // NKMM_
 #else
 		//小文字"o"の下半分を出力
