@@ -304,34 +304,25 @@ void CMemory::AllocBuffer( int nNewDataLen )
 	int		nWorkLen;
 	char*	pWork = NULL;
 
+#if 1
+	// use aligned 'nkmm
+	size_t alignedSize = 8;
+	while (alignedSize < nNewDataLen) {
+		alignedSize *= 2;
+	}
+	nWorkLen = alignedSize;
+	//
+	nWorkLen = ((nWorkLen + 2) + 7) & (~7); // 8Byteごとに整列
+#else
 	// 2バイト多くメモリ確保しておく('\0'またはL'\0'を入れるため) 2007.08.13 kobake 変更
 	nWorkLen = ((nNewDataLen + 2) + 7) & (~7); // 8Byteごとに整列
+#endif
 
 	if( m_nDataBufSize == 0 ){
 		/* 未確保の状態 */
 		pWork = malloc_char( nWorkLen );
 		m_nDataBufSize = nWorkLen;
 	}else{
-#if 1
-		// use aligned 'nkmm
-		size_t alignedSize = 8;
-		while (alignedSize < nWorkLen) {
-			alignedSize *= 2;
-		}
-		nWorkLen = alignedSize;
-
-		// 2014.06.25 有効データ長が0の場合はfree & malloc
-		if( m_nRawLen == 0 ){
-			free( m_pRawData );
-			m_pRawData = NULL;
-			pWork = malloc_char( nWorkLen );
-		}else{
-			if( m_nDataBufSize < nWorkLen ){
-				pWork = (char*)realloc( m_pRawData, nWorkLen );
-			}
-		}
-		m_nDataBufSize = nWorkLen;
-#else
 		/* 現在のバッファサイズより大きくなった場合のみ再確保する */
 		if( m_nDataBufSize < nWorkLen ){
 			// 2014.06.25 有効データ長が0の場合はfree & malloc
@@ -346,7 +337,6 @@ void CMemory::AllocBuffer( int nNewDataLen )
 		}else{
 			return;
 		}
-#endif
 	}
 
 
