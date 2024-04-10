@@ -3057,7 +3057,7 @@ BEGIN
     F_FILE_REOPEN_CESU8     "CESU-8"
     F_FILE_REOPEN_LATIN1    "Latin1"
     F_FILE_REOPEN           "ŠJ‚«’¼‚·"
-    F_FILESAVEALL           "‚·‚×‚Äã‘‚«•Û‘¶"
+    F_FILESAVEALL           "‚·‚×‚Ä•Û‘¶"
 END
 
 STRINGTABLE DISCARDABLE 
