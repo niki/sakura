@@ -312,6 +312,26 @@ void CMemory::AllocBuffer( int nNewDataLen )
 		pWork = malloc_char( nWorkLen );
 		m_nDataBufSize = nWorkLen;
 	}else{
+#if 1
+		// use aligned 'nkmm
+		size_t alignedSize = 8;
+		while (alignedSize < nWorkLen) {
+			alignedSize *= 2;
+		}
+		nWorkLen = alignedSize;
+
+		// 2014.06.25 有効データ長が0の場合はfree & malloc
+		if( m_nRawLen == 0 ){
+			free( m_pRawData );
+			m_pRawData = NULL;
+			pWork = malloc_char( nWorkLen );
+		}else{
+			if( m_nDataBufSize < nWorkLen ){
+				pWork = (char*)realloc( m_pRawData, nWorkLen );
+			}
+		}
+		m_nDataBufSize = nWorkLen;
+#else
 		/* 現在のバッファサイズより大きくなった場合のみ再確保する */
 		if( m_nDataBufSize < nWorkLen ){
 			// 2014.06.25 有効データ長が0の場合はfree & malloc
@@ -326,6 +346,7 @@ void CMemory::AllocBuffer( int nNewDataLen )
 		}else{
 			return;
 		}
+#endif
 	}
 
 
