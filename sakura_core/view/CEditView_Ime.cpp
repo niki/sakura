@@ -82,10 +82,9 @@ void CEditView::SetIMECompFormPos( void )
 	CompForm.dwStyle = CFS_POINT;
 	CompForm.ptCurrentPos.x = (long) point.x;
 	CompForm.ptCurrentPos.y = (long) point.y + GetCaret().GetCaretSize().cy - GetTextMetrics().GetHankakuHeight();
-#if defined(NKMM_LINE_MARGIN_TOP) && NKMM_LINE_MARGIN_TOP_WITH_CARET_HEIGHT == 1 // 変換位置
-	CompForm.ptCurrentPos.y -= GetLineMargin() +
-	                           (GetLineSpace() & 1);
-#endif // NKMM_
+//#if defined(NKMM_LINE_MARGIN_TOP) && NKMM_LINE_MARGIN_TOP_WITH_CARET_HEIGHT == 1 // 変換位置
+//	CompForm.ptCurrentPos.y -= GetLineMargin();
+//#endif // NKMM_
 
 	if ( hIMC ){
 		::ImmSetCompositionWindow( hIMC, &CompForm );
