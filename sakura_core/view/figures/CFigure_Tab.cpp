@@ -76,14 +76,14 @@ void CFigure_Tab::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView,
 			_DrawTabArrow(
 				gr,
 				nPosLeft,
-//#ifdef NKMM_LINE_CENTERING
-//			pcView->GetLineMargin() +
-//#endif // NKMM_
+#ifdef NKMM_LINE_MARGIN_TOP
+				pcView->GetLineMargin() +
+#endif // NKMM_
 				sPos.GetDrawPos().y,
 				nCharWidth * tabDispWidth - (nPosLeft -  sPos.GetDrawPos().x),	// Tab Area一杯に 2013/4/11 Uchi
-#ifdef NKMM_LINE_CENTERING
-				pcView->GetLineSpace() +
-#endif // NKMM_LINE_CENTERING
+//#ifdef NKMM_LINE_CENTERING
+//				pcView->GetLineMargin() +
+//#endif // NKMM_
 				pMetrics->GetHankakuHeight(),
 				gr.GetCurrentMyFontBold() || m_pTypeData->m_ColorInfoArr[COLORIDX_TAB].m_sFontAttr.m_bBoldFont,
 				gr.GetCurrentTextForeColor()

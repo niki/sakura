@@ -39,9 +39,9 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-//#ifdef NKMM_LINE_CENTERING
-//			pcView->GetLineMargin() +
-//#endif // NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
+			pcView->GetLineMargin() +
+#endif // NKMM_
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipBottom,

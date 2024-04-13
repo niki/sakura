@@ -198,7 +198,7 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 			pcView->GetLineMargin() +
 #endif // NKMM_
 			pDispPos->GetDrawPos().y + nHeightMargin,
@@ -301,7 +301,7 @@ void _DispEOF(
 void _DrawEOL(
 	CGraphics&		gr,
 	const CMyRect&	rcEol,
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 	int nMargin,
 #endif // NKMM_
 	CEol			cEol,
@@ -323,7 +323,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 		::ExtTextOutW_AnyBuild(
 			gr,
 			pDispPos->GetDrawPos().x,
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 			pcView->GetLineMargin() +
 #endif // NKMM_
 			pDispPos->GetDrawPos().y + nHeightMargin,
@@ -350,7 +350,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 			// 文字色や太字かどうかを現在の DC から調べる	// 2009.05.29 ryoji 
 			// （検索マッチ等の状況に柔軟に対応するため、ここは記号の色指定には決め打ちしない）
 			// 2013.06.21 novice 文字色、太字をCGraphicsから取得
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 			_DrawEOL(gr, rcEol, pcView->GetLineMargin(), cEol, gr.GetCurrentMyFontBold(), gr.GetCurrentTextForeColor());
 #else
 			_DrawEOL(gr, rcEol, cEol, gr.GetCurrentMyFontBold(), gr.GetCurrentTextForeColor());
@@ -382,7 +382,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 void _DrawEOL(
 	CGraphics&		gr,		//!< Device Context Handle
 	const CMyRect&	rcEol,		//!< 描画領域
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 	int nMargin,
 #endif // NKMM_
 	CEol			cEol,		//!< 行末コード種別
@@ -398,7 +398,7 @@ void _DrawEOL(
 		{
 			sx = rcEol.left;						//X左端
 			sy = rcEol.top + ( rcEol.Height() / 2);	//Y中心
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 			sy += nMargin;
 #endif // NKMM_
 			DWORD pp[] = { 3, 3 };
@@ -438,7 +438,7 @@ void _DrawEOL(
 		{
 			sx = rcEol.left;
 			sy = rcEol.top + ( rcEol.Height() / 2 );
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 			sy += nMargin;
 #endif // NKMM_
 			DWORD pp[] = { 3, 2 };
@@ -475,7 +475,7 @@ void _DrawEOL(
 		{
 			sx = rcEol.left + ( rcEol.Width() / 2 );
 			sy = rcEol.top + ( rcEol.Height() * 3 / 4 );
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 			sy += nMargin;
 #endif // NKMM_
 			DWORD pp[] = { 3, 2 };
@@ -514,7 +514,7 @@ void _DrawEOL(
 			// 左下矢印(折れ曲がりなし)
 			sx = rcEol.left;			//X左端
 			sy = rcEol.top + ( rcEol.Height() * 3 / 4 );	//Y上から3/4
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 			sy += nMargin;
 #endif // NKMM_
 			DWORD pp[] = { 2, 3 };

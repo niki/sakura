@@ -82,15 +82,9 @@ void CEditView::SetIMECompFormPos( void )
 	CompForm.dwStyle = CFS_POINT;
 	CompForm.ptCurrentPos.x = (long) point.x;
 	CompForm.ptCurrentPos.y = (long) point.y + GetCaret().GetCaretSize().cy - GetTextMetrics().GetHankakuHeight();
-#if defined(NKMM_LINE_CENTERING) && NKMM_CENTERINLG_WITH_CARET_HEIGHT == 1 // 変換位置
-	{ // ※アンダーラインと交差する個所にゴミが残る
-		// カーソル行アンダーラインが非表示の時はキャレットを行の高さにする
-		bool bUnderLine = m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_bDisp;
-		if (!bUnderLine) {
-			CompForm.ptCurrentPos.y -= GetLineMargin() +
-			                           (GetLineSpace() & 1);
-		}
-	}
+#if defined(NKMM_LINE_MARGIN_TOP) && NKMM_LINE_MARGIN_TOP_WITH_CARET_HEIGHT == 1 // 変換位置
+	CompForm.ptCurrentPos.y -= GetLineMargin() +
+	                           (GetLineSpace() & 1);
 #endif // NKMM_
 
 	if ( hIMC ){

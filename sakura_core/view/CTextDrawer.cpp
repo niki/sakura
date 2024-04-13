@@ -143,7 +143,7 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, int marginy, const wchar
 		::ExtTextOutW_AnyBuild(
 			hdc,
 			nDrawX,					//X
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 			m_pEditView->GetLineMargin() +
 #endif // NKMM_
 			y + marginy,			//Y
@@ -542,7 +542,7 @@ void CTextDrawer::DispLineNumber(
 			int drawNumTop = (pView->GetTextArea().m_nViewAlignLeftCols - nLineNumCols - 1) * ( nCharWidth );
 			::ExtTextOutW_AnyBuild( gr,
 				drawNumTop,
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 				pView->GetLineMargin() +
 #endif // NKMM_
 				y,
@@ -644,7 +644,7 @@ void CTextDrawer::DispLineNumber(
 		int nHeightMargin = pView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
 		::ExtTextOutW_AnyBuild( gr,
 			drawNumTop,
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 			pView->GetLineMargin() +
 #endif // NKMM_
 			y + nHeightMargin,

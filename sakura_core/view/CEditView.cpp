@@ -2555,7 +2555,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 	if( bUnderLine ){
 		nUnderLineY = GetTextArea().GetAreaTop() + (Int)(GetCaret().GetCaretLayoutPos().GetY2() - GetTextArea().GetViewTopLine())
 			 * GetTextMetrics().GetHankakuDy() + GetTextMetrics().GetHankakuHeight();
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 		nUnderLineY += GetLineMargin();
 #endif // NKMM_
 	}
@@ -2622,23 +2622,13 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 				nUnderLineY = -1;
 			}else if( GetTextArea().m_nViewRowNum < nY ){
 				nUnderLineY = GetTextArea().GetAreaBottom() + 1;
-#ifdef NKMM_LINE_CENTERING
-				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
-				// 背景色の描画領域全体に影響してしまう
-				// アンダーライン処理とごっちゃになっていてわかりにくい
-				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
-					nUnderLineY += GetLineMargin();
-				}
+#ifdef NKMM_LINE_MARGIN_TOP
+				nUnderLineY += GetLineMargin();
 #endif // NKMM_
 			}else{
 				nUnderLineY = GetTextArea().GetAreaTop() + (Int)(nY) * GetTextMetrics().GetHankakuDy();
-#ifdef NKMM_LINE_CENTERING
-				// カーソル行の背景色を表示する場合にセンタリング補正をいれると
-				// 背景色の描画領域全体に影響してしまう
-				// アンダーライン処理とごっちゃになっていてわかりにくい
-				if (!m_pTypeData->m_ColorInfoArr[COLORIDX_CARETLINEBG].m_bDisp) {
-					nUnderLineY += GetLineMargin();
-				}
+#ifdef NKMM_LINE_MARGIN_TOP
+				nUnderLineY += GetLineMargin();
 #endif // NKMM_
 			}
 

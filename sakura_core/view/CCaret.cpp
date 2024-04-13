@@ -639,14 +639,8 @@ void CCaret::ShowEditCaret()
 	int				nCaretHeight = 0;
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();
-#if defined(NKMM_LINE_CENTERING) && NKMM_CENTERINLG_WITH_CARET_HEIGHT == 1 // Caretの高さ
-		{ // ※アンダーラインと交差する個所にゴミが残る
-			// カーソル行アンダーラインが非表示の時はキャレットを行の高さにする
-			bool bUnderLine = m_pEditView->m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_bDisp;
-			if (!bUnderLine) {
-				nCaretHeight += m_pEditView->GetLineSpace();
-			}
-		}
+#if defined(NKMM_LINE_MARGIN_TOP) && NKMM_LINE_MARGIN_TOP_WITH_CARET_HEIGHT == 1 // Caretの高さ
+		nCaretHeight += m_pEditView->GetLineMargin();
 #endif // NKMM_
 		if( m_pEditView->IsInsMode() ){
 			nCaretWidth = 2;
@@ -676,14 +670,8 @@ void CCaret::ShowEditCaret()
 	// カーソルのタイプ = win
 	if( 0 == pCommon->m_sGeneral.GetCaretType() ){
 		nCaretHeight = GetHankakuHeight();					/* キャレットの高さ */
-#if defined(NKMM_LINE_CENTERING) && NKMM_CENTERINLG_WITH_CARET_HEIGHT == 1 // Caretの高さ
-		{ // ※アンダーラインと交差する個所にゴミが残る
-			// カーソル行アンダーラインが非表示の時はキャレットを行の高さにする
-			bool bUnderLine = m_pEditView->m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_bDisp;
-			if (!bUnderLine) {
-				nCaretHeight += m_pEditView->GetLineSpace();
-			}
-		}
+#if defined(NKMM_LINE_MARGIN_TOP) && NKMM_LINE_MARGIN_TOP_WITH_CARET_HEIGHT == 1 // Caretの高さ
+		nCaretHeight += m_pEditView->GetLineMargin();
 #endif // NKMM_
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
 #ifdef NKMM_FIX_CARET_WIDTH
@@ -1326,17 +1314,11 @@ POINT CCaret::CalcCaretDrawPos(const CLayoutPoint& ptCaretPos) const
 		nPosY = m_pEditView->GetTextArea().GetAreaTop()
 			+ (Int)(nY) * m_pEditView->GetTextMetrics().GetHankakuDy()
 			+ m_pEditView->GetTextMetrics().GetHankakuHeight() - GetCaretSize().cy; //下寄せ
-#if defined(NKMM_LINE_CENTERING) && NKMM_CENTERINLG_WITH_CARET_HEIGHT == 1
-		{ // ※アンダーラインと交差する個所にゴミが残る
-			// カーソル行アンダーラインが非表示の時はキャレットを行の高さにする
-			bool bUnderLine = m_pEditView->m_pTypeData->m_ColorInfoArr[COLORIDX_UNDERLINE].m_bDisp;
-			if (!bUnderLine) {
-				nPosY += m_pEditView->GetLineSpace();
-			}
-		}
+#if defined(NKMM_LINE_MARGIN_TOP) && NKMM_LINE_MARGIN_TOP_WITH_CARET_HEIGHT == 1
+			nPosY += m_pEditView->GetLineMargin();
 #endif // NKMM_
 	}
-#if defined(NKMM_LINE_TOP_ADJUST)
+#if defined(NKMM_LINE_MARGIN_TOP)
 	//nPosY += m_pEditView->GetLineMargin();  // 文字の高さにする場合
 #endif // NKMM_
 

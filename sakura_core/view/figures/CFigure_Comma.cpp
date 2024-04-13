@@ -63,7 +63,7 @@ void CFigure_Comma::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcVie
 			::ExtTextOutW_AnyBuild(
 				gr,
 				sPos.GetDrawPos().x,
-#ifdef NKMM_LINE_CENTERING
+#ifdef NKMM_LINE_MARGIN_TOP
 				pcView->GetLineMargin() +
 #endif // NKMM_
 				sPos.GetDrawPos().y,
