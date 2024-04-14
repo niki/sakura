@@ -273,7 +273,7 @@ void _DispEOF(
 	const CTextArea* pArea=&pcView->GetTextArea();
 
 	//定数
-	static const wchar_t	szEof[] = L"[EOF]";
+	static const wchar_t	szEof[] = L"#␃";
 	const int		nEofLen = _countof(szEof) - 1;
 
 	cEofType.SetGraphicsState_WhileThisObj(gr);
