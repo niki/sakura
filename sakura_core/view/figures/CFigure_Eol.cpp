@@ -144,9 +144,9 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 	CTypeSupport cWrapType(pcView,COLORIDX_WRAP);
 	const wchar_t* szText;
 	if (cWrapType.IsDisp()) {
-		szText = L"<";
+		szText = L"￢";
 	}else{
-		szText = L" ";
+		return;
 	}
 	CLayoutXInt width = CLayoutXInt(pcView->GetTextMetrics().CalcTextWidth3(szText, 1));
 	RECT rcClip2;
