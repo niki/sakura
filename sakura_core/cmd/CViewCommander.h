@@ -96,7 +96,7 @@ public:
 	bool Command_FILESAVEAS_DIALOG(const WCHAR*, ECodeType, EEolType);		/* 名前を付けて保存 */
 	BOOL Command_FILESAVEAS( const WCHAR* filename, EEolType eEolType);	/* 名前を付けて保存 */
 	BOOL Command_FILESAVEALL( void );					/* 全て上書き保存 */ // Jan. 23, 2005 genta
-	void Command_FILECLOSE( void );						/* 開じて(無題) */	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
+	void Command_FILECLOSE( void );						/* 開じて(新規) */	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
 	/* 閉じて開く*/
 	// Mar. 30, 2003 genta 引数追加
 	void Command_FILECLOSE_OPEN( LPCWSTR filename = NULL,

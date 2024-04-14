@@ -235,7 +235,7 @@ BOOL CViewCommander::Command_FILESAVEALL( void )
 
 
 
-/* 閉じて(無題) */	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
+/* 閉じて(新規) */	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
 void CViewCommander::Command_FILECLOSE( void )
 {
 	GetDocument()->m_cDocFileOperation.FileClose();

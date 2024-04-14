@@ -276,10 +276,10 @@ void CDocOutline::MakeTopicList_wztxt(CFuncInfoArr* pcFuncInfoArr)
 			
 			int level = pPos - pLine;
 
-			// 2003.06.27 Moca 階層が2段位上深くなるときは、無題の要素を追加
+			// 2003.06.27 Moca 階層が2段位上深くなるときは、新規の要素を追加
 			if( levelPrev < level && level != levelPrev + 1  ){
 				int dummyLevel;
-				// (無題)を挿入
+				// (新規)を挿入
 				//	ただし，TAG一覧には出力されないように
 				for( dummyLevel = levelPrev + 1; dummyLevel < level; dummyLevel++ ){
 					pcFuncInfoArr->AppendData(

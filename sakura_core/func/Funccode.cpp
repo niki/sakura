@@ -93,7 +93,7 @@ const EFunctionCode pnFuncList_File[] = {	//Oct. 16, 2000 JEPRO 変数名変更(
 	F_FILESAVE			,	//上書き保存
 	F_FILESAVEAS_DIALOG	,	//名前を付けて保存
 	F_FILESAVEALL		,	//全て上書き保存	// Jan. 24, 2005 genta
-	F_FILECLOSE			,	//閉じて(無題)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
+	F_FILECLOSE			,	//閉じて(新規)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
 	F_FILECLOSE_OPEN	,	//閉じて開く
 	F_WINCLOSE			,	//ウィンドウを閉じる	//Oct.17,2000 コマンド本家は「ウィンドウ系」	//Feb. 18, 2001	JEPRO 下から移動した
 	F_FILESAVECLOSE		,	//保存して閉じる Feb. 28, 2004 genta
@@ -596,7 +596,7 @@ int FuncID_To_HelpContextID( EFunctionCode nFuncID )
 	case F_FILESAVEAS_DIALOG:	return HLP000021;			//名前を付けて保存
 	case F_FILESAVEALL:			return HLP000313;			//すべて上書き保存	// 2006.10.05 ryoji
 	case F_FILESAVECLOSE:		return HLP000287;			//保存して閉じる	// 2006.10.05 ryoji
-	case F_FILECLOSE:			return HLP000017;			//閉じて(無題)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
+	case F_FILECLOSE:			return HLP000017;			//閉じて(新規)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
 	case F_FILECLOSE_OPEN:		return HLP000119;			//閉じて開く
 	case F_FILE_REOPEN:			return HLP000283;			//開き直す	//@@@ 2003.06.15 MIK
 	case F_FILE_REOPEN_SJIS:	return HLP000156;			//SJISで開き直す
@@ -1219,7 +1219,7 @@ bool IsFuncEnable( const CEditDoc* pcEditDoc, const DLLSHAREDATA* pShareData, EF
 			return false;
 	case F_JUMPHIST_SET:	//	現在位置を移動履歴に登録
 		return true;
-	// 20100402 Moca (無題)もダイレクトタグジャンプできるように
+	// 20100402 Moca (新規)もダイレクトタグジャンプできるように
 	case F_DIRECT_TAGJUMP:	//ダイレクトタグジャンプ	//@@@ 2003.04.15 MIK
 	case F_TAGJUMP_KEYWORD:	//キーワードを指定してダイレクトタグジャンプ	//@@@ 2005.03.31 MIK
 	//	2003.05.12 MIK タグファイル作成先を選べるようにしたので、常に作成可能とする

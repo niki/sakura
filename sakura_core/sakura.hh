@@ -36,7 +36,7 @@
 #define HLP000021	21 //名前を付けて保存
 #define HLP000313	313 //すべて上書き保存	// 2006.10.05 ryoji
 #define HLP000287	287 //保存して閉じる	// 2006.10.05 ryoji
-#define HLP000017	17 //閉じて(無題)
+#define HLP000017	17 //閉じて(新規)
 #define HLP000119	119 //閉じて開く
 #define HLP000283	283 //開き直す	//@@@ 2003.06.15 MIK
 #define HLP000156	156 //SJISで開き直す
@@ -600,7 +600,7 @@
 #define HIDC_CHECK_SameTabWidth					11270 //等幅	// 2006.08.06 ryoji
 #define HIDC_CHECK_DispTabIcon					11271 //アイコン表示	// 2006.08.06 ryoji
 #define HIDC_CHECK_SortTabList					11272 //タブ一覧ソート	// 2006.08.06 ryoji
-#define HIDC_CHECK_RetainEmptyWindow			11273 //最後のファイルを閉じたとき(無題)文書を残す	// 2007.02.13 ryoji
+#define HIDC_CHECK_RetainEmptyWindow			11273 //最後のファイルを閉じたとき(新規)文書を残す	// 2007.02.13 ryoji
 #define HIDC_CHECK_CloseOneWin					11274 //ウィンドウの閉じるボタンは現在のファイルのみ閉じる	// 2007.02.13 ryoji
 #define HIDC_CHECK_ChgWndByWheel				11275 //マウスホイールでタブ切替	// 2007.04.03 ryoji
 #define HIDC_CHECK_OpenNewWin					11276 //外部から起動するときは新しいウインドウ開く	// 2009.06.19

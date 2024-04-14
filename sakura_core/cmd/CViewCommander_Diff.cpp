@@ -371,7 +371,7 @@ void CViewCommander::Command_Diff_Dialog( void )
 	//相手ファイル
 	// UNICODE,UNICODEBEの場合は常に一時ファイルでUTF-8にする
 	TCHAR	szTmpFile2[_MAX_PATH * 2];
-	// 2014.06.25 ファイル名がない(=無題,Grep,アウトプット)もTmpFileModeにする
+	// 2014.06.25 ファイル名がない(=新規,Grep,アウトプット)もTmpFileModeにする
 	bool bTmpFileMode = cDlgDiff.m_bIsModifiedDst || code2 != saveCode2 || cDlgDiff.m_szFile2[0] == _T('\0');
 	if( !bTmpFileMode ){
 		// 未変更でファイルありでASCII系コードの場合のみ,そのままファイルを利用する

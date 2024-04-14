@@ -34,7 +34,7 @@ struct EditNode {
 	int				m_nIndex;
 	int				m_nGroup;					//!< グループID								//@@@ 2007.06.20 ryoji
 	HWND			m_hWnd;
-	int				m_nId;						//!< 無題Id
+	int				m_nId;						//!< 新規Id
 	WIN_CHAR		m_szTabCaption[_MAX_PATH];	//!< タブウインドウ用：キャプション名		//@@@ 2003.05.31 MIK
 	SFilePath		m_szFilePath;				//!< タブウインドウ用：ファイル名			//@@@ 2006.01.28 ryoji
 	bool			m_bIsGrep;					//!< Grepのウィンドウか						//@@@ 2006.01.28 ryoji
@@ -43,7 +43,7 @@ struct EditNode {
 	bool			m_bIsRecMacro;  // キーマクロ記録中か
 #endif // NKMM_
 	UINT			m_showCmdRestore;			//!< 元のサイズに戻すときのサイズ種別		//@@@ 2007.06.20 ryoji
-	BOOL			m_bClosing;					//!< 終了中か（「最後のファイルを閉じても(無題)を残す」用）	//@@@ 2007.06.20 ryoji
+	BOOL			m_bClosing;					//!< 終了中か（「最後のファイルを閉じても(新規)を残す」用）	//@@@ 2007.06.20 ryoji
 
 	HWND GetHwnd() const{ return GetSafeHwnd(); }
 	HWND GetSafeHwnd() const{ if(this)return m_hWnd; else return NULL; }
@@ -65,7 +65,7 @@ struct SShare_Nodes{
 	int					m_nEditArrNum;	//short->intに修正	//@@@ 2003.05.31 MIK
 	EditNode			m_pEditArr[MAX_EDITWINDOWS];	//最大値修正	@@@ 2003.05.31 MIK
 	LONG				m_nSequences;	/* ウィンドウ連番 */
-	LONG				m_nNonameSequences;	/* 無題連番 */
+	LONG				m_nNonameSequences;	/* 新規連番 */
 	LONG				m_nGroupSequences;	// タブグループ連番	// 2007.06.20 ryoji
 };
 

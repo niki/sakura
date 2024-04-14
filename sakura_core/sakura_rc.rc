@@ -1718,7 +1718,7 @@ BEGIN
     CONTROL         "ウィンドウをまとめてグループ化する(&B)",
                     IDC_CHECK_DispTabWndMultiWin,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,40,239,10
-    CONTROL         "最後のファイルを閉じたとき(無題)文書を残す(&R)",
+    CONTROL         "最後のファイルを閉じたとき(新規)文書を残す(&R)",
                     IDC_CHECK_RetainEmptyWindow,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,24,53,226,10
     CONTROL         "ウィンドウの閉じるボタンは現在のファイルのみ閉じる(&C)",
@@ -3036,7 +3036,7 @@ BEGIN
     F_FILEOPEN              "開く"
     F_FILESAVE              "上書き保存"
     F_FILESAVEAS_DIALOG     "名前を付けて保存"
-    F_FILECLOSE             "閉じて新しい（無題）"
+    F_FILECLOSE             "閉じて新しい（新規）"
     F_FILECLOSE_OPEN        "閉じて開く"
     F_FILEOPEN_DROPDOWN     "開く（ドロップダウン）"
     F_FILESAVECLOSE         "保存して閉じる"
@@ -3672,8 +3672,8 @@ BEGIN
 	STR_SQLERR_ACTV_BUT_NOT_RUN	"Oracle SQL*Plusをアクティブ表示します。\n\n\nOracle SQL*Plusが起動されていません。\n"
 	STR_ERR_CMPERR				"比較先のファイル\n%ts\n%dバイトを超える行があります。\n比較できません。"
 
-	STR_NO_TITLE1				"(無題)"
-	STR_NO_TITLE2				"無題"
+	STR_NO_TITLE1				"(新規)"
+	STR_NO_TITLE2				"新規"
 	STR_PREVIEW_ONLY			"(印刷プレビューでのみ使用できます)"
 	STR_NOT_SAVED				"(保存されていません)"
 	STR_MAXWINDOW				"編集ウィンドウ数の上限は%dです。\nこれ以上は同時に開けません。"

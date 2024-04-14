@@ -143,7 +143,7 @@ void CViewCommander::Command_GREP( void )
 #endif // NKMM_
 
 	/*	今のEditViewにGrep結果を表示する。
-		Grepモードのとき、または未編集で無題かつアウトプットでない場合。
+		Grepモードのとき、または未編集で新規かつアウトプットでない場合。
 		自ウィンドウがGrep実行中も、(異常終了するので)別ウィンドウにする
 	*/
 	if( (  CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode &&
@@ -256,7 +256,7 @@ void CViewCommander::Command_GREP_REPLACE( void )
 	cmWork4.SetString( cDlgGrepRep.m_strText2.c_str() );
 
 	/*	今のEditViewにGrep結果を表示する。
-		Grepモードのとき、または未編集で無題かつアウトプットでない場合。
+		Grepモードのとき、または未編集で新規かつアウトプットでない場合。
 		自ウィンドウがGrep実行中も、(異常終了するので)別ウィンドウにする
 	*/
 	if( (  CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode &&

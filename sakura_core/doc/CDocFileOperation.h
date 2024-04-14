@@ -69,7 +69,7 @@ public:
 	bool FileSave();			//!< 上書き保存。ファイル名が指定されていなかったらダイアログで入力を促す。	// 2006.12.30 ryoji
 
 	//クローズ
-	bool FileClose();			//!< 閉じて(無題)	// 2006.12.30 ryoji
+	bool FileClose();			//!< 閉じて(新規)	// 2006.12.30 ryoji
 
 	//その他
 	void FileCloseOpen(				//!< 閉じて開く	// 2006.12.30 ryoji

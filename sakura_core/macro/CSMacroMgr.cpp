@@ -53,7 +53,7 @@ MacroFuncInfo CSMacroMgr::m_MacroFuncInfoCommandArr[] =
 	{F_FILESAVEALL,					LTEXT("FileSaveAll"),			{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, //上書き保存
 	{F_FILESAVEAS_DIALOG,			LTEXT("FileSaveAsDialog"),		{VT_BSTR,  VT_I4,    VT_I4,    VT_EMPTY},	VT_EMPTY,	NULL}, //名前を付けて保存(ダイアログ) 2013.05.02
 	{F_FILESAVEAS,					LTEXT("FileSaveAs"),			{VT_BSTR,  VT_I4,    VT_I4,    VT_EMPTY},	VT_EMPTY,	NULL}, //名前を付けて保存
-	{F_FILECLOSE,					LTEXT("FileClose"),				{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, //閉じて(無題)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
+	{F_FILECLOSE,					LTEXT("FileClose"),				{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, //閉じて(新規)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
 	{F_FILECLOSE_OPEN,				LTEXT("FileCloseOpen"),			{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, //閉じて開く
 	{F_FILE_REOPEN,					LTEXT("FileReopen"),			{VT_I4,    VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, //開き直す	//Dec. 4, 2002 genta
 	{F_FILE_REOPEN_SJIS,			LTEXT("FileReopenSJIS"),		{VT_I4,    VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}, //SJISで開き直す
@@ -903,7 +903,7 @@ BOOL CSMacroMgr::CanFuncIsKeyMacro( int nFuncID )
 //	case F_FILEOPEN					://開く
 //	case F_FILESAVE					://上書き保存
 //	case F_FILESAVEAS_DIALOG		://名前を付けて保存
-//	case F_FILECLOSE				://閉じて(無題)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
+//	case F_FILECLOSE				://閉じて(新規)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
 //	case F_FILECLOSE_OPEN			://閉じて開く
 	case F_FILE_REOPEN				://開き直す	//Dec. 4, 2002 genta
 	case F_FILE_REOPEN_SJIS			://SJISで開き直す

@@ -276,7 +276,7 @@ void CEditDoc::InitDoc()
 	m_cAutoReloadAgent.m_eWatchUpdate = WU_QUERY; // Dec. 4, 2002 genta 更新監視方法 $$
 
 	// 2005.06.24 Moca バグ修正
-	//	アウトプットウィンドウで「閉じて(無題)」を行ってもアウトプットウィンドウのまま
+	//	アウトプットウィンドウで「閉じて(新規)」を行ってもアウトプットウィンドウのまま
 	if( CAppMode::getInstance()->IsDebugMode() ){
 		CAppMode::getInstance()->SetDebugModeOFF();
 	}
@@ -887,7 +887,7 @@ BOOL CEditDoc::OnFileClose(bool bGrepNoConfirm)
 	}
 	if( NULL == pszTitle ){
 		const EditNode* node = CAppNodeManager::getInstance()->GetEditNode( CEditWnd::getInstance()->GetHwnd() );
-		auto_sprintf( szGrepTitle, _T("%s%d"), LS(STR_NO_TITLE1), node->m_nId );	//(無題)
+		auto_sprintf( szGrepTitle, _T("%s%d"), LS(STR_NO_TITLE1), node->m_nId );	//(新規)
 		pszTitle = szGrepTitle;
 	}
 	/* ウィンドウをアクティブにする */
@@ -988,7 +988,7 @@ void CEditDoc::RunAutoMacro( int idx, LPCTSTR pszSaveFilePath )
 	bRunning = false;
 }
 
-/*! (無題)の時のカレントディレクトリを設定する
+/*! (新規)の時のカレントディレクトリを設定する
 */
 void CEditDoc::SetCurDirNotitle()
 {

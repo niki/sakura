@@ -74,12 +74,12 @@ wchar_t* ExParam_LongName( wchar_t* q, wchar_t* q_max, EExpParamName eLongParam 
 	特殊文字は以下の通り
 	@li $  $自身
 	@li A  アプリ名
-	@li F  開いているファイルのフルパス。名前がなければ(無題)。
+	@li F  開いているファイルのフルパス。名前がなければ(新規)。
 	@li f  開いているファイルの名前（ファイル名+拡張子のみ）
 	@li g  開いているファイルの名前（拡張子除く）
 	@li /  開いているファイルの名前（フルパス。パスの区切りが/）
 	@li N  開いているファイルの名前(簡易表示)
-	@li n  無題の通し番号
+	@li n  新規の通し番号
 	@li E  開いているファイルのあるフォルダの名前(簡易表示)
 	@li e  開いているファイルのあるフォルダの名前
 	@li B  タイプ別設定の名前
@@ -114,7 +114,7 @@ void CSakuraEnvironment::ExpandParameter(const wchar_t* pszSource, wchar_t* pszB
 	// Apr. 03, 2003 genta 固定文字列をまとめる
 	const wstring	PRINT_PREVIEW_ONLY		= LSW( STR_PREVIEW_ONLY );	//L"(印刷プレビューでのみ使用できます)";
 	const int		PRINT_PREVIEW_ONLY_LEN	= PRINT_PREVIEW_ONLY.length();
-	const wstring	NO_TITLE				= LSW( STR_NO_TITLE1 );	//L"(無題)";
+	const wstring	NO_TITLE				= LSW( STR_NO_TITLE1 );	//L"(新規)";
 	const int		NO_TITLE_LEN			= NO_TITLE.length();
 	const wstring	NOT_SAVED				= LSW( STR_NOT_SAVED );	//L"(保存されていません)";
 	const int		NOT_SAVED_LEN			= NOT_SAVED.length();
@@ -671,7 +671,7 @@ int CSakuraEnvironment::_ExParam_Evaluate( const wchar_t* pCond )
 		else {
 			return 1;
 		}
-	case L'N': // $N 新規/(無題)		2012/12/2 Uchi
+	case L'N': // $N 新規/(新規)		2012/12/2 Uchi
 		if (!pcDoc->m_cDocFile.GetFilePathClass().IsValidPath()) {
 			return 0;
 		}

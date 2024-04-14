@@ -680,7 +680,7 @@ bool CViewCommander::Command_TagJumpByTagsFile( bool bClose )
 	@param keyword NULL許容
 	@author MIK
 	@date 2005.03.31 新規作成
-	@date 2010.04.02 Moca 無題でも使えるように
+	@date 2010.04.02 Moca 新規でも使えるように
 */
 bool CViewCommander::Command_TagJumpByTagsFileKeyword( const wchar_t* keyword )
 {
@@ -722,7 +722,7 @@ bool CViewCommander::Sub_PreProcTagJumpByTagsFile( TCHAR* szCurrentPath, int cou
 
 	// 実行可能確認
 	if( ! GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() ){
-		// 2010.04.02 (無題)でもタグジャンプできるように
+		// 2010.04.02 (新規)でもタグジャンプできるように
 		// Grep、アウトプットは行番号タグジャンプがあるので無効にする(要検討)
 		if( CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode ||
 		    CAppMode::getInstance()->IsDebugMode() ){
@@ -737,7 +737,7 @@ bool CViewCommander::Sub_PreProcTagJumpByTagsFile( TCHAR* szCurrentPath, int cou
 		if( 0 == ::GetCurrentDirectory( count - _countof(_T("\\dmy")) - MAX_TYPES_EXTS, szCurrentPath ) ){
 			return false;
 		}
-		// (無題)でもファイル名を要求してくるのでダミーをつける
+		// (新規)でもファイル名を要求してくるのでダミーをつける
 		// 現在のタイプ別の1番目の拡張子を拝借
 		TCHAR szExts[MAX_TYPES_EXTS];
 		CDocTypeManager::GetFirstExt(m_pCommanderView->m_pTypeData->m_szTypeExts, szExts, _countof(szExts));

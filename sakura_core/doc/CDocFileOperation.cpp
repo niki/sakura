@@ -282,13 +282,13 @@ bool CDocFileOperation::SaveFileDialog(
 				_tcscat(szDefaultWildCard, _T(";*.*"));	// 全ファイル表示
 		}
 	}
-	// 無題に、無題番号を付ける
+	// 新規に、新規番号を付ける
 	if( pSaveInfo->cFilePath[0] == _T('\0') ){
 		const EditNode* node = CAppNodeManager::getInstance()->GetEditNode( m_pcDocRef->m_pcEditWnd->GetHwnd() );
 		if( 0 < node->m_nId ){
 			TCHAR szText[16];
 			auto_sprintf(szText, _T("%d"), node->m_nId);
-			auto_strcpy(pSaveInfo->cFilePath, LS(STR_NO_TITLE2));	// 無題
+			auto_strcpy(pSaveInfo->cFilePath, LS(STR_NO_TITLE2));	// 新規
 			auto_strcat(pSaveInfo->cFilePath, szText);
 		}
 	}
@@ -487,7 +487,7 @@ bool CDocFileOperation::FileSaveAs( const WCHAR* filename,ECodeType eCodeType, E
 
 
 /*
-	閉じて(無題)。
+	閉じて(新規)。
 	ユーザキャンセル操作等によりクローズされなかった場合は false を返す。
 
 	@date 2006.12.30 ryoji CEditView::Command_FILESAVEAS()から処理本体を切り出し
@@ -515,7 +515,7 @@ bool CDocFileOperation::FileClose()
 
 	m_pcDocRef->SetCurDirNotitle();
 
-	// 無題番号取得
+	// 新規番号取得
 	CAppNodeManager::getInstance()->GetNoNameNumber( m_pcDocRef->m_pcEditWnd->GetHwnd() );
 
 	/* 親ウィンドウのタイトルを更新 */
@@ -591,7 +591,7 @@ void CDocFileOperation::FileCloseOpen( const SLoadInfo& _sLoadInfo )
 	m_pcDocRef->m_pcEditWnd->UpdateCaption();
 
 	// オープン後自動実行マクロを実行する
-	// ※ロードしてなくても(無題)には変更済み
+	// ※ロードしてなくても(新規)には変更済み
 	m_pcDocRef->RunAutoMacro( GetDllShareData().m_Common.m_sMacro.m_nMacroOnOpened );
 
 	//プラグイン：DocumentOpenイベント実行

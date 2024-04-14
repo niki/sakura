@@ -204,7 +204,7 @@ BOOL CViewCommander::HandleCommand(
 			Command_WINCLOSE();
 		}
 		break;
-	case F_FILECLOSE:										//閉じて(無題)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
+	case F_FILECLOSE:										//閉じて(新規)	//Oct. 17, 2000 jepro 「ファイルを閉じる」というキャプションを変更
 		Command_FILECLOSE();
 		break;
 	case F_FILECLOSE_OPEN:	/* 閉じて開く */

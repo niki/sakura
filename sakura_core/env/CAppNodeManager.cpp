@@ -521,7 +521,7 @@ EditNode* CAppNodeManager::GetEditNode( HWND hWnd )
 
 
 
-//! 無題番号取得
+//! 新規番号取得
 int CAppNodeManager::GetNoNameNumber( HWND hWnd )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
