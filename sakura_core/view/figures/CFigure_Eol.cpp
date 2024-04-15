@@ -334,8 +334,56 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
 
-		// 改行記号の表示
 		if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() ){
+#if 1
+			switch( cEol.GetType() ){
+			case EOL_CRLF: // 下左矢印
+				{
+					static const wchar_t	szEol[] = L"↵";
+					const int nEolLen = _countof(szEol) - 1;
+				
+					int fontNo = WCODE::GetFontNo(szEol[0]);
+					int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
+					pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szEol, nEolLen, bTrans);
+				}
+				break;
+			case EOL_CR:	 // 左向き矢印
+				{
+					static const wchar_t	szEol[] = L"←";
+					const int nEolLen = _countof(szEol) - 1;
+				
+					int fontNo = WCODE::GetFontNo(szEol[0]);
+					int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
+					pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szEol, nEolLen, bTrans);
+				}
+				break;
+			case EOL_LF:	 // 下向き矢印
+				{
+					static const wchar_t	szEol[] = L"↓";
+					const int nEolLen = _countof(szEol) - 1;
+				
+					int fontNo = WCODE::GetFontNo(szEol[0]);
+					int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
+					pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szEol, nEolLen, bTrans);
+				}
+				break;
+			case EOL_NEL:
+			case EOL_LS:
+			case EOL_PS:
+				{
+					// 左下矢印(折れ曲がりなし)
+					static const wchar_t	szEol[] = L"↙";
+					const int nEolLen = _countof(szEol) - 1;
+				
+					int fontNo = WCODE::GetFontNo(szEol[0]);
+					int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
+					pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szEol, nEolLen, bTrans);
+
+				}
+				break;
+			}
+
+#else
 			// From Here 2003.08.17 ryoji 改行文字が欠けないように
 
 			// リージョン作成、選択。
@@ -360,6 +408,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 			gr.PopClipping();
 
 			// To Here 2003.08.17 ryoji 改行文字が欠けないように
+#endif
 		}
 	}
 
@@ -368,6 +417,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 }
 
 
+#if 0
 //	May 23, 2000 genta
 /*!
 画面描画補助関数:
@@ -549,3 +599,4 @@ void _DrawEOL(
 		break;
 	}
 }
+#endif
