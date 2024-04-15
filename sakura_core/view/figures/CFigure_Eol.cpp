@@ -335,7 +335,7 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 		);
 
 		if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() ){
-#if 1
+#if 0
 			switch( cEol.GetType() ){
 			case EOL_CRLF: // 下左矢印
 				{
@@ -417,7 +417,6 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 }
 
 
-#if 0
 //	May 23, 2000 genta
 /*!
 画面描画補助関数:
@@ -599,4 +598,3 @@ void _DrawEOL(
 		break;
 	}
 }
-#endif
