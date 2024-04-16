@@ -312,108 +312,125 @@ void _DrawEOL(
 //2007.08.30 kobake 追加
 void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcView, bool bTrans)
 {
-	const CLayoutXInt nCol = CTypeSupport(pcView,COLORIDX_EOL).IsDisp()
-		? pcView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(1)) + CLayoutXInt(4) // ONのときは1幅+4px
-		: CLayoutXInt(2); // HACK:EOL off なら2px
-	RECT rcClip2;
-	if(pcView->GetTextArea().GenerateClipRect(&rcClip2,*pDispPos,nCol)){
-		int fontNo = WCODE::GetFontNo(' ');
-		int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
-		// 2003.08.17 ryoji 改行文字が欠けないように
-		::ExtTextOutW_AnyBuild(
-			gr,
-			pDispPos->GetDrawPos().x,
-#ifdef NKMM_LINE_MARGIN_TOP
-			pcView->GetLineMargin() +
-#endif // NKMM_
-			pDispPos->GetDrawPos().y + nHeightMargin,
-			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-			&rcClip2,
-			L"  ",
-			2,
-			pcView->GetTextMetrics().GetDxArray_AllHankaku()
-		);
+	if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() ){
+		CTypeSupport cTextType(pcView,COLORIDX_TEXT);
+		COLORREF crText = cTextType.GetTextColor();
+		COLORREF crBack = cTextType.GetBackColor();
+		//! 色をマージする
+		//! @param colText テキスト色
+		//! @param colBase ベースとなる色
+		//! @return 合成後の色
+		auto fnMeargeColor = [](COLORREF colText, COLORREF colBase, int blendPer)
+		{
+			COLORREF c1 = colText;
+			COLORREF c2 = colBase;
+			float blendPerN = 1.0f / 100.0f * blendPer;
+			const float r1 = (float)GetRValue(c1);
+			const float g1 = (float)GetGValue(c1);
+			const float b1 = (float)GetBValue(c1);
+			const float r2 = (float)GetRValue(c2);
+			const float g2 = (float)GetGValue(c2);
+			const float b2 = (float)GetBValue(c2);
+			float r = r2 + (r1 - r2) * blendPerN;
+			float g = g2 + (g1 - g2) * blendPerN;
+			float b = b2 + (b1 - b2) * blendPerN;
+			return RGB( (BYTE)r, (BYTE)g, (BYTE)b );
+		};
+	
+		static int nBlendPer = RegKey(NKMM_REGKEY).get(_T("WhiteSpaceBlendPer"), NKMM_WS_BLEND_PER);
+		// 現在のテキスト色と現在の背景色をブレンドする (空白TABのカラー設定は無視されます)
+		COLORREF col1 = cTextType.GetTextColor();
+		COLORREF col2 = crBack;	// 合成済みの色を使用する
+		crText = fnMeargeColor(col1, col2, nBlendPer);
 
-		if( CTypeSupport(pcView,COLORIDX_EOL).IsDisp() ){
-#if 0
+		RECT rcClip2;
+		int fontNo = WCODE::GetFontNo('E');
+		int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
+		CLayoutXInt width = CLayoutXInt(pcView->GetTextMetrics().CalcTextWidth3(L"↵", 1));
+		int nDx[1] = {(Int)width};
+		if(pcView->GetTextArea().GenerateClipRect(&rcClip2, *pDispPos, width)) {
 			switch( cEol.GetType() ){
 			case EOL_CRLF: // 下左矢印
 				{
-					static const wchar_t	szEol[] = L"↵";
-					const int nEolLen = _countof(szEol) - 1;
-				
-					int fontNo = WCODE::GetFontNo(szEol[0]);
-					int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
-					pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szEol, nEolLen, bTrans);
+					static const wchar_t	 szEol[] = L"↵";
+					::ExtTextOutW_AnyBuild(
+						gr,
+						pDispPos->GetDrawPos().x - 2,
+#ifdef NKMM_LINE_MARGIN_TOP
+						pcView->GetLineMargin() +
+#endif // NKMM_
+						pDispPos->GetDrawPos().y + nHeightMargin,
+						ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+						&rcClip2,
+						szEol,
+						wcslen(szEol),
+						nDx
+					);
+					break;
 				}
-				break;
 			case EOL_CR:	 // 左向き矢印
 				{
 					static const wchar_t	szEol[] = L"←";
-					const int nEolLen = _countof(szEol) - 1;
-				
-					int fontNo = WCODE::GetFontNo(szEol[0]);
-					int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
-					pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szEol, nEolLen, bTrans);
+
+					::ExtTextOutW_AnyBuild(
+						gr,
+						pDispPos->GetDrawPos().x - 2,
+#ifdef NKMM_LINE_MARGIN_TOP
+						pcView->GetLineMargin() +
+#endif // NKMM_
+						pDispPos->GetDrawPos().y + nHeightMargin,
+						ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+						&rcClip2,
+						szEol,
+						wcslen(szEol),
+						nDx
+					);
+					break;
 				}
-				break;
 			case EOL_LF:	 // 下向き矢印
 				{
 					static const wchar_t	szEol[] = L"↓";
-					const int nEolLen = _countof(szEol) - 1;
-				
-					int fontNo = WCODE::GetFontNo(szEol[0]);
-					int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
-					pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szEol, nEolLen, bTrans);
+
+					::ExtTextOutW_AnyBuild(
+						gr,
+						pDispPos->GetDrawPos().x - 2,
+#ifdef NKMM_LINE_MARGIN_TOP
+						pcView->GetLineMargin() +
+#endif // NKMM_
+						pDispPos->GetDrawPos().y + nHeightMargin,
+						ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+						&rcClip2,
+						szEol,
+						wcslen(szEol),
+						nDx
+					);
+					break;
 				}
-				break;
 			case EOL_NEL:
 			case EOL_LS:
 			case EOL_PS:
 				{
 					// 左下矢印(折れ曲がりなし)
 					static const wchar_t	szEol[] = L"↙";
-					const int nEolLen = _countof(szEol) - 1;
-				
-					int fontNo = WCODE::GetFontNo(szEol[0]);
-					int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
-					pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szEol, nEolLen, bTrans);
 
-				}
-				break;
-			}
-
-#else
-			// From Here 2003.08.17 ryoji 改行文字が欠けないように
-
-			// リージョン作成、選択。
-			gr.PushClipping(rcClip2);
-			
-			// 描画領域
-			CMyRect rcEol;
-			rcEol.SetPos(pDispPos->GetDrawPos().x + 1, pDispPos->GetDrawPos().y);
-			rcEol.SetSize(pcView->GetTextMetrics().GetHankakuWidth(), pcView->GetTextMetrics().GetHankakuHeight());
-
-			// 描画
-			// 文字色や太字かどうかを現在の DC から調べる	// 2009.05.29 ryoji 
-			// （検索マッチ等の状況に柔軟に対応するため、ここは記号の色指定には決め打ちしない）
-			// 2013.06.21 novice 文字色、太字をCGraphicsから取得
+					::ExtTextOutW_AnyBuild(
+						gr,
+						pDispPos->GetDrawPos().x - 2,
 #ifdef NKMM_LINE_MARGIN_TOP
-			_DrawEOL(gr, rcEol, pcView->GetLineMargin(), cEol, gr.GetCurrentMyFontBold(), gr.GetCurrentTextForeColor());
-#else
-			_DrawEOL(gr, rcEol, cEol, gr.GetCurrentMyFontBold(), gr.GetCurrentTextForeColor());
+						pcView->GetLineMargin() +
 #endif // NKMM_
-
-			// リージョン破棄
-			gr.PopClipping();
-
-			// To Here 2003.08.17 ryoji 改行文字が欠けないように
-#endif
+						pDispPos->GetDrawPos().y + nHeightMargin,
+						ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+						&rcClip2,
+						szEol,
+						wcslen(szEol),
+						nDx
+					);
+					break;
+				}
+			}
 		}
 	}
-
-	//描画位置を進める(2桁)
-	pDispPos->ForwardDrawCol(nCol);
 }
 
 
