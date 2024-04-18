@@ -242,7 +242,7 @@ INT_PTR CPropCommon::DoPropertySheet( int nPageNum, bool bTrayProc )
 		{ STR_PROPCOMMON_KEYWORD,	IDD_PROP_KEYWORD,	CPropKeyword::DlgProc_page },
 		{ STR_PROPCOMMON_SUPPORT,	IDD_PROP_HELPER,	CPropHelper::DlgProc_page },
 		{ STR_PROPCOMMON_MACRO,		IDD_PROP_MACRO,		CPropMacro::DlgProc_page },
-		{ STR_PROPCOMMON_PLUGIN,	IDD_PROP_PLUGIN,	CPropPlugin::DlgProc_page },
+//nkmm		{ STR_PROPCOMMON_PLUGIN,	IDD_PROP_PLUGIN,	CPropPlugin::DlgProc_page },
 	};
 
 	std::tstring		sTabname[_countof(ComPropSheetInfoList)];

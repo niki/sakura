@@ -139,9 +139,9 @@ INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			break;
 		default:
 			switch( pNMHDR->code ){
-			case PSN_HELP:
-				OnHelp( hwndDlg, IDD_PROP_PLUGIN );
-				return TRUE;
+//mkmm			case PSN_HELP:
+//				OnHelp( hwndDlg, IDD_PROP_PLUGIN );
+//				return TRUE;
 			case PSN_KILLACTIVE:
 				/* ダイアログデータの取得 Plugin */
 				GetData( hwndDlg );
