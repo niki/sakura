@@ -267,7 +267,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #endif // NKMM_
 	ShareData_IO_Nickname( cProfile );
 	ShareData_IO_Common( cProfile );
-	ShareData_IO_Plugin( cProfile, pcMenuDrawer );		// Move here	2010/6/24 Uchi
+//nkmm	ShareData_IO_Plugin( cProfile, pcMenuDrawer );		// Move here	2010/6/24 Uchi
 	ShareData_IO_Toolbar( cProfile, pcMenuDrawer );
 	ShareData_IO_CustMenu( cProfile );
 	ShareData_IO_Font( cProfile );
@@ -2500,6 +2500,7 @@ void CShareData_IO::ShareData_IO_Statusbar( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("DispSurrogatePairCodepoint")	, statusbar.m_bDispSPCodepoint);	// サロゲートペアをコードポイントで表示する
 	cProfile.IOProfileData( pszSecName, LTEXT("DispSelectCountByByte")		, statusbar.m_bDispSelCountByByte);	// 選択文字数を文字単位ではなくバイト単位で表示する
 	cProfile.IOProfileData( pszSecName, LTEXT("DispColByChar")				, statusbar.m_bDispColByChar);		// 現在桁をルーラー単位ではなく文字単位で表示する
+	cProfile.IOProfileData( pszSecName, LTEXT("DispCountExcludeWhiteSpace")	, statusbar.m_bDispCountExcludeWhiteSpace);
 }
 
 /*!

@@ -795,6 +795,7 @@
 #define IDC_LIST_WINDOW                 1724
 #define IDC_BUTTON_SAVE                 1725
 #define IDC_BUTTON_CLOSE                1726
+#define IDC_CHECK_DISP_COUNT_EXCLUDE_WHITWSPACE 1727
 #define IDS_AUTHOR_PAGE                 4054
 #define IDS_ABOUT_DESCRIPTION           4056
 #define IDD_TYPELIST                    5000
