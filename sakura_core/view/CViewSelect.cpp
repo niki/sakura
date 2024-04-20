@@ -164,7 +164,7 @@ void CViewSelect::DrawSelectArea(bool bDrawBracketCursorLine)
 		return;
 	}
 	m_bDrawSelectArea = true;
-	
+
 	bool bDispText = CTypeSupport(pView,COLORIDX_SELECT).IsDisp();
 	if( bDispText ){
 		if( m_sSelect != m_sSelectOld ){
@@ -184,7 +184,7 @@ void CViewSelect::DrawSelectArea(bool bDrawBracketCursorLine)
 			}else if( !m_sSelectOld.IsValid() ){
 				rc.top    = rcNew.top;
 				rc.bottom = rcNew.bottom;
-			}else if(IsBoxSelecting() && 
+			}else if(IsBoxSelecting() &&
 				(m_sSelect.GetTo().x != m_sSelectOld.GetTo().x || m_sSelect.GetFrom().x != m_sSelectOld.GetFrom().x)){
 				rc.UnionStrictRect(rcOld, rcNew);
 			}else if(!IsBoxSelecting() && rcOld.top == rcNew.top && rcOld.bottom == rcNew.bottom){
@@ -216,7 +216,7 @@ void CViewSelect::DrawSelectArea(bool bDrawBracketCursorLine)
 			if( pView->IsBkBitmap() ||  drawRight == -1){
 				// 背景表示のクリッピングが甘いので左右を指定しない
 				rcPx.left   =  0;
-				rcPx.right  = SHRT_MAX; 
+				rcPx.right  = SHRT_MAX;
 			}else{
 				rcPx.left   =  area.GetAreaLeft() + nCharWidth * (Int)(drawLeft - area.GetViewLeftCol());
 				rcPx.right  = area.GetAreaLeft() + nCharWidth * (Int)(drawRight- area.GetViewLeftCol());
@@ -385,7 +385,7 @@ void CViewSelect::DrawSelectArea2( HDC hdc ) const
 					rcNew.right  = pView->GetTextArea().GetAreaRight();
 					rcNew.top    = pView->GetTextArea().GenerateYPx( ptLast.y );
 					rcNew.bottom = rcNew.top + nCharHeight;
-					
+
 					// 2006.10.01 Moca GDI(リージョン)リソースリーク修正
 					HRGN hrgnEOFNew = ::CreateRectRgnIndirect( &rcNew );
 					::CombineRgn( hrgnDraw, hrgnDraw, hrgnEOFNew, RGN_DIFF );
@@ -508,7 +508,7 @@ void CViewSelect::DrawSelectAreaLine(
 	if( nSelectFrom == INT_MAX || nSelectTo == INT_MAX ){
 		CLayoutInt nPosX = CLayoutInt(0);
 		CMemoryIterator it = layoutMgr.CreateCMemoryIterator(pcLayout);
-		
+
 		while( !it.end() ){
 			it.scanNext();
 			if ( it.getIndex() + it.getIndexDelta() > pcLayout->GetLengthWithoutEOL() ){
@@ -538,7 +538,7 @@ void CViewSelect::DrawSelectAreaLine(
 			nSelectTo = nPosX;
 		}
 	}
-	
+
 	// 2006.03.28 Moca ウィンドウ幅が大きいと正しく反転しない問題を修正
 	if( nSelectFrom < pView->GetTextArea().GetViewLeftCol() ){
 		nSelectFrom = pView->GetTextArea().GetViewLeftCol();
@@ -559,7 +559,7 @@ void CViewSelect::DrawSelectAreaLine(
 		const_cast<CLayoutRange*>(&m_sSelect)->Clear(-1);
 		pView->GetCaret().m_cUnderLine.CaretUnderLineOFF(true, false, true);
 		*(const_cast<CLayoutRange*>(&m_sSelect)) = selectOld;
-		
+
 		// 2006.03.28 Moca 表示域内のみ処理する
 		if( nSelectFrom <=pView->GetTextArea().GetRightCol() && pView->GetTextArea().GetViewLeftCol() < nSelectTo ){
 			HRGN hrgnDraw = ::CreateRectRgn( rcClip.left, rcClip.top, rcClip.right, rcClip.bottom );
@@ -671,7 +671,7 @@ void CViewSelect::PrintSelectionInfoMsg() const
 	else {
 		select_line = m_sSelect.GetTo().y - m_sSelect.GetFrom().y + 1;
 	}
-	
+
 	//	To here 2006.06.06 ryoji 選択範囲の行が実在しない場合の対策
 	if( IsBoxSelecting() ){
 		//	矩形の場合は幅と高さだけでごまかす
@@ -836,9 +836,10 @@ void CViewSelect::PrintSelectionInfoMsg() const
 			m_sSelect.GetTo().x, m_sSelect.GetTo().y );
 #else
 		// todo: ローカライズ対策ができていない nkmm.
-		auto_sprintf( msg, _T("%d %ts (%d 行) 選択."), select_sum, ( bCountByByte ? _T("bytes") : _T("字") ), select_line );
+		auto_sprintf( msg, _T("%d %ts (%d 行) 選択"), select_sum, ( bCountByByte ? _T("bytes") : _T("字") ), select_line );
 #endif
 	}
 	const_cast<CEditView*>(pView)->GetCaret().m_bClearStatus = false;
 	pView->m_pcEditWnd->m_cStatusBar.SendStatusMessage2( msg );
 }
+

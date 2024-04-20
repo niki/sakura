@@ -86,7 +86,7 @@ CShareData::~CShareData()
 
 
 static CMutex g_cMutexShareWork( FALSE, GSTR_MUTEX_SAKURA_SHAREWORK );
- 
+
 CMutex& CShareData::GetMutexShareWork(){
 	return g_cMutexShareWork;
 }
@@ -287,7 +287,7 @@ bool CShareData::InitShareData()
 			sWindow.m_nWinSizeType = SIZE_RESTORED;
 			sWindow.m_nWinSizeCX = CW_USEDEFAULT;
 			sWindow.m_nWinSizeCY = 0;
-		
+
 			sWindow.m_bScrollBarHorz = TRUE;				/* 水平スクロールバーを使う */
 			//	2004.05.13 Moca ウィンドウ位置
 			sWindow.m_eSaveWindowPos = WINSIZEMODE_DEF;		// ウィンドウ位置固定・継承
@@ -304,19 +304,19 @@ bool CShareData::InitShareData()
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
 
 #ifdef NKMM_FIX_TAB_CAPTION_COLOR
-			_tcscpy( sWindow.m_szWindowCaptionActive, 
+			_tcscpy( sWindow.m_szWindowCaptionActive,
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
 				_T(" $A ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-			_tcscpy( sWindow.m_szWindowCaptionInactive, 
+			_tcscpy( sWindow.m_szWindowCaptionInactive,
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
 				_T(" $A ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
 #else
 			//	Apr. 05, 2003 genta ウィンドウキャプションの初期値
 			//	Aug. 16, 2003 genta $N(ファイル名省略表示)をデフォルトに変更
-			_tcscpy( sWindow.m_szWindowCaptionActive, 
+			_tcscpy( sWindow.m_szWindowCaptionActive,
 				_T("${w?$h$:アウトプット$:${I?$f$n$:$N$n$}$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-			_tcscpy( sWindow.m_szWindowCaptionInactive, 
+			_tcscpy( sWindow.m_szWindowCaptionInactive,
 				_T("${w?$h$:アウトプット$:$f$n$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
 #endif // NKMM_
@@ -531,7 +531,7 @@ bool CShareData::InitShareData()
 
 			sHelper.m_szExtHelp[0] = L'\0';			// 外部ヘルプ１
 			sHelper.m_szExtHtmlHelp[0] = L'\0';		// 外部HTMLヘルプ
-		
+
 			sHelper.m_szMigemoDll[0] = L'\0';			/* migemo dll */
 			sHelper.m_szMigemoDict[0] = L'\0';		/* migemo dict */
 
@@ -730,7 +730,7 @@ bool CShareData::InitShareData()
 			m_pShareData->m_sTagJump.m_aTagJumpKeywords.clear();
 			m_pShareData->m_sTagJump.m_bTagJumpICase = FALSE;
 			m_pShareData->m_sTagJump.m_bTagJumpAnyWhere = FALSE;
-			//To Here 2005.04.03 MIK 
+			//To Here 2005.04.03 MIK
 
 			m_pShareData->m_sHistory.m_aExceptMRU.clear();
 
@@ -918,7 +918,7 @@ void CShareData::ConvertLangValues(std::vector<std::wstring>& values, bool bSetV
 
 /*!
 	@brief	指定ファイルが開かれているか調べる
-	
+
 	指定のファイルが開かれている場合は開いているウィンドウのハンドルを返す
 
 	@retval	TRUE すでに開いていた
@@ -941,7 +941,7 @@ BOOL CShareData::IsPathOpened( const TCHAR* pszPath, HWND* phwndOwner )
 	if( 0 == CAppNodeGroupHandle(0).GetEditorWindowsNum() ){
 		return FALSE;
 	}
-	
+
 	for( int i = 0; i < m_pShareData->m_sNodes.m_nEditArrNum; ++i ){
 		if( IsSakuraMainWindow( m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd ) ){
 			// トレイからエディタへの編集ファイル名要求通知
@@ -984,7 +984,7 @@ BOOL CShareData::IsPathOpened( const TCHAR* pszPath, HWND* phwndOwner )
 BOOL CShareData::ActiveAlreadyOpenedWindow( const TCHAR* pszPath, HWND* phwndOwner, ECodeType nCharCode )
 {
 	if( IsPathOpened( pszPath, phwndOwner ) ){
-		
+
 		//文字コードの一致確認
 		EditInfo*		pfi;
 		::SendMessageAny( *phwndOwner, MYWM_GETFILEINFO, 0, 0 );
@@ -1053,11 +1053,11 @@ void CShareData::TraceOut( LPCTSTR lpFmt, ... )
 	if( false == OpenDebugWindow( m_hwndTraceOutSource, false ) ){
 		return;
 	}
-	
+
 	LockGuard<CMutex> guard( CShareData::GetMutexShareWork() );
 	va_list argList;
 	va_start( argList, lpFmt );
-	int ret = tchar_vsnprintf_s( m_pShareData->m_sWorkBuffer.GetWorkBuffer<WCHAR>(), 
+	int ret = tchar_vsnprintf_s( m_pShareData->m_sWorkBuffer.GetWorkBuffer<WCHAR>(),
 		m_pShareData->m_sWorkBuffer.GetWorkBufferCount<WCHAR>(),
 		to_wchar(lpFmt), argList );
 	va_end( argList );
@@ -1181,7 +1181,7 @@ BOOL CShareData::IsPrivateSettings( void ){
 	@note 現在は使われていないようだ。
 	@par History
 	2001.12.26 削除した。（YAZAKI）
-	
+
 */
 /*!	idxで指定したマクロファイル名（フルパス）を取得する．
 
@@ -1197,7 +1197,7 @@ BOOL CShareData::IsPrivateSettings( void ){
 	@date 2003.06.08 Moca ローカル変数へのポインタを返さないように仕様変更
 	@date 2003.06.14 genta 文字列長，ポインタのチェックを追加
 	@date 2003.06.24 Moca idxが-1のとき、キーマクロのフルパスを返す.
-	
+
 	@note idxは正確なものでなければならない。(内部で正当性チェックを行っていない)
 */
 int CShareData::GetMacroFilename( int idx, TCHAR *pszPath, int nBufLen )
@@ -1336,7 +1336,7 @@ void CShareData::InitToolButtons(DLLSHAREDATA* pShareData)
 	/* ツールバーボタンの数 */
 	pShareData->m_Common.m_sToolBar.m_nToolBarButtonNum = _countof(DEFAULT_TOOL_BUTTONS);
 	pShareData->m_Common.m_sToolBar.m_bToolBarIsFlat = !IsVisualStyle();			/* フラットツールバーにする／しない */	// 2006.06.23 ryoji ビジュアルスタイルでは初期値をノーマルにする
-	
+
 }
 
 
@@ -1349,7 +1349,7 @@ void CShareData::InitToolButtons(DLLSHAREDATA* pShareData)
 void CShareData::InitPopupMenu(DLLSHAREDATA* pShareData)
 {
 	/* カスタムメニュー 規定値 */
-	
+
 	CommonSetting_CustomMenu& rMenu = m_pShareData->m_Common.m_sCustomMenu;
 
 	/* 右クリックメニュー */
