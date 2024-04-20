@@ -218,7 +218,7 @@ BOOL CEditView::Create(
 
 	m_ptSrchStartPos_PHY.Set(CLogicInt(-1), CLogicInt(-1));	//検索/置換開始時のカーソル位置  (改行単位行先頭からのバイト数(0開始), 改行単位行の行番号(0開始))
 	m_bSearch = FALSE;					// 検索/置換開始位置を登録するか */											// 02/06/26 ai
-	
+
 	m_ptBracketPairPos_PHY.Set(CLogicInt(-1), CLogicInt(-1)); // 対括弧の位置 (改行単位行先頭からのバイト数(0開始), 改行単位行の行番号(0開始))
 	m_ptBracketCaretPos_PHY.Set(CLogicInt(-1), CLogicInt(-1));
 
@@ -227,7 +227,7 @@ BOOL CEditView::Create(
 
 	m_crBack = -1;				/* テキストの背景色 */			// 2006.12.16 ryoji
 	m_crBack2 = -1;
-	
+
 	m_szComposition[0] = _T('\0');
 
 
@@ -242,7 +242,7 @@ BOOL CEditView::Create(
 	m_nCompatBMPWidth = -1;
 	m_nCompatBMPHeight = -1;
 	// To Here 2007.09.09 Moca
-	
+
 	m_nOldUnderLineY = -1;
 	m_nOldCursorLineX = -1;
 	m_nOldCursorVLineWidth = 1;
@@ -268,21 +268,21 @@ BOOL CEditView::Create(
 		m_uMSIMEReconvertMsg = ::RegisterWindowMessage( RWM_RECONVERT );
 		m_uATOKReconvertMsg = ::RegisterWindowMessage( MSGNAME_ATOK_RECONVERT ) ;
 		m_uWM_MSIME_RECONVERTREQUEST = ::RegisterWindowMessage(_T("MSIMEReconvertRequest"));
-		
+
 		m_hAtokModule = LoadLibraryExedir(_T("ATOK10WC.DLL"));
 		m_AT_ImmSetReconvertString = NULL;
 		if ( NULL != m_hAtokModule ) {
 			m_AT_ImmSetReconvertString =(BOOL (WINAPI *)( HIMC , int ,PRECONVERTSTRING , DWORD  ) ) GetProcAddress(m_hAtokModule,"AT_ImmSetReconvertString");
 		}
 	}
-	else{ 
+	else{
 		// それ以外のOSのときはOS標準を使用する
 		m_uMSIMEReconvertMsg = 0;
 		m_uATOKReconvertMsg = 0 ;
 		m_hAtokModule = 0;	//@@@ 2002.04.14 MIK
 	}
 	// to here  2002.04.10 minfu
-	
+
 	//2004.10.23 isearch
 	m_nISearchMode = SEARCH_NONE;
 	m_pcmigemo = NULL;
@@ -433,7 +433,7 @@ void CEditView::Close()
 
 	delete m_cRegexKeyword;	//@@@ 2001.11.17 add MIK
 	m_cRegexKeyword = NULL;
-	
+
 	//再変換 2002.04.10 minfu
 	if(m_hAtokModule)
 		FreeLibrary(m_hAtokModule);
@@ -485,7 +485,7 @@ LRESULT CEditView::DispatchEvent(
 		{
 			SB_Marker_Trace(L"WM_APP_SCRBAR_PAINT, RequestCount %d", SBMarker_->nDrawRequestCount_);
 			SBMarker_->WaitForBuild(false);
-			
+
 			// 再描画したいタイミングが複数あり, メッセージがたくさん飛んでくるので
 			// リクエストカウンタが残り１のときに描画処理をする
 			if (SBMarker_->nDrawRequestCount_ == 1) {
@@ -495,14 +495,14 @@ LRESULT CEditView::DispatchEvent(
 					SB_Marker_Clear(4000);
 					return 0L;
 				}
-				
+
 				SB_Marker_Draw();
 			}
-			
+
 			SBMarker_->nDrawRequestCount_ = std::max(SBMarker_->nDrawRequestCount_ - 1, 0);
 		}
 		return 0L;
-		
+
 	case WM_APP_SCRBAR_ENDPAINT: // スクロールバー描画終了
 		{
 			SB_Marker_Trace(L"WM_APP_SCRBAR_ENDPAINT");
@@ -697,7 +697,7 @@ LRESULT CEditView::DispatchEvent(
 			/* アクティブなペインを設定 */
 			m_pcEditWnd->SetActivePane( m_nMyIndex );
 			// カーソルをクリック位置へ移動する
-			OnLBUTTONDOWN( wParam, (short)LOWORD( lParam ), (short)HIWORD( lParam ) );	
+			OnLBUTTONDOWN( wParam, (short)LOWORD( lParam ), (short)HIWORD( lParam ) );
 			// 2007.10.02 nasukoji
 			m_bActivateByMouse = FALSE;		// マウスによるアクティベートを示すフラグをOFF
 		}
@@ -886,24 +886,24 @@ LRESULT CEditView::DispatchEvent(
 		return 0L;
 
 	case MYWM_IME_REQUEST:  /* 再変換  by minfu 2002.03.27 */ // 20020331 aroka
-		
-		// 2002.04.09 switch case に変更  minfu 
+
+		// 2002.04.09 switch case に変更  minfu
 		switch ( wParam ){
 		case IMR_RECONVERTSTRING:
 			return SetReconvertStruct((PRECONVERTSTRING)lParam, UNICODE_BOOL);
-			
+
 		case IMR_CONFIRMRECONVERTSTRING:
 			return SetSelectionFromReonvert((PRECONVERTSTRING)lParam, UNICODE_BOOL);
-			
+
 		// 2010.03.16 MS-IME 2002 だと「カーソル位置の前後の内容を参照して変換を行う」の機能
 		case IMR_DOCUMENTFEED:
 			return SetReconvertStruct((PRECONVERTSTRING)lParam, UNICODE_BOOL, true);
-			
+
 		//default:
 		}
 		// 2010.03.16 0LではなくTSFが何かするかもしれないのでDefにまかせる
 		return ::DefWindowProc( hwnd, uMsg, wParam, lParam );
-	
+
 	case MYWM_DROPFILES:	// 独自のドロップファイル通知	// 2008.06.20 ryoji
 		OnMyDropFiles( (HDROP)wParam );
 		return 0L;
@@ -970,16 +970,16 @@ LRESULT CEditView::DispatchEvent(
 
 	default:
 // << 20020331 aroka 再変換対応 for 95/NT
-		if( (m_uMSIMEReconvertMsg && (uMsg == m_uMSIMEReconvertMsg)) 
+		if( (m_uMSIMEReconvertMsg && (uMsg == m_uMSIMEReconvertMsg))
 			|| (m_uATOKReconvertMsg && (uMsg == m_uATOKReconvertMsg))){
-		// 2002.04.08 switch case に変更 minfu 
+		// 2002.04.08 switch case に変更 minfu
 			switch ( wParam ){
 			case IMR_RECONVERTSTRING:
 				return SetReconvertStruct((PRECONVERTSTRING)lParam, true);
-				
+
 			case IMR_CONFIRMRECONVERTSTRING:
 				return SetSelectionFromReonvert((PRECONVERTSTRING)lParam, true);
-				
+
 			}
 			return 0L;
 		}
@@ -1005,7 +1005,7 @@ void CEditView::OnMove( int x, int y, int nWidth, int nHeight )
 /* ウィンドウサイズの変更処理 */
 void CEditView::OnSize( int cx, int cy )
 {
-	if( NULL == GetHwnd() 
+	if( NULL == GetHwnd()
 		|| ( cx == 0 && cy == 0 ) ){
 		// From Here 2007.09.09 Moca 互換BMPによる画面バッファ
 		// ウィンドウ無効時にも互換BMPを破棄する
@@ -1259,8 +1259,8 @@ void CEditView::MoveCursorSelecting(
 	GetCaret().GetAdjustCursorPos(&ptWk_CaretPos);
 	if( bSelect ){
 		/*	現在のカーソル位置によって選択範囲を変更．
-		
-			2004.04.02 Moca 
+
+			2004.04.02 Moca
 			キャレット位置が不正だった場合にMoveCursorの移動結果が
 			引数で与えた座標とは異なることがあるため，
 			nPosX, nPosYの代わりに実際の移動結果を使うように．
@@ -1497,7 +1497,7 @@ void CEditView::ConvSelectedArea( EFunctionCode nFuncCode )
 					nDelLen,
 					&cmemBuf
 				);
-				
+
 				{
 					/* 機能種別によるバッファの変換 */
 					int nStartColumn = (Int)sPos.GetX2() / (Int)GetTextMetrics().GetLayoutXDefault();
@@ -2416,7 +2416,7 @@ bool CEditView::MyGetClipboardData( CNativeW& cmemBuf, bool* pbColumnSelect, boo
 
 	if(!CClipboard::HasValidData())
 		return false;
-	
+
 	CClipboard cClipboard(GetHwnd());
 	if(!cClipboard)
 		return false;
@@ -2483,7 +2483,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 //	m_nOldUnderLineY  = -1;
 	// 2011.12.06 Moca IsTextSelected → IsTextSelecting に変更。ロック中も下線を表示しない
 	int bCursorLineBgDraw = false;
-	
+
 	// カーソル行の描画
 	if( bDraw
 	 && bCursorLineBg
@@ -2512,7 +2512,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 			GetCaret().m_cUnderLine.UnLock();
 		}
 	}
-	
+
 	int nCursorVLineX = -1;
 	// From Here 2007.09.09 Moca 互換BMPによる画面バッファ
 	if( bCursorVLine ){
@@ -2550,7 +2550,7 @@ void CEditView::CaretUnderLineON( bool bDraw, bool bDrawPaint, bool DisalbeUnder
 		}	// ReleaseDC の前に gr デストラクト
 		::ReleaseDC( GetHwnd(), hdc );
 	}
-	
+
 	int nUnderLineY = -1;
 	if( bUnderLine ){
 		nUnderLineY = GetTextArea().GetAreaTop() + (Int)(GetCaret().GetCaretLayoutPos().GetY2() - GetTextArea().GetViewTopLine())
@@ -2668,7 +2668,7 @@ void CEditView::CaretUnderLineOFF( bool bDraw, bool bDrawPaint, bool bResetFlag,
 
 			//	選択情報を復元
 			GetCaret().m_cUnderLine.UnLock();
-			
+
 			if( bDrawPaint ){
 				m_nOldUnderLineYBg = -1;
 			}
@@ -2861,7 +2861,7 @@ bool  CEditView::ShowKeywordHelp( POINT po, LPCWSTR pszHelp, LPRECT prcHokanWin)
 	@param[in] ptTo    指定範囲終了
 	@param[in] bSelect    範囲指定
 	@param[in] bBoxSelect 矩形選択
-	
+
 	@retval true  指定位置または指定範囲内にテキストが存在しない
 			false 指定位置または指定範囲内にテキストが存在する
 
@@ -2915,7 +2915,7 @@ bool CEditView::IsEmptyArea( CLayoutPoint ptFrom, CLayoutPoint ptTo, bool bSelec
 /*! アンドゥバッファの処理 */
 void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 {
-	
+
 	if( NULL != m_cCommander.GetOpeBlk() && m_cCommander.GetOpeBlk()->Release() == 0 ){
 		if( 0 < m_cCommander.GetOpeBlk()->GetNum() ){	/* 操作の数を返す */
 			/* 操作の追加 */
@@ -2974,7 +2974,7 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg)
 	else {
 		pEditView->SBMarker_->strKey_ = _T("");
 	}
-	
+
 	// リセット
 	pEditView->SBMarker_->nSearchFoundLine_ = 0;
 	pEditView->SBMarker_->nMarkFoundLine_ = 0;
@@ -2993,12 +2993,12 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg)
 			pCDocLine = pCDocLine->GetNextLine();
 		}
 	}
-	
+
 	// キャッシュ用
 	std::vector<uint32_t> vCache(nAllLines + 1, 0u);
-	
+
 	CEditView::ScrBarMarker &rSBMarker = *pEditView->SBMarker_;
-	
+
 	CLayoutInt nLineHint = CLogicInt(0);
 	bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
 
@@ -3013,7 +3013,7 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg)
 		if ((uFoundMagic | uMarkMagic) != 0u) {
 			CLogicInt nLogicY = i;
 			CLayoutInt nLayoutY;
-			
+
 			if (bNoTextWrap) {  // 折り返しなし
 				// ロジック行＝レイアウト行
 				nLayoutY = nLogicY;
@@ -3025,14 +3025,14 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg)
 				                                                   nLineHint);
 				nLayoutY = ptLayout.y;
 			}
-			
+
 			// キャッシュに登録
 			vCache[i] = (uint32_t)nLayoutY | (uFoundMagic | uMarkMagic);
 			if (uFoundMagic != 0u) rSBMarker.nSearchFoundLine_++;
 			if (uMarkMagic != 0u) rSBMarker.nMarkFoundLine_++;
 			//rSBMarker.Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
 			//rSBMarker.Add(nLayoutY, uMarkMagic);   // ブックマーク
-			
+
 			nLineHint = nLayoutY;
 		}
 		else {
@@ -3056,7 +3056,7 @@ end_thread:
 	rSBMarker.bBuildThreadRunning_ = false;
 	SB_Marker_Trace(L"  >>> finish SB_Marker_BuildThread %d", rSBMarker.vLines_.size());
 	_endthreadex(0);
-	return 0;  
+	return 0;
 }
 
 //----------------------
@@ -3081,15 +3081,15 @@ unsigned __stdcall SB_Marker_DrawThread(void *arg)
 	int nBarTop = nCyVScroll/*rSBMarker.sbi_.dxyLineButton*/;
 	int nBarHeight = rSBMarker.sbi_.rcScrollBar.bottom - rSBMarker.sbi_.rcScrollBar.top -
 	                 (nCyVScroll /*rSBMarker.sbi_.dxyLineButton*/ * 2);
-	
+
 	COLORREF clrSearch = si::ColorString::ToCOLORREF(
 	    RegKey(NKMM_REGKEY).get_s(_T("EditViewScrBarFoundColor"), NKMM_SCRBAR_FOUND_COLOR));
 	COLORREF clrMark = si::ColorString::ToCOLORREF(
 	    RegKey(NKMM_REGKEY).get_s(_T("EditViewScrBarMarkColor"), NKMM_SCRBAR_MARK_COLOR));
 	COLORREF clrCursor = si::ColorString::ToCOLORREF(
 	    RegKey(NKMM_REGKEY).get_s(_T("EditViewScrBarCursorColor"), NKMM_SCRBAR_CURSOR_COLOR));
-	
-	
+
+
 start_thread:
 	enum {
 		eLoopBreak_None = 0,
@@ -3103,7 +3103,7 @@ start_thread:
 		const int foundLeft = std::max(0, 0);
 		const int foundWidth = std::max(DpiScaleX(1), nCxVScroll - DpiScaleX(1));
 		const int foundHeight = std::max(DpiScaleY(1), DpiScaleY(2));
-		
+
 		const int markLeft = std::max(DpiScaleX(0), nCxVScroll / 3 * 0);
 		const int markWidth = std::max(DpiScaleX(1), nCxVScroll / 3 * 1);
 		const int markHeight = std::max(DpiScaleY(1), nCxVScroll / 3 * 1);
@@ -3121,11 +3121,11 @@ start_thread:
 			auto fnDrawMark = [=, &gr](uint32_t ln, int left, int width, int height, COLORREF clr) {
 				int x = 1;
 				int y = nBarTop;
-				
+
 				y += bEnable ? ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight))
 				             : ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum *
 				                      nBarHeight));
-				
+
 				int margin = 0;  // スクロールバーの領域を超えた時のマージン
 				int x2 = x + left;
 				int y2 = y - height / 2;  // 中央にくるように
@@ -3134,7 +3134,7 @@ start_thread:
 					margin = nBarTop - y2;
 				}
 				else if (y2 + height > nBarTop + nBarHeight) {
-					margin = (nBarTop + nBarHeight) - (y2 + height); 
+					margin = (nBarTop + nBarHeight) - (y2 + height);
 				}
 				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + width, y2 + height + margin}, clr);
 			};
@@ -3144,14 +3144,14 @@ start_thread:
 #endif
 			for (int i = 0; i < vsize; i++) {
 				if (loop_break != eLoopBreak_None) break;
-				
+
 				uint32_t ln = rSBMarker.vLines_[i];
-				
+
 				// 検索行
 				if (ln & NKMM_SCRBAR_FOUND_MAGIC) {
 					fnDrawMark(ln, foundLeft, foundWidth, foundHeight, clrSearch);
 				}
-				
+
 				if (rSBMarker.bRestartRequestDrawThread_) {  // やり直し
 					loop_break = eLoopBreak_Restart;
 				}
@@ -3159,20 +3159,20 @@ start_thread:
 					loop_break = eLoopBreak_Abort;
 				}
 			}
-			
+
 #ifdef _OPENMP
 			#pragma omp for
 #endif
 			for (int i = 0; i < vsize; i++) {
 				if (loop_break != eLoopBreak_None) break;
-				
+
 				uint32_t ln = rSBMarker.vLines_[i];
-				
+
 				// ブックマーク行
 				if (ln & NKMM_SCRBAR_MARK_MAGIC) {
 					fnDrawMark(ln, markLeft, markWidth, markHeight, clrMark);
 				}
-				
+
 				if (rSBMarker.bRestartRequestDrawThread_) {  // やり直し
 					loop_break = eLoopBreak_Restart;
 				}
@@ -3180,7 +3180,7 @@ start_thread:
 					loop_break = eLoopBreak_Abort;
 				}
 			}
-			
+
 			::ReleaseDC(pEditView->m_hwndVScrollBar, hdc);
 		}
 	}
@@ -3189,22 +3189,22 @@ start_thread:
 	{
 		HDC hdc = ::GetDC(pEditView->m_hwndVScrollBar);
 		CGraphics gr(hdc);
-		
+
 		int x = 1;
 		int y = nBarTop;
-		
+
 		y += bEnable ? ((int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines *
 		                      nBarHeight))
 		             : ((int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
 		                      pEditView->GetTextArea().m_nViewRowNum * nBarHeight));
-		
+
 		//gr.FillSolidMyRect(/*RECT*/{x, nBarTop, x + nCxVScroll - 1, nBarTop + nBarHeight}, ::GetSysColor(COLOR_MENU));
 		//gr.FillSolidMyRect(/*RECT*/{x, nThumbTop, x + nCxVScroll - 1, nThumbBottom}, ::GetSysColor(COLOR_SCROLLBAR));
-		
+
 		const int w = std::max(DpiScaleX(1), nCxVScroll - DpiScaleX(1));
 		const int h = std::max(DpiScaleY(1), DpiScaleY(2));
 		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor);
-		
+
 		::ReleaseDC(pEditView->m_hwndVScrollBar, hdc);
 	}
 
@@ -3229,7 +3229,7 @@ end_thread:
 	rSBMarker.bDrawThreadRunning_ = false;
 	SB_Marker_Trace(L"  >>> finish SB_Marker_DrawThread %d", rSBMarker.vLines_.size());
 	_endthreadex(0);
-	return 0;  
+	return 0;
 }
 
 //----------------------
@@ -3275,27 +3275,27 @@ void CEditView::ScrBarMarker::Clear(int foo)
 void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo)
 {
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
-	
+
 	/* 垂直スクロールバー */
 	const CLayoutInt	nEofMargin = CLayoutInt(1); // EOFのマージン
 	const CLayoutInt	nAllLines = pEditView_->m_pcEditDoc->m_cLayoutMgr.GetLineCount() + nEofMargin;
-	
+
 	// 行数が変わっていたら強制更新
 	if (nLastLineCount_ != nAllLines) {
 		nLastLineCount_ = nAllLines;
 		bCacheClear = true;
 	}
-	
+
 	// 描画スレッドを中断
 	WaitForDraw(true);
-	
+
 	if (bCacheClear) {
 		WaitForBuild(true);
-		
+
 		// キャッシュをクリア
 		vLines_.clear();
 	}
-	
+
 	// 更新
 	if (vLines_.empty()) {
 		WaitForBuild(true);
@@ -3348,8 +3348,8 @@ void CEditView::ScrBarMarker::Draw()
 		hDrawThread_ = 0;
 		SB_Marker_Trace(L" *** %s: CloseHandle(hDrawThread_)", _T(__FUNCTION__));
 	}
-	
-#if 1 // @@ 描画する際にスクロールバーを更新する 20170721 
+
+#if 1 // @@ 描画する際にスクロールバーを更新する 20170721
 	SCROLLINFO si;
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_ALL;
@@ -3359,7 +3359,7 @@ void CEditView::ScrBarMarker::Draw()
 	si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
 	::SetScrollInfo(pEditView_->m_hwndVScrollBar, SB_CTL, &si, TRUE);
 #endif // @@
-	
+
 	// スクロールバーの情報を取得
 	sbi_.cbSize = sizeof(sbi_);
 	::GetScrollBarInfo(pEditView_->m_hwndVScrollBar, OBJID_CLIENT, &sbi_);
@@ -3397,11 +3397,11 @@ bool CEditView::ScrBarMarker::Add(int nLayoutY, uint32_t magic)
 			}
 			++it;
 		}
-		
+
 		vLines_.push_back(nLayoutY | magic);  // まだないので追加
 		SB_Marker_Trace(L"ScrBarMarker::Add, Append tail");
 	}
-	
+
 func_end:
 	if (magic & NKMM_SCRBAR_FOUND_MAGIC) {
 		nSearchFoundLine_++;
@@ -3409,7 +3409,7 @@ func_end:
 	if (magic & NKMM_SCRBAR_MARK_MAGIC) {
 		nMarkFoundLine_++;
 	}
-	
+
 	return true;
 }
 
@@ -3419,7 +3419,7 @@ func_end:
 bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic)
 {
 	bool bDelete = false;
-	
+
 	if (vLines_.empty()) {
 		SB_Marker_Trace(L"ScrBarMarker::Del, Empty");
 		return false;
@@ -3429,7 +3429,7 @@ bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic)
 		while (it != vLines_.end()) {
 			if (((*it) & NKMM_SCRBAR_LINEN_MASK) == nLayoutY) {
 				(*it) &= ~magic;  // 指定のマジックを取り除く
-				
+
 				if (((*it) & NKMM_SCRBAR_MAGIC_MASK) == 0u) {  // マジックがなくなったら要素を削除
 					it = vLines_.erase(it);
 					SB_Marker_Trace(L"ScrBarMarker::Del, Remove line");
@@ -3437,14 +3437,14 @@ bool CEditView::ScrBarMarker::Del(int nLayoutY, uint32_t magic)
 				else {
 					SB_Marker_Trace(L"ScrBarMarker::Del, Remove magic");
 				}
-				
+
 				bDelete = true;
 				goto func_end;
 			}
 			++it;
 		}
 	}
-	
+
 func_end:
 	if (magic & NKMM_SCRBAR_FOUND_MAGIC) {
 		nSearchFoundLine_ = std::max(nSearchFoundLine_ - 1, 0);
@@ -3452,7 +3452,7 @@ func_end:
 	if (magic & NKMM_SCRBAR_MARK_MAGIC) {
 		nMarkFoundLine_ = std::max(nMarkFoundLine_ - 1, 0);
 	}
-	
+
 	return bDelete;
 }
 
@@ -3541,5 +3541,36 @@ void CEditView::_SB_Marker_DrawRequest()
 void CEditView::_SB_Marker_Draw()
 {
 	SBMarker_->Draw();
+}
+
+int CEditView::GetDocumentWordNum() const
+{
+	const CEditView* pView=this;
+
+	CLayoutInt nLineCount = pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount();
+	if( 0 >= nLineCount ){ // 先頭行が実在しない
+		return 0;
+	}
+
+	//	通常の選択では選択範囲の中身を数える
+	int select_sum = 0;	//	バイト数合計
+	const wchar_t *pLine;	//	データを受け取る
+	CLogicInt	nLineLen;		//	行の長さ
+	const CLayout*	pcLayout;
+
+	//  文字数でカウント
+
+	//	GetSelectedDataと似ているが，先頭行と最終行は排除している
+	//	Aug. 16, 2005 aroka nLineNumはfor以降でも使われるのでforの前で宣言する
+	//	VC .NET以降でもMicrosoft拡張を有効にした標準動作はVC6と同じことに注意
+	CLayoutInt nLineNum;
+	for( nLineNum = CLayoutInt(0); nLineNum <= nLineCount; ++nLineNum ){
+		pLine = pView->m_pcEditDoc->m_cLayoutMgr.GetLineStr( nLineNum, &nLineLen, &pcLayout );
+		//	2006.06.06 ryoji 指定行のデータが存在しない場合の対策
+		if (!pLine) continue;
+		select_sum += pcLayout->GetLengthWithoutEOL();
+	}
+
+	return select_sum;
 }
 #endif // NKMM_

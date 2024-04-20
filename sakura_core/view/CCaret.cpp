@@ -1003,7 +1003,7 @@ void CCaret::ShowCaretPosInfo()
 	else{
 #ifdef NKMM_FIX_STATUSBAR
 		TCHAR	szText_1[64];
-		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), ptCaret.y, ptCaret.x );	//Oct. 30, 2000 JEPRO 千万行も要らん
+		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), ptCaret.y, ptCaret.x, m_pEditView->GetDocumentWordNum() );	//Oct. 30, 2000 JEPRO 千万行も要らん
 
 		TCHAR	szText_6[16];
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){

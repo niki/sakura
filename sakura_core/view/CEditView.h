@@ -841,6 +841,8 @@ public:
 	void _SB_Marker_Build(bool bCacheClear, int foo); // 再構築 foo:マーキング用
 	void _SB_Marker_DrawRequest();                    // 描画リクエスト
 	void _SB_Marker_Draw();                           // 描画
+
+	int GetDocumentWordNum() const;
 	
 	// トレース用マクロ
 	#define SCRBAR_MARKCACHE_TRACE  (0)
