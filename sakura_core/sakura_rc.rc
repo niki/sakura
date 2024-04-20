@@ -1783,7 +1783,7 @@ BEGIN
                     WS_TABSTOP,7,128,274,10
     CONTROL         "ï∂éöêîÇ…ãÛîíÇÕä‹ÇﬂÇ»Ç¢(&D)",
                     IDC_CHECK_DISP_COUNT_EXCLUDE_WHITWSPACE,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,7,144,274,10
+                    WS_TABSTOP | WS_DISABLED ,7,144,274,10
 END
 
 IDD_PROP_EDIT DIALOGEX 0, 0, 293, 240
