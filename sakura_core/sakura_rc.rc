@@ -1588,8 +1588,8 @@ BEGIN
                     IDC_STATIC,163,88,111,16,NOT WS_GROUP
     COMBOBOX        IDC_COMBO_WHEEL_HSCROLL,178,108,85,80,CBS_DROPDOWNLIST |
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "画面キャッシュを使う(&G)",IDC_CHECK_MEMDC,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,163,134,96,16
+//nkmm    CONTROL         "画面キャッシュを使う(&G)",IDC_CHECK_MEMDC,"Button",
+//nkmm                    BS_AUTOCHECKBOX | WS_TABSTOP,163,134,96,16
     GROUPBOX        "履歴",IDC_STATIC,158,152,130,82,WS_GROUP
     LTEXT           "ファイルの履歴&MAX",IDC_STATIC,163,167,74,8,NOT
                     WS_GROUP
@@ -1781,7 +1781,7 @@ BEGIN
     CONTROL         "現在桁をルーラー単位ではなく文字単位で表示する(&C)",
                     IDC_CHECK_DISP_COL_BY_CHAR,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,7,128,274,10
-    CONTROL         "文字数に空白は含めない(&D)",
+    CONTROL         "空白は文字数に含めない(&I)",
                     IDC_CHECK_DISP_COUNT_EXCLUDE_WHITWSPACE,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP | WS_DISABLED ,7,144,274,10
 END
