@@ -4054,7 +4054,7 @@ BEGIN
 	STR_ERR_DLGEDITVW6			"■"
 	STR_MENU_KEYWORDINFO		"キーワードの説明をクリップボードにコピー"
 	STR_MENU_OPENKEYWORDDIC		"キーワード辞書を開く"
-	STR_STATUS_ROW_COL			"行: %d,  桁: %d,  %d 文字"
+	STR_STATUS_ROW_COL			"%d 文字｜行: %d,  桁: %3d"
 	STR_INS_MODE_INS			"挿入"
 	STR_INS_MODE_OVR			"上書"
 	STR_GREP_SEARCH_CONDITION	"\r\n□検索条件  "
