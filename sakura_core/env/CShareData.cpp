@@ -258,7 +258,7 @@ bool CShareData::InitShareData()
 #ifdef _DEBUG
 			sGeneral.m_bStayTaskTray = FALSE;				/* タスクトレイのアイコンを常駐 */
 #else
-			sGeneral.m_bStayTaskTray = TRUE;				/* タスクトレイのアイコンを常駐 */
+			sGeneral.m_bStayTaskTray = FALSE;				/* タスクトレイのアイコンを常駐 */
 #endif
 			sGeneral.m_wTrayMenuHotKeyCode = L'Z';		/* タスクトレイ左クリックメニュー キー */
 			sGeneral.m_wTrayMenuHotKeyMods = HOTKEYF_ALT | HOTKEYF_CONTROL;	/* タスクトレイ左クリックメニュー キー */
@@ -294,10 +294,10 @@ bool CShareData::InitShareData()
 			sWindow.m_nWinPosX = CW_USEDEFAULT;
 			sWindow.m_nWinPosY = 0;
 
-			sWindow.m_nRulerHeight = 13;					/* ルーラーの高さ */
-			sWindow.m_nRulerBottomSpace = 0;				/* ルーラーとテキストの隙間 */
+			sWindow.m_nRulerHeight = 18;					/* ルーラーの高さ */
+			sWindow.m_nRulerBottomSpace = 1;				/* ルーラーとテキストの隙間 */
 			sWindow.m_nRulerType = 0;					/* ルーラーのタイプ */
-			sWindow.m_nLineNumRightSpace = 0;			/* 行番号の右の隙間 */
+			sWindow.m_nLineNumRightSpace = 2;			/* 行番号の右の隙間 */
 			sWindow.m_nVertLineOffset = -1;			// 2005.11.10 Moca 指定桁縦線
 			sWindow.m_bUseCompatibleBMP = TRUE;		// 2007.09.09 Moca 画面キャッシュを使う	// 2009.06.09 ryoji FALSE->TRUE
 
@@ -306,10 +306,10 @@ bool CShareData::InitShareData()
 #ifdef NKMM_FIX_TAB_CAPTION_COLOR
 			_tcscpy( sWindow.m_szWindowCaptionActive,
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
-				_T(" $A ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
+				_T(" $A ${R?【ビューモード】$:【上書き禁止】$}${M?  【キーマクロの記録中】$} $<profile>") );
 			_tcscpy( sWindow.m_szWindowCaptionInactive,
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
-				_T(" $A ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
+				_T(" $A ${R?【ビューモード】$:【上書き禁止】$}${M?  【キーマクロの記録中】$} $<profile>") );
 #else
 			//	Apr. 05, 2003 genta ウィンドウキャプションの初期値
 			//	Aug. 16, 2003 genta $N(ファイル名省略表示)をデフォルトに変更
@@ -331,16 +331,16 @@ bool CShareData::InitShareData()
 			wcscpy(	//@@@ 2003.06.13 MIK
 				sTabBar.m_szTabWndCaption,
 #ifdef NKMM_FIX_TAB_CAPTION_COLOR
-				L"${w?【Grep】$h$:【アウトプット】$:$f$}${U?*$}${R?(ビューモード)$:(上書き禁止)$}"
+				L"${w?【Grep】$h$:【アウトプット】$:$f$}${U?*$}${R?【ビューモード】$:【上書き禁止】$}"
 #else
 				L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
 #endif // NKMM_
 			);
 			sTabBar.m_bSameTabWidth = FALSE;			//タブを等幅にする			//@@@ 2006.01.28 ryoji
-			sTabBar.m_bDispTabIcon = FALSE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
+			sTabBar.m_bDispTabIcon = TRUE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
 			sTabBar.m_bDispTabClose = DISPTABCLOSE_NO;	//タブに閉じるボタンを表示する	//@@@ 2012.04.14 syat
 			sTabBar.m_bSortTabList = TRUE;			//タブ一覧をソートする		//@@@ 2006.05.10 ryoji
-			sTabBar.m_bTab_RetainEmptyWin = TRUE;	// 最後のファイルが閉じられたとき(新規)を残す	// 2007.02.11 genta
+			sTabBar.m_bTab_RetainEmptyWin = FALSE;	// 最後のファイルが閉じられたとき(新規)を残す	// 2007.02.11 genta
 			sTabBar.m_bTab_CloseOneWin = FALSE;	// タブモードでもウィンドウの閉じるボタンで現在のファイルのみ閉じる	// 2007.02.11 genta
 			sTabBar.m_bTab_ListFull = FALSE;			//タブ一覧をフルパス表示する	//@@@ 2007.02.28 ryoji
 			sTabBar.m_bChgWndByWheel = FALSE;		//マウスホイールでウィンドウ切替	//@@@ 2006.03.26 ryoji
@@ -365,13 +365,13 @@ bool CShareData::InitShareData()
 			sEdit.m_bUseOLE_DropSource = TRUE;			/* OLEによるドラッグ元にするか */
 			sEdit.m_bSelectClickedURL = TRUE;			/* URLがクリックされたら選択するか */
 			sEdit.m_bCopyAndDisablSelection = FALSE;	/* コピーしたら選択解除 */
-			sEdit.m_bEnableNoSelectCopy = TRUE;		/* 選択なしでコピーを可能にする */	// 2007.11.18 ryoji
-			sEdit.m_bEnableLineModePaste = true;		/* ラインモード貼り付けを可能にする */	// 2007.10.08 ryoji
+			sEdit.m_bEnableNoSelectCopy = FALSE;		/* 選択なしでコピーを可能にする */	// 2007.11.18 ryoji
+			sEdit.m_bEnableLineModePaste = false;		/* ラインモード貼り付けを可能にする */	// 2007.10.08 ryoji
 			sEdit.m_bConvertEOLPaste = false;			/* 改行コードを変換して貼り付ける */	// 2009.02.28 salarm
 			sEdit.m_bEnableExtEol = false;
 			sEdit.m_bBoxSelectLock = true;
 
-			sEdit.m_bNotOverWriteCRLF = TRUE;			/* 改行は上書きしない */
+			sEdit.m_bNotOverWriteCRLF = FALSE;			/* 改行は上書きしない */
 			sEdit.m_bOverWriteFixMode = false;			// 文字幅に合わせてスペースを詰める
 
 			sEdit.m_bOverWriteBoxDelete = false;
@@ -403,9 +403,9 @@ bool CShareData::InitShareData()
 			sFile.m_bRestoreCurPosition = true;	// カーソル位置復元	//	Oct. 27, 2000 genta
 			sFile.m_bRestoreBookmarks = true;		// ブックマーク復元	//2002.01.16 hor
 			sFile.m_bAutoMIMEdecode = false;		// ファイル読み込み時にMIMEのデコードを行うか	//Jul. 13, 2001 JEPRO
-			sFile.m_bQueryIfCodeChange = true;		// 前回と異なる文字コードの時に問い合わせを行うか	Oct. 03, 2004 genta
-			sFile.m_bAlertIfFileNotExist = false;	// 開こうとしたファイルが存在しないとき警告する	Oct. 09, 2004 genta
-			sFile.m_bAlertIfLargeFile = false;		// 開こうとしたファイルが大きい場合に警告する
+			sFile.m_bQueryIfCodeChange = false;		// 前回と異なる文字コードの時に問い合わせを行うか	Oct. 03, 2004 genta
+			sFile.m_bAlertIfFileNotExist = true;	// 開こうとしたファイルが存在しないとき警告する	Oct. 09, 2004 genta
+			sFile.m_bAlertIfLargeFile = true;		// 開こうとしたファイルが大きい場合に警告する
 			sFile.m_nAlertFileSize = 100;//NKMM_ 10;			// 警告を始めるファイルサイズ（MB単位）
 		}
 
@@ -467,7 +467,7 @@ bool CShareData::InitShareData()
 
 			sSearch.m_bGrepDefaultFolder=TRUE;//NKMM_ FALSE;		/* Grep: フォルダの初期値をカレントフォルダにする */
 			sSearch.m_nGrepCharSet = CODE_AUTODETECT;	/* Grep: 文字コードセット */
-			sSearch.m_bGrepRealTimeView = FALSE;		/* 2003.06.28 Moca Grep結果のリアルタイム表示 */
+			sSearch.m_bGrepRealTimeView = TRUE;		/* 2003.06.28 Moca Grep結果のリアルタイム表示 */
 			sSearch.m_bCaretTextForSearch = TRUE;		/* 2006.08.23 ryoji カーソル位置の文字列をデフォルトの検索文字列にする */
 			sSearch.m_bInheritKeyOtherView = true;
 			sSearch.m_szRegexpLib[0] = _T('\0');		/* 2007.08.12 genta 正規表現DLL */
@@ -539,7 +539,7 @@ bool CShareData::InitShareData()
 
 			sHelper.m_bHokanKey_RETURN	= TRUE;			/* VK_RETURN 補完決定キーが有効/無効 */
 			sHelper.m_bHokanKey_TAB		= FALSE;		/* VK_TAB   補完決定キーが有効/無効 */
-			sHelper.m_bHokanKey_RIGHT	= TRUE;			/* VK_RIGHT 補完決定キーが有効/無効 */
+			sHelper.m_bHokanKey_RIGHT	= FALSE;			/* VK_RIGHT 補完決定キーが有効/無効 */
 			sHelper.m_bHokanKey_SPACE	= FALSE;		/* VK_SPACE 補完決定キーが有効/無効 */
 		}
 
@@ -620,10 +620,10 @@ bool CShareData::InitShareData()
 			_tcscpy( sFileName.m_szTransformFileNameTo[0],   _T("デスクトップ\\") );
 			_tcscpy( sFileName.m_szTransformFileNameFrom[1], _T("%Personal%\\") );
 			_tcscpy( sFileName.m_szTransformFileNameTo[1],   _T("マイドキュメント\\") );
-			_tcscpy( sFileName.m_szTransformFileNameFrom[2], _T("%Cache%\\Content.IE5\\") );
-			_tcscpy( sFileName.m_szTransformFileNameTo[2],   _T("IEキャッシュ\\") );
-			_tcscpy( sFileName.m_szTransformFileNameFrom[3], _T("%TEMP%\\") );
-			_tcscpy( sFileName.m_szTransformFileNameTo[3],   _T("TEMP\\") );
+//nkmm			_tcscpy( sFileName.m_szTransformFileNameFrom[2], _T("%Cache%\\Content.IE5\\") );
+//nkmm			_tcscpy( sFileName.m_szTransformFileNameTo[2],   _T("IEキャッシュ\\") );
+//nkmm			_tcscpy( sFileName.m_szTransformFileNameFrom[3], _T("%TEMP%\\") );
+//nkmm			_tcscpy( sFileName.m_szTransformFileNameTo[3],   _T("TEMP\\") );
 			_tcscpy( sFileName.m_szTransformFileNameFrom[4], _T("%Common DeskTop%\\") );
 			_tcscpy( sFileName.m_szTransformFileNameTo[4],   _T("共有デスクトップ\\") );
 			_tcscpy( sFileName.m_szTransformFileNameFrom[5], _T("%Common Documents%\\") );
@@ -662,6 +662,7 @@ bool CShareData::InitShareData()
 			sStatusbar.m_bDispCountExcludeWhiteSpace = FALSE;
 		}
 
+#if 0 //nkmm
 		// [プラグイン]タブ
 		{
 			CommonSetting_Plugin& sPlugin = m_pShareData->m_Common.m_sPlugin;
@@ -673,6 +674,7 @@ bool CShareData::InitShareData()
 				sPlugin.m_PluginTable[nPlugin].m_state = PLS_NONE;		// プラグイン状態
 			}
 		}
+#endif
 
 		// [メインメニュー]タブ
 		{

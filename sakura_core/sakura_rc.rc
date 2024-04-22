@@ -1580,14 +1580,14 @@ BEGIN
                     12
     CONTROL         "少し滑らかにする(&S)",IDC_CHECK_REPEATEDSCROLLSMOOTH,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,163,33,80,10
-    LTEXT           "組み合わせてホイール操作した時\nページスクロールする(&J)",
-                    IDC_STATIC,163,49,110,16,NOT WS_GROUP
-    COMBOBOX        IDC_COMBO_WHEEL_PAGESCROLL,178,67,85,80,CBS_DROPDOWNLIST |
-                    WS_VSCROLL | WS_TABSTOP
-    LTEXT           "組み合わせてホイール操作した時\n横スクロールする(&H)",
-                    IDC_STATIC,163,88,111,16,NOT WS_GROUP
-    COMBOBOX        IDC_COMBO_WHEEL_HSCROLL,178,108,85,80,CBS_DROPDOWNLIST |
-                    WS_VSCROLL | WS_TABSTOP
+//nkmm    LTEXT           "組み合わせてホイール操作した時\nページスクロールする(&J)",
+//nkmm                    IDC_STATIC,163,49,110,16,NOT WS_GROUP
+//nkmm    COMBOBOX        IDC_COMBO_WHEEL_PAGESCROLL,178,67,85,80,CBS_DROPDOWNLIST |
+//nkmm                    WS_VSCROLL | WS_TABSTOP
+//nkmm    LTEXT           "組み合わせてホイール操作した時\n横スクロールする(&H)",
+//nkmm                    IDC_STATIC,163,88,111,16,NOT WS_GROUP
+//nkmm    COMBOBOX        IDC_COMBO_WHEEL_HSCROLL,178,108,85,80,CBS_DROPDOWNLIST |
+//nkmm                    WS_VSCROLL | WS_TABSTOP
 //nkmm    CONTROL         "画面キャッシュを使う(&G)",IDC_CHECK_MEMDC,"Button",
 //nkmm                    BS_AUTOCHECKBOX | WS_TABSTOP,163,134,96,16
     GROUPBOX        "履歴",IDC_STATIC,158,152,130,82,WS_GROUP
@@ -1658,17 +1658,17 @@ BEGIN
                     IDC_CHECK_SplitterWndHScroll,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,8,139,116,10
     GROUPBOX        "分割ウィンドウ",IDC_STATIC,3,114,153,39,WS_GROUP
-    LTEXT           "位置",IDC_STATIC,167,68,16,8
-    CONTROL         "上(&O)",IDC_RADIO_FUNCKEYWND_PLACE1,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,191,68,34,10
-    CONTROL         "下(&B)",IDC_RADIO_FUNCKEYWND_PLACE2,"Button",
-                    BS_AUTORADIOBUTTON,227,68,34,10
-    LTEXT           "グループボタン数(&G)",IDC_STATIC,167,81,67,10
-    EDITTEXT        IDC_EDIT_FUNCKEYWND_GROUPNUM,236,80,28,12,ES_AUTOHSCROLL |
-                    ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_FUNCKEYWND_GROUPNUM,"msctls_updown32",
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,262,80,10,
-                    12
+//nkmm    LTEXT           "位置",IDC_STATIC,167,68,16,8
+//nkmm    CONTROL         "上(&O)",IDC_RADIO_FUNCKEYWND_PLACE1,"Button",
+//nkmm                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,191,68,34,10
+//nkmm    CONTROL         "下(&B)",IDC_RADIO_FUNCKEYWND_PLACE2,"Button",
+//nkmm                    BS_AUTORADIOBUTTON,227,68,34,10
+//nkmm    LTEXT           "グループボタン数(&G)",IDC_STATIC,167,81,67,10
+//nkmm    EDITTEXT        IDC_EDIT_FUNCKEYWND_GROUPNUM,236,80,28,12,ES_AUTOHSCROLL |
+//nkmm                    ES_NUMBER
+//nkmm    CONTROL         "Spin1",IDC_SPIN_FUNCKEYWND_GROUPNUM,"msctls_updown32",
+//nkmm                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,262,80,10,
+//nkmm                    12
     GROUPBOX        "ファンクションキー",IDC_STATIC,162,56,126,40
     LTEXT           "アクティブ時(&1)",IDC_STATIC,7,171,59,8
     EDITTEXT        IDC_WINCAPTION_ACTIVE,67,168,216,14,ES_AUTOHSCROLL
@@ -1781,7 +1781,7 @@ BEGIN
     CONTROL         "現在桁をルーラー単位ではなく文字単位で表示する(&C)",
                     IDC_CHECK_DISP_COL_BY_CHAR,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,7,128,274,10
-    CONTROL         "空白は文字数に含めない(&I)",
+    CONTROL         "空白は文字数に含めない\n（全角空白は文字として扱う）(&I)",
                     IDC_CHECK_DISP_COUNT_EXCLUDE_WHITWSPACE,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP | WS_DISABLED ,7,144,274,10
 END
