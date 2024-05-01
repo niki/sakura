@@ -2,6 +2,10 @@
 #ifndef MY_CONFIG_H
 #define MY_CONFIG_H
 
+#pragma warning(disable : 4244) // 型変換による警告
+#pragma warning(disable : 4267) // 型変換による警告
+#pragma warning(disable : 26495) // 未初期化による警告
+
 // clang-format off
 
 //
