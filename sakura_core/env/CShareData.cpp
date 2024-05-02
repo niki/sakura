@@ -761,6 +761,7 @@ bool CShareData::InitShareData()
 			0,
 			0
 		);
+		if (m_pShareData == nullptr) abort(); // yuz
 		SetDllShareData( m_pShareData );
 
 		SelectCharWidthCache( CWM_FONT_EDIT, CWM_CACHE_SHARE );
