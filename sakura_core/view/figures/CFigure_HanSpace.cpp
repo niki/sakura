@@ -45,7 +45,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 			pDispPos->GetDrawPos().y,
 			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClipBottom,
-			L"•",//L"・",
+			L"･",//L"・",
 			1,
 			pcView->GetTextMetrics().GetDxArray_AllHankaku()
 		);
