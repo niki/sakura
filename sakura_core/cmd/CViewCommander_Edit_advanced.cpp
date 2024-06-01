@@ -609,8 +609,10 @@ struct SORTDATA {
 inline int CNativeW_comp(const CNativeW& lhs, const CNativeW& rhs )
 {
 	// 比較長には終端NULを含めないといけない
-	return wmemcmp(lhs.GetStringPtr(), rhs.GetStringPtr(),
-			t_min(lhs.GetStringLength() + 1, rhs.GetStringLength() + 1));
+	return _memicmp(lhs.GetStringPtr(), rhs.GetStringPtr(),
+	                t_min(lhs.GetStringLength() + 1, rhs.GetStringLength() + 1));
+//	return wmemcmp(lhs.GetStringPtr(), rhs.GetStringPtr(),
+//			t_min(lhs.GetStringLength() + 1, rhs.GetStringLength() + 1));
 }
 
 /*!	物理行のソートに使う関数(昇順) */
