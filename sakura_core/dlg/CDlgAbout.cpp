@@ -209,11 +209,13 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef NKMM_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d L%02d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
+	auto_sprintf( szMsg, _T("Build. %d.%d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
+	//auto_sprintf( szMsg, _T("Ver. %d.%d L%02d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
 	//auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d L%02d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
 	//auto_sprintf( szMsg, _T("Ver. %d.%d.%d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
-		HIWORD( dwVersionMS ),
-		LOWORD( dwVersionMS ),
+		PR_VER_VAL,
+//		HIWORD( dwVersionMS ),
+//		LOWORD( dwVersionMS ),
 //		HIWORD( dwVersionLS ),
 //		LOWORD( dwVersionLS ),
 		PR_LV
