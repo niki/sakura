@@ -609,17 +609,29 @@ struct SORTDATA {
 inline int CNativeW_comp(const CNativeW& lhs, const CNativeW& rhs )
 {
 	// 比較長には終端NULを含めないといけない
-	return _memicmp(lhs.GetStringPtr(), rhs.GetStringPtr(),
-	                t_min(lhs.GetStringLength() + 1, rhs.GetStringLength() + 1));
-//	return wmemcmp(lhs.GetStringPtr(), rhs.GetStringPtr(),
-//			t_min(lhs.GetStringLength() + 1, rhs.GetStringLength() + 1));
+	return wmemcmp(lhs.GetStringPtr(), rhs.GetStringPtr(),
+			t_min(lhs.GetStringLength() + 1, rhs.GetStringLength() + 1));
 }
 
+inline int CNativeW_icomp(const CNativeW &lhs, const CNativeW &rhs)
+{
+	// 比較長には終端NULを含めないといけない
+	return _memicmp(lhs.GetStringPtr(), rhs.GetStringPtr(),
+	                t_min(lhs.GetStringLength() + 1, rhs.GetStringLength() + 1));
+}
+
+
 /*!	物理行のソートに使う関数(昇順) */
-bool SortByLineAsc (SORTDATA* pst1, SORTDATA* pst2) {return CNativeW_comp(*pst1->pCmemLine, *pst2->pCmemLine) < 0;}
+bool SortByLineAsc (SORTDATA* pst1, SORTDATA* pst2)
+{
+	return CNativeW_icomp(*pst1->pCmemLine, *pst2->pCmemLine) < 0;
+}
 
 /*!	物理行のソートに使う関数(降順) */
-bool SortByLineDesc(SORTDATA* pst1, SORTDATA* pst2) {return CNativeW_comp(*pst1->pCmemLine, *pst2->pCmemLine) > 0;}
+bool SortByLineDesc(SORTDATA* pst1, SORTDATA* pst2)
+{
+	return CNativeW_icomp(*pst1->pCmemLine, *pst2->pCmemLine) > 0;
+}
 
 inline int CStringRef_comp(const CStringRef& c1, const CStringRef& c2)
 {
