@@ -90,7 +90,8 @@ public:
 	wchar_t operator[](int nIndex) const;                    //!< 任意位置の文字取得。nIndexは文字単位。
 	CLogicInt GetStringLength() const                        //!< 文字列長を返す。文字単位。
 	{
-		return CLogicInt(CNative::GetRawLength() / sizeof(wchar_t));
+		//return CLogicInt(CNative::GetRawLength() / sizeof(wchar_t));
+		return CLogicInt(CNative::GetRawLength() >> (sizeof(wchar_t) >> 1));
 	}
 	const wchar_t* GetStringPtr() const
 	{
