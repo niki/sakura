@@ -85,8 +85,8 @@ bool CColor_Numeric::EndColor(const CStringRef& cStr, int nPos)
 static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*, int length*/)
 {
 #ifdef NKMM_FIX_NUMERIC_COLOR
-	register const wchar_t *p2 = cStr.GetPtr() + offset;
-	register const wchar_t *q2 = cStr.GetPtr() + cStr.GetLength();
+	const wchar_t *p2 = cStr.GetPtr() + offset;
+	const wchar_t *q2 = cStr.GetPtr() + cStr.GetLength();
 
 #if REGEX_MODE == 0  // std::regex
 	using _regex = wregex;                                     // 照合パターン

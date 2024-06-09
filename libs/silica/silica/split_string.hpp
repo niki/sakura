@@ -64,7 +64,8 @@ public:
 
 			c++;
 		}
-		// xxx: トークンありき
+		/// xxx: トークンありき
+		/// warning C4715: 'si::text::SplitString::At': 値を返さないコントロール パスがあります。
 	}
 	std::tstring operator[](int index) { return At(index); }
 
