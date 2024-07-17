@@ -1792,58 +1792,66 @@ STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | DS_CONTEXTHELP | WS_POPUP |
 EXSTYLE WS_EX_CONTEXTHELP
 FONT 9, NKMM_RES_FONT_NAME
 BEGIN
-    CONTROL         "折り返し行に改行を付けてコピー(&C)",
-                    IDC_CHECK_ADDCRLFWHENCOPY,"Button",BS_AUTOCHECKBOX |
-                    WS_GROUP | WS_TABSTOP,8,16,143,10
-    CONTROL         "コピーしたら選択解除(&R)",
-                    IDC_CHECK_COPYnDISABLESELECTEDAREA,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,29,143,10
-    CONTROL         "選択なしでコピーを可能にする(&E)",
-                    IDC_CHECK_bEnableNoSelectCopy,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,42,143,10
-    CONTROL         "ラインモード貼り付けを可能にする(&L)",
-                    IDC_CHECK_bEnableLineModePaste,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,55,143,10
-    CONTROL         "改行コードを変換して貼り付ける(&P)",
-                    IDC_CHECK_CONVERTEOLPASTE,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,68,143,10
     GROUPBOX        "コピー",IDC_STATIC,3,3,149,81,WS_GROUP
-    CONTROL         "ドラッグ && ドロップ編集する(&D)",IDC_CHECK_DRAGDROP,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,104,
-                    143,10
-    CONTROL         "ドロップ元にする(&S)",IDC_CHECK_DROPSOURCE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,117,143,10
-    GROUPBOX        "ドラッグ && ドロップ",IDC_STATIC,3,91,149,43,WS_GROUP
+    CONTROL         "折り返し行に改行を付けてコピー(&C)",
+                    IDC_CHECK_ADDCRLFWHENCOPY,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,
+                    8,16,143,10
+    CONTROL         "コピーしたら選択解除(&R)",
+                    IDC_CHECK_COPYnDISABLESELECTEDAREA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,29,143,10
+    CONTROL         "選択なしでコピーを可能にする(&E)",
+                    IDC_CHECK_bEnableNoSelectCopy,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,42,143,10
+    CONTROL         "ラインモード貼り付けを可能にする(&L)",
+                    IDC_CHECK_bEnableLineModePaste,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,55,143,10
+    CONTROL         "改行コードを変換して貼り付ける(&P)",
+                    IDC_CHECK_CONVERTEOLPASTE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,68,143,10
+    GROUPBOX        "ドラッグ && ドロップ",IDC_STATIC,3,89,149,43,WS_GROUP
+    CONTROL         "ドラッグ && ドロップ編集する(&D)",
+                    IDC_CHECK_DRAGDROP,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,
+                    8,102,143,10
+    CONTROL         "ドロップ元にする(&S)",
+                    IDC_CHECK_DROPSOURCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,115,143,10
+    GROUPBOX        "上書きモード",IDC_STATIC,3,136,149,58,WS_GROUP
     CONTROL         "改行コードは上書きしない(&N)",
-                    IDC_CHECK_bNotOverWriteCRLF,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,156,143,10
+                    IDC_CHECK_bNotOverWriteCRLF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,149,143,10
     CONTROL         "文字幅に合わせてスペースを詰める(&F)",
-                    IDC_CHECK_bOverWriteFixMode,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,169,143,10
+                    IDC_CHECK_bOverWriteFixMode,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,162,143,10
     CONTROL         "矩形入力で選択範囲を削除する(&G)",
-                    IDC_CHECK_bOverWriteBoxDelete,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,182,143,10
-    GROUPBOX        "上書きモード",IDC_STATIC,3,143,149,58,WS_GROUP
-    CONTROL         "クリックで&URLを選択する",IDC_CHECK_bSelectClickedURL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,18,120,10
+                    IDC_CHECK_bOverWriteBoxDelete,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,175,143,10
+    GROUPBOX        "ソート",IDC_STATIC,3,200,149,32,WS_GROUP
+    CONTROL         "Case-sensitive",
+                    IDC_CHECK_bSelectClickedURL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,162,143,10
     GROUPBOX        "クリッカブルURL",IDC_STATIC,156,3,131,35,WS_GROUP
-    CONTROL         "カレントフォルダ(&U)",IDC_RADIO_CURDIR,"Button",
-                    BS_AUTORADIOBUTTON,161,54,90,8
-    CONTROL         "最近使ったフォルダ(&M)",IDC_RADIO_MRUDIR,"Button",
-                    BS_AUTORADIOBUTTON,161,69,90,8
-    CONTROL         "指定フォルダ(&F)",IDC_RADIO_SELDIR,"Button",
-                    BS_AUTORADIOBUTTON,161,84,90,8
+    CONTROL         "クリックで&URLを選択する",
+                    IDC_CHECK_bSelectClickedURL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    161,14,120,10
+    GROUPBOX        "ファイルダイアログの初期位置",IDC_STATIC,156,41,130,79,WS_GROUP
+    CONTROL         "カレントフォルダ(&U)",
+                    IDC_RADIO_CURDIR,"Button",BS_AUTORADIOBUTTON,
+                    161,54,90,8
+    CONTROL         "最近使ったフォルダ(&M)",
+                    IDC_RADIO_MRUDIR,"Button",BS_AUTORADIOBUTTON,
+                    161,69,90,8
+    CONTROL         "指定フォルダ(&F)",
+                    IDC_RADIO_SELDIR,"Button",BS_AUTORADIOBUTTON,
+                    161,84,90,8
     EDITTEXT        IDC_EDIT_FILEOPENDIR,161,100,111,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON_FILEOPENDIR,273,100,9,12
-    GROUPBOX        "ファイルダイアログの初期位置",IDC_STATIC,156,41,130,79,
-                    WS_GROUP
-    CONTROL         "改行コードNEL,PS,LSを有効にする(&O)",
-                    IDC_CHECK_ENABLEEXTEOL,"Button",BS_AUTOCHECKBOX | WS_GROUP
-                    | WS_TABSTOP,161,138,122,10
-    CONTROL         "矩形選択移動で選択をロックする(&B)",
-                    IDC_CHECK_BOXSELECTLOCK,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,161,151,122,10
     GROUPBOX        "その他",IDC_STATIC,156,125,131,42,WS_GROUP
+    CONTROL         "改行コードNEL,PS,LSを有効にする(&O)",
+                    IDC_CHECK_ENABLEEXTEOL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,
+                    161,138,122,10
+    CONTROL         "矩形選択移動で選択をロックする(&B)",
+                    IDC_CHECK_BOXSELECTLOCK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    161,151,122,10
 END
 
 IDD_PROP_FILE DIALOGEX 0, 0, 293, 240
