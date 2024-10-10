@@ -207,6 +207,9 @@ void CPropEdit::SetData( HWND hwndDlg )
 	// 矩形入力で選択範囲を削除する
 	CheckDlgButtonBool( hwndDlg, IDC_CHECK_bOverWriteBoxDelete, m_Common.m_sEdit.m_bOverWriteBoxDelete );
 
+	CheckDlgButtonBool(hwndDlg, IDC_CHECK_bSortCaseSensitive, m_Common.m_sEdit.m_bSortCaseSensitive);
+	CheckDlgButtonBool(hwndDlg, IDC_CHECK_bSortHiraKanaSensitive, m_Common.m_sEdit.m_bSortHiraKanaSensitive);
+
 	//	URLがクリックされたら選択するか */	// 2007.02.11 genta このページへ移動
 	::CheckDlgButton( hwndDlg, IDC_CHECK_bSelectClickedURL, m_Common.m_sEdit.m_bSelectClickedURL );
 
@@ -260,6 +263,9 @@ int CPropEdit::GetData( HWND hwndDlg )
 
 	// 文字幅に合わせてスペースを詰める
 	m_Common.m_sEdit.m_bOverWriteFixMode = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_bOverWriteFixMode );
+
+	m_Common.m_sEdit.m_bSortCaseSensitive = ::IsDlgButtonChecked(hwndDlg, IDC_CHECK_bSortCaseSensitive);
+	m_Common.m_sEdit.m_bSortHiraKanaSensitive = ::IsDlgButtonChecked(hwndDlg, IDC_CHECK_bSortHiraKanaSensitive);
 
 	// 矩形入力で選択範囲を削除する
 	m_Common.m_sEdit.m_bOverWriteBoxDelete = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_bOverWriteBoxDelete );

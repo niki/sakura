@@ -370,9 +370,13 @@ bool CShareData::InitShareData()
 			sEdit.m_bConvertEOLPaste = false;			/* 改行コードを変換して貼り付ける */	// 2009.02.28 salarm
 			sEdit.m_bEnableExtEol = false;
 			sEdit.m_bBoxSelectLock = true;
+			//sEdit.m_bVistaStyleFileDialog = true;
 
 			sEdit.m_bNotOverWriteCRLF = FALSE;			/* 改行は上書きしない */
 			sEdit.m_bOverWriteFixMode = false;			// 文字幅に合わせてスペースを詰める
+
+			sEdit.m_bSortCaseSensitive = false;
+			sEdit.m_bSortHiraKanaSensitive = true;
 
 			sEdit.m_bOverWriteBoxDelete = false;
 			sEdit.m_eOpenDialogDir = OPENDIALOGDIR_CUR;

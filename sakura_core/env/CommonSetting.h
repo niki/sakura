@@ -221,6 +221,9 @@ struct CommonSetting_Edit
 	bool	m_bOverWriteFixMode;		//!< 文字幅に合わせてスペースを詰める
 	bool	m_bOverWriteBoxDelete;		//!< 上書きモードでの矩形入力で選択範囲を削除する
 
+	bool m_bSortCaseSensitive;
+	bool m_bSortHiraKanaSensitive;
+
 	//クリッカブルURL
 	BOOL	m_bJumpSingleClickURL;		//!< URLのシングルクリックでJump $$$未使用
 	BOOL	m_bSelectClickedURL;		//!< URLがクリックされたら選択するか

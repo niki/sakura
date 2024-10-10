@@ -701,6 +701,8 @@
 #define IDC_EDIT_FILEOPENDIR            1630
 #define IDC_BUTTON_FILEOPENDIR          1631
 #define IDC_CHECK_bOverWriteFixMode     1632
+#define IDC_CHECK_bSortCaseSensitive    1728
+#define IDC_CHECK_bSortHiraKanaSensitive 1729
 #define IDC_STATIC_MOZI                 1633
 #define IDC_BUTTON_TYPEFONT             1634
 #define IDC_CHECK_USETYPEFONT           1635
