@@ -38,7 +38,7 @@ void CFigure_ZenSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 	{
 		int u25a1Dx = pcView->GetTextMetrics().CalcTextWidth3(L"□", 1);
 		bool bDrawMySelf = dx[0] != u25a1Dx;
-		const wchar_t* pZenSp = (bDrawMySelf ? L"　" : L"☒");
+		const wchar_t* pZenSp = (bDrawMySelf ? L"　" : L"□");
 		int fontNo = WCODE::GetFontNo(*pZenSp);
 		if( fontNo ){
 			SFONT sFont;
