@@ -40,10 +40,19 @@ struct ColorInfoIni {
 
 static ColorInfoIni ColorInfo_DEFAULT[] = {
 //	項目名,									表示,		太字,		下線,		文字色,					背景色,
+#ifdef NKMM_FIX_DEFAULT_VALUE
+	{ STR_COLOR_TEXT,						{ TRUE,		{ FALSE,	FALSE },	{ RGB(  46,  45,  43 ),	RGB( 255, 251, 240 ) } } },
+#else
 	{ STR_COLOR_TEXT,						{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0,   0,   0 ),	RGB( 255, 251, 240 ) } } },
+#endif
 	{ STR_COLOR_RULER,						{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0,   0,   0 ),	RGB( 239, 239, 239 ) } } },
+#ifdef NKMM_FIX_DEFAULT_VALUE
+	{ STR_COLOR_CURSOR,						{ TRUE,		{ FALSE,	FALSE },	{ RGB( 255,   0,   0 ),	RGB( 255, 251, 240 ) } } },	// 2006.12.07 ryoji
+	{ STR_COLOR_CURSOR_IMEON,				{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0, 128,   0 ),	RGB( 255, 251, 240 ) } } },	// 2006.12.07 ryoji
+#else
 	{ STR_COLOR_CURSOR,						{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0,   0,   0 ),	RGB( 255, 251, 240 ) } } },	// 2006.12.07 ryoji
 	{ STR_COLOR_CURSOR_IMEON,				{ TRUE,		{ FALSE,	FALSE },	{ RGB( 255,   0,   0 ),	RGB( 255, 251, 240 ) } } },	// 2006.12.07 ryoji
+#endif
 	{ STR_COLOR_CURSOR_LINE_BG,				{ FALSE,	{ FALSE,	FALSE },	{ RGB(   0,   0,   0 ),	RGB( 255, 255, 128 ) } } },	// 2012.11.21 Moca
 	{ STR_COLOR_CURSOR_LINE,				{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0,   0, 255 ),	RGB( 255, 251, 240 ) } } },
 	{ STR_COLOR_CURSOR_COLUMN,				{ FALSE,	{ FALSE,	FALSE },	{ RGB( 128, 128, 255 ),	RGB( 255, 251, 240 ) } } },	// 2007.09.09 Moca
@@ -61,7 +70,11 @@ static ColorInfoIni ColorInfo_DEFAULT[] = {
 	{ STR_COLOR_EOF,						{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0, 255, 255 ),	RGB(   0,   0,   0 ) } } },
 	{ STR_COLOR_NUMBER,						{ FALSE,	{ FALSE,	FALSE },	{ RGB( 235,   0,   0 ),	RGB( 255, 251, 240 ) } } },	//@@@ 2001.02.17 by MIK		//Mar. 7, 2001 JEPRO RGB(0,0,255)を変更  Mar.10, 2001 標準は色なしに
 	{ STR_COLOR_BRACKET,					{ FALSE,	{ TRUE,		FALSE },	{ RGB( 128,   0,   0 ),	RGB( 255, 251, 240 ) } } },	// 02/09/18 ai
+#ifdef NKMM_FIX_DEFAULT_VALUE
+	{ STR_COLOR_SELECTED_AREA,				{ TRUE,		{ FALSE,	FALSE },	{ RGB( 153, 201, 239 ),	RGB( 153, 201, 239 ) } } },	//2011.05.18
+#else
 	{ STR_COLOR_SELECTED_AREA,				{ TRUE,		{ FALSE,	FALSE },	{ RGB(  49, 106, 197 ),	RGB(  49, 106, 197 ) } } },	//2011.05.18
+#endif
 	{ STR_COLOR_SEARCH_WORD1,				{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0,   0,   0 ),	RGB( 255, 255,   0 ) } } },
 	{ STR_COLOR_SEARCH_WORD2,				{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0,   0,   0 ),	RGB( 160, 255, 255 ) } } },
 	{ STR_COLOR_SEARCH_WORD3,				{ TRUE,		{ FALSE,	FALSE },	{ RGB(   0,   0,   0 ),	RGB( 153, 255, 153 ) } } },
