@@ -3,7 +3,7 @@
 
 改修内容・ダウンロードはこちらから。
 
-[https://note.com/nekomimix_jp/n/n7463242cc326](https://note.com/katakotori/n/n7463242cc326)
+[https://note.com/katakotori/n/n7463242cc326](https://note.com/katakotori/n/n7463242cc326)
 
 <hr>
 
