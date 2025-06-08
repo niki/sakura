@@ -29,3 +29,17 @@
 *.exe
 *.out
 *.app
+
+
+*.asm
+*.patch
+*.log
+*.tlog
+*.obj
+*.iobj
+*.pdb
+*.ipdb
+
+Publish
+[Dd]ebug64/
+[Rr]elease64/
