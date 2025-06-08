@@ -139,8 +139,8 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OpenMPSupport>true</OpenMPSupport>
       <ForcedIncludeFiles>my.h</ForcedIncludeFiles>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <ResourceCompile>
