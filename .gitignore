@@ -39,7 +39,11 @@
 *.iobj
 *.pdb
 *.ipdb
+*.user
+tags
 
-Publish
+Publish/
+[Dd]ebug/
+[Rr]elease/
 [Dd]ebug64/
 [Rr]elease64/
