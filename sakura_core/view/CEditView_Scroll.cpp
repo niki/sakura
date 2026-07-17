@@ -29,10 +29,11 @@
 #include "window/CEditWnd.h"
 #include "types/CTypeSupport.h"
 #include <limits.h>
-#ifdef NKMM_FIX_EDITVIEW_SCRBAR
 #include "_main/CAppMode.h"
 #include "CEditApp.h"
 #include "CGrepAgent.h" // use CEditApp.h
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+#include "extmodule/CUxTheme.h"
 #endif // NKMM_
 
 
@@ -67,6 +68,9 @@ BOOL CEditView::CreateScrollBar()
 	si.nTrackPos = 1;
 	::SetScrollInfo( m_hwndVScrollBar, SB_CTL, &si, TRUE );
 	::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
+#if NKMM_SCRBAR_SYSTEM_STYLE
+	CUxTheme::getInstance()->SetWindowTheme( m_hwndVScrollBar, L"Explorer", NULL );	// システム(Explorer)風スクロールバー
+#endif // NKMM_SCRBAR_SYSTEM_STYLE
 
 	/* スクロールバーの作成 */
 	m_hwndHScrollBar = NULL;
@@ -94,6 +98,9 @@ BOOL CEditView::CreateScrollBar()
 		si.nTrackPos = 1;
 		::SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE );
 		::ShowScrollBar( m_hwndHScrollBar, SB_CTL, TRUE );
+#if NKMM_SCRBAR_SYSTEM_STYLE
+		CUxTheme::getInstance()->SetWindowTheme( m_hwndHScrollBar, L"Explorer", NULL );	// システム(Explorer)風スクロールバー
+#endif // NKMM_SCRBAR_SYSTEM_STYLE
 	}
 
 

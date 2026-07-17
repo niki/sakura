@@ -64,7 +64,7 @@
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
 	#define PR_VER_VAL	2320
-	#define PR_LV		25
+	#define PR_LV		26
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -164,6 +164,9 @@
 	#define NKMM_SCRBAR_CURSOR_COLOR _T("#0026ff") //_T("#0000cd") //_T("#00d800")
 
 	#define NKMM_EDITVIEW_H_SCRBAR_REDRAW_TIMING  (1)  // 水平スクロールバーの更新タイミングを修正
+	// システム(Explorer)風の細いスクロールバーにする 20260717
+	// SetWindowTheme(hwnd, L"Explorer", NULL) を適用する。テーマ無効環境では従来通りの見た目にフォールバックする
+	#define NKMM_SCRBAR_SYSTEM_STYLE (1)
 
 //------------------------------------------------------------------
 // 行間を上揃えではなく下揃えにする
