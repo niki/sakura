@@ -1,4 +1,5 @@
-.vs
+# Prerequisites
+*.d
 
 # Compiled Object files
 *.slo
@@ -10,10 +11,18 @@
 *.gch
 *.pch
 
+# Linker files
+*.ilk
+
+# Debugger Files
+*.pdb
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
-#*.dll
+*.dll
+*.so.*
+
 
 # Fortran module files
 *.mod
@@ -23,27 +32,56 @@
 *.lai
 *.la
 *.a
-#*.lib
+*.lib
 
 # Executables
 *.exe
 *.out
 *.app
 
+# Build directories
+build/
+Build/
+build-*/
 
-*.asm
-*.patch
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+
+# Temporary files
+*.tmp
 *.log
-*.tlog
-*.obj
-*.iobj
-*.pdb
-*.ipdb
+*.bak
+*.swp
 *.user
-tags
 
-Publish/
-[Dd]ebug/
-[Rr]elease/
-[Dd]ebug64/
-[Rr]elease64/
+# vcpkg
+vcpkg_installed/
+
+# debug information files
+*.dwo
+
+# test output & cache
+Testing/
+.cache/
+HeaderMake/Release/
+MakefileMake/Release/
+sakura/.vs/
+sakura/Debug/
+sakura/Debug64/
+sakura/Release/
+sakura/Release64/
+sakura/x64/
+sakura/sakura/
+
+# Root
+*.zip
+
+Publish/*.zip
+Publish/*.7z
+
+*.patch

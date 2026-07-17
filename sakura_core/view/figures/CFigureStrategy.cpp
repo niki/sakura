@@ -67,6 +67,9 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo)
 	}
 #endif // NKMM_
 
+#ifdef NKMM_FIX_COLOR_FONT
+	CMyPoint ptColorCellBegin = pInfo->m_pDispPos->GetDrawPos();
+#endif // NKMM_
 	pInfo->m_pcView->GetTextDrawer().DispText(
 		pInfo->m_gr,
 		pInfo->m_pDispPos,
@@ -75,6 +78,29 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo)
 		nLength,
 		bTrans
 	);
+#ifdef NKMM_FIX_COLOR_FONT
+	{
+		//GDIでの描画直後に、このグリフがカラーフォント(絵文字等)のグリフなら
+		//描画待ちキューへ積む。GDI描画そのものは変更しない。
+		CMyPoint ptColorCellEnd = pInfo->m_pDispPos->GetDrawPos();
+		RECT rcColorCell;
+		rcColorCell.left   = ptColorCellBegin.x;
+		rcColorCell.top    = ptColorCellBegin.y;
+		rcColorCell.right  = ptColorCellEnd.x;
+		rcColorCell.bottom = ptColorCellBegin.y + pInfo->m_pcView->GetTextMetrics().GetHankakuDy();
+		HFONT hFontUsed = (HFONT)::GetCurrentObject(pInfo->m_gr, OBJ_FONT);
+		COLORREF crForeUsed = ::GetTextColor(pInfo->m_gr);
+		COLORREF crBackUsed = ::GetBkColor(pInfo->m_gr);
+		//DispTextが実際にグリフを描画するY位置は、rcColorCell.topそのものではなく
+		//GetLineMargin()とnHeightMarginぶんだけ下にずれている(下のDispText呼び出しの
+		//引数と同じ計算)。上書き描画のベースライン合わせに必要なので一緒に渡す。
+		int nBaselineTopOffset = nHeightMargin;
+#ifdef NKMM_LINE_MARGIN_TOP
+		nBaselineTopOffset += pInfo->m_pcView->GetLineMargin();
+#endif // NKMM_
+		pInfo->m_pcView->TryQueueColorGlyph(hFontUsed, &pInfo->m_pLineOfLogic[nIdx], nLength, rcColorCell, nBaselineTopOffset, crForeUsed, crBackUsed);
+	}
+#endif // NKMM_
 #ifdef NKMM_FIX_SELAREA
 	if (select) {
 		pInfo->m_gr.PopMyFont();

@@ -25,11 +25,19 @@
 #include "StdAfx.h"
 #include "CViewFont.h"
 
+#ifdef NKMM_FIX_COLOR_FONT
+ULONG CViewFont::s_nGeneration = 0;
+#endif // NKMM_
+
 /*! フォント作成
 */
 void CViewFont::CreateFont(const LOGFONT *plf)
 {
 	LOGFONT	lf;
+
+#ifdef NKMM_FIX_COLOR_FONT
+	++s_nGeneration;
+#endif // NKMM_
 
 	/* フォント作成 */
 	lf = *plf;

@@ -861,6 +861,16 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		GetRuler().DispRuler( gr );
 	}
 
+#ifdef NKMM_FIX_COLOR_FONT
+	//全行のGDI描画(選択範囲の反転描画・ルーラーも含む)が終わった直後、
+	//bUseMemoryDCの場合は画面へのBitBltより前に、まとめてカラーフォント
+	//(絵文字等)のグリフをオーバーレイ描画する。1行ごとにDirect2Dの
+	//BindDC/BeginDraw/EndDrawを繰り返すと、後で1枚のメモリDCとして
+	//BitBltされる構成と相性が悪く、後から描いた行の内容が反映されない
+	//ことがあったため、ここで1回にまとめる。
+	FlushColorGlyphQueue(gr);
+#endif // NKMM_
+
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                     その他後始末など                        //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -1325,6 +1335,13 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 					: CLayoutInt(0))
 		);
 	}
+
+	//NKMM_FIX_COLOR_FONT: カラーフォント(絵文字等)のグリフ描画待ちキューは、ここでは
+	//flushしない。1行ごとにDirect2DのBindDC/BeginDraw/EndDrawを繰り返すと、
+	//bUseMemoryDCで全行を1枚のメモリDCへ描いてから最後に一括BitBltする構成と
+	//相性が悪く、後から描いた行のBitBlt後の内容が不安定になる(2行目以降の色が
+	//消える不具合の原因だった)。OnPaint2側で全行のGDI描画が終わった直後・
+	//BitBltの直前に1回だけまとめてflushする。
 
 	return bDispEOF;
 }

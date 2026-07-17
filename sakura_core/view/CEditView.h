@@ -47,6 +47,7 @@
 #include "CTextMetrics.h"
 #include "CTextDrawer.h"
 #include "CTextArea.h"
+#include "CColorGlyphCell.h"	// カラーフォント(絵文字等)描画キュー用POD
 #include "CCaret.h"
 #include "CViewCalc.h" // parent
 #include "CEditView_Paint.h"	// parent
@@ -250,6 +251,18 @@ protected:
 
 	//! レイアウト行を1行描画
 	bool DrawLayoutLine(SColorStrategyInfo* pInfo);
+
+#ifdef NKMM_FIX_COLOR_FONT
+	//カラーフォント(絵文字等)描画
+public:
+	//! GDIでの描画直後に、このグリフがカラーフォントのグリフなら描画待ちキューに積む。
+	//! 実際の描画はまだ行わない(GDIが描画したフォールバック用グリフはそのまま残る)。
+	void TryQueueColorGlyph(HFONT hFont, const wchar_t* pData, int nLength, const RECT& rcCell, int nBaselineTopOffset, COLORREF crFore, COLORREF crBack);
+	//! 1visual行分たまった描画待ちキューを、その行の全GDI描画が終わった後にまとめて描画する。
+	void FlushColorGlyphQueue(CGraphics& gr);
+private:
+	std::vector<SColorGlyphCell> m_vPendingColorGlyphs;
+#endif // NKMM_
 
 	//色分け
 public:

@@ -273,6 +273,18 @@ namespace WCODE
 				return t_max<int>(nCx, size.cx);
 			}
 			GetTextExtentPoint32W_AnyBuild(SelectHDC(c),&c,1,&size);
+#ifdef NKMM_FIX_EMOJI_WIDTH
+			//U+263A等、サロゲートペアを使わないBMP内の絵文字的記号もSystemLinkで
+			//代替フォントへ差し替えられて描画されることがあり、実測字送り幅が
+			//「半角幅の整数倍」からズレることがある。レイアウトは半角幅の固定
+			//グリッドを前提とするため、最も近い半角幅の整数倍に丸める
+			//(CalcPxWidthByFont2と同じ理由。詳細はそちらのコメント参照)。
+			if( m_han_size.cx > 0 && size.cx > 0 ){
+				int nKeta = (size.cx + m_han_size.cx / 2) / m_han_size.cx;
+				if( nKeta < 1 ) nKeta = 1;
+				return nKeta * m_han_size.cx;
+			}
+#endif // NKMM_
 			return t_max<int>(1,size.cx);
 		}
 		int CalcPxWidthByFont2(const wchar_t* pc2)
@@ -280,6 +292,19 @@ namespace WCODE
 			SIZE size={m_han_size.cx*2,0};
 			// サロゲートは全角フォント
 			GetTextExtentPoint32W_AnyBuild(m_hdcFull?m_hdcFull:m_hdc,pc2,2,&size);
+#ifdef NKMM_FIX_EMOJI_WIDTH
+			//本文フォントに無い絵文字等はGDIのSystemLinkで代替フォントへ黙って
+			//差し替えられて描画されるため、実測字送り幅(size.cx)が「半角幅の
+			//ちょうど2倍」からズレることがある。レイアウトの桁位置計算は
+			//この値をそのままピクセル座標として積算していくため、ズレが
+			//後続の文字へ累積し、絵文字混在行でルーラーとの位置が徐々に
+			//食い違っていく。サロゲートペア文字は全角2桁として扱う前提
+			//(GetKetaOfChar等)と矛盾しないよう、常にちょうど半角幅の2倍に
+			//丸める。
+			if( m_han_size.cx > 0 ){
+				return m_han_size.cx * 2;
+			}
+#endif // NKMM_
 			return t_max<int>(1,size.cx);
 		}
 		bool GetMultiFont() const

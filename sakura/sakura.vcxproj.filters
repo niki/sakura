@@ -580,6 +580,12 @@
     <ClInclude Include="..\sakura_core\view\CCaret.h">
       <Filter>Cpp Source Files\view</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\view\CColorFontRenderer.h">
+      <Filter>Cpp Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\view\CColorGlyphCell.h">
+      <Filter>Cpp Source Files\view</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\view\CEditView.h">
       <Filter>Cpp Source Files\view</Filter>
     </ClInclude>
@@ -1644,6 +1650,12 @@
       <Filter>Cpp Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\view\CEditView_Ime.cpp">
+      <Filter>Cpp Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\view\CEditView_ColorFont.cpp">
+      <Filter>Cpp Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\view\CColorFontRenderer.cpp">
       <Filter>Cpp Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\view\CEditView_Mouse.cpp">

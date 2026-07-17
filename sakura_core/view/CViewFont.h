@@ -55,6 +55,12 @@ public:
 		return m_LogFont;
 	}
 
+#ifdef NKMM_FIX_COLOR_FONT
+	//! フォントが作り直されるたびに増加する世代番号。
+	//! HFONTから派生させたリソース(IDWriteFontFace等)のキャッシュ無効化に使う。
+	static ULONG GetFontGeneration(){ return s_nGeneration; }
+#endif // NKMM_
+
 private:
 	void CreateFont(const LOGFONT *plf);
 	void DeleteFont();
@@ -65,6 +71,10 @@ private:
 	HFONT	m_hFont_HAN_BOLD_UL;	/* 現在のフォントハンドル(太字、下線) */
 
 	LOGFONT	m_LogFont;
+
+#ifdef NKMM_FIX_COLOR_FONT
+	static ULONG s_nGeneration;
+#endif // NKMM_
 };
 
 #endif /* SAKURA_CVIEWFONT_9E51373D_58BA_4A64_9930_5174F7BF9C929_H_ */

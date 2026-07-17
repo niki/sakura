@@ -358,10 +358,12 @@ util/tchar_receive.o \
 util/tchar_template.o \
 util/window.o \
 view/CCaret.o \
+view/CColorFontRenderer.o \
 view/CEditView.o \
 view/CEditView_Cmdgrep.o \
 view/CEditView_CmdHokan.o \
 view/CEditView_Cmdisrch.o \
+view/CEditView_ColorFont.o \
 view/CEditView_Command.o \
 view/CEditView_Command_New.o \
 view/CEditView_Diff.o \

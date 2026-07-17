@@ -505,6 +505,8 @@
     <ClInclude Include="..\sakura_core\util\tchar_template.h" />
     <ClInclude Include="..\sakura_core\util\window.h" />
     <ClInclude Include="..\sakura_core\view\CCaret.h" />
+    <ClInclude Include="..\sakura_core\view\CColorFontRenderer.h" />
+    <ClInclude Include="..\sakura_core\view\CColorGlyphCell.h" />
     <ClInclude Include="..\sakura_core\view\CEditView.h" />
     <ClInclude Include="..\sakura_core\view\CEditView_Paint.h" />
     <ClInclude Include="..\sakura_core\view\colors\CColorStrategy.h" />
@@ -904,6 +906,7 @@
     <ClCompile Include="..\sakura_core\view\CEditView_CmdHokan.cpp" />
     <ClCompile Include="..\sakura_core\view\CEditView_Cmdisrch.cpp" />
     <ClCompile Include="..\sakura_core\view\CEditView_Command.cpp" />
+    <ClCompile Include="..\sakura_core\view\CEditView_ColorFont.cpp" />
     <ClCompile Include="..\sakura_core\view\CEditView_Command_New.cpp" />
     <ClCompile Include="..\sakura_core\view\CEditView_Diff.cpp" />
     <ClCompile Include="..\sakura_core\view\CEditView_ExecCmd.cpp" />
@@ -913,6 +916,7 @@
     <ClCompile Include="..\sakura_core\view\CEditView_Paint_Bracket.cpp" />
     <ClCompile Include="..\sakura_core\view\CEditView_Scroll.cpp" />
     <ClCompile Include="..\sakura_core\view\CEditView_Search.cpp" />
+    <ClCompile Include="..\sakura_core\view\CColorFontRenderer.cpp" />
     <ClCompile Include="..\sakura_core\view\colors\CColorStrategy.cpp" />
     <ClCompile Include="..\sakura_core\view\colors\CColor_Comment.cpp" />
     <ClCompile Include="..\sakura_core\view\colors\CColor_Found.cpp" />
