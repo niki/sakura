@@ -470,6 +470,17 @@ LRESULT CTabWnd::OnTabMouseMove( WPARAM wParam, LPARAM lParam )
 		// 元のタブから離れたらドラッグ開始
 		if( m_nSrcTab == nDstTab )
 			break;
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_DRAG_THRESHOLD == 1
+		// クリックのつもりのわずかなカーソル移動をドラッグ開始と誤認識しないよう、
+		// システム標準のドラッグしきい値を超えるまではドラッグ開始とみなさない	20260718
+		{
+			POINT ptNow;
+			::GetCursorPos( &ptNow );
+			if( abs( ptNow.x - m_ptSrcCursor.x ) < ::GetSystemMetrics( SM_CXDRAG )
+				&& abs( ptNow.y - m_ptSrcCursor.y ) < ::GetSystemMetrics( SM_CYDRAG ) )
+				break;
+		}
+#endif // NKMM_
 		m_eDragState = DRAG_DRAG;
 		m_hDefaultCursor = ::GetCursor();
 		m_bTabSwapped = FALSE;
