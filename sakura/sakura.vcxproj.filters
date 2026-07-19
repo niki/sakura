@@ -11,6 +11,9 @@
     <Filter Include="C Source Files">
       <UniqueIdentifier>{375c40c0-858e-4c2a-8224-0b5273af4323}</UniqueIdentifier>
     </Filter>
+    <Filter Include="C Source Files\pcre2">
+      <UniqueIdentifier>{7067f930-c768-442d-8c82-be835061474b}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Cpp Source Files">
       <UniqueIdentifier>{099ccf22-168e-437c-8582-90c4a6decd26}</UniqueIdentifier>
     </Filter>
@@ -1050,6 +1053,48 @@
     </ClInclude>
     <ClInclude Include="..\sakura_core\extmodule\CDllHandler.h">
       <Filter>Cpp Source Files\extmodule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\extmodule\CRegexFallback.h">
+      <Filter>Cpp Source Files\extmodule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\config.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_internal.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_intmodedep.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_compile.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_ucp.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_ucptables_inc.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_jit_char_inc.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_jit_match_inc.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_jit_misc_inc.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_jit_simd_inc.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_printint_inc.h">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\pcre2\pcre2_util.h">
+      <Filter>C Source Files\pcre2</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\extmodule\CHtmlHelp.h">
       <Filter>Cpp Source Files\extmodule</Filter>
@@ -2234,6 +2279,9 @@
     <ClCompile Include="..\sakura_core\extmodule\CDllHandler.cpp">
       <Filter>Cpp Source Files\extmodule</Filter>
     </ClCompile>
+    <ClCompile Include="..\sakura_core\extmodule\CRegexFallback.cpp">
+      <Filter>Cpp Source Files\extmodule</Filter>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\extmodule\CHtmlHelp.cpp">
       <Filter>Cpp Source Files\extmodule</Filter>
     </ClCompile>
@@ -2242,6 +2290,99 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\extmodule\CUxTheme.cpp">
       <Filter>Cpp Source Files\extmodule</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_auto_possess.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_chkdint.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_chartables.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_compile.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_compile_cgroup.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_compile_class.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_config.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_context.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_convert.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_dfa_match.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_error.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_extuni.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_find_bracket.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_jit_compile.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_maketables.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_match.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_match_data.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_match_next.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_newline.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_ord2utf.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_pattern_info.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_script_run.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_serialize.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_string_utils.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_study.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_substitute.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_substring.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_tables.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_ucd.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_valid_utf.c">
+      <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_xclass.c">
+      <Filter>C Source Files\pcre2</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\print\CPrint.cpp">
       <Filter>Cpp Source Files\print</Filter>

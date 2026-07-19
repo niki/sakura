@@ -89,7 +89,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>MinSpace</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -128,7 +128,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -171,7 +171,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -204,7 +204,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -390,9 +390,25 @@
     <ClInclude Include="..\sakura_core\extmodule\CBregexp.h" />
     <ClInclude Include="..\sakura_core\extmodule\CBregexpDll2.h" />
     <ClInclude Include="..\sakura_core\extmodule\CDllHandler.h" />
+    <ClInclude Include="..\sakura_core\extmodule\CRegexFallback.h" />
     <ClInclude Include="..\sakura_core\extmodule\CHtmlHelp.h" />
     <ClInclude Include="..\sakura_core\extmodule\CMigemo.h" />
     <ClInclude Include="..\sakura_core\extmodule\CUxTheme.h" />
+    <!-- 20260720 PCRE2 10.47 (BSD-3-Clause) をvendor。NKMM_FIX_REGEXP_FALLBACKの
+         フォールバック正規表現エンジン(CRegexFallback.cpp)からのみ使用する。 -->
+    <ClInclude Include="..\libs\pcre2\config.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_internal.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_intmodedep.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_compile.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_ucp.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_ucptables_inc.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_jit_char_inc.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_jit_match_inc.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_jit_misc_inc.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_jit_simd_inc.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_printint_inc.h" />
+    <ClInclude Include="..\libs\pcre2\pcre2_util.h" />
     <ClInclude Include="..\sakura_core\Funccode_define.h" />
     <ClInclude Include="..\sakura_core\Funccode_enum.h" />
     <ClInclude Include="..\sakura_core\func\CFuncKeyWnd.h" />
@@ -751,9 +767,265 @@
     <ClCompile Include="..\sakura_core\extmodule\CBregexp.cpp" />
     <ClCompile Include="..\sakura_core\extmodule\CBregexpDll2.cpp" />
     <ClCompile Include="..\sakura_core\extmodule\CDllHandler.cpp" />
+    <ClCompile Include="..\sakura_core\extmodule\CRegexFallback.cpp">
+      <!-- 20260720 pcre2.hがPCRE2_CODE_UNIT_WIDTH/PCRE2_STATICを要求するため指定 -->
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\extmodule\CHtmlHelp.cpp" />
     <ClCompile Include="..\sakura_core\extmodule\CMigemo.cpp" />
     <ClCompile Include="..\sakura_core\extmodule\CUxTheme.cpp" />
+    <!-- 20260720 PCRE2 10.47 (BSD-3-Clause) をvendor。NKMM_FIX_REGEXP_FALLBACKの
+         フォールバック正規表現エンジン(CRegexFallback.cpp)からのみ使用する。
+         PrecompiledHeaderをNotUsingにするのは、これらのCファイルがStdAfx.hを
+         includeしない(includeすると本来のPCRE2ソースと差分が生じてしまう)ため。 -->
+    <ClCompile Include="..\libs\pcre2\pcre2_auto_possess.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_chkdint.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_chartables.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_compile.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_compile_cgroup.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_compile_class.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_config.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_context.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_convert.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_dfa_match.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_error.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_extuni.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_find_bracket.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_jit_compile.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_maketables.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_match.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_match_data.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_match_next.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_newline.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_ord2utf.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_pattern_info.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_script_run.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_serialize.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_string_utils.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_study.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_substitute.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_substring.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_tables.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_ucd.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_valid_utf.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\pcre2\pcre2_xclass.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\func\CFuncKeyWnd.cpp" />
     <ClCompile Include="..\sakura_core\func\CFuncLookup.cpp" />
     <ClCompile Include="..\sakura_core\func\CKeyBind.cpp" />

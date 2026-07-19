@@ -440,6 +440,11 @@ bool CBregexp::Compile( const wchar_t *szPattern0, const wchar_t *szPattern1, in
 	// 別関数で共通処理に変更 2003.05.03 by かろと
 	wchar_t *szNPattern = NULL;
 	const wchar_t *pszNPattern = NULL;
+	// 20260720 以前はstd::regex(ECMAScript文法)がルックビハインド非対応だったため、
+	// フォールバック時はMakePatternAlternateのCR/LF補正(ルックビハインド使用)を
+	// 丸ごとスキップする特別扱いをしていたが、フォールバックエンジンをPCRE2に
+	// 置き換えたことでルックビハインドがネイティブ対応になったため不要になった。
+	// (DLL版・フォールバック版とも同じ経路で問題ない)
 	if( bKakomi ){
 		pszNPattern = szPattern0;
 	}else{
@@ -618,7 +623,14 @@ bool InitRegexp(
 	LPCTSTR RegexpDll = pShareData->m_Common.m_sSearch.m_szRegexpLib;
 	//	To Here 2007.08.12 genta
 
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+	// 20260720 DLLが見つからない場合はInitDllWithFallback内でPCRE2ベースの
+	// フォールバックへ切り替わりDLL_SUCCESSが返るため、ここで失敗になるのは
+	// DLLはあるがエクスポート不整合(DLL_INITFAILURE)等の実エラーのみ。
+	EDllResult eDllResult = rRegexp.InitDllWithFallback(RegexpDll);
+#else
 	EDllResult eDllResult = rRegexp.InitDll(RegexpDll);
+#endif
 	if( DLL_SUCCESS != eDllResult ){
 		if( bShowMessage ){
 			LPCTSTR pszMsg = _T("");

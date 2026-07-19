@@ -80,7 +80,12 @@
 */
 CRegexKeyword::CRegexKeyword(LPCTSTR regexp_dll )
 {
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+	// 20260720 bregonig.dllが見つからない場合はPCRE2ベースのフォールバックへ切り替える
+	InitDllWithFallback( regexp_dll );	// 2007.08.12 genta 引数追加
+#else
 	InitDll( regexp_dll );	// 2007.08.12 genta 引数追加
+#endif
 	MYDBGMSG("CRegexKeyword")
 
 	m_pTypes    = NULL;

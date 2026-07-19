@@ -47,6 +47,18 @@ public:
 	CBregexpDll2();
 	virtual ~CBregexpDll2();
 
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+	//! DLLロードと初期処理。DLLが見つからない場合はPCRE2ベースのフォールバックへ切り替える。
+	//! (DLLはあるがエクスポート不整合の場合は今まで通りDLL_INITFAILUREを返す) 20260720
+	EDllResult InitDllWithFallback(LPCTSTR pszSpecifiedDllName = NULL);
+
+	//! DLLロード成功、またはフォールバック中なら使用可能 20260720
+	virtual bool IsAvailable() const override { return CDllImp::IsAvailable() || m_bFallback; }
+
+	//! フォールバック(PCRE2)動作中か 20260720
+	bool IsFallback() const { return m_bFallback; }
+#endif // NKMM_FIX_REGEXP_FALLBACK
+
 protected:
 	// CDllImpインタフェース
 	virtual LPCTSTR GetDllNameImp(int nIndex); // Jul. 5, 2001 genta インターフェース変更に伴う引数追加
@@ -65,6 +77,22 @@ protected:
 
 public:
 	// UNICODEインターフェースを提供する
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+	// bregonig.dllが見つからない場合はPCRE2ベースのフォールバックへ委譲するため、
+	// 本体はCBregexpDll2.cppに移し、m_bFallback次第で分岐させる 20260720
+	int BMatch(const wchar_t* str, const wchar_t* target,const wchar_t* targetendp,BREGEXP_W** rxp,wchar_t* msg);
+	int BSubst(const wchar_t* str, const wchar_t* target,const wchar_t* targetendp,BREGEXP_W** rxp,wchar_t* msg);
+	int BTrans(const wchar_t* str, wchar_t* target,wchar_t* targetendp,BREGEXP_W** rxp,wchar_t* msg);
+	int BSplit(const wchar_t* str, wchar_t* target,wchar_t* targetendp,int limit,BREGEXP_W** rxp,wchar_t* msg);
+	void BRegfree(BREGEXP_W* rx);
+	const wchar_t* BRegexpVersion(void);
+	int BMatchEx(const wchar_t* str, const wchar_t* targetbeg, const wchar_t* target, const wchar_t* targetendp, BREGEXP_W** rxp, wchar_t* msg);
+	int BSubstEx(const wchar_t* str, const wchar_t* targetbeg, const wchar_t* target, const wchar_t* targetendp, BREGEXP_W** rxp, wchar_t* msg);
+
+	// 関数があるかどうか(フォールバック中はBMatchEx/BSubstEx相当を自前実装しているので常にtrue) 20260720
+	bool ExistBMatchEx() const{ return m_bFallback || m_BMatchEx!=NULL; }
+	bool ExistBSubstEx() const{ return m_bFallback || m_BSubstEx!=NULL; }
+#else
 	int BMatch(const wchar_t* str, const wchar_t* target,const wchar_t* targetendp,BREGEXP_W** rxp,wchar_t* msg)
 	{
 		return m_BMatch(str,target,targetendp,rxp,msg);
@@ -101,6 +129,7 @@ public:
 	// 関数があるかどうか
 	bool ExistBMatchEx() const{ return m_BMatchEx!=NULL; }
 	bool ExistBSubstEx() const{ return m_BSubstEx!=NULL; }
+#endif // NKMM_FIX_REGEXP_FALLBACK
 
 private:
 	//DLL内関数ポインタ
@@ -112,6 +141,10 @@ private:
 	BREGEXP_BRegexpVersionW2 m_BRegexpVersion;
 	BREGEXP_BMatchExW2       m_BMatchEx;
 	BREGEXP_BSubstExW2       m_BSubstEx;
+
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+	bool m_bFallback = false;	//!< bregonig.dllが見つからずPCRE2で代替動作中か 20260720
+#endif
 };
 
 #endif /* SAKURA_CBREGEXPDLL2_850005D4_6AA3_41D2_B541_1EE730935E6B_H_ */

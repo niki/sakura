@@ -216,6 +216,7 @@ extmodule/CBregexpDll2.o \
 extmodule/CDllHandler.o \
 extmodule/CHtmlHelp.o \
 extmodule/CMigemo.o \
+extmodule/CRegexFallback.o \
 extmodule/CUxTheme.o \
 func/CFuncKeyWnd.o \
 func/CFuncLookup.o \

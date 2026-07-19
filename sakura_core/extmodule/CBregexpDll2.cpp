@@ -23,6 +23,9 @@
 */
 #include "StdAfx.h"
 #include "CBregexpDll2.h"
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+#include "CRegexFallback.h"
+#endif
 
 CBregexpDll2::CBregexpDll2()
 {
@@ -31,6 +34,68 @@ CBregexpDll2::CBregexpDll2()
 CBregexpDll2::~CBregexpDll2()
 {
 }
+
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+/*!
+	20260720 bregonig.dllが見つからない場合にPCRE2へフォールバックする機能を追加。
+	DLLロードと初期処理。bregonig.dll(bregonig32/64.dll含む)が見つからない場合は、
+	PCRE2ベースのフォールバックエンジンへ切り替えて成功扱いにする。
+	DLLは見つかったがエクスポート不整合の場合(DLL_INITFAILURE)は、DLLが壊れている
+	ことを示す実エラーなので、フォールバックせずそのまま返す。
+*/
+EDllResult CBregexpDll2::InitDllWithFallback(LPCTSTR pszSpecifiedDllName)
+{
+	EDllResult result = InitDll(pszSpecifiedDllName);
+	if (result == DLL_LOADFAILURE) {
+		m_bFallback = true;
+		return DLL_SUCCESS;
+	}
+	return result;
+}
+
+// 20260720 以下8関数は、フォールバック中はRegexFallback名前空間(PCRE2ベース)へ委譲する。
+// (元は CBregexpDll2.h にインライン定義されていたが、フォールバック分岐のため.cppへ移動)
+int CBregexpDll2::BMatch(const wchar_t* str, const wchar_t* target,const wchar_t* targetendp,BREGEXP_W** rxp,wchar_t* msg)
+{
+	if (m_bFallback) return RegexFallback::BMatch(str,target,targetendp,rxp,msg);
+	return m_BMatch(str,target,targetendp,rxp,msg);
+}
+int CBregexpDll2::BSubst(const wchar_t* str, const wchar_t* target,const wchar_t* targetendp,BREGEXP_W** rxp,wchar_t* msg)
+{
+	if (m_bFallback) return RegexFallback::BSubst(str,target,targetendp,rxp,msg);
+	return m_BSubst(str,target,targetendp,rxp,msg);
+}
+int CBregexpDll2::BTrans(const wchar_t* str, wchar_t* target,wchar_t* targetendp,BREGEXP_W** rxp,wchar_t* msg)
+{
+	if (m_bFallback) return RegexFallback::BTrans(str,target,targetendp,rxp,msg);
+	return m_BTrans(str,target,targetendp,rxp,msg);
+}
+int CBregexpDll2::BSplit(const wchar_t* str, wchar_t* target,wchar_t* targetendp,int limit,BREGEXP_W** rxp,wchar_t* msg)
+{
+	if (m_bFallback) return RegexFallback::BSplit(str,target,targetendp,limit,rxp,msg);
+	return m_BSplit(str,target,targetendp,limit,rxp,msg);
+}
+void CBregexpDll2::BRegfree(BREGEXP_W* rx)
+{
+	if (m_bFallback) { RegexFallback::BRegfree(rx); return; }
+	m_BRegfree(rx);
+}
+const wchar_t* CBregexpDll2::BRegexpVersion(void)
+{
+	if (m_bFallback) return RegexFallback::BRegexpVersion();
+	return m_BRegexpVersion();
+}
+int CBregexpDll2::BMatchEx(const wchar_t* str, const wchar_t* targetbeg, const wchar_t* target, const wchar_t* targetendp, BREGEXP_W** rxp, wchar_t* msg)
+{
+	if (m_bFallback) return RegexFallback::BMatchEx(str,targetbeg,target,targetendp,rxp,msg);
+	return m_BMatchEx(str,targetbeg,target,targetendp,rxp,msg);
+}
+int CBregexpDll2::BSubstEx(const wchar_t* str, const wchar_t* targetbeg, const wchar_t* target, const wchar_t* targetendp, BREGEXP_W** rxp, wchar_t* msg)
+{
+	if (m_bFallback) return RegexFallback::BSubstEx(str,targetbeg,target,targetendp,rxp,msg);
+	return m_BSubstEx(str,targetbeg,target,targetendp,rxp,msg);
+}
+#endif // NKMM_FIX_REGEXP_FALLBACK
 
 /*!
 	@date 2001.07.05 genta 引数追加。ただし、ここでは使わない。

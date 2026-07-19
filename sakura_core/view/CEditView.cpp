@@ -250,7 +250,12 @@ BOOL CEditView::Create(
 
 	//	Jun. 27, 2001 genta	正規表現ライブラリの差し替え
 	//	2007.08.12 genta 初期化にShareDataの値が必要になった
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+	// 20260720 bregonig.dllが見つからない場合はPCRE2ベースのフォールバックへ切り替える
+	m_CurRegexp.InitDllWithFallback(GetDllShareData().m_Common.m_sSearch.m_szRegexpLib );
+#else
 	m_CurRegexp.InitDll(GetDllShareData().m_Common.m_sSearch.m_szRegexpLib );
+#endif
 
 	// 2004.02.08 m_hFont_ZENは未使用により削除
 	m_dwTipTimer = ::GetTickCount();	/* 辞書Tip起動タイマー */

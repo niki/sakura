@@ -622,6 +622,30 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_SURROGATE_CHAR_COUNT
 
+//------------------------------------------------------------------
+// 正規表現ライブラリ(bregonig.dll)が見つからない場合はPCRE2にフォールバック 20260720
+//  - 検索/置換/Grep/マクロ(CBregexp)と構文強調キーワード(CRegexKeyword)の両方に適用する
+//  - DLLが「見つからない」場合のみ発動する。DLLはあるがエクスポート不整合(壊れている)
+//    場合は今まで通りエラーにする(誤って壊れたDLLを隠蔽しないため)
+//  - フォールバックエンジンにはPCRE2(libs/pcre2, BSD-3-Clause)をvendorして静的に
+//    組み込んでいる(フォールバック自体が別のDLL依存を持つと本末転倒なため)。
+//    ルックビハインド・POSIX文字クラス・Unicode文字プロパティ等、BREGEXP
+//    (Oniguruma系)相当の構文を概ねネイティブサポートする。
+//    (実装当初はstd::regex(ECMAScript文法)を使っていたが、ルックビハインド等の
+//    非対応構文が多かったためPCRE2に置き換えた。詳細はchangelog/参照)
+//  - それでもPCRE2が非対応の構文は「正規表現エラー」として通知される
+//    (既存のエラー表示経路を流用)
+//  - 設定ダイアログの「正規表現ライブラリ」テストボタン(CPropComGrep.cpp)は対象外
+//    (指定したDLLパスの妥当性を素直に検証する必要があるため、フォールバックさせない)
+//  - libs\pcre2 (新規、PCRE2 10.47をvendor)
+//  - sakura_core\extmodule\CRegexFallback.h,cpp (新規、フォールバック実装本体)
+//  - sakura_core\extmodule\CBregexpDll2.h,cpp
+//  - sakura_core\extmodule\CBregexp.cpp
+//  - sakura_core\CRegexKeyword.cpp
+//  - sakura_core\view\CEditView.cpp
+//------------------------------------------------------------------
+#define NKMM_FIX_REGEXP_FALLBACK
+
 //
 //#define USE_SSE2
 
