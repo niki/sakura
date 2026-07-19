@@ -230,6 +230,22 @@ CLogicInt CNativeW::GetSizeOfChar( const wchar_t* pData, int nDataLen, int nIdx 
 	return CLogicInt(1);
 }
 
+#ifdef NKMM_FIX_SURROGATE_CHAR_COUNT
+//! 指定範囲[nIdxFrom, nIdxTo)の論理文字数を返す(サロゲートペアは1文字として数える) 20260719
+int CNativeW::GetCharCountInRange( const wchar_t* pData, int nDataLen, int nIdxFrom, int nIdxTo )
+{
+	int nCount = 0;
+	int nIdx = nIdxFrom;
+	while( nIdx < nIdxTo ){
+		CLogicInt nSize = GetSizeOfChar( pData, nDataLen, nIdx );
+		if( nSize <= 0 ) break; // 範囲外(保護)
+		nIdx += nSize;
+		++nCount;
+	}
+	return nCount;
+}
+#endif // NKMM_
+
 //! 指定した位置の文字が半角何個分かを返す
 CKetaXInt CNativeW::GetKetaOfChar( const wchar_t* pData, int nDataLen, int nIdx )
 {

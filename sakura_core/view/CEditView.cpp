@@ -3568,7 +3568,12 @@ int CEditView::GetDocumentWordNum() const
 		pLine = pView->m_pcEditDoc->m_cLayoutMgr.GetLineStr( nLineNum, &nLineLen, &pcLayout );
 		//	2006.06.06 ryoji 指定行のデータが存在しない場合の対策
 		if (!pLine) continue;
+#ifdef NKMM_FIX_SURROGATE_CHAR_COUNT
+		// サロゲートペア文字(絵文字等)を1文字として数える 20260719
+		select_sum += CNativeW::GetCharCountInRange( pLine, nLineLen, 0, pcLayout->GetLengthWithoutEOL() );
+#else
 		select_sum += pcLayout->GetLengthWithoutEOL();
+#endif // NKMM_
 	}
 
 	return select_sum;

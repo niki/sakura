@@ -899,7 +899,13 @@ void CCaret::ShowCaretPosInfo()
 		}else{
 			// 文字単位
 			if( pcLayout ){
+#ifdef NKMM_FIX_SURROGATE_CHAR_COUNT
+				// サロゲートペア文字(絵文字等)を1文字として数える 20260719
+				CLogicInt nIdx = GetCaretLogicPos().GetX() - pcLayout->GetLogicOffset();
+				ptCaret.x = pLine ? CNativeW::GetCharCountInRange( pLine, nLineLen, 0, nIdx ) : (Int)nIdx;
+#else
 				ptCaret.x = (Int)GetCaretLogicPos().GetX() - pcLayout->GetLogicOffset();
+#endif // NKMM_
 			}else{
 				ptCaret.x = (Int)GetCaretLogicPos().GetX();
 			}

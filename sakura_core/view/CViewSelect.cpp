@@ -783,14 +783,28 @@ void CViewSelect::PrintSelectionInfoMsg() const
 
 				//	1行だけ選択されている場合
 				if( m_sSelect.IsLineOne() ){
+#ifdef NKMM_FIX_SURROGATE_CHAR_COUNT
+					// サロゲートペア文字(絵文字等)を1文字として数える 20260719
+					select_sum = CNativeW::GetCharCountInRange( pLine, nLineLen,
+						pView->LineColumnToIndex( pcLayout, m_sSelect.GetFrom().GetX2() ),
+						pView->LineColumnToIndex( pcLayout, m_sSelect.GetTo().GetX2() ) );
+#else
 					select_sum =
 						pView->LineColumnToIndex( pcLayout, m_sSelect.GetTo().GetX2() )
 						- pView->LineColumnToIndex( pcLayout, m_sSelect.GetFrom().GetX2() );
+#endif // NKMM_
 				} else {	//	2行以上選択されている場合
+#ifdef NKMM_FIX_SURROGATE_CHAR_COUNT
+					// サロゲートペア文字(絵文字等)を1文字として数える 20260719
+					select_sum = CNativeW::GetCharCountInRange( pLine, nLineLen,
+						pView->LineColumnToIndex( pcLayout, m_sSelect.GetFrom().GetX2() ),
+						pcLayout->GetLengthWithoutEOL() );
+#else
 					select_sum =
 						pcLayout->GetLengthWithoutEOL()
 /*nkmm					+ pcLayout->GetLayoutEol().GetLen()*/
 						- pView->LineColumnToIndex( pcLayout, m_sSelect.GetFrom().GetX2() );
+#endif // NKMM_
 
 					//	GetSelectedDataと似ているが，先頭行と最終行は排除している
 					//	Aug. 16, 2005 aroka nLineNumはfor以降でも使われるのでforの前で宣言する
@@ -803,13 +817,24 @@ void CViewSelect::PrintSelectionInfoMsg() const
 						if( NULL == pLine )
 							break;
 //nkmm					select_sum += pcLayout->GetLengthWithoutEOL() + pcLayout->GetLayoutEol().GetLen();
+#ifdef NKMM_FIX_SURROGATE_CHAR_COUNT
+						// サロゲートペア文字(絵文字等)を1文字として数える 20260719
+						select_sum += CNativeW::GetCharCountInRange( pLine, nLineLen, 0, pcLayout->GetLengthWithoutEOL() );
+#else
 						select_sum += pcLayout->GetLengthWithoutEOL();
+#endif // NKMM_
 					}
 
 					//	最終行の処理
 					pLine = pView->m_pcEditDoc->m_cLayoutMgr.GetLineStr( nLineNum, &nLineLen, &pcLayout );
 					if( pLine ){
+#ifdef NKMM_FIX_SURROGATE_CHAR_COUNT
+						// サロゲートペア文字(絵文字等)を1文字として数える 20260719
+						int last_line_chars = CNativeW::GetCharCountInRange( pLine, nLineLen, 0,
+							pView->LineColumnToIndex( pcLayout, m_sSelect.GetTo().GetX2() ) );
+#else
 						int last_line_chars = pView->LineColumnToIndex( pcLayout, m_sSelect.GetTo().GetX2() );
+#endif // NKMM_
 						select_sum += last_line_chars;
 						if( last_line_chars == 0 ){
 							//	最終行の先頭にキャレットがある場合は

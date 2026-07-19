@@ -205,6 +205,9 @@ private:
 public:
 	// -- -- staticインターフェース -- -- //
 	static CLogicInt GetSizeOfChar( const wchar_t* pData, int nDataLen, int nIdx ); //!< 指定した位置の文字がwchar_t何個分かを返す
+#ifdef NKMM_FIX_SURROGATE_CHAR_COUNT
+	static int GetCharCountInRange( const wchar_t* pData, int nDataLen, int nIdxFrom, int nIdxTo ); //!< 指定範囲[nIdxFrom, nIdxTo)の論理文字数を返す(サロゲートペアは1文字として数える)
+#endif // NKMM_
 	static CHabaXInt GetHabaOfChar( const wchar_t* pData, int nDataLen, int nIdx );
 	static CKetaXInt GetKetaOfChar( const wchar_t* pData, int nDataLen, int nIdx ); //!< 指定した位置の文字が半角何個分かを返す
 	static const wchar_t* GetCharNext( const wchar_t* pData, int nDataLen, const wchar_t* pDataCurrent ); //!< ポインタで示した文字の次にある文字の位置を返します
