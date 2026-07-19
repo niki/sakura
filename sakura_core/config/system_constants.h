@@ -538,12 +538,15 @@
 	Version 172:
 	キーワードヘルプの右クリックメニュー表示選択
 
+	Version 173:
+	設定ダイアログの多重オープン排他制御用ハンドルを追加(SShare_Flags::m_hwndPropSheetOwner)
+
 	-- 統合されたので元に戻す（1000～1023が使用済み） 	2008.11.16 nasukoji
 	-- Version 1000:
 	-- バージョン1000以降を本家統合までの間、使わせてください。かなり頻繁に構成が変更されると思われるので。by kobake 2008.03.02
 
 */
-#define N_SHAREDATA_VERSION		172
+#define N_SHAREDATA_VERSION		173
 #define STR_SHAREDATA_VERSION	NUM_TO_STR(N_SHAREDATA_VERSION)
 #define	GSTR_SHAREDATA	(_T("SakuraShareData") _T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_) _T(STR_SHAREDATA_VERSION))
 
@@ -572,6 +575,11 @@
 
 //タイプ別設定転送用
 #define	GSTR_MUTEX_SAKURA_DOCTYPE			(_T("MutexSakuraEditorDocType")			_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
+
+#ifdef NKMM_FIX_PROPSHEET_EXCLUSIVE
+//! 設定ダイアログ排他制御用
+#define	GSTR_MUTEX_SAKURA_PROPSHEET		(_T("MutexSakuraEditorPropSheet")		_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
+#endif // NKMM_
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                         イベント                            //

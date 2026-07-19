@@ -161,6 +161,9 @@ bool CShareData::InitShareData()
 		m_pShareData->m_sFlags.m_bEditWndChanging = FALSE;	// 編集ウィンドウ切替中	// 2007.04.03 ryoji
 		m_pShareData->m_sFlags.m_bRecordingKeyMacro = FALSE;		/* キーボードマクロの記録中 */
 		m_pShareData->m_sFlags.m_hwndRecordingKeyMacro = NULL;	/* キーボードマクロを記録中のウィンドウ */
+#ifdef NKMM_FIX_PROPSHEET_EXCLUSIVE
+		m_pShareData->m_sFlags.m_hwndPropSheetOwner = NULL;		/* 設定ダイアログを開いているオーナーウィンドウ */
+#endif // NKMM_
 
 		m_pShareData->m_sNodes.m_nSequences = 0;					/* ウィンドウ連番 */
 		m_pShareData->m_sNodes.m_nNonameSequences = 0;

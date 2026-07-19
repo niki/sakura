@@ -91,6 +91,9 @@ struct SShare_Flags{
 	*/
 	BOOL				m_bRecordingKeyMacro;		/* キーボードマクロの記録中 */
 	HWND				m_hwndRecordingKeyMacro;	/* キーボードマクロを記録中のウィンドウ */
+#ifdef NKMM_FIX_PROPSHEET_EXCLUSIVE
+	HWND				m_hwndPropSheetOwner;		/* 設定ダイアログを開いているオーナーウィンドウ(排他制御用) */
+#endif // NKMM_
 #ifdef NKMM_FIX_TABWND
 	int					m_nInterTabClk = 0;	/* タブ間のクリック判定 */
 #endif // NKMM_
@@ -198,5 +201,27 @@ public:
 	static void WaitLock( HWND, CShareDataLockCounter** = NULL );
 private:
 };
+
+#ifdef NKMM_FIX_PROPSHEET_EXCLUSIVE
+/*!	設定ダイアログ(共通設定/タイプ別設定)の多重オープンを防ぐための排他制御。
+	@note ウィンドウ(プロセス)をまたいで、設定ダイアログを開けるのは常に1つだけにする。
+		Applyが「編集開始時点のスナップショットを丸ごと共有メモリへ上書きする」実装のため、
+		複数ウィンドウで同時に設定ダイアログを開いて別々の項目を変更しOKすると、
+		後からOKした側が先にOKした側の変更を消してしまう(lost update)ことを防ぐ。
+*/
+class CPropSheetOwnerGuard{
+public:
+	explicit CPropSheetOwnerGuard( HWND hwndOwner );
+	~CPropSheetOwnerGuard();
+
+	bool IsAcquired() const { return m_bAcquired; }
+
+	//! 現在ダイアログを開いているオーナーウィンドウを返す(いなければNULL)
+	static HWND GetCurrentOwner();
+private:
+	HWND	m_hwndOwner;
+	bool	m_bAcquired;
+};
+#endif // NKMM_
 #endif /* SAKURA_DLLSHAREDATA_3A6DD7E0_90DC_4219_8570_F5C1B8B6A306_H_ */
 /*[EOF]*/

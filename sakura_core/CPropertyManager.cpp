@@ -26,6 +26,9 @@
 #include "CPropertyManager.h"
 #include "env/DLLSHAREDATA.h"
 #include "env/CDocTypeManager.h"
+#ifdef NKMM_FIX_PROPSHEET_EXCLUSIVE
+#include "util/window.h"
+#endif // NKMM_
 #include <memory>
 
 void CPropertyManager::Create( HWND hwndOwner, CImageListMgr* pImageList, CMenuDrawer* pMenuDrawer )
@@ -41,6 +44,19 @@ void CPropertyManager::Create( HWND hwndOwner, CImageListMgr* pImageList, CMenuD
 /*! 共通設定 プロパティシート */
 bool CPropertyManager::OpenPropertySheet( HWND hWnd, int nPageNum, bool bTrayProc )
 {
+#ifdef NKMM_FIX_PROPSHEET_EXCLUSIVE
+	// 設定ダイアログの多重オープンを排他する。既に他ウィンドウで開いていれば、
+	// そちらをアクティブにして今回のオープン要求はキャンセル扱いにする。
+	CPropSheetOwnerGuard cPropSheetGuard( m_hwndOwner );
+	if( !cPropSheetGuard.IsAcquired() ){
+		HWND hwndExistingOwner = CPropSheetOwnerGuard::GetCurrentOwner();
+		if( NULL != hwndExistingOwner ){
+			ActivateFrameWindow( hwndExistingOwner );
+		}
+		return false;
+	}
+#endif // NKMM_
+
 	bool bRet;
 	CPropCommon* pcPropCommon = new CPropCommon();
 	pcPropCommon->Create( m_hwndOwner, m_pImageList, m_pMenuDrawer );
@@ -105,6 +121,19 @@ bool CPropertyManager::OpenPropertySheet( HWND hWnd, int nPageNum, bool bTrayPro
 /*! タイプ別設定 プロパティシート */
 bool CPropertyManager::OpenPropertySheetTypes( HWND hWnd, int nPageNum, CTypeConfig nSettingType )
 {
+#ifdef NKMM_FIX_PROPSHEET_EXCLUSIVE
+	// 設定ダイアログの多重オープンを排他する。既に他ウィンドウで開いていれば、
+	// そちらをアクティブにして今回のオープン要求はキャンセル扱いにする。
+	CPropSheetOwnerGuard cPropSheetGuard( m_hwndOwner );
+	if( !cPropSheetGuard.IsAcquired() ){
+		HWND hwndExistingOwner = CPropSheetOwnerGuard::GetCurrentOwner();
+		if( NULL != hwndExistingOwner ){
+			ActivateFrameWindow( hwndExistingOwner );
+		}
+		return false;
+	}
+#endif // NKMM_
+
 	bool bRet;
 	CPropTypes* pcPropTypes = new CPropTypes();
 	pcPropTypes->Create( G_AppInstance(), m_hwndOwner );

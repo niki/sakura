@@ -131,3 +131,47 @@ void CShareDataLockCounter::WaitLock( HWND hwndParent, CShareDataLockCounter** p
 		::EnableWindow(hwndParent, TRUE);
 	}
 }
+
+#ifdef NKMM_FIX_PROPSHEET_EXCLUSIVE
+static CMutex g_cPropSheetMutex( FALSE, GSTR_MUTEX_SAKURA_PROPSHEET );
+
+// 現在のオーナーが有効か調べ、無効(プロセスクラッシュ等で消えている)ならクリアする。
+// g_cPropSheetMutexをロックした状態で呼び出すこと。
+static HWND GetValidPropSheetOwnerNoLock()
+{
+	HWND hwndCur = GetDllShareData().m_sFlags.m_hwndPropSheetOwner;
+	if( hwndCur != NULL && !::IsWindow( hwndCur ) ){
+		// オーナーがクラッシュ等で消えている。スタックしたロックを解除する
+		GetDllShareData().m_sFlags.m_hwndPropSheetOwner = NULL;
+		hwndCur = NULL;
+	}
+	return hwndCur;
+}
+
+CPropSheetOwnerGuard::CPropSheetOwnerGuard( HWND hwndOwner )
+	: m_hwndOwner( hwndOwner )
+	, m_bAcquired( false )
+{
+	LockGuard<CMutex> guard( g_cPropSheetMutex );
+	if( NULL == GetValidPropSheetOwnerNoLock() ){
+		GetDllShareData().m_sFlags.m_hwndPropSheetOwner = hwndOwner;
+		m_bAcquired = true;
+	}
+}
+
+CPropSheetOwnerGuard::~CPropSheetOwnerGuard()
+{
+	if( m_bAcquired ){
+		LockGuard<CMutex> guard( g_cPropSheetMutex );
+		if( GetDllShareData().m_sFlags.m_hwndPropSheetOwner == m_hwndOwner ){
+			GetDllShareData().m_sFlags.m_hwndPropSheetOwner = NULL;
+		}
+	}
+}
+
+HWND CPropSheetOwnerGuard::GetCurrentOwner()
+{
+	LockGuard<CMutex> guard( g_cPropSheetMutex );
+	return GetValidPropSheetOwnerNoLock();
+}
+#endif // NKMM_
