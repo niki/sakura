@@ -57,7 +57,9 @@ compile_commands.json
 *.log
 *.bak
 *.swp
+
 *.user
+tags
 
 # vcpkg
 vcpkg_installed/
@@ -79,6 +81,7 @@ sakura/x64/
 sakura/sakura/
 
 # Root
+.claude/
 *.zip
 
 Publish/*.zip
