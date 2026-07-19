@@ -6,9 +6,11 @@
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
 #ifdef NKMM_FIX_NUMERIC_COLOR
-#define REGEX_MODE (0)  // 0:std::regex
+#define REGEX_MODE (3)  // 0:std::regex
                         // 1:boost::regex
                         // 2:BREGEXP
+                        // 3:PCRE2 (要NKMM_FIX_REGEXP_FALLBACK。bregonig.dllの
+                        //   有無に関わらず常時使用可能。20260720追加)
 #if REGEX_MODE == 0
 	#include <regex>
 	using namespace std;
@@ -18,6 +20,12 @@
 	using namespace boost;
 #elif REGEX_MODE == 2
 	#include "window/CEditWnd.h"
+#elif REGEX_MODE == 3
+	#ifdef NKMM_FIX_REGEXP_FALLBACK
+		#include "extmodule/CRegexFallback.h"
+	#else
+		#error REGEX_MODE == 3 (PCRE2) を使うには NKMM_FIX_REGEXP_FALLBACK の定義が必要です
+	#endif
 #endif
 #endif // NKMM_
 
@@ -129,6 +137,21 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 	#define _REG_ENDP(match)    match->endp[0]
 	#define _REG_INIT(p)        p = nullptr
 	#define _REG_FREE(p)        if (p) { CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.BRegfree(p); }
+	#define PREFIX              "/"
+	#define SUFIX               "/k"
+	#define REGSTR(x)           L"" PREFIX ##x SUFIX
+	#define REGEX(x)            _regex(REGSTR(x))
+#elif REGEX_MODE == 3  // PCRE2 (bregonig.dllの有無に関わらず常時利用可能。20260720追加)
+	using _regex = std::wstring;
+	using _match = BREGEXP_W*;
+	#define _REG_IS_AVAILABLE() (1)
+	#define _REG_ENTRY(p, c)    (c == 0 || ::wcschr(p, c))
+	#define _REG_SEARCH(pt, p, q, match, msg) \
+	                            RegexFallback::BMatch(pt.c_str(), p, q, &(match), msg)
+	#define _REG_STARTP(p)      p
+	#define _REG_ENDP(match)    match->endp[0]
+	#define _REG_INIT(p)        p = nullptr
+	#define _REG_FREE(p)        if (p) { RegexFallback::BRegfree(p); }
 	#define PREFIX              "/"
 	#define SUFIX               "/k"
 	#define REGSTR(x)           L"" PREFIX ##x SUFIX

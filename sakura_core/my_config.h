@@ -261,6 +261,10 @@
 //------------------------------------------------------------------
 // 数値の色付け判定
 //  - 正規表現で判定する 20170421
+//  - 判定に使う正規表現エンジンはCColor_Numeric.cppのREGEX_MODEで切り替え可能
+//    (0:std::regex 1:boost::regex 2:BREGEXP(bregonig.dll) 3:PCRE2)
+//    3:PCRE2はNKMM_FIX_REGEXP_FALLBACKのフォールバックエンジンをbregonig.dllの
+//    有無に関わらず直接使う設定 20260720
 //------------------------------------------------------------------
 #define NKMM_FIX_NUMERIC_COLOR
 
@@ -643,6 +647,8 @@
 //  - sakura_core\extmodule\CBregexp.cpp
 //  - sakura_core\CRegexKeyword.cpp
 //  - sakura_core\view\CEditView.cpp
+//  - (任意) sakura_core\view\colors\CColor_Numeric.cpp の REGEX_MODE==3から
+//    RegexFallback名前空間を直接利用可能(NKMM_FIX_NUMERIC_COLOR参照)
 //------------------------------------------------------------------
 #define NKMM_FIX_REGEXP_FALLBACK
 

@@ -11,6 +11,7 @@
 - `sakura_core/view/CEditView.cpp`
 - `sakura_core/my_config.h`
 - `sakura/sakura.vcxproj` / `.vcxproj.filters`
+- `sakura_core/view/colors/CColor_Numeric.cpp`（追記、REGEX_MODE==3として任意利用可能に）
 
 ---
 
@@ -95,6 +96,35 @@ sakura.exeへ組み込む方式にした（`libs/silica`と同じ考え方）。
   `ForcedIncludeFiles`を空に上書きして無効化した。
 - `CRegexFallback.cpp`には`PCRE2_CODE_UNIT_WIDTH=16;PCRE2_STATIC`を追加(`pcre2.h`を
   includeするために必要)。
+
+## 追記: CColor_Numeric.cpp からの直接利用 (REGEX_MODE==3)
+
+`NKMM_FIX_NUMERIC_COLOR`(数値の色付け判定)は元々`REGEX_MODE`マクロで
+`std::regex`/`boost::regex`/BREGEXP(bregonig.dll)を切り替えられる作りになって
+いた(`CColor_Numeric.cpp`)。ここに`REGEX_MODE==3`として、`CBregexp`経由ではなく
+`RegexFallback`名前空間(本フラグの実装本体)を直接呼び出すモードを追加した。
+
+```cpp
+#elif REGEX_MODE == 3  // PCRE2
+	using _regex = std::wstring;
+	using _match = BREGEXP_W*;
+	#define _REG_IS_AVAILABLE() (1)
+	#define _REG_SEARCH(pt, p, q, match, msg) \
+	                            RegexFallback::BMatch(pt.c_str(), p, q, &(match), msg)
+	#define _REG_FREE(p)        if (p) { RegexFallback::BRegfree(p); }
+	...
+```
+
+既存のBREGEXPモード(`REGEX_MODE==2`)が`m_CurRegexp.BMatch()`/`BRegfree()`
+(bregonig.dllが無ければ機能しない)を呼んでいるのに対し、`RegexFallback::BMatch`/
+`BRegfree`はPCRE2が静的にリンクされているため**bregonig.dllの有無に関わらず常時
+利用可能**(`_REG_IS_AVAILABLE()`を`(1)`固定にできる)。コマンド文字列書式
+(`"/pattern/k"`)が共通のため、`PREFIX`/`SUFIX`はBREGEXPモードと同じものを流用できた。
+
+`REGEX_MODE==3`を選択するには`NKMM_FIX_REGEXP_FALLBACK`の定義が必須で、未定義
+のまま選択すると`#error`でビルド時に気づけるようにしてある。既定値は引き続き
+`REGEX_MODE (0)`(std::regex)のままで、この追加は選択肢を増やしただけであり
+デフォルト動作は変更していない。
 
 ## 既知の制限
 
