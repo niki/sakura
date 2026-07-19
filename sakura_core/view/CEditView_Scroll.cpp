@@ -36,6 +36,41 @@
 #include "extmodule/CUxTheme.h"
 #endif // NKMM_
 
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+#if NKMM_SCRBAR_SYSTEM_STYLE
+namespace {
+	WNDPROC g_pOldVScrollBarWndProc = NULL;
+
+	// Explorerテーマのホバー(フェード)アニメーションでバー全体が自前で
+	// 再描画され、マーカー描画が消されてしまうため、ホバー解除
+	// (WM_MOUSELEAVE)を検知してマーカーのカスタムドローを再実行する
+	LRESULT CALLBACK VScrollBarWndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+	{
+		switch( msg ){
+		case WM_MOUSEMOVE:
+			{
+				TRACKMOUSEEVENT tme = { sizeof(tme), TME_LEAVE, hwnd, 0 };
+				::TrackMouseEvent( &tme );
+			}
+			break;
+		case WM_MOUSELEAVE:
+			{
+				CEditView* pView = (CEditView*)::GetWindowLongPtr( ::GetParent(hwnd), 0 );
+				if( NULL != pView ){
+					pView->SB_Marker_CallPaint(6000);	// ホバー解除でマーカー再描画
+				}
+			}
+			break;
+		case WM_DESTROY:
+			::SetWindowLongPtr( hwnd, GWLP_WNDPROC, (LONG_PTR)g_pOldVScrollBarWndProc );
+			break;
+		}
+		return ::CallWindowProc( g_pOldVScrollBarWndProc, hwnd, msg, wParam, lParam );
+	}
+}
+#endif // NKMM_SCRBAR_SYSTEM_STYLE
+#endif // NKMM_
+
 
 /*! スクロールバー作成
 	@date 2006.12.19 ryoji 新規作成（CEditView::Createから分離）
@@ -70,6 +105,7 @@ BOOL CEditView::CreateScrollBar()
 	::ShowScrollBar( m_hwndVScrollBar, SB_CTL, TRUE );
 #if NKMM_SCRBAR_SYSTEM_STYLE
 	CUxTheme::getInstance()->SetWindowTheme( m_hwndVScrollBar, L"Explorer", NULL );	// システム(Explorer)風スクロールバー
+	g_pOldVScrollBarWndProc = (WNDPROC)::SetWindowLongPtr( m_hwndVScrollBar, GWLP_WNDPROC, (LONG_PTR)VScrollBarWndProc );	// ホバー解除時にマーカーを再描画するためサブクラス化
 #endif // NKMM_SCRBAR_SYSTEM_STYLE
 
 	/* スクロールバーの作成 */
