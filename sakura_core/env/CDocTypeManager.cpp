@@ -97,10 +97,32 @@ CTypeConfig CDocTypeManager::GetDocumentTypeOfId( int id )
 	return CTypeConfig(-1);	//	ハズレ
 }
 
-bool CDocTypeManager::GetTypeConfig(CTypeConfig cDocumentType, STypeConfig& type)
+bool CDocTypeManager::GetTypeConfig(CTypeConfig cDocumentType, STypeConfig& type, bool bMergeSharedColor)
 {
 	int n = cDocumentType.GetIndex();
 	if( 0 <= n && n < m_pShareData->m_nTypesCount ){
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+		bool bGot = false;
+		if( 0 == n ){
+			type = m_pShareData->m_TypeBasis;
+			bGot = true;
+		}else{
+			LockGuard<CMutex> guard( g_cDocTypeMutex );
+			 if( SendMessageAny( m_pShareData->m_sHandles.m_hwndTray, MYWM_GET_TYPESETTING, (WPARAM)n, 0 ) ){
+				type = m_pShareData->m_sWorkBuffer.m_TypeConfig;
+				bGot = true;
+			}
+		}
+		if( bGot && bMergeSharedColor && 0 != n && !type.m_bUseTypeColor ){
+			// タイプ別の色を使わない設定の場合、基本(Types(0))の現在の色設定で上書きする
+			// (別に保持する「共通色」は持たず、常に基本の色をそのまま参照することで、
+			//  基本の色を変更すれば追従先も即座に変わるようにする。基本自身(n==0)は対象外)
+			const STypeConfig& basis = m_pShareData->m_TypeBasis;
+			type.m_nColorInfoArrNum = basis.m_nColorInfoArrNum;
+			memcpy( type.m_ColorInfoArr, basis.m_ColorInfoArr, sizeof(type.m_ColorInfoArr) );
+		}
+		return bGot;
+#else
 		if( 0 == n ){
 			type = m_pShareData->m_TypeBasis;
 			return true;
@@ -111,6 +133,7 @@ bool CDocTypeManager::GetTypeConfig(CTypeConfig cDocumentType, STypeConfig& type
 				return true;
 			}
 		}
+#endif // NKMM_
 	}
 	return false;
 }

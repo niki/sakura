@@ -64,7 +64,7 @@
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
 	#define PR_VER_VAL	2320
-	#define PR_LV		26071900
+	#define PR_LV		26072600
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -651,6 +651,27 @@
 //    RegexFallback名前空間を直接利用可能(NKMM_FIX_NUMERIC_COLOR参照)
 //------------------------------------------------------------------
 #define NKMM_FIX_REGEXP_FALLBACK
+
+//------------------------------------------------------------------
+// タイプ別設定の色情報を全タイプで共有・統一する 20260726
+//  - STypeConfig::m_bUseTypeColor(既定false)を追加。falseのときは
+//    タイプごとの色設定ではなく、常に「基本」(Types(0))の現在の色設定を
+//    そのまま使う(タイプ別フォント(m_bUseTypeFont)と同じトグル方式)
+//  - 共通色専用の別ストレージは持たない。基本の色を変更すれば、共有中の
+//    他タイプにも即座に反映される(ini移行処理も不要で、常に一貫した状態になる)
+//  - 「基本」自身(Types(0))は本トグルの対象外。常に自分自身の色を使う
+//    (でなければ参照先を失う)
+//  - 色の解決はCDocTypeManager::GetTypeConfig()の1箇所でのみ行うため、
+//    描画・印刷・アウトライン・マクロなど色を参照する既存コードは無改造
+//  - 「タイプ別設定」→「色」ページにチェックボックスを追加。OFFのときは
+//    色設定コントロールをグレーアウトし、基本の色を表示する
+//  - sakura_core\types\CType.h,cpp: STypeConfig::m_bUseTypeColor
+//  - sakura_core\env\CShareData_IO.cpp: bUseTypeColorのI/O、基本のトグル強制
+//  - sakura_core\env\CDocTypeManager.cpp: GetTypeConfig()での基本色マージ
+//  - sakura_core\typeprop\CPropTypes.h,CPropTypesColor.cpp: チェックボックス
+//  - sakura_core\sakura_rc.rc,h: IDC_CHECK_USETYPECOLOR
+//------------------------------------------------------------------
+#define NKMM_FIX_SHARED_TYPE_COLOR
 
 //
 //#define USE_SSE2

@@ -110,6 +110,14 @@ protected:
 	int				m_nCurrentColorType;					//!< 現在選択されている色タイプ
 	CKeyWordSetMgr*	m_pCKeyWordSetMgr;						//!< メモリ削減のためポインタに  Mar. 31, 2003 genta
 	bool			m_bChangeKeyWordSet;
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+	// 注意: 各プロパティページのサブクラス(CPropTypesColor等)はここ(CPropTypes)と
+	// 同一サイズであることが前提(CPropTypes.cppのassert参照、実体は1つのCPropTypes
+	// インスタンスを各ページのクラスにreinterpret_castして使い回している)。
+	// そのためメンバ追加は派生クラス側ではなく必ずこの基底クラスに行うこと。
+	ColorInfo	m_ColorInfoArrOwn[64];		//!< このタイプ自身の色設定(共通色とマージされていない生の値)
+	int			m_nColorInfoArrNumOwn;
+#endif // NKMM_
 
 	// フォント表示用データ
 	HFONT			m_hTypeFont;							//!< タイプ別フォント表示ハンドル
@@ -190,6 +198,8 @@ protected:
 protected:
 	void DrawColorListItem( DRAWITEMSTRUCT* );				//!< 色種別リスト オーナー描画
 	void EnableTypesPropInput( HWND hwndDlg );				//!< タイプ別設定のカラー設定のON/OFF
+	void EnableColorControls( HWND hwndDlg, int nIndex );	//!< 色設定コントロール(色一覧含む)の有効/無効切り替え
+	void RefreshCurrentColorDisplay( HWND hwndDlg );		//!< 現在選択されている色の表示(チェック/ボタン)を更新
 	void RearrangeKeywordSet( HWND );						//!< キーワードセット再配置  Jan. 23, 2005 genta
 	void DrawColorButton( DRAWITEMSTRUCT* , COLORREF );		//!< 色ボタンの描画
 public:

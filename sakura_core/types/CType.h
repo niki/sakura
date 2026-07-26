@@ -158,6 +158,9 @@ struct STypeConfig{
 	int					m_nHeredocType;
 	wchar_t				m_szIndentChars[64];			//!< その他のインデント対象文字
 
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+	bool				m_bUseTypeColor;				//!< タイプ別の色の使用
+#endif // NKMM_
 	int					m_nColorInfoArrNum;				//!< 色設定配列の有効数
 	ColorInfo			m_ColorInfoArr[64];				//!< 色設定配列
 

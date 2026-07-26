@@ -40,7 +40,7 @@ public:
 	CTypeConfig GetDocumentTypeOfExt( const TCHAR* pszExt );		/* 拡張子を渡して、ドキュメントタイプ（数値）を取得する */
 	CTypeConfig GetDocumentTypeOfId( int id );
 
-	bool GetTypeConfig(CTypeConfig cDocumentType, STypeConfig& type);
+	bool GetTypeConfig(CTypeConfig cDocumentType, STypeConfig& type, bool bMergeSharedColor = true);
 	bool SetTypeConfig(CTypeConfig cDocumentType, const STypeConfig& type);
 	bool GetTypeConfigMini(CTypeConfig cDocumentType, const STypeConfigMini** type);
 #ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE

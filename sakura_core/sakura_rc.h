@@ -848,15 +848,18 @@
 #ifdef NKMM_FIX_FIND_DIALOG
 #define IDC_FIND_RESULT                 7600
 #endif // NKMM_
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+#define IDC_CHECK_USETYPECOLOR          1728
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        230
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1727
+#define _APS_NEXT_CONTROL_VALUE         1729
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

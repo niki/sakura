@@ -1937,6 +1937,10 @@ void CShareData_IO::ShareData_IO_Types( CDataProfile& cProfile )
 		if( cProfile.IsReadingMode() ){
 			type.m_nIdx = i;
 			if( i == 0 ){
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+				// 基本は常にタイプ別の色を使う(共有する色設定の対象外)
+				type.m_bUseTypeColor = true;
+#endif // NKMM_
 				pShare->m_TypeBasis = type;
 			}
 			auto_strcpy(pShare->m_TypeMini[i].m_szTypeExts, type.m_szTypeExts);
@@ -2214,6 +2218,15 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	cProfile.IOProfileData( pszSecName, LTEXT("nIndentLayout")			, types.m_nIndentLayout );
 
 	/* 色設定 I/O */
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+	// 新規追加のキーのため、旧バージョンのiniには存在しない。読み込み時は
+	// STypeConfigの未初期化(不定値)のままにしないよう、まず既定値(false=共通の色を使う)
+	// を明示的に設定してから読み込む(キーが無ければこの既定値のままになる)。
+	if( cProfile.IsReadingMode() ){
+		types.m_bUseTypeColor = false;
+	}
+	cProfile.IOProfileData( pszSecName, LTEXT("bUseTypeColor"), types.m_bUseTypeColor );
+#endif // NKMM_
 	IO_ColorSet( &cProfile, pszSecName, types.m_ColorInfoArr  );
 
 	// 2010.09.17 背景画像
