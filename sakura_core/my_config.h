@@ -315,7 +315,7 @@
 //  - 印刷設定書き込み時、未定義値を無視する 20170612
 //------------------------------------------------------------------
 #define NKMM_FIX_PROFILES
-	#define NKMM_SEPARATE_HISTORY                    (1)  // 履歴は別ファイルで扱う (sakura.recent) 20170502
+	#define NKMM_SEPARATE_HISTORY                    (0)  // 履歴は別ファイルで扱う (sakura.recent) 20170502
 	#define NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP (1)  // 起動時に存在しないファイル・フォルダの履歴は削除する 20170410
 	#define NKMM_USE_KEYWORDSET_CSV                  (1)  // sakura.keywordset.csvを用意し、強調キーワードの管理はこのファイルで行う 20170513
 
@@ -382,7 +382,7 @@
 // 正規表現検索の際、検索文字列の正規表現記号をクォートする 20150601
 // PHPの preg_quote() みたいなもの
 //------------------------------------------------------------------
-#define NKMM_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
+//#define NKMM_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 
 //------------------------------------------------------------------
 // メニューアイコン (未実装)
