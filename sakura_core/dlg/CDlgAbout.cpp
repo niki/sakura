@@ -34,6 +34,7 @@
 #ifdef NKMM_FIX_QUICKJS_MACRO
 #include "quickjs.h"
 #endif
+#include "macro/CWSH.h"
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//12900
@@ -283,6 +284,20 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	auto_sprintf( szMsg, _T("      QuickJS %s (MIT)\r\n"), to_tchar(JS_GetVersion()) );
 	cmemMsg.AppendString( szMsg );
 #endif
+	// WSH(JScript/VBScript)は実行環境のOSに登録されたCOMコンポーネントに
+	// 依存するため、バージョンは固定値ではなく実行時に取得する 20260726
+	{
+		const wchar_t* pszJScriptVer = GetWSHEngineVersion( L"JScript" );
+		if( pszJScriptVer[0] != L'\0' ){
+			auto_sprintf( szMsg, _T("      JScript %s\r\n"), to_tchar(pszJScriptVer) );
+			cmemMsg.AppendString( szMsg );
+		}
+		const wchar_t* pszVBScriptVer = GetWSHEngineVersion( L"VBScript" );
+		if( pszVBScriptVer[0] != L'\0' ){
+			auto_sprintf( szMsg, _T("      VBScript %s\r\n"), to_tchar(pszVBScriptVer) );
+			cmemMsg.AppendString( szMsg );
+		}
+	}
 
 	::DlgItem_SetText( GetHwnd(), IDC_EDIT_VER, cmemMsg.GetStringPtr() );
 

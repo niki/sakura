@@ -41,7 +41,7 @@ LIBS= \
  -lwinspool -lcomdlg32 -ladvapi32 \
  -lshell32 -lole32 -loleaut32 \
  -luuid -lcomctl32 -limm32 \
- -lmpr -limagehlp -lshlwapi \
+ -lmpr -limagehlp -lshlwapi -lversion \
  -static-libgcc -static-libstdc++ -mwindows -s
 
 exe= sakura.exe

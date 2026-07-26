@@ -40,6 +40,7 @@
 #include <ObjBase.h>
 #include <InitGuid.h>
 #include <ShlDisp.h>
+#include <winver.h>	// GetWSHEngineVersion: GetFileVersionInfoW/VerQueryValueW
 #include "macro/CWSH.h"
 #include "macro/CIfObj.h"
 #include "window/CEditWnd.h"
@@ -271,6 +272,62 @@ CWSHClient::CWSHClient(const wchar_t *AEngine, ScriptErrorHandler AErrorHandler,
 			}
 		}
 	}
+}
+
+//! GetWSHEngineVersion実装。CWSHClient::CWSHClientと同じ手順(CLSIDFromProgID→
+//! (JScriptならUSE_JSCRIPT9でCLSID差し替え))でエンジンのCLSIDを求め、レジストリの
+//! InprocServer32からDLLパスを引いて、そのファイルバージョンを取得する。 20260726
+const wchar_t* GetWSHEngineVersion(const wchar_t* AEngine)
+{
+	static std::map<std::wstring, std::wstring> cache;
+	auto itCache = cache.find(AEngine);
+	if (itCache != cache.end())
+		return itCache->second.c_str();
+
+	// 失敗時も空文字列のままキャッシュし、再取得を試みない
+	std::wstring& result = cache[AEngine];
+
+	CLSID ClassID;
+	if (CLSIDFromProgID(AEngine, &ClassID) != S_OK)
+		return result.c_str();
+
+#ifdef USE_JSCRIPT9
+	if (0 == wcscmp(AEngine, LTEXT("JScript"))) {
+		ClassID = CLSID_JSScript9;
+	}
+#endif
+
+	OLECHAR szClsid[64];
+	if (StringFromGUID2(ClassID, szClsid, _countof(szClsid)) <= 0)
+		return result.c_str();
+
+	std::wstring keyPath = std::wstring(L"CLSID\\") + szClsid + L"\\InprocServer32";
+	wchar_t szDllPath[MAX_PATH * 2];
+	DWORD cbDllPath = sizeof(szDllPath);
+	if (RegGetValueW(HKEY_CLASSES_ROOT, keyPath.c_str(), NULL,
+			RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ, NULL, szDllPath, &cbDllPath) != ERROR_SUCCESS)
+		return result.c_str();
+
+	DWORD dwHandle = 0;
+	DWORD cbInfo = GetFileVersionInfoSizeW(szDllPath, &dwHandle);
+	if (cbInfo == 0)
+		return result.c_str();
+
+	std::vector<BYTE> verBuf(cbInfo);
+	if (!GetFileVersionInfoW(szDllPath, dwHandle, cbInfo, verBuf.data()))
+		return result.c_str();
+
+	VS_FIXEDFILEINFO* pFileInfo = NULL;
+	UINT cbFileInfo = 0;
+	if (!VerQueryValueW(verBuf.data(), L"\\", reinterpret_cast<LPVOID*>(&pFileInfo), &cbFileInfo) || pFileInfo == NULL)
+		return result.c_str();
+
+	wchar_t szVer[64];
+	swprintf_s(szVer, L"%u.%u.%u.%u",
+		HIWORD(pFileInfo->dwFileVersionMS), LOWORD(pFileInfo->dwFileVersionMS),
+		HIWORD(pFileInfo->dwFileVersionLS), LOWORD(pFileInfo->dwFileVersionLS));
+	result = szVer;
+	return result.c_str();
 }
 
 CWSHClient::~CWSHClient()

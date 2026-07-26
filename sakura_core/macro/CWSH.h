@@ -31,6 +31,12 @@ class CInterfaceObject: public ImplementsIUnknown<IDispatch>
  */
 typedef void (*ScriptErrorHandler)(BSTR Description, BSTR Source, void *Data);
 
+//! バージョン情報ダイアログ表示用。AEngine("JScript"/"VBScript")に対応する
+//! COMコンポーネント(jscript.dll/vbscript.dll等)のファイルバージョンを
+//! "x.y.z.w"形式で返す。エンジンが登録されていない等で取得できない場合は
+//! 空文字列を返す。 20260726
+const wchar_t* GetWSHEngineVersion(const wchar_t* AEngine);
+
 class CWSHClient : IWSHClient
 {
 public:

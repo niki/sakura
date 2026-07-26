@@ -88,7 +88,7 @@
       <Command>call preBuild.bat</Command>
     </PreBuildEvent>
     <ClCompile>
-      <Optimization>MinSpace</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -101,6 +101,10 @@
       </FavorSizeOrSpeed>
       <OpenMPSupport>true</OpenMPSupport>
       <ForcedIncludeFiles>my.h</ForcedIncludeFiles>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <OmitFramePointers />
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -108,7 +112,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/NXCOMPAT /SAFESEH /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- 20260726 QuickJS(NKMM_FIX_QUICKJS_MACRO)はMSVC既定の1MBスタックだと
            深い再帰スクリプトでスタックオーバーフローする恐れがあるため8MBへ拡張する
            (quickjs-ng公式CMakeLists.txtの/STACK:8388608と同じ値) -->
@@ -140,12 +144,17 @@
       <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <FavorSizeOrSpeed>
+      </FavorSizeOrSpeed>
       <OpenMPSupport>true</OpenMPSupport>
       <ForcedIncludeFiles>my.h</ForcedIncludeFiles>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <AdditionalOptions>/Gw %(AdditionalOptions)</AdditionalOptions>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -153,7 +162,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/NXCOMPAT /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- 20260726 QuickJS(NKMM_FIX_QUICKJS_MACRO)はMSVC既定の1MBスタックだと
            深い再帰スクリプトでスタックオーバーフローする恐れがあるため8MBへ拡張する
            (quickjs-ng公式CMakeLists.txtの/STACK:8388608と同じ値) -->
@@ -165,6 +174,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalLibraryDirectories>..\libs\boost\$(PlatformTarget)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
       <Command>call postBuild.bat "$(TargetPath).manifest"</Command>
@@ -197,7 +207,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/NXCOMPAT /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- 20260726 QuickJS(NKMM_FIX_QUICKJS_MACRO)はMSVC既定の1MBスタックだと
            深い再帰スクリプトでスタックオーバーフローする恐れがあるため8MBへ拡張する
            (quickjs-ng公式CMakeLists.txtの/STACK:8388608と同じ値) -->
@@ -235,7 +245,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/NXCOMPAT /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- 20260726 QuickJS(NKMM_FIX_QUICKJS_MACRO)はMSVC既定の1MBスタックだと
            深い再帰スクリプトでスタックオーバーフローする恐れがあるため8MBへ拡張する
            (quickjs-ng公式CMakeLists.txtの/STACK:8388608と同じ値) -->
@@ -820,7 +830,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_chkdint.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -828,7 +839,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_chartables.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -836,7 +848,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_compile.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -844,7 +857,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_compile_cgroup.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -852,7 +866,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_compile_class.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -860,7 +875,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_config.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -868,7 +884,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_context.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -876,7 +893,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_convert.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -884,7 +902,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_dfa_match.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -892,7 +911,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_error.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -900,7 +920,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_extuni.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -908,7 +929,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_find_bracket.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -916,7 +938,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_jit_compile.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -924,7 +947,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_maketables.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -932,7 +956,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_match.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -940,7 +965,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_match_data.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -948,7 +974,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_match_next.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -956,7 +983,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_newline.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -964,7 +992,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_ord2utf.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -972,7 +1001,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_pattern_info.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -980,7 +1010,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_script_run.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -988,7 +1019,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_serialize.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -996,7 +1028,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_string_utils.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1004,7 +1037,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_study.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1012,7 +1046,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_substitute.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1020,7 +1055,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_substring.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1028,7 +1064,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_tables.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1036,7 +1073,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_ucd.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1044,7 +1082,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_valid_utf.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1052,7 +1091,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_xclass.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1060,7 +1100,8 @@
       <!-- 20260720 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <!-- 20260726 quickjs-ng v0.15.1 (MIT)。CMakeLists.txtのqjs_sources(libビルド対象)
          と同じ4ファイルのみ(CLIツール・quickjs-libc・テスト類は含めない)。 -->
@@ -1074,7 +1115,8 @@
       <!-- 20260726 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこれらのファイルでは
            コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\quickjs\libregexp.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1083,7 +1125,8 @@
       <!-- 20260726 quickjs-c-atomics.hがC11の<stdatomic.h>を要求するため、
            このファイルだけC11としてコンパイルする(プロジェクト全体には広げない) -->
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\quickjs\libunicode.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1092,7 +1135,8 @@
       <!-- 20260726 quickjs-c-atomics.hがC11の<stdatomic.h>を要求するため、
            このファイルだけC11としてコンパイルする(プロジェクト全体には広げない) -->
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\libs\quickjs\quickjs.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1101,7 +1145,8 @@
       <!-- 20260726 quickjs-c-atomics.hがC11の<stdatomic.h>を要求するため、
            このファイルだけC11としてコンパイルする(プロジェクト全体には広げない) -->
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
     </ClCompile>
     <ClCompile Include="..\sakura_core\func\CFuncKeyWnd.cpp" />
     <ClCompile Include="..\sakura_core\func\CFuncLookup.cpp" />
