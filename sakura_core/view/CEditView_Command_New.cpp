@@ -278,8 +278,6 @@ void CEditView::InsertData_CEditView(
 					nModifyLayoutLinesOld++;
 				}
 			}
-			CLayoutYInt nLayoutTop;
-			CLayoutYInt nLayoutBottom;
 			if( 0 != nInsLineNum ){
 				// スクロールバーの状態を更新する
 				AdjustScrollBars();
@@ -293,8 +291,6 @@ void CEditView::InsertData_CEditView(
 				ps.rcPaint.right = GetTextArea().GetAreaRight();
 				ps.rcPaint.top = GetTextArea().GenerateYPx(nStartLine);
 				ps.rcPaint.bottom = GetTextArea().GetAreaBottom();
-				nLayoutTop = nStartLine;
-				nLayoutBottom = CLayoutYInt(-1);
 			}
 			else{
 				// 描画開始行位置と描画行数を調整する	// 2009.02.17 ryoji
@@ -314,25 +310,10 @@ void CEditView::InsertData_CEditView(
 				//ps.rcPaint.top = GetTextArea().GetAreaTop() + GetTextMetrics().GetHankakuDy() * (ptInsertPos.y - GetTextArea().GetViewTopLine() - 1);
 				ps.rcPaint.top = GetTextArea().GenerateYPx(nStartLine);
 				ps.rcPaint.bottom = GetTextArea().GenerateYPx(nStartLine + nModifyLayoutLinesOld);
-				nLayoutTop = nStartLine;
-				nLayoutBottom = nStartLine + nModifyLayoutLinesOld;
 			}
 			HDC hdc = this->GetDC();
 			OnPaint( hdc, &ps, FALSE );
 			this->ReleaseDC( hdc );
-			// 2014.07.16 他のビュー(ミニマップ)の再描画を抑制する
-			if( 0 == nInsLineNum ){
-				for(int i = 0; i < m_pcEditWnd->GetAllViewCount(); i++ ){
-					CEditView* pcView = &m_pcEditWnd->GetView(i);
-					if( pcView == this ){
-						continue;
-					}
-					pcView->RedrawLines(nLayoutTop, nLayoutBottom);
-				}
-				if( !m_bDoing_UndoRedo && pcOpe ){
-					GetDocument()->m_cDocEditor.m_nOpeBlkRedawCount++;
-				}
-			}
 		}
 	}
 

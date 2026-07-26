@@ -2872,7 +2872,6 @@ void CDlgFuncList::GetDockSpaceRect( LPRECT pRect )
 {
 	CEditView* pcEditView = (CEditView*)m_lParam;
 	// CDlgFuncList と CSplitterWnd の外接矩形
-	// 2014.12.02 ミニマップ対応
 	HWND hwnd[3];
 	RECT rc[3];
 	hwnd[0] = ::GetParent( pcEditView->GetHwnd() );	// CSplitterWnd

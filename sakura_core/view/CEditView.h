@@ -782,8 +782,6 @@ public:
 	CRegexKeyword*	m_cRegexKeyword;	//@@@ 2001.11.17 add MIK
 	int				m_nMyIndex;	/* 分割状態 */
 	CMigemo*		m_pcmigemo;
-	CLayoutInt		m_nPageViewTop;
-	CLayoutInt		m_nPageViewBottom;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(CEditView);

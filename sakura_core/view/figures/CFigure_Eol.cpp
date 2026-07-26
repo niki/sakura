@@ -157,7 +157,6 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 		CTypeSupport cTextType(pcView,COLORIDX_TEXT);
 		CTypeSupport cBgLineType(pcView,COLORIDX_CARETLINEBG);
 		CTypeSupport cEvenBgLineType(pcView,COLORIDX_EVENLINEBG);
-		CTypeSupport cPageViewBgLineType(pcView,COLORIDX_PAGEVIEW);
 #ifdef NKMM_FIX_COMMENT
 		bool bBgcolor = true;
 #else

@@ -711,10 +711,6 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		DrawBracketPair( false );
 	}
 
-	CEditView& cActiveView = m_pcEditWnd->GetActiveView();
-	m_nPageViewTop = cActiveView.GetTextArea().GetViewTopLine();
-	m_nPageViewBottom = cActiveView.GetTextArea().GetBottomLine();
-
 	// 背景の表示
 	if( bTransText ){
 		HDC hdcBgImg = CreateCompatibleDC(gr);
@@ -1063,12 +1059,10 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	int nLineHeight = GetTextMetrics().GetHankakuDy();  //行の縦幅？
 	CTypeSupport	cCaretLineBg(this, COLORIDX_CARETLINEBG);
 	CTypeSupport	cEvenLineBg(this, COLORIDX_EVENLINEBG);
-	CTypeSupport	cPageViewBg(this, COLORIDX_PAGEVIEW);
 #ifdef NKMM_FIX_COMMENT
 	int comment_mode = 0;
 	CTypeSupport cComment(this, COLORIDX_COMMENT);
 #endif // NKMM_
-	CEditView& cActiveView = m_pcEditWnd->GetActiveView();
 	CTypeSupport&	cBackType = (cCaretLineBg.IsDisp() &&
 		GetCaret().GetCaretLayoutPos().GetY() == pInfo->m_pDispPos->GetLayoutLineRef()
 			? cCaretLineBg
@@ -1193,17 +1187,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 				else {
 					if (comment_mode != 1) comment_mode = 0;
 				}
-
-				if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
-					pInfo->m_gr.SetTextBackColor(cPageViewBg.GetBackColor());
-					pInfo->m_cIndex.eColorIndex = COLORIDX_PAGEVIEW;
-				}
 			}
 
 
 			if (comment_mode &&
-				pInfo->m_cIndex.eColorIndex != COLORIDX_SELECT &&
-				pInfo->m_colorIdxBackLine != COLORIDX_PAGEVIEW)
+				pInfo->m_cIndex.eColorIndex != COLORIDX_SELECT)
 			{
 				pInfo->m_cIndex.eColorIndex = COLORIDX_COMMENT;
 			}
@@ -1249,10 +1237,7 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	if(rcClipRet){
 		if( !bTransText ){
 #ifdef NKMM_FIX_COMMENT
-			if (pInfo->m_colorIdxBackLine == COLORIDX_PAGEVIEW) {
-				cBackType.FillBack(pInfo->m_gr,rcClip);
-			}
-			else if (comment_mode) {
+			if (comment_mode) {
 				if (cComment.GetBackColor() == cTextType.GetBackColor()) {
 					// カーソル行背景色とテキスト背景色が同じ場合は背景色で塗りつぶす
 					cBackType.FillBack(pInfo->m_gr,rcClip);

@@ -24,7 +24,6 @@
 /* CTipWndクラス デストラクタ */
 CTipWnd::CTipWnd()
 : CWnd(_T("::CTipWnd"))
-, m_bAlignLeft(false)
 {
 	m_hFont = NULL;
 	m_KeyWasHit = FALSE;	/* キーがヒットしたか */
@@ -124,13 +123,8 @@ void CTipWnd::Show( int nX, int nY, const TCHAR* szText, RECT* pRect )
 
 	::ReleaseDC( GetHwnd(), hdc );
 
-	if( m_bAlignLeft ){
-		// 右側固定で表示(MiniMap)
-		::MoveWindow( GetHwnd(), nX - rc.right, nY, rc.right + 8, rc.bottom + 8, TRUE );
-	}else{
-		// 左側固定で表示(通常)
-		::MoveWindow( GetHwnd(), nX, nY, rc.right + 8, rc.bottom + 8/*nHeight*/, TRUE );
-	}
+	// 左側固定で表示
+	::MoveWindow( GetHwnd(), nX, nY, rc.right + 8, rc.bottom + 8/*nHeight*/, TRUE );
 	::InvalidateRect( GetHwnd(), NULL, TRUE );
 	::ShowWindow( GetHwnd(), SW_SHOWNA );
 	return;

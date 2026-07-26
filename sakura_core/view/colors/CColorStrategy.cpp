@@ -454,7 +454,6 @@ const SColorAttributeData g_ColorAttributeArr[] =
 #else
 	{_T("MRK"), 0},	//ブックマーク	// 02/10/16 ai Add
 #endif // NKMM_
-	{_T("PGV"), COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_EFFECTS},
 	{_T("LAST"), 0}	// Not Used
 };
 
