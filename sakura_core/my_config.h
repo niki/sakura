@@ -64,7 +64,7 @@
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
 	#define PR_VER_VAL	2320
-	#define PR_LV		26072600
+	#define PR_LV		26072700
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -316,7 +316,7 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_PROFILES
 	#define NKMM_SEPARATE_HISTORY                    (0)  // 履歴は別ファイルで扱う (sakura.recent) 20170502
-	#define NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP (1)  // 起動時に存在しないファイル・フォルダの履歴は削除する 20170410
+	#define NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP (1)  // 起動時に存在しないファイル・フォルダの履歴は削除する (ndef(NKMM_FIX_PROFILES)の時の処理がない) 20170410
 	#define NKMM_USE_KEYWORDSET_CSV                  (1)  // sakura.keywordset.csvを用意し、強調キーワードの管理はこのファイルで行う 20170513
 
 //------------------------------------------------------------------

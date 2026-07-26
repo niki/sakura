@@ -369,7 +369,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef NKMM_FIX_PROFILES
+#if defined(NKMM_FIX_PROFILES) && NKMM_SEPARATE_HISTORY
 	SShare_History &hist = pShare->m_sHistory;
 
 	if (cProfile.IsReadingMode()) {
@@ -622,7 +622,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef NKMM_FIX_PROFILES
+#if defined(NKMM_FIX_PROFILES) && NKMM_SEPARATE_HISTORY
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
 	if (cProfile.IsReadingMode()) {
@@ -717,7 +717,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef NKMM_FIX_PROFILES
+#if defined(NKMM_FIX_PROFILES) && NKMM_SEPARATE_HISTORY
 	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
 
 	if (cProfile.IsReadingMode()) {
@@ -874,7 +874,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
 
-#ifdef NKMM_FIX_PROFILES
+#if defined(NKMM_FIX_PROFILES) && NKMM_SEPARATE_HISTORY
 	SShare_History &hist = pShare->m_sHistory;
 
 	if (cProfile.IsReadingMode()) {
