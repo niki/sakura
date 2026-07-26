@@ -1103,8 +1103,10 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 		bVertLineDoNotOFF = false;		//選択状態ならカーソル位置縦線消去を行う
 	}
 
+#ifdef NKMM_FIX_CURSOR_MOVE_TOPEND
     bool moveToTop = false;
 	bool moveToEnd = false;
+#endif // NKMM_
 
 	// 現在のキャレットY座標 + nMoveLinesが正しいレイアウト行の範囲内に収まるように nMoveLinesを調整する。
 	if( nMoveLines > 0 ) { // 下移動。
@@ -1119,16 +1121,20 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 			// EOFのみの行には移動しない。下移動でキャレットの X座標を動かしたくないので。
 			nMoveLines = t_max( CLayoutInt(0), nMoveLines - 1 ); // うっかり上移動しないように 0以上を守る。
 		}
+#ifdef NKMM_FIX_CURSOR_MOVE_TOPEND
         else if (nMoveLines == 0) {
 			moveToEnd = true;
         }
+#endif // NKMM_
 	} else { // 上移動。
 		// 移動先が 0行目より小さくならないように移動量を規制。
 		nMoveLines = t_max( nMoveLines, - GetCaretLayoutPos().GetY() );
 
+#ifdef NKMM_FIX_CURSOR_MOVE_TOPEND
         if (nMoveLines == 0) {
 			moveToTop = true;
 		}
+#endif // NKMM_
 	}
 
 	if( bSelect && ! m_pEditView->GetSelectionInfo().IsTextSelected() ) {
@@ -1171,6 +1177,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 		}
 	}
 
+#ifdef NKMM_FIX_CURSOR_MOVE_TOPEND
     if (moveToTop) {
 		ptTo.x = CLayoutInt(0);
         m_nCaretPosX_Prev = ptTo.x;
@@ -1184,6 +1191,7 @@ CLayoutInt CCaret::Cursor_UPDOWN( CLayoutInt nMoveLines, bool bSelect )
 			m_nCaretPosX_Prev = ptTo.x;
 		}
 	}
+#endif // NKMM_
 
 	if( i >= nLineLen ) {
 		/* フリーカーソルモードと矩形選択中は、キャレットの位置を改行や EOFの前に制限しない */
