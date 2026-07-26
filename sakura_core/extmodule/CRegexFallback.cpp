@@ -436,6 +436,18 @@ const wchar_t* BRegexpVersion()
 	return s.c_str();
 }
 
+const wchar_t* Pcre2LibraryVersion()
+{
+	static std::wstring s;
+	if (s.empty()) {
+		PCRE2_UCHAR16 verbuf[64];
+		int n = pcre2_config_16(PCRE2_CONFIG_VERSION, verbuf);
+		s = L"PCRE2 ";
+		if (n >= 0) s += reinterpret_cast<wchar_t*>(verbuf);
+	}
+	return s.c_str();
+}
+
 } // namespace RegexFallback
 
 #endif // NKMM_FIX_REGEXP_FALLBACK

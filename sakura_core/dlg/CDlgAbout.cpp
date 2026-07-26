@@ -27,6 +27,14 @@
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "sakura.hh"
 
+// 20260726 使用ライブラリのバージョン表示用
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+#include "extmodule/CRegexFallback.h"
+#endif
+#ifdef NKMM_FIX_QUICKJS_MACRO
+#include "quickjs.h"
+#endif
+
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//12900
 	IDOK,					HIDOK_ABOUT,
@@ -265,6 +273,16 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	cmemMsg.AppendString( ptszPatchInfo, t_min(80, patchInfoLen) );
 #endif
 	cmemMsg.AppendString( _T("\r\n"));
+
+	// 使用ライブラリのバージョン情報 20260726
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+	auto_sprintf( szMsg, _T("      %s (BSD-3-Clause)\r\n"), to_tchar(RegexFallback::Pcre2LibraryVersion()) );
+	cmemMsg.AppendString( szMsg );
+#endif
+#ifdef NKMM_FIX_QUICKJS_MACRO
+	auto_sprintf( szMsg, _T("      QuickJS %s (MIT)\r\n"), to_tchar(JS_GetVersion()) );
+	cmemMsg.AppendString( szMsg );
+#endif
 
 	::DlgItem_SetText( GetHwnd(), IDC_EDIT_VER, cmemMsg.GetStringPtr() );
 

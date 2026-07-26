@@ -34,6 +34,10 @@ int BSplit(const wchar_t* str, wchar_t* target, wchar_t* targetendp, int limit, 
 void BRegfree(BREGEXP_W* rx);
 const wchar_t* BRegexpVersion();
 
+//! バージョン情報ダイアログ表示用。フォールバック状態の説明文を含めず、
+//! "PCRE2 x.yy" 形式のライブラリバージョンだけを返す。
+const wchar_t* Pcre2LibraryVersion();
+
 } // namespace RegexFallback
 
 #endif // NKMM_FIX_REGEXP_FALLBACK
