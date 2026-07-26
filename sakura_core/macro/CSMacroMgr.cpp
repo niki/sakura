@@ -27,6 +27,9 @@
 #include "macro/CKeyMacroMgr.h"
 #include "macro/CPPAMacroMgr.h"
 #include "macro/CWSHManager.h"
+#ifdef NKMM_FIX_QUICKJS_MACRO
+#include "macro/CQuickJSMacroMgr.h"
+#endif // NKMM_
 #include "macro/CMacroFactory.h"
 #include "env/CShareData.h"
 #include "view/CEditView.h"
@@ -499,6 +502,9 @@ CSMacroMgr::CSMacroMgr()
 #endif // NKMM_
 	CKeyMacroMgr::declare();
 	CWSHMacroManager::declare();
+#ifdef NKMM_FIX_QUICKJS_MACRO
+	CQuickJSMacroMgr::declare();
+#endif // NKMM_
 	
 	int i;
 	for ( i = 0 ; i < MAX_CUSTMACRO ; i++ ){

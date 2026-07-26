@@ -29,6 +29,9 @@
 #include "plugin/CPluginManager.h"
 #include "plugin/CJackManager.h"
 #include "plugin/CWSHPlugin.h"
+#ifdef NKMM_FIX_QUICKJS_MACRO
+#include "plugin/CQuickJSPlugin.h"
+#endif // NKMM_
 #include "plugin/CDllPlugin.h"
 #include "util/module.h"
 #include "io/CZipFile.h"
@@ -548,6 +551,10 @@ CPlugin* CPluginManager::LoadPlugin( const TCHAR* pszPluginDir, const TCHAR* psz
 
 	if( wcsicmp( sPlugType.c_str(), L"wsh" ) == 0 ){
 		plugin = new CWSHPlugin( tstring(pszBasePath) );
+#ifdef NKMM_FIX_QUICKJS_MACRO
+	}else if( wcsicmp( sPlugType.c_str(), L"qjs" ) == 0 ){
+		plugin = new CQuickJSPlugin( tstring(pszBasePath) );
+#endif // NKMM_
 	}else if( wcsicmp( sPlugType.c_str(), L"dll" ) == 0 ){
 		plugin = new CDllPlugin( tstring(pszBasePath) );
 	}else{

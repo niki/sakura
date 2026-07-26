@@ -673,6 +673,39 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_SHARED_TYPE_COLOR
 
+//------------------------------------------------------------------
+// WSH(JScript/VBScript)に依存しないマクロエンジンとしてQuickJSを追加 20260726
+//  - WSHはJScript.dll/VBScript.dllというOS登録済みの外部COMコンポーネントに依存して
+//    おり、それらが無い(または将来廃止された)環境ではマクロ機能そのものが使えない。
+//    また一般利用者がJScript/VBAを使わずに「機能追加」をスクリプトで書けるようにしたい
+//    という要望もあり、拡張子".qjs"のマクロファイルをQuickJS(quickjs-ng, MIT)で
+//    実行できるようにした。
+//  - CMacroFactory/CMacroManagerBaseの既存の仕組み(CPPAMacroMgr等と同列)にそのまま
+//    載せている。WSH/PPAは変更・削除しておらず、両方とも従来通り使える。
+//  - マクロから呼べる関数群(CEditorIfObj等のGetMacroCommandInfo/GetMacroFuncInfoが返す
+//    MacroFuncInfoテーブルとHandleCommand/HandleFunctionの実装)はエンジンに依存しない
+//    形で既に実装されていたため、それらは一切変更していない。WSH固有だったのは
+//    IDispatch/COMオートメーション経由の呼び出し部分(CIfObj/CWSHClient)だけで、
+//    QuickJS版はそこだけをCQuickJSIfObjBinder(VARIANT⇔JSValue変換)で置き換えている。
+//  - QuickJSはファイルI/O等のOSバインディング(quickjs-libc)を含めず、インタプリタ本体
+//    のみをvendorしている。スクリプトに公開する機能はCEditorIfObj等が明示的に登録した
+//    ものだけであり、WSHのActiveXObject経由の任意のCOMオートメーションアクセスより
+//    サンドボックスは狭い。
+//  - 20260726 プラグイン機構(CWSHPlugin相当)にも対応。CQuickJSIfObjBinderは
+//    CWSHIfObj派生オブジェクトなら何であれ束縛できる設計だったため、CWSHPlugin/
+//    CWSHPlugを複製したCQuickJSPlugin/CQuickJSPlugと、CQuickJSMacroMgrへの
+//    AddParam/ClearParam追加だけで対応できた。plugin.defのType:に"qjs"を指定する。
+//  - libs\quickjs (新規、quickjs-ng v0.15.1のインタプリタ本体をvendor)
+//  - sakura_core\macro\CQuickJSMacroMgr.h,cpp (新規、CMacroManagerBase実装)
+//  - sakura_core\macro\CQuickJSIfObjBinder.h,cpp (新規、IfObj⇔QuickJS橋渡し)
+//  - sakura_core\macro\CWSHIfObj.h (Invoke*転送メソッドの追加のみ、既存実装は無改造)
+//  - sakura_core\macro\CSMacroMgr.cpp (CQuickJSMacroMgr::declare()の呼び出し追加)
+//  - sakura_core\plugin\CQuickJSPlugin.h,cpp (新規、プラグイン機構向け)
+//  - sakura_core\plugin\CPluginManager.cpp (Type: qjsの分岐追加)
+//  - 詳細はchangelog/NKMM_FIX_QUICKJS_MACRO.md参照
+//------------------------------------------------------------------
+#define NKMM_FIX_QUICKJS_MACRO
+
 //
 //#define USE_SSE2
 

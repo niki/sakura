@@ -238,6 +238,8 @@ macro/CMacroFactory.o \
 macro/CMacroManagerBase.o \
 macro/CPPA.o \
 macro/CPPAMacroMgr.o \
+macro/CQuickJSIfObjBinder.o \
+macro/CQuickJSMacroMgr.o \
 macro/CSMacroMgr.o \
 macro/CWSH.o \
 macro/CWSHIfObj.o \
@@ -256,7 +258,9 @@ parse/CWordParse.o \
 plugin/CDllPlugin.o \
 plugin/CJackManager.o \
 plugin/CPlugin.o \
+plugin/CPluginIfObj.o \
 plugin/CPluginManager.o \
+plugin/CQuickJSPlugin.o \
 plugin/CWSHPlugin.o \
 print/CPrint.o \
 print/CPrintPreview.o \

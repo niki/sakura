@@ -89,7 +89,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>MinSpace</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -109,6 +109,10 @@
     <Link>
       <AdditionalOptions>/NXCOMPAT /SAFESEH /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- 20260726 QuickJS(NKMM_FIX_QUICKJS_MACRO)はMSVC既定の1MBスタックだと
+           深い再帰スクリプトでスタックオーバーフローする恐れがあるため8MBへ拡張する
+           (quickjs-ng公式CMakeLists.txtの/STACK:8388608と同じ値) -->
+      <StackReserveSize>8388608</StackReserveSize>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
@@ -128,7 +132,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -150,6 +154,10 @@
     <Link>
       <AdditionalOptions>/NXCOMPAT /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- 20260726 QuickJS(NKMM_FIX_QUICKJS_MACRO)はMSVC既定の1MBスタックだと
+           深い再帰スクリプトでスタックオーバーフローする恐れがあるため8MBへ拡張する
+           (quickjs-ng公式CMakeLists.txtの/STACK:8388608と同じ値) -->
+      <StackReserveSize>8388608</StackReserveSize>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
@@ -171,7 +179,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -190,6 +198,10 @@
     <Link>
       <AdditionalOptions>/NXCOMPAT /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- 20260726 QuickJS(NKMM_FIX_QUICKJS_MACRO)はMSVC既定の1MBスタックだと
+           深い再帰スクリプトでスタックオーバーフローする恐れがあるため8MBへ拡張する
+           (quickjs-ng公式CMakeLists.txtの/STACK:8388608と同じ値) -->
+      <StackReserveSize>8388608</StackReserveSize>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
@@ -204,7 +216,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -224,6 +236,10 @@
     <Link>
       <AdditionalOptions>/NXCOMPAT /DYNAMICBASE %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- 20260726 QuickJS(NKMM_FIX_QUICKJS_MACRO)はMSVC既定の1MBスタックだと
+           深い再帰スクリプトでスタックオーバーフローする恐れがあるため8MBへ拡張する
+           (quickjs-ng公式CMakeLists.txtの/STACK:8388608と同じ値) -->
+      <StackReserveSize>8388608</StackReserveSize>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -409,6 +425,23 @@
     <ClInclude Include="..\libs\pcre2\pcre2_jit_simd_inc.h" />
     <ClInclude Include="..\libs\pcre2\pcre2_printint_inc.h" />
     <ClInclude Include="..\libs\pcre2\pcre2_util.h" />
+    <!-- 20260726 quickjs-ng v0.15.1 (MIT) をvendor。NKMM_FIX_QUICKJS_MACROの
+         マクロエンジン(CQuickJSMacroMgr.cpp/CQuickJSIfObjBinder.cpp)からのみ使用する。
+         quickjs-libc(ファイルI/O等のOSバインディング)は含めていない。 -->
+    <ClInclude Include="..\libs\quickjs\quickjs.h" />
+    <ClInclude Include="..\libs\quickjs\builtin-array-fromasync.h" />
+    <ClInclude Include="..\libs\quickjs\builtin-iterator-zip-keyed.h" />
+    <ClInclude Include="..\libs\quickjs\builtin-iterator-zip.h" />
+    <ClInclude Include="..\libs\quickjs\quickjs-atom.h" />
+    <ClInclude Include="..\libs\quickjs\quickjs-opcode.h" />
+    <ClInclude Include="..\libs\quickjs\quickjs-c-atomics.h" />
+    <ClInclude Include="..\libs\quickjs\libregexp.h" />
+    <ClInclude Include="..\libs\quickjs\libregexp-opcode.h" />
+    <ClInclude Include="..\libs\quickjs\libunicode.h" />
+    <ClInclude Include="..\libs\quickjs\libunicode-table.h" />
+    <ClInclude Include="..\libs\quickjs\dtoa.h" />
+    <ClInclude Include="..\libs\quickjs\cutils.h" />
+    <ClInclude Include="..\libs\quickjs\list.h" />
     <ClInclude Include="..\sakura_core\Funccode_define.h" />
     <ClInclude Include="..\sakura_core\Funccode_enum.h" />
     <ClInclude Include="..\sakura_core\func\CFuncKeyWnd.h" />
@@ -431,6 +464,8 @@
     <ClInclude Include="..\sakura_core\macro\CMacroManagerBase.h" />
     <ClInclude Include="..\sakura_core\macro\CPPA.h" />
     <ClInclude Include="..\sakura_core\macro\CPPAMacroMgr.h" />
+    <ClInclude Include="..\sakura_core\macro\CQuickJSIfObjBinder.h" />
+    <ClInclude Include="..\sakura_core\macro\CQuickJSMacroMgr.h" />
     <ClInclude Include="..\sakura_core\macro\CSMacroMgr.h" />
     <ClInclude Include="..\sakura_core\macro\CWSH.h" />
     <ClInclude Include="..\sakura_core\macro\CWSHIfObj.h" />
@@ -457,6 +492,7 @@
     <ClInclude Include="..\sakura_core\plugin\CPlugin.h" />
     <ClInclude Include="..\sakura_core\plugin\CPluginIfObj.h" />
     <ClInclude Include="..\sakura_core\plugin\CPluginManager.h" />
+    <ClInclude Include="..\sakura_core\plugin\CQuickJSPlugin.h" />
     <ClInclude Include="..\sakura_core\plugin\CSmartIndentIfObj.h" />
     <ClInclude Include="..\sakura_core\plugin\CWSHPlugin.h" />
     <ClInclude Include="..\sakura_core\print\CPrint.h" />
@@ -1026,6 +1062,47 @@
            コンパイルエラーになるため無効化する -->
       <ForcedIncludeFiles></ForcedIncludeFiles>
     </ClCompile>
+    <!-- 20260726 quickjs-ng v0.15.1 (MIT)。CMakeLists.txtのqjs_sources(libビルド対象)
+         と同じ4ファイルのみ(CLIツール・quickjs-libc・テスト類は含めない)。 -->
+    <ClCompile Include="..\libs\quickjs\dtoa.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_GNU_SOURCE;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0601;QUICKJS_NG_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4018;4100;4244;4267;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <!-- 20260726 quickjs-c-atomics.hがC11の<stdatomic.h>を要求するため、
+           このファイルだけC11としてコンパイルする(プロジェクト全体には広げない) -->
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <!-- 20260726 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこれらのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\quickjs\libregexp.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_GNU_SOURCE;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0601;QUICKJS_NG_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4018;4100;4244;4267;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <!-- 20260726 quickjs-c-atomics.hがC11の<stdatomic.h>を要求するため、
+           このファイルだけC11としてコンパイルする(プロジェクト全体には広げない) -->
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\quickjs\libunicode.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_GNU_SOURCE;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0601;QUICKJS_NG_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4018;4100;4244;4267;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <!-- 20260726 quickjs-c-atomics.hがC11の<stdatomic.h>を要求するため、
+           このファイルだけC11としてコンパイルする(プロジェクト全体には広げない) -->
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="..\libs\quickjs\quickjs.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_GNU_SOURCE;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0601;QUICKJS_NG_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4018;4100;4244;4267;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <!-- 20260726 quickjs-c-atomics.hがC11の<stdatomic.h>を要求するため、
+           このファイルだけC11としてコンパイルする(プロジェクト全体には広げない) -->
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\func\CFuncKeyWnd.cpp" />
     <ClCompile Include="..\sakura_core\func\CFuncLookup.cpp" />
     <ClCompile Include="..\sakura_core\func\CKeyBind.cpp" />
@@ -1046,6 +1123,8 @@
     <ClCompile Include="..\sakura_core\macro\CMacroManagerBase.cpp" />
     <ClCompile Include="..\sakura_core\macro\CPPA.cpp" />
     <ClCompile Include="..\sakura_core\macro\CPPAMacroMgr.cpp" />
+    <ClCompile Include="..\sakura_core\macro\CQuickJSIfObjBinder.cpp" />
+    <ClCompile Include="..\sakura_core\macro\CQuickJSMacroMgr.cpp" />
     <ClCompile Include="..\sakura_core\macro\CSMacroMgr.cpp" />
     <ClCompile Include="..\sakura_core\macro\CWSH.cpp" />
     <ClCompile Include="..\sakura_core\macro\CWSHIfObj.cpp" />
@@ -1064,7 +1143,9 @@
     <ClCompile Include="..\sakura_core\plugin\CDllPlugin.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CJackManager.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CPlugin.cpp" />
+    <ClCompile Include="..\sakura_core\plugin\CPluginIfObj.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CPluginManager.cpp" />
+    <ClCompile Include="..\sakura_core\plugin\CQuickJSPlugin.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CWSHPlugin.cpp" />
     <ClCompile Include="..\sakura_core\print\CPrint.cpp" />
     <ClCompile Include="..\sakura_core\print\CPrintPreview.cpp" />

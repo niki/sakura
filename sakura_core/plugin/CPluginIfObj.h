@@ -31,6 +31,10 @@
 #include "macro/CWSHIfObj.h"
 #include "_os/OleTypes.h"
 #include "util/ole_convert.h"
+//	20260726 m_cPlugin(CPlugin&)を使うインライン実装があるため、CPluginを完全な
+//	型として要求する。従来はCWSHPlugin.h(先にplugin/CPlugin.hをincludeする)経由の
+//	利用しかなかったため問題化しなかったが、単体でincludeする場合に必要(NKMM_FIX_QUICKJS_MACRO)。
+#include "plugin/CPlugin.h"
 
 // cppへ移動予定
 #include "window/CEditWnd.h"
@@ -189,28 +193,10 @@ private:
 	int m_nPlugIndex;	//実行中プラグの番号
 };
 
-//コマンド情報
-MacroFuncInfo CPluginIfObj::m_MacroFuncInfoCommandArr[] = 
-{
-	//ID									関数名							引数										戻り値の型	m_pszData
-	{EFunctionCode(F_PL_SETOPTION),			LTEXT("SetOption"),				{VT_BSTR, VT_BSTR, VT_VARIANT, VT_EMPTY},	VT_EMPTY,	NULL }, //オプションファイルに値を書く
-	{EFunctionCode(F_PL_ADDCOMMAND),		LTEXT("AddCommand"),			{VT_BSTR, VT_BSTR, VT_BSTR, VT_EMPTY},		VT_EMPTY,	NULL }, //コマンドを追加する
-	//	終端
-	{F_INVALID,	NULL, {VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}
-};
-
-//関数情報
-MacroFuncInfo CPluginIfObj::m_MacroFuncInfoArr[] = 
-{
-	//ID									関数名							引数										戻り値の型	m_pszData
-	{EFunctionCode(F_PL_GETPLUGINDIR),		LTEXT("GetPluginDir"),			{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_BSTR,	NULL }, //プラグインフォルダパスを取得する
-	{EFunctionCode(F_PL_GETDEF),			LTEXT("GetDef"),				{VT_BSTR, VT_BSTR, VT_EMPTY, VT_EMPTY},		VT_BSTR,	NULL }, //設定ファイルから値を読む
-	{EFunctionCode(F_PL_GETOPTION),			LTEXT("GetOption"),				{VT_BSTR, VT_BSTR, VT_EMPTY, VT_EMPTY},		VT_BSTR,	NULL }, //オプションファイルから値を読む
-	{EFunctionCode(F_PL_GETCOMMANDNO),		LTEXT("GetCommandNo"),			{VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_I4,		NULL }, //オプションファイルから値を読む
-	{EFunctionCode(F_PL_GETSTRING),			LTEXT("GetString"),				{VT_I4,    VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_BSTR,	NULL }, //設定ファイルから文字列を読む
-	//	終端
-	{F_INVALID,	NULL, {VT_EMPTY, VT_EMPTY, VT_EMPTY, VT_EMPTY},	VT_EMPTY,	NULL}
-};
+//	20260726 NKMM_FIX_QUICKJS_MACRO: m_MacroFuncInfoCommandArr/m_MacroFuncInfoArrの定義本体は
+//	CPluginIfObj.cppへ移した。CQuickJSPlugin.cppもこのヘッダをincludeするようになり、
+//	ヘッダ内で非inlineのクラス静的メンバを定義するとODR違反(LNK2005 多重定義)になる
+//	ため(inline変数はC++17が必要で、本プロジェクトはWin32構成がC++17未満のため使えない)。
 
 #endif /* SAKURA_CPLUGINIFOBJ_2205DDE8_330B_49AC_AC5E_4C02F07DDCD5D_H_ */
 /*[EOF]*/

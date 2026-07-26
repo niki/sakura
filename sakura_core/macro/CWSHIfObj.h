@@ -61,6 +61,23 @@ public:
 
 	virtual void ReadyMethods( CEditView* pView, int flags );
 
+#ifdef NKMM_FIX_QUICKJS_MACRO
+	// QuickJSバインダ(CQuickJSIfObjBinder)がIDispatch/COMを経由せずに
+	// HandleCommand/HandleFunction/GetMacroCommandInfo/GetMacroFuncInfoを
+	// 呼び出すための薄い転送。ロジック本体(各IfObjのHandleCommand/HandleFunction
+	// 実装)は一切変更しない。
+	MacroFuncInfoArray InvokeGetMacroCommandInfo() const { return GetMacroCommandInfo(); }
+	MacroFuncInfoArray InvokeGetMacroFuncInfo() const { return GetMacroFuncInfo(); }
+	bool InvokeCommand(CEditView* View, EFunctionCode ID, const WCHAR* Arguments[], const int ArgLengths[], const int ArgSize)
+	{
+		return HandleCommand(View, ID, Arguments, ArgLengths, ArgSize);
+	}
+	bool InvokeFunction(CEditView* View, EFunctionCode ID, const VARIANT *Arguments, const int ArgSize, VARIANT &Result)
+	{
+		return HandleFunction(View, ID, Arguments, ArgSize, Result);
+	}
+#endif // NKMM_FIX_QUICKJS_MACRO
+
 protected:
 	// 操作
 	//	2007.07.20 genta : flags追加

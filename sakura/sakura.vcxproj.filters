@@ -14,6 +14,9 @@
     <Filter Include="C Source Files\pcre2">
       <UniqueIdentifier>{7067f930-c768-442d-8c82-be835061474b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="C Source Files\quickjs">
+      <UniqueIdentifier>{3b9a7c5e-1a2d-4b7f-9c6e-8f2a6b1d4e5a}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Cpp Source Files">
       <UniqueIdentifier>{099ccf22-168e-437c-8582-90c4a6decd26}</UniqueIdentifier>
     </Filter>
@@ -811,6 +814,12 @@
     <ClInclude Include="..\sakura_core\macro\CPPAMacroMgr.h">
       <Filter>Cpp Source Files\macro</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\macro\CQuickJSIfObjBinder.h">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\macro\CQuickJSMacroMgr.h">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\macro\CSMacroMgr.h">
       <Filter>Cpp Source Files\macro</Filter>
     </ClInclude>
@@ -1030,6 +1039,9 @@
     <ClInclude Include="..\sakura_core\plugin\CPluginManager.h">
       <Filter>Cpp Source Files\plugin</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\plugin\CQuickJSPlugin.h">
+      <Filter>Cpp Source Files\plugin</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\plugin\CSmartIndentIfObj.h">
       <Filter>Cpp Source Files\plugin</Filter>
     </ClInclude>
@@ -1095,6 +1107,48 @@
     </ClInclude>
     <ClInclude Include="..\libs\pcre2\pcre2_util.h">
       <Filter>C Source Files\pcre2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\quickjs.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\builtin-array-fromasync.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\builtin-iterator-zip-keyed.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\builtin-iterator-zip.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\quickjs-atom.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\quickjs-opcode.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\quickjs-c-atomics.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\libregexp.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\libregexp-opcode.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\libunicode.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\libunicode-table.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\dtoa.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\cutils.h">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\quickjs\list.h">
+      <Filter>C Source Files\quickjs</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\extmodule\CHtmlHelp.h">
       <Filter>Cpp Source Files\extmodule</Filter>
@@ -1991,6 +2045,12 @@
     <ClCompile Include="..\sakura_core\macro\CPPAMacroMgr.cpp">
       <Filter>Cpp Source Files\macro</Filter>
     </ClCompile>
+    <ClCompile Include="..\sakura_core\macro\CQuickJSIfObjBinder.cpp">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\macro\CQuickJSMacroMgr.cpp">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\macro\CSMacroMgr.cpp">
       <Filter>Cpp Source Files\macro</Filter>
     </ClCompile>
@@ -2195,7 +2255,13 @@
     <ClCompile Include="..\sakura_core\plugin\CPlugin.cpp">
       <Filter>Cpp Source Files\plugin</Filter>
     </ClCompile>
+    <ClCompile Include="..\sakura_core\plugin\CPluginIfObj.cpp">
+      <Filter>Cpp Source Files\plugin</Filter>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\plugin\CPluginManager.cpp">
+      <Filter>Cpp Source Files\plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\plugin\CQuickJSPlugin.cpp">
       <Filter>Cpp Source Files\plugin</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\plugin\CWSHPlugin.cpp">
@@ -2383,6 +2449,18 @@
     </ClCompile>
     <ClCompile Include="..\libs\pcre2\pcre2_xclass.c">
       <Filter>C Source Files\pcre2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\quickjs\dtoa.c">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\quickjs\libregexp.c">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\quickjs\libunicode.c">
+      <Filter>C Source Files\quickjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\quickjs\quickjs.c">
+      <Filter>C Source Files\quickjs</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\print\CPrint.cpp">
       <Filter>Cpp Source Files\print</Filter>
