@@ -28,6 +28,10 @@
 #include "window/CEditWnd.h"
 #include "uiparts/CMenuDrawer.h"
 #endif // NKMM_
+#ifdef NKMM_FIX_FIND_DIALOG_FLAT
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
+#endif // NKMM_
 
 //検索 CDlgFind.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//11800
@@ -350,8 +354,88 @@ HWND CDlgFind::DoModeless( HINSTANCE hInstance, HWND hwndParent, LPARAM lParam )
 	m_bNOTIFYNOTFOUND = m_pShareData->m_Common.m_sSearch.m_bNOTIFYNOTFOUND;	// 検索／置換  見つからないときメッセージを表示
 	m_ptEscCaretPos_PHY = ((CEditView*)lParam)->GetCaret().GetCaretLogicPos();	// 検索開始時のカーソル位置退避
 	((CEditView*)lParam)->m_bSearch = TRUE;							// 検索開始位置の登録有無		02/07/28 ai
+#ifdef NKMM_FIX_FIND_DIALOG
+	// IDD_FIND は WS_VISIBLE を持たないため非表示状態で生成される。	// 2026.07.27
+	HWND hWnd = CDialog::DoModeless( hInstance, hwndParent, IDD_FIND, lParam, SW_HIDE );
+#ifdef NKMM_FIX_FIND_DIALOG_FLAT
+	// 生成直後、最終位置より少し上にずらしてから表示し、タイマーで
+	// 実際にウィンドウ位置を動かして上からスライドインさせる。
+	// AnimateWindow(AW_SLIDE)はDWM合成下で子コントロール(コンボボックス等)が
+	// 追従せず、枠(パネル)だけ先に全表示されてしまう不具合があったため、
+	// ウィンドウ位置そのものを動かす方式に変更した。
+	if( NULL != hWnd ){
+		StartSlideAnimation();
+	}
+#else
+	if( NULL != hWnd ){
+		::ShowWindow( hWnd, SW_SHOW );
+	}
+#endif // NKMM_FIX_FIND_DIALOG_FLAT
+	return hWnd;
+#else
 	return CDialog::DoModeless( hInstance, hwndParent, IDD_FIND, lParam, SW_SHOW );
+#endif // NKMM_
 }
+
+#ifdef NKMM_FIX_FIND_DIALOG_FLAT
+namespace {
+	const UINT_PTR ID_TIMER_FIND_SLIDEIN = 1;
+	const int SLIDE_DURATION_MS = 150;
+	const int SLIDE_DISTANCE_DIP = 24;		// スライド開始位置のオフセット
+	const int SLIDE_INTERVAL_MS = 10;
+}
+
+/*!
+	上からのスライドインアニメーションを開始する。
+
+	OnInitDialog で決定済みの最終表示位置(現在のウィンドウ位置)より
+	少し上にウィンドウを動かしてから表示し、WM_TIMER で実際に
+	ウィンドウ位置を最終位置まで動かすことでアニメーションさせる。
+
+	@date 2026.07.27 追加
+*/
+void CDlgFind::StartSlideAnimation()
+{
+	RECT rc;
+	::GetWindowRect( GetHwnd(), &rc );
+
+	m_nSlideX         = rc.left;
+	m_nSlideTargetY   = rc.top;
+	m_nSlideStartY    = rc.top - DpiScaleY(SLIDE_DISTANCE_DIP);
+	m_dwSlideStartTick = ::GetTickCount();
+
+	::SetWindowPos( GetHwnd(), NULL, m_nSlideX, m_nSlideStartY, 0, 0,
+		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+	::ShowWindow( GetHwnd(), SW_SHOW );	// 表示とアクティブ化(検索文字列欄へフォーカス)
+
+	::SetTimer( GetHwnd(), ID_TIMER_FIND_SLIDEIN, SLIDE_INTERVAL_MS, NULL );
+}
+
+BOOL CDlgFind::OnTimer( WPARAM wParam )
+{
+	if( wParam != ID_TIMER_FIND_SLIDEIN ){
+		return CDialog::OnTimer( wParam );
+	}
+
+	DWORD dwElapsed = ::GetTickCount() - m_dwSlideStartTick;
+	if( dwElapsed >= (DWORD)SLIDE_DURATION_MS ){
+		::SetWindowPos( GetHwnd(), NULL, m_nSlideX, m_nSlideTargetY, 0, 0,
+			SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+		::KillTimer( GetHwnd(), ID_TIMER_FIND_SLIDEIN );
+		return TRUE;
+	}
+
+	// ease-out (3次): 1 - (1-t)^3
+	double t = (double)dwElapsed / SLIDE_DURATION_MS;
+	double u = 1.0 - t;
+	double eased = 1.0 - u * u * u;
+	int y = m_nSlideStartY + (int)((m_nSlideTargetY - m_nSlideStartY) * eased);
+
+	::SetWindowPos( GetHwnd(), NULL, m_nSlideX, y, 0, 0,
+		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+	return TRUE;
+}
+#endif // NKMM_
 
 /* モードレス時：検索対象となるビューの変更 */
 void CDlgFind::ChangeView( LPARAM pcEditView )
@@ -359,6 +443,29 @@ void CDlgFind::ChangeView( LPARAM pcEditView )
 	m_lParam = pcEditView;
 	return;
 }
+
+#ifdef NKMM_FIX_DIALOG_POS
+/*!
+	親ウィンドウ（エディタビュー）の移動・サイズ変更に追従して表示位置を更新する。
+
+	SWP_NOACTIVATE を指定し、追従による再配置がエディタ側の
+	フォーカス・操作を妨げないようにする。
+
+	@date 2026.07.27 追加
+*/
+void CDlgFind::FollowParentWindow()
+{
+	if( NULL == GetHwnd() ){
+		return;
+	}
+	CEditView* pcEditView = (CEditView*)m_lParam;
+	RECT rcView;
+	::GetWindowRect( pcEditView->GetHwnd(), &rcView );
+	SetPlaceOfWindow( ::GetParent( pcEditView->GetHwnd() ), &rcView, CDialog::DLGPLACE_TR );
+	::SetWindowPos( GetHwnd(), NULL, m_xPos, m_yPos, 0, 0,
+		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+}
+#endif // NKMM_
 
 
 
@@ -377,6 +484,19 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ) );
 #endif // NKMM_
 	m_cFontText.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT ) );
+
+#ifdef NKMM_FIX_FIND_DIALOG_FLAT
+	// 枠なしフローティングパネル化：Win11角丸を適用。
+	// 20260727 DwmExtendFrameIntoClientAreaで影を付けていたが、AnimateWindow(AW_SLIDE)による
+	// クライアント領域の再生より先にDWMが拡張マージンをアクセントカラー(既定は青)で
+	// 合成してしまい、スライド前に青い領域が見えてしまうため廃止。
+	// 通常のトップレベルポップアップとして生成されるため、影はDWMの既定動作に任せる。
+	{
+		const int cornerPreference = DWMWCP_ROUND;
+		::DwmSetWindowAttribute( hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference) );
+	}
+#endif // NKMM_
+
 	return bRet;
 }
 

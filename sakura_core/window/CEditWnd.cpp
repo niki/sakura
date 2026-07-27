@@ -1367,7 +1367,14 @@ LRESULT CEditWnd::DispatchEvent(
 		if( SIZE_MINIMIZED == wParam ){
 			this->UpdateCaption();
 		}
-		return OnSize( wParam, lParam );
+		{
+			LRESULT lResult = OnSize( wParam, lParam );
+			// 検索ダイアログを親ウィンドウの位置に追従させる	// 2026.07.27
+			if( NULL != m_cDlgFind.GetHwnd() ){
+				m_cDlgFind.FollowParentWindow();
+			}
+			return lResult;
+		}
 
 	//From here 2003.05.31 MIK
 	case WM_MOVE:
@@ -1391,6 +1398,10 @@ LRESULT CEditWnd::DispatchEvent(
 			}
 		}
 		// To Here 2004.05.13 Moca ウィンドウ位置継承
+		// 検索ダイアログを親ウィンドウの位置に追従させる	// 2026.07.27
+		if( NULL != m_cDlgFind.GetHwnd() ){
+			m_cDlgFind.FollowParentWindow();
+		}
 		return DefWindowProc( hwnd, uMsg, wParam, lParam );
 	//To here 2003.05.31 MIK
 	case WM_SYSCOMMAND:

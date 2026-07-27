@@ -44,6 +44,9 @@ public:
 #endif // NKMM_
 
 	void ChangeView( LPARAM );
+#ifdef NKMM_FIX_DIALOG_POS
+	void FollowParentWindow();	/* 親ウィンドウの移動・サイズ変更に追従して表示位置を更新する */
+#endif // NKMM_
 
 	SSearchOption m_sSearchOption;	// 検索オプション
 	int		m_bNOTIFYNOTFOUND;	// 検索／置換  見つからないときメッセージを表示
@@ -58,6 +61,13 @@ public:
 #ifdef NKMM_FIX_FIND_DIALOG
 	std::wstring m_inputText;  // 入力中の文字列
 	HMENU m_hMenuPopUp;
+#endif // NKMM_
+
+#ifdef NKMM_FIX_FIND_DIALOG_FLAT
+	int		m_nSlideX;				// スライドインアニメーション中のX座標(固定)
+	int		m_nSlideTargetY;		// スライドインアニメーションの最終Y座標
+	int		m_nSlideStartY;			// スライドインアニメーションの開始Y座標
+	DWORD	m_dwSlideStartTick;		// スライドインアニメーション開始時刻(GetTickCount)
 #endif // NKMM_
 
 protected:
@@ -75,6 +85,10 @@ protected:
 	BOOL OnDestroy();
 	BOOL OnBnClicked( int );
 	BOOL OnActivate( WPARAM wParam, LPARAM lParam );	// 2009.11.29 ryoji
+#ifdef NKMM_FIX_FIND_DIALOG_FLAT
+	BOOL OnTimer( WPARAM wParam );	// 2026.07.27 スライドインアニメーション用
+	void StartSlideAnimation();	// 2026.07.27 上からのスライドインアニメーションを開始する
+#endif // NKMM_
 
 	// virtual BOOL OnKeyDown( WPARAM wParam, LPARAM lParam );
 	LPVOID GetHelpIdTable(void);	//@@@ 2002.01.18 add
