@@ -53,8 +53,10 @@ public:
 			if (rgb == _RGB(255, 165, 0)) return _T("orange");
 		}
 
-		TCHAR buf[32];
-		::_stprintf_s(buf, sizeof(buf), _T("#%02x%02x%02x"), r, g, b);
+		TCHAR buf[64];
+		// _stprintf_sの第2引数は要素数(TCHAR単位)。sizeof(buf)はバイト数のため
+		// UnicodeビルドではTCHAR=wchar_tとなり実際の容量の2倍を伝えてしまいバッファオーバーランの原因になる
+		::_stprintf_s(buf, _countof(buf), _T("#%02x%02x%02x"), r, g, b);
 		return buf;
 	}
 
