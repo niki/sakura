@@ -89,7 +89,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;..\libs\mimalloc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -136,7 +136,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;..\libs\mimalloc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -189,7 +189,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;..\libs\mimalloc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -226,7 +226,7 @@
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\sakura_core;..\libs\silica;..\libs\pcre2;..\libs\quickjs;..\libs\mimalloc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NOMINMAX;_WIN32_WINNT=0x0601;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -452,6 +452,45 @@
     <ClInclude Include="..\libs\quickjs\dtoa.h" />
     <ClInclude Include="..\libs\quickjs\cutils.h" />
     <ClInclude Include="..\libs\quickjs\list.h" />
+    <!-- 20260727 mimalloc v3.4.3 (MIT) をvendor。NKMM_USE_MIMALLOCが定義されているとき
+         のみ_main/WinMain.cppからmimalloc-new-delete.hをincludeし、operator new/delete
+         をmimalloc(mi_malloc/mi_free)に差し替える(malloc/free自体のCRT丸ごと上書きは
+         Windowsではmimalloc-redirect.dllの配置が別途必要になるため見送り、C++の
+         new/deleteのみに絞っている)。単一の翻訳単位(src\static.c)が他の.cを
+         #includeしてまとめてビルドする構成のため、ClCompileはstatic.cの1つのみで、
+         それ以外の.c/.hはIDE表示・編集用としてのみ追加している(直接コンパイルはしない)。 -->
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc.h" />
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc-new-delete.h" />
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc-stats.h" />
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\atomic.h" />
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\bits.h" />
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\internal.h" />
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\prim.h" />
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\track.h" />
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\types.h" />
+    <ClInclude Include="..\libs\mimalloc\src\alloc.c" />
+    <ClInclude Include="..\libs\mimalloc\src\alloc-aligned.c" />
+    <ClInclude Include="..\libs\mimalloc\src\alloc-override.c" />
+    <ClInclude Include="..\libs\mimalloc\src\alloc-posix.c" />
+    <ClInclude Include="..\libs\mimalloc\src\arena.c" />
+    <ClInclude Include="..\libs\mimalloc\src\arena-meta.c" />
+    <ClInclude Include="..\libs\mimalloc\src\bitmap.c" />
+    <ClInclude Include="..\libs\mimalloc\src\bitmap.h" />
+    <ClInclude Include="..\libs\mimalloc\src\free.c" />
+    <ClInclude Include="..\libs\mimalloc\src\heap.c" />
+    <ClInclude Include="..\libs\mimalloc\src\theap.c" />
+    <ClInclude Include="..\libs\mimalloc\src\init.c" />
+    <ClInclude Include="..\libs\mimalloc\src\libc.c" />
+    <ClInclude Include="..\libs\mimalloc\src\options.c" />
+    <ClInclude Include="..\libs\mimalloc\src\os.c" />
+    <ClInclude Include="..\libs\mimalloc\src\page.c" />
+    <ClInclude Include="..\libs\mimalloc\src\page-queue.c" />
+    <ClInclude Include="..\libs\mimalloc\src\page-map.c" />
+    <ClInclude Include="..\libs\mimalloc\src\random.c" />
+    <ClInclude Include="..\libs\mimalloc\src\stats.c" />
+    <ClInclude Include="..\libs\mimalloc\src\threadlocal.c" />
+    <ClInclude Include="..\libs\mimalloc\src\prim\prim.c" />
+    <ClInclude Include="..\libs\mimalloc\src\prim\windows\prim.c" />
     <ClInclude Include="..\sakura_core\Funccode_define.h" />
     <ClInclude Include="..\sakura_core\Funccode_enum.h" />
     <ClInclude Include="..\sakura_core\func\CFuncKeyWnd.h" />
@@ -1147,6 +1186,18 @@
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <ForcedIncludeFiles>
       </ForcedIncludeFiles>
+    </ClCompile>
+    <!-- 20260727 mimalloc v3.4.3 (MIT) をvendor。static.cが他の全.cを#includeして
+         1つの翻訳単位としてビルドされる構成のため、ClCompileはこれ1つのみでよい。 -->
+    <ClCompile Include="..\libs\mimalloc\src\static.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <!-- 20260727 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
+           includeしており、Cとしてコンパイルされるこのファイルでは
+           コンパイルエラーになるため無効化する -->
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
+      <!-- mimallocはC11のCMAKE_C_STANDARDを前提にしているためC11としてコンパイルする -->
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <ClCompile Include="..\sakura_core\func\CFuncKeyWnd.cpp" />
     <ClCompile Include="..\sakura_core\func\CFuncLookup.cpp" />

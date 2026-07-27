@@ -27,6 +27,11 @@
 #include "util/module.h"
 #include "debug/CRunningTimer.h"
 
+#ifdef NKMM_USE_MIMALLOC
+// このcppだけがoperator new/deleteの定義を持つ(複数箇所でincludeすると多重定義エラーになる) 20260727
+#include <mimalloc-new-delete.h>
+#endif // NKMM_
+
 /*!
 	Windows Entry point
 

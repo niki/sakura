@@ -722,6 +722,17 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_FIND_DIALOG_FLAT
 
+//------------------------------------------------------------------
+// mimalloc(MIT)によるoperator new/deleteの高速化 20260727
+//  - CRTのmalloc/free自体は上書きしない(Windowsでの完全上書きにはmimalloc-redirect.dll
+//    の配布が別途必要になるため見送り)。C++のnew/deleteのみをmimalloc(mi_malloc/mi_free)
+//    に差し替える
+//  - _main/WinMain.cppで1箇所だけmimalloc-new-delete.hをincludeしている
+//  - libs\mimalloc (新規、mimalloc v3.4.3をvendor)
+//  - 詳細はchangelog/NKMM_USE_MIMALLOC.md参照
+//------------------------------------------------------------------
+#define NKMM_USE_MIMALLOC
+
 //
 //#define USE_SSE2
 

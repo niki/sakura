@@ -34,6 +34,9 @@
 #ifdef NKMM_FIX_QUICKJS_MACRO
 #include "quickjs.h"
 #endif
+#ifdef NKMM_USE_MIMALLOC
+#include <mimalloc.h>
+#endif
 #include "macro/CWSH.h"
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
@@ -283,6 +286,15 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 #ifdef NKMM_FIX_QUICKJS_MACRO
 	auto_sprintf( szMsg, _T("      QuickJS %s (MIT)\r\n"), to_tchar(JS_GetVersion()) );
 	cmemMsg.AppendString( szMsg );
+#endif
+#ifdef NKMM_USE_MIMALLOC
+	{
+		int nMiVer = mi_version(); // major*10000 + minor*100 + patch 20260727
+		auto_sprintf( szMsg, _T("      mimalloc %d.%d.%d (MIT)\r\n"),
+			nMiVer / 10000, (nMiVer / 100) % 100, nMiVer % 100
+		);
+		cmemMsg.AppendString( szMsg );
+	}
 #endif
 	// WSH(JScript/VBScript)は実行環境のOSに登録されたCOMコンポーネントに
 	// 依存するため、バージョンは固定値ではなく実行時に取得する 20260726

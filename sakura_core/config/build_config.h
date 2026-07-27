@@ -66,7 +66,9 @@ static const bool UNICODE_BOOL=false;
 
 
 //newされた領域をわざと汚すかどうか (デバッグ用)
-#ifdef _DEBUG
+//  - NKMM_USE_MIMALLOC有効時はoperator new/deleteをmimalloc-new-delete.hが
+//    (非inlineで)1箇所定義するため、ここでinline定義するとodrに反しリンクエラーになる 20260727
+#if defined(_DEBUG) && !defined(NKMM_USE_MIMALLOC)
 #define FILL_STRANGE_IN_NEW_MEMORY
 #endif
 

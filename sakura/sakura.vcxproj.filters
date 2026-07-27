@@ -17,6 +17,9 @@
     <Filter Include="C Source Files\quickjs">
       <UniqueIdentifier>{3b9a7c5e-1a2d-4b7f-9c6e-8f2a6b1d4e5a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="C Source Files\mimalloc">
+      <UniqueIdentifier>{6a1d9f3c-4e2b-4c8a-9d5f-2b7e0a3c6f1d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Cpp Source Files">
       <UniqueIdentifier>{099ccf22-168e-437c-8582-90c4a6decd26}</UniqueIdentifier>
     </Filter>
@@ -1149,6 +1152,102 @@
     </ClInclude>
     <ClInclude Include="..\libs\quickjs\list.h">
       <Filter>C Source Files\quickjs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc-new-delete.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc-stats.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\atomic.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\bits.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\internal.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\prim.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\track.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\include\mimalloc\types.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\alloc.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\alloc-aligned.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\alloc-override.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\alloc-posix.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\arena.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\arena-meta.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\bitmap.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\bitmap.h">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\free.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\heap.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\theap.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\init.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\libc.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\options.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\os.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\page.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\page-queue.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\page-map.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\random.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\stats.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\threadlocal.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\prim\prim.c">
+      <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\mimalloc\src\prim\windows\prim.c">
+      <Filter>C Source Files\mimalloc</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\extmodule\CHtmlHelp.h">
       <Filter>Cpp Source Files\extmodule</Filter>
@@ -2461,6 +2560,9 @@
     </ClCompile>
     <ClCompile Include="..\libs\quickjs\quickjs.c">
       <Filter>C Source Files\quickjs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\mimalloc\src\static.c">
+      <Filter>C Source Files\mimalloc</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\print\CPrint.cpp">
       <Filter>Cpp Source Files\print</Filter>
