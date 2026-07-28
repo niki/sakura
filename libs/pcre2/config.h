@@ -348,7 +348,10 @@ surrounded by #ifndef/#endif lines so that the value can be overridden by -D. */
 /* #undef SUPPORT_DIFF_FUZZ */
 
 /* Define to any value to enable support for Just-In-Time compiling. */
-/* #undef SUPPORT_JIT */
+/* 20260728 数値ハイライト等、同一パターンをコンパイル済みcodeで繰り返しマッチさせる
+   箇所(CRegexFallback.cpp CompilePattern)がpcre2_jit_compile_16を呼ぶようにしたため、
+   JITサポート自体を有効化する。バックエンドはlibs/deps/sljitに新規vendoring(BSD)。 */
+#define SUPPORT_JIT
 
 /* Define to any value to allow pcre2grep to be linked with libbz2, so that it
    is able to handle .bz2 files. */

@@ -187,6 +187,12 @@ bool CompilePattern(const ParsedPattern& pp, pcre2_code_16*& outCode, std::wstri
 		if (n >= 0) errMsg += reinterpret_cast<wchar_t*>(buf);
 		return false;
 	}
+
+	// 20260728 構文強調(数値の色付け等)は同じパターンを行ごとに繰り返しマッチさせるため、
+	// JITでコンパイルしておくと以後のpcre2_match_16/pcre2_substitute_16が自動でJIT実行
+	// される(呼び出し側の変更は不要)。非対応パターンや非対応環境では失敗するが、
+	// その場合は単に通常のインタプリタでマッチするだけなので戻り値は無視してよい。
+	pcre2_jit_compile_16(outCode, PCRE2_JIT_COMPLETE);
 	return true;
 }
 
