@@ -20,6 +20,9 @@
     <Filter Include="C Source Files\mimalloc">
       <UniqueIdentifier>{6a1d9f3c-4e2b-4c8a-9d5f-2b7e0a3c6f1d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="C Source Files\sljit">
+      <UniqueIdentifier>{8e4f2a71-3c6d-4b9e-a1f5-7d2c9e6b0a48}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Cpp Source Files">
       <UniqueIdentifier>{099ccf22-168e-437c-8582-90c4a6decd26}</UniqueIdentifier>
     </Filter>
@@ -1248,6 +1251,105 @@
     </ClInclude>
     <ClInclude Include="..\libs\mimalloc\src\prim\windows\prim.c">
       <Filter>C Source Files\mimalloc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitConfig.h">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitConfigCPU.h">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitConfigInternal.h">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitLir.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitLir.h">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeARM_32.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeARM_64.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeARM_T2_32.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeLOONGARCH_64.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeMIPS_32.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeMIPS_64.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeMIPS_common.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativePPC_32.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativePPC_64.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativePPC_common.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeRISCV_32.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeRISCV_64.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeRISCV_common.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeS390X.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeX86_32.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeX86_64.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeX86_common.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitSerialize.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitUtils.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorApple.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorCore.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorFreeBSD.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorPosix.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorWindows.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitProtExecAllocatorNetBSD.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitProtExecAllocatorPosix.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitWXExecAllocatorPosix.c">
+      <Filter>C Source Files\sljit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitWXExecAllocatorWindows.c">
+      <Filter>C Source Files\sljit</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\extmodule\CHtmlHelp.h">
       <Filter>Cpp Source Files\extmodule</Filter>

@@ -491,6 +491,44 @@
     <ClInclude Include="..\libs\mimalloc\src\threadlocal.c" />
     <ClInclude Include="..\libs\mimalloc\src\prim\prim.c" />
     <ClInclude Include="..\libs\mimalloc\src\prim\windows\prim.c" />
+    <!-- 20260728 sljit(PCRE2のJITバックエンド、BSD、zherczeg/sljit)。
+         libs\pcre2\pcre2_jit_compile.cが"../deps/sljit/sljit_src/sljitLir.c"を
+         #includeしてまとめてビルドする構成のため、ClCompileはpcre2_jit_compile.c
+         (既存)のみで、ここに挙げるsljit本体はIDE表示・編集用としてのみ追加している
+         (直接コンパイルはしない)。 -->
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitConfig.h" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitConfigCPU.h" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitConfigInternal.h" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitLir.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitLir.h" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeARM_32.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeARM_64.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeARM_T2_32.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeLOONGARCH_64.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeMIPS_32.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeMIPS_64.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeMIPS_common.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativePPC_32.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativePPC_64.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativePPC_common.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeRISCV_32.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeRISCV_64.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeRISCV_common.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeS390X.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeX86_32.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeX86_64.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitNativeX86_common.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitSerialize.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\sljitUtils.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorApple.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorCore.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorFreeBSD.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorPosix.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitExecAllocatorWindows.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitProtExecAllocatorNetBSD.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitProtExecAllocatorPosix.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitWXExecAllocatorPosix.c" />
+    <ClInclude Include="..\libs\deps\sljit\sljit_src\allocator_src\sljitWXExecAllocatorWindows.c" />
     <ClInclude Include="..\sakura_core\Funccode_define.h" />
     <ClInclude Include="..\sakura_core\Funccode_enum.h" />
     <ClInclude Include="..\sakura_core\func\CFuncKeyWnd.h" />
