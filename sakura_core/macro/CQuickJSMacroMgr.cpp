@@ -33,6 +33,54 @@ std::string WideToUtf8(const std::wstring& src)
 	return dst;
 }
 
+/*!	20260728 実行ファイルサイズ削減のため、JS_NewContext()(全機能を有効化する
+	便利関数)の代わりに、必要な機能だけを個別に有効化したJSContextを作る。
+
+	quickjs.cのJS_NewContext()実体(コピー元)は以下の通り:
+	  JS_AddIntrinsicBaseObjects, Date, Eval, RegExp, JSON, Proxy,
+	  MapSet, TypedArrays, Promise, WeakRef, AToB, Performance
+
+	このうちマクロ用途で省いても実害が薄いと判断したものをコメントアウトして
+	いる。元に戻したい場合は、該当行の"//"を外すだけでよい。
+
+	- JS_AddIntrinsicPromise: マクロ実行はJS_Evalでスクリプト全体を1回評価して
+	  終了する同期モデルで、ジョブキュー(JS_ExecutePendingJob)を一切ポーリング
+	  していないため、Promise/async/awaitは実質動作しない(then/awaitの継続が
+	  実行されるタイミングが無い)。有効化するだけではマクロから使えるように
+	  ならないので、復活させる場合はジョブキューのポーリングも別途必要。
+	- JS_AddIntrinsicProxy: Editor.xxxのバインディング(CQuickJSIfObjBinder)は
+	  JS_SetPropertyStrで直接プロパティ登録しており、Proxyには依存していない。
+	- JS_AddIntrinsicWeakRef: GCと連携する高度な機能で自動化スクリプトでは
+	  まず使われない。
+	- JS_AddPerformance(performance.now()): Date.now()で代替可能。
+
+	BaseObjects/Date/Eval/RegExp/JSON/MapSet/TypedArraysはマクロ作者が普通に
+	使う可能性が高いため、そのまま残している。
+*/
+static JSContext* NewMacroContext(JSRuntime* rt)
+{
+	JSContext* ctx = JS_NewContextRaw(rt);
+	if( !ctx ) return NULL;
+
+	if( JS_AddIntrinsicBaseObjects(ctx) ||
+		JS_AddIntrinsicDate(ctx) ||
+		JS_AddIntrinsicEval(ctx) ||
+		JS_AddIntrinsicRegExp(ctx) ||
+		JS_AddIntrinsicJSON(ctx) ||
+	//	JS_AddIntrinsicProxy(ctx) ||		// 20260728 マクロ用途では未使用のため無効化(復活可)
+		JS_AddIntrinsicMapSet(ctx) ||
+		JS_AddIntrinsicTypedArrays(ctx)
+	//	|| JS_AddIntrinsicPromise(ctx)		// 20260728 ジョブキュー未対応のため無効化(復活可、要ジョブキュー対応)
+	//	|| JS_AddIntrinsicWeakRef(ctx)		// 20260728 マクロ用途では未使用のため無効化(復活可)
+	){
+		JS_FreeContext(ctx);
+		return NULL;
+	}
+	//	JS_AddPerformance(ctx);				// 20260728 Date.now()で代替可能なため無効化(復活可)
+
+	return ctx;
+}
+
 //	マクロ停止スレッドへ渡すパラメータ(CWSH.cppのSAbortMacroParamに相当)
 struct SQuickJSAbortParam {
 	HANDLE			hEvent;
@@ -104,22 +152,17 @@ void ReportQuickJSException(HWND hwndOwner, JSContext* ctx)
 	JSValue exc = JS_GetException(ctx);
 
 	JSValue msgVal = JS_ToString(ctx, exc);
-	size_t nMsgLen = 0;
-	const uint16_t* pMsgBuf = JS_ToCStringLenUTF16(ctx, &nMsgLen, msgVal);
-	std::wstring sMsg( (const wchar_t*)pMsgBuf, nMsgLen );
-	if( pMsgBuf ) JS_FreeCStringUTF16(ctx, pMsgBuf);
+	std::wstring sMsg = JSValueToWString(ctx, msgVal);
 	JS_FreeValue(ctx, msgVal);
 
 	//スタックトレースがあれば付加する
 	JSValue stackVal = JS_GetPropertyStr(ctx, exc, "stack");
 	if( JS_IsString(stackVal) ){
-		size_t nStackLen = 0;
-		const uint16_t* pStackBuf = JS_ToCStringLenUTF16(ctx, &nStackLen, stackVal);
-		if( pStackBuf && 0 < nStackLen ){
+		std::wstring sStack = JSValueToWString(ctx, stackVal);
+		if( !sStack.empty() ){
 			sMsg += L"\r\n";
-			sMsg.append( (const wchar_t*)pStackBuf, nStackLen );
+			sMsg += sStack;
 		}
-		if( pStackBuf ) JS_FreeCStringUTF16(ctx, pStackBuf);
 	}
 	JS_FreeValue(ctx, stackVal);
 	JS_FreeValue(ctx, exc);
@@ -153,7 +196,7 @@ bool CQuickJSMacroMgr::ExecKeyMacro( CEditView* pcEditView, int flags ) const
 	//QuickJS側の論理スタック上限もそれに収まるよう控えめに設定する。
 	JS_SetMaxStackSize(rt, 4 * 1024 * 1024);
 
-	JSContext* ctx = JS_NewContext(rt);
+	JSContext* ctx = NewMacroContext(rt);
 	if( !ctx ){
 		JS_FreeRuntime(rt);
 		return false;

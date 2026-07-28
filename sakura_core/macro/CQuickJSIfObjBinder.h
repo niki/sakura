@@ -13,6 +13,7 @@
 #ifdef NKMM_FIX_QUICKJS_MACRO
 
 #include <vector>
+#include <string>
 #include "quickjs.h"
 #include "func/Funccode.h" // EFunctionCode
 
@@ -20,6 +21,17 @@ class CWSHIfObj;
 class CEditView;
 struct MacroFuncInfo;
 typedef MacroFuncInfo* MacroFuncInfoArray;
+
+/*!	JS文字列をwstringへ変換する。
+
+	quickjs.cにサクラエディタ側で追加したJS_ToCStringLenUTF16/JS_FreeCStringUTF16
+	(quickjs-ng本体には無い独自追加。UTF-8版の兄弟関数JS_ToCStringLen2と違い、
+	戻り値をNUL終端しない・文字列連結由来のスライス文字列の内部ポインタをそのまま
+	返すことがある、という2つの不具合を持つ)には頼らず、常に正しく動く
+	JS_ToCStringLen2(UTF-8, 常にNUL終端された自分専用バッファを保証)経由で
+	MultiByteToWideCharによりUTF-16へ変換する。vendorしたquickjs.c自体は変更しない。
+*/
+std::wstring JSValueToWString(JSContext* ctx, JSValueConst v);
 
 class CQuickJSIfObjBinder {
 public:

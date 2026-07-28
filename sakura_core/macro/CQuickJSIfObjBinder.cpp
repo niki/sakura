@@ -13,6 +13,24 @@
 #include "Funccode_enum.h" // EFunctionCode::FA_FROMMACRO
 #include <vector>
 
+std::wstring JSValueToWString(JSContext* ctx, JSValueConst v)
+{
+	size_t nUtf8Len = 0;
+	const char* pUtf8 = JS_ToCStringLen2(ctx, &nUtf8Len, v, false);
+	if( !pUtf8 ) return std::wstring();
+
+	std::wstring result;
+	if( 0 < nUtf8Len ){
+		int nWideLen = ::MultiByteToWideChar(CP_UTF8, 0, pUtf8, (int)nUtf8Len, NULL, 0);
+		if( 0 < nWideLen ){
+			result.resize(nWideLen);
+			::MultiByteToWideChar(CP_UTF8, 0, pUtf8, (int)nUtf8Len, &result[0], nWideLen);
+		}
+	}
+	JS_FreeCString(ctx, pUtf8);
+	return result;
+}
+
 namespace {
 
 //	JSの値をHandleFunction向けのVARIANTへ変換する。
@@ -43,11 +61,9 @@ void JSArgToVariant(JSContext* ctx, JSValueConst v, VARIANT* pOut)
 	}
 	//	文字列、およびそれ以外のオブジェクト等はJS_ToStringで文字列化してから渡す
 	JSValue strVal = JS_IsString(v) ? JS_DupValue(ctx, v) : JS_ToString(ctx, v);
-	size_t len = 0;
-	const uint16_t* pBuf = JS_ToCStringLenUTF16(ctx, &len, strVal);
+	std::wstring sVal = JSValueToWString(ctx, strVal);
 	pOut->vt = VT_BSTR;
-	pOut->bstrVal = ::SysAllocStringLen((const OLECHAR*)pBuf, (UINT)len);
-	if( pBuf ) JS_FreeCStringUTF16(ctx, pBuf);
+	pOut->bstrVal = ::SysAllocStringLen(sVal.c_str(), (UINT)sVal.size());
 	JS_FreeValue(ctx, strVal);
 }
 
@@ -203,23 +219,17 @@ JSValue CQuickJSIfObjBinder::Trampoline(JSContext* ctx, JSValueConst /*this_val*
 		int argCountMin = t_max(4, argc);
 		std::vector<const WCHAR*> strArgs(argCountMin, (const WCHAR*)NULL);
 		std::vector<int> strLengths(argCountMin, 0);
-		std::vector<const uint16_t*> rawUtf16(argc, (const uint16_t*)NULL);
-		std::vector<JSValue> strTemp(argc, JS_UNDEFINED);
+		std::vector<std::wstring> strTemp(argc);
 
 		for( int i = 0; i < argc; ++i ){
-			strTemp[i] = JS_ToString(ctx, argv[i]);
-			size_t len = 0;
-			rawUtf16[i] = JS_ToCStringLenUTF16(ctx, &len, strTemp[i]);
-			strArgs[i] = (const WCHAR*)rawUtf16[i];
-			strLengths[i] = (int)len;
+			JSValue jsStr = JS_ToString(ctx, argv[i]);
+			strTemp[i] = JSValueToWString(ctx, jsStr);
+			JS_FreeValue(ctx, jsStr);
+			strArgs[i] = strTemp[i].c_str();
+			strLengths[i] = (int)strTemp[i].size();
 		}
 
 		method.pObj->InvokeCommand(method.pView, method.id, &strArgs[0], &strLengths[0], argc);
-
-		for( int i = 0; i < argc; ++i ){
-			if( rawUtf16[i] ) JS_FreeCStringUTF16(ctx, rawUtf16[i]);
-			JS_FreeValue(ctx, strTemp[i]);
-		}
 		return JS_UNDEFINED;
 	}
 }
