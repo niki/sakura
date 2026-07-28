@@ -79,6 +79,16 @@ VOID CALLBACK EditViewTimerProc( HWND, UINT, UINT_PTR, DWORD );
 
 #define IDT_ROLLMOUSE	1
 
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+// 20260728 スクロールバーマーカー再構築のデバウンス用タイマー。
+// 編集のたびにClear()が呼ばれてもここでは再構築せず、このタイマーを
+// リセットし続けるだけにする。入力が一定時間止まってから1回だけ
+// 実際の再構築(スレッド起動)を行う。
+#define IDT_SCRBAR_MARKER_DEBOUNCE	3
+#define SCRBAR_MARKER_DEBOUNCE_MS	150
+VOID CALLBACK ScrBarMarkerDebounceTimerProc( HWND, UINT, UINT_PTR, DWORD );
+#endif // NKMM_
+
 
 
 /*
@@ -140,6 +150,29 @@ VOID CALLBACK EditViewTimerProc(
 	}
 	return;
 }
+
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+/*
+||  スクロールバーマーカー再構築のデバウンスタイマーコールバック
+||
+||	20260728 Clear()から連打されたタイマーが一定時間止まったときに
+||	一度だけ呼ばれ、実際の再構築(Build)を行う。
+*/
+VOID CALLBACK ScrBarMarkerDebounceTimerProc(
+	HWND hwnd,
+	UINT uMsg,
+	UINT_PTR idEvent,
+	DWORD dwTime
+)
+{
+	::KillTimer( hwnd, IDT_SCRBAR_MARKER_DEBOUNCE );
+	CEditView*	pCEditView = ( CEditView* )::GetWindowLongPtr( hwnd, 0 );
+	if( NULL != pCEditView ){
+		pCEditView->SB_Marker_Build( true, 9999 ); // 9999: デバウンス経由の再構築
+	}
+	return;
+}
+#endif // NKMM_
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -3250,6 +3283,7 @@ CEditView::ScrBarMarker::ScrBarMarker(CEditView *pView)
 //----------------------
 CEditView::ScrBarMarker::~ScrBarMarker()
 {
+	::KillTimer(pEditView_->GetHwnd(), IDT_SCRBAR_MARKER_DEBOUNCE);
 	WaitForBuild(true);
 	WaitForDraw(true);
 }
@@ -3271,7 +3305,22 @@ void CEditView::ScrBarMarker::CallPaint(int foo)
 void CEditView::ScrBarMarker::Clear(int foo)
 {
 	SB_Marker_Trace(L"ScrBarMarker::Clear (%d)", foo);
-	Build(/*bCacheClear =*/ true, foo);
+
+	// 20260728 描画抑制中(SetDrawSwitch(false)中、ReplaceAll等のバルク編集)は
+	// デバウンスせず即座に同期でBuild()を呼ぶ。Build()側の早期returnが
+	// 直前のビルド/描画スレッドを確実に止めてからvLines_をクリアするため、
+	// ここを遅延させるとバルク編集本体との競合(ドキュメント破損)防止が崩れる。
+	if (!pEditView_->GetDrawSwitch()) {
+		Build(/*bCacheClear =*/ true, foo);
+		return;
+	}
+
+	// 通常編集中は、編集のたびにスレッドを起動(Sleep(10)を含む)すると
+	// キー入力ごとに最低10ms UIスレッドをブロックしてしまう。ここでは
+	// 再構築を即座に行わず、デバウンスタイマーをリセットするだけにする。
+	// 連続入力が止まってからScrBarMarkerDebounceTimerProc経由で1回だけ
+	// 実際の再構築が走る。
+	::SetTimer(pEditView_->GetHwnd(), IDT_SCRBAR_MARKER_DEBOUNCE, SCRBAR_MARKER_DEBOUNCE_MS, ScrBarMarkerDebounceTimerProc);
 }
 
 //----------------------
