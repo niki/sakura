@@ -270,8 +270,18 @@
 //    (0:std::regex 1:boost::regex 2:BREGEXP(bregonig.dll) 3:PCRE2)
 //    3:PCRE2はNKMM_FIX_REGEXP_FALLBACKのフォールバックエンジンをbregonig.dllの
 //    有無に関わらず直接使う設定 20260720
+//  - 無効化: IsNumber()の呼び出し元(CColor_Numeric::BeginColor)は画面内の
+//    数値になりうる全位置に対して高頻度で呼ばれるが、REGEX_MODE==2/3の
+//    呼び出し方はCRegexFallback::BMatchExに毎回str!=nullptrで渡ってしまうため
+//    6パターン全てを呼ぶたびにゼロからコンパイル(+JIT)し直し、かつ
+//    ループ1周ごとに直前のコンパイル結果(BREGEXP_W_Fallback、JIT実行可能
+//    メモリ含む)を解放せず上書きしてリークする(CRegexKeyword.cppのように
+//    1回コンパイルして使い回す設計になっていない)。この呼び出しパターンの
+//    まま速くしようがない上、固定・小規模な文法には元々あった手書きの
+//    文字ループ(CColor_Numeric.cppの#else節)で十分かつ確保/解放が一切ない
+//    ため、正規表現版を無効化して文字ループ版に戻す 20260728
 //------------------------------------------------------------------
-#define NKMM_FIX_NUMERIC_COLOR
+//#define NKMM_FIX_NUMERIC_COLOR
 
 //------------------------------------------------------------------
 // ステータスバー 20150610 - 20170401, 20170611
@@ -655,6 +665,9 @@
 //  - sakura_core\view\CEditView.cpp
 //  - (任意) sakura_core\view\colors\CColor_Numeric.cpp の REGEX_MODE==3から
 //    RegexFallback名前空間を直接利用可能(NKMM_FIX_NUMERIC_COLOR参照)
+//  - PCRE2をJIT化(pcre2_jit_compile_16)。数値ハイライト等、コンパイル済み
+//    パターンを繰り返しマッチさせる箇所の高速化が目的。JITバックエンドの
+//    sljitをlibs/deps/sljitに新規vendor(BSD, zherczeg/sljit) 20260728
 //------------------------------------------------------------------
 #define NKMM_FIX_REGEXP_FALLBACK
 

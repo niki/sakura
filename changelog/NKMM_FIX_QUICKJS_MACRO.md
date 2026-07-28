@@ -272,3 +272,150 @@ Release|x64構成を持たずMSB8013で落ちるため、ソリューション�
 - マクロ停止ダイアログでの中断
 - `plugin.def`に`Type: qjs`を指定したプラグインの導入・実行
 - リンク(フルビルド)そのもの(ファイル単位コンパイルの確認に留まる)
+
+## 追記: JS_ToCStringLenUTF16のNUL終端漏れ・スライス文字列の誤解放バグ 20260728
+
+対象ファイル:
+- `sakura_core/macro/CQuickJSIfObjBinder.h` / `.cpp`(`JSValueToWString()`を新規追加、
+  `JSArgToVariant`と`Trampoline`のコマンド引数変換をこれに置き換え)
+- `sakura_core/macro/CQuickJSMacroMgr.cpp`(`ReportQuickJSException`を同様に置き換え)
+
+`libs/quickjs/quickjs.c`(vendorしたQuickJS本体)は変更していない。
+
+### 経緯
+
+`macro_bench/BenchmarkRegex.qjs`(正規表現JITの効果測定用に作成したベンチマークマクロ)を
+実機で実行したところ、2つの症状が出た。
+
+1. `ReplaceAll("\\b(?:lorem|ipsum|dolor|sit|amet)\\b", "$0", flags)`
+   (中身は純粋なASCIIの正規表現パターン文字列で、非ASCII文字もサロゲートペアも一切
+   含まない)が「`regex compile error: UTF-16 error: invalid low surrogate`」という
+   ネイティブ側のエラーダイアログを引き起こした。
+2. `InfoMsg(msg)`に渡した文字列(末尾が日本語)が、そのASCII部分は正しく表示される一方、
+   日本語部分だけ文字化けして表示された。
+
+いずれも今回のsljit/JIT作業とは無関係な、QuickJSマクロエンジン(`NKMM_FIX_QUICKJS_MACRO`)
+自体の既存バグだった。
+
+### 根本原因
+
+`libs/quickjs/quickjs.c`にサクラエディタ側で追加した`JS_ToCStringLenUTF16`
+(upstreamのquickjs-ngには存在しない独自追加関数。UTF-8版の兄弟関数`JS_ToCStringLen2`は
+正しく実装されている)に、次の2つの問題があった。
+
+1. **NUL終端漏れ**: 文字列確保元の`js_alloc_string_rt()`は、narrow(8bit)文字列には
+   NUL終端用に+1バイト確保するが、wide(UTF-16)文字列には確保しない
+   (`sizeof(JSString) + (max_len << is_wide_char) + 1 - is_wide_char`という式で、
+   `is_wide_char=1`のとき`+1-1`が相殺されて0になる)。旧`JS_ToCStringLenUTF16`は
+   入力が既にwideな場合、この余白の無いバッファをコピーせずにそのまま返していたため、
+   戻り値はNUL終端されていなかった。
+2. **スライス文字列の誤解放**: 入力がQuickJS内部の`JS_STRING_KIND_SLICE`/
+   `JS_STRING_KIND_INDIRECT`(文字列連結などから生じる、実体を他の文字列や間接ポインタ
+   に間借りする表現)だった場合、`str16(p)`は親文字列の内部バッファ(または別の間接
+   ポインタ)を指すポインタを返す。対になる`JS_FreeCStringUTF16`は
+   `(JSString*)ptr-1`を「自分専用のJSStringヘッダ」とみなして参照カウント操作/解放を
+   行うため、無関係なヒープ領域を破損させうる。
+
+呼び出し側(`sakura_core/macro/CQuickJSIfObjBinder.cpp`)は長さを`ArgLengths[]`として
+正しく渡しているが、その先の`sakura_core/macro/CMacro.cpp`(`wcslen(Argument[0])`等)や
+`sakura_core/extmodule/CBregexp.cpp`(`CBregexp::Compile`内の`wcslen(szPattern)`)が
+長さ引数を使わずNUL終端に頼っていたため、症状1はNUL終端漏れが直接の引き金になった
+(WSH版は実文字列としてWindows標準の`BSTR`を使っており、OSがNUL終端を保証するため
+同じ`wcslen()`ベースのコードでも問題が出ない)。症状2はスライス文字列の誤解放による
+ヒープ破損が疑わしい(実行時の確定はできていない)。
+
+### 修正方針
+
+当初はvendorした`quickjs.c`側の`JS_ToCStringLenUTF16`自体を「常に新規のNORMAL/wide
+文字列へコピーしてから返す」方式に修正する案で実装・動作確認まで行ったが、vendor
+ライブラリ本体への変更は将来quickjs-ngのバージョンを上げる際の障害になるため避けたい
+との方針を受け、**vendorした`quickjs.c`には一切手を入れず、サクラエディタ側の
+呼び出し元だけで安全な変換をやり直す**方式に変更した。
+
+具体的には、バグを踏んでいた独自追加のUTF-16版`JS_ToCStringLenUTF16`/
+`JS_FreeCStringUTF16`を呼ぶのをやめ、代わりに以下を新設した`JSValueToWString()`
+(`CQuickJSIfObjBinder.h/.cpp`)経由で行うようにした。
+
+- upstream本来のUTF-8版`JS_ToCStringLen2`(常にNUL終端された自分専用バッファを
+  保証する、正しく実装済みの関数)でJS文字列をUTF-8として取り出す
+- `::MultiByteToWideChar(CP_UTF8, ...)`でUTF-16(`std::wstring`)へ変換する
+- `std::wstring`はRAIIで自身のバッファを所有するため、`JS_FreeCStringUTF16`の
+  ような手動解放や、その解放処理が誤ったポインタを掴む心配自体が無くなる
+
+置き換えた3箇所:
+- `JSArgToVariant()`(関数呼び出しの引数→VARIANT変換)
+- `Trampoline()`のコマンド引数変換(`ReplaceAll`/`InsText`等、`HandleCommand`へ
+  渡す`WCHAR*`配列の構築。ここに`strTemp`として`std::wstring`の配列を保持する形に
+  変え、ループ後の手動`JS_FreeCStringUTF16`呼び出しも不要になった)
+- `ReportQuickJSException()`(`CQuickJSMacroMgr.cpp`、例外メッセージ・スタック
+  トレースの取得)
+
+独自追加関数`JS_ToCStringLenUTF16`/`JS_FreeCStringUTF16`自体(`quickjs.c`/`quickjs.h`)は
+未使用のまま残っている(バグは残存するが、サクラエディタ側のどこからも呼ばれなく
+なったため実害はない)。
+
+### 動作確認について
+
+`msbuild /t:sakura:ClCompile /p:SelectedFiles=<file>`によるファイル単位ビルドで、
+`CQuickJSIfObjBinder.cpp`/`CQuickJSMacroMgr.cpp`をDebug/Release×Win32/x64の4構成
+全てで0エラー・0警告を確認した。実機での`.qjs`マクロ実行による再現確認(修正後に
+ReplaceAllのUTF-16エラーが再発しないか、InfoMsgの日本語文字化けが解消するか)は
+未実施。
+
+## 追記: 実行ファイルサイズ削減のための機能絞り込み 20260728
+
+対象ファイル: `sakura_core/macro/CQuickJSMacroMgr.cpp`(`NewMacroContext()`を新設)。
+`quickjs.c`/`quickjs.h`(vendor)は変更していない。
+
+### 経緯
+
+`sakura.exe`(Release64)が約4.0MBまで増えており(vendoring前は約2.2MB)、
+最大の増加要因はQuickJS本体(オブジェクトファイルで約3.4MB)だった。当初
+「quickjs-ngのコンパイル時フラグで未使用機能を削れないか」を検討したが、
+実際に確認したところ`quickjs.c`にはコンパイル時フラグが`CONFIG_ATOMICS`
+(未使用)しか残っておらず、この経路での削減はほぼ無い。
+
+代わりに、`CQuickJSMacroMgr::ExecKeyMacro()`が使っている`JS_NewContext(rt)`
+(標準機能を全部有効化する便利関数)に着目した。中身(`quickjs.c:2533`)は
+単純に`JS_AddIntrinsicBaseObjects/Date/Eval/RegExp/JSON/Proxy/MapSet/
+TypedArrays/Promise/WeakRef/AToB`と`JS_AddPerformance`を順に呼んでいる
+だけで、quickjs.hにはこれらを個別に呼べる`JS_AddIntrinsicXxx`系のAPIが
+公開されている。**サクラエディタ側のコード変更だけで機能を絞り込める**
+(vendorした`quickjs.c`自体には触れない)。
+
+### 削った機能
+
+- `JS_AddIntrinsicPromise`: マクロ実行(`JS_Eval`)はスクリプト全体を1回評価
+  して終了する同期モデルで、ジョブキュー(`JS_ExecutePendingJob`)を一切
+  ポーリングしていないことを確認した(`grep`で該当呼び出しなし)。つまり
+  Promise/async/awaitは有効化しても`.then()`/`await`の継続が実行される
+  タイミングが無く、現状のマクロでは実質動作しない。
+- `JS_AddIntrinsicProxy`: `CQuickJSIfObjBinder`のEditor.xxxバインディングは
+  `JS_SetPropertyStr`で直接プロパティ登録しており、Proxyに依存していない
+  ことを確認した。
+- `JS_AddIntrinsicWeakRef`: GCと連携する高度な機能で自動化スクリプトでは
+  まず使われない。
+- `JS_AddPerformance`(`performance.now()`): `Date.now()`で代替可能
+  (`JS_AddIntrinsicDate`は残しているので`Date.now()`自体は使える)。
+
+残したもの: `BaseObjects`/`Date`/`Eval`/`RegExp`/`JSON`/`MapSet`/
+`TypedArrays`。マクロ作者が普通に使う可能性が高いと判断した。
+
+### 元に戻す方法
+
+`NewMacroContext()`内の該当行の`//`を外すだけでよい。`JS_AddIntrinsicPromise`
+だけは、有効化してもジョブキューをポーリングする処理を別途追加しない限り
+実際には動作しない旨をコメントに明記した。
+
+### 動作確認について
+
+`msbuild /t:sakura:ClCompile /p:SelectedFiles=..\sakura_core\macro\
+CQuickJSMacroMgr.cpp`で、Debug/Release×x64/Win32の4構成すべて0エラー・
+0警告を確認した(このファイル単体はDebug構成の既知の型変換エラーの影響を
+受けない)。
+
+このサンドボックス環境では`preBuild.bat`が見つからずフルビルド(リンクまで)
+が既存の問題として通らないため、削減後の実際の`sakura.exe`サイズはこちらでは
+測定できていない。実機でフルビルドし、`sakura.exe`のファイルサイズを
+削減前(約4.0MB)と比較して確認してほしい。`/OPT:REF`(既に有効)により、
+呼ばなくなった機能の内部実装がリンク時に落とせているかどうかは実測が必要。

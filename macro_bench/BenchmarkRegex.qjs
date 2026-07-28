@@ -1,0 +1,140 @@
+// ============================================================
+// 正規表現(ReplaceAll)ベンチマークマクロ (拡張子 .qjs)
+//
+// NKMM_FIX_REGEXP_FALLBACK配下のPCRE2フォールバックにJIT(sljit,
+// SUPPORT_JIT)を組み込んだ効果を計測するためのもの。
+// CBregexp::Match/Replace(検索/置換/Grepの実体)は「1回コンパイルした
+// パターンを使い回して何度もマッチさせる」設計になっており、これは
+// JITが最も効果を発揮するアクセスパターン(1回のJITコンパイルコストを
+// 大量のマッチで償却できる)。
+//
+// 20260728 v6: Command_INSTEXT(編集の実処理)が呼ばれるたびにCEditView::
+// ScrBarMarker::Build()がキャッシュを全クリアしてビルドスレッドを起動し
+// ::Sleep(10)する不具合を修正(CEditView.cpp/CViewCommander_Search.cpp)。
+//
+// 20260728 v7〜: それでもREPEATを重ねるごとに遅くなる現象が続いたため、
+// 毎回FileNew()で新規タブを作る方式を試したが、今度は「開いているタブ/
+// ウィンドウの総数」に応じて遅くなる別の現象にぶつかった(原因未特定)。
+// これ以上の深追いはJIT比較という本題に対してコストが見合わないため、
+// ベンチマーク側を「そもそも新規タブを増やさない」方式に変更して回避する:
+// FileNew()は最初の1回だけ、REPEATも減らし、同じタブ・同じドキュメントに
+// 対して繰り返し測定する。置換は無変換($1/$0の後方参照)なので、Undoは
+// 溜まるが実害が出ない範囲(REPEAT=5×2パターン程度)にとどめる。
+//
+// 使い方:
+//   1. このマクロを実行する(新規タブに検証用テキストを1回だけ生成し、
+//      同じタブに対して置換を繰り返し、結果をInfoMsgで表示する)
+//   2. libs/pcre2/config.hのSUPPORT_JITを有効/無効それぞれでビルドした
+//      sakura.exeで同じ数値を比較する(有効な方が速ければJITが効いている)
+//   3. 検証用タブは実行後1枚だけ残る。保存せず閉じてよい
+//
+// 2種類のパターンを計測する:
+//   - Simple: "([0-9]+)" -> "$1"  単純な文字クラスの繰り返しだけ
+//   - Alt:    "\b(?:lorem|ipsum|dolor|sit|amet)\b" -> "$0"  複数語の
+//             選択(alternation)。インタプリタは候補を順番に試すが、
+//             JITはより効率的な分岐にコンパイルできるため、Simpleより
+//             JIT有無の差が出やすいと期待できる。
+// どちらも置換後にテキストが変化しない(無変換)ため、何度繰り返しても
+// 同じ条件で計測できる(バッファサイズが変わらない)。
+// ============================================================
+
+const LINE_COUNT    = 20000; // 生成する行数
+const NUMS_PER_LINE = 6;     // 1行あたりの数値トークン数
+const REPEAT        = 5;     // ReplaceAllを何回繰り返すか(平均を取ってノイズを減らす)
+
+// ReplaceAll(検索文字列, 置換後文字列, オプション) のオプションビット
+//   0x004 正規表現
+//   0x800 (マクロ専用)検索キーを履歴に登録しない
+//   0x1000 (マクロ専用)検索オプションを元に戻す
+const OPT_REGEX = 0x004 | 0x800 | 0x1000;
+
+function now() {
+	return Date.now();
+}
+
+// 検証用テキストを生成する。各行は5個の固定単語("lorem ipsum dolor sit amet")
+// と、桁数の異なる数値をNUMS_PER_LINE個混ぜたもの。
+function buildText() {
+	const lines = new Array(LINE_COUNT);
+	for (let i = 0; i < LINE_COUNT; i++) {
+		let line = "lorem ipsum dolor sit amet";
+		for (let n = 0; n < NUMS_PER_LINE; n++) {
+			// 桁数を1〜6桁でばらけさせる(固定長パターンへの最適化に依存しないように)
+			const width = (i + n) % 6 + 1;
+			const num = String((i * 7 + n * 131) % Math.pow(10, width));
+			// タグは数字ではなく文字にする("v0="のように数字を混ぜると、
+			// タグ自体が[0-9]+の別マッチになってマッチ数がずれるため)
+			const tag = String.fromCharCode(97 + n); // n=0..5 -> 'a'..'f'
+			line += " v" + tag + "=" + num;
+		}
+		lines[i] = line;
+	}
+	return lines.join("\r\n") + "\r\n";
+}
+
+function stats(times) {
+	let total = 0, min = times[0], max = times[0];
+	for (const t of times) {
+		total += t;
+		if (t < min) min = t;
+		if (t > max) max = t;
+	}
+	return { total: total, avg: total / times.length, min: min, max: max };
+}
+
+// 20260728 v8: 新規タブは増やさず、同じタブに対してREPEAT回繰り返す。
+function benchReplace(pattern, replacement, opt, repeat) {
+	const times = [];
+	for (let r = 0; r < repeat; r++) {
+		const t0 = now();
+		ReplaceAll(pattern, replacement, opt);
+		times.push(now() - t0);
+	}
+	return stats(times);
+}
+
+function fmt(s) {
+	return "total=" + s.total + " ms, avg=" + s.avg.toFixed(2) +
+		" ms, min=" + s.min + " ms, max=" + s.max + " ms";
+}
+
+// 20260728 v3: 実行後に最終InfoMsgが一度も出ずに終わる現象があったため、
+// 要所ごとにInfoMsgのチェックポイントを挟み、全体をtry/catchで囲んで
+// 例外があれば必ず表示するようにした。
+
+try {
+	// --- 準備: 新規タブは最初の1回だけ ---
+	FileNew();
+	const text = buildText();
+	InsText(text);
+	const textLen = text.length;
+	InfoMsg("checkpoint 1/3: document ready, chars=" + textLen);
+
+	// --- Simple: 文字クラスのみ ---
+	const simple = benchReplace("([0-9]+)", "$1", OPT_REGEX, REPEAT);
+	const simpleMatches = LINE_COUNT * NUMS_PER_LINE;
+	InfoMsg("checkpoint 2/3: Simple done (matches/pass=" + simpleMatches + ")\n" + fmt(simple));
+
+	// --- Alt: 複数語の選択(alternation) ---
+	const alt = benchReplace("\\b(?:lorem|ipsum|dolor|sit|amet)\\b", "$0", OPT_REGEX, REPEAT);
+	const altMatches = LINE_COUNT * 5;
+	InfoMsg("checkpoint 3/3: Alt done (matches/pass=" + altMatches + ")\n" + fmt(alt));
+
+	const msg =
+		"[Regex ReplaceAll Benchmark v8]\n" +
+		"lines=" + LINE_COUNT + ", chars/pass=" + textLen + ", repeat=" + REPEAT + "\n" +
+		"(single tab, no new windows created; watch min vs max for drift)\n" +
+		"\n" +
+		"Simple  \"([0-9]+)\" -> \"$1\"  (matches/pass=" + simpleMatches + ")\n" +
+		"  " + fmt(simple) + "\n" +
+		"\n" +
+		"Alt     \"\\b(?:lorem|ipsum|dolor|sit|amet)\\b\" -> \"$0\"  (matches/pass=" + altMatches + ")\n" +
+		"  " + fmt(alt) + "\n" +
+		"\n" +
+		"Compare these numbers against a build with SUPPORT_JIT disabled.\n" +
+		"(Discard the scratch tab without saving.)";
+
+	InfoMsg(msg);
+} catch (e) {
+	InfoMsg("EXCEPTION: " + e + "\n" + (e && e.stack ? e.stack : "(no stack)"));
+}

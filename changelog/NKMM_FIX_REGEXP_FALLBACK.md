@@ -147,3 +147,59 @@ sakura.exeへ組み込む方式にした（`libs/silica`と同じ考え方）。
 で、PCRE2の`.c`31ファイル全部と`CRegexFallback.cpp`・`CBregexp.cpp`を個別にコンパイル
 し、すべて0警告0エラーであることを確認した。実機での動作確認(検索/置換/Grep/構文強調の
 実操作、ルックビハインドパターンが実際にマッチすることの確認等)は未実施。
+
+## 追記: PCRE2のJIT化 20260728
+
+対象ファイル(追加分):
+
+- `libs/deps/sljit/`（新規、sljit(PCRE2のJITバックエンド)をvendor。BSD、
+  zherczeg/sljit、コミット`45f910b`。PCRE2 10.47が`.gitmodules`/`deps/sljit`で
+  参照しているのと同一コミット）
+- `libs/pcre2/config.h`（`SUPPORT_JIT`を有効化）
+- `sakura_core/extmodule/CRegexFallback.cpp`（`CompilePattern`に
+  `pcre2_jit_compile_16`呼び出しを追加）
+- `sakura/sakura.vcxproj` / `.vcxproj.filters`（sljitソースをIDE表示用に追加）
+
+### 背景
+
+`CBregexp`/`CRegexKeyword`は`BMatch(str, ...)`で一度パターンをコンパイルした後、
+同じ`rxp`(コンパイル済みインスタンス)を使い回して`BMatch(NULL, ...)`を繰り返し呼ぶ
+設計になっている(`CBregexp.cpp`の`ExistBMatchEx()`分岐、`CColor_Numeric.cpp`の数値
+ハイライト等)。数値ハイライトのように画面内の全行に対して毎スクロール・毎入力で
+同一パターンをマッチさせ続ける箇所があり、これは「コンパイル済みパターンを繰り返し
+マッチさせる」というJITが最も効果を発揮するアクセスパターンに合致する。
+
+ところが従来は`pcre2_compile_16()`でコンパイルするだけでJIT化しておらず、
+`pcre2_match_16`/`pcre2_substitute_16`は常にバイトコードインタプリタで実行されていた。
+
+### 実装
+
+`CompilePattern()`内、`pcre2_compile_16()`成功後に`pcre2_jit_compile_16(outCode,
+PCRE2_JIT_COMPLETE)`を呼ぶ一行を追加しただけ。戻り値は無視する(非対応パターン・
+非対応環境では単に失敗するだけで、それ以降は今まで通りインタプリタでマッチする
+ため、呼び出し側の分岐は不要)。PCRE2は一度JITコンパイルに成功したcodeに対しては、
+通常の`pcre2_match_16`/`pcre2_substitute_16`呼び出しが自動的にJIT実行に切り替わる
+仕様のため、`DoMatch`/`DoSubst`側の呼び出しコードは無改造で恩恵を受ける。
+
+### sljitのvendoringについて
+
+`pcre2_jit_compile.c`は内部で`../deps/sljit/sljit_src/sljitLir.c`を`#include`する
+構成になっており(単一翻訳単位ビルド)、`SUPPORT_JIT`を有効にしただけではこの
+sljit本体が存在せずビルドが壊れることが判明した。PCRE2本体のvendoring時には
+sljit(gitサブモジュール)が含まれていなかったため、今回`libs/deps/sljit/`として
+新規にvendorした。バージョンはPCRE2 10.47の`.gitmodules`が指す
+`https://github.com/zherczeg/sljit.git`のコミット`45f910b78c6605ebf5b53d3ec7cb00f2312fe417`
+と完全に一致させている(pcre2_jit_compile.c側のAPI前提とズレないようにするため)。
+`sljit_src/`と`sljit_src/allocator_src/`をまるごとvendorし(ARM/MIPS/PPC/RISCV/S390X等、
+このプロジェクトでは使わないアーキテクチャの`.c`も含む。プリプロセッサで自動的に
+x86/x64のみが選択されるため無害)、vcxprojの`ClCompile`は追加していない
+(`pcre2_jit_compile.c`の既存の1エントリが`#include`経由でまとめてビルドする)。
+
+### 動作確認について
+
+`msbuild /t:sakura:ClCompile /p:SelectedFiles=<file>`によるファイル単位ビルドで、
+`pcre2_jit_compile.c`をDebug/Release×Win32/x64の4構成全てで0警告0エラーを確認した。
+また`SUPPORT_JIT`有効化の影響を受ける`pcre2_compile.c`/`pcre2_match.c`/
+`pcre2_context.c`/`pcre2_config.c`も(x64 Debugで)問題なくコンパイルできることを
+確認した。実機でのJIT有効化による速度計測(数値ハイライトの体感速度、検索/置換の
+実行時間比較等)は未実施。
