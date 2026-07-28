@@ -213,6 +213,26 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 
 	// Feb. 12, 2006 D.S.Koba
+#if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
+	// ==== 20260728 履歴(Mru/Keys/Grep/Cmd)をsakura.ini本体にブロック形式で保存する機能 ここから ====
+	// 読み込みはここでini本体をもう一度開き直してブロック形式(#XXX〜#end)を試み、
+	// 見つからなければ各関数内で旧形式(MRU[00].xxxなど)にフォールバックする。
+	// 書き込みはWriteProfile()でini本体を書き終えた後にブロック形式のみ追記する(下記参照)
+	if (bRead) {
+		CDataProfile cProfileHistory;
+		cProfileHistory.SetReadingMode();
+
+		std::ifstream ifs(si::util::to_bytes(szIniFileName).c_str(), std::ios::in);
+		cProfileHistory.tag_ = &ifs;
+
+		ShareData_IO_Mru(cProfile, cProfileHistory);
+		ShareData_IO_Keys(cProfile, cProfileHistory);
+		ShareData_IO_Grep(cProfile, cProfileHistory);
+		ShareData_IO_Cmd(cProfile, cProfileHistory);
+	}
+	// ==== 20260728 ここまで(書き込み側はWriteProfile()の直後を参照) ====
+	ShareData_IO_Folders( cProfile );
+#else
 #if defined(NKMM_FIX_PROFILES) && NKMM_SEPARATE_HISTORY
 	do {
 		CDataProfile cProfileRecent;
@@ -265,6 +285,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #else
 	ShareData_IO_Cmd( cProfile );
 #endif // NKMM_
+#endif // NKMM_HISTORY_BLOCK_IN_INI
 	ShareData_IO_Nickname( cProfile );
 	ShareData_IO_Common( cProfile );
 //nkmm	ShareData_IO_Plugin( cProfile, pcMenuDrawer );		// Move here	2010/6/24 Uchi
@@ -293,6 +314,24 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		// 2014.12.08 sakura.iniの読み取り専用
 		if( !GetDllShareData().m_Common.m_sOthers.m_bIniReadOnly ){
 			cProfile.WriteProfile( szIniFileName, LTEXT(" sakura.ini テキストエディタ設定ファイル") );
+
+#if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
+			// 履歴(Mru/Keys/Grep/Cmd)をini本体の末尾にブロック形式で追記する。
+			// WriteProfile()はini全体を作り直すため、必ずこの後で追記する必要がある 20260728
+			do {
+				std::ofstream ofs(si::util::to_bytes(szIniFileName).c_str(), std::ios::out | std::ios::app);
+				if (!ofs) break;
+
+				CDataProfile cProfileHistory;
+				cProfileHistory.SetWritingMode();
+				cProfileHistory.tag_ = &ofs;
+
+				ShareData_IO_Mru(cProfile, cProfileHistory);
+				ShareData_IO_Keys(cProfile, cProfileHistory);
+				ShareData_IO_Grep(cProfile, cProfileHistory);
+				ShareData_IO_Cmd(cProfile, cProfileHistory);
+			} while (0);
+#endif // NKMM_
 		}
 	}
 
@@ -333,6 +372,42 @@ static int EachIStreamLines(std::ifstream &ifs,
 	return i;  // 処理した数
 }
 
+#if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
+// ifstreamの行繰り返しテンプレート(section_startが見つかったかどうかも返す版)。
+// 履歴をini本体にブロック形式で保存する機能で、旧形式との共存判定に使用する 20260728
+template <typename Functor1, typename Functor2, typename Functor3>
+static int EachIStreamLinesFound(std::ifstream &ifs,
+                            const std::string &section_start, const std::string &section_end,
+                            Functor1 fnBegin,
+                            Functor2 fnEnd,
+                            Functor3 fnBlock,
+                            bool *pFound) {
+	std::string line_buffer;
+	bool bRead = false;
+	int i = 0;
+
+	while (std::getline(ifs, line_buffer)) {
+		if (line_buffer.find(section_start) == 0) {
+			bRead = true;
+			fnBegin();
+			continue;
+		} else if (line_buffer.find(section_end) == 0) {
+			fnEnd();
+			break;
+		}
+
+		if (!bRead) continue;
+
+		if (fnBlock(i, line_buffer)) {
+			i++;
+		}
+	}
+
+	*pFound = bRead;
+	return i;  // 処理した数
+}
+#endif // NKMM_
+
 // ofstreamの行繰り返しテンプレート
 template <typename Functor1, typename Functor2, typename Functor3>
 static void EachOStreamLines(std::ofstream &ofs,
@@ -359,6 +434,291 @@ static void EachOStreamLines(std::ofstream &ofs,
 
 
 
+#if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
+// ==== 20260728 履歴(Mru)をini本体にブロック形式で保存する機能 ここから ====
+// 履歴(MRU)をブロック形式で入出力する。読み込み時、対象マーカーが全て見つかった場合にtrueを返す
+static bool ShareData_IO_Mru_Block( CDataProfile& cProfileHistory )
+{
+	DLLSHAREDATA* pShare = &GetDllShareData();
+	SShare_History &hist = pShare->m_sHistory;
+	bool bFoundAll = true;
+
+	if (cProfileHistory.IsReadingMode()) {
+		std::ifstream &ifs = *(std::ifstream *)(cProfileHistory.tag_);
+		bool bFound = false;
+
+		int i = EachIStreamLinesFound(ifs, "#MRU", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) // block
+			{
+				std::istringstream stream(line_buffer);
+				std::wstring path = GetTokenStringW(stream, ',');
+
+#if NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+				if (!fexist(path.c_str())) {
+					return false;
+				}
+#endif // NKMM_
+
+				EditInfo *pfiWork = &hist.m_fiMRUArr[index];
+				_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
+				pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
+				pfiWork->m_nViewTopLine = GetTokenInt(stream, ',');
+				pfiWork->m_nViewLeftCol = GetTokenInt(stream, ',');
+				pfiWork->m_ptCursor.x = GetTokenInt(stream, ',');
+				pfiWork->m_ptCursor.y = GetTokenInt(stream, ',');
+				pfiWork->m_nCharCode = static_cast<ECodeType>(GetTokenInt(stream, ','));
+				_tcsncpy(pfiWork->m_szMarkLines, GetTokenStringW(stream, ',').c_str(), MAX_MARKLINES_LEN + 1);
+				pfiWork->m_szMarkLines[MAX_MARKLINES_LEN + 1 - 1] = _T('\0');
+				pfiWork->m_nTypeId = GetTokenInt(stream, ',');
+				hist.m_bMRUArrFavorite[index] = GetTokenInt(stream, ',') ? true : false;
+				return true;
+			},
+			&bFound
+		);
+
+		bFoundAll &= bFound;
+		if (bFound) {
+			hist.m_nMRUArrNum = i;
+			SetValueLimit( hist.m_nMRUArrNum, MAX_MRU );
+
+			//@@@ 2001.12.26 YAZAKI 残りのm_fiMRUArrを初期化。
+			EditInfo	fiInit;
+			//	残りをfiInitで初期化しておく。
+			fiInit.m_nCharCode = CODE_DEFAULT;
+			fiInit.m_nViewLeftCol = CLayoutInt(0);
+			fiInit.m_nViewTopLine = CLayoutInt(0);
+			fiInit.m_ptCursor.Set(CLogicInt(0), CLogicInt(0));
+			_tcscpy( fiInit.m_szPath, _T("") );
+			fiInit.m_szMarkLines[0] = L'\0';	// 2002.01.16 hor
+			for (int i2 = hist.m_nMRUArrNum; i2 < MAX_MRU; ++i2) {
+				hist.m_fiMRUArr[i2] = fiInit;
+				hist.m_bMRUArrFavorite[i2] = false;	//お気に入り	//@@@ 2003.04.08 MIK
+			}
+		}
+	}
+	else {
+		std::ofstream &ofs = *(std::ofstream *)(cProfileHistory.tag_);
+
+		EachOStreamLines(ofs, "#MRU", "#end", hist.m_nMRUArrNum,
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				EditInfo *pfiWork = &hist.m_fiMRUArr[index];
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(pfiWork->m_szPath) + ",";
+				line_buffer += std::to_string(pfiWork->m_nViewTopLine) + ",";
+				line_buffer += std::to_string(pfiWork->m_nViewLeftCol) + ",";
+				line_buffer += std::to_string(pfiWork->m_ptCursor.x) + ",";
+				line_buffer += std::to_string(pfiWork->m_ptCursor.y) + ",";
+				line_buffer += std::to_string(pfiWork->m_nCharCode) + ",";
+				line_buffer += si::util::to_bytes(pfiWork->m_szMarkLines) + ",";
+				line_buffer += std::to_string(pfiWork->m_nTypeId) + ",";
+				line_buffer += std::to_string((int)hist.m_bMRUArrFavorite[index]) + ",";
+				ofs << line_buffer << std::endl;
+			}
+		);
+	}
+
+	if (cProfileHistory.IsReadingMode()) {
+		std::ifstream &ifs = *(std::ifstream *)(cProfileHistory.tag_);
+		bool bFound = false;
+
+		int i = EachIStreamLinesFound(ifs, "#Folder", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) {  // block
+				std::string token;
+				std::istringstream stream(line_buffer);
+
+				std::wstring dir = GetTokenStringW(stream, ',');
+
+#if NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+				if (!fexist(dir.c_str())) {
+					return false;
+				}
+#endif // NKMM_
+
+				hist.m_szOPENFOLDERArr[index].Assign(dir.c_str());
+				hist.m_bOPENFOLDERArrFavorite[index] = GetTokenBool(stream, ',');
+				return true;
+			},
+			&bFound
+		);
+
+		bFoundAll &= bFound;
+		if (bFound) {
+			hist.m_nOPENFOLDERArrNum = i;
+			SetValueLimit( hist.m_nOPENFOLDERArrNum, MAX_OPENFOLDER );
+
+			//読み込み時は残りを初期化
+			for (int i2 = hist.m_nOPENFOLDERArrNum; i2 < MAX_OPENFOLDER; ++i2) {
+				// 2005.04.05 D.S.Koba
+				hist.m_szOPENFOLDERArr[i2][0] = L'\0';
+				hist.m_bOPENFOLDERArrFavorite[i2] = false;	//お気に入り	//@@@ 2003.04.08 MIK
+			}
+		}
+	}
+	else {
+		std::ofstream &ofs = *(std::ofstream *)(cProfileHistory.tag_);
+
+		EachOStreamLines(ofs, "#Folder", "#end", hist.m_nOPENFOLDERArrNum,
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(hist.m_szOPENFOLDERArr[index].c_str()) + ",";
+				line_buffer += std::to_string((int)hist.m_bOPENFOLDERArrFavorite[index]);
+				ofs << line_buffer << std::endl;
+			}
+		);
+	}
+
+	if (cProfileHistory.IsReadingMode()) {
+		std::ifstream &ifs = *(std::ifstream *)(cProfileHistory.tag_);
+		bool bFound = false;
+
+		int i = EachIStreamLinesFound(ifs, "#except_MRU", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) {  // block
+				hist.m_aExceptMRU[index].Assign(wchomp(line_buffer).c_str());
+				return true;
+			},
+			&bFound
+		);
+
+		bFoundAll &= bFound;
+		if (bFound) {
+			hist.m_aExceptMRU._GetSizeRef() = i;
+			hist.m_aExceptMRU.SetSizeLimit();
+		}
+	}
+	else {
+		std::ofstream &ofs = *(std::ofstream *)(cProfileHistory.tag_);
+
+		EachOStreamLines(ofs, "#except_MRU", "#end", hist.m_aExceptMRU._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(hist.m_aExceptMRU[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
+	}
+
+	return bFoundAll;
+}
+
+// 履歴(MRU)を旧形式(sakura.iniのキー1件ごと)で入出力する 20260728
+static void ShareData_IO_Mru_Legacy( CDataProfile& cProfile )
+{
+	DLLSHAREDATA* pShare = &GetDllShareData();
+	const WCHAR* pszSecName = LTEXT("MRU");
+	int			i;
+	int			nSize;
+	EditInfo*	pfiWork;
+	WCHAR		szKeyName[64];
+
+	cProfile.IOProfileData( pszSecName, LTEXT("_MRU_Counts"), pShare->m_sHistory.m_nMRUArrNum );
+	SetValueLimit( pShare->m_sHistory.m_nMRUArrNum, MAX_MRU );
+	nSize = pShare->m_sHistory.m_nMRUArrNum;
+	for( i = 0; i < nSize; ++i ){
+		pfiWork = &pShare->m_sHistory.m_fiMRUArr[i];
+		if( cProfile.IsReadingMode() ){
+			pfiWork->m_nTypeId = -1;
+		}
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nViewTopLine"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pfiWork->m_nViewTopLine );
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nViewLeftCol"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pfiWork->m_nViewLeftCol );
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nX"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pfiWork->m_ptCursor.x );
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nY"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pfiWork->m_ptCursor.y );
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nCharCode"), i );
+		cProfile.IOProfileData_WrapInt( pszSecName, szKeyName, pfiWork->m_nCharCode );
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].szPath"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferT(pfiWork->m_szPath) );
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].szMark2"), i );
+		if( !cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW(pfiWork->m_szMarkLines) ) ){
+			if( cProfile.IsReadingMode() ){
+				auto_sprintf( szKeyName, LTEXT("MRU[%02d].szMark"), i ); // 旧ver互換
+				cProfile.IOProfileData( pszSecName, szKeyName, MakeStringBufferW(pfiWork->m_szMarkLines) );
+			}
+		}
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].nType"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pfiWork->m_nTypeId );
+		//お気に入り	//@@@ 2003.04.08 MIK
+		auto_sprintf( szKeyName, LTEXT("MRU[%02d].bFavorite"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bMRUArrFavorite[i] );
+	}
+	//@@@ 2001.12.26 YAZAKI 残りのm_fiMRUArrを初期化。
+	if ( cProfile.IsReadingMode() ){
+		EditInfo	fiInit;
+		//	残りをfiInitで初期化しておく。
+		fiInit.m_nCharCode = CODE_DEFAULT;
+		fiInit.m_nViewLeftCol = CLayoutInt(0);
+		fiInit.m_nViewTopLine = CLayoutInt(0);
+		fiInit.m_ptCursor.Set(CLogicInt(0), CLogicInt(0));
+		_tcscpy( fiInit.m_szPath, _T("") );
+		fiInit.m_szMarkLines[0] = L'\0';	// 2002.01.16 hor
+		for( ; i < MAX_MRU; ++i){
+			pShare->m_sHistory.m_fiMRUArr[i] = fiInit;
+			pShare->m_sHistory.m_bMRUArrFavorite[i] = false;	//お気に入り	//@@@ 2003.04.08 MIK
+		}
+	}
+
+	cProfile.IOProfileData( pszSecName, LTEXT("_MRUFOLDER_Counts"), pShare->m_sHistory.m_nOPENFOLDERArrNum );
+	SetValueLimit( pShare->m_sHistory.m_nOPENFOLDERArrNum, MAX_OPENFOLDER );
+	nSize = pShare->m_sHistory.m_nOPENFOLDERArrNum;
+	for( i = 0; i < nSize; ++i ){
+		auto_sprintf( szKeyName, LTEXT("MRUFOLDER[%02d]"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_szOPENFOLDERArr[i] );
+		//お気に入り	//@@@ 2003.04.08 MIK
+		wcscat( szKeyName, LTEXT(".bFavorite") );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] );
+	}
+	//読み込み時は残りを初期化
+	if ( cProfile.IsReadingMode() ){
+		for (; i< MAX_OPENFOLDER; ++i){
+			// 2005.04.05 D.S.Koba
+			pShare->m_sHistory.m_szOPENFOLDERArr[i][0] = L'\0';
+			pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] = false;	//お気に入り	//@@@ 2003.04.08 MIK
+		}
+	}
+
+	cProfile.IOProfileData( pszSecName, LTEXT("_ExceptMRU_Counts"), pShare->m_sHistory.m_aExceptMRU._GetSizeRef() );
+	pShare->m_sHistory.m_aExceptMRU.SetSizeLimit();
+	nSize = pShare->m_sHistory.m_aExceptMRU.size();
+	for( i = 0; i < nSize; ++i ){
+		auto_sprintf( szKeyName, LTEXT("ExceptMRU[%02d]"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aExceptMRU[i] );
+	}
+}
+
+/*!
+	@brief 共有データのMruセクションの入出力(履歴をini本体にブロック形式で保存する版)
+	@param[in,out]	cProfile	        INIファイル入出力クラス(旧形式へのフォールバック読み込みに使用)
+	@param[in,out]	cProfileHistory	    sakura.ini本体への生ストリームを保持する履歴入出力クラス
+
+	@date 2026-07-28 履歴をini本体にブロック形式で保存するモードを追加。書き込みはブロック形式のみ、読み込みは新旧両対応
+*/
+void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile, CDataProfile& cProfileHistory )
+{
+	if (cProfileHistory.IsReadingMode()) {
+		if (!ShareData_IO_Mru_Block( cProfileHistory )) {
+			ShareData_IO_Mru_Legacy( cProfile );
+		}
+	}
+	else {
+		ShareData_IO_Mru_Block( cProfileHistory );
+	}
+}
+// ==== 20260728 履歴(Mru)をini本体にブロック形式で保存する機能 ここまで ====
+#else
 /*!
 	@brief 共有データのMruセクションの入出力
 	@param[in,out]	cProfile	INIファイル入出力クラス
@@ -611,7 +971,134 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 	}
 #endif // NKMM_
 }
+#endif // NKMM_HISTORY_BLOCK_IN_INI (Mru)
 
+#if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
+// ==== 20260728 履歴(Keys)をini本体にブロック形式で保存する機能 ここから ====
+// 検索/置換キー履歴をブロック形式で入出力する。読み込み時、対象マーカーが全て見つかった場合にtrueを返す
+static bool ShareData_IO_Keys_Block( CDataProfile& cProfileHistory )
+{
+	DLLSHAREDATA* pShare = &GetDllShareData();
+	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
+	bool bFoundAll = true;
+
+	if (cProfileHistory.IsReadingMode()) {
+		std::ifstream &ifs = *(std::ifstream *)(cProfileHistory.tag_);
+		bool bFound = false;
+
+		int i = EachIStreamLinesFound(ifs, "#SearchKey", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&skwd](int index, const std::string &line_buffer) {  // block
+				skwd.m_aSearchKeys[index].Assign(wchomp(line_buffer).c_str());
+				return true;
+			},
+			&bFound
+		);
+
+		bFoundAll &= bFound;
+		if (bFound) {
+			skwd.m_aSearchKeys._GetSizeRef() = i;
+			skwd.m_aSearchKeys.SetSizeLimit();
+		}
+	}
+	else {
+		std::ofstream &ofs = *(std::ofstream *)(cProfileHistory.tag_);
+
+		EachOStreamLines(ofs, "#SearchKey", "#end", skwd.m_aSearchKeys._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &skwd](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(skwd.m_aSearchKeys[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
+	}
+
+	if (cProfileHistory.IsReadingMode()) {
+		std::ifstream &ifs = *(std::ifstream *)(cProfileHistory.tag_);
+		bool bFound = false;
+
+		int i = EachIStreamLinesFound(ifs, "#ReplaceKey", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&skwd](int index, const std::string &line_buffer) {  // block
+				skwd.m_aReplaceKeys[index].Assign(wchomp(line_buffer).c_str());
+				return true;
+			},
+			&bFound
+		);
+
+		bFoundAll &= bFound;
+		if (bFound) {
+			skwd.m_aReplaceKeys._GetSizeRef() = i;
+			skwd.m_aReplaceKeys.SetSizeLimit();
+		}
+	}
+	else {
+		std::ofstream &ofs = *(std::ofstream *)(cProfileHistory.tag_);
+
+		EachOStreamLines(ofs, "#ReplaceKey", "#end", skwd.m_aReplaceKeys._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &skwd](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(skwd.m_aReplaceKeys[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
+	}
+
+	return bFoundAll;
+}
+
+// 検索/置換キー履歴を旧形式(sakura.iniのキー1件ごと)で入出力する 20260728
+static void ShareData_IO_Keys_Legacy( CDataProfile& cProfile )
+{
+	DLLSHAREDATA* pShare = &GetDllShareData();
+	const WCHAR* pszSecName = LTEXT("Keys");
+	int		i;
+	int		nSize;
+	WCHAR	szKeyName[64];
+
+	cProfile.IOProfileData( pszSecName, LTEXT("_SEARCHKEY_Counts"), pShare->m_sSearchKeywords.m_aSearchKeys._GetSizeRef() );
+	pShare->m_sSearchKeywords.m_aSearchKeys.SetSizeLimit();
+	nSize = pShare->m_sSearchKeywords.m_aSearchKeys.size();
+	for( i = 0; i < nSize; ++i ){
+		auto_sprintf( szKeyName, LTEXT("SEARCHKEY[%02d]"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aSearchKeys[i] );
+	}
+
+	cProfile.IOProfileData( pszSecName, LTEXT("_REPLACEKEY_Counts"), pShare->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef() );
+	pShare->m_sSearchKeywords.m_aReplaceKeys.SetSizeLimit();
+	nSize = pShare->m_sSearchKeywords.m_aReplaceKeys.size();
+	for( i = 0; i < nSize; ++i ){
+		auto_sprintf( szKeyName, LTEXT("REPLACEKEY[%02d]"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aReplaceKeys[i] );
+	}
+}
+
+/*!
+	@brief 共有データのKeysセクションの入出力(履歴をini本体にブロック形式で保存する版)
+	@param[in,out]	cProfile	        INIファイル入出力クラス(旧形式へのフォールバック読み込みに使用)
+	@param[in,out]	cProfileHistory	    sakura.ini本体への生ストリームを保持する履歴入出力クラス
+
+	@date 2026-07-28 履歴をini本体にブロック形式で保存するモードを追加。書き込みはブロック形式のみ、読み込みは新旧両対応
+*/
+void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile, CDataProfile& cProfileHistory )
+{
+	if (cProfileHistory.IsReadingMode()) {
+		if (!ShareData_IO_Keys_Block( cProfileHistory )) {
+			ShareData_IO_Keys_Legacy( cProfile );
+		}
+	}
+	else {
+		ShareData_IO_Keys_Block( cProfileHistory );
+	}
+}
+// ==== 20260728 履歴(Keys)をini本体にブロック形式で保存する機能 ここまで ====
+#else
 /*!
 	@brief 共有データのKeysセクションの入出力
 	@param[in,out]	cProfile	INIファイル入出力クラス
@@ -706,7 +1193,179 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 	}
 #endif // NKMM_
 }
+#endif // NKMM_HISTORY_BLOCK_IN_INI (Keys)
 
+#if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
+// ==== 20260728 履歴(Grep)をini本体にブロック形式で保存する機能 ここから ====
+// Grep履歴をブロック形式で入出力する。読み込み時、対象マーカーが全て見つかった場合にtrueを返す
+static bool ShareData_IO_Grep_Block( CDataProfile& cProfileHistory )
+{
+	DLLSHAREDATA* pShare = &GetDllShareData();
+	SShare_SearchKeywords &skwd = pShare->m_sSearchKeywords;
+	bool bFoundAll = true;
+
+	if (cProfileHistory.IsReadingMode()) {
+		std::ifstream &ifs = *(std::ifstream *)(cProfileHistory.tag_);
+		bool bFound = false;
+
+		int i = EachIStreamLinesFound(ifs, "#GrepFile", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&skwd](int index, const std::string &line_buffer) {  // block
+				skwd.m_aGrepFiles[index].Assign(wchomp(line_buffer).c_str());
+				return true;
+			},
+			&bFound
+		);
+
+		bFoundAll &= bFound;
+		if (bFound) {
+			skwd.m_aGrepFiles._GetSizeRef() = i;
+			skwd.m_aGrepFiles.SetSizeLimit();
+		}
+	}
+	else {
+		std::ofstream &ofs = *(std::ofstream *)(cProfileHistory.tag_);
+
+		EachOStreamLines(ofs, "#GrepFile", "#end", skwd.m_aGrepFiles._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &skwd](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(skwd.m_aGrepFiles[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
+	}
+
+	if (cProfileHistory.IsReadingMode()) {
+		std::ifstream &ifs = *(std::ifstream *)(cProfileHistory.tag_);
+		bool bFound = false;
+
+		int i = EachIStreamLinesFound(ifs, "#GrepFolder", "#end",
+			[&ifs, &skwd]{  // begin
+				std::string line_buffer;
+				if (std::getline(ifs, line_buffer)) {
+				skwd.m_bGrepFolders99 = std::stoi(chomp(line_buffer)) ? true : false;
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_bGrepFolders2 = std::stoi(chomp(line_buffer)) ? true : false;
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_bGrepFolders3 = std::stoi(chomp(line_buffer)) ? true : false;
+				}
+				while (std::getline(ifs, line_buffer)) {
+					if (line_buffer == "---") break;
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_szGrepFolders2.Assign(wchomp(line_buffer).c_str());
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_szGrepFolders3.Assign(wchomp(line_buffer).c_str());
+				}
+				if (std::getline(ifs, line_buffer)) {
+					skwd.m_szGrepExcludeDirs.Assign(wchomp(line_buffer).c_str());
+				}
+				while (std::getline(ifs, line_buffer)) {
+					if (line_buffer == "---") break;
+				}
+			},
+			[]{},  // end
+			[&skwd](int index, const std::string &line_buffer) {  // block
+				skwd.m_aGrepFolders[index].Assign(wchomp(line_buffer).c_str());
+				return true;
+			},
+			&bFound
+		);
+
+		bFoundAll &= bFound;
+		if (bFound) {
+			skwd.m_aGrepFolders._GetSizeRef() = i;
+			skwd.m_aGrepFolders.SetSizeLimit();
+		}
+	}
+	else {
+		std::ofstream &ofs = *(std::ofstream *)(cProfileHistory.tag_);
+
+		EachOStreamLines(ofs, "#GrepFolder", "#end", skwd.m_aGrepFolders._GetSizeRef(),
+			[&ofs, &skwd]{  // begin
+#ifdef NKMM_FIX_GREP
+				ofs << (skwd.m_bGrepFolders99 ? "1" : "0") << std::endl;
+				ofs << (skwd.m_bGrepFolders2 ? "1" : "0") << std::endl;
+				ofs << (skwd.m_bGrepFolders3 ? "1" : "0") << std::endl;
+				ofs << "---" << std::endl;
+				ofs << si::util::to_bytes(skwd.m_szGrepFolders2.c_str()) << std::endl;
+				ofs << si::util::to_bytes(skwd.m_szGrepFolders3.c_str()) << std::endl;
+				ofs << si::util::to_bytes(skwd.m_szGrepExcludeDirs.c_str()) << std::endl;
+				ofs << "---" << std::endl;
+#endif // NKMM_
+			},
+			[]{},  // end
+			[&ofs, &skwd](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(skwd.m_aGrepFolders[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
+	}
+
+	return bFoundAll;
+}
+
+// Grep履歴を旧形式(sakura.iniのキー1件ごと)で入出力する 20260728
+static void ShareData_IO_Grep_Legacy( CDataProfile& cProfile )
+{
+	DLLSHAREDATA* pShare = &GetDllShareData();
+	const WCHAR* pszSecName = LTEXT("Grep");
+	int		i;
+	int		nSize;
+	WCHAR	szKeyName[64];
+
+	cProfile.IOProfileData( pszSecName, LTEXT("_GREPFILE_Counts"), pShare->m_sSearchKeywords.m_aGrepFiles._GetSizeRef() );
+	pShare->m_sSearchKeywords.m_aGrepFiles.SetSizeLimit();
+	nSize = pShare->m_sSearchKeywords.m_aGrepFiles.size();
+	for( i = 0; i < nSize; ++i ){
+		auto_sprintf( szKeyName, LTEXT("GREPFILE[%02d]"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFiles[i] );
+	}
+
+	cProfile.IOProfileData( pszSecName, LTEXT("_GREPFOLDER_Counts"), pShare->m_sSearchKeywords.m_aGrepFolders._GetSizeRef() );
+	pShare->m_sSearchKeywords.m_aGrepFolders.SetSizeLimit();
+	nSize = pShare->m_sSearchKeywords.m_aGrepFolders.size();
+	for( i = 0; i < nSize; ++i ){
+		auto_sprintf( szKeyName, LTEXT("GREPFOLDER[%02d]"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFolders[i] );
+	}
+#ifdef NKMM_FIX_GREP
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[*].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders99 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders2 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Enable"), pShare->m_sSearchKeywords.m_bGrepFolders3 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[0].Path"), pShare->m_sSearchKeywords.m_szGrepFolders2 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPFOLDER_EX[1].Path"), pShare->m_sSearchKeywords.m_szGrepFolders3 );
+	cProfile.IOProfileData( pszSecName, LTEXT("GREPEXCLUDEDIRS.Path"), pShare->m_sSearchKeywords.m_szGrepExcludeDirs );
+#endif // NKMM_
+}
+
+/*!
+	@brief 共有データのGrepセクションの入出力(履歴をini本体にブロック形式で保存する版)
+	@param[in,out]	cProfile	        INIファイル入出力クラス(旧形式へのフォールバック読み込みに使用)
+	@param[in,out]	cProfileHistory	    sakura.ini本体への生ストリームを保持する履歴入出力クラス
+
+	@date 2026-07-28 履歴をini本体にブロック形式で保存するモードを追加。書き込みはブロック形式のみ、読み込みは新旧両対応
+*/
+void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile, CDataProfile& cProfileHistory )
+{
+	if (cProfileHistory.IsReadingMode()) {
+		if (!ShareData_IO_Grep_Block( cProfileHistory )) {
+			ShareData_IO_Grep_Legacy( cProfile );
+		}
+	}
+	else {
+		ShareData_IO_Grep_Block( cProfileHistory );
+	}
+}
+// ==== 20260728 履歴(Grep)をini本体にブロック形式で保存する機能 ここまで ====
+#else
 /*!
 	@brief 共有データのGrepセクションの入出力
 	@param[in,out]	cProfile	INIファイル入出力クラス
@@ -846,6 +1505,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 #endif // NKMM_
 #endif // NKMM_
 }
+#endif // NKMM_HISTORY_BLOCK_IN_INI (Grep)
 
 /*!
 	@brief 共有データのFoldersセクションの入出力
@@ -864,6 +1524,131 @@ void CShareData_IO::ShareData_IO_Folders( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("szIMPORTFOLDER"), pShare->m_sHistory.m_szIMPORTFOLDER );
 }
 
+#if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
+// ==== 20260728 履歴(Cmd)をini本体にブロック形式で保存する機能 ここから ====
+// 外部コマンド実行履歴をブロック形式で入出力する。読み込み時、対象マーカーが全て見つかった場合にtrueを返す
+static bool ShareData_IO_Cmd_Block( CDataProfile& cProfileHistory )
+{
+	DLLSHAREDATA* pShare = &GetDllShareData();
+	SShare_History &hist = pShare->m_sHistory;
+	bool bFoundAll = true;
+
+	if (cProfileHistory.IsReadingMode()) {
+		std::ifstream &ifs = *(std::ifstream *)(cProfileHistory.tag_);
+		bool bFound = false;
+
+		int i = EachIStreamLinesFound(ifs, "#Cmd", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) {  // block
+				hist.m_aCommands[index].Assign(wchomp(line_buffer).c_str());
+				return true;
+			},
+			&bFound
+		);
+
+		bFoundAll &= bFound;
+		if (bFound) {
+			hist.m_aCommands._GetSizeRef() = i;
+			hist.m_aCommands.SetSizeLimit();
+		}
+	}
+	else {
+		std::ofstream &ofs = *(std::ofstream *)(cProfileHistory.tag_);
+
+		EachOStreamLines(ofs, "#Cmd", "#end", hist.m_aCommands._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(hist.m_aCommands[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
+	}
+
+	if (cProfileHistory.IsReadingMode()) {
+		std::ifstream &ifs = *(std::ifstream *)(cProfileHistory.tag_);
+		bool bFound = false;
+
+		int i = EachIStreamLinesFound(ifs, "#CmdCurDir", "#end",
+			[]{},  // begin
+			[]{},  // end
+			[&hist](int index, const std::string &line_buffer) {  // block
+				hist.m_aCurDirs[index].Assign(wchomp(line_buffer).c_str());
+				return true;
+			},
+			&bFound
+		);
+
+		bFoundAll &= bFound;
+		if (bFound) {
+			hist.m_aCurDirs._GetSizeRef() = i;
+			hist.m_aCurDirs.SetSizeLimit();
+		}
+	}
+	else {
+		std::ofstream &ofs = *(std::ofstream *)(cProfileHistory.tag_);
+
+		EachOStreamLines(ofs, "#CmdCurDir", "#end", hist.m_aCurDirs._GetSizeRef(),
+			[]{},  // begin
+			[]{},  // end
+			[&ofs, &hist](int index) {  // block
+				std::string line_buffer;
+				line_buffer += si::util::to_bytes(hist.m_aCurDirs[index].c_str());
+				ofs << line_buffer << std::endl;
+			}
+		);
+	}
+
+	return bFoundAll;
+}
+
+// 外部コマンド実行履歴を旧形式(sakura.iniのキー1件ごと)で入出力する 20260728
+static void ShareData_IO_Cmd_Legacy( CDataProfile& cProfile )
+{
+	DLLSHAREDATA* pShare = &GetDllShareData();
+	const WCHAR* pszSecName = LTEXT("Cmd");
+	int		i;
+	WCHAR	szKeyName[64];
+
+	cProfile.IOProfileData( pszSecName, LTEXT("nCmdArrNum"), pShare->m_sHistory.m_aCommands._GetSizeRef() );
+	pShare->m_sHistory.m_aCommands.SetSizeLimit();
+	int nSize = pShare->m_sHistory.m_aCommands.size();
+	for( i = 0; i < nSize; ++i ){
+		auto_sprintf( szKeyName, LTEXT("szCmdArr[%02d]"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aCommands[i] );
+	}
+
+	cProfile.IOProfileData( pszSecName, LTEXT("nCurDirArrNum"), pShare->m_sHistory.m_aCurDirs._GetSizeRef() );
+	pShare->m_sHistory.m_aCurDirs.SetSizeLimit();
+	nSize = pShare->m_sHistory.m_aCurDirs.size();
+	for( i = 0; i < nSize; ++i ){
+		auto_sprintf( szKeyName, LTEXT("szCurDirArr[%02d]"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aCurDirs[i] );
+	}
+}
+
+/*!
+	@brief 共有データのCmdセクションの入出力(履歴をini本体にブロック形式で保存する版)
+	@param[in,out]	cProfile	        INIファイル入出力クラス(旧形式へのフォールバック読み込みに使用)
+	@param[in,out]	cProfileHistory	    sakura.ini本体への生ストリームを保持する履歴入出力クラス
+
+	@date 2026-07-28 履歴をini本体にブロック形式で保存するモードを追加。書き込みはブロック形式のみ、読み込みは新旧両対応
+*/
+void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile, CDataProfile& cProfileHistory )
+{
+	if (cProfileHistory.IsReadingMode()) {
+		if (!ShareData_IO_Cmd_Block( cProfileHistory )) {
+			ShareData_IO_Cmd_Legacy( cProfile );
+		}
+	}
+	else {
+		ShareData_IO_Cmd_Block( cProfileHistory );
+	}
+}
+// ==== 20260728 履歴(Cmd)をini本体にブロック形式で保存する機能 ここまで ====
+#else
 /*!
 	@brief 共有データのCmdセクションの入出力
 	@param[in,out]	cProfile	INIファイル入出力クラス
@@ -957,6 +1742,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 	}
 #endif // NKMM_
 }
+#endif // NKMM_HISTORY_BLOCK_IN_INI (Cmd)
 
 /*!
 	@brief 共有データのNicknameセクションの入出力

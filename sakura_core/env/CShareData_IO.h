@@ -45,11 +45,20 @@ protected:
 	static bool ShareData_IO_2( bool );	/* 共有データの保存 */
 
 	// Feb. 12, 2006 D.S.Koba
+#if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
+	// 2026.07.28 履歴をini本体にブロック形式で保存するモード用。旧形式へのフォールバック読み込みに
+	// cProfileを、sakura.ini本体への生ストリームにcProfileHistoryを使う
+	static void ShareData_IO_Mru( CDataProfile& cProfile, CDataProfile& cProfileHistory );
+	static void ShareData_IO_Keys( CDataProfile& cProfile, CDataProfile& cProfileHistory );
+	static void ShareData_IO_Grep( CDataProfile& cProfile, CDataProfile& cProfileHistory );
+	static void ShareData_IO_Cmd( CDataProfile& cProfile, CDataProfile& cProfileHistory );
+#else
 	static void ShareData_IO_Mru( CDataProfile& );
 	static void ShareData_IO_Keys( CDataProfile& );
 	static void ShareData_IO_Grep( CDataProfile& );
-	static void ShareData_IO_Folders( CDataProfile& );
 	static void ShareData_IO_Cmd( CDataProfile& );
+#endif // NKMM_
+	static void ShareData_IO_Folders( CDataProfile& );
 	static void ShareData_IO_Nickname( CDataProfile& );
 	static void ShareData_IO_Common( CDataProfile& );
 	static void ShareData_IO_Toolbar( CDataProfile&, CMenuDrawer* );

@@ -316,6 +316,7 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_PROFILES
 	#define NKMM_SEPARATE_HISTORY                    (0)  // 履歴は別ファイルで扱う (sakura.recent) 20170502
+	#define NKMM_HISTORY_BLOCK_IN_INI                (1)  // NKMM_SEPARATE_HISTORYが0のとき、履歴(Mru/Keys/Grep/Cmd)をsakura.ini内にブロック形式(#XXX〜#end)で保存する。読み込みは新形式(ブロック)/旧形式(MRU[00].xxx=など)の両方に対応、書き込みは新形式のみ。iniファイル肥大化対策 20260728
 	#define NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP (1)  // 起動時に存在しないファイル・フォルダの履歴は削除する (ndef(NKMM_FIX_PROFILES)の時の処理がない) 20170410
 	#define NKMM_USE_KEYWORDSET_CSV                  (1)  // sakura.keywordset.csvを用意し、強調キーワードの管理はこのファイルで行う 20170513
 
@@ -440,7 +441,7 @@
 // (デスクトップではなくサクラエディタのウィンドウの位置の影響を受けます)
 //  - アウトライン解析
 //  - 外部コマンド実行
-//  - 検索
+//  - 検索（parent追従、no move）
 //  - 置換
 //  - Grep
 //  - Grep置換
