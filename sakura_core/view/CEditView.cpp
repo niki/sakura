@@ -3281,6 +3281,23 @@ void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo)
 {
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 
+	// 20260728 描画抑制中(SetDrawSwitch(false)中、ReplaceAll等のバルク編集)は
+	// 新規スレッドの起動+Sleep(10)はしない(これが編集1回につき最低10ms以上
+	// かかり、数百秒規模の性能劣化を起こしていた)。
+	// ただし、既に実行中のビルド/描画スレッドが残っている場合はここで確実に
+	// 停止させる(WaitForBuild/WaitForDraw)。これを省略すると、直前の操作
+	// (InsText等)で起動したバックグラウンドスレッドがドキュメントを読みながら、
+	// このあとに続く一括編集(ReplaceAll等)がメインスレッドでドキュメントを
+	// 書き換える、という競合状態になり、ドキュメント破損の原因になりうる。
+	// vLines_はクリアだけしておき、描画再開後の最初のClear()呼び出し
+	// (Command_REPLACE_ALL側で1回だけ明示的に呼んでいる)で正しく作り直す。
+	if (!pEditView_->GetDrawSwitch()) {
+		WaitForDraw(true);
+		WaitForBuild(true);
+		vLines_.clear();
+		return;
+	}
+
 	/* 垂直スクロールバー */
 	const CLayoutInt	nEofMargin = CLayoutInt(1); // EOFのマージン
 	const CLayoutInt	nAllLines = pEditView_->m_pcEditDoc->m_cLayoutMgr.GetLineCount() + nEofMargin;

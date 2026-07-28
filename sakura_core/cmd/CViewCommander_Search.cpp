@@ -32,6 +32,38 @@
 #include <limits.h>
 #include "sakura_rc.h"
 
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+namespace {
+	/*!	20260728 Command_REPLACE_ALL用のRAIIガード。
+
+		スクロールバーマーカーのバックグラウンド構築スレッド(SB_Marker_BuildThread)は、
+		m_bCurSrchKeyMarkが立っていると検索ハイライト判定(IsFoundLine→IsSearchString)で
+		m_CurRegexpを参照する。Command_REPLACE_ALLの正規表現置換もChangeCurRegexp/
+		cRegexp.Replace経由で同じm_CurRegexpを書き換えるため、両者が同時に走ると
+		不整合な状態を参照してクラッシュ・ハングする(実機で確認済み)。
+		コンストラクタで検索ハイライトを一時的に無効化して既存の構築スレッドを止め、
+		デストラクタで(returnの経路によらず)必ず元へ戻す。
+	*/
+	class CSuppressSrchKeyMarkForReplaceAll {
+	public:
+		explicit CSuppressSrchKeyMarkForReplaceAll(CEditView* pView)
+			: m_pView(pView), m_bOld(pView->m_bCurSrchKeyMark)
+		{
+			m_pView->m_bCurSrchKeyMark = false;
+			m_pView->SB_Marker_Clear(810);
+		}
+		~CSuppressSrchKeyMarkForReplaceAll()
+		{
+			m_pView->m_bCurSrchKeyMark = m_bOld;
+			m_pView->SB_Marker_Clear(811);
+		}
+	private:
+		CEditView*	m_pView;
+		bool		m_bOld;
+	};
+}
+#endif // NKMM_
+
 
 /*!
 検索(ボックス)コマンド実行.
@@ -800,11 +832,23 @@ void CViewCommander::Command_REPLACE( HWND hwndParent )
 */
 void CViewCommander::Command_REPLACE_ALL()
 {
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+	// 20260728 関数を抜けるとき(どのreturn経路でも)必ず検索ハイライトの
+	// 状態を復元する。詳細はCSuppressSrchKeyMarkForReplaceAllのコメント参照。
+	CSuppressSrchKeyMarkForReplaceAll _srchKeyMarkGuard(m_pCommanderView);
+#endif // NKMM_
 
 	// m_sSearchOption選択のための先に適用
 	if( !m_pCommanderView->ChangeCurRegexp() ){
 		return;
 	}
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+	// 20260728 ChangeCurRegexp()は内部で無条件にm_bCurSrchKeyMarkをtrueへ
+	// 戻してしまう(検索文字列のマーク設定)ため、_srchKeyMarkGuardによる
+	// 抑制はここで無効化されてしまう。置換ループに入る前に改めてfalseへ
+	// 戻す(関数を抜けるときはガードのデストラクタが元の状態へ復元する)。
+	m_pCommanderView->m_bCurSrchKeyMark = false;
+#endif // NKMM_
 
 	//2002.02.10 hor
 	BOOL nPaste			= GetEditWindow()->m_cDlgReplace.m_nPaste;
@@ -1580,6 +1624,9 @@ void CViewCommander::Command_REPLACE_ALL()
 	GetEditWindow()->m_cDlgReplace.m_bCanceled = (cDlgCancel.IsCanceled() != FALSE);
 	GetEditWindow()->m_cDlgReplace.m_nReplaceCnt=nReplaceNum;
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);
+	// 20260728 ここでSetDrawSwitchを戻した後、関数を抜けるときに
+	// _srchKeyMarkGuardのデストラクタが検索ハイライトの状態を復元し、
+	// スクロールバーマーカーを1回だけ正しく再構築する(置換後の状態を反映)。
 	ActivateFrameWindow( GetMainWindow() );
 }
 
