@@ -737,6 +737,10 @@
 //  - 詳細はchangelog/NKMM_FIX_FIND_DIALOG_FLAT.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_FIND_DIALOG_FLAT
+	// 1にすると角丸をやめてDWMの非クライアント描画自体を無効化し、影も消す。
+	// (DWMWA_WINDOW_CORNER_PREFERENCEとDWMWA_NCRENDERING_POLICYは同じNC描画
+	//  パイプラインのため、角丸と影は分離できず二者択一) 比較検証用 20260729
+	#define NKMM_FIND_DIALOG_NO_SHADOW (1)
 
 //------------------------------------------------------------------
 // mimalloc(MIT)によるoperator new/deleteの高速化 20260727

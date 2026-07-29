@@ -491,10 +491,17 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 	// クライアント領域の再生より先にDWMが拡張マージンをアクセントカラー(既定は青)で
 	// 合成してしまい、スライド前に青い領域が見えてしまうため廃止。
 	// 通常のトップレベルポップアップとして生成されるため、影はDWMの既定動作に任せる。
+#if defined(NKMM_FIND_DIALOG_NO_SHADOW) && NKMM_FIND_DIALOG_NO_SHADOW == 1
+	{
+		const int ncRenderingPolicy = DWMNCRP_DISABLED;
+		::DwmSetWindowAttribute( hwnd, DWMWA_NCRENDERING_POLICY, &ncRenderingPolicy, sizeof(ncRenderingPolicy) );
+	}
+#else
 	{
 		const int cornerPreference = DWMWCP_ROUND;
 		::DwmSetWindowAttribute( hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference) );
 	}
+#endif
 #endif // NKMM_
 
 	return bRet;
