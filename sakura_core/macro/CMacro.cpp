@@ -1898,7 +1898,13 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 			);
 			bool bRet;
 			TCHAR szPath[ _MAX_PATH ];
+#ifdef NKMM_FIX_MACRO_FILEDIALOG_OVERFLOW
+			size_t nCopyLen = t_min( sDefault.length(), (size_t)(_MAX_PATH - 1) );
+			auto_memcpy( szPath, sDefault.c_str(), nCopyLen );
+			szPath[nCopyLen] = _T('\0');
+#else
 			_tcscpy( szPath, sDefault.c_str() );
+#endif // NKMM_
 			if( LOWORD(ID) == F_FILEOPENDIALOG ){
 				bRet = cDlgOpenFile.DoModal_GetOpenFileName( szPath );
 			}else{

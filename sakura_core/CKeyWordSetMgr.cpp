@@ -491,6 +491,9 @@ int CKeyWordSetMgr::SetKeyWordArr(
 		while( *ptr != L'\t' && *ptr != L'\0' )
 			++ptr;
 		int kwlen = ptr - pTop;
+#ifdef NKMM_FIX_KEYWORD_OVERFLOW
+		kwlen = t_min( kwlen, MAX_KEYWORDLEN );
+#endif // NKMM_
 		wmemcpy( m_szKeyWordArr[i], pTop, kwlen );
 		m_szKeyWordArr[i][kwlen] = L'\0';
 		++ptr;
