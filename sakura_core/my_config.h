@@ -24,9 +24,10 @@
   \view\CEditView_Scroll.cpp:void CEditView::ScrollDraw() があやしい?
   ScrollWindowEx() で行われる更新をなんとかすればいい?
 
-- [ ] 20150804 タスクバーアイコンのちらつき
+- [x] 20150804@20260729 タスクバーアイコンのちらつき
   \window\CTabWnd.cpp:CTabWnd::ShowHideWindow()
   SendMessageTimeout() と TabWnd_ActivateFrameWindow() の関係
+  → NKMM_TABWND_SYNC_HIDE で対応。新ウィンドウ表示直後に旧ウィンドウを同期的に隠すよう修正
 
 - [ ] 20170303 テキスト描画, 文字の右端が欠ける, ExtTextOutのタイミング
   [patchunicode:#588]をあてて目立たなくはしている, 続けて描画されれば欠けない
@@ -36,7 +37,7 @@
 
 - [ ] 20170404 BkSpを押したときにタブ入力文字だけしかない場合は逆TABにする
 
-- [ ] 20170607 #RRGGBB を色付け
+- [-] 20170607 #RRGGBB を色付け
 
 - [ ] 20170611 空白タブ改行行番号の表示切替
 
@@ -64,7 +65,7 @@
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
 	#define PR_VER_VAL	2320
-	#define PR_LV		26072700
+	#define PR_LV		26072900
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -151,6 +152,7 @@
 	#define NKMM_TAB_CLOSE_BTN_DRAW (0)  //〆 タブを閉じるボタンをグラフィカルにする 20170423
 	#define NKMM_TABWND_DRAG_THRESHOLD (1)  // タブクリックがドラッグ移動としきい値なしで誤認識され、切替えただけでタブの並びが入れ替わる問題を修正 20260718
 	#define NKMM_BUGFIX_TAB_EDGE    (1)  // 間に選択タブがあると右側のエッヂがないバグを修正 (となりのタブが上書き描画していた) 20170429
+	#define NKMM_TABWND_SYNC_HIDE   (1)  // タブ切替時、旧ウィンドウを隠す処理がTWNT_ORDER通知の非同期往復待ちになっており、新旧ウィンドウが重なって見えるちらつきの原因だったため、ウィンドウ表示直後に同期的に隠すよう修正 20260729
 
 //------------------------------------------------------------------
 // エディット画面 スクロールバー

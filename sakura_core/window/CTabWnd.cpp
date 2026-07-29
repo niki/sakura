@@ -2331,6 +2331,12 @@ void CTabWnd::ShowHideWindow( HWND hwnd, BOOL bDisp )
 
 		TabWnd_ActivateFrameWindow( hwnd );
 
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_SYNC_HIDE == 1
+		// 旧ウィンドウを隠す処理が TWNT_ORDER 通知の往復を待って非同期に行われると、
+		// 新旧ウィンドウが重なって見えるちらつきが発生するため、ここで直ちに隠す。	20260729
+		HideOtherWindows( hwnd );
+#endif // NKMM_
+
 		m_pShareData->m_sFlags.m_bEditWndChanging = FALSE;	// 編集ウィンドウ切替中OFF	2007.04.03 ryoji
 	}
 	else
