@@ -38,6 +38,12 @@ const wchar_t* BRegexpVersion();
 //! "PCRE2 x.yy" 形式のライブラリバージョンだけを返す。
 const wchar_t* Pcre2LibraryVersion();
 
+//! バージョン情報ダイアログ表示用。sljit(PCRE2のJITバックエンドとして
+//! libs/deps/sljitにvendor)は正式なバージョン番号を持たないため、
+//! vendor時点のupstream(https://github.com/zherczeg/sljit)コミット
+//! ハッシュを代わりに返す。
+const wchar_t* SljitLibraryVersion();
+
 } // namespace RegexFallback
 
 #endif // NKMM_FIX_REGEXP_FALLBACK

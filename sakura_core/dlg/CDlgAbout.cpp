@@ -282,6 +282,8 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 #ifdef NKMM_FIX_REGEXP_FALLBACK
 	auto_sprintf( szMsg, _T("      %s (BSD-3-Clause)\r\n"), to_tchar(RegexFallback::Pcre2LibraryVersion()) );
 	cmemMsg.AppendString( szMsg );
+	auto_sprintf( szMsg, _T("      %s\r\n"), to_tchar(RegexFallback::SljitLibraryVersion()) );
+	cmemMsg.AppendString( szMsg );
 #endif
 #ifdef NKMM_FIX_QUICKJS_MACRO
 	auto_sprintf( szMsg, _T("      QuickJS %s (MIT)\r\n"), to_tchar(JS_GetVersion()) );
@@ -295,6 +297,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		);
 		cmemMsg.AppendString( szMsg );
 	}
+	cmemMsg.AppendString( _T("\r\n") );
 #endif
 	// WSH(JScript/VBScript)は実行環境のOSに登録されたCOMコンポーネントに
 	// 依存するため、バージョンは固定値ではなく実行時に取得する 20260726

@@ -454,6 +454,19 @@ const wchar_t* Pcre2LibraryVersion()
 	return s.c_str();
 }
 
+// sljit(https://github.com/zherczeg/sljit)にはバージョン番号が無いため、
+// libs/deps/sljitへvendorした時点のupstreamコミットハッシュ(短縮形)を
+// ここに記録する。sljit本体を更新した際はこの値も合わせて更新すること。
+// 20260729 vendor元のフルハッシュ: 45f910b78c6605ebf5b53d3ec7cb00f2312fe417
+//          (2025-09-26付, "Improve sljit_emit_op2_shift on x86 (#342)")
+#define SLJIT_VENDORED_COMMIT L"45f910b78c66"
+
+const wchar_t* SljitLibraryVersion()
+{
+	static const std::wstring s = std::wstring(L"sljit ") + SLJIT_VENDORED_COMMIT + L" (BSD-2-Clause)";
+	return s.c_str();
+}
+
 } // namespace RegexFallback
 
 #endif // NKMM_FIX_REGEXP_FALLBACK
