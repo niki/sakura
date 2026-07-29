@@ -27,6 +27,7 @@
 #include "util/os.h"
 #include "util/shell.h"
 #include "util/module.h"
+#include "env/CSakuraEnvironment.h"
 #ifdef NKMM_FIX_SETMAINFONT
 #include "util/window.h"
 #endif // NKMM_
@@ -110,7 +111,11 @@ INT_PTR CDialog::DoModal( HINSTANCE hInstance, HWND hwndParent, int nDlgTemplete
 	m_bInited = FALSE;
 	m_bModal = TRUE;
 	m_hInstance = hInstance;	/* アプリケーションインスタンスのハンドル */
+#ifdef NKMM_FIX_DIALOG_OWNER
+	m_hwndParent = ResolveDialogOwnerWindow( hwndParent );	/* オーナーウィンドウのハンドル */
+#else
 	m_hwndParent = hwndParent;	/* オーナーウィンドウのハンドル */
+#endif // NKMM_
 	m_lParam = lParam;
 	m_hLangRsrcInstance = CSelectLang::getLangRsrcInstance();		// メッセージリソースDLLのインスタンスハンドル
 	return ::DialogBoxParam(
@@ -134,7 +139,11 @@ HWND CDialog::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTemplete
 	m_bInited = FALSE;
 	m_bModal = FALSE;
 	m_hInstance = hInstance;	/* アプリケーションインスタンスのハンドル */
+#ifdef NKMM_FIX_DIALOG_OWNER
+	m_hwndParent = ResolveDialogOwnerWindow( hwndParent );	/* オーナーウィンドウのハンドル */
+#else
 	m_hwndParent = hwndParent;	/* オーナーウィンドウのハンドル */
+#endif // NKMM_
 	m_lParam = lParam;
 	m_hLangRsrcInstance = CSelectLang::getLangRsrcInstance();		// メッセージリソースDLLのインスタンスハンドル
 	m_hWnd = ::CreateDialogParam(
@@ -155,7 +164,11 @@ HWND CDialog::DoModeless( HINSTANCE hInstance, HWND hwndParent, LPCDLGTEMPLATE l
 	m_bInited = FALSE;
 	m_bModal = FALSE;
 	m_hInstance = hInstance;	/* アプリケーションインスタンスのハンドル */
+#ifdef NKMM_FIX_DIALOG_OWNER
+	m_hwndParent = ResolveDialogOwnerWindow( hwndParent );	/* オーナーウィンドウのハンドル */
+#else
 	m_hwndParent = hwndParent;	/* オーナーウィンドウのハンドル */
+#endif // NKMM_
 	m_lParam = lParam;
 	m_hWnd = ::CreateDialogIndirectParam(
 		m_hInstance,

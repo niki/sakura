@@ -45,6 +45,11 @@ private:
 /* 指定ウィンドウが、編集ウィンドウのフレームウィンドウかどうか調べる */
 BOOL IsSakuraMainWindow( HWND hWnd );
 
+#ifdef NKMM_FIX_DIALOG_OWNER
+/* ダイアログ・メッセージボックスのオーナーウィンドウを補正する */
+HWND ResolveDialogOwnerWindow( HWND hwndOwner );
+#endif // NKMM_
+
 
 #endif /* SAKURA_CSAKURAENVIRONMENT_95CFC65B_9C67_4ABF_A681_5A4652A3C5D3_H_ */
 /*[EOF]*/

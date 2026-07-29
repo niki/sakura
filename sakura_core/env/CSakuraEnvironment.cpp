@@ -822,4 +822,26 @@ BOOL IsSakuraMainWindow( HWND hWnd )
 	}
 }
 
+#ifdef NKMM_FIX_DIALOG_OWNER
+/*!	ダイアログ・メッセージボックスのオーナーウィンドウを補正する
+
+	タスクトレイの隠しウィンドウやNULLがオーナーとして渡された場合、
+	ダイアログが画面中央に表示されてしまう。フォアグラウンドウィンドウが
+	編集ウィンドウであればそちらをオーナーとして使うことで、アクティブな
+	編集ウィンドウの中央に表示されるようにする。
+
+	@date 2026.07.29 追加
+*/
+HWND ResolveDialogOwnerWindow( HWND hwndOwner )
+{
+	if( hwndOwner == NULL || !::IsWindowVisible( hwndOwner ) ){
+		HWND hwndForeground = ::GetForegroundWindow();
+		if( IsSakuraMainWindow( hwndForeground ) ){
+			return hwndForeground;
+		}
+	}
+	return hwndOwner;
+}
+#endif // NKMM_
+
 

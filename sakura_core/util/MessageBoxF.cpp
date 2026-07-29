@@ -36,6 +36,7 @@
 #include <tchar.h>
 #include "MessageBoxF.h"
 #include "window/CEditWnd.h"
+#include "env/CSakuraEnvironment.h"
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                 メッセージボックス：実装                    //
@@ -63,11 +64,13 @@ int Wrap_MessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, UINT uType)
 HWND GetMessageBoxOwner(HWND hwndOwner)
 {
 	if(hwndOwner==NULL && g_pcEditWnd){
-		return g_pcEditWnd->GetHwnd();
+		hwndOwner = g_pcEditWnd->GetHwnd();
 	}
-	else{
-		return hwndOwner;
-	}
+#ifdef NKMM_FIX_DIALOG_OWNER
+	return ResolveDialogOwnerWindow( hwndOwner );
+#else
+	return hwndOwner;
+#endif // NKMM_
 }
 
 /*!

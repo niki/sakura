@@ -740,6 +740,8 @@
 	// 1にすると角丸をやめてDWMの非クライアント描画自体を無効化し、影も消す。
 	// (DWMWA_WINDOW_CORNER_PREFERENCEとDWMWA_NCRENDERING_POLICYは同じNC描画
 	//  パイプラインのため、角丸と影は分離できず二者択一) 比較検証用 20260729
+	// 影の代わりにWS_BORDERで薄い縁取りを付ける(sakura_rc.rcのIDD_FIND STYLE)
+	// 詳細はchangelog/NKMM_FIND_DIALOG_NO_SHADOW.md参照
 	#define NKMM_FIND_DIALOG_NO_SHADOW (1)
 
 //------------------------------------------------------------------
@@ -759,6 +761,7 @@
 //    マクロ引数(ドキュメント内容から作られうる文字列)を無検査に
 //    _tcscpyでTCHAR szPath[_MAX_PATH]へコピーしていたため、
 //    _MAX_PATH文字を超える引数でスタックバッファオーバーフローする不具合を修正
+//  - 詳細はchangelog/NKMM_FIX_MACRO_FILEDIALOG_OVERFLOW.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_MACRO_FILEDIALOG_OVERFLOW
 
@@ -768,8 +771,22 @@
 //    キーワード文字列の長さをMAX_KEYWORDLEN(63文字)でクランプせずに
 //    wmemcpyしていたため、64文字以上のキーワードを含む設定ファイルの読み込みで
 //    共有メモリ(DLLSHAREDATA)上のm_szKeyWordArrがオーバーフローする不具合を修正
+//  - 詳細はchangelog/NKMM_FIX_KEYWORD_OVERFLOW.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_KEYWORD_OVERFLOW
+
+//------------------------------------------------------------------
+// ダイアログ・メッセージボックスの表示位置修正 20260729
+//  - タスクトレイメニュー等、編集ウィンドウを持たない場所から呼ばれた場合、
+//    ダイアログ/メッセージボックスのオーナーがNULLやタスクトレイの隠しウィンドウに
+//    なり、アクティブな編集ウィンドウではなく画面中央に表示されてしまっていた。
+//    (終了確認ダイアログ、Grepダイアログ等)
+//  - CDialog::DoModal/DoModeless、GetMessageBoxOwnerの共通経路で、
+//    フォアグラウンドウィンドウが編集ウィンドウであればそちらをオーナーにすることで、
+//    アクティブな編集ウィンドウの中央に表示されるようにした
+//  - 詳細はchangelog/NKMM_FIX_DIALOG_OWNER.md参照
+//------------------------------------------------------------------
+#define NKMM_FIX_DIALOG_OWNER
 
 //
 //#define USE_SSE2
