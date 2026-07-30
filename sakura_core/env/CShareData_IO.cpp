@@ -3014,8 +3014,22 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 		types.m_bUseTypeDisp = true;
 	}
 	cProfile.IOProfileData( pszSecName, LTEXT("bUseTypeDisp"), types.m_bUseTypeDisp );
-#endif // NKMM_
+	// CDocTypeManager::GetTypeConfigのマージ処理により、基本(Types(0))以外は
+	// 色の値(文字色・背景色)がbUseTypeDispの真偽に関わらず常に基本からコピーされ、
+	// このタイプ自身の色の値は実行時に一切参照されない。
+	// さらにbUseTypeDispがfalseの場合は表示/太字/下線も基本からコピーされるため、
+	// 色設定を丸ごと省略できる。bUseTypeDispがtrueの場合は表示/太字/下線だけ実値を
+	// 残し、色の値はダミーにしてini/エクスポートファイルを軽量化する。
+	bool bIsBasis = ( 0 == wcscmp( pszSecName, LTEXT("Types(0)") ) );
+	if( bIsBasis ){
+		IO_ColorSet( &cProfile, pszSecName, types.m_ColorInfoArr  );
+	}else if( types.m_bUseTypeDisp ){
+		IO_ColorSet( &cProfile, pszSecName, types.m_ColorInfoArr, false, true );
+	}
+	// bUseTypeDispがfalseの場合は書き込み/読み込みとも省略する
+#else
 	IO_ColorSet( &cProfile, pszSecName, types.m_ColorInfoArr  );
+#endif // NKMM_
 
 	// 2010.09.17 背景画像
 	cProfile.IOProfileData( pszSecName, L"bgImgPath", types.m_szBackImgPath );
@@ -3756,7 +3770,7 @@ void CShareData_IO::ShareData_IO_Other( CDataProfile& cProfile )
 	@param[in,out]	pColorInfoArr	書き出し、読み込み対象の色設定へのポインタ (入出力方向はbReadに依存)
 */
 #ifdef NKMM_FIX_PROFILES
-void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr, bool bColorOnly )
+void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr, bool bColorOnly, bool bOmitColorValue )
 #else
 void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr )
 #endif // NKMM_
@@ -3832,6 +3846,16 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 			if (fAttribute == (COLOR_ATTRIB_NO_TEXT | COLOR_ATTRIB_NO_BACK | COLOR_ATTRIB_NO_EFFECTS)) {
 				auto_sprintf( szKeyData, L"%d,", info->m_bDisp?1:0 );
 			}
+			else if (bOmitColorValue) {
+				// 基本(Types(0))以外は色の値が常に基本からコピーされ実行時に一切参照
+				// されない(CDocTypeManager::GetTypeConfigのマージ処理を参照)ため、
+				// 表示/太字/下線だけ実値を残し、色の値はダミー("_")にしてiniを軽量化する
+				auto_sprintf( szKeyData, L"%d,%d,_,_,%d",
+					info->m_bDisp?1:0,
+					info->m_sFontAttr.m_bBoldFont?1:0,
+					info->m_sFontAttr.m_bUnderLine?1:0
+				);
+			}
 			else {
 				auto fnColorToName = [pColorInfoArr, j](COLORREF c, int attr) -> std::tstring {
 					if (j == 0/* txt */) return si::ColorString::FromCOLORREF(c, true);
@@ -3840,7 +3864,7 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 					if (c == pColorInfoArr[0].m_sColorAttr.m_cBACK) return L"bg";
 					return si::ColorString::FromCOLORREF(c, true);
 				};
-				
+
 				auto_sprintf( szKeyData, L"%d,%d,%s,%s,%d",
 					info->m_bDisp?1:0,
 					info->m_sFontAttr.m_bBoldFont?1:0,

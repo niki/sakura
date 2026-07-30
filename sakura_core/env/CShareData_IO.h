@@ -88,7 +88,7 @@ public:
 	static void IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstring>* pData,
 		CommonSetting_MainMenu& mainmenu, bool bOutCmdName);
 #ifdef NKMM_FIX_PROFILES
-	static void IO_ColorSet( CDataProfile* , const WCHAR* , ColorInfo*, bool bColorOnly = false );	/* 色設定 I/O */ // Feb. 12, 2006 D.S.Koba
+	static void IO_ColorSet( CDataProfile* , const WCHAR* , ColorInfo*, bool bColorOnly = false, bool bOmitColorValue = false );	/* 色設定 I/O */ // Feb. 12, 2006 D.S.Koba
 #else
 	static void IO_ColorSet( CDataProfile* , const WCHAR* , ColorInfo* );	/* 色設定 I/O */ // Feb. 12, 2006 D.S.Koba
 #endif // NKMM_
