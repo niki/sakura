@@ -1,0 +1,12 @@
+/* CSS 数値リテラル サンプル (NKMM_FIX_NUMERIC_LANG_LITERAL) */
+.sample {
+    width: 100px;           /* 単位付き数値(px) ← 新規対応 */
+    height: 1.5em;          /* 単位付き数値(em) */
+    margin: -10px;          /* 負符号 + 単位 */
+    opacity: 0.5;            /* 単位なし小数 */
+    top: 50%;                 /* パーセント ← 新規対応 */
+    line-height: 1.5;         /* 単位なし */
+    transform: rotate(45deg); /* 単位付き数値(deg) */
+    transition: 0.3s ease;    /* 単位付き数値(s) */
+    z-index: 100;             /* 整数 */
+}
