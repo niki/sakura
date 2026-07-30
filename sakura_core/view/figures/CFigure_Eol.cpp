@@ -344,10 +344,32 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 	COLORREF col2 = crBack;	// 合成済みの色を使用する
 	crText = fnMeargeColor(col1, col2, nBlendPer);
 
+	// 改行コード種別に応じた描画記号を決定する
+	// "↵"(U+21B5 下向き矢印・角を左へ)はフォントによってグリフを持たず、
+	// 点などの代替表示になることがあったため、CRLFは同じ「下→左」の意味を持つ
+	// "↲"(U+21B2)を使う(こちらの方が対応フォントが多い)。それでもグリフが
+	// 無いフォントでは代替表示になるが、フォント側の限界として許容する。
+	const wchar_t* szEol;
+	switch( cEol.GetType() ){
+	case EOL_CRLF: szEol = L"↲"; break;	// 下左矢印
+	case EOL_CR:   szEol = L"←"; break;	// 左向き矢印
+	case EOL_LF:   szEol = L"↓"; break;	// 下向き矢印
+	case EOL_NEL:
+	case EOL_LS:
+	case EOL_PS:   szEol = L"↙"; break;	// 左下矢印(折れ曲がりなし)
+	default: return;
+	}
+
+	// 呼び出し元(DrawImp_StyleSelect)は空白記号全般用に常にfontNo=0(半角フォント)を
+	// Pushしているが、この矢印記号がそのフォントに無い場合、幅計算(CalcTextWidth3)は
+	// WCODE::GetFontNo()に従って全角フォント側の実測幅を使うことがある一方、
+	// 描画は半角フォントのままSystemLinkで代替フォントに差し替わって行われるため、
+	// 想定した幅とクリップ矩形が食い違い、記号が欠けて(あるいは点のように)見える
+	// ことがあった。幅計算・フォント選択・描画で同じ記号・同じfontNoを使うようにする。
+	int fontNo = WCODE::GetFontNo(szEol[0]);
 	RECT rcClip2;
-	int fontNo = WCODE::GetFontNo('E');
 	int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
-	CLayoutXInt width = CLayoutXInt(pcView->GetTextMetrics().CalcTextWidth3(L"↵", 1));
+	CLayoutXInt width = CLayoutXInt(pcView->GetTextMetrics().CalcTextWidth3(szEol, 1));
 	int nDx[1] = {(Int)width};
 
 	if (!pcView->GetTextArea().GenerateClipRect(&rcClip2, *pDispPos, width))
@@ -355,88 +377,27 @@ void _DispEOL(CGraphics& gr, DispPos* pDispPos, CEol cEol, const CEditView* pcVi
 
 	gr.PushTextForeColor(crText);
 
-	switch( cEol.GetType() ){
-	case EOL_CRLF: // 下左矢印
-		{
-			static const wchar_t	 szEol[] = L"↵";
+	SFONT sFont;
+	sFont.m_sFontAttr.m_bBoldFont = CTypeSupport(pcView, COLORIDX_EOL).IsBoldFont();
+	sFont.m_sFontAttr.m_bUnderLine = CTypeSupport(pcView, COLORIDX_EOL).HasUnderLine();
+	sFont.m_hFont = pcView->GetFontset().ChooseFontHandle(fontNo, sFont.m_sFontAttr);
+	gr.PushMyFont(sFont);
 
-			::ExtTextOutW_AnyBuild(
-				gr,
-				pDispPos->GetDrawPos().x,
+	::ExtTextOutW_AnyBuild(
+		gr,
+		pDispPos->GetDrawPos().x,
 #ifdef NKMM_LINE_MARGIN_TOP
-				pcView->GetLineMargin() +
+		pcView->GetLineMargin() +
 #endif // NKMM_
-				pDispPos->GetDrawPos().y + nHeightMargin,
-				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-				&rcClip2,
-				szEol,
-				wcslen(szEol),
-				nDx
-			);
-			break;
-		}
-	case EOL_CR:	 // 左向き矢印
-		{
-			static const wchar_t	szEol[] = L"←";
+		pDispPos->GetDrawPos().y + nHeightMargin,
+		ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+		&rcClip2,
+		szEol,
+		wcslen(szEol),
+		nDx
+	);
 
-			::ExtTextOutW_AnyBuild(
-				gr,
-				pDispPos->GetDrawPos().x,
-#ifdef NKMM_LINE_MARGIN_TOP
-				pcView->GetLineMargin() +
-#endif // NKMM_
-				pDispPos->GetDrawPos().y + nHeightMargin,
-				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-				&rcClip2,
-				szEol,
-				wcslen(szEol),
-				nDx
-			);
-			break;
-		}
-	case EOL_LF:	 // 下向き矢印
-		{
-			static const wchar_t	szEol[] = L"↓";
-
-			::ExtTextOutW_AnyBuild(
-				gr,
-				pDispPos->GetDrawPos().x,
-#ifdef NKMM_LINE_MARGIN_TOP
-				pcView->GetLineMargin() +
-#endif // NKMM_
-				pDispPos->GetDrawPos().y + nHeightMargin,
-				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-				&rcClip2,
-				szEol,
-				wcslen(szEol),
-				nDx
-			);
-			break;
-		}
-	case EOL_NEL:
-	case EOL_LS:
-	case EOL_PS:
-		{
-			// 左下矢印(折れ曲がりなし)
-			static const wchar_t	szEol[] = L"↙";
-
-			::ExtTextOutW_AnyBuild(
-				gr,
-				pDispPos->GetDrawPos().x,
-#ifdef NKMM_LINE_MARGIN_TOP
-				pcView->GetLineMargin() +
-#endif // NKMM_
-				pDispPos->GetDrawPos().y + nHeightMargin,
-				ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
-				&rcClip2,
-				szEol,
-				wcslen(szEol),
-				nDx
-			);
-			break;
-		}
-	}
-
+	gr.PopMyFont();
 	gr.PopTextForeColor();
 
 	pDispPos->ForwardDrawCol(width);
