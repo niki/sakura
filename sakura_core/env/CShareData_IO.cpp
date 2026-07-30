@@ -3234,8 +3234,6 @@ void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 				nMemLen ++;
 			}
 			nMemLen ++;
-			auto_sprintf( szKeyName, LTEXT("szKW[%02d].Size"), i );
-			cProfile.IOProfileData( pszSecName, szKeyName, nMemLen );
 			wchar_t* pszMem = new wchar_t[nMemLen + 1];	//	May 25, 2003 genta 区切りをTABに変更したので，最後の\0の分を追加
 			wchar_t* pMem = pszMem;
 			for( j = 0; j < pCKeyWordSetMgr->m_nKeyWordNumArr[i]; ++j ){
