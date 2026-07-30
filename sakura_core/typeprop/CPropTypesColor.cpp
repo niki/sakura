@@ -231,6 +231,7 @@ LRESULT APIENTRY ColorList_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LP
 
 			::InvalidateRect( hwnd, &rcItem, TRUE );
 		}else
+#ifndef NKMM_FIX_SHARED_TYPE_COLOR
 		/* 前景色見本 矩形 */
 		if( rcItem.right - 27 <= xPos && xPos <= rcItem.right - 27 + 12
 			&& ( 0 == (g_ColorAttributeArr[nIndex].fAttribute & COLOR_ATTRIB_NO_TEXT) ) )
@@ -256,6 +257,9 @@ LRESULT APIENTRY ColorList_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LP
 				::InvalidateRect( ::GetDlgItem( ::GetParent( hwnd ), IDC_BUTTON_BACKCOLOR ), NULL, TRUE );
 			}
 		}
+		// タイプ別設定では色(文字色/背景色)は編集不可(常に基本の値)のため、
+		// 色見本クリックでの色選択も無効化する
+#endif // NKMM_
 		break;
 	// 2005.11.30 Moca カスタム色保持
 	case WM_DESTROY:
@@ -381,13 +385,16 @@ INT_PTR CPropTypesColor::DispatchEvent(
 				return TRUE;
 
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
-			case IDC_CHECK_USETYPECOLOR:	/* タイプ別の色を使う */
-				m_Types.m_bUseTypeColor = ::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_USETYPECOLOR );
-				/* チェック状態に応じて編集対象の色配列を入れ替える(自分の色 or 基本の色) */
-				if( m_Types.m_bUseTypeColor ){
-					memcpy( m_Types.m_ColorInfoArr, m_ColorInfoArrOwn, sizeof(m_Types.m_ColorInfoArr) );
-				}else{
-					memcpy( m_Types.m_ColorInfoArr, m_pShareData->m_TypeBasis.m_ColorInfoArr, sizeof(m_Types.m_ColorInfoArr) );
+			case IDC_CHECK_USETYPECOLOR:	/* タイプ別の表示を使う */
+				m_Types.m_bUseTypeDisp = ::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_USETYPECOLOR );
+				/* 色(文字色/背景色)は常に基本の値。表示(m_bDisp)・太字・下線のみ
+				   チェック状態に応じて自分の値/基本の値を入れ替える */
+				memcpy( m_Types.m_ColorInfoArr, m_pShareData->m_TypeBasis.m_ColorInfoArr, sizeof(m_Types.m_ColorInfoArr) );
+				if( m_Types.m_bUseTypeDisp ){
+					for( int i = 0; i < COLORIDX_LAST; ++i ){
+						m_Types.m_ColorInfoArr[i].m_bDisp = m_ColorInfoArrOwn[i].m_bDisp;
+						m_Types.m_ColorInfoArr[i].m_sFontAttr = m_ColorInfoArrOwn[i].m_sFontAttr;
+					}
 				}
 				/* 色関連コントロールの有効/無効を再計算し、一覧と現在の色の表示を更新する */
 				EnableColorControls( hwndDlg, m_nCurrentColorType );
@@ -660,17 +667,17 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 	SetDataKeyword( hwndDlg ); // m_nSet
 
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
-	/* タイプ別の色を使う */
-	// 基本(m_nIdx==0)は全タイプで共有する色設定の対象外とし、常にタイプ別の色を使う
+	/* タイプ別の表示を使う */
+	// 基本(m_nIdx==0)は全タイプで共有される側なので対象外とし、常にタイプ別の表示を使う
 	// (通常通り変更できるようにする。チェックボックスも操作不可にする)
 	if( 0 == m_Types.m_nIdx ){
-		m_Types.m_bUseTypeColor = true;
+		m_Types.m_bUseTypeDisp = true;
 	}
-	CheckDlgButtonBool( hwndDlg, IDC_CHECK_USETYPECOLOR, m_Types.m_bUseTypeColor );
+	CheckDlgButtonBool( hwndDlg, IDC_CHECK_USETYPECOLOR, m_Types.m_bUseTypeDisp );
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_USETYPECOLOR ), 0 != m_Types.m_nIdx );
 
-	// このタイプ自身の色設定(基本の色とマージされていない生の値)を取得してキャッシュする。
-	// タイプ別の色を使う/使わないを切り替えたときに、自分の色/基本の色を
+	// このタイプ自身の設定(基本とマージされていない生の値)を取得してキャッシュする。
+	// タイプ別の表示を使う/使わないを切り替えたときに、自分の表示/基本の表示を
 	// 即座に入れ替えて表示・編集できるようにするため。
 	{
 		STypeConfig typeRaw;
@@ -678,11 +685,18 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 		m_nColorInfoArrNumOwn = typeRaw.m_nColorInfoArrNum;
 		memcpy( m_ColorInfoArrOwn, typeRaw.m_ColorInfoArr, sizeof(m_ColorInfoArrOwn) );
 	}
-	// チェック状態に応じて、編集対象の色配列を選択する(自分の色 or 基本の色)
-	if( m_Types.m_bUseTypeColor ){
+	// 色(文字色/背景色)はタイプ別設定の対象外(常に基本の値を表示するだけ)。
+	// 表示(m_bDisp)・太字・下線のみ、チェック状態に応じて自分の値/基本の値を選択する。
+	if( 0 == m_Types.m_nIdx ){
 		memcpy( m_Types.m_ColorInfoArr, m_ColorInfoArrOwn, sizeof(m_Types.m_ColorInfoArr) );
 	}else{
 		memcpy( m_Types.m_ColorInfoArr, m_pShareData->m_TypeBasis.m_ColorInfoArr, sizeof(m_Types.m_ColorInfoArr) );
+		if( m_Types.m_bUseTypeDisp ){
+			for( int i = 0; i < COLORIDX_LAST; ++i ){
+				m_Types.m_ColorInfoArr[i].m_bDisp = m_ColorInfoArrOwn[i].m_bDisp;
+				m_Types.m_ColorInfoArr[i].m_sFontAttr = m_ColorInfoArrOwn[i].m_sFontAttr;
+			}
+		}
 	}
 #endif // NKMM_
 
@@ -905,17 +919,28 @@ int CPropTypesColor::GetData( HWND hwndDlg )
 	// to here 2005.11.30 Moca 指定位置縦線の設定
 
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
-	// 基本(m_nIdx==0)は全タイプで共有する色設定の対象外(念のため確定させる)
+	// 基本(m_nIdx==0)は全タイプで共有される側なので対象外(念のため確定させる)
 	if( 0 == m_Types.m_nIdx ){
-		m_Types.m_bUseTypeColor = true;
+		m_Types.m_bUseTypeDisp = true;
 	}
-	if( !m_Types.m_bUseTypeColor ){
-		// タイプ別の色を使わない場合、色一覧は編集不可(無効化)のため画面上は基本の色を
-		// 表示していただけで、実際には編集されていない。m_Types はこのタイプ自身の
-		// 色設定として保存されるため、基本の色ではなく元のこのタイプ自身の色設定に
-		// 戻しておく(基本の色で上書き保存されてしまうのを防ぐ)。
+	if( 0 != m_Types.m_nIdx ){
+		// 色(文字色/背景色)はこのタイプでは編集させていない(基本の値を表示していただけ)ため、
+		// 元のこのタイプ自身の値に戻しておく(基本の値で上書き保存されてしまうのを防ぐ)。
+		// 表示(m_bDisp)・太字・下線は、タイプ別の表示を使う場合は画面上の編集結果を反映する。
+		bool bDispEdited[COLORIDX_LAST];
+		SFontAttr sFontAttrEdited[COLORIDX_LAST];
+		for( int i = 0; i < COLORIDX_LAST; ++i ){
+			bDispEdited[i] = m_Types.m_ColorInfoArr[i].m_bDisp;
+			sFontAttrEdited[i] = m_Types.m_ColorInfoArr[i].m_sFontAttr;
+		}
 		m_Types.m_nColorInfoArrNum = m_nColorInfoArrNumOwn;
 		memcpy( m_Types.m_ColorInfoArr, m_ColorInfoArrOwn, sizeof(m_Types.m_ColorInfoArr) );
+		if( m_Types.m_bUseTypeDisp ){
+			for( int i = 0; i < COLORIDX_LAST; ++i ){
+				m_Types.m_ColorInfoArr[i].m_bDisp = bDispEdited[i];
+				m_Types.m_ColorInfoArr[i].m_sFontAttr = sFontAttrEdited[i];
+			}
+		}
 	}
 #endif // NKMM_
 	return TRUE;
@@ -1019,35 +1044,45 @@ void CPropTypesColor::DrawColorButton( DRAWITEMSTRUCT* pDis, COLORREF cColor )
 	@param hwndDlg [in] ダイアログボックスのウィンドウハンドル
 	@param nIndex  [in] 色一覧で現在選択されている項目のインデックス
 
-	色一覧の選択変更時、および「タイプ別の色を使う」チェックボックスの
+	色一覧の選択変更時、および「タイプ別の表示を使う」チェックボックスの
 	状態変更時の両方から呼ばれる。
 */
 void CPropTypesColor::EnableColorControls( HWND hwndDlg, int nIndex )
 {
 	// 各種コントロールの有効／無効を切り替える	// 2006.12.18 ryoji フラグ利用で簡素化
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
-	// タイプ別の色を使わない設定のときは共通の色設定を編集することになるため、
-	// 個々の項目属性による制限に加えて全体を無効化する
-	BOOL bUseTypeColor = m_Types.m_bUseTypeColor ? TRUE : FALSE;
+	// タイプ別の表示を使わない設定のときは表示(disp)も含めて共通の設定を編集する
+	// ことになるため、個々の項目属性による制限に加えて全体を無効化する
+	BOOL bUseTypeDisp = m_Types.m_bUseTypeDisp ? TRUE : FALSE;
 #else
-	BOOL bUseTypeColor = TRUE;
+	BOOL bUseTypeDisp = TRUE;
 #endif // NKMM_
 	unsigned int fAttribute = g_ColorAttributeArr[nIndex].fAttribute;
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_DISP ),			bUseTypeColor && (0 == (fAttribute & COLOR_ATTRIB_FORCE_DISP))? TRUE: FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_BOLD ),			bUseTypeColor && (0 == (fAttribute & COLOR_ATTRIB_NO_BOLD))? TRUE: FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_UNDERLINE ),		bUseTypeColor && (0 == (fAttribute & COLOR_ATTRIB_NO_UNDERLINE))? TRUE: FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_MOZI ),			bUseTypeColor && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_TEXTCOLOR ),		bUseTypeColor && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMETEXTCOLOR ),	bUseTypeColor && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_HAIKEI ),			bUseTypeColor && (0 == (fAttribute & COLOR_ATTRIB_NO_BACK))? TRUE: FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_BACKCOLOR ),		bUseTypeColor && (0 == (fAttribute & COLOR_ATTRIB_NO_BACK))? TRUE: FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMEBKCOLOR ),	bUseTypeColor && (0 == (fAttribute & COLOR_ATTRIB_NO_BACK))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_DISP ),			bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_FORCE_DISP))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_BOLD ),			bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_BOLD))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_UNDERLINE ),		bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_UNDERLINE))? TRUE: FALSE );
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_LIST_COLORS ),			bUseTypeColor );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_IMPORT ),		bUseTypeColor );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_EXPORT ),		bUseTypeColor );
-	// タイプ別の色を使わないときは編集できないことを示すためスクロールバーも消す
-	::ShowScrollBar( ::GetDlgItem( hwndDlg, IDC_LIST_COLORS ), SB_VERT, bUseTypeColor );
+	// 色(文字色/背景色)はタイプ別設定の対象外(常に基本の値を表示するだけ)のため常に無効化する
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_MOZI ),			FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_TEXTCOLOR ),		FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMETEXTCOLOR ),	FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_HAIKEI ),			FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_BACKCOLOR ),		FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMEBKCOLOR ),	FALSE );
+#else
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_MOZI ),			bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_TEXTCOLOR ),		bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMETEXTCOLOR ),	bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_HAIKEI ),			bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_BACK))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_BACKCOLOR ),		bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_BACK))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMEBKCOLOR ),	bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_BACK))? TRUE: FALSE );
+#endif // NKMM_
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_LIST_COLORS ),			bUseTypeDisp );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_IMPORT ),		bUseTypeDisp );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_EXPORT ),		bUseTypeDisp );
+	// タイプ別の表示を使わないときは編集できないことを示すためスクロールバーも消す
+	::ShowScrollBar( ::GetDlgItem( hwndDlg, IDC_LIST_COLORS ), SB_VERT, bUseTypeDisp );
 #endif // NKMM_
 }
 

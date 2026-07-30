@@ -29,6 +29,7 @@
 #include "CDocTypeManager.h"
 #include "_main/CMutex.h"
 #include "CFileExt.h"
+#include "view/colors/EColorIndexType.h"	// COLORIDX_LAST
 #include <Shlwapi.h>	// PathMatchSpec
 
 const TCHAR* CDocTypeManager::m_typeExtSeps = _T(" ;,");	// タイプ別拡張子 区切り文字
@@ -113,13 +114,28 @@ bool CDocTypeManager::GetTypeConfig(CTypeConfig cDocumentType, STypeConfig& type
 				bGot = true;
 			}
 		}
-		if( bGot && bMergeSharedColor && 0 != n && !type.m_bUseTypeColor ){
-			// タイプ別の色を使わない設定の場合、基本(Types(0))の現在の色設定で上書きする
-			// (別に保持する「共通色」は持たず、常に基本の色をそのまま参照することで、
+		if( bGot && bMergeSharedColor && 0 != n ){
+			// 色(文字色・背景色)は常に基本(Types(0))の現在の設定をそのまま使う
+			// (別に保持する「共通色」は持たず、常に基本を参照することで、
 			//  基本の色を変更すれば追従先も即座に変わるようにする。基本自身(n==0)は対象外)
+			// 表示(m_bDisp)・太字・下線は、タイプ別の表示を使う設定の場合はこのタイプ自身の値を残す。
 			const STypeConfig& basis = m_pShareData->m_TypeBasis;
+			bool bDispOwn[COLORIDX_LAST];
+			SFontAttr sFontAttrOwn[COLORIDX_LAST];
+			if( type.m_bUseTypeDisp ){
+				for( int i = 0; i < COLORIDX_LAST; ++i ){
+					bDispOwn[i] = type.m_ColorInfoArr[i].m_bDisp;
+					sFontAttrOwn[i] = type.m_ColorInfoArr[i].m_sFontAttr;
+				}
+			}
 			type.m_nColorInfoArrNum = basis.m_nColorInfoArrNum;
 			memcpy( type.m_ColorInfoArr, basis.m_ColorInfoArr, sizeof(type.m_ColorInfoArr) );
+			if( type.m_bUseTypeDisp ){
+				for( int i = 0; i < COLORIDX_LAST; ++i ){
+					type.m_ColorInfoArr[i].m_bDisp = bDispOwn[i];
+					type.m_ColorInfoArr[i].m_sFontAttr = sFontAttrOwn[i];
+				}
+			}
 		}
 		return bGot;
 #else

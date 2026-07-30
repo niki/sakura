@@ -2724,8 +2724,8 @@ void CShareData_IO::ShareData_IO_Types( CDataProfile& cProfile )
 			type.m_nIdx = i;
 			if( i == 0 ){
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
-				// 基本は常にタイプ別の色を使う(共有する色設定の対象外)
-				type.m_bUseTypeColor = true;
+				// 基本は常にタイプ別の表示を使う(共有される側なので対象外)
+				type.m_bUseTypeDisp = true;
 #endif // NKMM_
 				pShare->m_TypeBasis = type;
 			}
@@ -3006,12 +3006,14 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 	/* 色設定 I/O */
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
 	// 新規追加のキーのため、旧バージョンのiniには存在しない。読み込み時は
-	// STypeConfigの未初期化(不定値)のままにしないよう、まず既定値(false=共通の色を使う)
-	// を明示的に設定してから読み込む(キーが無ければこの既定値のままになる)。
+	// STypeConfigの未初期化(不定値)のままにしないよう、まず既定値(true=タイプ別の
+	// 表示/太字/下線を使う。色は常に基本)を明示的に設定してから読み込む
+	// (キーが無ければこの既定値のままになり、旧バージョンからの移行時も
+	//  タイプごとの表示/太字/下線の見た目が変わらない)。
 	if( cProfile.IsReadingMode() ){
-		types.m_bUseTypeColor = false;
+		types.m_bUseTypeDisp = true;
 	}
-	cProfile.IOProfileData( pszSecName, LTEXT("bUseTypeColor"), types.m_bUseTypeColor );
+	cProfile.IOProfileData( pszSecName, LTEXT("bUseTypeDisp"), types.m_bUseTypeDisp );
 #endif // NKMM_
 	IO_ColorSet( &cProfile, pszSecName, types.m_ColorInfoArr  );
 

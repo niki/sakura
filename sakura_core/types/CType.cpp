@@ -375,7 +375,7 @@ void _DefaultConfig(STypeConfig* pType)
 
 
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
-	pType->m_bUseTypeColor = false;			//!< タイプ別の色の使用
+	pType->m_bUseTypeDisp = true;				//!< タイプ別の表示の使用(既定でタイプ別の表示/太字/下線を使う。色のみ常に基本)
 #endif // NKMM_
 	assert( COLORIDX_LAST <= _countof(pType->m_ColorInfoArr) );
 	for( int i = 0; i < COLORIDX_LAST; ++i ){

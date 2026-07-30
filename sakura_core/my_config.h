@@ -675,22 +675,26 @@
 
 //------------------------------------------------------------------
 // タイプ別設定の色情報を全タイプで共有・統一する 20260726
-//  - STypeConfig::m_bUseTypeColor(既定false)を追加。falseのときは
-//    タイプごとの色設定ではなく、常に「基本」(Types(0))の現在の色設定を
+//  - 色(文字色・背景色)は常に「基本」(Types(0))の現在の設定をそのまま使う。
+//    タイプごとに変えられるのは表示/非表示(m_bDisp)・太字・下線のみ
+//  - STypeConfig::m_bUseTypeDisp(既定true)を追加。trueのときはこのタイプ自身の
+//    表示/非表示・太字・下線を使う(移行時に既存タイプの見た目が変わらないよう
+//    既定でON)。falseにすると表示/非表示・太字・下線も含めて常に基本の設定を
 //    そのまま使う(タイプ別フォント(m_bUseTypeFont)と同じトグル方式)
 //  - 共通色専用の別ストレージは持たない。基本の色を変更すれば、共有中の
 //    他タイプにも即座に反映される(ini移行処理も不要で、常に一貫した状態になる)
-//  - 「基本」自身(Types(0))は本トグルの対象外。常に自分自身の色を使う
+//  - 「基本」自身(Types(0))は本トグルの対象外。常に自分自身の設定を使う
 //    (でなければ参照先を失う)
 //  - 色の解決はCDocTypeManager::GetTypeConfig()の1箇所でのみ行うため、
 //    描画・印刷・アウトライン・マクロなど色を参照する既存コードは無改造
-//  - 「タイプ別設定」→「色」ページにチェックボックスを追加。OFFのときは
-//    色設定コントロールをグレーアウトし、基本の色を表示する
-//  - sakura_core\types\CType.h,cpp: STypeConfig::m_bUseTypeColor
-//  - sakura_core\env\CShareData_IO.cpp: bUseTypeColorのI/O、基本のトグル強制
-//  - sakura_core\env\CDocTypeManager.cpp: GetTypeConfig()での基本色マージ
+//  - 「タイプ別設定」→「色」ページに「タイプ別の表示を使う」チェックボックスを
+//    追加。文字色/背景色のコントロールは常にグレーアウト(編集不可)し基本の
+//    値を表示する。表示/非表示・太字・下線のコントロールはOFFのとき無効化する
+//  - sakura_core\types\CType.h,cpp: STypeConfig::m_bUseTypeDisp
+//  - sakura_core\env\CShareData_IO.cpp: bUseTypeDispのI/O、基本のトグル強制
+//  - sakura_core\env\CDocTypeManager.cpp: GetTypeConfig()での基本色・表示マージ
 //  - sakura_core\typeprop\CPropTypes.h,CPropTypesColor.cpp: チェックボックス
-//  - sakura_core\sakura_rc.rc,h: IDC_CHECK_USETYPECOLOR
+//  - sakura_core\sakura_rc.rc,h: IDC_CHECK_USETYPECOLOR(「タイプ別の表示を使う」)
 //------------------------------------------------------------------
 #define NKMM_FIX_SHARED_TYPE_COLOR
 
