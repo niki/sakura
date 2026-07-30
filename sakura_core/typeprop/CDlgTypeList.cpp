@@ -177,6 +177,18 @@ BOOL CDlgTypeList::OnActivate( WPARAM wParam, LPARAM lParam )
 	return CDialog::OnActivate( wParam, lParam );
 }
 
+#ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
+BOOL CDlgTypeList::OnDrawItem( WPARAM wParam, LPARAM lParam )
+{
+	DRAWITEMSTRUCT* lpdis = (DRAWITEMSTRUCT*)lParam;
+	if( lpdis->CtlType == ODT_MENU ){
+		m_cMenuDrawer.DrawItem( lpdis );
+		return TRUE;
+	}
+	return CDialog::OnDrawItem( wParam, lParam );
+}
+#endif // NKMM_
+
 
 INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
@@ -193,16 +205,18 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 		// 任意のタイプ設定を追加する
 		if (((LPNMHDR)lParam)->code ==  BCN_DROPDOWN) {
 			HWND hwndBtn = GetDlgItem(GetHwnd(), IDC_BUTTON_ADD_TYPE);
-			CMenuDrawer cMenuDrawer;
-			cMenuDrawer.Create(G_AppInstance(), hwndBtn, NULL);
-			cMenuDrawer.ResetContents();
+			// オーナー描画メニューのWM_MEASUREITEM/WM_DRAWITEMはTrackPopupMenuの
+			// オーナーウィンドウ(=このダイアログ自身)に送られるため、m_cMenuDrawerも
+			// このダイアログのDispatchEventからアクセスできるメンバにする必要がある
+			m_cMenuDrawer.Create(G_AppInstance(), GetHwnd(), NULL);
+			m_cMenuDrawer.ResetContents();
 			HMENU hMenuPopUp = ::CreatePopupMenu();
 			std::vector<std::tstring> names;
 			CShareData::getInstance()->GetTypeNames(names);
 			int nIdx = 0;
 			for (auto v : names) {
 				int nFlag = MF_BYPOSITION | MF_STRING;
-				cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, nIdx + 1, v.c_str(), _T(""), FALSE);
+				m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, nIdx + 1, v.c_str(), _T(""), FALSE);
 				nIdx++;
 			}
 			RECT rc;
@@ -213,7 +227,7 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 				TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD | TPM_LEFTBUTTON,
 				po.x, po.y,
 				0,
-				hwndBtn,
+				GetHwnd(),
 				NULL
 			);
 			::DestroyMenu( hMenuPopUp );
@@ -224,6 +238,20 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 					break;
 				}
 				SetData(nNewTypeIndex);
+			}
+		}
+		break;
+	case WM_MEASUREITEM:
+		{
+			MEASUREITEMSTRUCT* lpmis = (MEASUREITEMSTRUCT*)lParam;
+			if( lpmis->CtlType == ODT_MENU ){
+				int nItemHeight = 0;
+				int nItemWidth = m_cMenuDrawer.MeasureItem( (int)lpmis->itemID, &nItemHeight );
+				if( 0 < nItemWidth ){
+					lpmis->itemWidth = nItemWidth;
+					lpmis->itemHeight = nItemHeight;
+				}
+				return TRUE;
 			}
 		}
 		break;

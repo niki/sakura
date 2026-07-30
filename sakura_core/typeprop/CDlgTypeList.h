@@ -18,6 +18,9 @@ class CDlgTypeList;
 #define _CDLGTYPELIST_H_
 
 #include "dlg/CDialog.h"
+#ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
+#include "uiparts/CMenuDrawer.h"
+#endif // NKMM_
 using std::wstring;
 
 /*-----------------------------------------------------------------------
@@ -44,6 +47,9 @@ protected:
 	BOOL OnLbnDblclk( int );
 	BOOL OnBnClicked( int );
 	BOOL OnActivate( WPARAM wParam, LPARAM lParam );
+#ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
+	BOOL OnDrawItem( WPARAM wParam, LPARAM lParam );
+#endif // NKMM_
 	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam );
 	void SetData();	/* ダイアログデータの設定 */
 	void SetData(int);	/* ダイアログデータの設定 */
@@ -66,6 +72,9 @@ private:
 	bool m_bExtDblClick[ MAX_TYPES ];		//ダブルクリック 未／済
 	bool m_bAlertFileAssociation;			//関連付け警告の表示フラグ
 	bool m_bEnableTempChange;				//一時適用の有効化
+#ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
+	CMenuDrawer m_cMenuDrawer;				//「追加」ドロップダウンのオーナー描画メニュー
+#endif // NKMM_
 };
 
 
