@@ -199,10 +199,7 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 #endif // NKMM_
 		EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_OUTLINERULEFILE ), _countof2( m_Types.m_szOutlineRuleFilename ) - 1 );	//	Oct. 5, 2002 genta 画面上でも入力制限
 
-		if( 0 == m_Types.m_nIdx ){
-			::EnableWindow( ::GetDlgItem( hwndDlg, IDC_EDIT_TYPENAME ), FALSE );	//設定の名前
-			::EnableWindow( ::GetDlgItem( hwndDlg, IDC_EDIT_TYPEEXTS ), FALSE );	//ファイル拡張子
-		}
+		// 名前/拡張子のEnable/DisableはSetData()側で毎回判定するように移動した
 		UpDown_SetRange(::GetDlgItem(hwndDlg, IDC_SPIN_LINESPACE), -LINESPACE_MAX, LINESPACE_MAX);
 
 		return TRUE;
@@ -453,6 +450,12 @@ void CPropTypesScreen::SetData( HWND hwndDlg )
 {
 	::DlgItem_SetText( hwndDlg, IDC_EDIT_TYPENAME, m_Types.m_szTypeName );	//設定の名前
 	::DlgItem_SetText( hwndDlg, IDC_EDIT_TYPEEXTS, m_Types.m_szTypeExts );	//ファイル拡張子
+	// 基本(m_nIdx==0)は名前/拡張子を変更できない。従来はWM_INITDIALOGでのみ判定
+	// していたため、タイプ別設定一覧にタブを埋め込んで同じページを使い回す
+	// (NKMM_FIX_TYPELIST_EMBED_ALLTABS)と、最初に表示したタイプの状態のまま
+	// 固定されてしまっていた。SetData()側で毎回判定するように修正する
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_EDIT_TYPENAME ), 0 != m_Types.m_nIdx );	//設定の名前
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_EDIT_TYPEEXTS ), 0 != m_Types.m_nIdx );	//ファイル拡張子
 
 	//レイアウト
 	{

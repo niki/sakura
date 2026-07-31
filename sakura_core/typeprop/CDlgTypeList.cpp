@@ -19,6 +19,9 @@
 #include "window/CEditWnd.h"
 #include "typeprop/CDlgTypeList.h"
 #include "typeprop/CImpExpManager.h"	// 2010/4/24 Uchi
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+#include "typeprop/CPropTypes.h"
+#endif // NKMM_
 #include "env/CShareData.h"
 #include "env/CDocTypeManager.h"
 #include "util/shell.h"
@@ -74,6 +77,19 @@ int CDlgTypeList::DoModal( HINSTANCE hInstance, HWND hwndParent, SResult* psResu
 	m_nSettingType = psResult->cDocumentType;
 	m_bAlertFileAssociation = true;
 	m_bEnableTempChange = psResult->bTempChange;
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	m_pcPropTypes = NULL;
+	m_hwndTab = NULL;
+	m_nActiveTab = 0;
+	for( int i = 0; i < 6; ++i ){
+		m_hwndPropPage[i] = NULL;
+	}
+	m_nEmbeddedColorTypeIdx = -1;
+	m_bColorPanelFinalized = false;
+	for( int i = 0; i < MAX_TYPES; ++i ){
+		m_pColorSnapshot[i] = NULL;
+	}
+#endif // NKMM_
 	nRet = (int)CDialog::DoModal( hInstance, hwndParent, IDD_TYPELIST, (LPARAM)NULL );
 	if( -1 == nRet ){
 		return FALSE;
@@ -93,6 +109,9 @@ BOOL CDlgTypeList::OnLbnDblclk( int wID )
 	case IDC_LIST_TYPES:
 		//	Nov. 29, 2000	genta
 		//	動作変更: 指定タイプの設定ダイアログ→一時的に別の設定を適用
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+		CommitEmbeddedColorPanel();
+#endif // NKMM_
 		::EndDialog(
 			GetHwnd(),
 			List_GetCurSel( GetDlgItem( GetHwnd(), IDC_LIST_TYPES ) )
@@ -114,6 +133,9 @@ BOOL CDlgTypeList::OnBnClicked( int wID )
 	//	Nov. 29, 2000	From Here	genta
 	//	適用する型の一時的変更
 	case IDC_BUTTON_TEMPCHANGE:
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+		CommitEmbeddedColorPanel();
+#endif // NKMM_
 		::EndDialog(
 			GetHwnd(),
  			List_GetCurSel( GetDlgItem( GetHwnd(), IDC_LIST_TYPES ) )
@@ -122,9 +144,40 @@ BOOL CDlgTypeList::OnBnClicked( int wID )
 		return TRUE;
 	//	Nov. 29, 2000	To Here
 	case IDOK:
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+		CommitEmbeddedColorPanel();
+#endif // NKMM_
 		::EndDialog( GetHwnd(), List_GetCurSel( GetDlgItem( GetHwnd(), IDC_LIST_TYPES ) ) );
 		return TRUE;
 	case IDCANCEL:
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+		{
+			bool bHasSnapshot = false;
+			for( int i = 0; i < MAX_TYPES; ++i ){
+				if( NULL != m_pColorSnapshot[i] ){
+					bHasSnapshot = true;
+					break;
+				}
+			}
+			if( bHasSnapshot ){
+				// 「キャンセルで閉じる」こと自体が目的であって、変更を捨てることが
+				// 目的ではないため、「破棄しますか」ではなく「保存しますか」で聞く
+				int nRet = ::MYMESSAGEBOX( GetHwnd(), MB_YESNOCANCEL | MB_ICONQUESTION, GSTR_APPNAME,
+					_T("色/フォント/拡張子などの設定に変更があります。保存しますか？") );
+				if( IDCANCEL == nRet ){
+					return TRUE;	// 閉じない
+				}
+				if( IDYES == nRet ){
+					// 保存する: 表示中タイプの未反映分もここで確定させる
+					CommitEmbeddedColorPanel();
+				}
+				else{
+					// 保存しない: 編集前の値に戻す
+					RestoreColorSnapshots();
+				}
+			}
+		}
+#endif // NKMM_
 		::EndDialog( GetHwnd(), -1 );
 		return TRUE;
 	case IDC_BUTTON_IMPORT:
@@ -189,6 +242,282 @@ BOOL CDlgTypeList::OnDrawItem( WPARAM wParam, LPARAM lParam )
 }
 #endif // NKMM_
 
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+BOOL CDlgTypeList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+{
+	BOOL bRet = CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	CreateEmbeddedColorPanel();
+	// 埋め込みパネル(タブ/各ページ)の生成過程でフォーカスが移動してしまうことが
+	// あるため、一覧のリストボックスへ明示的にフォーカスを戻す。
+	// 自分でSetFocusした場合はFALSEを返し、既定のフォーカス設定を抑止する
+	::SetFocus( GetDlgItem( hwndDlg, IDC_LIST_TYPES ) );
+	return FALSE;
+}
+
+BOOL CDlgTypeList::OnDestroy( void )
+{
+	// OK/一時適用/キャンセルのいずれかで既にCommit/Restoreされているはず。
+	// 想定外の終了経路(強制終了等)のフォールバックとして、未確定なら保存しておく
+	if( !m_bColorPanelFinalized ){
+		CommitEmbeddedColorPanel();
+	}
+	for( int i = 0; i < MAX_TYPES; ++i ){
+		if( NULL != m_pColorSnapshot[i] ){
+			delete m_pColorSnapshot[i];
+			m_pColorSnapshot[i] = NULL;
+		}
+	}
+	if( NULL != m_pcPropTypes ){
+		delete m_pcPropTypes;
+		m_pcPropTypes = NULL;
+	}
+	return CDialog::OnDestroy();
+}
+
+/*! タイプ別設定の全タブ(スクリーン/カラー/ウィンドウ/支援/正規表現キーワード/
+	キーワードヘルプ)をタブコントロールとして一覧の右側に埋め込み生成する。
+
+	各ページはCPropTypesと同一サイズの派生クラス群であることを利用し、
+	1つのCPropTypesインスタンスをページごとに該当サブクラスへ
+	reinterpret_castして使い回す(m_Typesも共有されるため、あるページでの
+	編集は他ページのCommit時にも反映される)。
+	リソースの座標を直接編集せずに済むよう、埋め込み位置は既存コントロール
+	(一覧・「設定変更(S)」ボタン)の実際の表示位置から実行時に計算する。
+*/
+void CDlgTypeList::CreateEmbeddedColorPanel()
+{
+	if( NULL != m_pcPropTypes ) return;
+
+	HWND hwndList   = GetDlgItem( GetHwnd(), IDC_LIST_TYPES );
+	HWND hwndRefBtn = GetDlgItem( GetHwnd(), IDOK );	// 「設定変更(S)」ボタン(右端の目安)
+	RECT rcList, rcBtn;
+	::GetWindowRect( hwndList, &rcList );
+	::GetWindowRect( hwndRefBtn, &rcBtn );
+	::MapWindowPoints( NULL, GetHwnd(), (LPPOINT)&rcList, 2 );
+	::MapWindowPoints( NULL, GetHwnd(), (LPPOINT)&rcBtn, 2 );
+
+	// 一覧側とタブ側の間にセパレータ(縦の区切り線)を入れるための余白(ダイアログ単位)
+	RECT rcSep = { 0, 0, 14, 0 };
+	::MapDialogRect( GetHwnd(), &rcSep );
+	const int nMargin = rcSep.right;
+	int x = rcBtn.right + nMargin;
+	int y = rcList.top;
+
+	// 各ページ(IDD_PROP_XXX)の元サイズ(302x244 ダイアログ単位)をピクセルに変換
+	RECT rcPage = { 0, 0, 302, 244 };
+	::MapDialogRect( GetHwnd(), &rcPage );
+	int cxPage = rcPage.right;
+	int cyPage = rcPage.bottom;
+
+	// タブ見出し分の余白(ダイアログ単位。十分大きめに確保しておく)
+	RECT rcMargin = { 0, 0, 8, 24 };
+	::MapDialogRect( GetHwnd(), &rcMargin );
+	int cxTab = cxPage + rcMargin.right;
+	int cyTab = cyPage + rcMargin.bottom;
+
+	// 一覧側とタブ側の間に縦の区切り線を入れる(高さはタブ側と一覧側の高い方に合わせる)
+	{
+		int cySep = t_max( cyTab, (int)(rcList.bottom - rcList.top) );
+		::CreateWindowEx( 0, _T("STATIC"), _T(""),
+			WS_CHILD | WS_VISIBLE | SS_ETCHEDVERT,
+			rcBtn.right + nMargin / 2 - 1, y, 2, cySep,
+			GetHwnd(), NULL, G_AppInstance(), NULL );
+	}
+
+	// タブコントロールを生成
+	m_hwndTab = ::CreateWindowEx( 0, WC_TABCONTROL, _T(""),
+		WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+		x, y, cxTab, cyTab,
+		GetHwnd(), NULL, G_AppInstance(), NULL );
+	// 実行時にCreateWindowExで作った子ウィンドウには、ダイアログ本体のフォントが
+	// 自動適用されないため、明示的に設定する(既定のシステムフォントのままだと
+	// タブ見出しの文字が大きく浮いて見える)
+	{
+		HFONT hDlgFont = (HFONT)::SendMessage( GetHwnd(), WM_GETFONT, 0, 0 );
+		if( NULL != hDlgFont ){
+			::SendMessage( m_hwndTab, WM_SETFONT, (WPARAM)hDlgFont, TRUE );
+		}
+	}
+
+	// タブ項目を追加(CPropTypes.cppのTypePropSheetInfoListと同じ順序)
+	// タブの行数(折り返し)がAdjustRectの結果に影響するため、必ず項目追加後に呼ぶこと
+	static const int s_nResId[6]     = { IDD_PROP_SCREEN, IDD_PROP_COLOR, IDD_PROP_WINDOW, IDD_PROP_SUPPORT, IDD_PROP_REGEX, IDD_PROP_KEYHELP };
+	static const int s_nTabNameId[6] = { STR_PROPTYPE_SCREEN, STR_PROPTYPE_COLOR, STR_PROPTYPE_WINDOW, STR_PROPTYPE_SUPPORT, STR_PROPTYPE_REGEX_KEYWORD, STR_PROPTYPE_KEYWORD_HELP };
+	for( int i = 0; i < 6; ++i ){
+		TCITEM item;
+		memset_raw( &item, 0, sizeof_raw(item) );
+		item.mask = TCIF_TEXT;
+		TCHAR szTab[64];
+		auto_strcpy( szTab, LS(s_nTabNameId[i]) );
+		item.pszText = szTab;
+		TabCtrl_InsertItem( m_hwndTab, i, &item );
+	}
+
+	// タブコントロールの実際の配置矩形から、コンテンツ表示領域(ページの置き場所)を求める
+	// (fLarger=FALSEは「ウィンドウ矩形→表示領域」という一般的なAdjustRectの使い方)
+	RECT rcDisplay = { x, y, x + cxTab, y + cyTab };
+	TabCtrl_AdjustRect( m_hwndTab, FALSE, &rcDisplay );
+	int xPage = rcDisplay.left;
+	int yPage = rcDisplay.top;
+	// タブ見出しの実際の高さは、指定した余白(24 DLU)と厳密には一致しないため、
+	// ページを元サイズ(cxPage x cyPage)固定で配置すると表示領域との差分が
+	// タブコントロール自身の背景色として隙間に見えてしまう。表示領域ぴったりの
+	// サイズに合わせて埋める
+	int cxPageActual = rcDisplay.right  - rcDisplay.left;
+	int cyPageActual = rcDisplay.bottom - rcDisplay.top;
+
+	m_pcPropTypes = new CPropTypes();
+	m_pcPropTypes->Create( G_AppInstance(), GetHwnd() );
+
+	int selIdx = List_GetCurSel( hwndList );
+	if( selIdx < 0 ) selIdx = 0;
+	CaptureColorSnapshot( selIdx );
+	STypeConfig type;
+	CDocTypeManager().GetTypeConfig( CTypeConfig(selIdx), type );
+	m_pcPropTypes->SetTypeData( type );
+
+	m_hwndPropPage[0] = ((CPropTypesScreen*) m_pcPropTypes)->CreateEmbeddedPage( GetHwnd(), xPage, yPage, cxPageActual, cyPageActual );
+	m_hwndPropPage[1] = ((CPropTypesColor*)  m_pcPropTypes)->CreateEmbeddedPage( GetHwnd(), xPage, yPage, cxPageActual, cyPageActual );
+	m_hwndPropPage[2] = ((CPropTypesWindow*) m_pcPropTypes)->CreateEmbeddedPage( GetHwnd(), xPage, yPage, cxPageActual, cyPageActual );
+	m_hwndPropPage[3] = ((CPropTypesSupport*)m_pcPropTypes)->CreateEmbeddedPage( GetHwnd(), xPage, yPage, cxPageActual, cyPageActual );
+	m_hwndPropPage[4] = ((CPropTypesRegex*)  m_pcPropTypes)->CreateEmbeddedPage( GetHwnd(), xPage, yPage, cxPageActual, cyPageActual );
+	m_hwndPropPage[5] = ((CPropTypesKeyHelp*)m_pcPropTypes)->CreateEmbeddedPage( GetHwnd(), xPage, yPage, cxPageActual, cyPageActual );
+
+	// 生成直後は全ページ非表示のはずだが、初回表示のタブとページのズレを防ぐため
+	// 念のため明示的に隠してから、アクティブにするページだけを最前面に表示する
+	for( int i = 0; i < 6; ++i ){
+		if( NULL != m_hwndPropPage[i] ){
+			::ShowWindow( m_hwndPropPage[i], SW_HIDE );
+		}
+	}
+	m_nActiveTab = 0;
+	TabCtrl_SetCurSel( m_hwndTab, 0 );
+	if( NULL != m_hwndPropPage[0] ){
+		::SetWindowPos( m_hwndPropPage[0], HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW );
+	}
+
+	m_nEmbeddedColorTypeIdx = selIdx;
+
+	// リソース上のダイアログサイズ(.rcで大きめに確保している)は実際に必要な
+	// サイズより余白が大きくなりがちなため、一覧側・タブ側それぞれの実際の
+	// 表示範囲に合わせてダイアログ全体を詰める
+	{
+		HWND hwndHelpBtn = GetDlgItem( GetHwnd(), IDC_BUTTON_HELP );
+		RECT rcHelp;
+		::GetWindowRect( hwndHelpBtn, &rcHelp );
+		::MapWindowPoints( NULL, GetHwnd(), (LPPOINT)&rcHelp, 2 );
+
+		RECT rcSmallMargin = { 0, 0, 7, 7 };
+		::MapDialogRect( GetHwnd(), &rcSmallMargin );
+
+		int cxClientNeeded = t_max( x + cxTab, (int)rcHelp.right )  + rcSmallMargin.right;
+		int cyClientNeeded = t_max( y + cyTab, (int)rcHelp.bottom ) + rcSmallMargin.bottom;
+
+		RECT rcWindowNow, rcClientNow;
+		::GetWindowRect( GetHwnd(), &rcWindowNow );
+		::GetClientRect( GetHwnd(), &rcClientNow );
+		int cxFrame = (rcWindowNow.right - rcWindowNow.left) - rcClientNow.right;
+		int cyFrame = (rcWindowNow.bottom - rcWindowNow.top) - rcClientNow.bottom;
+
+		::SetWindowPos( GetHwnd(), NULL, 0, 0,
+			cxClientNeeded + cxFrame, cyClientNeeded + cyFrame,
+			SWP_NOMOVE | SWP_NOZORDER );
+	}
+}
+
+/*! タブ切り替え。現在表示中のページを隠し、選択されたタブのページを表示する */
+void CDlgTypeList::OnTabSelChange()
+{
+	if( NULL == m_hwndTab ) return;
+	int nNewTab = TabCtrl_GetCurSel( m_hwndTab );
+	if( nNewTab == m_nActiveTab ) return;
+	if( 0 <= m_nActiveTab && m_nActiveTab < 6 && NULL != m_hwndPropPage[m_nActiveTab] ){
+		::ShowWindow( m_hwndPropPage[m_nActiveTab], SW_HIDE );
+	}
+	m_nActiveTab = nNewTab;
+	if( 0 <= m_nActiveTab && m_nActiveTab < 6 && NULL != m_hwndPropPage[m_nActiveTab] ){
+		::SetWindowPos( m_hwndPropPage[m_nActiveTab], HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW );
+	}
+}
+
+/*! パネルが現在表示しているタイプの内容を保存する(全ページ分をまとめて) */
+void CDlgTypeList::CommitEmbeddedColorPanel()
+{
+	if( NULL == m_pcPropTypes || m_nEmbeddedColorTypeIdx < 0 ) return;
+	STypeConfig type;
+	// m_Typesは全ページ共有の実体なので、順にGetDataを反映させてから最後に取得すればよい
+	if( NULL != m_hwndPropPage[0] ) ((CPropTypesScreen*) m_pcPropTypes)->CommitEmbeddedPage( type, m_hwndPropPage[0] );
+	if( NULL != m_hwndPropPage[1] ) ((CPropTypesColor*)  m_pcPropTypes)->CommitEmbeddedPage( type, m_hwndPropPage[1] );
+	if( NULL != m_hwndPropPage[2] ) ((CPropTypesWindow*) m_pcPropTypes)->CommitEmbeddedPage( type, m_hwndPropPage[2] );
+	if( NULL != m_hwndPropPage[3] ) ((CPropTypesSupport*)m_pcPropTypes)->CommitEmbeddedPage( type, m_hwndPropPage[3] );
+	if( NULL != m_hwndPropPage[4] ) ((CPropTypesRegex*)  m_pcPropTypes)->CommitEmbeddedPage( type, m_hwndPropPage[4] );
+	if( NULL != m_hwndPropPage[5] ) ((CPropTypesKeyHelp*)m_pcPropTypes)->CommitEmbeddedPage( type, m_hwndPropPage[5] );
+	CDocTypeManager().SetTypeConfig( CTypeConfig(m_nEmbeddedColorTypeIdx), type );
+	m_bColorPanelFinalized = true;
+}
+
+/*! 指定タイプの設定を全ページに表示する(保存はしない) */
+void CDlgTypeList::RefreshEmbeddedColorPanel( int nIdx )
+{
+	if( NULL == m_pcPropTypes ) return;
+	if( nIdx < 0 || GetDllShareData().m_nTypesCount <= nIdx ){
+		m_nEmbeddedColorTypeIdx = -1;
+		return;
+	}
+	CaptureColorSnapshot( nIdx );
+	STypeConfig type;
+	CDocTypeManager().GetTypeConfig( CTypeConfig(nIdx), type );
+	if( NULL != m_hwndPropPage[0] ) ((CPropTypesScreen*) m_pcPropTypes)->RefreshEmbeddedPage( type, m_hwndPropPage[0] );
+	if( NULL != m_hwndPropPage[1] ) ((CPropTypesColor*)  m_pcPropTypes)->RefreshEmbeddedPage( type, m_hwndPropPage[1] );
+	if( NULL != m_hwndPropPage[2] ) ((CPropTypesWindow*) m_pcPropTypes)->RefreshEmbeddedPage( type, m_hwndPropPage[2] );
+	if( NULL != m_hwndPropPage[3] ) ((CPropTypesSupport*)m_pcPropTypes)->RefreshEmbeddedPage( type, m_hwndPropPage[3] );
+	if( NULL != m_hwndPropPage[4] ) ((CPropTypesRegex*)  m_pcPropTypes)->RefreshEmbeddedPage( type, m_hwndPropPage[4] );
+	if( NULL != m_hwndPropPage[5] ) ((CPropTypesKeyHelp*)m_pcPropTypes)->RefreshEmbeddedPage( type, m_hwndPropPage[5] );
+	m_nEmbeddedColorTypeIdx = nIdx;
+}
+
+/*! 表示タイプを切り替える(現在の表示中タイプを保存してから切り替える) */
+void CDlgTypeList::SwitchEmbeddedColorPanel( int nNewIdx )
+{
+	if( NULL == m_pcPropTypes ) return;
+	if( m_nEmbeddedColorTypeIdx == nNewIdx ) return;
+	CommitEmbeddedColorPanel();
+	RefreshEmbeddedColorPanel( nNewIdx );
+}
+
+/*! 初回表示時、キャンセル用に編集前の値を保存しておく(2回目以降は何もしない) */
+void CDlgTypeList::CaptureColorSnapshot( int nIdx )
+{
+	if( nIdx < 0 || MAX_TYPES <= nIdx ) return;
+	if( NULL != m_pColorSnapshot[nIdx] ) return;	// 取得済み
+	m_pColorSnapshot[nIdx] = new STypeConfig();
+	CDocTypeManager().GetTypeConfig( CTypeConfig(nIdx), *m_pColorSnapshot[nIdx], false );
+}
+
+/*! キャンセル時、埋め込みパネルで表示/編集した全タイプを編集前の値に戻す */
+void CDlgTypeList::RestoreColorSnapshots()
+{
+	for( int i = 0; i < MAX_TYPES; ++i ){
+		if( NULL == m_pColorSnapshot[i] ) continue;
+		if( i < GetDllShareData().m_nTypesCount ){
+			CDocTypeManager().SetTypeConfig( CTypeConfig(i), *m_pColorSnapshot[i] );
+		}
+	}
+	m_bColorPanelFinalized = true;
+}
+
+/*! 並べ替え/削除等でインデックスの対応が崩れる前に、そのスナップショットを
+	復元対象から外す(その時点までの内容を確定させる) */
+void CDlgTypeList::DiscardColorSnapshot( int nIdx )
+{
+	if( nIdx < 0 || MAX_TYPES <= nIdx ) return;
+	if( NULL != m_pColorSnapshot[nIdx] ){
+		delete m_pColorSnapshot[nIdx];
+		m_pColorSnapshot[nIdx] = NULL;
+	}
+}
+#endif // NKMM_
+
 
 INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
@@ -240,6 +569,11 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 				SetData(nNewTypeIndex);
 			}
 		}
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+		else if( ((LPNMHDR)lParam)->code == TCN_SELCHANGE && ((LPNMHDR)lParam)->hwndFrom == m_hwndTab ){
+			OnTabSelChange();
+		}
+#endif // NKMM_
 		break;
 	case WM_MEASUREITEM:
 		{
@@ -267,6 +601,9 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 			switch( HIWORD(wParam) )
 			{
 			case LBN_SELCHANGE:
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+				SwitchEmbeddedColorPanel( nIdx );
+#endif // NKMM_
 				DlgItem_Enable( GetHwnd(), IDC_BUTTON_UP_TYPE, 1 < nIdx );
 				DlgItem_Enable( GetHwnd(), IDC_BUTTON_DOWN_TYPE, nIdx != 0 && nIdx < GetDllShareData().m_nTypesCount - 1 );
 				DlgItem_Enable( GetHwnd(), IDC_BUTTON_DEL_TYPE, nIdx != 0 );
@@ -580,6 +917,17 @@ bool CDlgTypeList::InitializeType( void )
 	if( -1 == iDocType ){
 		return false;
 	}
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 初期化対象が埋め込みパネルの表示中タイプと同じ場合、未保存分は破棄すべき
+	// (初期化結果を上書きしてしまうため)なのでコミットせず追跡を無効化するだけに
+	// する。別のタイプを表示中なら影響しないのでそのまま。
+	// また初期化は他の一覧操作と同様に即時・確定の操作として扱い、キャンセルしても
+	// 元に戻らないようにする(スナップショットを確定させる)
+	if( m_nEmbeddedColorTypeIdx == iDocType ){
+		m_nEmbeddedColorTypeIdx = -1;
+	}
+	DiscardColorSnapshot( iDocType );
+#endif // NKMM_
 //	_DefaultConfig(&types);		//規定値をコピー
 	std::unique_ptr<STypeConfig> type(new STypeConfig());
 	if( 0 != iDocType ){
@@ -628,6 +976,10 @@ bool CDlgTypeList::InitializeType( void )
 
 bool CDlgTypeList::CopyType()
 {
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// コピー元に埋め込みパネルの未保存分があれば、複製に含められるよう先に反映する
+	CommitEmbeddedColorPanel();
+#endif // NKMM_
 	int nNewTypeIndex = GetDllShareData().m_nTypesCount;
 	HWND hwndDlg = GetHwnd();
 	HWND hwndList = GetDlgItem( hwndDlg, IDC_LIST_TYPES );
@@ -692,6 +1044,16 @@ bool CDlgTypeList::UpType()
 		// 基本の場合には何もしない
 		return true;
 	}
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 並べ替えでインデックスの対応が変わるため、埋め込みパネルの未保存分を
+	// 先に反映してから追跡インデックスを無効化しておく(古いインデックスへの
+	// 誤コミットを防ぐ)。またこの2つのインデックスのスナップショットは
+	// 入れ替え後は意味を持たないため、確定させて復元対象から外す
+	CommitEmbeddedColorPanel();
+	m_nEmbeddedColorTypeIdx = -1;
+	DiscardColorSnapshot( iDocType );
+	DiscardColorSnapshot( iDocType - 1 );
+#endif // NKMM_
 	std::unique_ptr<STypeConfig> type1(new STypeConfig());
 	std::unique_ptr<STypeConfig> type2(new STypeConfig());
 	CDocTypeManager().GetTypeConfig(CTypeConfig(iDocType), *type1);
@@ -714,6 +1076,16 @@ bool CDlgTypeList::DownType()
 		// 基本、最後の場合には何もしない
 		return true;
 	}
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 並べ替えでインデックスの対応が変わるため、埋め込みパネルの未保存分を
+	// 先に反映してから追跡インデックスを無効化しておく(古いインデックスへの
+	// 誤コミットを防ぐ)。またこの2つのインデックスのスナップショットは
+	// 入れ替え後は意味を持たないため、確定させて復元対象から外す
+	CommitEmbeddedColorPanel();
+	m_nEmbeddedColorTypeIdx = -1;
+	DiscardColorSnapshot( iDocType );
+	DiscardColorSnapshot( iDocType + 1 );
+#endif // NKMM_
 	std::unique_ptr<STypeConfig> type1(new STypeConfig());
 	std::unique_ptr<STypeConfig> type2(new STypeConfig());
 	CDocTypeManager().GetTypeConfig(CTypeConfig(iDocType), *type1);
@@ -764,6 +1136,18 @@ bool CDlgTypeList::DelType()
 		return false;
 	}
 	iDocType = config.GetIndex();
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 削除するとインデックスの対応がずれるため、追跡インデックスを無効化しておく
+	// (削除対象自身の未保存分は破棄してよいのでコミットしない)
+	if( m_nEmbeddedColorTypeIdx != iDocType ){
+		CommitEmbeddedColorPanel();
+	}
+	m_nEmbeddedColorTypeIdx = -1;
+	// 削除位置以降は全てインデックスがずれるため、スナップショットを確定させる
+	for( int i = iDocType; i < MAX_TYPES; ++i ){
+		DiscardColorSnapshot( i );
+	}
+#endif // NKMM_
 	CDocTypeManager().DelTypeConfig(config);
 	if( GetDllShareData().m_nTypesCount <= iDocType ){
 		iDocType = GetDllShareData().m_nTypesCount - 1;

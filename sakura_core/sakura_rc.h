@@ -851,6 +851,9 @@
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
 #define IDC_CHECK_USETYPECOLOR          1728
 #endif // NKMM_
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+#define IDC_GROUP_COLORLIST             1729
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -859,7 +862,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        230
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1729
+#define _APS_NEXT_CONTROL_VALUE         1730
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

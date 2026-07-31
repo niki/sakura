@@ -759,6 +759,11 @@ enum e_PM_SETCARETPOS_SELECTSTATE {
 //! ウィンドウ一覧表示
 #define MYWM_DLGWINLIST (WM_APP+225)
 
+#ifdef NKMM_FIX_TRAY_TYPELIST_CURRENT_TYPE
+//! 現在の文書のタイプIndexを問い合わせる(トレイ→エディタ)
+#define MYWM_GET_CURRENT_DOCTYPE (WM_APP+226)
+#endif // NKMM_
+
 /* 再変換対応 */ // 20020331 aroka
 #ifndef WM_IME_REQUEST
 #define MYWM_IME_REQUEST 0x288  // ==WM_IME_REQUEST

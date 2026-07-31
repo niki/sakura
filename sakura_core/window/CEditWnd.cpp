@@ -1565,19 +1565,25 @@ LRESULT CEditWnd::DispatchEvent(
 					for (int nIdx = 0; nIdx < type_count; ++nIdx) {
 						const STypeConfigMini* type;
 						CDocTypeManager().GetTypeConfigMini(CTypeConfig(nIdx), &type);
+#ifdef NKMM_FIX_TYPE_MENU_EMPTY_SEPARATOR
 						if( type->m_szTypeName[0] == _T('\0') ){
 							// 名前が空のタイプ枠は「-- undefined name --」にせず区切り線にする
 							// 区切り線と認識されるのはnFuncId(=F_0)で判定されるため、MF_SEPARATORだけでなくF_0も必須
 							m_cMenuDrawer.MyAppendMenuSep(hMenuPopUp, MF_SEPARATOR, F_0, _T(""), FALSE);
 							continue;
 						}
+#endif // NKMM_
 						int nFlag = MF_BYPOSITION | MF_STRING;
 						if (::_tcscmp(type->m_szTypeName, GetActiveView().m_pTypeData->m_szTypeName) == 0) {
 							nFlag |= MF_CHECKED;
 						}
 						m_cMenuDrawer.MyAppendMenu(hMenuPopUp, nFlag, nIdx + 1, type->m_szTypeName, _T(""), FALSE);
 					}
+#ifdef NKMM_FIX_TYPE_MENU_EMPTY_SEPARATOR
 					m_cMenuDrawer.MyAppendMenuSep(hMenuPopUp, MF_SEPARATOR, F_0, _T(""), FALSE);
+#else
+					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_SEPARATOR, type_count + 1, _T(""), _T(""), FALSE);
+#endif // NKMM_
 					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_BYPOSITION | MF_STRING, type_count + 2, LS(F_OPTION_TYPE), _T(""), FALSE);
 					m_cMenuDrawer.MyAppendMenu(hMenuPopUp, MF_BYPOSITION | MF_STRING, type_count + 3, LS(F_TYPE_LIST), _T(""), FALSE);
 					//	mp->ptはステータスバー内部の座標なので，スクリーン座標への変換が必要
@@ -1912,6 +1918,11 @@ LRESULT CEditWnd::DispatchEvent(
 		/* 編集ファイル情報を格納 */
 		GetDocument()->GetEditInfo( pfi );
 		return 0L;
+#ifdef NKMM_FIX_TRAY_TYPELIST_CURRENT_TYPE
+	case MYWM_GET_CURRENT_DOCTYPE:
+		/* トレイから「タイプ別設定一覧」を開く際、現在の文書のタイプをデフォルト選択にするための問い合わせ */
+		return (LRESULT)GetDocument()->m_cDocType.GetDocumentType().GetIndex();
+#endif // NKMM_
 	case MYWM_CHANGESETTING:
 		/* 設定変更の通知 */
 		switch( (e_PM_CHANGESETTING_SELECT)lParam ){

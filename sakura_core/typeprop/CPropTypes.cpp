@@ -116,6 +116,52 @@ void CPropTypes::Create( HINSTANCE hInstApp, HWND hwndParent )
 	m_hwndParent = hwndParent;	/* オーナーウィンドウのハンドル */
 }
 
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+/*! タイプ別設定一覧に埋め込むためのページ生成の共通実装
+
+	本来PropertySheet()経由(トップレベルポップアップ)で使われるダイアログ
+	テンプレートを、直接CreateDialogParamで生成したうえでWS_CHILD化し、
+	hwndParentDlgの子ウィンドウとして埋め込む。
+	WM_INITDIALOGの解釈(PropTypesCommonProc)はPROPSHEETPAGE*経由でthis
+	ポインタを受け取る前提のため、ローカルのPROPSHEETPAGEでその形を模して
+	lParamに渡す(生成中の同期呼び出し内でのみ参照されるためスタック上でよい)。
+	生成直後は非表示にしておき、表示はタブ切り替え側で制御する。
+*/
+HWND CPropTypes::CreateEmbeddedPageGeneric( HWND hwndParentDlg, int x, int y, int cx, int cy, int nResId, DLGPROC pDlgProc )
+{
+	PROPSHEETPAGE psp;
+	memset_raw( &psp, 0, sizeof_raw(psp) );
+	psp.lParam = (LPARAM)this;
+
+	HWND hwndPage = ::CreateDialogParam(
+		CSelectLang::getLangRsrcInstance(),
+		MAKEINTRESOURCE( nResId ),
+		hwndParentDlg,
+		pDlgProc,
+		(LPARAM)&psp
+	);
+	if( NULL == hwndPage ){
+		return NULL;
+	}
+	m_hwndThis = hwndPage;
+
+	// テンプレートはWS_POPUP前提(プロパティシートページの通常仕様)のため、
+	// 子ウィンドウ化して埋め込む
+	LONG_PTR style = ::GetWindowLongPtr( hwndPage, GWL_STYLE );
+	style &= ~(WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME);
+	style |= WS_CHILD;
+	::SetWindowLongPtr( hwndPage, GWL_STYLE, style );
+	// WS_EX_CONTROLPARENTを付けないと、埋め込み先ダイアログのIsDialogMessage経由の
+	// Tabキー移動がこのページ内部のコントロールまで入り込めない
+	LONG_PTR exStyle = ::GetWindowLongPtr( hwndPage, GWL_EXSTYLE );
+	::SetWindowLongPtr( hwndPage, GWL_EXSTYLE, exStyle | WS_EX_CONTROLPARENT );
+	::SetParent( hwndPage, hwndParentDlg );
+	::SetWindowPos( hwndPage, NULL, x, y, cx, cy, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_HIDEWINDOW );
+
+	return hwndPage;
+}
+#endif // NKMM_
+
 struct TypePropSheetInfo {
 	int m_nTabNameId;										//!< TABの表示名
 	unsigned int resId;										//!< Property sheetに対応するDialog resource

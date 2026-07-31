@@ -26,6 +26,18 @@
 class CPropTypes;
 class CKeyWordSetMgr;
 
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+#include "sakura_rc.h" // IDD_PROP_XXX (各ページのCreateEmbeddedPage()がインラインで参照するため)
+// タイプ別設定一覧への埋め込み用。各ページのダイアログプロシージャの実体は
+// CPropTypes.cppのGEN_PROPTYPES_CALLBACKマクロで定義されている
+extern INT_PTR CALLBACK PropTypesScreen( HWND, UINT, WPARAM, LPARAM );
+extern INT_PTR CALLBACK PropTypesWindow( HWND, UINT, WPARAM, LPARAM );
+extern INT_PTR CALLBACK PropTypesColor( HWND, UINT, WPARAM, LPARAM );
+extern INT_PTR CALLBACK PropTypesSupport( HWND, UINT, WPARAM, LPARAM );
+extern INT_PTR CALLBACK PropTypesRegex( HWND, UINT, WPARAM, LPARAM );
+extern INT_PTR CALLBACK PropTypesKeyHelp( HWND, UINT, WPARAM, LPARAM );
+#endif // NKMM_
+
 /*-----------------------------------------------------------------------
 定数
 -----------------------------------------------------------------------*/
@@ -89,6 +101,13 @@ protected:
 	//イベント
 	void OnHelp( HWND , int );	//!< ヘルプ
 
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+protected:
+	//!< タイプ別設定一覧への埋め込み用の共通実装。各ページのCreateEmbeddedPage()から
+	//!< 自分の(IDD_PROP_XXX, PropTypesXXX)を渡して呼ぶ
+	HWND CreateEmbeddedPageGeneric( HWND hwndParentDlg, int x, int y, int cx, int cy, int nResId, DLGPROC pDlgProc );
+#endif // NKMM_
+
 protected:
 	//各種参照
 	HINSTANCE	m_hInstance;	//!< アプリケーションインスタンスのハンドル
@@ -151,6 +170,18 @@ class CPropTypesScreen : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
+	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
+		return CreateEmbeddedPageGeneric( hwndParentDlg, x, y, cx, cy, IDD_PROP_SCREEN, PropTypesScreen );
+	}
+	// hwndPageは各ページ生成時にCreateEmbeddedPage()の戻り値を呼び出し側で保持し、
+	// 明示的に渡すこと。m_hwndThisは全ページで共有される実体の1フィールドのため、
+	// 複数ページが同時に生きている状況では「直前に作成/操作したページ」を指して
+	// しまい信用できない
+	void RefreshEmbeddedPage( const STypeConfig& t, HWND hwndPage ){ SetTypeData(t); SetData(hwndPage); }
+	void CommitEmbeddedPage( STypeConfig& t, HWND hwndPage ){ GetData(hwndPage); GetTypeData(t); }
+#endif // NKMM_
 protected:
 	void SetData( HWND );											//!< ダイアログデータの設定
 	int  GetData( HWND );											//!< ダイアログデータの取得
@@ -170,6 +201,18 @@ class CPropTypesWindow : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
+	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
+		return CreateEmbeddedPageGeneric( hwndParentDlg, x, y, cx, cy, IDD_PROP_WINDOW, PropTypesWindow );
+	}
+	// hwndPageは各ページ生成時にCreateEmbeddedPage()の戻り値を呼び出し側で保持し、
+	// 明示的に渡すこと。m_hwndThisは全ページで共有される実体の1フィールドのため、
+	// 複数ページが同時に生きている状況では「直前に作成/操作したページ」を指して
+	// しまい信用できない
+	void RefreshEmbeddedPage( const STypeConfig& t, HWND hwndPage ){ SetTypeData(t); SetData(hwndPage); }
+	void CommitEmbeddedPage( STypeConfig& t, HWND hwndPage ){ GetData(hwndPage); GetTypeData(t); }
+#endif // NKMM_
 protected:
 	void SetData( HWND );											//!< ダイアログデータの設定
 	int  GetData( HWND );											//!< ダイアログデータの取得
@@ -188,6 +231,19 @@ class CPropTypesColor : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// タイプ別設定一覧に埋め込むための機能。埋め込み先(hwndParentDlg)の子ウィンドウ
+	// として生成し、一覧側でタイプの選択が変わるたびにRefreshEmbeddedPage/
+	// CommitEmbeddedPageで表示内容を切り替える。新規メンバ変数は追加禁止
+	// (CPropTypesは各ページのサブクラスとreinterpret_castで使い回されるため、
+	//  サイズが変わってはいけない。CPropTypes.h上部の注意書き参照)。
+	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy );	//!< 子ウィンドウとして埋め込み生成
+	// hwndPageは呼び出し側がCreateEmbeddedPage()の戻り値を保持し、明示的に渡すこと。
+	// m_hwndThisは(NKMM_FIX_TYPELIST_EMBED_ALLTABS時)全ページで共有される実体の
+	// 1フィールドのため、複数ページが同時に生きている状況では信用できない
+	void RefreshEmbeddedPage( const STypeConfig& t, HWND hwndPage );				//!< 表示するタイプを切り替える
+	void CommitEmbeddedPage( STypeConfig& t, HWND hwndPage );						//!< 表示中の内容を取得する
+#endif // NKMM_
 protected:
 	void SetData( HWND );											//!< ダイアログデータの設定
 	void SetDataKeyword( HWND );									//!< セット名コンボボックスの値セット
@@ -214,6 +270,18 @@ class CPropTypesSupport : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
+	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
+		return CreateEmbeddedPageGeneric( hwndParentDlg, x, y, cx, cy, IDD_PROP_SUPPORT, PropTypesSupport );
+	}
+	// hwndPageは各ページ生成時にCreateEmbeddedPage()の戻り値を呼び出し側で保持し、
+	// 明示的に渡すこと。m_hwndThisは全ページで共有される実体の1フィールドのため、
+	// 複数ページが同時に生きている状況では「直前に作成/操作したページ」を指して
+	// しまい信用できない
+	void RefreshEmbeddedPage( const STypeConfig& t, HWND hwndPage ){ SetTypeData(t); SetData(hwndPage); }
+	void CommitEmbeddedPage( STypeConfig& t, HWND hwndPage ){ GetData(hwndPage); GetTypeData(t); }
+#endif // NKMM_
 protected:
 	void SetData( HWND );											//!< ダイアログデータの設定
 	int  GetData( HWND );											//!< ダイアログデータの取得
@@ -229,6 +297,18 @@ class CPropTypesRegex : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
+	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
+		return CreateEmbeddedPageGeneric( hwndParentDlg, x, y, cx, cy, IDD_PROP_REGEX, PropTypesRegex );
+	}
+	// hwndPageは各ページ生成時にCreateEmbeddedPage()の戻り値を呼び出し側で保持し、
+	// 明示的に渡すこと。m_hwndThisは全ページで共有される実体の1フィールドのため、
+	// 複数ページが同時に生きている状況では「直前に作成/操作したページ」を指して
+	// しまい信用できない
+	void RefreshEmbeddedPage( const STypeConfig& t, HWND hwndPage ){ SetTypeData(t); SetData(hwndPage); }
+	void CommitEmbeddedPage( STypeConfig& t, HWND hwndPage ){ GetData(hwndPage); GetTypeData(t); }
+#endif // NKMM_
 protected:
 	void SetData( HWND );											//!< ダイアログデータの設定
 	void SetDataKeywordList( HWND );								//!< ダイアログデータの設定リスト部分
@@ -249,6 +329,18 @@ class CPropTypesKeyHelp : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
+	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
+		return CreateEmbeddedPageGeneric( hwndParentDlg, x, y, cx, cy, IDD_PROP_KEYHELP, PropTypesKeyHelp );
+	}
+	// hwndPageは各ページ生成時にCreateEmbeddedPage()の戻り値を呼び出し側で保持し、
+	// 明示的に渡すこと。m_hwndThisは全ページで共有される実体の1フィールドのため、
+	// 複数ページが同時に生きている状況では「直前に作成/操作したページ」を指して
+	// しまい信用できない
+	void RefreshEmbeddedPage( const STypeConfig& t, HWND hwndPage ){ SetTypeData(t); SetData(hwndPage); }
+	void CommitEmbeddedPage( STypeConfig& t, HWND hwndPage ){ GetData(hwndPage); GetTypeData(t); }
+#endif // NKMM_
 protected:
 	void SetData( HWND );											//!< ダイアログデータの設定
 	int  GetData( HWND );											//!< ダイアログデータの取得

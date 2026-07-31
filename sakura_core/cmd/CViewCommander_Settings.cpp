@@ -147,10 +147,15 @@ void CViewCommander::Command_TYPE_LIST( void )
 		if( sResult.bTempChange ){
 			HandleCommand( F_CHANGETYPE, true, (LPARAM)sResult.cDocumentType.GetIndex() + 1, 0, 0, 0 );
 		}
+#ifndef NKMM_FIX_TYPELIST_EMBED_ALLTABS
 		else{
 			/* タイプ別設定 */
+			// NKMM_FIX_TYPELIST_EMBED_ALLTABS導入後は、タイプ別設定一覧自体に
+			// 全設定タブが埋め込まれ「設定変更(S)」の時点で全て保存済みのため、
+			// 個別のプロパティシートを開き直す必要がなくなった
 			CEditApp::getInstance()->OpenPropertySheetTypes( -1, sResult.cDocumentType );
 		}
+#endif // NKMM_
 	}
 	return;
 }

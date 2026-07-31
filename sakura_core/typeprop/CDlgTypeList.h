@@ -21,6 +21,10 @@ class CDlgTypeList;
 #ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
 #include "uiparts/CMenuDrawer.h"
 #endif // NKMM_
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+class CPropTypes;
+struct STypeConfig;
+#endif // NKMM_
 using std::wstring;
 
 /*-----------------------------------------------------------------------
@@ -50,6 +54,10 @@ protected:
 #ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
 	BOOL OnDrawItem( WPARAM wParam, LPARAM lParam );
 #endif // NKMM_
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	BOOL OnInitDialog( HWND, WPARAM, LPARAM );
+	BOOL OnDestroy( void );
+#endif // NKMM_
 	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam );
 	void SetData();	/* ダイアログデータの設定 */
 	void SetData(int);	/* ダイアログデータの設定 */
@@ -64,6 +72,18 @@ protected:
 	bool DelType();
 	bool AlertFileAssociation();	// 2011/8/20 syat
 
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	void CreateEmbeddedColorPanel();				//!< 埋め込みパネル(群)の生成
+	void CommitEmbeddedColorPanel();				//!< 表示中タイプの設定パネルの内容を保存
+	void RefreshEmbeddedColorPanel( int nIdx );	//!< 指定タイプの設定をパネルに表示
+	void SwitchEmbeddedColorPanel( int nNewIdx );	//!< 表示タイプの切り替え(保存してから表示)
+	void CaptureColorSnapshot( int nIdx );			//!< 初回表示時、キャンセル用に編集前の値を保存
+	void RestoreColorSnapshots();					//!< キャンセル時、編集前の値に全て戻す
+	void DiscardColorSnapshot( int nIdx );			//!< 並べ替え/削除などでインデックスの対応が
+													//!< 崩れる場合に、そのスナップショットを確定させる(復元対象から外す)
+	void OnTabSelChange();							//!< タブ切り替え(表示するページの切り替え)
+#endif // NKMM_
+
 private:
 	CTypeConfig				m_nSettingType;
 	// 関連付け状態
@@ -74,6 +94,16 @@ private:
 	bool m_bEnableTempChange;				//一時適用の有効化
 #ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
 	CMenuDrawer m_cMenuDrawer;				//「追加」ドロップダウンのオーナー描画メニュー
+#endif // NKMM_
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	CPropTypes*	m_pcPropTypes;						//!< 全タブ共有の実体(各ページのCPropTypesXXXへ
+													//!< reinterpret_castして使い回す。NULL=未生成)
+	HWND		m_hwndTab;							//!< タブコントロール
+	HWND		m_hwndPropPage[6];					//!< 各タブページの埋め込みウィンドウ
+	int			m_nActiveTab;						//!< 現在表示中のタブIndex
+	int					m_nEmbeddedColorTypeIdx;	//!< パネルが現在表示しているタイプIndex(-1=無効)
+	STypeConfig*		m_pColorSnapshot[ MAX_TYPES ];	//!< キャンセル時に戻すための編集前の値(NULL=未取得)
+	bool				m_bColorPanelFinalized;		//!< Commit/Restoreのどちらかを実行済みか
 #endif // NKMM_
 };
 

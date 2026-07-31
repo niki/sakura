@@ -31,6 +31,7 @@
 #include "CControlTray.h"
 #include "CPropertyManager.h"
 #include "typeprop/CDlgTypeList.h"
+#include "env/CDocTypeManager.h"
 #include "debug/CRunningTimer.h"
 #include "dlg/CDlgOpenFile.h"
 #include "dlg/CDlgAbout.h"		//Nov. 21, 2000 JEPROtest
@@ -918,13 +919,49 @@ LRESULT CControlTray::DispatchEvent(
 						CDlgTypeList			cDlgTypeList;
 						CDlgTypeList::SResult	sResult;
 						sResult.cDocumentType = CTypeConfig(0);
+#ifdef NKMM_FIX_TRAY_TYPELIST_CURRENT_TYPE
+						// 現在アクティブな編集ウィンドウが分かれば、そのウィンドウで開いている
+						// 文書のタイプをデフォルト選択にする(トレイからの起動は特定の編集
+						// ウィンドウに紐付かないため、前面のウィンドウから逆引きする)
+						{
+							EditNode* pEditNodeArr;
+							int nRowNum = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pEditNodeArr, TRUE );
+							HWND hwndTarget = NULL;
+							if( 1 == nRowNum ){
+								// 編集ウィンドウが1つだけなら、前面判定に関わらずそれを使う
+								hwndTarget = pEditNodeArr[0].GetHwnd();
+							}else if( nRowNum > 1 ){
+								HWND hwndFore = ::GetAncestor( ::GetForegroundWindow(), GA_ROOT );
+								for( int i = 0; i < nRowNum; ++i ){
+									if( pEditNodeArr[i].GetHwnd() == hwndFore ){
+										hwndTarget = hwndFore;
+										break;
+									}
+								}
+							}
+							if( NULL != hwndTarget ){
+								LRESULT nDocTypeIdx = ::SendMessageAny( hwndTarget, MYWM_GET_CURRENT_DOCTYPE, 0, 0 );
+								CTypeConfig type = CTypeConfig( (int)nDocTypeIdx );
+								if( type.IsValidType() ){
+									sResult.cDocumentType = type;
+								}
+							}
+						}
+#endif // NKMM_
 						sResult.bTempChange = false;
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+						// NKMM_FIX_TYPELIST_EMBED_ALLTABS導入後は、タイプ別設定一覧自体に
+						// 全設定タブが埋め込まれ「設定変更(S)」の時点で全て保存済みのため、
+						// 個別のプロパティシートを開き直す必要がなくなった
+						cDlgTypeList.DoModal( G_AppInstance(), GetTrayHwnd(), &sResult );
+#else
 						if( cDlgTypeList.DoModal( G_AppInstance(), GetTrayHwnd(), &sResult ) ){
 							// タイプ別設定
 							CPluginManager::getInstance()->LoadAllPlugin();
 							m_pcPropertyManager->OpenPropertySheetTypes( NULL, -1, sResult.cDocumentType );
 							CPluginManager::getInstance()->UnloadAllPlugin();
 						}
+#endif // NKMM_
 					}
 					break;
 				case F_OPTION:	// 共通設定

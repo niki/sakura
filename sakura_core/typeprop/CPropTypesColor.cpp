@@ -609,6 +609,14 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 	int		i;
 	int		nItem;
 
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+	// 色の値は基本(m_nIdx==0)からのみ編集可能なため、それ以外を表示しているときは
+	// グループ見出しでその旨を示す(切り替えのたびに呼ばれるSetData()側で毎回
+	// 判定することで、タブ埋め込みでページを使い回しても正しく表示が更新される)
+	::DlgItem_SetText( hwndDlg, IDC_GROUP_COLORLIST,
+		( 0 == m_Types.m_nIdx ) ? LS( STR_PROPTYPE_COLOR_GROUP ) : LS( STR_PROPTYPE_COLOR_GROUP_OTHER ) );
+#endif // NKMM_
+
 	m_nCurrentColorType = 0;	/* 現在選択されている色タイプ */
 
 	/* ユーザーがエディット コントロールに入力できるテキストの長さを制限する */	//@@@ 2002.09.22 YAZAKI
@@ -1062,13 +1070,15 @@ void CPropTypesColor::EnableColorControls( HWND hwndDlg, int nIndex )
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_BOLD ),			bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_BOLD))? TRUE: FALSE );
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_UNDERLINE ),		bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_UNDERLINE))? TRUE: FALSE );
 #ifdef NKMM_FIX_SHARED_TYPE_COLOR
-	// 色(文字色/背景色)はタイプ別設定の対象外(常に基本の値を表示するだけ)のため常に無効化する
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_MOZI ),			FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_TEXTCOLOR ),		FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMETEXTCOLOR ),	FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_HAIKEI ),			FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_BACKCOLOR ),		FALSE );
-	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMEBKCOLOR ),	FALSE );
+	// 色(文字色/背景色)は基本(Types(0))からのみ編集可能。それ以外のタイプは
+	// 常に基本の値を表示するだけなので無効化する
+	BOOL bIsBasis = ( 0 == m_Types.m_nIdx ) ? TRUE : FALSE;
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_MOZI ),			bIsBasis && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_TEXTCOLOR ),		bIsBasis && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMETEXTCOLOR ),	bIsBasis && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_HAIKEI ),			bIsBasis && (0 == (fAttribute & COLOR_ATTRIB_NO_BACK))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_BACKCOLOR ),		bIsBasis && (0 == (fAttribute & COLOR_ATTRIB_NO_BACK))? TRUE: FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_SAMEBKCOLOR ),	bIsBasis && (0 == (fAttribute & COLOR_ATTRIB_NO_BACK))? TRUE: FALSE );
 #else
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_MOZI ),			bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_TEXTCOLOR ),		bUseTypeDisp && (0 == (fAttribute & COLOR_ATTRIB_NO_TEXT))? TRUE: FALSE );
@@ -1386,4 +1396,75 @@ BOOL CPropTypesColor::SelectColor( HWND hwndParent, COLORREF* pColor, DWORD* pCu
 	*pColor = cc.rgbResult;
 	return TRUE;
 }
+
+#ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
+// タイプ別設定一覧(CDlgTypeList)に埋め込むためのダイアログプロシージャ
+// (CPropTypes.cppのGEN_PROPTYPES_CALLBACKマクロで定義されている実体)
+extern INT_PTR CALLBACK PropTypesColor( HWND, UINT, WPARAM, LPARAM );
+
+/*! カラー設定ページを子ウィンドウとして埋め込み生成する
+
+	通常はPropertySheet()経由(トップレベルポップアップ)で使われるダイアログ
+	テンプレートを、直接CreateDialogParamで生成したうえでWS_CHILD化し、
+	hwndParentDlgの子ウィンドウとして埋め込む。
+	WM_INITDIALOGの解釈(CPropTypes.cppのPropTypesCommonProc)はPROPSHEETPAGE*
+	経由でthisポインタを受け取る前提のため、ローカルのPROPSHEETPAGEでその形を
+	模してlParamに渡す(生成中の同期呼び出し内でのみ参照されるためスタック上でよい)。
+*/
+HWND CPropTypesColor::CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy )
+{
+	// カスタム色を共有メモリから取得(DoPropertySheetと同様の初期化)
+	memcpy_raw( m_dwCustColors, m_pShareData->m_dwCustColors, sizeof(m_dwCustColors) );
+	m_dwCustColors[0] = m_Types.m_ColorInfoArr[COLORIDX_TEXT].m_sColorAttr.m_cTEXT;
+	m_dwCustColors[1] = m_Types.m_ColorInfoArr[COLORIDX_TEXT].m_sColorAttr.m_cBACK;
+
+	PROPSHEETPAGE psp;
+	memset_raw( &psp, 0, sizeof_raw(psp) );
+	psp.lParam = (LPARAM)this;
+
+	HWND hwndPage = ::CreateDialogParam(
+		CSelectLang::getLangRsrcInstance(),
+		MAKEINTRESOURCE( IDD_PROP_COLOR ),
+		hwndParentDlg,
+		PropTypesColor,
+		(LPARAM)&psp
+	);
+	if( NULL == hwndPage ){
+		return NULL;
+	}
+	m_hwndThis = hwndPage;
+
+	// テンプレートはWS_POPUP前提(プロパティシートページの通常仕様)のため、
+	// 子ウィンドウ化して埋め込む
+	LONG_PTR style = ::GetWindowLongPtr( hwndPage, GWL_STYLE );
+	style &= ~(WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME);
+	style |= WS_CHILD;
+	::SetWindowLongPtr( hwndPage, GWL_STYLE, style );
+	// WS_EX_CONTROLPARENTを付けないと、埋め込み先ダイアログのIsDialogMessage経由の
+	// Tabキー移動がこのページ内部のコントロールまで入り込めない
+	LONG_PTR exStyle = ::GetWindowLongPtr( hwndPage, GWL_EXSTYLE );
+	::SetWindowLongPtr( hwndPage, GWL_EXSTYLE, exStyle | WS_EX_CONTROLPARENT );
+	::SetParent( hwndPage, hwndParentDlg );
+	::SetWindowPos( hwndPage, NULL, x, y, cx, cy, SWP_NOZORDER | SWP_FRAMECHANGED );
+	::ShowWindow( hwndPage, SW_SHOW );
+
+	return hwndPage;
+}
+
+/*! 埋め込みページに表示するタイプを切り替える(現在の表示内容は破棄される) */
+void CPropTypesColor::RefreshEmbeddedPage( const STypeConfig& t, HWND hwndPage )
+{
+	if( NULL == hwndPage ) return;
+	SetTypeData( t );
+	SetData( hwndPage );
+}
+
+/*! 埋め込みページの表示中の内容を取得する */
+void CPropTypesColor::CommitEmbeddedPage( STypeConfig& t, HWND hwndPage )
+{
+	if( NULL == hwndPage ) return;
+	GetData( hwndPage );
+	GetTypeData( t );
+}
+#endif // NKMM_
 
