@@ -64,8 +64,11 @@ public:
 
 			c++;
 		}
-		/// xxx: トークンありき
-		/// warning C4715: 'si::text::SplitString::At': 値を返さないコントロール パスがあります。
+		/// xxx: トークンありき（index は常に有効な範囲で呼び出される前提）
+		/// warning C4715 対応	2026.07.31 yuu_zuki
+		/// 呼び出し側の契約違反時のフォールバックとして空文字列への参照を返す
+		static std::tstring empty;
+		return empty;
 	}
 	std::tstring operator[](int index) { return At(index); }
 
