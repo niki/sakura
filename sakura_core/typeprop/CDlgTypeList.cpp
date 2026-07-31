@@ -151,31 +151,19 @@ BOOL CDlgTypeList::OnBnClicked( int wID )
 		return TRUE;
 	case IDCANCEL:
 #ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
-		{
-			bool bHasSnapshot = false;
-			for( int i = 0; i < MAX_TYPES; ++i ){
-				if( NULL != m_pColorSnapshot[i] ){
-					bHasSnapshot = true;
-					break;
-				}
+		if( HasColorPanelChanges() ){
+			// 「キャンセルで閉じる」こと自体が目的であって、変更を捨てることが
+			// 目的ではないため、「破棄しますか」ではなく「保存しますか」で聞く
+			int nRet = ::MYMESSAGEBOX( GetHwnd(), MB_YESNOCANCEL | MB_ICONQUESTION, GSTR_APPNAME,
+				_T("色/フォント/拡張子などの設定に変更があります。保存しますか？") );
+			if( IDCANCEL == nRet ){
+				return TRUE;	// 閉じない
 			}
-			if( bHasSnapshot ){
-				// 「キャンセルで閉じる」こと自体が目的であって、変更を捨てることが
-				// 目的ではないため、「破棄しますか」ではなく「保存しますか」で聞く
-				int nRet = ::MYMESSAGEBOX( GetHwnd(), MB_YESNOCANCEL | MB_ICONQUESTION, GSTR_APPNAME,
-					_T("色/フォント/拡張子などの設定に変更があります。保存しますか？") );
-				if( IDCANCEL == nRet ){
-					return TRUE;	// 閉じない
-				}
-				if( IDYES == nRet ){
-					// 保存する: 表示中タイプの未反映分もここで確定させる
-					CommitEmbeddedColorPanel();
-				}
-				else{
-					// 保存しない: 編集前の値に戻す
-					RestoreColorSnapshots();
-				}
+			if( IDNO == nRet ){
+				// 保存しない: 編集前の値に戻す
+				RestoreColorSnapshots();
 			}
+			// IDYESの場合はHasColorPanelChanges()内で既に反映済み
 		}
 #endif // NKMM_
 		::EndDialog( GetHwnd(), -1 );
@@ -504,6 +492,44 @@ void CDlgTypeList::RestoreColorSnapshots()
 		}
 	}
 	m_bColorPanelFinalized = true;
+}
+
+/*! 編集前のスナップショットと比較し、実際に値が変化したタイプがあるかどうかを判定する。
+	表示中タイプの未反映分はここで確定させたうえで比較する(比較後は確定済みのままでよい:
+	変更なしならスナップショットと同じ値が再度書き込まれるだけ、変更ありなら呼び出し側が
+	RestoreColorSnapshots()で元に戻す)。
+
+	以下は編集の有無に関わらずコミットのたびに値が変わり得るため、比較対象から除外する:
+	- m_ColorInfoArr/m_nColorInfoArrNum: 基本設定に追従して常に上書きされる
+	  (CDocTypeManager::GetTypeConfigのマージ処理を参照)
+	- m_nRegexKeyMagicNumber: 正規表現キーワードタブのGetDataが、コミットの都度
+	  無条件に採番し直す更新用マジックナンバー(CPropTypesRegex::GetData参照)。
+	  設定内容そのものではないため比較材料にならない
+	- m_nImeState: 「起動時のIME」コンボの選択位置から再構成される値のため、
+	  テーブルに一致しない値(出荷時の基本設定など)を経由すると、編集していなくても
+	  正規化されて値が変わることがある(CPropTypesWindow::SetData/GetData参照) */
+bool CDlgTypeList::HasColorPanelChanges()
+{
+	CommitEmbeddedColorPanel();
+
+	for( int i = 0; i < MAX_TYPES; ++i ){
+		if( NULL == m_pColorSnapshot[i] ) continue;
+		STypeConfig cur;
+		if( !CDocTypeManager().GetTypeConfig( CTypeConfig(i), cur, false ) ) continue;
+		STypeConfig snap = *m_pColorSnapshot[i];
+		memset_raw( cur.m_ColorInfoArr, 0, sizeof_raw(cur.m_ColorInfoArr) );
+		memset_raw( snap.m_ColorInfoArr, 0, sizeof_raw(snap.m_ColorInfoArr) );
+		cur.m_nColorInfoArrNum = 0;
+		snap.m_nColorInfoArrNum = 0;
+		cur.m_nRegexKeyMagicNumber = 0;
+		snap.m_nRegexKeyMagicNumber = 0;
+		cur.m_nImeState = 0;
+		snap.m_nImeState = 0;
+		if( 0 != memcmp( &cur, &snap, sizeof(STypeConfig) ) ){
+			return true;
+		}
+	}
+	return false;
 }
 
 /*! 並べ替え/削除等でインデックスの対応が崩れる前に、そのスナップショットを

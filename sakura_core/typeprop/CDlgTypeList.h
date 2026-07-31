@@ -79,6 +79,7 @@ protected:
 	void SwitchEmbeddedColorPanel( int nNewIdx );	//!< 表示タイプの切り替え(保存してから表示)
 	void CaptureColorSnapshot( int nIdx );			//!< 初回表示時、キャンセル用に編集前の値を保存
 	void RestoreColorSnapshots();					//!< キャンセル時、編集前の値に全て戻す
+	bool HasColorPanelChanges();					//!< 編集前のスナップショットと比較し、実際に変更があったか判定
 	void DiscardColorSnapshot( int nIdx );			//!< 並べ替え/削除などでインデックスの対応が
 													//!< 崩れる場合に、そのスナップショットを確定させる(復元対象から外す)
 	void OnTabSelChange();							//!< タブ切り替え(表示するページの切り替え)
