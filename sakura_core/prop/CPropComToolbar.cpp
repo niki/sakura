@@ -22,6 +22,9 @@
 #include "uiparts/CImageListMgr.h" // 2005/8/9 aroka
 #include "util/shell.h"
 #include "util/window.h"
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+#include "env/CShareData.h"	// 20260731 「初期化」ボタンでの既定値復元用
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 #include "sakura_rc.h"
 #include "sakura.hh"
 
@@ -34,6 +37,9 @@ static const DWORD p_helpids[] = {	//11000
 	IDC_BUTTON_ADD,					HIDC_BUTTON_ADD_TOOLBAR,				//ツールバーへ機能追加
 	IDC_BUTTON_UP,					HIDC_BUTTON_UP_TOOLBAR,					//ツールバーの機能を上へ移動
 	IDC_BUTTON_DOWN,				HIDC_BUTTON_DOWN_TOOLBAR,				//ツールバーの機能を下へ移動
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+	IDC_BUTTON_INITIALIZE,			HIDC_BUTTON_INITIALIZE_TOOLBAR,			//ツールバーを初期状態に戻す 20260731
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 	IDC_CHECK_TOOLBARISFLAT,		HIDC_CHECK_TOOLBARISFLAT,				//フラットなボタン
 	IDC_COMBO_FUNCKIND,				HIDC_COMBO_FUNCKIND_TOOLBAR,			//機能の種別
 	IDC_LIST_FUNC,					HIDC_LIST_FUNC_TOOLBAR,					//機能一覧
@@ -394,6 +400,26 @@ INT_PTR CPropToolbar::DispatchEvent(
 					List_SetCurSel( hwndResList, nIndex1 );
 					//	To Here Apr. 13, 2002 genta
 					break;
+
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+				case IDC_BUTTON_INITIALIZE:	// 20260731 ツールバーのボタン構成を既定値に戻す
+					if( IDCANCEL == ::MYMESSAGEBOX( hwndDlg, MB_OKCANCEL | MB_ICONQUESTION, GSTR_APPNAME,
+						LS(STR_PROPCOMTOOL_INIT) ) ){
+						break;
+					}
+					CShareData::ResetToolBarButtonsToDefault( m_Common.m_sToolBar );
+
+					List_ResetContent( hwndResList );
+					for( i = 0; i < m_Common.m_sToolBar.m_nToolBarButtonNum; ++i ){
+						lResult = ::Listbox_ADDDATA( hwndResList, (LPARAM)m_Common.m_sToolBar.m_nToolBarButtonIdxArr[i] );
+						if( lResult == LB_ERR || lResult == LB_ERRSPACE ){
+							break;
+						}
+						lResult = List_SetItemHeight( hwndResList, lResult, nListItemHeight );
+					}
+					List_SetCurSel( hwndResList, 0 );
+					break;
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 				}
 
 				break;

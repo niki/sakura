@@ -35,6 +35,9 @@ static const DWORD p_helpids[] = {	//10700
 	IDC_BUTTON_EXPORT,				HIDC_BUTTON_EXPORT_KEYBIND,		//エクスポート
 	IDC_BUTTON_ASSIGN,				HIDC_BUTTON_ASSIGN,				//キー割り当て
 	IDC_BUTTON_RELEASE,				HIDC_BUTTON_RELEASE,			//キー解除
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+	IDC_BUTTON_INITIALIZE,			HIDC_BUTTON_INITIALIZE_KEYBIND,	//キー割り当てを初期状態に戻す 20260731
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 	IDC_CHECK_SHIFT,				HIDC_CHECK_SHIFT,				//Shiftキー
 	IDC_CHECK_CTRL,					HIDC_CHECK_CTRL,				//Ctrlキー
 	IDC_CHECK_ALT,					HIDC_CHECK_ALT,					//Altキー
@@ -243,6 +246,11 @@ INT_PTR CPropKeybind::DispatchEvent(
 				::SendMessageCmd( hwndDlg, WM_COMMAND, MAKELONG( IDC_LIST_KEY, LBN_SELCHANGE ), (LPARAM)hwndKeyList );
 				::SendMessageCmd( hwndDlg, WM_COMMAND, MAKELONG( IDC_LIST_FUNC, LBN_SELCHANGE ), (LPARAM)hwndFuncList );
 				return TRUE;
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+			case IDC_BUTTON_INITIALIZE:	/* 初期化 */	// 20260731
+				InitializeToDefault( hwndDlg );
+				return TRUE;
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 			}
 			break;	/* BN_CLICKED */
 		}
@@ -522,3 +530,23 @@ void CPropKeybind::Export( HWND hwndDlg )
 		return;
 	}
 }
+
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+/* Keybind:キー割り当てを既定値に戻す 20260731 */
+void CPropKeybind::InitializeToDefault( HWND hwndDlg )
+{
+	if( IDCANCEL == ::MYMESSAGEBOX( hwndDlg, MB_OKCANCEL | MB_ICONQUESTION, GSTR_APPNAME,
+		LS(STR_PROPCOMKEYBIND_INIT) ) ){
+		return;
+	}
+
+	CShareData::ResetKeyBindToDefault( m_Common.m_sKeyBind );
+
+	// ダイアログデータの設定 Keybind
+	// 2012.11.18 aroka キー一覧の更新は全アイテムを更新する。
+	ChangeKeyList( hwndDlg );
+	HWND	hwndCtrl;
+	hwndCtrl = ::GetDlgItem( hwndDlg, IDC_LIST_FUNC );
+	::SendMessageCmd( hwndDlg, WM_COMMAND, MAKELONG( IDC_LIST_FUNC, LBN_SELCHANGE ), (LPARAM)hwndCtrl );
+}
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET

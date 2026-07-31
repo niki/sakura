@@ -47,6 +47,18 @@ static void SetKeyNameArrVal(
 	const KEYDATAINIT*	pKeydata
 );
 
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+// 20260731 共通設定「キー割り当て」ページの「初期化」ボタン用。
+// SetKeyNameArrVal()はDLLSHAREDATA全体を要求するため、ダイアログの一時データ
+// (CommonSetting_KeyBind単体)にはそのまま使えない。ロジックはSetKeyNameArrVal()と
+// 同一で、書き込み先をCommonSetting_KeyBindへの参照に差し替えただけ。
+static void SetKeyNameArrValRef(
+	CommonSetting_KeyBind&	sKeyBind,
+	int						nIdx,
+	const KEYDATAINIT*		pKeydata
+);
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
+
 
 CKeyBind::CKeyBind()
 {
@@ -867,6 +879,50 @@ bool CShareData::InitKeyAssign(DLLSHAREDATA* pShareData)
 	return true;
 }
 
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+/*!	@brief キー割り当てを既定値に戻す
+
+	共通設定ダイアログ「キー割り当て」ページの「初期化」ボタン用。ロジックはInitKeyAssign()
+	と同一で、書き込み先をDLLSHAREDATA全体ではなくCommonSetting_KeyBind単体への参照に
+	差し替えただけ(ダイアログの一時データ領域を直接書き換えられるようにするため)。20260731
+*/
+bool CShareData::ResetKeyBindToDefault(CommonSetting_KeyBind& sKeyBind)
+{
+	const int	nKeyDataInitNum = _countof( KeyDataInit );
+	const int	KEYNAME_SIZE = _countof( sKeyBind.m_pKeyNameArr ) -1;// 最後の１要素はダミー用に予約 2012.11.25 aroka
+	assert( !(nKeyDataInitNum > KEYNAME_SIZE) );
+
+	static const KEYDATAINIT	dummy[] = {
+		{ 0,		_T(""),				{ F_0,				F_0,				F_0,					F_0,				F_0,					F_0,				F_0,					F_0 } }
+	};
+
+	// インデックス用ダミー作成
+	SetKeyNameArrValRef( sKeyBind, KEYNAME_SIZE, &dummy[0] );
+	// インデックス作成 重複した場合は先頭にあるものを優先
+	for( int ii = 0; ii< _countof(sKeyBind.m_VKeyToKeyNameArr); ii++ ){
+		sKeyBind.m_VKeyToKeyNameArr[ii] = KEYNAME_SIZE;
+	}
+	for( int i=nKeyDataInitNum-1; i>=0; i-- ){
+		sKeyBind.m_VKeyToKeyNameArr[KeyDataInit[i].m_nKeyCode] = (BYTE)i;
+	}
+
+	for( int i = 0; i < nKeyDataInitNum; ++i ){
+		SetKeyNameArrValRef( sKeyBind, i, &KeyDataInit[i] );
+	}
+	sKeyBind.m_nKeyNameArrNum = nKeyDataInitNum;
+
+	// リソース文字列ベースのキー名を解決する。起動シーケンスではRefreshKeyAssignString()で
+	// 改めて解決されるが、ダイアログの「初期化」ボタンから直接呼ばれたときのために
+	// ここで完結させておく
+	for( int i = 0; i < nKeyDataInitNum; ++i ){
+		if ( KeyDataInit[i].m_nKeyNameId <= 0xFFFF ) {
+			_tcscpy( sKeyBind.m_pKeyNameArr[i].m_szKeyName, LS( KeyDataInit[i].m_nKeyNameId ) );
+		}
+	}
+	return true;
+}
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
+
 /*!	@brief 言語選択後の文字列更新処理 */
 void CShareData::RefreshKeyAssignString(DLLSHAREDATA* pShareData)
 {
@@ -904,3 +960,22 @@ static void SetKeyNameArrVal(
 	assert( sizeof(pKeydata->m_nFuncCodeArr) == sizeof(pKeydataInit->m_nFuncCodeArr) );
 	memcpy_raw( pKeydata->m_nFuncCodeArr, pKeydataInit->m_nFuncCodeArr, sizeof(pKeydataInit->m_nFuncCodeArr) );
 }
+
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+/*! KEYDATA配列にデータをセット(CommonSetting_KeyBind単体版。SetKeyNameArrVal()参照) 20260731 */
+static void SetKeyNameArrValRef(
+	CommonSetting_KeyBind&	sKeyBind,
+	int						nIdx,
+	const KEYDATAINIT*		pKeydataInit
+)
+{
+	KEYDATA* pKeydata = &sKeyBind.m_pKeyNameArr[nIdx];
+
+	pKeydata->m_nKeyCode = pKeydataInit->m_nKeyCode;
+	if ( 0xFFFF < pKeydataInit->m_nKeyNameId ) {
+		_tcscpy( pKeydata->m_szKeyName, pKeydataInit->m_pszKeyName );
+	}
+	assert( sizeof(pKeydata->m_nFuncCodeArr) == sizeof(pKeydataInit->m_nFuncCodeArr) );
+	memcpy_raw( pKeydata->m_nFuncCodeArr, pKeydataInit->m_nFuncCodeArr, sizeof(pKeydataInit->m_nFuncCodeArr) );
+}
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET

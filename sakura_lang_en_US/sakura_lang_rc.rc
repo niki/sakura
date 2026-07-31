@@ -1703,6 +1703,9 @@ BEGIN
     PUSHBUTTON      "&Up",IDC_BUTTON_UP,129,105,33,14
     PUSHBUTTON      "&Down",IDC_BUTTON_DOWN,129,119,33,14
     PUSHBUTTON      "Ne&w Line",IDC_BUTTON_INSERTWRAP,129,151,33,14
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+    PUSHBUTTON      "I&nitialize",IDC_BUTTON_INITIALIZE,129,185,33,14
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 END
 
 IDD_PROP_TAB DIALOGEX 0, 0, 293, 240
@@ -2127,6 +2130,9 @@ BEGIN
                     196,120,8
     EDITTEXT        IDC_EDIT_KEYSFUNC,164,205,118,12,ES_AUTOHSCROLL | 
                     ES_READONLY | WS_GROUP | NOT WS_TABSTOP
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+    PUSHBUTTON      "I&nitialize",IDC_BUTTON_INITIALIZE,129,168,34,14
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
     PUSHBUTTON      "Assign(&B)",IDC_BUTTON_ASSIGN,129,190,34,14,WS_GROUP
     PUSHBUTTON      "&Release",IDC_BUTTON_RELEASE,129,204,34,14
 END
@@ -4408,6 +4414,7 @@ BEGIN
 
 	// CPropComGrep.cpp 
 	STR_PROPCOMGREP_DLL			"Regex are disabled"
+	STR_PROPCOMGREP_DLL_FALLBACK	"Using built-in PCRE2 (bregonig.dll not found)"
 	STR_TAGJUMP_0				"Don't search next file"
 	STR_TAGJUMP_1				"If hit, don't search next file"
 	STR_TAGJUMP_2				"If exact match, don't search next file"
@@ -4419,6 +4426,7 @@ BEGIN
 	// CPropComKeybind.cpp
 	// STR_KEYDATA_HEAD... 
 	STR_PROPCOMKEYBIND_UNASSIGN	"Unassigned"						// Is key assigned? (xxx or Unassigned)
+	STR_PROPCOMKEYBIND_INIT	"Are you sure you want to reset the key assignment settings to their defaults?"
 	
 	// CPropComKeyword.cpp
 	STR_PROPCOMKEYWORD_ERR_LEN	"Maximum Keyword length is %d bytes."
@@ -4529,6 +4537,7 @@ BEGIN
 	STR_PROPCOMTOOL_ITEM1		"---------------------"
 	STR_PROPCOMTOOL_ITEM2		"-- Tool Bar Break --"
 	STR_PROPCOMTOOL_ITEM3		"----- disabled -----"
+	STR_PROPCOMTOOL_INIT		"Are you sure you want to reset the toolbar settings to their defaults?"
 
 	// CPropComWin.cpp
 

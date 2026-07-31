@@ -866,6 +866,26 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_NUMERIC_LANG_LITERAL
 
+//------------------------------------------------------------------
+// 共通設定「キー割り当て」「ツールバー」ページに「初期化」ボタンを追加 20260731
+//  - どちらも既存の「メインメニュー」ページの「初期化」ボタンと同じ文言・確認
+//    メッセージの体裁("〇〇の設定を初期状態に戻します。\nよろしいですか？")
+//  - キー割り当て: 全キーの割り当てを出荷時の既定値に戻す(1キー単位で戻す
+//    既存の「解除」ボタンとは別機能)
+//  - ツールバー: ボタン構成一覧のみ既定値に戻す。「フラットなボタン」設定は
+//    ボタン構成とは独立した見た目の設定のため変更しない
+//  - 既存のCShareData::InitKeyAssign()/InitToolButtons()(DLLSHAREDATA全体を
+//    要求する起動時初期化専用)から、ダイアログの一時データ(CommonSetting_KeyBind/
+//    CommonSetting_ToolBar単体)にも使える形でCShareData::ResetKeyBindToDefault()/
+//    ResetToolBarButtonsToDefault()としてロジックを複製・分離
+//  - sakura_core\env\CShareData.h,cpp
+//  - sakura_core\func\CKeyBind.cpp
+//  - sakura_core\prop\CPropCommon.h
+//  - sakura_core\prop\CPropComKeybind.cpp, CPropComToolbar.cpp
+//  - sakura_core\sakura_rc.rc,h: IDC_BUTTON_INITIALIZE(既存ID再利用)
+//------------------------------------------------------------------
+#define NKMM_FIX_KEYBIND_TOOLBAR_RESET
+
 //
 //#define USE_SSE2
 

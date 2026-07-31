@@ -245,6 +245,9 @@ protected:
 
 private:
 	void ChangeKeyList( HWND ); /* キーリストをチェックボックスの状態に合わせて更新する*/
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+	void InitializeToDefault( HWND );	//!< キー割り当てを既定値に戻す 20260731
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 };
 
 //==============================================================

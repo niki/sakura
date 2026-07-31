@@ -1288,51 +1288,44 @@ bool CShareData::BeReloadWhenExecuteMacro( int idx )
 
 
 
-/*!	@brief 共有メモリ初期化/ツールバー
-
-	ツールバー関連の初期化処理
-
-	@author genta
-	@date 2005.01.30 genta CShareData::Init()から分離．
-		一つずつ設定しないで一気にデータ転送するように．
-*/
-void CShareData::InitToolButtons(DLLSHAREDATA* pShareData)
-{
-		/* ツールバーボタン構造体 */
+// 2010.06.26 Moca 内容は CMenuDrawer::FindToolbarNoFromCommandId の戻り値です
 //Sept. 16, 2000 JEPRO
 //	CShareData_new2.cppでできるだけ系ごとに集まるようにアイコンの順番を大幅に入れ替えたのに伴い以下の初期設定値を変更
-	// 2010.06.26 Moca 内容は CMenuDrawer::FindToolbarNoFromCommandId の戻り値です
-	static const int DEFAULT_TOOL_BUTTONS[] = {
-		1,	//新規作成
-		25,		//ファイルを開く(DropDown)
-		3,		//上書き保存		//Sept. 16, 2000 JEPRO 3→11に変更	//Oct. 25, 2000 11→3
-		4,		//名前を付けて保存	//Sept. 19, 2000 JEPRO 追加
-		0,
+// 20260731 InitToolButtons()と(NKMM_FIX_KEYBIND_TOOLBAR_RESET時は)ResetToolBarButtonsToDefault()の
+// 両方から参照するためファイルスコープへ移動
+static const int DEFAULT_TOOL_BUTTONS[] = {
+	1,	//新規作成
+	25,		//ファイルを開く(DropDown)
+	3,		//上書き保存		//Sept. 16, 2000 JEPRO 3→11に変更	//Oct. 25, 2000 11→3
+	4,		//名前を付けて保存	//Sept. 19, 2000 JEPRO 追加
+	0,
 
-		33,	//元に戻す(Undo)	//Sept. 16, 2000 JEPRO 7→19に変更	//Oct. 25, 2000 19→33
-		34,	//やり直し(Redo)	//Sept. 16, 2000 JEPRO 8→20に変更	//Oct. 25, 2000 20→34
-		0,
+	33,	//元に戻す(Undo)	//Sept. 16, 2000 JEPRO 7→19に変更	//Oct. 25, 2000 19→33
+	34,	//やり直し(Redo)	//Sept. 16, 2000 JEPRO 8→20に変更	//Oct. 25, 2000 20→34
+	0,
 
-		87,	//移動履歴: 前へ	//Dec. 24, 2000 JEPRO 追加
-		88,	//移動履歴: 次へ	//Dec. 24, 2000 JEPRO 追加
-		0,
+	87,	//移動履歴: 前へ	//Dec. 24, 2000 JEPRO 追加
+	88,	//移動履歴: 次へ	//Dec. 24, 2000 JEPRO 追加
+	0,
 
-		225,	//検索		//Sept. 16, 2000 JEPRO 9→22に変更	//Oct. 25, 2000 22→225
-		226,	//次を検索	//Sept. 16, 2000 JEPRO 16→23に変更	//Oct. 25, 2000 23→226
-		227,	//前を検索	//Sept. 16, 2000 JEPRO 17→24に変更	//Oct. 25, 2000 24→227
-		228,	//置換		// Oct. 7, 2000 JEPRO 追加
-		229,	//検索マークのクリア	//Sept. 16, 2000 JEPRO 41→25に変更(Oct. 7, 2000 25→26)	//Oct. 25, 2000 25→229
-		230,	//Grep		//Sept. 16, 2000 JEPRO 14→31に変更	//Oct. 25, 2000 31→230
-		232,	//アウトライン解析	//Dec. 24, 2000 JEPRO 追加
-		0,
+	225,	//検索		//Sept. 16, 2000 JEPRO 9→22に変更	//Oct. 25, 2000 22→225
+	226,	//次を検索	//Sept. 16, 2000 JEPRO 16→23に変更	//Oct. 25, 2000 23→226
+	227,	//前を検索	//Sept. 16, 2000 JEPRO 17→24に変更	//Oct. 25, 2000 24→227
+	228,	//置換		// Oct. 7, 2000 JEPRO 追加
+	229,	//検索マークのクリア	//Sept. 16, 2000 JEPRO 41→25に変更(Oct. 7, 2000 25→26)	//Oct. 25, 2000 25→229
+	230,	//Grep		//Sept. 16, 2000 JEPRO 14→31に変更	//Oct. 25, 2000 31→230
+	232,	//アウトライン解析	//Dec. 24, 2000 JEPRO 追加
+	0,
 
-		264,	//タイプ別設定一覧	//Sept. 16, 2000 JEPRO 追加
-		265,	//タイプ別設定		//Sept. 16, 2000 JEPRO 18→36に変更	//Oct. 25, 2000 36→265
-		266,	//共通設定			//Sept. 16, 2000 JEPRO 10→37に変更 説明を「設定プロパティシート」から変更	//Oct. 25, 2000 37→266
-		0,		//Oct. 8, 2000 jepro 次行のために追加
-		346,	//コマンド一覧	//Oct. 8, 2000 JEPRO 追加
-	};
+	264,	//タイプ別設定一覧	//Sept. 16, 2000 JEPRO 追加
+	265,	//タイプ別設定		//Sept. 16, 2000 JEPRO 18→36に変更	//Oct. 25, 2000 36→265
+	266,	//共通設定			//Sept. 16, 2000 JEPRO 10→37に変更 説明を「設定プロパティシート」から変更	//Oct. 25, 2000 37→266
+	0,		//Oct. 8, 2000 jepro 次行のために追加
+	346,	//コマンド一覧	//Oct. 8, 2000 JEPRO 追加
+};
 
+void CShareData::InitToolButtons(DLLSHAREDATA* pShareData)
+{
 	//	ツールバーアイコン数の最大値を超えないためのおまじない
 	//	最大値を超えて定義しようとするとここでコンパイルエラーになります．
 	char dummy[ _countof(DEFAULT_TOOL_BUTTONS) < MAX_TOOLBAR_BUTTON_ITEMS ? 1:0 ];
@@ -1349,6 +1342,30 @@ void CShareData::InitToolButtons(DLLSHAREDATA* pShareData)
 	pShareData->m_Common.m_sToolBar.m_bToolBarIsFlat = !IsVisualStyle();			/* フラットツールバーにする／しない */	// 2006.06.23 ryoji ビジュアルスタイルでは初期値をノーマルにする
 
 }
+
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+/*!	@brief ツールバーのボタン構成を既定値に戻す
+
+	共通設定ダイアログ「ツールバー」ページの「初期化」ボタン用。ロジックはInitToolButtons()
+	と同一で、書き込み先をDLLSHAREDATA全体ではなくCommonSetting_ToolBar単体への参照に
+	差し替えただけ。フラットボタン設定(m_bToolBarIsFlat)はボタン構成とは独立した見た目の
+	設定のため、ここでは変更しない。20260731
+*/
+void CShareData::ResetToolBarButtonsToDefault(CommonSetting_ToolBar& sToolBar)
+{
+	char dummy[ _countof(DEFAULT_TOOL_BUTTONS) < MAX_TOOLBAR_BUTTON_ITEMS ? 1:0 ];
+	dummy[0]=0;
+
+	memcpy_raw(
+		sToolBar.m_nToolBarButtonIdxArr,
+		DEFAULT_TOOL_BUTTONS,
+		sizeof(DEFAULT_TOOL_BUTTONS)
+	);
+
+	/* ツールバーボタンの数 */
+	sToolBar.m_nToolBarButtonNum = _countof(DEFAULT_TOOL_BUTTONS);
+}
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 
 
 /*!	@brief 共有メモリ初期化/ポップアップメニュー

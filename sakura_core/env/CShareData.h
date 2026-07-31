@@ -41,6 +41,10 @@ class CShareData;
 struct DLLSHAREDATA;
 struct STypeConfig;
 class CMutex;
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+struct CommonSetting_KeyBind;
+struct CommonSetting_ToolBar;
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 
 /*!	@brief 共有データの管理
 
@@ -94,6 +98,14 @@ public:
 	void ConvertLangValues(std::vector<std::wstring>& values, bool bSetValues);
 
 	static CMutex& GetMutexShareWork();
+
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+	// 共通設定ダイアログの「初期化」ボタンから呼ぶ、既定値への復元処理 20260731
+	// InitKeyAssign/InitToolButtonsとロジックを共有しつつ、DLLSHAREDATA全体ではなく
+	// 対象の設定構造体だけを差し替えられるようpublicに分離した。
+	static bool ResetKeyBindToDefault(CommonSetting_KeyBind&);		//!< キー割り当てを既定値に戻す
+	static void ResetToolBarButtonsToDefault(CommonSetting_ToolBar&);	//!< ツールバーのボタン構成を既定値に戻す（フラットボタン設定は変更しない）
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 
 	void InitKeyword(DLLSHAREDATA*, bool);
 #if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV

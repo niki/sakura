@@ -234,13 +234,26 @@ int CPropGrep::GetData( HWND hwndDlg )
 void CPropGrep::SetRegexpVersion( HWND hwndDlg )
 {
 	TCHAR regexp_dll[_MAX_PATH];
-	
+
 	::DlgItem_GetText( hwndDlg, IDC_EDIT_REGEXPLIB, regexp_dll, _countof( regexp_dll ));
 	CBregexp breg;
+#ifdef NKMM_FIX_REGEXP_FALLBACK
+	// 20260720 DLLが見つからない場合はPCRE2ベースのフォールバックへ切り替わり、
+	// このケースを「使用できません」とは表示しないようにする
+	if( DLL_SUCCESS != breg.InitDllWithFallback( regexp_dll ) ){
+		::DlgItem_SetText( hwndDlg, IDC_LABEL_REGEXP_VER, LS(STR_PROPCOMGREP_DLL) );
+		return;
+	}
+	if( breg.IsFallback() ){
+		::DlgItem_SetText( hwndDlg, IDC_LABEL_REGEXP_VER, LS(STR_PROPCOMGREP_DLL_FALLBACK) );
+		return;
+	}
+#else
 	if( DLL_SUCCESS != breg.InitDll( regexp_dll ) ){
 		::DlgItem_SetText( hwndDlg, IDC_LABEL_REGEXP_VER, LS(STR_PROPCOMGREP_DLL) );
 		return;
 	}
+#endif
 	::DlgItem_SetText( hwndDlg, IDC_LABEL_REGEXP_VER, breg.GetVersionT() );
 }
 

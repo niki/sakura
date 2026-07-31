@@ -1723,6 +1723,9 @@ BEGIN
     PUSHBUTTON      "↑(&U)",IDC_BUTTON_UP,129,105,33,14
     PUSHBUTTON      "↓(&O)",IDC_BUTTON_DOWN,129,119,33,14
     PUSHBUTTON      "折返(&W)",IDC_BUTTON_INSERTWRAP,129,151,33,14
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+    PUSHBUTTON      "初期化(&N)",IDC_BUTTON_INITIALIZE,129,185,33,14
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 END
 
 IDD_PROP_TAB DIALOGEX 0, 0, 293, 240
@@ -2161,6 +2164,9 @@ BEGIN
                     196,120,8
     EDITTEXT        IDC_EDIT_KEYSFUNC,164,205,118,12,ES_AUTOHSCROLL |
                     ES_READONLY | WS_GROUP | NOT WS_TABSTOP
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+    PUSHBUTTON      "初期化(&N)",IDC_BUTTON_INITIALIZE,129,168,34,14
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
     PUSHBUTTON      "割付(&B)",IDC_BUTTON_ASSIGN,129,190,34,14,WS_GROUP
     PUSHBUTTON      "解除(&R)",IDC_BUTTON_RELEASE,129,204,34,14
 END
@@ -4442,6 +4448,7 @@ BEGIN
 
 	// CPropComGrep.cpp
 	STR_PROPCOMGREP_DLL			"正規表現は使用できません"
+	STR_PROPCOMGREP_DLL_FALLBACK	"組み込み済みのPCRE2を使用します（bregonig.dllが見つかりません）"
 	STR_TAGJUMP_0				"次のファイルを検索しない"
 	STR_TAGJUMP_1				"ヒットしたら次のファイルを検索しない"
 	STR_TAGJUMP_2				"完全一致でヒットしたら次のファイルを検索しない"
@@ -4453,6 +4460,7 @@ BEGIN
 	// CPropComKeybind.cpp
 	// STR_KEYDATA_HEAD...
 	STR_PROPCOMKEYBIND_UNASSIGN	"未割付"
+	STR_PROPCOMKEYBIND_INIT	"キー割り当ての設定を初期状態に戻します。\nよろしいですか？"
 
 	// CPropComKeyword.cpp
 	STR_PROPCOMKEYWORD_ERR_LEN	"キーワードの長さは%dバイトまでです。"
@@ -4562,6 +4570,7 @@ BEGIN
 	STR_PROPCOMTOOL_ITEM1		"───────────"
 	STR_PROPCOMTOOL_ITEM2		"――ツールバー折返――"
 	STR_PROPCOMTOOL_ITEM3		"────不　明────"
+	STR_PROPCOMTOOL_INIT		"ツールバーの設定を初期状態に戻します。\nよろしいですか？"
 
 	// CPropComWin.cpp
 
