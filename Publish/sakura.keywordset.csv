@@ -1,29 +1,29 @@
-#Reserved,Name,Case-sensitive,File
-0,C/C++,1,cpp.kwd
-0,HTML,0,html5.kwd
-0,PL/SQL,0,plsql.kwd
-0,COBOL,1,COBOL.kwd
-0,Java,1,java.kwd
-0,CORBA IDL,1,corba.kwd
-0,AWK,1,awk.kwd
-0,MS-DOS batch,0,batch.kwd
-0,Pascal,0,pascal.kwd
-0,TeX,1,tex1.kwd
-0,TeX2,1,tex2.kwd
-0,Perl,1,perl.kwd
-0,Perl2,1,perlvar.kwd
-0,Visual Basic,0,vb.kwd
-0,Visual Basic2,0,vb2.kwd
-0,Rich Text,1,rtf.kwd
-0,C#,1,csharp.kwd
-0,C# content,1,csharp-context.kwd
-0,CSS,1,css2.1.kwd
-0,JavaScript,1,ecmascript_sys.kwd
-0,JavaScript2,1,javascript.kwd
-0,PHP,1,
-0,PHP2,1,
-0,python,1,python_2.5.kwd
-0,Ruby1,1,ruby1.kwd
-0,Ruby2,1,ruby2.kwd
-0,Ruby3,1,ruby3.kwd
-0,Ruby4,1,ruby4.kwd
+#reserved,name,case_sensitive(0/1),filename(Keyword\配下)
+,C/C++,1,cpp.kwd
+,HTML,0,html5.kwd
+,PL/SQL,0,plsql.kwd
+,COBOL,1,COBOL.kwd
+,Java,1,java.kwd
+,CORBA IDL,1,corba.kwd
+,AWK,1,awk.kwd
+,MS-DOS batch,0,batch.kwd
+,Pascal,0,pascal.kwd
+,TeX,1,tex1.kwd
+,TeX2,1,tex2.kwd
+,Perl,1,perl.kwd
+,Perl2,1,perlvar.kwd
+,Visual Basic,0,vb.kwd
+,Visual Basic2,0,vb2.kwd
+,Rich Text,1,rtf.kwd
+,C#,1,csharp.kwd
+,C# content,1,csharp-context.kwd
+,CSS,1,css2.1.kwd
+,JavaScript,1,ecmascript_sys.kwd
+,JavaScript2,1,javascript.kwd
+,PHP,1,php_reserved.kwd
+,PHP2,1,php.kwd
+,python,1,python_2.5.kwd
+,Ruby1,1,ruby1.kwd
+,Ruby2,1,ruby2.kwd
+,Ruby3,1,ruby3.kwd
+,Ruby4,1,ruby4.kwd
