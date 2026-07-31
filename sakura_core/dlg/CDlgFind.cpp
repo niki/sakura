@@ -502,6 +502,23 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 		::DwmSetWindowAttribute( hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(cornerPreference) );
 	}
 #endif
+
+#if defined(NKMM_FIND_DIALOG_BOLD_TOGGLE_BUTTONS) && NKMM_FIND_DIALOG_BOLD_TOGGLE_BUTTONS == 1
+	// 単語単位/大文字小文字/正規表現のトグルボタン("|Ab|"/"Aa"/".*")をボールド体にして視認性を上げる 20260801
+	{
+		HWND hwndToggle = GetItemHwnd( IDC_CHK_WORD );
+		HFONT hFontToggleOld = (HFONT)::SendMessageAny( hwndToggle, WM_GETFONT, 0, 0 );
+		LOGFONT lf = {};
+		::GetObject( hFontToggleOld, sizeof(lf), &lf );
+		lf.lfWeight = FW_BOLD;
+		HFONT hFontToggleBold = ::CreateFontIndirect( &lf );
+		const int toggleIds[] = { IDC_CHK_WORD, IDC_CHK_LOHICASE, IDC_CHK_REGULAREXP };
+		for( int id : toggleIds ){
+			::SendMessageAny( GetItemHwnd( id ), WM_SETFONT, (WPARAM)hFontToggleBold, TRUE );
+		}
+		m_cFontToggleButtons.SetFont( hFontToggleOld, hFontToggleBold, hwndToggle );
+	}
+#endif // NKMM_FIND_DIALOG_BOLD_TOGGLE_BUTTONS
 #endif // NKMM_
 
 	return bRet;
@@ -518,6 +535,9 @@ BOOL CDlgFind::OnDestroy()
 	}
 #endif // NKMM_
 	m_cFontText.ReleaseOnDestroy();
+#if defined(NKMM_FIND_DIALOG_BOLD_TOGGLE_BUTTONS) && NKMM_FIND_DIALOG_BOLD_TOGGLE_BUTTONS == 1
+	m_cFontToggleButtons.ReleaseOnDestroy();
+#endif // NKMM_FIND_DIALOG_BOLD_TOGGLE_BUTTONS
 	return CDialog::OnDestroy();
 }
 

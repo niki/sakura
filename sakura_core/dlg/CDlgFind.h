@@ -68,6 +68,7 @@ public:
 	int		m_nSlideTargetY;		// スライドインアニメーションの最終Y座標
 	int		m_nSlideStartY;			// スライドインアニメーションの開始Y座標
 	DWORD	m_dwSlideStartTick;		// スライドインアニメーション開始時刻(GetTickCount)
+	CFontAutoDeleter		m_cFontToggleButtons;	// 20260801 単語単位/大文字小文字/正規表現トグルボタンのボールド体フォント
 #endif // NKMM_
 
 protected:

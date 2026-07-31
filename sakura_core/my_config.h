@@ -65,7 +65,7 @@
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
 	#define PR_VER_VAL	2320
-	#define PR_LV		26073100
+	#define PR_LV		26080100
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -769,6 +769,9 @@
 	// 影の代わりにWS_BORDERで薄い縁取りを付ける(sakura_rc.rcのIDD_FIND STYLE)
 	// 詳細はchangelog/NKMM_FIND_DIALOG_NO_SHADOW.md参照
 	#define NKMM_FIND_DIALOG_NO_SHADOW (1)
+	// 単語単位/大文字小文字/正規表現のトグルボタン("|Ab|"/"Aa"/".*")が小さく
+	// 読み取りにくいため、ボールド体フォントにして視認性を上げる 20260801
+	#define NKMM_FIND_DIALOG_BOLD_TOGGLE_BUTTONS (1)
 
 //------------------------------------------------------------------
 // mimalloc(MIT)によるoperator new/deleteの高速化 20260727
