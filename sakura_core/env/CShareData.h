@@ -45,6 +45,9 @@ class CMutex;
 struct CommonSetting_KeyBind;
 struct CommonSetting_ToolBar;
 #endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
+#ifdef NKMM_FIX_CUSTMENU_RESET
+struct CommonSetting_CustomMenu;
+#endif // NKMM_FIX_CUSTMENU_RESET
 
 /*!	@brief 共有データの管理
 
@@ -106,6 +109,13 @@ public:
 	static bool ResetKeyBindToDefault(CommonSetting_KeyBind&);		//!< キー割り当てを既定値に戻す
 	static void ResetToolBarButtonsToDefault(CommonSetting_ToolBar&);	//!< ツールバーのボタン構成を既定値に戻す（フラットボタン設定は変更しない）
 #endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
+
+#ifdef NKMM_FIX_CUSTMENU_RESET
+	// 共通設定ダイアログ「カスタムメニュー」ページの「初期化」ボタンから呼ぶ、既定値への復元処理 20260731
+	// 既定内容の生成ロジックはInitPopupMenu()(DLLSHAREDATA全体を要求する起動時初期化専用)と
+	// 同一だが、CommonSetting_CustomMenu単体に対して直接書き込む形でCShareData.cppに複製した。
+	static void ResetCustomMenuToDefault(CommonSetting_CustomMenu&);	//!< カスタムメニューを既定値に戻す
+#endif // NKMM_FIX_CUSTMENU_RESET
 
 	void InitKeyword(DLLSHAREDATA*, bool);
 #if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV

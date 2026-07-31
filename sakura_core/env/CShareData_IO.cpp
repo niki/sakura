@@ -288,7 +288,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #endif // NKMM_HISTORY_BLOCK_IN_INI
 	ShareData_IO_Nickname( cProfile );
 	ShareData_IO_Common( cProfile );
-//nkmm	ShareData_IO_Plugin( cProfile, pcMenuDrawer );		// Move here	2010/6/24 Uchi
+	ShareData_IO_Plugin( cProfile, pcMenuDrawer );		// Move here	2010/6/24 Uchi
 	ShareData_IO_Toolbar( cProfile, pcMenuDrawer );
 	ShareData_IO_CustMenu( cProfile );
 	ShareData_IO_Font( cProfile );

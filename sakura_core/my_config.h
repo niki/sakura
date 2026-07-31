@@ -886,6 +886,22 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_KEYBIND_TOOLBAR_RESET
 
+//------------------------------------------------------------------
+// 共通設定「カスタムメニュー」ページに「初期化」ボタンを追加 20260731
+//  - NKMM_FIX_KEYBIND_TOOLBAR_RESETと同じ文言・確認メッセージの体裁
+//  - 選択中のメニュー(右クリックメニュー/カスタムメニュー1/タブメニュー等)だけでなく、
+//    全メニューまとめて出荷時の既定値に戻す(既存の「削除」ボタンは1項目単位)
+//  - 既存のCShareData::InitPopupMenu()(DLLSHAREDATA全体を要求する起動時初期化専用、
+//    かつ実際には引数を使わずm_pShareData経由で自分自身の共有メモリしか参照して
+//    いなかった)の引数をCommonSetting_CustomMenu&に変更(呼び出しは1箇所のみで
+//    動作は変わらない)。これを土台にCShareData::ResetCustomMenuToDefault()を追加
+//  - sakura_core\env\CShareData.h,cpp
+//  - sakura_core\prop\CPropCommon.h
+//  - sakura_core\prop\CPropComCustmenu.cpp
+//  - sakura_core\sakura_rc.rc,h: IDC_BUTTON_INITIALIZE(既存ID再利用)
+//------------------------------------------------------------------
+#define NKMM_FIX_CUSTMENU_RESET
+
 //
 //#define USE_SSE2
 

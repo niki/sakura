@@ -436,6 +436,7 @@
 #define HIDC_BUTTON_DOWN						10105 //メニューの機能を下へ移動
 #define HIDC_BUTTON_IMPORT						10106 //インポート
 #define HIDC_BUTTON_EXPORT						10107 //エクスポート
+#define HIDC_BUTTON_INITIALIZE_CUSTMENU			10108 //カスタムメニューを初期状態に戻す 20260731
 #define HIDC_COMBO_FUNCKIND						10130 //機能の種別
 #define HIDC_COMBO_MENU							10131 //メニューの種別
 #define HIDC_EDIT_MENUNAME						10132 //メニュー名	// 2009.02.20 ryoji

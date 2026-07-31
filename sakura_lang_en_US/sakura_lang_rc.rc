@@ -2165,6 +2165,9 @@ BEGIN
     PUSHBUTTON      "Ins. &Bot.",IDC_BUTTON_ADD,128,115,34,14,BS_MULTILINE
     PUSHBUTTON      "&Up",IDC_BUTTON_UP,128,135,34,14
     PUSHBUTTON      "D&own",IDC_BUTTON_DOWN,128,149,34,14
+#ifdef NKMM_FIX_CUSTMENU_RESET
+    PUSHBUTTON      "I&nitialize",IDC_BUTTON_INITIALIZE,128,170,34,14
+#endif // NKMM_FIX_CUSTMENU_RESET
     LTEXT           "Double click item to set hot-key",
                     IDC_LABEL_MENUKEYCHANGE,174,208,114,8
     CONTROL         "Di&splay as Sub Menu",IDC_CHECK_SUBMENU,"Button",BS_AUTOCHECKBOX | 
@@ -4393,6 +4396,7 @@ BEGIN
 	STR_PROPCOMCUSTMENU_SEP		" --------------------------"
 	STR_PROPCOMCUSTMENU_AC1		"Menu Item Access Settings"
 	STR_PROPCOMCUSTMENU_AC2		"Please press a key."
+	STR_PROPCOMCUSTMENU_INIT	"Are you sure you want to reset the custom menu settings to their defaults?"
 	// Has a HEADER #define, should we also fix this?
 
 	// CPropComEdit.cpp

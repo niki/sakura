@@ -312,6 +312,9 @@ protected:
 	int  GetData( HWND );	//!< ダイアログデータの取得
 	void Import( HWND );	//!< カスタムメニュー設定をインポートする
 	void Export( HWND );	//!< カスタムメニュー設定をエクスポートする
+#ifdef NKMM_FIX_CUSTMENU_RESET
+	void InitializeToDefault( HWND );	//!< カスタムメニューを既定値に戻す 20260731
+#endif // NKMM_FIX_CUSTMENU_RESET
 };
 
 //==============================================================

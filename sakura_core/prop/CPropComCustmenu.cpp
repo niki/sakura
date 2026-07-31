@@ -40,6 +40,9 @@ static const DWORD p_helpids[] = {	//10100
 	IDC_BUTTON_DOWN,				HIDC_BUTTON_DOWN,				//メニューの機能を下へ移動
 	IDC_BUTTON_IMPORT,				HIDC_BUTTON_IMPORT,				//インポート
 	IDC_BUTTON_EXPORT,				HIDC_BUTTON_EXPORT,				//エクスポート
+#ifdef NKMM_FIX_CUSTMENU_RESET
+	IDC_BUTTON_INITIALIZE,			HIDC_BUTTON_INITIALIZE_CUSTMENU,	//カスタムメニューを初期状態に戻す 20260731
+#endif // NKMM_FIX_CUSTMENU_RESET
 	IDC_COMBO_FUNCKIND,				HIDC_COMBO_FUNCKIND,			//機能の種別
 	IDC_COMBO_MENU,					HIDC_COMBO_MENU,				//メニューの種別
 	IDC_EDIT_MENUNAME,				HIDC_EDIT_MENUNAME,				//メニュー名		// 2009.02.20 ryoji
@@ -189,6 +192,11 @@ INT_PTR CPropCustmenu::DispatchEvent(
 				// 削除すると選択が解除されるので，元に戻す
 				Combo_SetCurSel( hwndCOMBO_MENU, nIdx1 );
 				return TRUE;
+#ifdef NKMM_FIX_CUSTMENU_RESET
+			case IDC_BUTTON_INITIALIZE:	/* 初期化 */	// 20260731
+				InitializeToDefault( hwndDlg );
+				return TRUE;
+#endif // NKMM_FIX_CUSTMENU_RESET
 			}
 			break;	/* BN_CLICKED */
 		}
@@ -729,3 +737,30 @@ void CPropCustmenu::Export( HWND hwndDlg )
 		return;
 	}
 }
+
+#ifdef NKMM_FIX_CUSTMENU_RESET
+/* Custom menu:カスタムメニューを既定値に戻す 20260731 */
+void CPropCustmenu::InitializeToDefault( HWND hwndDlg )
+{
+	if( IDCANCEL == ::MYMESSAGEBOX( hwndDlg, MB_OKCANCEL | MB_ICONQUESTION, GSTR_APPNAME,
+		LS(STR_PROPCOMCUSTMENU_INIT) ) ){
+		return;
+	}
+
+	CShareData::ResetCustomMenuToDefault( m_Common.m_sCustomMenu );
+
+	// メニュー名がすべて既定値(空)に戻るため、コンボボックスの項目名も作り直す
+	HWND	hwndCOMBO_MENU = ::GetDlgItem( hwndDlg, IDC_COMBO_MENU );
+	int		nIdxSel = Combo_GetCurSel( hwndCOMBO_MENU );
+	WCHAR	buf[ MAX_CUSTOM_MENU_NAME_LEN + 1 ];
+
+	Combo_ResetContent( hwndCOMBO_MENU );
+	for( int i = 0; i < MAX_CUSTOM_MENU; ++i ){
+		Combo_AddString( hwndCOMBO_MENU, m_cLookup.Custmenu2Name( i, buf, _countof( buf ) ) );
+	}
+	Combo_SetCurSel( hwndCOMBO_MENU, ( CB_ERR == nIdxSel ) ? 0 : nIdxSel );
+
+	// 画面更新
+	::SendMessageCmd( hwndDlg, WM_COMMAND, MAKELONG( IDC_COMBO_MENU, CBN_SELCHANGE ), (LPARAM)hwndCOMBO_MENU );
+}
+#endif // NKMM_FIX_CUSTMENU_RESET
