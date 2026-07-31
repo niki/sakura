@@ -69,9 +69,10 @@ ODR違反・リンクエラーになる。そのため`FILL_STRANGE_IN_NEW_MEMOR
 
 ## 動作確認について
 
-このサンドボックスビルド環境ではフルビルドが、今回の変更とは無関係な既存の問題
-(`preBuild.bat`がコード生成ツールHeaderMake/MakefileMakeの実行に失敗する。
-`NKMM_FIX_REGEXP_FALLBACK`実装時と同種の、この環境固有の制約)により最後までは通らない。
+このサンドボックスビルド環境ではフルビルド(`msbuild sakura.vcxproj`をそのまま実行)が、
+今回の変更とは無関係な既存の問題(`preBuild.bat`がコード生成ツールHeaderMake/
+MakefileMakeの実行に失敗する。`NKMM_FIX_REGEXP_FALLBACK`実装時と同種の、この環境
+固有の制約)により最後までは通らない。
 
 そのため`msbuild /t:sakura:ClCompile /p:SelectedFiles=<file>`によるファイル単位ビルドで、
 以下を4構成(Debug/Release × Win32/x64)全てで確認した。
@@ -81,5 +82,38 @@ ODR違反・リンクエラーになる。そのため`FILL_STRANGE_IN_NEW_MEMOR
 
 `build_config.h`修正前はDebug構成のPCHビルド時に`operator new`等のC4595警告
 (非メンバーnew/deleteをinlineにできない、という将来のリンクエラーを予告する警告)が
-出ることを確認しており、修正後は解消されている。ただし実際にexeまでリンクしての
-動作確認・パフォーマンス計測は未実施。
+出ることを確認しており、修正後は解消されている。
+
+### 追記 20260731: フルビルド+実測
+
+その後、`preBuild.bat`/`postBuild.bat`はコード生成済みファイル(`Funccode_define.h`
+等)がすでに存在していれば必須ではないと分かったため、`msbuild sakura.vcxproj`に
+`/p:PreBuildEventUseInBuild=false /p:PostBuildEventUseInBuild=false`を渡すことで
+このサンドボックス環境でもフルビルド+リンクまで通ることを確認した(Release|Win32、
+0エラー、`sakura.exe`生成を確認)。この2オプションはPreBuildEvent/PostBuildEventの
+コマンド実行だけをスキップするもので、コンパイル・リンク自体には影響しない。
+
+#### ベンチマーク(アロケータ単体を分離した合成マイクロベンチマーク)
+
+実際にsakuraが使うのと同じ`mimalloc-new-delete.h`込みでビルドしたバイナリと、
+素のCRT `operator new`/`delete`のバイナリを2本用意し、行編集ワークロードを模した
+処理(行バッファの逐次伸長・大量行の生成/破棄・Undoリング churn)で計測した
+(Release相当 `/O2 /MT /DNDEBUG`、x64、3回計測の平均。scale=10で行数20万・
+Undo操作200万回相当)。
+
+| フェーズ | CRT (baseline) | mimalloc | 倍率 |
+|---|---:|---:|---:|
+| Typing(1文字ずつ伸長) | 43.1 ms | 17.0 ms | 2.5x |
+| BuildLineArray(20万行生成) | 16.8 ms | 10.9 ms | 1.5x |
+| FreeLineArray(一括解放) | 8.8 ms | 2.2 ms | 4.0x |
+| UndoChurn(20万件のUndo記録churn) | 102.3 ms | 18.6 ms | 5.5x |
+| **合計** | **170.9 ms** | **48.7 ms** | **約3.5x** |
+
+小さいオブジェクトを高頻度に確保/解放するパターンほど効果が大きく、特にUndo churn
+のような「確保してすぐ解放」を繰り返す箇所で5倍以上出ている。逆にBuildLineArray
+(確保して長く保持するだけ)は伸びが控えめで、「小オブジェクトの頻繁な確保/解放」
+というmimallocの謳い文句通りの傾向が出た。
+
+これはアロケータ単体を切り出した合成マイクロベンチマークであり、実際のsakura.exe
+を操作しての体感速度・GUI描画込みの計測ではない。ベンチ用コードはリポジトリには
+含めていない(一時ディレクトリで作成・実行のみ)。

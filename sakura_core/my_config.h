@@ -772,14 +772,42 @@
 
 //------------------------------------------------------------------
 // mimalloc(MIT)によるoperator new/deleteの高速化 20260727
-//  - CRTのmalloc/free自体は上書きしない(Windowsでの完全上書きにはmimalloc-redirect.dll
-//    の配布が別途必要になるため見送り)。C++のnew/deleteのみをmimalloc(mi_malloc/mi_free)
-//    に差し替える
+//  - CRTのmalloc/freeは上書きしない(完全上書きはNKMM_USE_MIMALLOC_OVERRIDE参照)。
+//    C++のnew/deleteのみをmimalloc(mi_malloc/mi_free)に差し替える
 //  - _main/WinMain.cppで1箇所だけmimalloc-new-delete.hをincludeしている
 //  - libs\mimalloc (新規、mimalloc v3.4.3をvendor)
-//  - 詳細はchangelog/NKMM_USE_MIMALLOC.md参照
+//  - ベンチマーク(小オブジェクトの確保/解放churnを模した合成マイクロベンチ、
+//    アロケータ単体を分離して計測): 詳細はchangelog/NKMM_USE_MIMALLOC.md参照
 //------------------------------------------------------------------
 #define NKMM_USE_MIMALLOC
+
+//------------------------------------------------------------------
+// mimalloc(MIT)によるmalloc/free/calloc/realloc等の完全上書き 20260731
+//  - NKMM_USE_MIMALLOCの追加オプション。malloc()等のCRT標準関数を直接呼んでいる
+//    箇所(operator new/delete経由でない13ファイル)にも効果を及ぼしたい場合に使う
+//  - 動的CRT(/MD)でmalloc/freeを完全上書きするにはmimalloc-redirect.dllの配布が
+//    別途必要になるが、本プロジェクトは静的CRT(/MT)でビルドしているため事情が異なる。
+//    mimalloc本体(libs\mimalloc\src\static.c)を`MI_MALLOC_OVERRIDE`付きでコンパイル
+//    するだけで、malloc/free/calloc/realloc/_aligned_malloc/strdup等がリンク時に
+//    mimalloc側の実装で静的に上書きされ、redirect dllは不要
+//    (alloc-override.cの`#if defined(MI_MALLOC_OVERRIDE) && !defined(_DLL)`分岐。
+//    `_DLL`は動的CRT使用時のみ定義されるマクロなので、静的CRTでは常に条件成立する)。
+//    実際に/MTビルドで検証し、plainなmalloc/calloc/realloc/free/strdupがすべて
+//    mi_is_in_heap_region()でtrueになる(mimallocが処理している)ことを確認済み
+//  - vendor元のlibs\mimalloc\src\static.cは無改造のまま、このフラグに応じて
+//    `MI_MALLOC_OVERRIDE`を定義するためだけのForcedIncludeFileを新設
+//    (sakura_core\config\mimalloc_override_fi.h)。sakura.vcxprojのstatic.c用
+//    ClCompile項目のForcedIncludeFilesをこれに差し替える
+//  - 既知の制約: CRTのデバッグヒープ機能(_CRTDBG_MAP_ALLOCによる_malloc_dbg等への
+//    自動置換)との組み合わせは未検証。本プロジェクトはこれを使っていないため
+//    影響なしと判断している
+//  - 詳細はchangelog/NKMM_USE_MIMALLOC.md参照
+//------------------------------------------------------------------
+#define NKMM_USE_MIMALLOC_OVERRIDE
+
+#if defined(NKMM_USE_MIMALLOC_OVERRIDE) && !defined(NKMM_USE_MIMALLOC)
+#error NKMM_USE_MIMALLOC_OVERRIDE requires NKMM_USE_MIMALLOC to also be defined
+#endif
 
 //------------------------------------------------------------------
 // マクロ関数FileOpenDialog/FileSaveDialogの既定値バッファオーバーフロー修正 20260729

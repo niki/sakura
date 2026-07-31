@@ -316,6 +316,7 @@
     <ClInclude Include="..\sakura_core\config\app_constants.h" />
     <ClInclude Include="..\sakura_core\config\build_config.h" />
     <ClInclude Include="..\sakura_core\config\maxdata.h" />
+    <ClInclude Include="..\sakura_core\config\mimalloc_override_fi.h" />
     <ClInclude Include="..\sakura_core\config\system_constants.h" />
     <ClInclude Include="..\sakura_core\convert\CConvert.h" />
     <ClInclude Include="..\sakura_core\convert\CConvert_HaneisuToZeneisu.h" />
@@ -1231,9 +1232,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <!-- 20260727 プロジェクト全体のForcedIncludeFiles(my.h)がC++専用のsilicaを
            includeしており、Cとしてコンパイルされるこのファイルでは
-           コンパイルエラーになるため無効化する -->
-      <ForcedIncludeFiles>
-      </ForcedIncludeFiles>
+           コンパイルエラーになるため無効化する。
+           20260731 代わりにNKMM_USE_MIMALLOC_OVERRIDE時だけMI_MALLOC_OVERRIDEを
+           定義する専用のForcedIncludeFile(sakura_core\config\mimalloc_override_fi.h)を指定する -->
+      <ForcedIncludeFiles>..\sakura_core\config\mimalloc_override_fi.h</ForcedIncludeFiles>
       <!-- mimallocはC11のCMAKE_C_STANDARDを前提にしているためC11としてコンパイルする -->
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>

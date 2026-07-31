@@ -325,6 +325,9 @@
     <ClInclude Include="..\sakura_core\config\maxdata.h">
       <Filter>Cpp Source Files\config</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\config\mimalloc_override_fi.h">
+      <Filter>Cpp Source Files\config</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\config\system_constants.h">
       <Filter>Cpp Source Files\config</Filter>
     </ClInclude>
