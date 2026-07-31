@@ -1527,9 +1527,11 @@ CColorStrategy* CPrintPreview::DrawPageText(
 				const int nLineCols = wcslen( szLineNum );
 
 				//文字間隔配列を生成
+				//	nTabSpaceに0を渡していた不具合を修正（C4724警告対応）	2026.07.31 yuu_zuki
+				//	szLineNumにTABは含まれないためnTabSpaceは既定値(8)のままでよい。
+				//	以前は0を誤って渡しており、GenerateDxArray内の「% nTabSpace」がC4724警告の原因になっていた。
 				vector<int> vDxArray;
-				int spacing = 0;
-				const int* pDxArray = CTextMetrics::GenerateDxArray(&vDxArray, szLineNum, nLineCols, m_pPrintSetting->m_nPrintFontWidth, spacing);
+				const int* pDxArray = CTextMetrics::GenerateDxArray(&vDxArray, szLineNum, nLineCols, m_pPrintSetting->m_nPrintFontWidth);
 
 				ApiWrap::ExtTextOutW_AnyBuild(
 					hdc,
