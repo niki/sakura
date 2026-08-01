@@ -55,9 +55,11 @@ public:
 		return m_LogFont;
 	}
 
-#ifdef NKMM_FIX_COLOR_FONT
+#if defined(NKMM_FIX_COLOR_FONT) || defined(NKMM_FIX_GLYPH_ATLAS_CACHE)
 	//! フォントが作り直されるたびに増加する世代番号。
-	//! HFONTから派生させたリソース(IDWriteFontFace等)のキャッシュ無効化に使う。
+	//! HFONTから派生させたリソース(IDWriteFontFace、グリフアトラス等)のキャッシュ無効化に使う。
+	//! CColorFontRenderer(NKMM_FIX_COLOR_FONT)とCGlyphAtlasCache(NKMM_FIX_GLYPH_ATLAS_CACHE)の
+	//! 両方から使われる共有機能のため、どちらか一方のマクロだけでガードしてはいけない。
 	static ULONG GetFontGeneration(){ return s_nGeneration; }
 #endif // NKMM_
 
@@ -72,7 +74,7 @@ private:
 
 	LOGFONT	m_LogFont;
 
-#ifdef NKMM_FIX_COLOR_FONT
+#if defined(NKMM_FIX_COLOR_FONT) || defined(NKMM_FIX_GLYPH_ATLAS_CACHE)
 	static ULONG s_nGeneration;
 #endif // NKMM_
 };

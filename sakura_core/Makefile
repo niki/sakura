@@ -379,6 +379,7 @@ view/CEditView_Paint.o \
 view/CEditView_Paint_Bracket.o \
 view/CEditView_Scroll.o \
 view/CEditView_Search.o \
+view/CGlyphAtlasCache.o \
 view/CRuler.o \
 view/CTextArea.o \
 view/CTextDrawer.o \

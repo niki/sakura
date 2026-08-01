@@ -28,6 +28,7 @@
 #include "CTextMetrics.h"
 #include "CTextArea.h"
 #include "CViewFont.h"
+#include "CGlyphAtlasCache.h"
 #include "CEol.h"
 #include "view/CEditView.h"
 #include "doc/CEditDoc.h"
@@ -140,19 +141,49 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, int marginy, const wchar
 		}
 
 		//描画
-		::ExtTextOutW_AnyBuild(
-			hdc,
-			nDrawX,					//X
+		int nDrawY =
 #ifdef NKMM_LINE_MARGIN_TOP
 			m_pEditView->GetLineMargin() +
 #endif // NKMM_
-			y + marginy,			//Y
-			ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
-			&rcClip,
-			pDrawData,				//文字列
-			nDrawLength,			//文字列長
-			pDrawDxArray			//文字間隔の入った配列
-		);
+			y + marginy;
+
+		bool bCached = false;
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+		// グリフキャッシュはETO_OPAQUEでの不透明1〜2文字描画にのみ適用する。
+		// 背景画像(壁紙)使用時(bTransparent)・複数文字描画(EOF記号等)・
+		// 横スクロールでセルが部分的に切れる場合は素通しでフォールバックする。
+		if( !bTransparent && nDrawLength >= 1 && nDrawLength <= 2 ){
+			int nCellWidth = 0;
+			for( int i = 0; i < nDrawLength; ++i ) nCellWidth += pDrawDxArray[i];
+			bool bFullyVisible =
+				nDrawX >= rcClip.left && (nDrawX + nCellWidth) <= rcClip.right;
+			if( bFullyVisible ){
+				CGlyphAtlasCache* pAtlas = CGlyphAtlasCache::getInstance();
+				if( pAtlas->IsEnabled() ){
+					HFONT hFont = (HFONT)::GetCurrentObject(hdc, OBJ_FONT);
+					COLORREF crFore = ::GetTextColor(hdc);
+					COLORREF crBack = ::GetBkColor(hdc);
+					bCached = pAtlas->DrawOrCache(
+						hdc, hFont, pDrawData, nDrawLength, crFore, crBack,
+						nDrawX, nDrawY, nCellWidth, pMetrics->GetHankakuDy(), pDrawDxArray
+					);
+				}
+			}
+		}
+#endif // NKMM_FIX_GLYPH_ATLAS_CACHE
+
+		if( !bCached ){
+			::ExtTextOutW_AnyBuild(
+				hdc,
+				nDrawX,					//X
+				nDrawY,					//Y
+				ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
+				&rcClip,
+				pDrawData,				//文字列
+				nDrawLength,			//文字列長
+				pDrawDxArray			//文字間隔の入った配列
+			);
+		}
 	}
 
 end:

@@ -55,6 +55,9 @@ static const DWORD p_helpids[] = {	//10900
 	IDC_SPIN_MAX_MRU_FILE,			HIDC_EDIT_MAX_MRU_FILE,
 	IDC_SPIN_MAX_MRU_FOLDER,		HIDC_EDIT_MAX_MRU_FOLDER,
 	IDC_CHECK_MEMDC,				HIDC_CHECK_MEMDC,					//画面キャッシュを使う
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+	IDC_CHECK_GLYPHATLASCACHE,		HIDC_CHECK_GLYPHATLASCACHE,			//グリフキャッシュを使う
+#endif // NKMM_
 	IDC_COMBO_WHEEL_PAGESCROLL,		HIDC_COMBO_WHEEL_PAGESCROLL,		// 組み合わせてホイール操作した時ページスクロールする		// 2009.01.17 nasukoji
 	IDC_COMBO_WHEEL_HSCROLL,		HIDC_COMBO_WHEEL_HSCROLL,			// 組み合わせてホイール操作した時横スクロールする			// 2009.01.17 nasukoji
 //	IDC_STATIC,						-1,
@@ -367,7 +370,12 @@ void CPropGeneral::SetData( HWND hwndDlg )
 
 	// 2007.09.09 Moca 画面キャッシュ設定追加
 	// 画面キャッシュを使う
-//nkmm	::CheckDlgButton( hwndDlg, IDC_CHECK_MEMDC, m_Common.m_sWindow.m_bUseCompatibleBMP );
+	::CheckDlgButton( hwndDlg, IDC_CHECK_MEMDC, m_Common.m_sWindow.m_bUseCompatibleBMP );
+
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+	// 20260801 グリフキャッシュ(グリフアトラス)を使う
+	::CheckDlgButton( hwndDlg, IDC_CHECK_GLYPHATLASCACHE, m_Common.m_sWindow.m_bUseGlyphAtlasCache );
+#endif // NKMM_
 
 	/* ファイルの履歴MAX */
 	::SetDlgItemInt( hwndDlg, IDC_EDIT_MAX_MRU_FILE, m_Common.m_sGeneral.m_nMRUArrNum_MAX, FALSE );
@@ -447,7 +455,12 @@ int CPropGeneral::GetData( HWND hwndDlg )
 
 	// 2007.09.09 Moca 画面キャッシュ設定追加
 	// 画面キャッシュを使う
-//nkmm	m_Common.m_sWindow.m_bUseCompatibleBMP = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_MEMDC );
+	m_Common.m_sWindow.m_bUseCompatibleBMP = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_MEMDC );
+
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+	// 20260801 グリフキャッシュ(グリフアトラス)を使う
+	m_Common.m_sWindow.m_bUseGlyphAtlasCache = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_GLYPHATLASCACHE );
+#endif // NKMM_
 
 	hwndCombo = ::GetDlgItem( hwndDlg, IDC_COMBO_WHEEL_PAGESCROLL );
 	nSelPos = Combo_GetCurSel( hwndCombo );

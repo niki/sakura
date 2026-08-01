@@ -1999,7 +1999,10 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	//	Sep. 18, 2002 genta 追加
 	cProfile.IOProfileData( pszSecName, LTEXT("nLineNumberRightSpace")		, common.m_sWindow.m_nLineNumRightSpace );/* 行番号の右側の隙間 */
 	cProfile.IOProfileData( pszSecName, LTEXT("nVertLineOffset")			, common.m_sWindow.m_nVertLineOffset ); // 2005.11.10 Moca
-//nkmm	cProfile.IOProfileData( pszSecName, LTEXT("bUseCompotibleBMP")			, common.m_sWindow.m_bUseCompatibleBMP ); // 2007.09.09 Moca
+	cProfile.IOProfileData( pszSecName, LTEXT("bUseCompotibleBMP")			, common.m_sWindow.m_bUseCompatibleBMP ); // 2007.09.09 Moca
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+	cProfile.IOProfileData( pszSecName, LTEXT("bUseGlyphAtlasCache")		, common.m_sWindow.m_bUseGlyphAtlasCache ); // 20260801 グリフキャッシュ(グリフアトラス)を使う
+#endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("bCopyAndDisablSelection")	, common.m_sEdit.m_bCopyAndDisablSelection );/* コピーしたら選択解除 */
 	cProfile.IOProfileData( pszSecName, LTEXT("bEnableNoSelectCopy")		, common.m_sEdit.m_bEnableNoSelectCopy );/* 選択なしでコピーを可能にする */	// 2007.11.18 ryoji
 	cProfile.IOProfileData( pszSecName, LTEXT("bEnableLineModePaste")		, common.m_sEdit.m_bEnableLineModePaste );/* ラインモード貼り付けを可能にする */	// 2007.10.08 ryoji

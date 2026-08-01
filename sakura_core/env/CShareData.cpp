@@ -303,6 +303,9 @@ bool CShareData::InitShareData()
 			sWindow.m_nLineNumRightSpace = 2;			/* 行番号の右の隙間 */
 			sWindow.m_nVertLineOffset = -1;			// 2005.11.10 Moca 指定桁縦線
 			sWindow.m_bUseCompatibleBMP = TRUE;		// 2007.09.09 Moca 画面キャッシュを使う	// 2009.06.09 ryoji FALSE->TRUE
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+			sWindow.m_bUseGlyphAtlasCache = FALSE;		// 20260801 グリフキャッシュ(グリフアトラス)を使う
+#endif // NKMM_
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
 

@@ -952,6 +952,36 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_KEYBIND_EXPORT_FUNCNAME
 
+//------------------------------------------------------------------
+// グリフキャッシュ(グリフアトラス)によるテキスト描画の高速化 20260801
+//  - (フォント,文字,前景色,背景色)をキーに、ExtTextOutで一度描画した
+//    結果をHBITMAPアトラス(シェルフパッキング)へキャッシュし、以後は
+//    BitBltで再利用する。ClearTypeの見た目は完全に保持される
+//    (DispTextは常にETO_OPAQUEで背景も同時描画するため、ClearTypeの
+//    サブピクセルレンダリング結果は(フォント,文字,fg,bg)の組だけで
+//    完全に決まる)
+//  - 選択範囲のハイライトはDispTextとは別経路(EXOR反転、行単位)の
+//    ため、キャッシュされたグリフに対しても正しく機能する
+//  - 背景画像(壁紙)使用時・複数文字を1回で描画するケース(EOF記号等)・
+//    横スクロールで部分的に切れるグリフはキャッシュを使わず、常に
+//    直接描画にフォールバックする
+//  - 共通設定「全般」タブでON/OFFを切り替え可能(既定OFF)
+//  - sakura_core\view\CGlyphAtlasCache.h,cpp
+//  - 詳細はchangelog/NKMM_FIX_GLYPH_ATLAS_CACHE.md参照
+//------------------------------------------------------------------
+#define NKMM_FIX_GLYPH_ATLAS_CACHE
+
+//------------------------------------------------------------------
+// グリフアトラスのページ内容を実DIBのままBMPファイルへダンプするデバッグ機能 20260801
+//  - NKMM_FIX_GLYPH_ATLAS_CACHEとは独立にON/OFFする(通常ビルドでは無効のまま)
+//  - CGlyphAtlasCache::Clear()でページを破棄する直前、GetDIBits()でHBITMAPの
+//    生ピクセルを取得し、BITMAPFILEHEADER/BITMAPINFOHEADERを自前で組み立てて
+//    %TEMP%\sakura_glyph_atlas_dump\へ実物のbmpとして書き出す
+//    (System.Drawing/GDI+等を介さない、HDCの内容そのもの)
+//  - sakura_core\view\CGlyphAtlasCache.h,cpp
+//------------------------------------------------------------------
+//#define NKMM_DEBUG_GLYPH_ATLAS_DUMP
+
 //
 //#define USE_SSE2
 

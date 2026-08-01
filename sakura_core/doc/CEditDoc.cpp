@@ -53,6 +53,7 @@
 #include "_main/CControlTray.h"
 #include "_main/CNormalProcess.h"
 #include "window/CEditWnd.h"
+#include "view/CGlyphAtlasCache.h"
 #include "_os/CClipboard.h"
 #include "CCodeChecker.h"
 #include "CEditApp.h"
@@ -749,6 +750,14 @@ void CEditDoc::OnChangeSetting(
 
 	// フォント更新
 	m_pcEditWnd->m_pcViewFont->UpdateFont(&m_pcEditWnd->GetLogfont());
+
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+	// 20260801 設定ON/OFF切り替えの即時反映(OFF時は即座にGDIリソースを解放する)。
+	// フォント再生成による世代番号ベースの自動無効化は、UpdateFont()呼び出しに
+	// 相乗りする形でCGlyphAtlasCache::DrawOrCache()側が次回描画時に検知する。
+	CGlyphAtlasCache::getInstance()->SetEnabled(
+		GetDllShareData().m_Common.m_sWindow.m_bUseGlyphAtlasCache != FALSE );
+#endif // NKMM_
 
 	SelectCharWidthCache( CWM_FONT_EDIT, m_pcEditWnd->GetLogfontCacheMode() );
 	InitCharWidthCache( m_pcEditWnd->GetLogfont() );

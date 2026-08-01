@@ -25,7 +25,7 @@
 #include "StdAfx.h"
 #include "CViewFont.h"
 
-#ifdef NKMM_FIX_COLOR_FONT
+#if defined(NKMM_FIX_COLOR_FONT) || defined(NKMM_FIX_GLYPH_ATLAS_CACHE)
 ULONG CViewFont::s_nGeneration = 0;
 #endif // NKMM_
 
@@ -35,7 +35,7 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 {
 	LOGFONT	lf;
 
-#ifdef NKMM_FIX_COLOR_FONT
+#if defined(NKMM_FIX_COLOR_FONT) || defined(NKMM_FIX_GLYPH_ATLAS_CACHE)
 	++s_nGeneration;
 #endif // NKMM_
 
