@@ -26,6 +26,9 @@
 #include "util/module.h"
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "sakura.hh"
+#ifdef NKMM_FIX_THIRDPARTY_LICENSE
+#include "dlg/CDlgThirdPartyLicense.h"
+#endif // NKMM_
 
 // 20260726 使用ライブラリのバージョン表示用
 #ifdef NKMM_FIX_REGEXP_FALLBACK
@@ -351,6 +354,14 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 BOOL CDlgAbout::OnBnClicked( int wID )
 {
 	switch( wID ){
+#ifdef NKMM_FIX_THIRDPARTY_LICENSE
+	case IDC_BUTTON_LICENSE:
+		{
+			CDlgThirdPartyLicense cDlgLicense;
+			cDlgLicense.DoModal( m_hInstance, GetHwnd() );
+		}
+		return TRUE;
+#endif // NKMM_
 	case IDC_BUTTON_COPY:
 		{
 			HWND hwndEditVer = GetDlgItem( GetHwnd(), IDC_EDIT_VER );

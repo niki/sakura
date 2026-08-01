@@ -355,6 +355,7 @@
     <ClInclude Include="..\sakura_core\debug\Debug3.h" />
     <ClInclude Include="..\sakura_core\dlg\CDialog.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgAbout.h" />
+    <ClInclude Include="..\sakura_core\dlg\CDlgThirdPartyLicense.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgCancel.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgCompare.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgCtrlCode.h" />
@@ -829,6 +830,7 @@
     <ClCompile Include="..\sakura_core\debug\Debug3.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDialog.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgAbout.cpp" />
+    <ClCompile Include="..\sakura_core\dlg\CDlgThirdPartyLicense.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgCancel.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgCompare.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgCtrlCode.cpp" />

@@ -850,6 +850,9 @@
     <ClInclude Include="..\sakura_core\dlg\CDlgAbout.h">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\dlg\CDlgThirdPartyLicense.h">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\dlg\CDlgCancel.h">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
@@ -2274,6 +2277,9 @@
       <Filter>Cpp Source Files\macro</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\dlg\CDialog.cpp">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\dlg\CDlgThirdPartyLicense.cpp">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\dlg\CDlgAbout.cpp">

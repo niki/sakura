@@ -857,15 +857,20 @@
 #ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
 #define IDC_CHECK_GLYPHATLASCACHE       1730
 #endif // NKMM_
+#ifdef NKMM_FIX_THIRDPARTY_LICENSE
+#define IDD_THIRDPARTY_LICENSE          230
+#define IDC_BUTTON_LICENSE              1731
+#define IDC_EDIT_LICENSE                1732
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        230
+#define _APS_NEXT_RESOURCE_VALUE        231
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1731
+#define _APS_NEXT_CONTROL_VALUE         1733
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

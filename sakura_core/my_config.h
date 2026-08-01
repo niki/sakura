@@ -959,9 +959,9 @@
 
 //------------------------------------------------------------------
 // グリフキャッシュ(グリフアトラス)によるテキスト描画の高速化 20260801
-//  - (フォント,文字,前景色,背景色)をキーに、ExtTextOutで一度描画した
-//    結果をHBITMAPアトラス(シェルフパッキング)へキャッシュし、以後は
-//    BitBltで再利用する。ClearTypeの見た目は完全に保持される
+//  - (フォント,文字,前景色,背景色,セル幅,セル高さ)をキーに、ExtTextOutで
+//    一度描画した結果をHBITMAPアトラス(シェルフパッキング)へキャッシュし、
+//    以後はBitBltで再利用する。ClearTypeの見た目は完全に保持される
 //    (DispTextは常にETO_OPAQUEで背景も同時描画するため、ClearTypeの
 //    サブピクセルレンダリング結果は(フォント,文字,fg,bg)の組だけで
 //    完全に決まる)
@@ -972,6 +972,11 @@
 //    直接描画にフォールバックする
 //  - 共通設定「全般」タブでON/OFFを切り替え可能(既定OFF)
 //  - sakura_core\view\CGlyphAtlasCache.h,cpp
+//  - 20260802 バグ修正: キーにセル幅・高さが含まれておらず、同じ
+//    (フォント,文字,fg,bg)でも呼び出し元が要求するセル幅が異なる場合に
+//    キャッシュヒット時に保存済み(古い)サイズでBitBltしてしまい、画面に
+//    塗り残し(ゴミ)が出る不具合があった。フォントサイズを大きくすると
+//    誤差が拡大されて可視化しやすかった。セル幅・高さをキーに追加して修正。
 //  - 詳細はchangelog/NKMM_FIX_GLYPH_ATLAS_CACHE.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_GLYPH_ATLAS_CACHE
@@ -1002,6 +1007,21 @@
 //  - sakura_core\cmd\CViewCommander_Window.cpp: Command_TAB_DUPLICATE()
 //------------------------------------------------------------------
 #define NKMM_FIX_TAB_DUPLICATE
+
+//------------------------------------------------------------------
+// バージョン情報にサードパーティライセンス表示ボタンを追加する 20260802
+//  - PCRE2/sljit/QuickJS/mimallocのライセンス全文はバージョン情報の
+//    エディットボックスに収まらないため、別ウィンドウ(モーダルダイアログ)
+//    に表示するボタンを追加する
+//  - ライセンス文面はビルド時にsakura_core\dlg\CDlgThirdPartyLicense.cpp内へ
+//    埋め込み済み(実行時に配布物からlibs以下のLICENSEファイルを探す必要がない)。
+//    元ネタ: libs\pcre2\LICENCE.md, libs\deps\sljit\LICENSE,
+//            libs\quickjs\LICENSE, libs\mimalloc\LICENSE
+//  - 各ライブラリの節はCDlgAbout.cppと同じ#ifdef(NKMM_FIX_REGEXP_FALLBACK等)
+//    でガードしているので、実際にビルドに含まれているものだけ表示される
+//  - sakura_core\dlg\CDlgThirdPartyLicense.h,cpp
+//------------------------------------------------------------------
+#define NKMM_FIX_THIRDPARTY_LICENSE
 
 //
 //#define USE_SSE2

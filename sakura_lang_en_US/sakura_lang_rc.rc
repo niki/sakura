@@ -90,7 +90,7 @@ CAPTION "Search"
 FONT 9, "Tahoma"
 BEGIN
 #ifdef NK_FIX_FIND_DIALOG
-//    LTEXT           "èåè(&N)",IDC_STATIC,65,6,26,8
+//    LTEXT           "ÔøΩÔøΩÔøΩÔøΩ(&N)",IDC_STATIC,65,6,26,8
     COMBOBOX        IDC_COMBO_TEXT,67,4,131,150,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     CONTROL         "|Ab|",IDC_CHK_WORD,"Button",
@@ -148,21 +148,36 @@ CAPTION "Version Information"
 FONT 9, "Tahoma"
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,97,236,50,14
+#ifdef NKMM_FIX_THIRDPARTY_LICENSE
+    PUSHBUTTON      "Third-Party Licenses(&L)",IDC_BUTTON_LICENSE,5,236,88,14
+#endif // NKMM_
     PUSHBUTTON      "&Copy to Clipboard",IDC_BUTTON_COPY,178,236,60,14
     ICON            IDI_ICON_STD,IDC_STATIC_MYICON,5,5,20,20,SS_NOTIFY
-    EDITTEXT        IDC_EDIT_VER,33,6,204,109,ES_MULTILINE | ES_READONLY | 
+    EDITTEXT        IDC_EDIT_VER,33,6,204,109,ES_MULTILINE | ES_READONLY |
                     NOT WS_BORDER | NOT WS_TABSTOP
     LTEXT           S_COPYRIGHT,IDC_STATIC,33,119,205,8,NOT WS_GROUP | SS_NOPREFIX
-    LTEXT           "Original Author: Take-san(í|ÉpÉìÉ_) Ç≥ÇÒ",IDC_STATIC,33,133,125,8,NOT 
+    LTEXT           "Original Author: Take-san(ÔøΩ|ÔøΩpÔøΩÔøΩÔøΩ_) ÔøΩÔøΩÔøΩÔøΩ",IDC_STATIC,33,133,125,8,NOT
                     WS_GROUP
     LTEXT           "Project Sakura-Editor:",IDC_STATIC_URL_CAPTION,33,146,71,
                     8,NOT WS_GROUP
     LTEXT           "https://sakura-editor.github.io/",
-                    IDC_STATIC_URL_UR,101,146,120,8,SS_NOTIFY | NOT WS_GROUP | 
+                    IDC_STATIC_URL_UR,101,146,120,8,SS_NOTIFY | NOT WS_GROUP |
                     WS_TABSTOP
-    EDITTEXT        IDC_EDIT_ABOUT,5,165,233,67,ES_MULTILINE | ES_READONLY | 
+    EDITTEXT        IDC_EDIT_ABOUT,5,165,233,67,ES_MULTILINE | ES_READONLY |
                     WS_VSCROLL | NOT WS_TABSTOP
 END
+
+#ifdef NKMM_FIX_THIRDPARTY_LICENSE
+IDD_THIRDPARTY_LICENSE DIALOG DISCARDABLE  0, 0, 320, 280
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Third-Party Licenses"
+FONT 9, "Tahoma"
+BEGIN
+    EDITTEXT        IDC_EDIT_LICENSE,7,7,306,240,ES_MULTILINE | ES_READONLY |
+                    WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "&OK",IDOK,133,257,50,14
+END
+#endif // NKMM_
 
 IDD_JUMP DIALOGEX 0, 0, 252, 121
 STYLE DS_MODALFRAME | DS_NOIDLEMSG | DS_SETFOREGROUND | DS_CENTER | 
@@ -212,8 +227,8 @@ BEGIN
     CONTROL         "List1",IDC_LIST_FL,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,0,
                     0,234,252
-    PUSHBUTTON      "Å•",IDC_BUTTON_MENU,1,255,10,14,NOT WS_TABSTOP
-    CONTROL         "Å°",IDC_BUTTON_WINSIZE,"Button",BS_AUTOCHECKBOX | 
+    PUSHBUTTON      "ÔøΩÔøΩ",IDC_BUTTON_MENU,1,255,10,14,NOT WS_TABSTOP
+    CONTROL         "ÔøΩÔøΩ",IDC_BUTTON_WINSIZE,"Button",BS_AUTOCHECKBOX | 
                     BS_PUSHLIKE,12,255,10,14
     PUSHBUTTON      "&Copy",IDC_BUTTON_COPY,24,255,50,14,WS_DISABLED
     DEFPUSHBUTTON   "&Jump",IDOK,76,255,50,14
@@ -458,7 +473,7 @@ STYLE DS_SETFOREGROUND | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Grep Running..."
 FONT 9, "Tahoma"
 BEGIN
-    LTEXT           "SearchingÅEÅEÅE",IDC_STATIC,5,5,61,8,NOT WS_GROUP
+    LTEXT           "SearchingÔøΩEÔøΩEÔøΩE",IDC_STATIC,5,5,61,8,NOT WS_GROUP
     LTEXT           "File",IDC_STATIC,5,21,26,8,NOT WS_GROUP
     LTEXT           "IDC_STATIC_CURPATH",IDC_STATIC_CURFILE,36,20,252,10,NOT 
                     WS_GROUP
@@ -1215,7 +1230,7 @@ BEGIN
     LTEXT           "Keyword Set &1",IDC_STATIC,162,18,54,8
     COMBOBOX        IDC_COMBO_SET,218,16,75,180,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    PUSHBUTTON      "Set &2Å`10...",IDC_BUTTON_KEYWORD_SELECT,218,31,75,14
+    PUSHBUTTON      "Set &2ÔøΩ`10...",IDC_BUTTON_KEYWORD_SELECT,218,31,75,14
     PUSHBUTTON      "Keyword Setting(&C)...",IDC_BUTTON_EDITKEYWORD,218,47,75,14
     GROUPBOX        "Keyword Highlighting",IDC_STATIC,156,6,142,60,WS_GROUP
     LTEXT           "Block(&F)",IDC_STATIC,164,80,42,8
@@ -1278,7 +1293,7 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Case &Insensitive",IDC_CHECK_HOKANLOHICASE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,31,90,10
-    LTEXT           "CandidateÅF",IDC_STATIC,102,32,30,8,NOT WS_GROUP
+    LTEXT           "CandidateÔøΩF",IDC_STATIC,102,32,30,8,NOT WS_GROUP
     CONTROL         "In current &file",IDC_CHECK_HOKANBYFILE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,142,31,68,10
     CONTROL         "From &Keyword Set",IDC_CHECK_HOKANBYKEYWORD,"Button",
@@ -1304,7 +1319,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,171,130,10
     CONTROL         "When Undo, separate from editing(&U)",IDC_CHECK_INDENTCPPUNDO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,146,10
-    GROUPBOX        "C/C++Å@Indent Settings",IDC_STATIC,3,159,295,40,WS_GROUP
+    GROUPBOX        "C/C++ÔøΩ@Indent Settings",IDC_STATIC,3,159,295,40,WS_GROUP
 END
 
 IDD_PROP_REGEX DIALOGEX 0, 0, 302, 244
@@ -1366,7 +1381,7 @@ BEGIN
                     WS_GROUP
     EDITTEXT        IDC_EDIT_KEYHELP,61,172,170,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON_KEYHELP_REF,234,172,12,13,WS_GROUP
-    LTEXT           "Å™ Priority (Top)",IDC_LABEL_KEYHELP_PRIOR,249,33,44,8,NOT 
+    LTEXT           "ÔøΩÔøΩ Priority (Top)",IDC_LABEL_KEYHELP_PRIOR,249,33,44,8,NOT 
                     WS_GROUP
     PUSHBUTTON      "In&sert",IDC_BUTTON_KEYHELP_INS,251,136,38,15
     PUSHBUTTON      "Updat&e",IDC_BUTTON_KEYHELP_UPD,251,154,38,15
@@ -1968,7 +1983,7 @@ BEGIN
     CONTROL         "Save once as .&bak",
                     IDC_RADIO_BACKUP_TYPE1,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,12,66,142,10
-    CONTROL         "Save repeatedly as (.b00Å`b98)(&G)",
+    CONTROL         "Save repeatedly as (.b00ÔøΩ`b98)(&G)",
                     IDC_RADIO_BACKUP_TYPE3,"Button",BS_AUTORADIOBUTTON,12,80,
                     156,10
     CONTROL         "App&end backup date/time to file name",
@@ -2449,7 +2464,7 @@ EXSTYLE WS_EX_CONTEXTHELP
 CAPTION "File Tree Setting"
 FONT 9, "Tahoma"
 BEGIN
-    LTEXT           "SettingÅFCommon",IDC_STATIC_SETTFING_FROM,4,4,282,10
+    LTEXT           "SettingÔøΩFCommon",IDC_STATIC_SETTFING_FROM,4,4,282,10
     CONTROL         "Load &Ini from foldres",IDC_CHECK_LOADINI,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,16,120,9
     LTEXT           "Default Setting File(&J)",IDC_STATIC,4,28,110,8
@@ -2466,7 +2481,7 @@ BEGIN
     LTEXT           "Pa&th",IDC_STATIC_PATH,3,119,22,10
     EDITTEXT        IDC_EDIT_PATH,38,117,122,13,ES_AUTOHSCROLL
     PUSHBUTTON      "&...",IDC_BUTTON_REF2,161,117,10,13
-    PUSHBUTTON      "Å•(&3)",IDC_BUTTON_PATH_MENU,171,117,21,14
+    PUSHBUTTON      "ÔøΩÔøΩ(&3)",IDC_BUTTON_PATH_MENU,171,117,21,14
     LTEXT           "Lab&el",IDC_STATIC,3,136,32,10
     EDITTEXT        IDC_EDIT_LABEL,38,134,111,13,ES_AUTOHSCROLL
     LTEXT           "File(&K)",IDC_STATIC_FILE,3,154,32,10
@@ -3285,8 +3300,8 @@ STRINGTABLE DISCARDABLE
 BEGIN
     F_COPY_ADDCRLF          "Copy adding CRLF"
     F_COPYLINES             "Copy selected lines"
-    F_COPYLINESASPASSAGE    "Copy selected as passage"			// ëIëîÕàÕì‡ëSçsà¯ópïÑïtÇ´ÉRÉsÅ[" <<--check
-	F_COPYLINESWITHLINENUMBER "Copy selected with line nr"		// ëIëîÕàÕì‡ëSçsçsî‘çÜïtÇ´ÉRÉsÅ[" <<--check
+    F_COPYLINESASPASSAGE    "Copy selected as passage"			// ÔøΩIÔøΩÔøΩÕàÕìÔøΩÔøΩSÔøΩsÔøΩÔøΩÔøΩpÔøΩÔøΩÔøΩtÔøΩÔøΩÔøΩRÔøΩsÔøΩ[" <<--check
+	F_COPYLINESWITHLINENUMBER "Copy selected with line nr"		// ÔøΩIÔøΩÔøΩÕàÕìÔøΩÔøΩSÔøΩsÔøΩsÔøΩ‘çÔøΩÔøΩtÔøΩÔøΩÔøΩRÔøΩsÔøΩ[" <<--check
     F_COPY_COLOR_HTML       "Copy selected with HTML markup"
     F_COPY_COLOR_HTML_LINENUMBER "Copy selected with line nr && HTML"
     F_COPYPATH              "Copy this file's path"
@@ -3311,36 +3326,36 @@ BEGIN
     F_CONVERT_TOPMENU		"Convert"
     F_TOLOWER               "Lower case"
     F_TOUPPER               "Upper case"
-    F_TOHANKAKU             "Full Height Å® Half Height"
-    F_TOZENKAKUKATA         "Half Height + Hiragana Å® Full/Katakana"
-    F_TOZENKAKUHIRA         "Half Height + Katakana Å® Full/Hiragana"
-    F_HANKATATOZENKATA      "Half Height Katakana Å® Full Katakana"
-    F_HANKATATOZENHIRA      "Half Katakana Å® Full Hiragana"
-    F_TOZENEI               "Half Alphabetic Å® Full Alphabetic"
+    F_TOHANKAKU             "Full Height ÔøΩÔøΩ Half Height"
+    F_TOZENKAKUKATA         "Half Height + Hiragana ÔøΩÔøΩ Full/Katakana"
+    F_TOZENKAKUHIRA         "Half Height + Katakana ÔøΩÔøΩ Full/Hiragana"
+    F_HANKATATOZENKATA      "Half Height Katakana ÔøΩÔøΩ Full Katakana"
+    F_HANKATATOZENHIRA      "Half Katakana ÔøΩÔøΩ Full Hiragana"
+    F_TOZENEI               "Half Alphabetic ÔøΩÔøΩ Full Alphabetic"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_TOHANEI               "Full Alphabetic Å® Half Alphabetic"
-    F_TOHANKATA             "Full Katakana Å® Half Katakana"
-    F_TABTOSPACE            "TABÅ®Spaces"
-    F_SPACETOTAB            "SpacesÅ®TAB"
+    F_TOHANEI               "Full Alphabetic ÔøΩÔøΩ Half Alphabetic"
+    F_TOHANKATA             "Full Katakana ÔøΩÔøΩ Half Katakana"
+    F_TABTOSPACE            "TABÔøΩÔøΩSpaces"
+    F_SPACETOTAB            "SpacesÔøΩÔøΩTAB"
 	F_CONV_ENCODE_SUBMENU	"Change Encoding"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_CODECNV_AUTO2SJIS     "Automatic Å® SJIS Code"
-    F_CODECNV_EMAIL         "E-Mail(JISÅ®SJIS) Code"
-    F_CODECNV_EUC2SJIS      "EUCÅ®SJIS Code"
-    F_CODECNV_UNICODE2SJIS  "UTF-16Å®SJIS Code"
-    F_CODECNV_UTF82SJIS     "UTF-8Å®SJIS Code"
-    F_CODECNV_UTF72SJIS     "UTF-7Å®SJIS Code"
-    F_CODECNV_UNICODEBE2SJIS "UTF-16 BEÅ®SJIS Code"
-    F_CODECNV_SJIS2JIS      "SJISÅ®JIS Code"
-    F_CODECNV_SJIS2EUC      "SJISÅ®EUC Code"
-    F_CODECNV_SJIS2UTF8     "SJISÅ®UTF-8 Code"
-    F_CODECNV_SJIS2UTF7     "SJISÅ®UTF-7 Code"
+    F_CODECNV_AUTO2SJIS     "Automatic ÔøΩÔøΩ SJIS Code"
+    F_CODECNV_EMAIL         "E-Mail(JISÔøΩÔøΩSJIS) Code"
+    F_CODECNV_EUC2SJIS      "EUCÔøΩÔøΩSJIS Code"
+    F_CODECNV_UNICODE2SJIS  "UTF-16ÔøΩÔøΩSJIS Code"
+    F_CODECNV_UTF82SJIS     "UTF-8ÔøΩÔøΩSJIS Code"
+    F_CODECNV_UTF72SJIS     "UTF-7ÔøΩÔøΩSJIS Code"
+    F_CODECNV_UNICODEBE2SJIS "UTF-16 BEÔøΩÔøΩSJIS Code"
+    F_CODECNV_SJIS2JIS      "SJISÔøΩÔøΩJIS Code"
+    F_CODECNV_SJIS2EUC      "SJISÔøΩÔøΩEUC Code"
+    F_CODECNV_SJIS2UTF8     "SJISÔøΩÔøΩUTF-8 Code"
+    F_CODECNV_SJIS2UTF7     "SJISÔøΩÔøΩUTF-7 Code"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -3577,7 +3592,7 @@ BEGIN
     F_PREVGROUP             "Prev group"
     F_TAB_MOVERIGHT         "Move tab Right"
     F_TAB_MOVELEFT          "Move tab Left"
-    F_TAB_SEPARATE          "New Tab Group" // "êVãKÉOÉãÅ[Év"
+    F_TAB_SEPARATE          "New Tab Group" // "ÔøΩVÔøΩKÔøΩOÔøΩÔøΩÔøΩ[ÔøΩv"
     F_TAB_JOINTNEXT         "Move to next group"
     F_TAB_JOINTPREV         "Move to prev group"
     F_TAB_MANIP_SUBMENU     "Tab control"				// LMP -- added
@@ -3650,7 +3665,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    F_MENU_NOT_USED_FIRST   "--Tool Bar Break--" //"Å\Å\ÉcÅ[ÉãÉoÅ[ê‹ï‘Å\Å\"
+    F_MENU_NOT_USED_FIRST   "--Tool Bar Break--" //"ÔøΩ\ÔøΩ\ÔøΩcÔøΩ[ÔøΩÔøΩÔøΩoÔøΩ[ÔøΩ‹ï‘Å\ÔøΩ\"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -3680,7 +3695,7 @@ BEGIN
     STR_SQLERR_EXEC_BUT_NOT_RUN	"Trying to execute in Oracle SQL*Plus\n\n\nOracle SQL*Plus is not running\n"
     STR_SQLERR_ACTV_BUT_NOT_RUN	"Trying to activate Oracle SQL*Plus\n\n\nOracle SQL*Plus is not running\n"
 	STR_ERR_CMPERR				"Comparison destination folder\n%ts\nhas a %d byte line \ncan not perform comparison."			// FIXME - ok?
-//	STR_ERR_CMPERR				"î‰ärêÊÇÃÉtÉ@ÉCÉã\n%s\n%dÉoÉCÉgÇí¥Ç¶ÇÈçsÇ™Ç†ÇËÇ‹Ç∑ÅB\nî‰ärÇ≈Ç´Ç‹ÇπÇÒÅB"
+//	STR_ERR_CMPERR				"ÔøΩÔøΩrÔøΩÔøΩÃÉtÔøΩ@ÔøΩCÔøΩÔøΩ\n%s\n%dÔøΩoÔøΩCÔøΩgÔøΩí¥ÇÔøΩÔøΩÔøΩsÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ‹ÇÔøΩÔøΩB\nÔøΩÔøΩrÔøΩ≈ÇÔøΩÔøΩ‹ÇÔøΩÔøΩÔøΩB"
 
 	STR_NO_TITLE1				"(No Title)"
 	STR_NO_TITLE2				"No Title"
@@ -3794,8 +3809,8 @@ BEGIN
 	STR_DLGFNCLST_REMARK03		"Procedure Declaration"
 	STR_DLGFNCLST_REMARK04		"Function"
 	STR_DLGFNCLST_REMARK05		"Procedure"
-	STR_DLGFNCLST_REMARK06		"Å°Package Specification"
-	STR_DLGFNCLST_REMARK07		"Å°Package Body"
+	STR_DLGFNCLST_REMARK06		"ÔøΩÔøΩPackage Specification"
+	STR_DLGFNCLST_REMARK07		"ÔøΩÔøΩPackage Body"
 	STR_DLGFNCLST_REMARK08		"PROC"
 	STR_DLGFNCLST_REMARK09		"LABEL"
 	STR_DLGFNCLST_REMARK10		"ENDP"
@@ -3863,7 +3878,7 @@ BEGIN
 	STR_DLGFNCLST_MENU_UNIFY	"&Unify inheriting info"
 	STR_DLGFNCLST_MENU_CLOSE	"Close(&X)"
 
-	STR_DLGFNCLST_UNIFY			"åªç›ÇÃâÊñ ÇÃÉhÉbÉLÉìÉOîzíuèÓïÒÇÇ∑Ç◊ÇƒÇÃã§í ê›íËÅEÉ^ÉCÉvï ê›íËÇ…ÉRÉsÅ[ÇµÇƒìùàÍÇµÇ‹Ç∑ÅB\nÅiåªç›äJÇ¢ÇƒÇ¢ÇÈëºâÊñ ÇÃèÛë‘Ç‡ìùàÍÇµÇ‹Ç∑ÅBÅj\n"
+	STR_DLGFNCLST_UNIFY			"ÔøΩÔøΩÔøΩ›ÇÃâÔøΩ ÇÃÉhÔøΩbÔøΩLÔøΩÔøΩÔøΩOÔøΩzÔøΩuÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ◊ÇƒÇÃãÔøΩÔøΩ ê›íÔøΩEÔøΩ^ÔøΩCÔøΩvÔøΩ ê›íÔøΩ…ÉRÔøΩsÔøΩ[ÔøΩÔøΩÔøΩƒìÔøΩÔøΩÍÇµÔøΩ‹ÇÔøΩÔøΩB\nÔøΩiÔøΩÔøΩÔøΩ›äJÔøΩÔøΩÔøΩƒÇÔøΩÔøΩÈëºÔøΩÔøΩ ÇÃèÔøΩ‘ÇÔøΩÔøΩÔøΩÔøΩÍÇµÔøΩ‹ÇÔøΩÔøΩBÔøΩj\n"
 
 
 	// CDlgGrep.cpp
@@ -4013,9 +4028,9 @@ BEGIN
 	STR_BACKUP_ERR_MSG		"Failed to create backup..  Continue to overwrite the original file?"		// Continue with original file
 	STR_BACKUP_ERR_PATH_CRETE	"error in the path of creating the backup destination.\nPath is too long or invalid format.\nContinue to overwire teh original file?"
 	STR_BACKUP_CONFORM_TITLE1		"Confirming creation of backup"												// Dialog Title for message below
-	STR_BACKUP_CONFORM_MSG1		"Creating a backup before updating.\nOK?  [(N)o] = No backup, just overwrite (or save as).\n\n%ts\n    Å´\n%ts\n\nBackup file will be sent to the Trashcan\n"
+	STR_BACKUP_CONFORM_MSG1		"Creating a backup before updating.\nOK?  [(N)o] = No backup, just overwrite (or save as).\n\n%ts\n    ÔøΩÔøΩ\n%ts\n\nBackup file will be sent to the Trashcan\n"
 	STR_BACKUP_CONFORM_TITLE2		"Confirming creation of backup"												// Dialog Title fo rmessage below
-	STR_BACKUP_CONFORM_MSG2		"Creating a backup before updating.\nOK?  [(N)o] = No backup, just overwrite (or save as).\n\n%ts\n    Å´\n%ts\n\n"
+	STR_BACKUP_CONFORM_MSG2		"Creating a backup before updating.\nOK?  [(N)o] = No backup, just overwrite (or save as).\n\n%ts\n    ÔøΩÔøΩ\n%ts\n\n"
 	STR_BACKUP_ERR_DELETE		"failed to delete"
 	STR_BACKUP_ERR_MOVE			"failed to move"
 	STR_ERR_DLGEDITDOC21		"%ts\nis currently prohibited from writing by another process."
@@ -4030,7 +4045,7 @@ BEGIN
 	STR_ERR_DLGEDITDOC30		"%ts\nhas been altered. Save before closing? \n\nDue to opening as view-mode it is suggested to save under a different name.\n"
 	STR_CHANGE_CHARSET			"%ts\nis no change.\nhowever change encoding.\nSave before closing?"
 	STR_ERR_DLGEDITDOC31		"%ts\nhas been altered. Save before closing?"
-	STR_AUTORELOAD_NOFITY		"ÅöFile Updated at %02d:%02d:%02d"
+	STR_AUTORELOAD_NOFITY		"ÔøΩÔøΩFile Updated at %02d:%02d:%02d"
 
 	// CType_Cpp.cpp
 	STR_OUTLINE_CPP_NONAME		"No Name"
@@ -4051,15 +4066,15 @@ BEGIN
 
 	// CEditView.cpp
 	STR_VIEW_TIMER				"CEditView::Create()\nTimer could not start up.\nPossible insufficiency of system resources."
-	STR_ERR_DLGEDITVW2			"ëÂ"													// Used in get Extents
-	STR_ERR_DLGEDITVW5			"\n--------------------\nÅ°"
-	STR_ERR_DLGEDITVW6			"Å°"
+	STR_ERR_DLGEDITVW2			"ÔøΩÔøΩ"													// Used in get Extents
+	STR_ERR_DLGEDITVW5			"\n--------------------\nÔøΩÔøΩ"
+	STR_ERR_DLGEDITVW6			"ÔøΩÔøΩ"
 	STR_MENU_KEYWORDINFO		"Copy Keyword description to clipboard"				// Right click menu
 	STR_MENU_OPENKEYWORDDIC		"Open keyword dictionary"							// Right click menu
 	STR_STATUS_ROW_COL			"%5d Ln %4d Col"
 	STR_INS_MODE_INS			"INS"													// Insert mode
 	STR_INS_MODE_OVR			"OVR"													// Overwrite mode
-	STR_GREP_SEARCH_CONDITION	"\r\nÅ† Search Conditions  "							// Output from GREP resuilts
+	STR_GREP_SEARCH_CONDITION	"\r\nÔøΩÔøΩ Search Conditions  "							// Output from GREP resuilts
 	STR_GREP_SEARCH_FILE		"<File Search>\r\n"
 	STR_GREP_SEARCH_TARGET		"Search Target   "
 	STR_GREP_REPLACE_TO			"Repalce To      "
@@ -4109,13 +4124,13 @@ BEGIN
 
 	// CEditView_Command.cpp
 	STR_ERR_MACRO1				"Macro %d (%ts) failed to execute."
-	STR_ERR_SRPREV1				"Å£Restarted search from bottom"
-	STR_ERR_SRPREV2				"Å¢Not Found"
-	STR_ERR_SRPREV3				"Reverse searching (Å™) for '%ls' found no further instances."
-	STR_ERR_SRNEXT1				"Å•Restarted search from top"
-	STR_ERR_SRNEXT2				"Å§Not Found"
-	STR_ERR_SRNEXT3				"Forward searching (Å´) for '%ls' found no further instances."
-	STR_ERR_UNINDENT1			"ÅöReverse indent only works on selected text"
+	STR_ERR_SRPREV1				"ÔøΩÔøΩRestarted search from bottom"
+	STR_ERR_SRPREV2				"ÔøΩÔøΩNot Found"
+	STR_ERR_SRPREV3				"Reverse searching (ÔøΩÔøΩ) for '%ls' found no further instances."
+	STR_ERR_SRNEXT1				"ÔøΩÔøΩRestarted search from top"
+	STR_ERR_SRNEXT2				"ÔøΩÔøΩNot Found"
+	STR_ERR_SRNEXT3				"Forward searching (ÔøΩÔøΩ) for '%ls' found no further instances."
+	STR_ERR_UNINDENT1			"ÔøΩÔøΩReverse indent only works on selected text"
 	STR_ERR_TAGJMP1				"Cant Tag-Jump"
 	STR_ERR_TAGJMPBK1			"Cant Bookmark Tag-Jump"
 	STR_ERR_MACROERR1			"Failed to open Macro.\n\n%ts"
@@ -4148,10 +4163,10 @@ BEGIN
 	// inside funciton Command_EXTHELP1
 
 	// CEditView_Command_New.cpp
-	STR_BOOKMARK_NEXT_NOT_FOUND	"Forward (Å´) bookmark wasnt found."
-	STR_BOOKMARK_PREV_NOT_FOUND	"Previous (Å™) bookmark wasnt found."
-	STR_FUCLIST_NEXT_NOT_FOUND	"Forward (Å´) Function wasnt found."
-	STR_FUCLIST_PREV_NOT_FOUND	"Previous (Å™) Function wasnt found."
+	STR_BOOKMARK_NEXT_NOT_FOUND	"Forward (ÔøΩÔøΩ) bookmark wasnt found."
+	STR_BOOKMARK_PREV_NOT_FOUND	"Previous (ÔøΩÔøΩ) bookmark wasnt found."
+	STR_FUCLIST_NEXT_NOT_FOUND	"Forward (ÔøΩÔøΩ) Function wasnt found."
+	STR_FUCLIST_PREV_NOT_FOUND	"Previous (ÔøΩÔøΩ) Function wasnt found."
 	STR_ERR_DLGEDITVWCMDNW7		"%d line was successfully merged."												// Edit Menu::Cosmtik::Merge lines option
 	STR_ERR_DLGEDITVWCMDNW8		"There were no lines of text that could be merged in your selection."			// Edit Menu::Cosmtik::Merge lines option
 	STR_SAVEAGENT_OTHER_APP		"'%ts'\nCould not save the file.\nPath may not be correct, or the file is in use by another application."
@@ -4164,13 +4179,13 @@ BEGIN
 	STR_ERR_DLGEDITVWDIFF3		"DIFF command failed.\n\n%ls"
 	STR_ERR_DLGEDITVWDIFF4		"The file to be used for comparison appears to be a binary file."
 	STR_ERR_DLGEDITVWDIFF5		"No differences were found by DIFF"
-	STR_DIFF_NEXT_NOT_FOUND		"Forwards (Å´) searching didnt find differences"
-	STR_DIFF_PREV_NOT_FOUND		"Backward (Å™) searching didnt find differences"
+	STR_DIFF_NEXT_NOT_FOUND		"Forwards (ÔøΩÔøΩ) searching didnt find differences"
+	STR_DIFF_PREV_NOT_FOUND		"Backward (ÔøΩÔøΩ) searching didnt find differences"
 	STR_DIFF_FAILED				"DIFF command failed."
 	STR_DIFF_FAILED_TEMP		"DIFF command failed.\n\nCouldnt create temporary file."
 	STR_DIFF_FAILED_LONG		"DIFF command failed.\n\nLine was too long."
-	STR_MODLINE_NEXT_NOT_FOUND	"Forward (Å´) Modified Line wasnt found."
-	STR_MODLINE_PREV_NOT_FOUND	"Previous (Å™) Modified Line wasnt found."
+	STR_MODLINE_NEXT_NOT_FOUND	"Forward (ÔøΩÔøΩ) Modified Line wasnt found."
+	STR_MODLINE_PREV_NOT_FOUND	"Previous (ÔøΩÔøΩ) Modified Line wasnt found."
 
 	// CEditView_New.cpp -- no words, going to ignore for now ( just block [], ... etc )
 
@@ -4199,10 +4214,10 @@ BEGIN
 
 	STR_ERR_DLGEDITWND14		"Before using Print Preview please install a printer driver.\n"
 
-	//		const char*	pszLabel[7] = { "", "99999 çs 9999 óÒ", "CRLF", "0000", "UTF-16", "REC", "è„èë" };	//Oct. 30, 2000 JEPRO êÁñúçsÇ‡óvÇÁÇÒ
+	//		const char*	pszLabel[7] = { "", "99999 ÔøΩs 9999 ÔøΩÔøΩ", "CRLF", "0000", "UTF-16", "REC", "ÔøΩ„èë" };	//Oct. 30, 2000 JEPRO ÔøΩÁñúÔøΩsÔøΩÔøΩÔøΩvÔøΩÔøΩÔøΩ
 	STR_ERR_DLGEDITWND19		""
 	STR_ERR_DLGEDITWND20		"99999 L 9999 C"
-//	STR_ERR_DLGEDITWND20		"99999 çs 9999 óÒ"
+//	STR_ERR_DLGEDITWND20		"99999 ÔøΩs 9999 ÔøΩÔøΩ"
 	STR_ERR_DLGEDITWND21		"CFLF"
 	STR_ERR_DLGEDITWND22		"0000"
 	STR_ERR_DLGEDITWND23		"UTF-16 BOM"
@@ -4607,7 +4622,7 @@ BEGIN
 
 	// CPropTypesRegex.cpp
 	STR_PROPTYPEREGEX_LIST1			"Keyword"
-	STR_PROPTYPEREGEX_LIST2			"Color Index"						// LMP - not sure êFéwíË
+	STR_PROPTYPEREGEX_LIST2			"Color Index"						// LMP - not sure ÔøΩFÔøΩwÔøΩÔøΩ
 	STR_PROPTYPEREGEX_NOUSE			"Cannot use Regular Expression"
 	STR_PROPTYPEREGEX_NOTFOUND		"RegEx library cannot be found\n\nRegular Expression functionality cant be used, do you want to enable it anyway?"
 	STR_PROPTYPEREGEX_NOREG			"Cannot register any further keywords."
@@ -4682,17 +4697,17 @@ BEGIN
 	STR_ERR_CSHAREDATA02			"Unexpected error"
 
 									// Common Prop::Tab/Title bar
-	STR_ERR_CSHAREDATA10			"${w?ÅyGrepÅz$h$:ÅyOutputÅz$:$f$}${U?(Changed)$}${R?(Read Only)$:(Write Protected)$}${M?ÅyRecording MacroÅz$}"
+	STR_ERR_CSHAREDATA10			"${w?ÔøΩyGrepÔøΩz$h$:ÔøΩyOutputÔøΩz$:$f$}${U?(Changed)$}${R?(Read Only)$:(Write Protected)$}${M?ÔøΩyRecording MacroÔøΩz$}"
 	STR_CUSTMENU_RIGHT_CLICK		"Right Click Menu"
 	STR_CUSTMENU_CUSTOM				"Menu%d"
 	STR_CUSTMENU_TAB				"Tab Menu"
-	STR_ERR_CSHAREDATA14			"ÇPÇQÇRÇSÇTÇUÇVÇWÇXÇOÅi(Åm[ÅuÅwÅyÅ°Å†Å£Å¢Å•Å§ÅüÅûÅõÅùÅúÅòÅEÅ¶ÅôÅöëÊá@áAáBáCáDáEáFáGáHáIáJáKáLáMáNáOáPáQáRáSáTáUáVáWáXáYáZá[á\á]àÍìÒéOélå‹òZéµî™ã„è\àÎìÛéQåﬁ"
+	STR_ERR_CSHAREDATA14			"ÔøΩPÔøΩQÔøΩRÔøΩSÔøΩTÔøΩUÔøΩVÔøΩWÔøΩXÔøΩOÔøΩi(ÔøΩm[ÔøΩuÔøΩwÔøΩyÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩEÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ@ÔøΩAÔøΩBÔøΩCÔøΩDÔøΩEÔøΩFÔøΩGÔøΩHÔøΩIÔøΩJÔøΩKÔøΩLÔøΩMÔøΩNÔøΩOÔøΩPÔøΩQÔøΩRÔøΩSÔøΩTÔøΩUÔøΩVÔøΩWÔøΩXÔøΩYÔøΩZÔøΩ[ÔøΩ\ÔøΩ]ÔøΩÔøΩÔøΩOÔøΩlÔøΩ‹òZÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ\ÔøΩÔøΩÔøΩQÔøΩÔøΩ"
 	STR_ERR_CSHAREDATA15			"yyyy'Y'M'M'd'D('dddd')'"
 	STR_ERR_CSHAREDATA16			"tthh'H'mm'M'ss'S'"
-	STR_ERR_CSHAREDATA17			"${w?$h$:Output$:${I?$f$:$N$}$}${U?(Changed)$} - sakura $V ${R?(Read Only)$:(Write Protected)$}${M?  ÅyRecording MacroÅz$}"
-	STR_ERR_CSHAREDATA18			"${w?$h$:Output$:$f$}${U?(Changed)$} - sakura $V ${R?(Read Only)$:(Write Protected)$}${M?  ÅyRecording MacroÅz$}"
+	STR_ERR_CSHAREDATA17			"${w?$h$:Output$:${I?$f$:$N$}$}${U?(Changed)$} - sakura $V ${R?(Read Only)$:(Write Protected)$}${M?  ÔøΩyRecording MacroÔøΩz$}"
+	STR_ERR_CSHAREDATA18			"${w?$h$:Output$:$f$}${U?(Changed)$} - sakura $V ${R?(Read Only)$:(Write Protected)$}${M?  ÔøΩyRecording MacroÔøΩz$}"
 	STR_ERR_CSHAREDATA19			"Attempting to close multiple editor windows, sure you want to do this?"			// Displayed if you try to close edit whith many open windows
-	STR_ERR_CSHAREDATA20			"%ts\n\n\nIn the case you want to re-open a file with a different encoding\nsChooseÅuRe-Open with EncodingÅvfrom the file menu please.\n\nCurrent Character Encoding set=[%ts]\nNew Character Encoding=[%ts]" // See Resource F_FILE_REOPEN_SUBMENU
+	STR_ERR_CSHAREDATA20			"%ts\n\n\nIn the case you want to re-open a file with a different encoding\nsChooseÔøΩuRe-Open with EncodingÔøΩvfrom the file menu please.\n\nCurrent Character Encoding set=[%ts]\nNew Character Encoding=[%ts]" // See Resource F_FILE_REOPEN_SUBMENU
 	STR_ERR_CSHAREDATA21			"%ts\n\nUnclear character encoding found during opening multiple documents.\n\nCurrent Char Encoding=%d [%ts]\nNew Char Encoding=%d [%ts]"
 	STR_ERR_CSHAREDATA22			"unknown" // relates to above two [%s]
 
@@ -4936,7 +4951,7 @@ GDI Resource\tRemaining  %d%%\n\n"
 	STR_PLGMGR_INST_RESERVE1		"Do'nt Use  """
 	STR_PLGMGR_INST_RESERVE2		""" in Plugin.ID"
 	STR_PLGMGR_INST_IDNUM			"Plugin.ID of Head charcter not use numbers"
-	STR_PLGMGR_INST_NAME			"The same plugin has been installed under a different name. Are you sure Overwite?\nÅ@YesÅ@->Å@Use newÅu%tsÅv\nÅ@NoÅ®Å@Use installedÅu%lsÅv"
+	STR_PLGMGR_INST_NAME			"The same plugin has been installed under a different name. Are you sure Overwite?\nÔøΩ@YesÔøΩ@->ÔøΩ@Use newÔøΩu%tsÔøΩv\nÔøΩ@NoÔøΩÔøΩÔøΩ@Use installedÔøΩu%lsÔøΩv"
 	STR_PLGMGR_INST_USERCANCEL		"User Cancel"
 	STR_PLGMGR_INST_MAX				"Plugin can not register any more"
 
@@ -4947,7 +4962,7 @@ GDI Resource\tRemaining  %d%%\n\n"
 	STR_FILETREE_FROM_TYPE			"Setting: Types"
 	STR_FILETREE_FROM_FILE			"Setting: %ts"
 	STR_FILETREE_CURDIR				"<Cur Folder>"
-	STR_FILETREE_MAXCOUNT			"ç≈ëÂêî(%d)Çí¥Ç¶ÇΩÇΩÇﬂêÿÇËéÃÇƒÇ‹ÇµÇΩ"
+	STR_FILETREE_MAXCOUNT			"ÔøΩ≈ëÂêî(%d)ÔøΩí¥ÇÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩﬂêÿÇÔøΩÃÇƒÇ‹ÇÔøΩÔøΩÔøΩ"
 	STR_FILETREE_MENU_ROOT			"&Ini Root"
 	STR_FILETREE_MENU_MYDOC			"M&y Document"
 	STR_FILETREE_MENU_MYMUSIC		"My &Music"
