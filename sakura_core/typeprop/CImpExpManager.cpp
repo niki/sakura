@@ -898,6 +898,16 @@ bool CImpExpKeybind::Import( const wstring& sFileName, wstring& sErrMsg )
 		if (sKeyBind.m_nKeyNameArrNum < 0 || sKeyBind.m_nKeyNameArrNum > KEYNAME_SIZE){	bVer3=false; bVer4=false; } //範囲チェック
 
 		CShareData_IO::IO_KeyBind(in, sKeyBind, true);	// 2008/5/25 Uchi
+
+#ifdef NKMM_FIX_KEYBIND_EXPORT_FUNCNAME
+		// Export()側でKeyBind[NNN]の末尾にTAB区切りで追記した機能名注釈を取り除き、
+		// 元のキー名に復元する(IO_KeyBind()はキー名をTABも含めた行末までとして
+		// 読み込むため、ここでTAB以降を切り捨てる)。
+		for( int i = 0; i < sKeyBind.m_nKeyNameArrNum; ++i ){
+			TCHAR* pTab = _tcschr( sKeyBind.m_pKeyNameArr[i].m_szKeyName, _T('\t') );
+			if( pTab != NULL )	*pTab = _T('\0');
+		}
+#endif // NKMM_FIX_KEYBIND_EXPORT_FUNCNAME
 	}
 
 	if (!bVer3 && !bVer4) {
@@ -1037,6 +1047,57 @@ bool CImpExpKeybind::Export( const wstring& sFileName, wstring& sErrMsg )
 
 	//内容
 	CShareData_IO::IO_KeyBind(cProfile, m_Common.m_sKeyBind, true);
+
+#ifdef NKMM_FIX_KEYBIND_EXPORT_FUNCNAME
+	// 20260801 KeyBind[NNN]行の末尾(キー名の後ろ)にTAB区切りで8モディファイア分の
+	// 割り当て機能名を追記する。IO_KeyBind()自体は変更せず、直前の書き込みで
+	// できあがった行をいったん読み戻して末尾に追記し、同じキーに書き戻す
+	// (CDataProfileは書き込みモードでもメモリ上のデータを保持しているため、
+	// 一時的にSetReadingMode()に切り替えれば読み戻せる)。
+	// TABより後ろはキー名として通常読み込まれるが、インポート側(Import())で
+	// TAB以降を切り捨てて元のキー名に復元するため、インポート結果には影響しない。
+	{
+		const wchar_t* szSecKeyBind = L"KeyBind";
+		for( int i = 0; i < m_Common.m_sKeyBind.m_nKeyNameArrNum; ++i ){
+			KEYDATA& keydata = m_Common.m_sKeyBind.m_pKeyNameArr[i];
+			WCHAR szKeyName[32];
+			auto_sprintf( szKeyName, L"KeyBind[%03d]", i );
+
+			WCHAR szKeyData[1024];
+			cProfile.SetReadingMode();
+			bool bGot = cProfile.IOProfileData( szSecKeyBind, szKeyName, MakeStringBufferW(szKeyData) );
+			cProfile.SetWritingMode();
+			if( !bGot )	continue;
+
+			WCHAR szDescData[8*256];
+			szDescData[0] = L'\0';
+			for( int j = 0; j < 8; ++j ){
+				// 0(F_DEFAULT)のスロットも、Ctrl+F4等の状況依存の既定機能まで解決する
+				EFunctionCode nFunc = CKeyBind::GetFuncCodeAt( keydata, j, TRUE );
+				WCHAR szName[256];
+				if( nFunc == F_DEFAULT ){
+					auto_strcpy( szName, L"_" );
+				}else{
+					WCHAR szFuncName[256];
+					WCHAR* p = CSMacroMgr::GetFuncInfoByID( 0, nFunc, szFuncName, NULL );
+					if( p ){
+						auto_strcpy( szName, p );
+					}else{
+						auto_sprintf( szName, L"%d", nFunc );
+					}
+				}
+				if( j != 0 ){
+					wcscat( szDescData, L"," );
+				}
+				wcscat( szDescData, szName );
+			}
+
+			WCHAR szNewKeyData[1024+8*256];
+			auto_sprintf( szNewKeyData, L"%ls\t%ls", szKeyData, szDescData );
+			cProfile.IOProfileData( szSecKeyBind, szKeyName, MakeStringBufferW(szNewKeyData) );
+		}
+	}
+#endif // NKMM_FIX_KEYBIND_EXPORT_FUNCNAME
 
 	// 書き込み
 	if (!cProfile.WriteProfile( strPath.c_str(), WSTR_KEYBIND_HEAD4)) {
