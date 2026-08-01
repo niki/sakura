@@ -213,7 +213,7 @@ bool CGlyphAtlasCache::DrawOrCache(
 	if( nLength < 1 || nLength > 2 ) return false;
 	ClearIfStale();
 
-	SGlyphAtlasKey key{ hFont, pData[0], (nLength == 2 ? pData[1] : L'\0'), crFore, crBack };
+	SGlyphAtlasKey key{ hFont, pData[0], (nLength == 2 ? pData[1] : L'\0'), crFore, crBack, nCellWidthPx, nCellHeightPx };
 	auto it = m_mapEntries.find(key);
 	if( it != m_mapEntries.end() ){
 		const SGlyphAtlasEntry& e = it->second;

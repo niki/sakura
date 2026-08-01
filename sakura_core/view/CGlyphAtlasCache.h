@@ -20,18 +20,26 @@
 #include <vector>
 #include "util/design_template.h"
 
-//! グリフアトラスキャッシュのキー: (フォント,文字,前景色,背景色)の組で一意
+//! グリフアトラスキャッシュのキー: (フォント,文字,前景色,背景色,セル幅,セル高さ)の組で一意
+//! セル幅・高さも含めるのは、同じ(フォント,文字,fg,bg)でも呼び出し元のDx配列(字送り)
+//! 計算の都合で異なる幅を要求してくることがあるため。幅を含めないと、キャッシュヒット時に
+//! 保存済みサイズでBitBltしてしまい、今回要求されたセルより小さいと右端に前フレームの
+//! 内容が塗り残る(「ゴミ」)。フォントサイズを大きくすると誤差が拡大されて可視化しやすい。
+//! 20260802 バグ修正でセル幅・高さをキーに追加
 struct SGlyphAtlasKey {
 	HFONT     hFont;
 	wchar_t   wch0;      //!< 1文字目(サロゲート上位、または単一文字)
 	wchar_t   wch1;      //!< サロゲート下位。単一コード単位のときは 0
 	COLORREF  crFore;
 	COLORREF  crBack;
+	int       nCellWidthPx;
+	int       nCellHeightPx;
 
 	bool operator==(const SGlyphAtlasKey& rhs) const
 	{
 		return hFont == rhs.hFont && wch0 == rhs.wch0 && wch1 == rhs.wch1
-			&& crFore == rhs.crFore && crBack == rhs.crBack;
+			&& crFore == rhs.crFore && crBack == rhs.crBack
+			&& nCellWidthPx == rhs.nCellWidthPx && nCellHeightPx == rhs.nCellHeightPx;
 	}
 };
 
@@ -44,6 +52,8 @@ struct SGlyphAtlasKeyHash {
 		h = h * 131 + (size_t)k.wch1;
 		h = h * 131 + (size_t)k.crFore;
 		h = h * 131 + (size_t)k.crBack;
+		h = h * 131 + (size_t)k.nCellWidthPx;
+		h = h * 131 + (size_t)k.nCellHeightPx;
 		return h;
 	}
 };
