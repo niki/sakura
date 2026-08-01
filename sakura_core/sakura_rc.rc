@@ -3625,6 +3625,7 @@ BEGIN
 	F_TAB_GROUPIZE			"グループ化"				// LMP -- added
     F_TAB_CLOSELEFT         "左をすべて閉じる"
     F_TAB_CLOSERIGHT        "右をすべて閉じる"
+    F_TAB_DUPLICATE         "ウィンドウを複製"
 END
 
 STRINGTABLE DISCARDABLE

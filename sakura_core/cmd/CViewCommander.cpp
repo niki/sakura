@@ -603,6 +603,9 @@ BOOL CViewCommander::HandleCommand(
 	case F_TAB_CLOSEOTHER:	Command_TAB_CLOSEOTHER();break;	/* このタブ以外を閉じる */	// 2008.11.22 syat 追加
 	case F_TAB_CLOSELEFT:	Command_TAB_CLOSELEFT();break;	/* 左をすべて閉じる */		// 2008.11.22 syat 追加
 	case F_TAB_CLOSERIGHT:	Command_TAB_CLOSERIGHT();break;	/* 右をすべて閉じる */		// 2008.11.22 syat 追加
+#ifdef NKMM_FIX_TAB_DUPLICATE
+	case F_TAB_DUPLICATE:	Command_TAB_DUPLICATE();break;	/* ウィンドウを複製 */		// 20260801 追加
+#endif // NKMM_
 
 	/* 支援 */
 	case F_HOKAN:			Command_HOKAN();break;			//入力補完

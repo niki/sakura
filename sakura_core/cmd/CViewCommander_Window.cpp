@@ -591,6 +591,105 @@ void CViewCommander::Command_TAB_CLOSERIGHT( void )
 
 
 
+#ifdef NKMM_FIX_TAB_DUPLICATE
+/*! ウィンドウを複製(同じファイルを新規ウィンドウとして強制的に開く)
+
+	既定では既に開いているファイルを再度開こうとしても既存ウィンドウを
+	アクティブにするだけ(CShareData::IsPathOpened())なので、この操作の
+	間だけ「既に開いているときは新しいウィンドウで開く」設定
+	(m_bFileOpen2Open、共通設定にある既存のオプション)を一時的にONにして
+	OpenNewEditor()を呼び、確実に新規ウィンドウとして複製を開く。
+	(ファイルドロップで多重オープンする場合と同じ経路)
+	タブモードのときは、複製したタブが末尾ではなく自タブの右隣りに来るよう
+	CAppNodeManager::ReorderTab()で並び替える。
+
+	@date 20260801 新規作成
+	@date 20260802 -DUPWINオプション方式から、既存のm_bFileOpen2Open一時ON方式に変更
+		(-DUPWIN方式は既存ウィンドウがロックしていないファイルでも「(新規)」に
+		 なってしまう問題があった。ファイルドロップでの多重オープンと同じ経路を
+		 通すことで確実に複製できるようにした)
+*/
+void CViewCommander::Command_TAB_DUPLICATE( void )
+{
+	CEditDoc* pcEditDoc = GetDocument();
+	if( !pcEditDoc->m_cDocFile.GetFilePathClass().IsValidPath() )
+		return;
+
+	SLoadInfo sLoadInfo;
+	sLoadInfo.cFilePath = pcEditDoc->m_cDocFile.GetFilePath();
+	sLoadInfo.eCharCode = pcEditDoc->m_cDocFile.GetCodeSet();
+	sLoadInfo.bViewMode = false;
+
+	const bool bTabMode = GetDllShareData().m_Common.m_sTabBar.m_bDispTabWnd != FALSE
+	                    && GetDllShareData().m_Common.m_sTabBar.m_bDispTabWndMultiWin == FALSE;
+
+	// 複製前に「自タブの次のタブ」を記録しておく(挿入位置の目印。自タブが末尾なら不要)
+	int nGroup = 0;
+	HWND hwndNextTab = NULL;
+	if( bTabMode ){
+		EditNode* pEditNode;
+		int nCount = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pEditNode, TRUE );
+		for( int i = 0; i < nCount; i++ ){
+			if( pEditNode[i].m_hWnd == GetMainWindow() ){
+				nGroup = pEditNode[i].m_nGroup;
+				if( i + 1 < nCount && pEditNode[i + 1].m_nGroup == nGroup ){
+					hwndNextTab = pEditNode[i + 1].m_hWnd;
+				}
+				break;
+			}
+		}
+		delete []pEditNode;
+	}
+
+	// 既に開いているファイルでも確実に新規ウィンドウとして開くよう、
+	// この呼び出しの間だけ「既に開いているときは新しいウィンドウで開く」をONにする
+	// (タブモードなら自分と同じグループへ。タブまとめ時はOpenNewEditor内部で
+	//  起動完了まで自動的に同期待ちするので、戻ってきた時点で元に戻して問題ない)
+	BOOL bOldFileOpen2Open = GetDllShareData().m_Common.m_sGeneral.m_bFileOpen2Open;
+	GetDllShareData().m_Common.m_sGeneral.m_bFileOpen2Open = TRUE;
+	bool bOk = CControlTray::OpenNewEditor(
+		NULL,					// hInstance (未使用)
+		GetMainWindow(),			// エラーメッセージ表示用の親ウィンドウ
+		sLoadInfo,
+		NULL,					// 追加コマンドラインオプション
+		false,					// sync
+		NULL,					// カレントディレクトリ(現在のプロセスを維持)
+		false					// bNewWindow (false=同じグループへ参加)
+	);
+	GetDllShareData().m_Common.m_sGeneral.m_bFileOpen2Open = bOldFileOpen2Open;
+
+	// タブモードなら、複製したタブを末尾ではなく自タブの右隣りへ並び替える
+	if( bOk && bTabMode && hwndNextTab != NULL ){
+		EditNode* pEditNode2;
+		int nCount2 = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pEditNode2, TRUE );
+		HWND hwndNew = NULL;
+		// GetOpenedWindowArr()が返す配列はグループごとに可視のタブ順でソートされている
+		// (m_nIndexはm_pEditArrの配列スロット番号に上書きされておりソート順の意味を持たないため使わない)。
+		// 新規ウィンドウは常に末尾に追加されるので、同じグループの中で最後に出てくるものを拾えばよい。
+		for( int i = 0; i < nCount2; i++ ){
+			if( pEditNode2[i].m_nGroup == nGroup ){
+				hwndNew = pEditNode2[i].m_hWnd;
+			}
+		}
+		delete []pEditNode2;
+
+		if( hwndNew != NULL && hwndNew != hwndNextTab ){
+			CAppNodeManager::getInstance()->ReorderTab( hwndNew, hwndNextTab );
+			// 全ウィンドウへタブの再表示を通知(CTabWnd::BroadcastRefreshToGroup()相当)
+			CAppNodeGroupHandle(nGroup).PostMessageToAllEditors(
+				MYWM_TAB_WINDOW_NOTIFY,
+				(WPARAM)TWNT_REFRESH,
+				(LPARAM)FALSE,
+				GetMainWindow()
+			);
+		}
+	}
+	return;
+}
+#endif // NKMM_
+
+
+
 //縦方向に最大化
 void CViewCommander::Command_MAXIMIZE_V( void )
 {

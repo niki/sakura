@@ -1522,6 +1522,11 @@ void CShareData::InitPopupMenu(DLLSHAREDATA* pShareData)
 	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_TAB_JOINTPREV;
 	rMenu.m_nCustMenuItemKeyArr [CUSTMENU_INDEX_FOR_TABWND][n] = 'V';
 	n++;
+#ifdef NKMM_FIX_TAB_DUPLICATE
+	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_TAB_DUPLICATE;
+	rMenu.m_nCustMenuItemKeyArr [CUSTMENU_INDEX_FOR_TABWND][n] = 'D';
+	n++;
+#endif // NKMM_
 	rMenu.m_nCustMenuItemNumArr[CUSTMENU_INDEX_FOR_TABWND] = n;
 }
 
@@ -1691,6 +1696,11 @@ void CShareData::ResetCustomMenuToDefault(CommonSetting_CustomMenu& rMenu)
 	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_TAB_JOINTPREV;
 	rMenu.m_nCustMenuItemKeyArr [CUSTMENU_INDEX_FOR_TABWND][n] = 'V';
 	n++;
+#ifdef NKMM_FIX_TAB_DUPLICATE
+	rMenu.m_nCustMenuItemFuncArr[CUSTMENU_INDEX_FOR_TABWND][n] = F_TAB_DUPLICATE;
+	rMenu.m_nCustMenuItemKeyArr [CUSTMENU_INDEX_FOR_TABWND][n] = 'D';
+	n++;
+#endif // NKMM_
 	rMenu.m_nCustMenuItemNumArr[CUSTMENU_INDEX_FOR_TABWND] = n;
 }
 #endif // NKMM_FIX_CUSTMENU_RESET

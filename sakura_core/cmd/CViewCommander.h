@@ -386,6 +386,9 @@ public:
 	void Command_TAB_CLOSEOTHER( void );/* このタブ以外を閉じる */	// 2008.11.22 syat
 	void Command_TAB_CLOSELEFT( void );	/* 左をすべて閉じる */		// 2008.11.22 syat
 	void Command_TAB_CLOSERIGHT( void );/* 右をすべて閉じる */		// 2008.11.22 syat
+#ifdef NKMM_FIX_TAB_DUPLICATE
+	void Command_TAB_DUPLICATE( void );	/* ウィンドウを複製 */		// 20260801
+#endif // NKMM_
 
 
 	void Command_ToggleKeySearch( int );	/* キャレット位置の単語を辞書検索する機能ON-OFF */	// 2006.03.24 fon

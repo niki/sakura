@@ -482,6 +482,9 @@ const EFunctionCode pnFuncList_Win[] = {	//Oct. 16, 2000 JEPRO 変数名変更(L
 	F_TAB_JOINTPREV		,	//前のグループに移動	// 2007.06.20 ryoji
 	F_TAB_CLOSELEFT 	,	//左をすべて閉じる		// 2008.11.22 syat
 	F_TAB_CLOSERIGHT	,	//右をすべて閉じる		// 2008.11.22 syat
+#ifdef NKMM_FIX_TAB_DUPLICATE
+	F_TAB_DUPLICATE		,	//ウィンドウを複製		// 20260801
+#endif // NKMM_
 	F_MAXIMIZE_V		,	//縦方向に最大化
 	F_MAXIMIZE_H		,	//横方向に最大化 //2001.02.10 by MIK
 	F_MINIMIZE_ALL		,	//すべて最小化	//Sept. 17, 2000 jepro 説明の「全て」を「すべて」に統一
@@ -1198,6 +1201,9 @@ bool IsFuncEnable( const CEditDoc* pcEditDoc, const DLLSHAREDATA* pShareData, EF
 	case F_COPYPATH:
 	case F_COPYTAG:
 	case F_COPYFNAME:					// 2002/2/3 aroka
+#ifdef NKMM_FIX_TAB_DUPLICATE
+	case F_TAB_DUPLICATE:				//ウィンドウを複製(保存済みファイルが必要)	// 20260801
+#endif // NKMM_
 	case F_OPEN_HfromtoC:				//同名のC/C++ヘッダ(ソース)を開く	//Feb. 7, 2001 JEPRO 追加
 //	case F_OPEN_HHPP:					//同名のC/C++ヘッダファイルを開く	//Feb. 9, 2001 jepro「.cまたは.cppと同名の.hを開く」から変更		del 2008/6/23 Uchi
 //	case F_OPEN_CCPP:					//同名のC/C++ソースファイルを開く	//Feb. 9, 2001 jepro「.hと同名の.c(なければ.cpp)を開く」から変更	del 2008/6/23 Uchi

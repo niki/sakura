@@ -3585,6 +3585,7 @@ BEGIN
 	F_TAB_GROUPIZE			"Create Tab group"			// LMP -- added
     F_TAB_CLOSELEFT         "Close all tabs to the Left"
     F_TAB_CLOSERIGHT        "Close all tabs to the Right"
+    F_TAB_DUPLICATE         "Duplicate Window"
 END
 
 STRINGTABLE DISCARDABLE 
