@@ -369,17 +369,31 @@ INT_PTR CPropTypesColor::DispatchEvent(
 				return TRUE;
 			case IDC_CHECK_DISP:	/* 色分け/表示 をする */
 				m_Types.m_ColorInfoArr[m_nCurrentColorType].m_bDisp = ::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_DISP );
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+				// 20260801 「このタイプ自身の値」キャッシュ(m_ColorInfoArrOwn)も同期する。
+				// ここを更新しないと、後で「タイプ別の表示を使う」を再トグルしたりタイプを
+				// 切り替えて戻ってきたりしたときに、この編集が古いキャッシュで上書きされて消える。
+				m_ColorInfoArrOwn[m_nCurrentColorType].m_bDisp = m_Types.m_ColorInfoArr[m_nCurrentColorType].m_bDisp;
+#endif // NKMM_
 				/* 現在選択されている色タイプ */
 				List_SetCurSel( hwndListColor, m_nCurrentColorType );
 				m_Types.m_nRegexKeyMagicNumber = CRegexKeyword::GetNewMagicNumber();	//Need Compile	//@@@ 2001.11.17 add MIK 正規表現キーワードのため
 				return TRUE;
 			case IDC_CHECK_BOLD:	/* 太字か */
 				m_Types.m_ColorInfoArr[m_nCurrentColorType].m_sFontAttr.m_bBoldFont = ::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_BOLD );
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+				// 20260801 IDC_CHECK_DISPと同じ理由でm_ColorInfoArrOwnも同期する
+				m_ColorInfoArrOwn[m_nCurrentColorType].m_sFontAttr.m_bBoldFont = m_Types.m_ColorInfoArr[m_nCurrentColorType].m_sFontAttr.m_bBoldFont;
+#endif // NKMM_
 				/* 現在選択されている色タイプ */
 				List_SetCurSel( hwndListColor, m_nCurrentColorType );
 				return TRUE;
 			case IDC_CHECK_UNDERLINE:	/* 下線を表示 */
 				m_Types.m_ColorInfoArr[m_nCurrentColorType].m_sFontAttr.m_bUnderLine = ::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_UNDERLINE );
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+				// 20260801 IDC_CHECK_DISPと同じ理由でm_ColorInfoArrOwnも同期する
+				m_ColorInfoArrOwn[m_nCurrentColorType].m_sFontAttr.m_bUnderLine = m_Types.m_ColorInfoArr[m_nCurrentColorType].m_sFontAttr.m_bUnderLine;
+#endif // NKMM_
 				/* 現在選択されている色タイプ */
 				List_SetCurSel( hwndListColor, m_nCurrentColorType );
 				return TRUE;
@@ -684,15 +698,18 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 	CheckDlgButtonBool( hwndDlg, IDC_CHECK_USETYPECOLOR, m_Types.m_bUseTypeDisp );
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_USETYPECOLOR ), 0 != m_Types.m_nIdx );
 
-	// このタイプ自身の設定(基本とマージされていない生の値)を取得してキャッシュする。
+	// このタイプ自身の設定(基本とマージされていない生の値)をキャッシュする。
 	// タイプ別の表示を使う/使わないを切り替えたときに、自分の表示/基本の表示を
 	// 即座に入れ替えて表示・編集できるようにするため。
-	{
-		STypeConfig typeRaw;
-		CDocTypeManager().GetTypeConfig( CTypeConfig(m_Types.m_nIdx), typeRaw, false );
-		m_nColorInfoArrNumOwn = typeRaw.m_nColorInfoArrNum;
-		memcpy( m_ColorInfoArrOwn, typeRaw.m_ColorInfoArr, sizeof(m_ColorInfoArrOwn) );
-	}
+	// 20260801 以前はCDocTypeManager().GetTypeConfig()で共有メモリ(保存済みの値)を
+	// 再取得していたが、これだとタイプ一覧で別タイプへ切り替えてから戻ってきたとき
+	// (RefreshEmbeddedPage→SetTypeData→SetData)に、ダイアログを開いてから今まさに
+	// 編集した(まだ「OK」していない)半角数値等のチェック状態が、保存済みの古い値で
+	// 上書きされて消えるバグがあった。SetTypeData()で設定済みのm_Types自身
+	// (直前のCommitEmbeddedPage→GetData()で編集内容を正しく引き継いでいる)から
+	// キャッシュを作ることで、未保存の編集を失わないようにする。
+	m_nColorInfoArrNumOwn = m_Types.m_nColorInfoArrNum;
+	memcpy( m_ColorInfoArrOwn, m_Types.m_ColorInfoArr, sizeof(m_ColorInfoArrOwn) );
 	// 色(文字色/背景色)はタイプ別設定の対象外(常に基本の値を表示するだけ)。
 	// 表示(m_bDisp)・太字・下線のみ、チェック状態に応じて自分の値/基本の値を選択する。
 	if( 0 == m_Types.m_nIdx ){
@@ -1197,6 +1214,16 @@ void CPropTypesColor::RearrangeKeywordSet( HWND hwndDlg )
 				std::swap( col1.m_bDisp, col2.m_bDisp );
 				std::swap( col1.m_sFontAttr, col2.m_sFontAttr );
 				std::swap( col1.m_sColorAttr, col2.m_sColorAttr );
+
+#ifdef NKMM_FIX_SHARED_TYPE_COLOR
+				// 20260801 「このタイプ自身の値」キャッシュ(m_ColorInfoArrOwn)も同じ内容で
+				// 入れ替える。ここを更新しないと、後で「タイプ別の表示を使う」を再トグル
+				// したときに、この入れ替えがm_ColorInfoArrOwnの古い(入れ替え前の)値で
+				// 上書きされ、強調キーワードのセットは割り当たっているのに表示チェックだけ
+				// 元の(オフの)スロットに戻ってハイライトされなくなる不具合があった。
+				std::swap( m_ColorInfoArrOwn[ COLORIDX_KEYWORD1 + i ].m_bDisp,      m_ColorInfoArrOwn[ COLORIDX_KEYWORD1 + j ].m_bDisp );
+				std::swap( m_ColorInfoArrOwn[ COLORIDX_KEYWORD1 + i ].m_sFontAttr,  m_ColorInfoArrOwn[ COLORIDX_KEYWORD1 + j ].m_sFontAttr );
+#endif // NKMM_
 
 				break;
 			}

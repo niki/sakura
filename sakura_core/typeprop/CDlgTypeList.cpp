@@ -517,8 +517,28 @@ bool CDlgTypeList::HasColorPanelChanges()
 		STypeConfig cur;
 		if( !CDocTypeManager().GetTypeConfig( CTypeConfig(i), cur, false ) ) continue;
 		STypeConfig snap = *m_pColorSnapshot[i];
+		// m_ColorInfoArrのうち色(m_sColorAttr)・名前・インデックスは基本設定に追従して
+		// 常に上書きされるノイズだが、表示(m_bDisp)・太字・下線(m_sFontAttr)は編集対象の
+		// 実データなので、これらだけ退避してから配列全体をゼロクリアし、戻す。20260801
+		// (以前はm_ColorInfoArr全体を比較対象から除外していたため、半角数値などの表示
+		//  チェックボックスの変更がキャンセル時の「変更あり」判定に反映されず、保存確認
+		//  なしに変更が破棄されてしまうバグがあった)
+		bool bDispCur[COLORIDX_LAST], bDispSnap[COLORIDX_LAST];
+		SFontAttr sFontAttrCur[COLORIDX_LAST], sFontAttrSnap[COLORIDX_LAST];
+		for( int c = 0; c < COLORIDX_LAST; ++c ){
+			bDispCur[c]  = cur.m_ColorInfoArr[c].m_bDisp;
+			bDispSnap[c] = snap.m_ColorInfoArr[c].m_bDisp;
+			sFontAttrCur[c]  = cur.m_ColorInfoArr[c].m_sFontAttr;
+			sFontAttrSnap[c] = snap.m_ColorInfoArr[c].m_sFontAttr;
+		}
 		memset_raw( cur.m_ColorInfoArr, 0, sizeof_raw(cur.m_ColorInfoArr) );
 		memset_raw( snap.m_ColorInfoArr, 0, sizeof_raw(snap.m_ColorInfoArr) );
+		for( int c = 0; c < COLORIDX_LAST; ++c ){
+			cur.m_ColorInfoArr[c].m_bDisp  = bDispCur[c];
+			snap.m_ColorInfoArr[c].m_bDisp = bDispSnap[c];
+			cur.m_ColorInfoArr[c].m_sFontAttr  = sFontAttrCur[c];
+			snap.m_ColorInfoArr[c].m_sFontAttr = sFontAttrSnap[c];
+		}
 		cur.m_nColorInfoArrNum = 0;
 		snap.m_nColorInfoArrNum = 0;
 		cur.m_nRegexKeyMagicNumber = 0;

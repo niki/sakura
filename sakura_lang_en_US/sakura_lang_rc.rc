@@ -94,11 +94,11 @@ BEGIN
     COMBOBOX        IDC_COMBO_TEXT,67,4,131,150,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     CONTROL         "|Ab|",IDC_CHK_WORD,"Button",
-                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,27,21,22,10
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,26,21,22,12
     CONTROL         "Aa",IDC_CHK_LOHICASE,"Button",
-                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,21,19,10
+                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,21,19,12
     CONTROL         ".*",IDC_CHK_REGULAREXP,"Button",
-                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,53,21,19,10 
+                    BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,50,21,19,12 
     CONTROL         "Display a &message if not found",
                     IDC_CHECK_NOTIFYNOTFOUND,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP | WS_DISABLED,5,1044,140,10
