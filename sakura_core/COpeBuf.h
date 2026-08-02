@@ -56,9 +56,18 @@ public:
 	void DUMP();								//!< 編集操作要素ブロックのダンプ
 
 private:
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	//! 共通設定の上限(KB)を超えていたら、古い(Undo方向の)ブロックから破棄して収める。
+	//! Redo対象(m_nCurrentPointer以降)は直後に必要になり得るため対象外。 20260802
+	void _ShrinkToBudget();
+#endif // NKMM_
+
 	std::vector<COpeBlk*>	m_vCOpeBlkArr;		//!< 操作ブロックの配列
 	int						m_nCurrentPointer;	//!< 現在位置
 	int						m_nNoModifiedIndex;	//!< 無変更な状態になった位置
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	int						m_nTotalByteSize;	//!< m_vCOpeBlkArr全体の概算バイト数(逐次更新) 20260802
+#endif // NKMM_
 };
 
 

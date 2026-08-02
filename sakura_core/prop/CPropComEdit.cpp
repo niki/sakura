@@ -145,6 +145,28 @@ INT_PTR CPropEdit::DispatchEvent(
 		case PSN_SETACTIVE: //@@@ 2002.01.03 YAZAKI 最後に表示していたシートを正しく覚えていないバグ修正
 			m_nPageNum = ID_PROPCOM_PAGENUM_EDIT;
 			return TRUE;
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+		case UDN_DELTAPOS:
+			// 元に戻す履歴のデータ量上限。矢印1クリックにつき4KBずつ刻む 20260802
+			if( pNMHDR->idFrom == IDC_SPIN_UNDOBUFMAXKB ){
+				NM_UPDOWN* pMNUD = (NM_UPDOWN*)lParam;
+				const int nStep = 4;
+				int nVal = ::GetDlgItemInt( hwndDlg, IDC_EDIT_UNDOBUFMAXKB, NULL, FALSE );
+				if( pMNUD->iDelta < 0 ){
+					nVal += nStep;
+				}else if( pMNUD->iDelta > 0 ){
+					nVal -= nStep;
+				}
+				if( nVal < 0 ){
+					nVal = 0;
+				}
+				if( nVal > 1048576 ){
+					nVal = 1048576;	// 最大1GB(KB単位)まで
+				}
+				::SetDlgItemInt( hwndDlg, IDC_EDIT_UNDOBUFMAXKB, nVal, FALSE );
+			}
+			return TRUE;
+#endif // NKMM_
 		}
 		break;	/* WM_NOTIFY */
 
@@ -233,6 +255,11 @@ void CPropEdit::SetData( HWND hwndDlg )
 	// 矩形選択移動で選択をロックする
 	CheckDlgButtonBool( hwndDlg, IDC_CHECK_BOXSELECTLOCK, m_Common.m_sEdit.m_bBoxSelectLock );
 
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	// 元に戻す履歴のデータ量上限(KB、0=無制限) 20260802
+	::SetDlgItemInt( hwndDlg, IDC_EDIT_UNDOBUFMAXKB, m_Common.m_sEdit.m_nUndoBufMaxKB, FALSE );
+#endif // NKMM_
+
 	EnableEditPropInput( hwndDlg );
 }
 
@@ -291,6 +318,14 @@ int CPropEdit::GetData( HWND hwndDlg )
 	m_Common.m_sEdit.m_bEnableExtEol = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_ENABLEEXTEOL );
 	// 矩形選択移動で選択をロックする
 	m_Common.m_sEdit.m_bBoxSelectLock = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_BOXSELECTLOCK );
+
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	// 元に戻す履歴のデータ量上限(KB、0=無制限) 20260802
+	m_Common.m_sEdit.m_nUndoBufMaxKB = ::GetDlgItemInt( hwndDlg, IDC_EDIT_UNDOBUFMAXKB, NULL, FALSE );
+	if( m_Common.m_sEdit.m_nUndoBufMaxKB < 0 ){
+		m_Common.m_sEdit.m_nUndoBufMaxKB = 0;
+	}
+#endif // NKMM_
 
 	return TRUE;
 }

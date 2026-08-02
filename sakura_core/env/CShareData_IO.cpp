@@ -2030,6 +2030,12 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("bAutoCloseDlgFuncList")		, common.m_sOutline.m_bAutoCloseDlgFuncList );/* アウトライン ダイアログを自動的に閉じる */
 	cProfile.IOProfileData( pszSecName, LTEXT("bAutoCloseDlgReplace")		, common.m_sSearch.m_bAutoCloseDlgReplace );/* 置換 ダイアログを自動的に閉じる */
 	cProfile.IOProfileData( pszSecName, LTEXT("bAutoColmnPaste")			, common.m_sEdit.m_bAutoColumnPaste );/* 矩形コピーのテキストは常に矩形貼り付け */ // 2013.5.23 aroka iniファイルのtypo未修正
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	cProfile.IOProfileData( pszSecName, LTEXT("nUndoBufMaxKB")				, common.m_sEdit.m_nUndoBufMaxKB );/* 元に戻す履歴のデータ量上限(KB、0=無制限) */ // 20260802
+	if( common.m_sEdit.m_nUndoBufMaxKB < 0 ){
+		common.m_sEdit.m_nUndoBufMaxKB = 0;
+	}
+#endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("NoCaretMoveByActivation")	, common.m_sGeneral.m_bNoCaretMoveByActivation );/* マウスクリックにてアクティベートされた時はカーソル位置を移動しない 2007.10.02 nasukoji (add by genta) */
 	cProfile.IOProfileData( pszSecName, LTEXT("bScrollBarHorz")				, common.m_sWindow.m_bScrollBarHorz );/* 水平スクロールバーを使う */
 

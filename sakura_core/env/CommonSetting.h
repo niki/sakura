@@ -239,6 +239,8 @@ struct CommonSetting_Edit
 
 	// (ダイアログ項目無し)
 	BOOL	m_bAutoColumnPaste;			//!< 矩形コピーのテキストは常に矩形貼り付け
+
+	int		m_nUndoBufMaxKB;			//!< 元に戻す(Undo)履歴が保持するデータの合計上限(KB単位、0=無制限) 20260802
 };
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

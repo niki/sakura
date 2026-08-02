@@ -59,6 +59,9 @@ bool COpeBlk::AppendOpe( COpe* pcOpe )
 
 	/* 配列のメモリサイズを調整 */
 	m_ppCOpeArr.push_back(pcOpe);
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	m_nByteSize += pcOpe->GetDataByteSize(); // 20260802
+#endif // NKMM_
 	return true;
 }
 

@@ -864,6 +864,10 @@
 #define IDC_BUTTON_LICENSE              1731
 #define IDC_EDIT_LICENSE                1732
 #endif // NKMM_
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+#define IDC_EDIT_UNDOBUFMAXKB           1735
+#define IDC_SPIN_UNDOBUFMAXKB           1736
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -872,7 +876,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        231
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1735
+#define _APS_NEXT_CONTROL_VALUE         1737
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

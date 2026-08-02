@@ -1896,6 +1896,15 @@ BEGIN
     CONTROL         "矩形選択移動で選択をロックする(&B)",
                     IDC_CHECK_BOXSELECTLOCK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     161,151,122,10
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+    GROUPBOX        "元に戻す",IDC_STATIC,156,170,131,44,WS_GROUP
+    LTEXT           "データ量の上限(&K)",IDC_STATIC,161,183,90,10
+    EDITTEXT        IDC_EDIT_UNDOBUFMAXKB,161,196,45,12,ES_NUMBER
+    CONTROL         "Spin1",IDC_SPIN_UNDOBUFMAXKB,"msctls_updown32",
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,206,195,9,
+                    14
+    LTEXT           "KB (0 = 無制限)",IDC_STATIC,219,198,64,10
+#endif // NKMM_
 END
 
 IDD_PROP_FILE DIALOGEX 0, 0, 293, 240

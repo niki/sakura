@@ -44,12 +44,21 @@ public:
 	int GetRefCount() const { return m_refCount; }	//!< 参照カウンタ取得
 	int SetRefCount(int val) {  return m_refCount = val > 0? val : 0; }	//!< 参照カウンタ設定
 
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	//! このブロックが保持するテキストデータの概算バイト数(Undoバッファ上限判定用)。
+	//! AppendOpe()のたびに加算するのでO(1)。 20260802
+	int GetByteSize() const { return m_nByteSize; }
+#endif // NKMM_
+
 	//デバッグ
 	void DUMP();									//!< 編集操作要素ブロックのダンプ
 
 private:
 	//メンバ変数
 	std::vector<COpe*>	m_ppCOpeArr;	//!< 操作の配列
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	int	m_nByteSize = 0;				//!< AppendOpe()のたびに加算する概算バイト数 20260802
+#endif // NKMM_
 
 	//参照カウンタ
 	//　HandleCommand内から再帰的にHandleCommandが呼ばれる場合、

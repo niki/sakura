@@ -45,6 +45,20 @@ template <>
 
 typedef std::vector<CLineData> COpeLineData;
 
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+//! COpeLineData(1つの操作が保持する行データの配列)の概算バイト数を合計する 20260802
+inline int CalcOpeLineDataByteSize(const COpeLineData& lineData)
+{
+	int total = 0;
+	for( const CLineData& ld : lineData ){
+		// CNativeW::capacity()はconst指定が無いためconst参照からは呼べない。
+		// 同じ計算をする_GetMemory()(const版)経由で取得する
+		total += (int)(ld.cmemLine._GetMemory()->capacity());
+	}
+	return total;
+}
+#endif // NKMM_
+
 /*!
 	編集操作要素
 	
@@ -60,6 +74,12 @@ public:
 	virtual void DUMP( void );	/* 編集操作要素のダンプ */
 
 	EOpeCode	GetCode() const{ return m_nOpe; }
+
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	//! このCOpeが保持するテキストデータの概算バイト数(Undoバッファ上限判定用)。
+	//! 既定は0(CMoveCaretOpe等、テキストを保持しない操作)。 20260802
+	virtual int GetDataByteSize() const { return 0; }
+#endif // NKMM_
 
 private:
 	EOpeCode	m_nOpe;						//!< 操作種別
@@ -77,6 +97,9 @@ public:
 		m_ptCaretPos_PHY_To.Set(CLogicInt(0),CLogicInt(0));
 	}
 	virtual void DUMP( void );	/* 編集操作要素のダンプ */
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	virtual int GetDataByteSize() const override { return CalcOpeLineDataByteSize(m_cOpeLineData); } // 20260802
+#endif // NKMM_
 public:
 	CLogicPoint	m_ptCaretPos_PHY_To;		//!< 操作前のキャレット位置。文字単位。	[DELETE]
 	COpeLineData	m_cOpeLineData;			//!< 操作に関連するデータ				[DELETE/INSERT]
@@ -88,6 +111,9 @@ class CInsertOpe : public COpe{
 public:
 	CInsertOpe() : COpe(OPE_INSERT) { }
 	virtual void DUMP( void );	/* 編集操作要素のダンプ */
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	virtual int GetDataByteSize() const override { return CalcOpeLineDataByteSize(m_cOpeLineData); } // 20260802
+#endif // NKMM_
 public:
 	COpeLineData	m_cOpeLineData;			//!< 操作に関連するデータ				[DELETE/INSERT]
 	int				m_nOrgSeq;
@@ -100,6 +126,11 @@ public:
 	{
 		m_ptCaretPos_PHY_To.Set(CLogicInt(0),CLogicInt(0));
 	}
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	virtual int GetDataByteSize() const override {
+		return CalcOpeLineDataByteSize(m_pcmemDataIns) + CalcOpeLineDataByteSize(m_pcmemDataDel);
+	} // 20260802
+#endif // NKMM_
 public:
 	CLogicPoint	m_ptCaretPos_PHY_To;		//!< 操作前のキャレット位置。文字単位。	[DELETE]
 	COpeLineData	m_pcmemDataIns;			//!< 操作に関連するデータ				[INSERT]
