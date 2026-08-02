@@ -54,6 +54,9 @@ protected:
 	//インターフェース
 public:
 	void AllocBuffer( int );                               //!< バッファサイズの調整。必要に応じて拡大する。
+#ifdef NKMM_FIX_SHRINK_LINE_BUFFER
+	void ShrinkToFit();                                    //!< 実データ長に対して過剰なバッファを縮小する(AllocBufferと対になる操作) 20260802
+#endif // NKMM_
 	void SetRawData( const void* pData, int nDataLen );    //!< バッファの内容を置き換える
 	void SetRawData( const CMemory& );                     //!< バッファの内容を置き換える
 	void SetRawDataHoldBuffer( const void* pData, int nDataLen );    //!< バッファの内容を置き換える(バッファを保持)
@@ -87,6 +90,11 @@ protected:
 	*/
 	void _Empty( void ); //!< 解放する。m_pRawDataはNULLになる。
 	void _AddData( const void*, int );
+#ifdef NKMM_FIX_SHRINK_LINE_BUFFER
+	//! ShrinkToFit専用: 指定データ長に対して確保すべきバッファサイズ(8Byte整列)を返す。
+	//! AllocBuffer()内の同じ計算式とは独立に持つ(既存コードを巻き込まないため)。 20260802
+	static int _ComputeBufSize( int nDataLen );
+#endif // NKMM_
 public:
 	void _AppendSz(const char* str);
 	void _SetRawLength(int nLength);

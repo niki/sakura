@@ -355,6 +355,55 @@ void CMemory::AllocBuffer( int nNewDataLen )
 }
 
 
+#ifdef NKMM_FIX_SHRINK_LINE_BUFFER
+/*
+|| ShrinkToFit専用: 指定データ長に対して確保すべきバッファサイズを求める。
+|| AllocBuffer()内の計算式と同じ内容だが、既存コードを巻き込まないよう
+|| あえて別に持つ(このマクロを無効化すればAllocBuffer()は無改造のまま残る)。 20260802
+*/
+int CMemory::_ComputeBufSize( int nDataLen )
+{
+	size_t alignedSize = 8;
+	while (alignedSize < (size_t)nDataLen) {
+		alignedSize *= 2;
+	}
+	int nWorkLen = (int)alignedSize;
+	nWorkLen = ((nWorkLen + 2) + 7) & (~7); // 8Byteごとに整列
+	return nWorkLen;
+}
+
+/*
+|| バッファを実データ長(m_nRawLen)に対して過剰な分だけ縮小する(AllocBufferと対になる操作) 20260802
+||
+|| 一度大きく伸びた行(巨大な行を貼り付けて後で大部分を消した等)のバッファは、
+|| AllocBuffer()側が「必要になったときだけ拡大し、縮小はしない」設計のため、
+|| そのままでは実際の内容に対して過大な容量を保持し続ける。これを明示的に
+|| 呼んだ節目(ファイル保存時など)でだけ縮小できるようにする。
+|| 縮小に失敗しても実害はない(過大なバッファのままになるだけ)ので、
+|| AllocBuffer()と違いエラーダイアログは出さない。
+*/
+void CMemory::ShrinkToFit()
+{
+	if( m_nDataBufSize == 0 ) return;
+
+	int nFitLen = _ComputeBufSize(m_nRawLen);
+	if( nFitLen >= m_nDataBufSize ) return; // これ以上縮められない
+
+	if( m_nRawLen == 0 ){
+		free( m_pRawData );
+		m_pRawData = NULL;
+		m_nDataBufSize = 0;
+		return;
+	}
+
+	char* pWork = (char*)realloc( m_pRawData, nFitLen );
+	if( NULL == pWork ) return; // 縮小失敗は無視。既存の(過大な)バッファのまま継続して問題ない
+
+	m_pRawData = pWork;
+	m_nDataBufSize = nFitLen;
+}
+#endif // NKMM_
+
 
 /* バッファの内容を置き換える */
 void CMemory::SetRawData( const void* pData, int nDataLen )

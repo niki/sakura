@@ -1153,6 +1153,34 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_MOUSEMOVE_COALESCE
 
+//------------------------------------------------------------------
+// 行バッファの縮小(メモリ節約) 20260802
+//  - CMemory::AllocBuffer()は必要になったときだけバッファを拡大し、縮小は
+//    しない設計(std::vectorのcapacity()と同じ考え方)。そのため、巨大な行
+//    (大きい内容を貼り付けた、圧縮/難読化されたJS/JSON等を1行で開いた)を
+//    一度でも経由した行は、その後編集で大部分を消してもバッファ容量が
+//    その最大時のまま解放されず、ファイルを閉じるまで保持され続ける
+//  - CMemory::ShrinkToFit()を追加。AllocBuffer()と同じサイズ計算式
+//    (_ComputeBufSizeへ共通化)で、実データ長に対して過剰なバッファを
+//    reallocで縮める。CDocLine::ShrinkToFit()、CDocLineMgr::
+//    ShrinkAllLineBuffers()で全行へ伝播させ、ファイル保存の節目
+//    (CSaveAgent::OnAfterSave)でまとめて回収する
+//  - 毎回の編集で縮小・拡大を繰り返すと再確保コストが逆に増えるため、
+//    あえて「保存時」という低頻度の節目でのみ行う(編集中は従来通り
+//    拡大のみで再確保回数を抑える)
+//  - 20260802 mi_collect(true)の追加: 本プロジェクトはNKMM_USE_MIMALLOC_OVERRIDE
+//    によりmalloc/free/reallocがmimallocに完全上書きされている。mimallocは
+//    free/reallocで縮めても内部セグメントに保持し続け、OSへは即座に返却
+//    しないため、ShrinkAllLineBuffers()だけではタスクマネージャ等の
+//    プロセスメモリ使用量に変化が見えないことがある。同じ節目でmimallocの
+//    mi_collect(true)も呼び、未使用メモリを明示的にOSへ返却させる
+//  - sakura_core\mem\CMemory.h,cpp: ShrinkToFit(), _ComputeBufSize()
+//  - sakura_core\doc\logic\CDocLine.h: ShrinkToFit()
+//  - sakura_core\doc\logic\CDocLineMgr.h,cpp: ShrinkAllLineBuffers()
+//  - sakura_core\CSaveAgent.cpp: OnAfterSave()、mi_collect(true)
+//------------------------------------------------------------------
+#define NKMM_FIX_SHRINK_LINE_BUFFER
+
 //
 //#define USE_SSE2
 

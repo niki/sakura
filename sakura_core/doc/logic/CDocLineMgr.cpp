@@ -97,6 +97,18 @@ void CDocLineMgr::DeleteAllLine()
 }
 
 
+#ifdef NKMM_FIX_SHRINK_LINE_BUFFER
+//! 全行のバッファのうち、実データ長に対して過剰な分を縮小する 20260802
+//! (巨大な行を貼り付けて後で大部分を消した、等で伸びたまま残っている容量を回収する)
+void CDocLineMgr::ShrinkAllLineBuffers()
+{
+	for( CDocLine* pDocLine = m_pDocLineTop; pDocLine; pDocLine = pDocLine->GetNextLine() ){
+		pDocLine->ShrinkToFit();
+	}
+}
+#endif // NKMM_
+
+
 //! 行の削除
 void CDocLineMgr::DeleteLine( CDocLine* pcDocLineDel )
 {

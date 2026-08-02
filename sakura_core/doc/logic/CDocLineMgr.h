@@ -68,6 +68,9 @@ public:
 	CDocLine* AddNewLine();						//!< 最下部に新しい行を挿入
 	void DeleteAllLine();						//!< 全ての行を削除する
 	void DeleteLine( CDocLine* );				//!< 行の削除
+#ifdef NKMM_FIX_SHRINK_LINE_BUFFER
+	void ShrinkAllLineBuffers();				//!< 全行のバッファのうち、実データ長に対して過剰な分を縮小する 20260802
+#endif // NKMM_
 
 	//デバッグ
 	void DUMP();

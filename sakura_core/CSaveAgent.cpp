@@ -34,6 +34,9 @@
 #include "CEditApp.h"
 #include "_main/CAppMode.h"
 #include "env/CShareData.h"
+#ifdef NKMM_USE_MIMALLOC
+#include <mimalloc.h>
+#endif // NKMM_
 
 CSaveAgent::CSaveAgent()
 {
@@ -135,6 +138,20 @@ void CSaveAgent::OnAfterSave(const SSaveInfo& sSaveInfo)
 	 * されないことがある。
 	 */
 	GetLastWriteTimestamp( pcDoc->m_cDocFile.GetFilePath(), &pcDoc->m_cDocFile.GetFileTime() );
+
+#ifdef NKMM_FIX_SHRINK_LINE_BUFFER
+	// 20260802 保存という節目で、巨大な行を貼り付けて後で大部分を消した、等で
+	// 伸びたまま縮んでいない各行のバッファ容量をまとめて回収する
+	pcDoc->m_cDocLineMgr.ShrinkAllLineBuffers();
+	#ifdef NKMM_USE_MIMALLOC
+		// mallocはmimallocに完全上書きされている(NKMM_USE_MIMALLOC_OVERRIDE)。
+		// mimallocはfree/reallocで縮めても内部セグメントに保持し続け、
+		// OSへは即座に返却しないため、上のShrinkAllLineBuffers()だけでは
+		// タスクマネージャ等のプロセスメモリ使用量に変化が見えないことがある。
+		// mi_collect(true)で未使用メモリを明示的にOSへ返却させる
+		::mi_collect(true);
+	#endif // NKMM_
+#endif // NKMM_
 
 	// タイプ別設定の変更を指示。
 	// 上書き（明示的な上書きや自動保存）では変更しない

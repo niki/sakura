@@ -80,6 +80,11 @@ public:
 	const CNativeW& _GetDocLineDataWithEOL() const { return m_cLine; } //###仮
 	CNativeW& _GetDocLineData() { return m_cLine; }
 
+#ifdef NKMM_FIX_SHRINK_LINE_BUFFER
+	//! この行が保持するバッファのうち、実データ長に対して過剰な分を縮小する 20260802
+	void ShrinkToFit(){ m_cLine._GetMemory()->ShrinkToFit(); }
+#endif // NKMM_
+
 	//データ設定
 	void SetDocLineString(const wchar_t* pData, int nLength);
 	void SetDocLineString(const CNativeW& cData);
