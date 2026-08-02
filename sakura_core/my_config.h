@@ -70,7 +70,7 @@
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
 	#define PR_VER_VAL	2320
-	#define PR_LV		26080100
+	#define PR_LV		26080201
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -1049,6 +1049,25 @@
 //  - sakura_core\dlg\CDlgThirdPartyLicense.h,cpp
 //------------------------------------------------------------------
 #define NKMM_FIX_THIRDPARTY_LICENSE
+
+//------------------------------------------------------------------
+// WM_MOUSEMOVEの間引き(コアレシング) 20260802
+//  - CEditView::DispatchEventはWM_MOUSEMOVEを受け取るたびに同期で
+//    ChangeSelectAreaByCurrentCursor()→DrawSelectArea()→OnPaint()まで
+//    実行する。WM_MOUSEMOVEはWM_PAINTと違いOS側で自動的に間引かれない
+//    ため、マウスを素早く動かして範囲選択すると、キューに溜まった
+//    古い座標のWM_MOUSEMOVEを1件ずつ同期再描画してから処理することになり、
+//    選択範囲がカーソルに追いつかず遅れて見える
+//  - 対策として、処理対象のWM_MOUSEMOVEを受け取った時点で同じウィンドウ
+//    宛てのWM_MOUSEMOVEがキューに既にあれば(PM_NOREMOVEで覗くだけ)、
+//    今回分の処理はスキップする。古い座標の処理を丸ごと飛ばして、
+//    結果的に一番新しい座標のときだけ選択範囲の更新・再描画を行う
+//  - WM_MOUSEMOVEは位置以外に処理必須の副作用を持たないため、
+//    スキップしても最終的な選択範囲・カーソル位置には影響しない
+//    (次にキューから取り出されるWM_MOUSEMOVEがより新しい座標を持つ)
+//  - sakura_core\view\CEditView.cpp: DispatchEvent()のcase WM_MOUSEMOVE
+//------------------------------------------------------------------
+#define NKMM_FIX_MOUSEMOVE_COALESCE
 
 //
 //#define USE_SSE2

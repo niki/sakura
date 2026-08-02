@@ -767,6 +767,16 @@ LRESULT CEditView::DispatchEvent(
 		OnLBUTTONUP( wParam, (short)LOWORD( lParam ), (short)HIWORD( lParam ) );
 		return 0L;
 	case WM_MOUSEMOVE:
+#ifdef NKMM_FIX_MOUSEMOVE_COALESCE
+		// 20260802 同じウィンドウ宛てのWM_MOUSEMOVEがキューに既にあるなら、
+		// 今回分(古い座標)の同期再描画はスキップして最新の座標だけ処理する
+		{
+			MSG msgNext;
+			if( ::PeekMessage( &msgNext, hwnd, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_NOREMOVE ) ){
+				return 0L;
+			}
+		}
+#endif // NKMM_
 		OnMOUSEMOVE( wParam, (short)LOWORD( lParam ), (short)HIWORD( lParam ) );
 		return 0L;
 
