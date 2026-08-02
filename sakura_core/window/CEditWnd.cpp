@@ -3383,17 +3383,37 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		//	May 12, 2000 genta
 		//	2カラム目に改行コードの表示を挿入
 		//	From Here
-		int			nStArr[8];
+		// 20260802 nStArrNum(NKMM_FIX_STATUSBAR時9、NKMM_DEBUG_GLYPH_ATLAS_HUDも
+		// 有効なら10)に対して配列サイズが8のままだったため、nStArr[nStArrNum-1]への
+		// 書き込みが配列末尾を1つはみ出す既存バグがあった(下のnStArrNum-1の書き込み
+		// 参照)。全パターンの最大値に合わせてサイズを直す
+		int			nStArr[10];
 		// 2003.08.26 Moca CR0LF0廃止に従い、適当に調整
 		// 2004-02-28 yasu 文字列を出力時の書式に合わせる
 		// 幅を変えた場合にはCEditView::ShowCaretPosInfo()での表示方法を見直す必要あり．
 		// ※pszLabel[3]: ステータスバー文字コード表示領域は大きめにとっておく
 #ifdef NKMM_FIX_STATUSBAR
-		constexpr int	nStArrNum = 9;
-	#ifdef SAKURA_LANG_EN_US_EXPORTS
-		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("99999 Ln 9999 Col"), _T("U+AAAAAAAA"), _T("UTF-16 BOM"), _T("Unix"), _T("INS"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●") };
+	#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+		// 20260802 グリフアトラスHUD用に末尾(index 9)へ1パーツ追加。既存の
+		// index 0〜8(SetStatusText呼び出し側で使っている番号)には影響しない
+		constexpr int	nStArrNum = 10;
 	#else
-		const TCHAR*	pszLabel[nStArrNum] = { _T(""), _T("行:99999  文字:9999  文字数:99999"), _T("U+AAAAAAAA"), _T("UTF-16 BOM付"), _T("Unix"), _T("上書"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●") };
+		constexpr int	nStArrNum = 9;
+	#endif // NKMM_
+	#ifdef SAKURA_LANG_EN_US_EXPORTS
+		const TCHAR*	pszLabel[nStArrNum] = {
+			_T(""), _T("99999 Ln 9999 Col"), _T("U+AAAAAAAA"), _T("UTF-16 BOM"), _T("Unix"), _T("INS"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●")
+	#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+			, _T("[GlyphAtlas] pages=9 entries=999999 pending=99999 hit=999999999 miss=999999999 warmed=999999999 hitrate=100.0%")
+	#endif // NKMM_
+		};
+	#else
+		const TCHAR*	pszLabel[nStArrNum] = {
+			_T(""), _T("行:99999  文字:9999  文字数:99999"), _T("U+AAAAAAAA"), _T("UTF-16 BOM付"), _T("Unix"), _T("上書"), _T("Spaces: 9"), _T("AAAAAAAAAAAA"), _T("●")
+	#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+			, _T("[GlyphAtlas] pages=9 entries=999999 pending=99999 hit=999999999 miss=999999999 warmed=999999999 hitrate=100.0%")
+	#endif // NKMM_
+		};
 	#endif // SAKURA_LANG_EN_US_EXPORTS
 #else
 		const TCHAR*	pszLabel[7] = { _T(""), _T("99999 行 9999 列"), _T("CRLF"), _T("AAAAAAAAAAAA"), _T("UTF-16 BOM付"), _T("REC"), _T("上書") };	//Oct. 30, 2000 JEPRO 千万行も要らん	文字コード枠を広げる 2008/6/21	Uchi

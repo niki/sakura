@@ -911,7 +911,29 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	/* キャレットを現在位置に表示します */
 	if( bCaretShowFlag_Old )	// 2008.06.09 ryoji
 		GetCaret().ShowCaret_( this->GetHwnd() ); // 2002/07/22 novice
-	
+
+#if defined(NKMM_DEBUG_GLYPH_ATLAS_HUD) && defined(NKMM_FIX_GLYPH_ATLAS_CACHE)
+	//手描きのオーバーレイ(GetDC+ExtTextOut)は、CEditView自身のDCだとScrollWindowEx()
+	//でピクセルごと引きずられて残像になり、フレームウィンドウのDCだとタブ/ツール
+	//バーなど子ウィンドウの領域と重なって(GetDCは子ウィンドウが占める領域を自動的に
+	//クリップ除外するため)描いても見えない、と2通りとも問題があった。ステータスバーは
+	//自前のクリッピング・再描画をコモンコントロールが処理するため、SetStatusText()
+	//経由ならどちらの問題も起きない。既存パーツ(パーツ0の検索結果等の一時メッセージ)
+	//と表示を奪い合わないよう、CEditWnd.cppのステータスバー分割に専用パーツ(index 9)を
+	//追加してあるので、そこへそのまま全項目を出す(幅は足りるようラベル分だけ確保済み)。
+	if( m_pcEditWnd->GetActivePane() == m_nMyIndex && CGlyphAtlasCache::getInstance()->IsEnabled() ){
+		CGlyphAtlasCache::SStats st = CGlyphAtlasCache::getInstance()->GetStats();
+		UINT64 nTotal = st.nHitCount + st.nMissCount;
+		double dHitRate = nTotal ? (100.0 * (double)st.nHitCount / (double)nTotal) : 0.0;
+		wchar_t szHud[256];
+		swprintf_s(szHud,
+			L"[GlyphAtlas] pages=%d entries=%zu pending=%zu hit=%llu miss=%llu warmed=%llu hitrate=%.1f%%",
+			st.nPageCount, st.nEntryCount, st.nPendingBlitCount,
+			st.nHitCount, st.nMissCount, st.nWarmedCount, dHitRate);
+		m_pcEditWnd->m_cStatusBar.SetStatusText(9, SBT_NOBORDERS, szHud);
+	}
+#endif // NKMM_
+
 #ifdef NKMM_OUTPUT_DEBUG_STRING
 	si::logln(L"OnPaint2 finish");
 #endif // NKMM_

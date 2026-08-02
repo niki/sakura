@@ -257,6 +257,16 @@ void CEditDoc::Clear()
 	InitCharWidthCache( m_pcEditWnd->GetLogfont() );
 	m_pcEditWnd->m_pcViewFont->UpdateFont(&m_pcEditWnd->GetLogfont());
 
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+	// 20260802 バグ修正: 設定ON/OFFの反映はOnChangeSetting()経由でしか行っていな
+	// かったため、共通設定でグリフキャッシュをONにしたまま起動して新規文書を
+	// 開いても(=OnChangeSetting()を一度も通らない)、シングルトンのコンストラクタ
+	// 既定値(false)のままになり無効化されていた。UpdateFont()の呼び出し箇所
+	// すべてで揃えて同期する(CLoadAgent::OnLoad()も同様)
+	CGlyphAtlasCache::getInstance()->SetEnabled(
+		GetDllShareData().m_Common.m_sWindow.m_bUseGlyphAtlasCache != FALSE );
+#endif // NKMM_
+
 	// 2008.06.07 nasukoji	折り返し方法の追加に対応
 	const STypeConfig& ref = m_cDocType.GetDocumentAttribute();
 	CKetaXInt nMaxLineKetas = ref.m_nMaxLineKetas;

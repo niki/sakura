@@ -219,7 +219,29 @@ bool CGlyphAtlasCache::DrawOrCache(
 	if( it != m_mapEntries.end() ){
 		const SGlyphAtlasEntry& e = it->second;
 		m_vPendingBlits.push_back(SGlyphAtlasBlit{ e.nPageIndex, e.rcCell, nDestX, nDestY });
+#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+		++m_nHitCount;
+#endif // NKMM_
 		return true;
+	}
+
+	// 今回ミスした文字自身が半角ASCII印字可能文字なら、この(フォント,fg,bg)の組み合わせで
+	// 以後発生するはずだったASCII文字のミスをまとめて先に焼いておく。nCellWidthPxは
+	// 「半角ASCII文字自身のミス」のときしか渡ってこないので、そのままASCII全体の
+	// セル幅として使ってよい(全角文字のミスではこの分岐へ入らない)
+	if( nLength == 1 && pData[0] >= 0x20 && pData[0] <= 0x7E ){
+		WarmUpAscii(hFont, crFore, crBack, nCellWidthPx, nCellHeightPx);
+		it = m_mapEntries.find(key);
+		if( it != m_mapEntries.end() ){
+			const SGlyphAtlasEntry& e = it->second;
+			m_vPendingBlits.push_back(SGlyphAtlasBlit{ e.nPageIndex, e.rcCell, nDestX, nDestY });
+#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+			++m_nMissCount;	// ウォームアップ経由でも、今回の文字にとっては「ミスして焼いた」ことに変わりないので数える
+#endif // NKMM_
+			return true;
+		}
+		// ページ上限等でウォームアップ中にこの文字自体は焼けなかった。
+		// 以下の単発ミス処理へフォールバックする
 	}
 
 	SGlyphAtlasEntry newEntry;
@@ -242,8 +264,72 @@ bool CGlyphAtlasCache::DrawOrCache(
 	m_mapEntries.emplace(key, newEntry);
 
 	m_vPendingBlits.push_back(SGlyphAtlasBlit{ newEntry.nPageIndex, rcCellDest, nDestX, nDestY });
+#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+	++m_nMissCount;
+#endif // NKMM_
 	return true;
 }
+
+//! 半角ASCII印字可能文字(0x20〜0x7E)を(hFont,crFore,crBack)の組でまとめて焼く。
+//! 1文字ずつSelectObject/SetTextColor/SetBkColorをやり直すコストを、同じページに
+//! 収まる範囲でひとまとめにする(ページ境界をまたいだら選択し直す)。
+//! 既にキャッシュ済みの文字はスキップするので、途中(ウォームアップ未完了)の
+//! 状態で複数回呼ばれても安全。
+void CGlyphAtlasCache::WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack, int nCellWidthPx, int nCellHeightPx)
+{
+	int dx[1] = { nCellWidthPx };
+	SGlyphAtlasPage* pCurPage = nullptr;
+	HFONT hOldFont = nullptr;
+
+	for( wchar_t ch = 0x20; ch <= 0x7E; ++ch ){
+		SGlyphAtlasKey key{ hFont, ch, L'\0', crFore, crBack, nCellWidthPx, nCellHeightPx };
+		if( m_mapEntries.find(key) != m_mapEntries.end() ) continue;
+
+		SGlyphAtlasEntry newEntry;
+		if( !AllocCell(nCellWidthPx, nCellHeightPx, &newEntry) ) break;	// ページ上限等。ここで打ち切る
+		SGlyphAtlasPage& page = m_vPages[newEntry.nPageIndex];
+
+		if( &page != pCurPage ){
+			// ページが変わった(または初回)ので、フォント・色の選択をやり直す
+			if( pCurPage ){
+				::SelectObject(pCurPage->hdcPage, hOldFont);
+			}
+			pCurPage = &page;
+			::SetTextColor(page.hdcPage, crFore);
+			::SetBkColor(page.hdcPage, crBack);
+			hOldFont = (HFONT)::SelectObject(page.hdcPage, hFont);
+		}
+
+		RECT rcCellDest = newEntry.rcCell;
+		::ExtTextOutW_AnyBuild(page.hdcPage, rcCellDest.left, rcCellDest.top,
+			ETO_CLIPPED | ETO_OPAQUE, &rcCellDest, &ch, 1, dx);
+
+		newEntry.nCellWidthPx  = nCellWidthPx;
+		newEntry.nCellHeightPx = nCellHeightPx;
+		m_mapEntries.emplace(key, newEntry);
+#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+		++m_nWarmedCount;
+#endif // NKMM_
+	}
+
+	if( pCurPage ){
+		::SelectObject(pCurPage->hdcPage, hOldFont);
+	}
+}
+
+#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+CGlyphAtlasCache::SStats CGlyphAtlasCache::GetStats() const
+{
+	SStats st;
+	st.nPageCount        = (int)m_vPages.size();
+	st.nEntryCount       = m_mapEntries.size();
+	st.nPendingBlitCount = m_vPendingBlits.size();
+	st.nHitCount         = m_nHitCount;
+	st.nMissCount        = m_nMissCount;
+	st.nWarmedCount      = m_nWarmedCount;
+	return st;
+}
+#endif // NKMM_
 
 //! DrawOrCache()が積んだ分をまとめてBitBltする。ページDCとhdcの行き来を
 //! グリフ単位で繰り返さないよう、ミスの焼き込み(ページ側)と転送(hdc側)を

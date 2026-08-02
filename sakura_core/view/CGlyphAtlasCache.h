@@ -153,10 +153,39 @@ public:
 	//! 全ページを解放し、キャッシュを空にする。積み残しのキューも破棄する。
 	void Clear();
 
+#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+	//! デバッグHUD用の統計スナップショット
+	struct SStats {
+		int    nPageCount;
+		size_t nEntryCount;
+		size_t nPendingBlitCount;
+		UINT64 nHitCount;
+		UINT64 nMissCount;
+		UINT64 nWarmedCount;	//!< WarmUpAscii()で(個別ミスとは別に)焼いたグリフの累計数
+	};
+	SStats GetStats() const;
+#endif // NKMM_
+
 private:
 	void ClearIfStale();
 	bool AllocCell(int w, int h, SGlyphAtlasEntry* pOut);
 	SGlyphAtlasPage* CreatePage();
+
+	/*!	半角ASCII印字可能文字(0x20〜0x7E)を(hFont,crFore,crBack)の組でまとめて
+		アトラスへ焼く。
+
+		DrawOrCache()は1グリフごとにSelectObject/SetTextColor/SetBkColorを
+		やり直すが、初めて見る(フォント,fg,bg)の組み合わせでは印字可能ASCIIの
+		どれか1文字がミスした時点でこの関数を呼び、以後同じ組み合わせで発生する
+		はずだった残りのASCIIミス(のセットアップコスト)を1回のページ選択に
+		まとめて償却する。既にキャッシュ済みの文字はスキップするので、
+		途中で呼ばれても安全(ページ確保に失敗したらそこで打ち切る)。
+
+		@param nCellWidthPx  [in] 半角1文字分のセル幅。呼び出し側は「今回ミスした
+		                          文字自身が半角ASCIIだった」ときのnCellWidthPxを
+		                          そのまま渡すこと(全角セル幅を渡すと壊れる)
+	*/
+	void WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack, int nCellWidthPx, int nCellHeightPx);
 
 #ifdef NKMM_DEBUG_GLYPH_ATLAS_DUMP
 	//! デバッグ用: 指定ページの実ピクセルをGetDIBits()で取得し、そのままbmpファイルへ書き出す
@@ -173,6 +202,14 @@ private:
 
 #ifdef NKMM_DEBUG_GLYPH_ATLAS_DUMP
 	int m_nDumpCounter = 0;	//!< Clear()の呼び出しごとにファイル名が重複しないようにする通し番号
+#endif // NKMM_
+
+#ifdef NKMM_DEBUG_GLYPH_ATLAS_HUD
+	//! プロセス寿命で積算するデバッグHUD用カウンタ(Clear()では リセットしない。
+	//! フォント変更をまたいだキャッシュ全体の効きを見たいため)
+	UINT64 m_nHitCount = 0;
+	UINT64 m_nMissCount = 0;
+	UINT64 m_nWarmedCount = 0;
 #endif // NKMM_
 
 	static const int PAGE_SIZE = 1024;

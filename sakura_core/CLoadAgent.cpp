@@ -31,6 +31,7 @@
 #include "env/CShareData.h"
 #include "doc/CEditDoc.h"
 #include "view/CEditView.h"
+#include "view/CGlyphAtlasCache.h"
 #include "window/CEditWnd.h"
 #include "uiparts/CVisualProgress.h"
 #include "util/file.h"
@@ -178,6 +179,16 @@ ELoadResult CLoadAgent::OnLoad(const SLoadInfo& sLoadInfo)
 	SelectCharWidthCache( CWM_FONT_EDIT, pcDoc->m_pcEditWnd->GetLogfontCacheMode() );
 	InitCharWidthCache( pcDoc->m_pcEditWnd->GetLogfont() );
 	pcDoc->m_pcEditWnd->m_pcViewFont->UpdateFont(&pcDoc->m_pcEditWnd->GetLogfont());
+
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+	// 20260802 バグ修正: 設定ON/OFFの反映はCEditDoc::OnChangeSetting()経由でしか
+	// 行っていなかったため、共通設定でグリフキャッシュをONにしたまま起動して
+	// ファイルを開いても(=OnChangeSetting()を一度も通らない)、シングルトンの
+	// コンストラクタ既定値(false)のままになり無効化されていた。UpdateFont()の
+	// 呼び出し箇所すべてで揃えて同期する
+	CGlyphAtlasCache::getInstance()->SetEnabled(
+		GetDllShareData().m_Common.m_sWindow.m_bUseGlyphAtlasCache != FALSE );
+#endif // NKMM_
 
 	// 起動と同時に読む場合は予めアウトライン解析画面を配置しておく
 	// （ファイル読み込み開始とともにビューが表示されるので、あとで配置すると画面のちらつきが大きいの）
