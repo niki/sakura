@@ -27,6 +27,7 @@
 #include "window/CEditWnd.h"
 #include "doc/CEditDoc.h"
 #include "types/CTypeSupport.h"
+#include "view/CGlyphAtlasCache.h"
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                           括弧                              //
@@ -231,6 +232,12 @@ void CEditView::DrawBracketPair( bool bDraw )
 					DispPos sPos(nWidth, nHeight);
 					sPos.InitDrawPos(CMyPoint(nLeft, nTop));
 					GetTextDrawer().DispText(gr, &sPos, 0, &pLine[OutputX], 1, bTrans);
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+					// この経路は通常のOnPaint(CEditView_Paint.cpp)を介さない独立した
+					// 即時描画のため、DispText内でDrawOrCache()がキューに積んだ分を
+					// ここで自前でFlushしないと、対括弧の強調表示が画面に出ない
+					CGlyphAtlasCache::getInstance()->FlushQueue(gr);
+#endif // NKMM_
 					GetTextDrawer().DispNoteLine(gr, nTop, nTop + nHeight, nLeft, nLeft + (Int)charsWidth * nWidth);
 					// 2006.04.30 Moca 対括弧の縦線対応
 					GetTextDrawer().DispVerticalLines(gr, nTop, nTop + nHeight, ptColLine.x, ptColLine.x + charsWidth); //※括弧が全角幅である場合を考慮

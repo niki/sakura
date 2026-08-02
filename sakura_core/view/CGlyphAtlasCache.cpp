@@ -87,6 +87,7 @@ void CGlyphAtlasCache::Clear()
 	}
 	m_vPages.clear();
 	m_mapEntries.clear();
+	m_vPendingBlits.clear();	// ページを解放するので、積み残しのBitBlt指示(ページ番号参照)も破棄する
 	m_bPageAllocFailed = false;
 }
 
@@ -217,9 +218,7 @@ bool CGlyphAtlasCache::DrawOrCache(
 	auto it = m_mapEntries.find(key);
 	if( it != m_mapEntries.end() ){
 		const SGlyphAtlasEntry& e = it->second;
-		SGlyphAtlasPage& page = m_vPages[e.nPageIndex];
-		::BitBlt(hdc, nDestX, nDestY, e.nCellWidthPx, e.nCellHeightPx,
-			page.hdcPage, e.rcCell.left, e.rcCell.top, SRCCOPY);
+		m_vPendingBlits.push_back(SGlyphAtlasBlit{ e.nPageIndex, e.rcCell, nDestX, nDestY });
 		return true;
 	}
 
@@ -242,9 +241,22 @@ bool CGlyphAtlasCache::DrawOrCache(
 	newEntry.nCellHeightPx = nCellHeightPx;
 	m_mapEntries.emplace(key, newEntry);
 
-	::BitBlt(hdc, nDestX, nDestY, nCellWidthPx, nCellHeightPx,
-		page.hdcPage, rcCellDest.left, rcCellDest.top, SRCCOPY);
+	m_vPendingBlits.push_back(SGlyphAtlasBlit{ newEntry.nPageIndex, rcCellDest, nDestX, nDestY });
 	return true;
+}
+
+//! DrawOrCache()が積んだ分をまとめてBitBltする。ページDCとhdcの行き来を
+//! グリフ単位で繰り返さないよう、ミスの焼き込み(ページ側)と転送(hdc側)を
+//! フェーズ分離するのが目的(詳細はヘッダのコメント、changelog参照)。
+void CGlyphAtlasCache::FlushQueue(HDC hdc)
+{
+	for( const SGlyphAtlasBlit& blit : m_vPendingBlits ){
+		const SGlyphAtlasPage& page = m_vPages[blit.nPageIndex];
+		::BitBlt(hdc, blit.nDestX, blit.nDestY,
+			blit.rcSrc.right - blit.rcSrc.left, blit.rcSrc.bottom - blit.rcSrc.top,
+			page.hdcPage, blit.rcSrc.left, blit.rcSrc.top, SRCCOPY);
+	}
+	m_vPendingBlits.clear();
 }
 
 #endif // NKMM_FIX_GLYPH_ATLAS_CACHE

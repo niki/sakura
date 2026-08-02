@@ -32,6 +32,7 @@
 #include "view/colors/CColorStrategy.h"
 #include "view/colors/CColor_Found.h"
 #include "view/figures/CFigureManager.h"
+#include "view/CGlyphAtlasCache.h"
 #include "types/CTypeSupport.h"
 #include "doc/CEditDoc.h"
 #include "doc/layout/CLayout.h"
@@ -857,10 +858,18 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		GetRuler().DispRuler( gr );
 	}
 
-#ifdef NKMM_FIX_COLOR_FONT
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
 	//全行のGDI描画(選択範囲の反転描画・ルーラーも含む)が終わった直後、
-	//bUseMemoryDCの場合は画面へのBitBltより前に、まとめてカラーフォント
-	//(絵文字等)のグリフをオーバーレイ描画する。1行ごとにDirect2Dの
+	//DispText中にDrawOrCache()が積んだグリフアトラスのBitBltをまとめて
+	//転送する。カラーフォントのオーバーレイより前に済ませる必要がある
+	//(オーバーレイは確定した下地のピクセルの上に重ね描きするため)。
+	CGlyphAtlasCache::getInstance()->FlushQueue(gr);
+#endif // NKMM_
+
+#ifdef NKMM_FIX_COLOR_FONT
+	//上のグリフアトラス転送が終わった後、bUseMemoryDCの場合は画面への
+	//BitBltより前に、まとめてカラーフォント(絵文字等)のグリフを
+	//オーバーレイ描画する。1行ごとにDirect2Dの
 	//BindDC/BeginDraw/EndDrawを繰り返すと、後で1枚のメモリDCとして
 	//BitBltされる構成と相性が悪く、後から描いた行の内容が反映されない
 	//ことがあったため、ここで1回にまとめる。

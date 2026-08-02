@@ -1004,6 +1004,20 @@
 //    キャッシュヒット時に保存済み(古い)サイズでBitBltしてしまい、画面に
 //    塗り残し(ゴミ)が出る不具合があった。フォントサイズを大きくすると
 //    誤差が拡大されて可視化しやすかった。セル幅・高さをキーに追加して修正。
+//  - 20260802 転送の2フェーズ化: DrawOrCache()は実際のBitBltをその場では
+//    行わず、CGlyphAtlasCache::m_vPendingBlitsへ積むだけにした。1回の
+//    描画パスの最後にFlushQueue()でまとめて転送する(既存のカラーフォント
+//    描画待ちキュー(CColorFontRenderer)と同じ構造)。ミス時にページ側の
+//    HDCとhdc側を1文字ごとに往復していたのをやめ、「ミスの焼き込み
+//    (ページ側のみ)」→「まとめて転送(hdc側のみ)」の2フェーズに分離する
+//    ことで、複数行にまたがる高速な選択ドラッグ時など、ミスが集中する
+//    場面での再描画コストを下げる狙い(定常時のヒットのみの再描画では
+//    効果はほぼ無い。ベンチマークはchangelog/NKMM_FIX_GLYPH_ATLAS_CACHE.md参照)
+//  - sakura_core\view\CEditView_Paint.cpp: 全行描画後、カラーフォントの
+//    オーバーレイより前にFlushQueue()を呼ぶ
+//  - sakura_core\view\CEditView_Paint_Bracket.cpp: DrawBracketPair()は
+//    通常のOnPaintを介さない独立した即時描画のため、自前でDispText直後に
+//    FlushQueue()を呼ぶ(呼ばないと対括弧の強調表示が画面に出ない)
 //  - 詳細はchangelog/NKMM_FIX_GLYPH_ATLAS_CACHE.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_GLYPH_ATLAS_CACHE

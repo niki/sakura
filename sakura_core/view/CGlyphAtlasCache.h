@@ -66,6 +66,14 @@ struct SGlyphAtlasEntry {
 	int  nCellHeightPx = 0;
 };
 
+//! FlushQueue()まで先送りする1グリフ分のBitBlt指示(転送元ページ内矩形→転送先座標)
+struct SGlyphAtlasBlit {
+	int  nPageIndex = 0;
+	RECT rcSrc = {0, 0, 0, 0};		//!< 転送元(ページ内座標)
+	int  nDestX = 0;
+	int  nDestY = 0;
+};
+
 //! グリフアトラスの1ページ(複数グリフをシェルフパッキングで敷き詰めた1枚のビットマップ)
 struct SGlyphAtlasPage {
 	HBITMAP hBitmap = nullptr;
@@ -79,9 +87,10 @@ struct SGlyphAtlasPage {
 /*!	GDIによるグリフキャッシュ(グリフアトラス)のシングルトン。
 
 	CTextDrawer::DispTextから、1文字(またはサロゲートペア)描画のたびに
-	DrawOrCache()を呼び出す。ヒット時はBitBltのみで済むため、同じ
-	(フォント,文字,fg,bg)の組み合わせが繰り返し描画されるスクロール・
-	再描画時の負荷を下げる。
+	DrawOrCache()を呼び出す。ヒット・ミスとも実際のBitBltはその場では行わず
+	m_vPendingBlitsへ積むだけにし、1回の描画パスの最後にFlushQueue()で
+	まとめて転送する(20260802 2フェーズ化。詳細はDrawOrCache/FlushQueueの
+	コメント、およびchangelog/NKMM_FIX_GLYPH_ATLAS_CACHE.md参照)。
 
 	CViewFont::GetFontGeneration()の値が変化したら(=フォントが作り直されたら)
 	キャッシュ全体を破棄する(ClearIfStale)。
@@ -96,9 +105,15 @@ public:
 	void SetEnabled(bool bEnabled);
 	bool IsEnabled() const { return m_bEnabled; }
 
-	/*!	グリフ1個(または1サロゲートペア)を描画する。
+	/*!	グリフ1個(または1サロゲートペア)分の転送をキューへ積む(または新規に焼く)。
 
-		@param hdc            [in] 描画先DC
+		ミス時、グリフをアトラスページへ焼く処理(SelectObject/SetTextColor/
+		SetBkColor/ExtTextOut、ページ側のHDCのみを触る)はこの場で完了させる。
+		一方、hdcへの実際のBitBlt(ヒット時・ミス時とも)はm_vPendingBlitsへ
+		積むだけで、この場では行わない。呼び出し側は1回の描画パスの最後に
+		必ずFlushQueue()を呼ぶこと(呼ばないとグリフが画面に出ない)。
+
+		@param hdc            [in] 描画先DC(FlushQueue()に渡すDCと同じである前提)
 		@param hFont          [in] 現在選択中のフォント(GetCurrentObject(hdc,OBJ_FONT)相当)
 		@param pData          [in] 描画対象文字列の先頭
 		@param nLength        [in] pDataの長さ(1または2のみ受け付ける)
@@ -110,7 +125,8 @@ public:
 		@param nCellHeightPx  [in] 行の高さ(CTextMetrics::GetHankakuDy())
 		@param pDx            [in] ミス時の実描画に使うDx配列(nLength要素)
 
-		@retval true  キャッシュ経由で処理した(呼び出し側はExtTextOutを呼ばなくてよい)
+		@retval true  キューに積んだ(呼び出し側はExtTextOutを呼ばなくてよい。
+		              ただし後でFlushQueue()を呼ぶまで実際には画面に出ない)
 		@retval false 何もしなかった(呼び出し側が通常どおりExtTextOutすること)
 	*/
 	bool DrawOrCache(
@@ -123,7 +139,18 @@ public:
 		const int* pDx
 	);
 
-	//! 全ページを解放し、キャッシュを空にする。
+	/*!	DrawOrCache()でキューに積んだ分をまとめてBitBltする。
+
+		呼び出し側は1回の描画パス(通常のOnPaint、対括弧強調表示の即時描画など、
+		DispText経由でDrawOrCache()を呼ぶ一連の処理)の最後に必ず1回呼ぶこと。
+		キューが空なら何もしない。呼び忘れるとグリフが画面に出ないので、
+		DispTextを直接呼ぶ新しい描画経路を追加するときは必ずこれも呼ぶこと。
+
+		@param hdc [in] 転送先DC。DrawOrCache()に渡したhdcと同じであること。
+	*/
+	void FlushQueue(HDC hdc);
+
+	//! 全ページを解放し、キャッシュを空にする。積み残しのキューも破棄する。
 	void Clear();
 
 private:
@@ -142,6 +169,7 @@ private:
 	bool  m_bPageAllocFailed;	//!< 一度でもページ確保に失敗したら以後は試みない
 	std::vector<SGlyphAtlasPage> m_vPages;
 	std::unordered_map<SGlyphAtlasKey, SGlyphAtlasEntry, SGlyphAtlasKeyHash> m_mapEntries;
+	std::vector<SGlyphAtlasBlit> m_vPendingBlits;	//!< FlushQueue()まで先送りしたBitBlt指示
 
 #ifdef NKMM_DEBUG_GLYPH_ATLAS_DUMP
 	int m_nDumpCounter = 0;	//!< Clear()の呼び出しごとにファイル名が重複しないようにする通し番号
