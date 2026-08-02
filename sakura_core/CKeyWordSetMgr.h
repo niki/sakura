@@ -121,7 +121,16 @@ public:
 	int GetAllocSize( int ) const;	//!< 確保している数を返す
 	int GetFreeSize() const;	//!< 未割り当てブロックのキーワード数を返す
 	void ResetAllKeyWordSet( void ); // 全キーワードセットの削除と初期化
+	void ClearKeyWord( int );	//!< ｎ番目のセットのキーワードをすべて削除(セット自体は残す) 20260802
 	// To Here 2004.07.29 Moca
+
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	///	@name sakura.keywordset.csv対応(セット単位の再読み込み用) 20260802
+	//@{
+	void SetKeyWordFile( int, const wchar_t* );	//!< ｎ番目のセットに対応するキーワードファイル名を設定する
+	const wchar_t* GetKeyWordFile( int ) const;	//!< ｎ番目のセットに対応するキーワードファイル名を取得する(未設定なら空文字列)
+	//@}
+#endif // NKMM_
 
 	/*
 	|| 演算子
@@ -141,6 +150,9 @@ public:
 	wchar_t	m_szSetNameArr[MAX_SETNUM][MAX_SETNAMELEN + 1];/*!< キーワードセット名 */
 	bool	m_bKEYWORDCASEArr[MAX_SETNUM];	/*!< キーワードの英大文字小文字区別 */
 	int		m_nKeyWordNumArr[MAX_SETNUM];	/*!< キーワードセットに登録されているキーワード数 */
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	wchar_t	m_szKeyWordFileArr[MAX_SETNUM][MAX_PATH];	/*!< セットに対応するキーワードファイル名(sakura.keywordset.csv由来、INI未保存、セット単位の再読み込み用) 20260802 */
+#endif // NKMM_
 private:
 	/*! キーワード格納領域 */
 	wchar_t	m_szKeyWordArr[MAX_KEYWORDNUM][MAX_KEYWORDLEN + 1];	

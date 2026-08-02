@@ -277,6 +277,7 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 	{
 		cKeyWordSetMgr.AddKeyWordSet(name.c_str(), case_sensitive);
 		++nSetCount;
+		cKeyWordSetMgr.SetKeyWordFile(nSetCount, filename.c_str());	// 20260802 セット単位の再読み込み用にファイル名を記録
 		CImpExpKeyWord impKeyword(pShareData->m_Common, nSetCount, case_sensitive);
 		std::wstring TmpMsg;
 		impKeyword.Import(std::tstring(szKeywordDir) + filename, TmpMsg);

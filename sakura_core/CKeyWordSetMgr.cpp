@@ -103,6 +103,9 @@ const CKeyWordSetMgr& CKeyWordSetMgr::operator=( CKeyWordSetMgr& cKeyWordSetMgr 
 	memcpy_raw( m_szKeyWordArr   , cKeyWordSetMgr.m_szKeyWordArr   , sizeof( m_szKeyWordArr )    );
 	memcpy_raw( m_IsSorted       , cKeyWordSetMgr.m_IsSorted       , sizeof( m_IsSorted )        ); //MIK 2000.12.01 binary search
 	memcpy_raw( m_nKeyWordMaxLenArr, cKeyWordSetMgr.m_nKeyWordMaxLenArr, sizeof( m_nKeyWordMaxLenArr ) ); //2014.05.04 Moca
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	memcpy_raw( m_szKeyWordFileArr, cKeyWordSetMgr.m_szKeyWordFileArr, sizeof( m_szKeyWordFileArr ) ); // 20260802
+#endif // NKMM_
 	return *this;
 }
 
@@ -136,6 +139,9 @@ bool CKeyWordSetMgr::AddKeyWordSet(
 	m_bKEYWORDCASEArr[nIdx] = bKEYWORDCASE;
 	m_nKeyWordNumArr[nIdx] = 0;
 	m_IsSorted[nIdx] = 0;	//MIK 2000.12.01 binary search
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	m_szKeyWordFileArr[nIdx][0] = L'\0';	// 20260802 csv経由でない限り再読み込み対象外
+#endif // NKMM_
 	return true;
 }
 
@@ -159,6 +165,9 @@ bool CKeyWordSetMgr::DelKeyWordSet( int nIdx )
 		m_nStartIdx[i] = m_nStartIdx[i + 1];	//	2004.07.29 Moca 可変長記憶
 		m_IsSorted[i] = m_IsSorted[i+1];	//MIK 2000.12.01 binary search
 		m_nKeyWordMaxLenArr[i] = m_nKeyWordMaxLenArr[i+1];	// 2014.05.04 Moca
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+		memcpy_raw( m_szKeyWordFileArr[i], m_szKeyWordFileArr[i + 1], sizeof( m_szKeyWordFileArr[0] ) );	// 20260802
+#endif // NKMM_
 	}
 	m_nStartIdx[m_nKeyWordSetNum - 1] = m_nStartIdx[m_nKeyWordSetNum];	// 2007.07.14 ryoji これが無いと末尾＝最終セットの先頭になってしまう
 	m_nKeyWordSetNum--;
@@ -695,6 +704,58 @@ int  CKeyWordSetMgr::SearchKeyWordSet( const wchar_t* pszKeyWord )
 	}
 	return nIdx;
 }
+
+/*!	@brief ｎ番目のセットのキーワードをすべて削除する(セット自体は残す)
+
+	再読み込み(キーワードファイルからの再インポート)の前段階として、
+	現在登録されているキーワードを一旦すべて空にするために使う。
+
+	@param nIdx [in] キーワードセット番号
+	@date 20260802
+*/
+void CKeyWordSetMgr::ClearKeyWord( int nIdx )
+{
+	if( nIdx < 0 || m_nKeyWordSetNum <= nIdx ){
+		return;
+	}
+	m_nKeyWordNumArr[nIdx] = 0;
+	m_IsSorted[nIdx] = 0;	//MIK 2000.12.01 binary search
+	m_nKeyWordMaxLenArr[nIdx] = 0;
+	KeyWordReAlloc( nIdx, 0 );
+}
+
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+/*!	@brief ｎ番目のセットに対応するキーワードファイル名を設定する
+
+	sakura.keywordset.csvからセットを読み込んだ際、対応するキーワード
+	ファイル名(Keywordフォルダからの相対パス)を記録しておく。
+	共通設定「強調キーワード」タブの「再読込」ボタンから、このファイルを
+	使ってセット単位の再読み込みを行う。
+
+	@date 20260802
+*/
+void CKeyWordSetMgr::SetKeyWordFile( int nIdx, const wchar_t* pszFile )
+{
+	if( nIdx < 0 || m_nKeyWordSetNum <= nIdx ){
+		return;
+	}
+	if( NULL == pszFile ){
+		m_szKeyWordFileArr[nIdx][0] = L'\0';
+		return;
+	}
+	wcsncpy( m_szKeyWordFileArr[nIdx], pszFile, _countof(m_szKeyWordFileArr[nIdx]) - 1 );
+	m_szKeyWordFileArr[nIdx][_countof(m_szKeyWordFileArr[nIdx]) - 1] = L'\0';
+}
+
+//! ｎ番目のセットに対応するキーワードファイル名を取得する(未設定なら空文字列) 20260802
+const wchar_t* CKeyWordSetMgr::GetKeyWordFile( int nIdx ) const
+{
+	if( nIdx < 0 || m_nKeyWordSetNum <= nIdx ){
+		return L"";
+	}
+	return m_szKeyWordFileArr[nIdx];
+}
+#endif // NKMM_
 
 
 

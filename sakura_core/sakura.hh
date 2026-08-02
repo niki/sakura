@@ -546,6 +546,7 @@
 #define HIDC_COMBO_SET							10830 //強調キーワードセット名
 #define HIDC_BUTTON_KEYSETRENAME				10831 //セットの名称変更	// 2006.08.06 ryoji
 #define HIDC_LIST_KEYWORD						10840 //キーワード一覧
+#define HIDC_BUTTON_KEYWORD_RELOAD				10841 //キーワードセット再読込	// 20260802
 #define HIDC_BUTTON_CLEAR_MRU_FILE				10900 //履歴をクリア（ファイル）
 #define HIDC_BUTTON_CLEAR_MRU_FOLDER			10901 //履歴をクリア（フォルダ）
 #define HIDC_CHECK_FREECARET					10910 //フリーカーソル

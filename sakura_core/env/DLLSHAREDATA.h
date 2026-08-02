@@ -100,6 +100,9 @@ struct SShare_Flags{
 #ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
 	int					m_nCenteringCursor = 0;	/* カーソルのセンタリングフラグ */
 #endif // NKMM_
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	BOOL				m_bKeywordSetLoadedFromCsv = FALSE;	/* sakura.keywordset.csvから強調キーワードを読み込んだ(共通設定「強調キーワード」タブを編集不可にする) 20260802 */
+#endif // NKMM_
 };
 
 //! 共有ワークバッファ

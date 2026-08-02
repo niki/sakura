@@ -338,6 +338,33 @@
 	#define NKMM_USE_KEYWORDSET_CSV                  (1)  // sakura.keywordset.csvを用意し、強調キーワードの管理はこのファイルで行う 20170513
 
 //------------------------------------------------------------------
+// 共通設定「強調キーワード」タブの、sakura.keywordset.csv対応強化 20260802
+//  - sakura.keywordset.csvから読み込んだかどうかのフラグを共有メモリに持ち、
+//    読み込んでいる間は「強調キーワード」タブの編集系コントロール(セット追加/
+//    削除/名称変更/キーワード追加・編集・削除・大文字小文字区別/インポート/
+//    エクスポート/整理)をDisableにする(次回起動時にcsvへ上書きされ編集内容が
+//    失われるため)
+//  - 「変更」ボタンと同じ位置に「更新」ボタンを重ねて配置し、csv側のキーワード
+//    ファイルからセット単位で再読み込みできるようにする(再読込可能な時だけ
+//    「変更」の代わりに表示)
+//  - csv読み込み時は「セット追加」「セット削除」ボタンも隠し、空いた場所に
+//    現在のセットが使用しているキーワードファイル名を表示する
+//  - キーワード一覧に、実際にエディタで使われる強調表示色・太字/下線・
+//    フォントをプレビュー表示する(色は常に「基本」に統一されるが、太字/下線/
+//    フォントはタイプ別の設定(m_bUseTypeDisp/m_bUseTypeFont)を反映する)
+//  - sakura_core\env\DLLSHAREDATA.h: SShare_Flags::m_bKeywordSetLoadedFromCsv
+//  - sakura_core\env\CShareData_IO.cpp: 上記フラグの設定
+//  - sakura_core\CKeyWordSetMgr.h,cpp: ClearKeyWord/SetKeyWordFile/GetKeyWordFile
+//  - sakura_core\types\CType.cpp: InitKeywordFromListでのキーワードファイル名記録
+//  - sakura_core\prop\CPropCommon.h,CPropComKeyword.cpp: ダイアログ側の実装
+//  - sakura_core\sakura_rc.rc,sakura_lang_rc.rc,sakura_rc.h,sakura.hh:
+//    IDC_BUTTON_KEYWORD_RELOAD, IDC_STATIC_KEYWORD_FILE
+//------------------------------------------------------------------
+#if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
+	#define NKMM_FIX_KEYWORDSET_UI
+#endif // NKMM_
+
+//------------------------------------------------------------------
 // メインメニューはデフォルトを使用する 20170515
 // (メインメニューのカスタマイズは混乱を招く原因になっているため)
 //  - 共通設定から「メインメニュー」タブを削除します

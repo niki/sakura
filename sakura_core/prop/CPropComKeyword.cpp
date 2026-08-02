@@ -21,10 +21,13 @@
 #include "StdAfx.h"
 #include "prop/CPropCommon.h"
 #include "env/CShareData.h"
+#include "env/DLLSHAREDATA.h"
 #include "env/CDocTypeManager.h"
 #include "typeprop/CImpExpManager.h"	// 20210/4/23 Uchi
 #include "dlg/CDlgInput1.h"
 #include "util/shell.h"
+#include "util/file.h"	// 20260802 GetExedir (再読込ボタン用)
+#include "view/colors/EColorIndexType.h"	// 20260802 COLORIDX_KEYWORD1 (色プレビュー用)
 #include <memory>
 #include "sakura_rc.h"
 #include "sakura.hh"
@@ -44,6 +47,9 @@ static const DWORD p_helpids[] = {	//10800
 	IDC_LIST_KEYWORD,				HIDC_LIST_KEYWORD,			//キーワード一覧
 	IDC_BUTTON_KEYCLEAN		,		HIDC_BUTTON_KEYCLEAN,		//キーワード整理	// 2006.08.06 ryoji
 	IDC_BUTTON_KEYSETRENAME,		HIDC_BUTTON_KEYSETRENAME,	//セットの名称変更	// 2006.08.06 ryoji
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	IDC_BUTTON_KEYWORD_RELOAD,		HIDC_BUTTON_KEYWORD_RELOAD,	//キーワードセット再読込	// 20260802
+#endif // NKMM_
 //	IDC_STATIC,						-1,
 	0, 0
 };
@@ -155,6 +161,11 @@ INT_PTR CPropKeyword::DispatchEvent(
 			switch( pNMHDR->code ){
 			case NM_DBLCLK:
 //				MYTRACE( _T("NM_DBLCLK     \n") );
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+				if( IsKeywordCsvLoaded() ){
+					return TRUE;
+				}
+#endif // NKMM_
 				/* リスト中で選択されているキーワードを編集する */
 				Edit_List_KeyWord( hwndDlg, hwndLIST_KEYWORD );
 				return TRUE;
@@ -211,6 +222,11 @@ INT_PTR CPropKeyword::DispatchEvent(
 				return TRUE;
 			case LVN_KEYDOWN:
 //				MYTRACE( _T("LVN_KEYDOWN\n") );
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+				if( IsKeywordCsvLoaded() ){
+					return TRUE;
+				}
+#endif // NKMM_
 				switch( pnkd->wVKey ){
 				case VK_DELETE:
 					/* リスト中で選択されているキーワードを削除する */
@@ -222,6 +238,32 @@ INT_PTR CPropKeyword::DispatchEvent(
 					break;
 				}
 				return TRUE;
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+			case NM_CUSTOMDRAW:
+				// 選択中のセットに割り当てられた強調表示色・太字/下線でキーワード一覧をプレビュー表示する 20260802
+				{
+					LPNMLVCUSTOMDRAW plvcd = (LPNMLVCUSTOMDRAW)lParam;
+					switch( plvcd->nmcd.dwDrawStage ){
+					case CDDS_PREPAINT:
+						::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW );
+						return TRUE;
+					case CDDS_ITEMPREPAINT:
+						if( m_bKeywordSetColorValid ){
+							plvcd->clrText = m_crKeywordSetText;
+							plvcd->clrTextBk = m_crKeywordSetBack;
+						}
+						if( m_hKeywordPreviewFont ){
+							::SelectObject( plvcd->nmcd.hdc, m_hKeywordPreviewFont );
+							::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_NEWFONT );
+						}else{
+							::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_DODEFAULT );
+						}
+						return TRUE;
+					}
+				}
+				::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_DODEFAULT );
+				return TRUE;
+#endif // NKMM_
 			}
 		}else{
 			switch( pNMHDR->code ){
@@ -419,6 +461,12 @@ INT_PTR CPropKeyword::DispatchEvent(
 					/* リスト中のキーワードをエクスポートする */
 					Export_List_KeyWord( hwndDlg, hwndLIST_KEYWORD );
 					return TRUE;
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+				case IDC_BUTTON_KEYWORD_RELOAD:	/* 再読込 20260802 */
+					/* 選択中のセットをキーワードファイルから再読み込みする */
+					Reload_List_KeyWord( hwndDlg, hwndLIST_KEYWORD );
+					return TRUE;
+#endif // NKMM_
 				// 独立ウィンドウで使用する
 				case IDOK:
 					EndDialog( hwndDlg, IDOK );
@@ -434,6 +482,12 @@ INT_PTR CPropKeyword::DispatchEvent(
 
 	case WM_TIMER:
 		nIndex1 = ListView_GetNextItem( hwndLIST_KEYWORD, -1, LVNI_ALL | LVNI_SELECTED );
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+		if( IsKeywordCsvLoaded() ){
+			::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_EDITKEYWORD ), FALSE );
+			::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_DELKEYWORD ), FALSE );
+		}else
+#endif // NKMM_
 		if( -1 == nIndex1 ){
 			::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_EDITKEYWORD ), FALSE );
 			::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_DELKEYWORD ), FALSE );
@@ -445,6 +499,12 @@ INT_PTR CPropKeyword::DispatchEvent(
 
 	case WM_DESTROY:
 		::KillTimer( hwndDlg, 1 );
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+		if( m_hKeywordPreviewFont ){	// 20260802 色/フォントプレビュー用フォントの解放
+			::DeleteObject( m_hKeywordPreviewFont );
+			m_hKeywordPreviewFont = NULL;
+		}
+#endif // NKMM_
 		break;
 
 //@@@ 2001.02.04 Start by MIK: Popup Help
@@ -577,6 +637,196 @@ void CPropKeyword::Export_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
 }
 
 
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+//! sakura.keywordset.csvから強調キーワードを読み込んだか 20260802
+bool CPropKeyword::IsKeywordCsvLoaded()
+{
+	return !!GetDllShareData().m_sFlags.m_bKeywordSetLoadedFromCsv;
+}
+
+//! sakura.keywordset.csvから読み込んだ場合、強調キーワードを編集する各コントロールをDisableにする 20260802
+//! (csvの内容が次回起動時に再読込・上書きされるため、ダイアログ上での編集を無効化する)
+void CPropKeyword::EnableKeywordPropInput( HWND hwndDlg )
+{
+	if( !IsKeywordCsvLoaded() ){
+		return;
+	}
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_ADDSET ), FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_DELSET ), FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_KEYSETRENAME ), FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_ADDKEYWORD ), FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_EDITKEYWORD ), FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_DELKEYWORD ), FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_KEYWORDCASE ), FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_IMPORT ), FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_EXPORT ), FALSE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_KEYCLEAN ), FALSE );
+}
+
+//! 「変更」と「再読込」は同じ位置に重ねて配置しているため、どちらか一方だけを表示する 20260802
+//! (再読込可能なときは「再読込」を、そうでない(通常編集/セットなし)ときは「変更」を表示する)
+void CPropKeyword::SwitchKeywordRenameReloadButton( HWND hwndDlg, bool bReloadable )
+{
+	::ShowWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_KEYWORD_RELOAD ), bReloadable ? SW_SHOW : SW_HIDE );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_KEYWORD_RELOAD ), bReloadable );
+	::ShowWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_KEYSETRENAME ), bReloadable ? SW_HIDE : SW_SHOW );
+}
+
+//! CSV読み込み時、「セット追加」「セット削除」を隠し、空いた場所にキーワードファイル名を表示する 20260802
+//! (セットの追加・削除はCSV側で管理するため、その場所を使ってどのファイルが読み込まれているかを見せる)
+void CPropKeyword::SwitchKeywordSetEditButtons( HWND hwndDlg, bool bCsvLoaded )
+{
+	::ShowWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_ADDSET ), bCsvLoaded ? SW_HIDE : SW_SHOW );
+	::ShowWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_DELSET ), bCsvLoaded ? SW_HIDE : SW_SHOW );
+	::ShowWindow( ::GetDlgItem( hwndDlg, IDC_STATIC_KEYWORD_FILE ), bCsvLoaded ? SW_SHOW : SW_HIDE );
+}
+
+//! セットに対応するキーワードファイル名の表示を更新する 20260802
+void CPropKeyword::UpdateKeywordFileLabel( HWND hwndDlg, int nIdx )
+{
+	const wchar_t* pszFile = L"";
+	if( 0 <= nIdx ){
+		pszFile = m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetKeyWordFile( nIdx );
+		if( NULL == pszFile ){
+			pszFile = L"";
+		}
+	}
+	::SetWindowText( ::GetDlgItem( hwndDlg, IDC_STATIC_KEYWORD_FILE ), pszFile );
+}
+
+//! 選択中のセットをキーワードファイルから再読み込みする(セット単位) 20260802
+//! (sakura.keywordset.csvで指定されたファイルの内容を反映し直す。セット自体やそれ以外のセットには影響しない)
+void CPropKeyword::Reload_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
+{
+	CKeyWordSetMgr& cKeyWordSetMgr = m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
+	int nIdx = cKeyWordSetMgr.m_nCurrentKeyWordSetIdx;
+	if( !IsKeywordCsvLoaded() || nIdx < 0 ){
+		return;
+	}
+	const wchar_t* pszFile = cKeyWordSetMgr.GetKeyWordFile( nIdx );
+	if( NULL == pszFile || L'\0' == pszFile[0] ){
+		return;
+	}
+
+	TCHAR szKeywordDir[_MAX_PATH];
+	GetExedir( szKeywordDir, _T("Keyword\\") );
+	std::wstring sPath = std::wstring(szKeywordDir) + pszFile;
+
+	// 現在のキーワードを一旦空にしてからファイルを取り込み直す
+	cKeyWordSetMgr.ClearKeyWord( nIdx );
+
+	bool bCase = cKeyWordSetMgr.GetKeyWordCase( nIdx );
+	CImpExpKeyWord cImpExpKeyWord( m_Common, nIdx, bCase );
+	std::wstring sErrMsg;
+	if( !cImpExpKeyWord.Import( sPath, sErrMsg ) ){
+		::MessageBox( hwndDlg, sErrMsg.c_str(), GSTR_APPNAME, MB_OK | MB_ICONEXCLAMATION );
+	}
+
+	/* ダイアログデータの設定 Keyword 指定キーワードセットの設定 */
+	SetKeyWordSet( hwndDlg, nIdx );
+}
+
+//! 指定したキーワードセットに割り当てられた強調表示色・フォント属性を取得する 20260802
+//! (色はNKMM_FIX_SHARED_TYPE_COLORにより常に「基本」(Types(0))の設定に統一されるが、
+//!  太字・下線・フォントはタイプ別の表示/フォントを使う設定(m_bUseTypeDisp/m_bUseTypeFont)の
+//!  場合はタイプごとに異なりうるため、実際にセットを参照している最初のタイプで
+//!  CDocTypeManager::GetTypeConfig()を引く(色はこのAPI自身が基本にマージするので、
+//!  色は結局常に基本と同じになる)。参照しているタイプが1つも無ければfalseを返す)
+bool CPropKeyword::GetKeywordSetColor( int nIdx, COLORREF& crText, COLORREF& crBack, bool& bBold, bool& bUnderline, LOGFONT& lf )
+{
+	if( nIdx < 0 ){
+		return false;
+	}
+
+	// セット番号から、参照している最初のタイプとスロット番号(強調キーワード1～10のどれか)を逆引きする
+	// (タイプ別設定側で未保存のまま編集中の一時タイプ(typeId==-1)は後回しにし、実在するタイプを優先する。
+	//  CPropCommon::InitData()はtypeId==-1の一時エントリ(あれば)を先頭に1件だけpushし、
+	//  その後CTypeConfig(0),(1),...の順に実タイプをpushする。そのため実タイプの出現順を
+	//  数えたカウンタが、そのままCTypeConfigに渡すべきインデックスと一致する。
+	//  typeIdからCDocTypeManager::GetDocumentTypeOfId()で逆引きするより、この方が確実)
+	bool bFoundReal = false;
+	int nRealTypeConfigIdx = -1;
+	int nSlot = -1;
+	int nTempSlot = -1;
+	int nTypeConfigIdx = 0;
+	for( size_t i = 0; i < m_Types_nKeyWordSetIdx.size() && !bFoundReal; ++i ){
+		const bool bIsTempEntry = ( -1 == m_Types_nKeyWordSetIdx[i].typeId );
+		for( int j = 0; j < MAX_KEYWORDSET_PER_TYPE; ++j ){
+			if( m_Types_nKeyWordSetIdx[i].index[j] != nIdx ){
+				continue;
+			}
+			if( bIsTempEntry ){
+				if( nTempSlot < 0 ){
+					nTempSlot = j;
+				}
+			}else{
+				nRealTypeConfigIdx = nTypeConfigIdx;
+				nSlot = j;
+				bFoundReal = true;
+			}
+			break;
+		}
+		if( !bIsTempEntry ){
+			++nTypeConfigIdx;
+		}
+	}
+	if( !bFoundReal && nTempSlot < 0 ){
+		return false;	// どのタイプにも割り当てられていない
+	}
+	if( !bFoundReal ){
+		nSlot = nTempSlot;	// 実在するタイプが無ければ、一時タイプのスロット番号だけ流用する(色・太字/下線は基本で代用)
+	}
+
+	STypeConfig type;
+	CTypeConfig typeConfig = bFoundReal ? CTypeConfig( nRealTypeConfigIdx ) : CTypeConfig(0);
+	if( !CDocTypeManager().GetTypeConfig( typeConfig, type ) ){
+		return false;
+	}
+	const ColorInfo& info = type.m_ColorInfoArr[COLORIDX_KEYWORD1 + nSlot];
+	crText = info.m_sColorAttr.m_cTEXT;
+	crBack = info.m_sColorAttr.m_cBACK;
+	bBold = info.m_sFontAttr.m_bBoldFont;
+	bUnderline = info.m_sFontAttr.m_bUnderLine;
+	// フォントは「タイプ別フォントを使う」設定の場合のみタイプ自身のものを使い、
+	// それ以外は共通設定(m_Common.m_sView)のフォントを使う(CEditWnd::GetLogfont()と同じ規則)
+	lf = type.m_bUseTypeFont ? type.m_lf : m_Common.m_sView.m_lf;
+	return true;
+}
+
+//! プレビュー用フォントを作り直す 20260802
+//! (lfBaseは共通設定/タイプ別設定の実際のフォント(GetKeywordSetColorが解決した値)。
+//!  書体・太字・下線はlfBaseに合わせるが、高さ/幅はリスト自身の既定フォントのまま
+//!  にする(リストの行の高さはリスト作成時のフォントで既に確定しているため、
+//!  実フォントの高さをそのまま使うと行の高さに収まらず上下が欠けてしまう)。
+//!  m_bKeywordSetColorValidがfalseなら何も作らずNULLのままにする=既定フォントで描画される)
+void CPropKeyword::UpdateKeywordPreviewFont( HWND hwndList, const LOGFONT& lfBase )
+{
+	if( m_hKeywordPreviewFont ){
+		::DeleteObject( m_hKeywordPreviewFont );
+		m_hKeywordPreviewFont = NULL;
+	}
+	if( !m_bKeywordSetColorValid ){
+		return;
+	}
+
+	LOGFONT lf = lfBase;
+	HFONT hListFont = (HFONT)::SendMessage( hwndList, WM_GETFONT, 0, 0 );
+	LOGFONT lfList;
+	if( hListFont && ::GetObject( hListFont, sizeof(LOGFONT), &lfList ) ){
+		lf.lfHeight = lfList.lfHeight;
+		lf.lfWidth  = lfList.lfWidth;
+	}
+	if( m_bKeywordSetBold ){
+		lf.lfWeight = FW_BOLD;
+	}
+	if( m_bKeywordSetUnderline ){
+		lf.lfUnderline = TRUE;
+	}
+	m_hKeywordPreviewFont = ::CreateFontIndirect( &lf );
+}
+#endif // NKMM_
+
+
 //! キーワードを整頓する
 void CPropKeyword::Clean_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
 {
@@ -624,7 +874,17 @@ void CPropKeyword::SetKeyWordSet( HWND hwndDlg, int nIdx )
 	HWND	hwndList;
 	LV_ITEM	lvi;
 
-	ListView_DeleteAllItems( ::GetDlgItem( hwndDlg, IDC_LIST_KEYWORD ) );
+	hwndList = ::GetDlgItem( hwndDlg, IDC_LIST_KEYWORD );
+	ListView_DeleteAllItems( hwndList );
+
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	// 選択中のセットに割り当てられた強調表示色・フォント属性を取得する(プレビュー用) 20260802
+	LOGFONT lfKeyword = {};
+	m_bKeywordSetColorValid = GetKeywordSetColor( nIdx, m_crKeywordSetText, m_crKeywordSetBack, m_bKeywordSetBold, m_bKeywordSetUnderline, lfKeyword );
+	UpdateKeywordPreviewFont( hwndList, lfKeyword );
+	UpdateKeywordFileLabel( hwndDlg, nIdx );
+#endif // NKMM_
+
 	if( 0 <= nIdx ){
 		::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_DELSET ), TRUE );
 		::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_KEYWORDCASE ), TRUE );
@@ -648,6 +908,12 @@ void CPropKeyword::SetKeyWordSet( HWND hwndDlg, int nIdx )
 		::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_DELKEYWORD ), FALSE );
 		::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_IMPORT ), FALSE );
 		::EnableWindow( ::GetDlgItem( hwndDlg, IDC_BUTTON_EXPORT ), FALSE );
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+		EnableKeywordPropInput( hwndDlg );
+		// キーワードセットが1つもない場合は「変更」を表示する(再読込は無意味なため)
+		SwitchKeywordRenameReloadButton( hwndDlg, false );
+		SwitchKeywordSetEditButtons( hwndDlg, IsKeywordCsvLoaded() );
+#endif // NKMM_
 		return;
 	}
 
@@ -660,7 +926,6 @@ void CPropKeyword::SetKeyWordSet( HWND hwndDlg, int nIdx )
 
 	/* ｎ番目のセットのキーワードの数を返す */
 	nNum = m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetKeyWordNum( nIdx );
-	hwndList = ::GetDlgItem( hwndDlg, IDC_LIST_KEYWORD );
 
 	// 2005.01.25 Moca/genta リスト追加中は再描画を抑制してすばやく表示
 	::SendMessageAny( hwndList, WM_SETREDRAW, FALSE, 0 );
@@ -684,6 +949,16 @@ void CPropKeyword::SetKeyWordSet( HWND hwndDlg, int nIdx )
 
 	//キーワード数を表示する。
 	DispKeywordCount( hwndDlg );
+
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	EnableKeywordPropInput( hwndDlg );
+	// 「再読込」は、CSVから読み込まれ、かつ対応するキーワードファイルを持つセットの時だけ有効
+	// (それ以外は「変更」を表示する。同じ位置に重ねて配置しているため一方だけを見せる)
+	bool bReloadable = IsKeywordCsvLoaded()
+		&& L'\0' != m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetKeyWordFile( nIdx )[0];
+	SwitchKeywordRenameReloadButton( hwndDlg, bReloadable );
+	SwitchKeywordSetEditButtons( hwndDlg, IsKeywordCsvLoaded() );
+#endif // NKMM_
 
 	return;
 }

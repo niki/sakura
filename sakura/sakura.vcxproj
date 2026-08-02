@@ -1446,7 +1446,9 @@
     <ClCompile Include="..\sakura_core\window\CTipWnd.cpp" />
     <ClCompile Include="..\sakura_core\window\CWnd.cpp" />
     <ClCompile Include="..\sakura_core\_main\CAppMode.cpp" />
-    <ClCompile Include="..\sakura_core\_main\CCommandLine.cpp" />
+    <ClCompile Include="..\sakura_core\_main\CCommandLine.cpp">
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NoListing</AssemblerOutput>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\_main\CControlProcess.cpp" />
     <ClCompile Include="..\sakura_core\_main\CControlTray.cpp" />
     <ClCompile Include="..\sakura_core\_main\CNormalProcess.cpp" />

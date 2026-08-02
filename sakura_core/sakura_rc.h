@@ -557,6 +557,8 @@
 #define IDC_STATIC_KEYWORD_COUNT        1489
 #define IDC_BUTTON_KEYSETRENAME         1490
 #define IDC_BUTTON_KEYCLEAN             1491
+#define IDC_BUTTON_KEYWORD_RELOAD       1733
+#define IDC_STATIC_KEYWORD_FILE         1734
 #define IDC_KEYWORD                     1492
 #define IDC_STATIC_KEYWORD              1493
 #define IDC_CHECK_ICASE                 1494
@@ -870,7 +872,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        231
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1733
+#define _APS_NEXT_CONTROL_VALUE         1735
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

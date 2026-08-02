@@ -294,6 +294,29 @@ private:
 	void Import_List_KeyWord( HWND , HWND );	//!< リスト中のキーワードをインポートする
 	void Export_List_KeyWord( HWND , HWND );	//!< リスト中のキーワードをエクスポートする
 	void Clean_List_KeyWord( HWND , HWND );		//!< リスト中のキーワードを整理する 2005.01.26 Moca
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	//! sakura.keywordset.csv読み込み時の編集ロック・再読込・セット編集ボタンの出し分け 20260802
+	//@{
+	bool IsKeywordCsvLoaded();					//!< sakura.keywordset.csvから強調キーワードを読み込んだか
+	void EnableKeywordPropInput( HWND hwndDlg );	//!< CSV読み込み時、強調キーワードの編集系コントロールをDisableにする
+	void SwitchKeywordRenameReloadButton( HWND hwndDlg, bool bReloadable );	//!< 「変更」「再読込」ボタンの表示切り替え(同じ位置に重ねて配置)
+	void Reload_List_KeyWord( HWND, HWND );		//!< 選択中のセットをキーワードファイルから再読み込みする(セット単位)
+	void SwitchKeywordSetEditButtons( HWND hwndDlg, bool bCsvLoaded );	//!< CSV読み込み時、「セット追加」「セット削除」を隠し、空いた場所にキーワードファイル名を表示する
+	void UpdateKeywordFileLabel( HWND hwndDlg, int nIdx );	//!< セットに対応するキーワードファイル名の表示を更新する
+	//@}
+
+	//! 強調キーワードの色・フォントプレビュー表示
+	//@{
+	bool GetKeywordSetColor( int nIdx, COLORREF& crText, COLORREF& crBack, bool& bBold, bool& bUnderline, LOGFONT& lf );	//!< セットに割り当てられた強調表示色・フォント属性(共通/タイプ別の実フォント含む)を取得する(いずれのタイプにも未割り当てならfalse)
+	void UpdateKeywordPreviewFont( HWND hwndList, const LOGFONT& lfBase );	//!< プレビュー用フォントを作り直す(書体はlfBase、高さ/幅はリスト自身のフォントに合わせる)
+	COLORREF	m_crKeywordSetText = RGB(0,0,0);		//!< 現在選択中のセットの強調表示色(文字) - プレビュー用
+	COLORREF	m_crKeywordSetBack = RGB(255,255,255);	//!< 現在選択中のセットの強調表示色(背景) - プレビュー用
+	bool		m_bKeywordSetColorValid = false;		//!< 上記(色)が有効か
+	bool		m_bKeywordSetBold = false;				//!< 現在選択中のセットが太字か - プレビュー用
+	bool		m_bKeywordSetUnderline = false;		//!< 現在選択中のセットが下線か - プレビュー用
+	HFONT		m_hKeywordPreviewFont = NULL;			//!< プレビュー用フォント(m_bKeywordSetColorValidがtrueの間だけ作成される)
+	//@}
+#endif // NKMM_
 };
 
 //==============================================================

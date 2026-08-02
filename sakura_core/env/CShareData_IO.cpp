@@ -153,8 +153,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 #if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 	std::tstring keywordset_fname =
-	    si::file::dirname(szIniFileName) +
-	    si::file::basename(szIniFileName) + _T(".keywordset.csv");
+	si::file::dirname(szIniFileName) +
+	si::file::basename(szIniFileName) + _T(".keywordset.csv");
 #endif // NKMM_
 
 	if( bRead ){
@@ -165,8 +165,10 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 #if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 			if (si::file::exist(keywordset_fname)) {
 				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
+				GetDllShareData().m_sFlags.m_bKeywordSetLoadedFromCsv = TRUE;
 			} else {
 				pcShare->InitKeyword( &GetDllShareData(), true );
+				GetDllShareData().m_sFlags.m_bKeywordSetLoadedFromCsv = FALSE;
 			}
 #else
 			// キーワードファイルのインポート
@@ -179,6 +181,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			// キーワードファイルのインポート
 			if (si::file::exist(keywordset_fname)) {
 				pcShare->InitKeywordFromList(&GetDllShareData(), keywordset_fname);
+				GetDllShareData().m_sFlags.m_bKeywordSetLoadedFromCsv = TRUE;
+			} else {
+				GetDllShareData().m_sFlags.m_bKeywordSetLoadedFromCsv = FALSE;
 			}
 		}
 #endif // NKMM_
@@ -189,9 +194,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		mH = mL = lH = lL = 0;	// ※ 古～い ini だと "szVersion" は無い
 		if( cProfile.IOProfileData( LTEXT("Other"), LTEXT("szVersion"), MakeStringBufferT(iniVer) ) )
 			_stscanf( iniVer, _T("%u.%u.%u.%u"), &mH, &mL, &lH, &lL );
-		DWORD dwMS = (DWORD)MAKELONG(mL, mH);
-		DWORD dwLS = (DWORD)MAKELONG(lL, lH);
-		DLLSHAREDATA* pShareData = &GetDllShareData();
+			DWORD dwMS = (DWORD)MAKELONG(mL, mH);
+			DWORD dwLS = (DWORD)MAKELONG(lL, lH);
+			DLLSHAREDATA* pShareData = &GetDllShareData();
 		if( pShareData->m_sVersion.m_dwProductVersionMS > dwMS
 			|| (pShareData->m_sVersion.m_dwProductVersionMS == dwMS && pShareData->m_sVersion.m_dwProductVersionLS > dwLS) )
 		{
