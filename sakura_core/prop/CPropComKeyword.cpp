@@ -27,6 +27,7 @@
 #include "dlg/CDlgInput1.h"
 #include "util/shell.h"
 #include "util/file.h"	// 20260802 GetExedir (再読込ボタン用)
+#include "util/os.h"	// 20260803 PreventVisualStyle (背景色プレビュー用)
 #include "view/colors/EColorIndexType.h"	// 20260802 COLORIDX_KEYWORD1 (色プレビュー用)
 #include <memory>
 #include "sakura_rc.h"
@@ -134,6 +135,11 @@ INT_PTR CPropKeyword::DispatchEvent(
 		/* コントロールのハンドルを取得 */
 		hwndCOMBO_SET = ::GetDlgItem( hwndDlg, IDC_COMBO_SET );
 		hwndLIST_KEYWORD = ::GetDlgItem( hwndDlg, IDC_LIST_KEYWORD );
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+		// ビジュアルスタイル有効時、ListViewはNM_CUSTOMDRAWのclrTextBk(背景色)を無視して
+		// テーマの背景を描画してしまうため、このリストだけテーマを無効化して背景色プレビューを効かせる 20260803
+		PreventVisualStyle( hwndLIST_KEYWORD );
+#endif // NKMM_
 		::GetWindowRect( hwndLIST_KEYWORD, &rc );
 		lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 		lvc.fmt = LVCFMT_LEFT;
@@ -241,6 +247,9 @@ INT_PTR CPropKeyword::DispatchEvent(
 #if defined(NKMM_FIX_KEYWORDSET_UI)
 			case NM_CUSTOMDRAW:
 				// 選択中のセットに割り当てられた強調表示色・太字/下線でキーワード一覧をプレビュー表示する 20260802
+				// 20260803 clrText/clrTextBkの指定はビジュアルスタイル有効時にListViewが
+				// 背景色を無視する(文字色は無視されない)ため、背景色は自前で塗って選択有無に
+				// 関わらず常に見えるようにする(選択行は青反転の代わりにフォーカス枠で示す)
 				{
 					LPNMLVCUSTOMDRAW plvcd = (LPNMLVCUSTOMDRAW)lParam;
 					switch( plvcd->nmcd.dwDrawStage ){
@@ -249,8 +258,36 @@ INT_PTR CPropKeyword::DispatchEvent(
 						return TRUE;
 					case CDDS_ITEMPREPAINT:
 						if( m_bKeywordSetColorValid ){
-							plvcd->clrText = m_crKeywordSetText;
-							plvcd->clrTextBk = m_crKeywordSetBack;
+							HDC hdc = plvcd->nmcd.hdc;
+							HWND hwndListDraw = plvcd->nmcd.hdr.hwndFrom;
+							int nItem = (int)plvcd->nmcd.dwItemSpec;
+
+							RECT rcItem;
+							ListView_GetItemRect( hwndListDraw, nItem, &rcItem, LVIR_BOUNDS );
+							// 隣接する行との間に境界線があるように錯視して見えるのを防ぐため、
+							// 上下に1pxずつ広げて隙間なく塗る(左右はリスト全幅のため不要)
+							::InflateRect( &rcItem, 0, 1 );
+							HBRUSH hbrBack = ::CreateSolidBrush( m_crKeywordSetBack );
+							::FillRect( hdc, &rcItem, hbrBack );
+							::DeleteObject( hbrBack );
+
+							if( m_hKeywordPreviewFont ){
+								::SelectObject( hdc, m_hKeywordPreviewFont );
+							}
+							::SetTextColor( hdc, m_crKeywordSetText );
+							::SetBkMode( hdc, TRANSPARENT );
+
+							TCHAR szText[MAX_KEYWORDLEN + 1];
+							ListView_GetItemText( hwndListDraw, nItem, 0, szText, _countof(szText) );
+							RECT rcLabel = rcItem;
+							rcLabel.left += 4;	// ListView既定のラベル余白に合わせる
+							::DrawText( hdc, szText, -1, &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX );
+
+							// 20260803 選択行にDrawFocusRect()で枠を付けていたが、格子状に見えて
+							// 錯視の原因になっていた(このリストは色見本の表示が主目的のため、
+							// 選択枠は付けず全項目を同じ見た目のまま揃える)
+							::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT );
+							return TRUE;
 						}
 						if( m_hKeywordPreviewFont ){
 							::SelectObject( plvcd->nmcd.hdc, m_hKeywordPreviewFont );
@@ -883,6 +920,10 @@ void CPropKeyword::SetKeyWordSet( HWND hwndDlg, int nIdx )
 	m_bKeywordSetColorValid = GetKeywordSetColor( nIdx, m_crKeywordSetText, m_crKeywordSetBack, m_bKeywordSetBold, m_bKeywordSetUnderline, lfKeyword );
 	UpdateKeywordPreviewFont( hwndList, lfKeyword );
 	UpdateKeywordFileLabel( hwndDlg, nIdx );
+	// 20260803 項目の間・末尾など自前描画が塗らない隙間もリスト本体の既定色として同じ背景色にしておく。
+	// 隙間だけ色が違うと、同じ背景色の項目同士でも境界線(枠)があるように錯視して見えてしまうため
+	ListView_SetBkColor( hwndList, m_bKeywordSetColorValid ? m_crKeywordSetBack : CLR_NONE );
+	ListView_SetTextBkColor( hwndList, m_bKeywordSetColorValid ? m_crKeywordSetBack : CLR_NONE );
 #endif // NKMM_
 
 	if( 0 <= nIdx ){
