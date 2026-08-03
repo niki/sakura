@@ -513,8 +513,8 @@ static bool ShareData_IO_Mru_Block( CDataProfile& cProfileHistory )
 				EditInfo *pfiWork = &hist.m_fiMRUArr[index];
 				std::string line_buffer;
 				line_buffer += si::util::to_bytes(pfiWork->m_szPath) + ",";
-				line_buffer += std::to_string(pfiWork->m_nViewTopLine) + ",";
-				line_buffer += std::to_string(pfiWork->m_nViewLeftCol) + ",";
+				line_buffer += std::to_string((Int)pfiWork->m_nViewTopLine) + ",";
+				line_buffer += std::to_string((Int)pfiWork->m_nViewLeftCol) + ",";
 				line_buffer += std::to_string(pfiWork->m_ptCursor.x) + ",";
 				line_buffer += std::to_string(pfiWork->m_ptCursor.y) + ",";
 				line_buffer += std::to_string(pfiWork->m_nCharCode) + ",";
