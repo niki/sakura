@@ -82,10 +82,13 @@ sakura/sakura/
 
 # Root
 .claude/
-*.zip
+#*.zip
 *.7z
 
-Publish/*.zip
+# Publish
+#Publish/*.zip
+Publish/old/
+Publish/*fix*.zip
 Publish/*.7z
 
 *.patch

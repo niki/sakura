@@ -70,7 +70,7 @@
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
 	#define PR_VER_VAL	2320
-	#define PR_LV		26080202
+	#define PR_LV		26080300
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -352,6 +352,10 @@
 //  - キーワード一覧に、実際にエディタで使われる強調表示色・太字/下線・
 //    フォントをプレビュー表示する(色は常に「基本」に統一されるが、太字/下線/
 //    フォントはタイプ別の設定(m_bUseTypeDisp/m_bUseTypeFont)を反映する)
+//  - 上記プレビューで背景色が反映されない問題を修正 20260803
+//    (ビジュアルスタイル有効時、ListViewはNM_CUSTOMDRAWのclrTextBkを無視して
+//    テーマの背景を描画してしまう。文字色(clrText)は反映されるため気付きにくい。
+//    PreventVisualStyle()でこのリストビューのテーマを無効化し、背景色を反映させる)
 //  - sakura_core\env\DLLSHAREDATA.h: SShare_Flags::m_bKeywordSetLoadedFromCsv
 //  - sakura_core\env\CShareData_IO.cpp: 上記フラグの設定
 //  - sakura_core\CKeyWordSetMgr.h,cpp: ClearKeyWord/SetKeyWordFile/GetKeyWordFile
