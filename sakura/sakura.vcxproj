@@ -1298,6 +1298,7 @@
     <ClCompile Include="..\sakura_core\prop\CPropComGrep.cpp" />
     <ClCompile Include="..\sakura_core\prop\CPropComHelper.cpp" />
     <ClCompile Include="..\sakura_core\prop\CPropComKeybind.cpp" />
+    <ClCompile Include="..\sakura_core\prop\CPropComKeybindList.cpp" />
     <ClCompile Include="..\sakura_core\prop\CPropComKeyword.cpp" />
     <ClCompile Include="..\sakura_core\prop\CPropComMacro.cpp" />
     <ClCompile Include="..\sakura_core\prop\CPropComMainMenu.cpp" />
@@ -1448,6 +1449,7 @@
     <ClCompile Include="..\sakura_core\_main\CAppMode.cpp" />
     <ClCompile Include="..\sakura_core\_main\CCommandLine.cpp">
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NoListing</AssemblerOutput>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</MultiProcessorCompilation>
     </ClCompile>
     <ClCompile Include="..\sakura_core\_main\CControlProcess.cpp" />
     <ClCompile Include="..\sakura_core\_main\CControlTray.cpp" />

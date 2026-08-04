@@ -2093,6 +2093,9 @@
     <ClCompile Include="..\sakura_core\prop\CPropComKeybind.cpp">
       <Filter>Cpp Source Files\prop</Filter>
     </ClCompile>
+    <ClCompile Include="..\sakura_core\prop\CPropComKeybindList.cpp">
+      <Filter>Cpp Source Files\prop</Filter>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\prop\CPropComKeyword.cpp">
       <Filter>Cpp Source Files\prop</Filter>
     </ClCompile>

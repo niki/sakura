@@ -70,7 +70,7 @@
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
 	#define PR_VER_VAL	2320
-	#define PR_LV		26080300
+	#define PR_LV		26080400
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -1222,6 +1222,41 @@
 //    他の項目(1刻み)と違いここでは4KBずつ増減させている
 //------------------------------------------------------------------
 #define NKMM_FIX_UNDO_BUFFER_LIMIT
+
+//------------------------------------------------------------------
+// 共通設定「キー割り当て」の隣に「ショートカット一覧」タブを追加する 20260803
+//  - 既存の「キー割り当て」タブは1キーずつ選んでチェックボックス(Shift/Ctrl/Alt)＋
+//    機能一覧から割り当てる編集用UIで、293x240のダイアログが既にコントロールで
+//    埋まっており「機能名とショートカットを対にした一覧」を差し込む余白がない。
+//    編集用UIはそのまま残し、俯瞰用の読み取り専用タブを別途追加する
+//  - Winキー修飾は対象外(既存のキー割り当て自体がShift/Ctrl/Altの3つしか
+//    扱っていないため)
+//  - 一覧の生成はCKeyBind::CreateKeyBindList()を流用する(クリップボードに
+//    コピーする既存コマンド Command_CREATEKEYBINDLIST と同じロジック)。
+//    タブ区切りの出力から先頭2行(ヘッダ/区切り線)を除いた各行を
+//    [機能名, キー]の2列としてSysListView32に流し込むだけで、機能の列挙・
+//    キー割り当ての解決ロジックを新規に書く必要がない
+//  - bGetDefFuncCode=TRUEで呼び出し、ユーザーが変更していない既定の割り当ても
+//    含めた「実際に効いているショートカット」の完全な一覧を見せる
+//    (クリップボードコピー版はFALSEで、ユーザーが変更した分のみ)
+//  - タブ切り替えのたびに(PSN_SETACTIVE)再構築するため、キー割り当てタブでの
+//    未保存の変更もすぐ反映される
+//  - 新規ページクラスCPropKeybindListはCPropCommonの派生ページ共通の制約
+//    (メンバ変数を追加しない。CPropCommon::CPropCommon()のsizeofアサートで
+//    強制される、ページクラスがCPropCommonと同一メモリレイアウトである
+//    という前提を壊さないため)に従い、作業用HWNDはDispatchEvent内の
+//    staticローカル変数として持つ(CPropComKeybind.cppと同じパターン)
+//  - sakura_core\prop\CPropCommon.h,cpp: ID_PROPCOM_PAGENUM_KEYLIST,
+//    CPropKeybindList, ComPropSheetInfoList[]への登録
+//  - sakura_core\prop\CPropComKeybindList.cpp(新規)
+//  - sakura_core\sakura_rc.rc,h, String_define.h: IDD_PROP_KEYBIND_LIST,
+//    IDC_LIST_KEYBINDALL, STR_PROPCOMMON_KEYLIST
+//  - sakura_lang_en_US\sakura_lang_rc.rc: 同上を英語版としてミラー
+//    (新規ダイアログリソースはCSelectLang::getLangRsrcInstance()で選択される
+//    言語DLL側にも実体が必要なため。既存ダイアログへのコントロール追記とは
+//    異なり、ダイアログテンプレート自体が無いとページが読み込めない)
+//------------------------------------------------------------------
+#define NKMM_FIX_KEYBIND_LIST_TAB
 
 //
 //#define USE_SSE2

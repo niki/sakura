@@ -67,6 +67,9 @@ enum PropComSheetOrder {
 	ID_PROPCOM_PAGENUM_FORMAT,			//!< 書式
 	ID_PROPCOM_PAGENUM_GREP,			//!< 検索
 	ID_PROPCOM_PAGENUM_KEYBOARD,		//!< キー割り当て
+#ifdef NKMM_FIX_KEYBIND_LIST_TAB
+	ID_PROPCOM_PAGENUM_KEYLIST,			//!< ショートカット一覧 20260803
+#endif // NKMM_
 	ID_PROPCOM_PAGENUM_CUSTMENU,		//!< カスタムメニュー
 	ID_PROPCOM_PAGENUM_KEYWORD,			//!< 強調キーワード
 	ID_PROPCOM_PAGENUM_HELPER,			//!< 支援
@@ -182,6 +185,26 @@ protected:
 
 	HFONT SetCtrlFont( HWND hwndDlg, int idc_static, const LOGFONT& lf );			//!< コントロールにフォント設定する		// 2013/4/24 Uchi
 	HFONT SetFontLabel( HWND hwndDlg, int idc_static, const LOGFONT& lf, int nps );	//!< フォントラベルにフォントとフォント名設定する	// 2013/4/24 Uchi
+#ifdef NKMM_FIX_KEYBIND_LIST_TAB
+	HFONT		m_hKeybindListBoldFont = NULL;			//!< ショートカット一覧の種別(カテゴリ)見出し用の太字フォント。
+														//!< 変数はCPropCommon自身に置く(ページクラスに置くと、全ページで
+														//!< 共有される単一のCPropCommonインスタンスをそのページの型として
+														//!< reinterpretする際に実際の確保サイズを超えてアクセスすることになるため) 20260803
+#endif // NKMM_
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	//! 強調キーワードの色・フォントプレビュー表示用データ。CPropKeyword固有に見えるが、
+	//! 変数はCPropCommon自身に置く必要がある(上記m_hKeybindListBoldFontと同じ理由。
+	//! 以前はCPropKeywordクラス側に置かれており、実際の確保サイズを超えてアクセスする
+	//! バグになっていたため、ここに移動した) 20260803
+	//@{
+	COLORREF	m_crKeywordSetText = RGB(0,0,0);		//!< 現在選択中のセットの強調表示色(文字) - プレビュー用
+	COLORREF	m_crKeywordSetBack = RGB(255,255,255);	//!< 現在選択中のセットの強調表示色(背景) - プレビュー用
+	bool		m_bKeywordSetColorValid = false;		//!< 上記(色)が有効か
+	bool		m_bKeywordSetBold = false;				//!< 現在選択中のセットが太字か - プレビュー用
+	bool		m_bKeywordSetUnderline = false;		//!< 現在選択中のセットが下線か - プレビュー用
+	HFONT		m_hKeywordPreviewFont = NULL;			//!< プレビュー用フォント(m_bKeywordSetColorValidがtrueの間だけ作成される)
+	//@}
+#endif // NKMM_
 };
 
 
@@ -250,6 +273,36 @@ private:
 #endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 };
 
+#ifdef NKMM_FIX_KEYBIND_LIST_TAB
+//==============================================================
+//!	ショートカット一覧ページ 20260803
+class CPropKeybindList : CPropCommon
+{
+public:
+	//!	Dialog Procedure
+	static INT_PTR CALLBACK DlgProc_page(
+		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
+protected:
+	//! Message Handler
+	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );
+	void SetData( HWND );	//!< ダイアログデータの設定
+	int  GetData( HWND );	//!< ダイアログデータの取得
+
+private:
+	void UpdateList( HWND );	//!< 一覧(機能名/ショートカット)を再構築する
+	void ReflectSelection( HWND, int );	//!< 選択行のショートカットを上部の設定コントロールに反映する 20260803
+	void FocusMatchingRow( HWND );	//!< 上部の設定コントロールと一致する行を一覧内でフォーカスする 20260803
+	int  FindMatchingRow( HWND );	//!< 上部の設定コントロールと一致する行の番号を返す(無ければ-1) 20260803
+	void UpdateActionArea( HWND );	//!< 機能名欄・登録/解除ボタン・キー警告色を選択状態に合わせて更新する 20260803
+	void UpdateStickyHeader( HWND );	//!< 先頭に見えている行の種別を、スクロールしても固定表示するオーバーレイに反映する 20260804
+	void Import( HWND );	//!< キー割り当て設定をインポートする(キー割り当てタブと共通) 20260804
+	void Export( HWND );	//!< キー割り当て設定をエクスポートする(キー割り当てタブと共通) 20260804
+#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+	void InitializeToDefault( HWND );	//!< キー割り当てを既定値に戻す(キー割り当てタブと共通) 20260804
+#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
+};
+#endif // NKMM_FIX_KEYBIND_LIST_TAB
+
 //==============================================================
 //!	ツールバーページ
 class CPropToolbar : CPropCommon
@@ -309,12 +362,6 @@ private:
 	//@{
 	bool GetKeywordSetColor( int nIdx, COLORREF& crText, COLORREF& crBack, bool& bBold, bool& bUnderline, LOGFONT& lf );	//!< セットに割り当てられた強調表示色・フォント属性(共通/タイプ別の実フォント含む)を取得する(いずれのタイプにも未割り当てならfalse)
 	void UpdateKeywordPreviewFont( HWND hwndList, const LOGFONT& lfBase );	//!< プレビュー用フォントを作り直す(書体はlfBase、高さ/幅はリスト自身のフォントに合わせる)
-	COLORREF	m_crKeywordSetText = RGB(0,0,0);		//!< 現在選択中のセットの強調表示色(文字) - プレビュー用
-	COLORREF	m_crKeywordSetBack = RGB(255,255,255);	//!< 現在選択中のセットの強調表示色(背景) - プレビュー用
-	bool		m_bKeywordSetColorValid = false;		//!< 上記(色)が有効か
-	bool		m_bKeywordSetBold = false;				//!< 現在選択中のセットが太字か - プレビュー用
-	bool		m_bKeywordSetUnderline = false;		//!< 現在選択中のセットが下線か - プレビュー用
-	HFONT		m_hKeywordPreviewFont = NULL;			//!< プレビュー用フォント(m_bKeywordSetColorValidがtrueの間だけ作成される)
 	//@}
 #endif // NKMM_
 };

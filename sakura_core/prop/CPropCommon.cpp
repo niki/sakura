@@ -141,6 +141,9 @@ CPropCommon::CPropCommon()
 		assert( sizeof(CPropFormat)    - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropGrep)      - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropKeybind)   - sizeof(CPropCommon) == 0 );
+#ifdef NKMM_FIX_KEYBIND_LIST_TAB
+		assert( sizeof(CPropKeybindList) - sizeof(CPropCommon) == 0 );
+#endif // NKMM_
 		assert( sizeof(CPropCustmenu)  - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropKeyword)   - sizeof(CPropCommon) == 0 );
 		assert( sizeof(CPropHelper)    - sizeof(CPropCommon) == 0 );
@@ -238,6 +241,9 @@ INT_PTR CPropCommon::DoPropertySheet( int nPageNum, bool bTrayProc )
 		{ STR_PROPCOMMON_FORMAT,	IDD_PROP_FORMAT,	CPropFormat::DlgProc_page },
 		{ STR_PROPCOMMON_SEARCH,	IDD_PROP_GREP,		CPropGrep::DlgProc_page },	// 2006.08.23 ryoji タイトル変更（Grep -> 検索）
 		{ STR_PROPCOMMON_KEYS,		IDD_PROP_KEYBIND,	CPropKeybind::DlgProc_page },
+#ifdef NKMM_FIX_KEYBIND_LIST_TAB
+		{ STR_PROPCOMMON_KEYLIST,	IDD_PROP_KEYBIND_LIST,	CPropKeybindList::DlgProc_page },	// 20260803
+#endif // NKMM_
 		{ STR_PROPCOMMON_CUSTMENU,	IDD_PROP_CUSTMENU,	CPropCustmenu::DlgProc_page },
 		{ STR_PROPCOMMON_KEYWORD,	IDD_PROP_KEYWORD,	CPropKeyword::DlgProc_page },
 		{ STR_PROPCOMMON_SUPPORT,	IDD_PROP_HELPER,	CPropHelper::DlgProc_page },

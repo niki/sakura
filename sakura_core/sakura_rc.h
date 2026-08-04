@@ -868,15 +868,25 @@
 #define IDC_EDIT_UNDOBUFMAXKB           1735
 #define IDC_SPIN_UNDOBUFMAXKB           1736
 #endif // NKMM_
+#ifdef NKMM_FIX_KEYBIND_LIST_TAB
+#define IDD_PROP_KEYBIND_LIST           231
+#define IDC_LIST_KEYBINDALL             1737
+#define IDC_COMBO_KEYBINDLIST_KEY       1738
+#define IDC_EDIT_KEYBINDLIST_FUNCNAME   1739
+#define IDC_BUTTON_KEYBINDLIST_REGISTER 1740
+#define IDC_EDIT_KEYBINDLIST_FILTER     1741
+#define IDC_BUTTON_KEYBINDLIST_RELEASE  1742
+#define IDC_STATIC_KEYBINDLIST_STICKYHEADER 1743
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        231
+#define _APS_NEXT_RESOURCE_VALUE        232
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1737
+#define _APS_NEXT_CONTROL_VALUE         1744
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

@@ -275,6 +275,7 @@ prop/CPropComGeneral.o \
 prop/CPropComGrep.o \
 prop/CPropComHelper.o \
 prop/CPropComKeybind.o \
+prop/CPropComKeybindList.o \
 prop/CPropComKeyword.o \
 prop/CPropComMacro.o \
 prop/CPropComMainMenu.o \
