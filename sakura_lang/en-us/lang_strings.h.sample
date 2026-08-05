@@ -1,0 +1,28 @@
+// ============================================================================
+// lang_strings.h.sample (en-us)
+//
+// String macro placeholder (not wired into the build yet).
+// English counterpart of the LANG_* macros consumed by
+// ../common/sakura_rc_body.rc.sample. Text taken as-is from the existing
+// sakura_lang_en_US/sakura_lang_rc.rc IDD_JUMP block.
+//
+// When the real migration happens, this file (and jp-ja/lang_strings.h) will
+// be generated from a diff between sakura_rc.rc and sakura_lang_rc.rc rather
+// than hand-written, since there are ~940 string IDs and ~2300 dialog text
+// literals to cover.
+// ============================================================================
+
+#define LANG_DIALOG_FONT           "Tahoma"
+
+#define LANG_JUMP_CAPTION          "Jump to Line"
+#define LANG_JUMP_LABEL_LINENUM    "Line &Number"
+#define LANG_JUMP_RADIO_LAYOUT     "Use Layout(&R)"
+#define LANG_JUMP_RADIO_CRLF       "Use CRLF(&W)"
+#define LANG_JUMP_CHECK_PLSQL      "&PL/SQL Compiler Error Processing"
+#define LANG_JUMP_LABEL_PLSQL1     "Group"
+#define LANG_JUMP_LABEL_PLSQL2     "Line as a block of &1 Line"
+#define LANG_JUMP_LABEL_PLSQL3     "&Select from detected PL/SQL package's block"
+#define LANG_JUMP_GROUP_PLSQL      "PL/SQL Compile Error Line"
+#define LANG_JUMP_BUTTON_JUMP      "&Jump"
+#define LANG_JUMP_BUTTON_CANCEL    "Cancel(&X)"
+#define LANG_JUMP_BUTTON_HELP      "&Help"

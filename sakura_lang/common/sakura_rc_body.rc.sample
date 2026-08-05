@@ -1,0 +1,60 @@
+// ============================================================================
+// sakura_rc_body.rc.sample
+//
+// 「共通本体」の書き方サンプル（雛形・未結線）。
+// IDD_JUMP（行へジャンプダイアログ）1つだけを題材に、キャプション／コントロール
+// 文字列／フォントをすべて LANG_* マクロへ置き換えた形を示す。
+//
+// 元ネタ:
+//   sakura_core/sakura_rc.rc            (日本語, IDD_JUMP)
+//   sakura_lang_en_US/sakura_lang_rc.rc (英語,   IDD_JUMP)
+//
+// 使い方（想定・未実装）:
+//   このファイルの前に ../jp-ja/lang_strings.h または ../en-us/lang_strings.h を
+//   #include してから、このファイル自体を #include することで、同じレイアウトを
+//   保ったまま言語だけを切り替えてコンパイルできるようにする。
+//
+// 注意:
+//   このファイルは実ビルドに組み込まれていません（.sample 拡張子）。
+//   resource.h 側の ID（IDD_JUMP, IDC_EDIT_LINENUM 等）は sakura_core/sakura_rc.h
+//   に既存のものをそのまま使う想定で、ここでは再定義しない。
+// ============================================================================
+
+IDD_JUMP DIALOGEX 0, 0, 252, 121
+STYLE DS_MODALFRAME | DS_NOIDLEMSG | DS_SETFOREGROUND | DS_CENTER |
+    DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTEXTHELP
+CAPTION LANG_JUMP_CAPTION
+FONT 9, LANG_DIALOG_FONT
+BEGIN
+    LTEXT           LANG_JUMP_LABEL_LINENUM,IDC_STATIC,5,6,34,8
+    EDITTEXT        IDC_EDIT_LINENUM,43,4,40,12
+    CONTROL         "Spin1",IDC_SPIN_LINENUM,"msctls_updown32",
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,82,4,9,12
+    CONTROL         LANG_JUMP_RADIO_LAYOUT,IDC_RADIO_LINENUM_LAYOUT,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,94,5,97,10
+    // NOTE: 英語版は "Use Layout(&R)" が長く、この下の行を x=102 にずらしていた
+    //       (日本語版は x=94)。本体を共有するとこの手の微調整ができなくなるため、
+    //       v1 では許容し、はみ出す言語だけ個別に幅/位置を見直す方針とする。
+    CONTROL         LANG_JUMP_RADIO_CRLF,IDC_RADIO_LINENUM_CRLF,"Button",
+                    BS_AUTORADIOBUTTON,94,20,87,10
+    CONTROL         LANG_JUMP_CHECK_PLSQL,IDC_CHECK_PLSQL,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,50,
+                    137,10
+    LTEXT           LANG_JUMP_LABEL_PLSQL2,IDC_LABEL_PLSQL2,92,66,92,
+                    8,NOT WS_GROUP
+    EDITTEXT        IDC_EDIT_PLSQL_E1,47,64,40,12
+    CONTROL         "Spin1",IDC_SPIN_PLSQL_E1,"msctls_updown32",
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,87,64,9,
+                    12
+    LTEXT           LANG_JUMP_LABEL_PLSQL1,IDC_LABEL_PLSQL1,12,66,34,8,NOT WS_GROUP
+    LTEXT           LANG_JUMP_LABEL_PLSQL3,
+                    IDC_LABEL_PLSQL3,12,81,166,8,NOT WS_GROUP
+    COMBOBOX        IDC_COMBO_PLSQLBLOCKS,15,94,168,100,CBS_DROPDOWNLIST |
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        LANG_JUMP_GROUP_PLSQL,IDC_STATIC,5,35,184,80,
+                    WS_GROUP
+    DEFPUSHBUTTON   LANG_JUMP_BUTTON_JUMP,IDC_BUTTON_JUMP,197,5,50,14,WS_GROUP
+    PUSHBUTTON      LANG_JUMP_BUTTON_CANCEL,IDCANCEL,197,24,50,14
+    PUSHBUTTON      LANG_JUMP_BUTTON_HELP,IDC_BUTTON_HELP,197,101,50,14
+END

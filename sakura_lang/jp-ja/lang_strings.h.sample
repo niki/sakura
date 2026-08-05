@@ -1,0 +1,25 @@
+// ============================================================================
+// lang_strings.h.sample (jp-ja)
+//
+// 「言語別文字列マクロ」の雛形（未結線）。
+// ../common/sakura_rc_body.rc.sample が参照する LANG_* マクロの日本語版実体。
+// 内容は sakura_core/sakura_rc.rc の IDD_JUMP から採取した実文言。
+//
+// 実移行時は、既存の sakura_rc.rc / sakura_lang_rc.rc をダイアログ単位で突き合わせて
+// 差分抽出するスクリプトで、このファイル一式を自動生成する想定（手書きでは網羅しない）。
+// ============================================================================
+
+#define LANG_DIALOG_FONT           NKMM_RES_FONT_NAME
+
+#define LANG_JUMP_CAPTION          "指定行へジャンプ"
+#define LANG_JUMP_LABEL_LINENUM    "行番号(&N)"
+#define LANG_JUMP_RADIO_LAYOUT     "折り返し単位の行番号(&R)"
+#define LANG_JUMP_RADIO_CRLF       "改行単位の行番号(&W)"
+#define LANG_JUMP_CHECK_PLSQL      "&PL/SQLコンパイルエラー行を処理する"
+#define LANG_JUMP_LABEL_PLSQL1     "テキストの"
+#define LANG_JUMP_LABEL_PLSQL2     "行目をブロックの&1行目とする"
+#define LANG_JUMP_LABEL_PLSQL3     "検出されたPL/SQLパッケージのブロックから選択(&S)"
+#define LANG_JUMP_GROUP_PLSQL      "PL/SQLコンパイルエラー行"
+#define LANG_JUMP_BUTTON_JUMP      "ジャンプ(&J)"
+#define LANG_JUMP_BUTTON_CANCEL    "キャンセル(&X)"
+#define LANG_JUMP_BUTTON_HELP      "ヘルプ(&H)"
