@@ -846,6 +846,11 @@ bool CEditView::ReplaceData_CEditView3(
 	// 2009.07.18 ryoji 置換後→置換前に位置を変更（置換後だと反転が不正になって汚い Wiki BugReport/43）
 	GetSelectionInfo().DisableSelectArea( bRedraw );
 
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	// pInsDataは呼び出し後に中身が移動してしまうため、置換前に文字数を数えておく 20260806
+	const int nInsCharsForWordNumCache = pInsData ? CalcOpeLineDataCharCount(*pInsData) : 0;
+#endif // NKMM_
+
 	/* 文字列置換 */
 	LayoutReplaceArg LRArg;
 	DocLineReplaceArg DLRArg;
@@ -863,6 +868,18 @@ bool CEditView::ReplaceData_CEditView3(
 		LRArg.nDelSeq      = nDelSeq;	//!< 挿入するデータの長さ
 		m_pcEditDoc->m_cLayoutMgr.ReplaceData_CLayoutMgr( &LRArg );
 	}
+
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	// ステータスバーの文字数キャッシュを差分更新する。削除データが捕捉できて
+	// いない場合(pcOpeBlkもpcmemCopyOfDeletedも無い内部処理等)は差分が
+	// わからないため、キャッシュを無効化して次回1回だけ数え直す 20260806
+	if( pcMemDeleted ){
+		const int nDelCharsForWordNumCache = CalcOpeLineDataCharCount(*pcMemDeleted);
+		m_pcEditDoc->AdjustDocumentCharCountCache( nInsCharsForWordNumCache - nDelCharsForWordNumCache );
+	}else{
+		m_pcEditDoc->InvalidateDocumentCharCountCache();
+	}
+#endif // NKMM_
 
 	//	Jan. 30, 2001 genta
 	//	再描画の時点でファイル更新フラグが適切になっていないといけないので

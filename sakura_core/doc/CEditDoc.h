@@ -115,6 +115,25 @@ public:
 
 	void SetCurDirNotitle();
 
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	//! 文書全体の文字数キャッシュを無効化する(次回GetDocumentWordNum()で1回だけ数え直す) 20260806
+	void InvalidateDocumentCharCountCache() { m_bDocumentCharCountValid = false; }
+	//! 文書全体の文字数キャッシュを差分(挿入文字数-削除文字数)ぶん更新する 20260806
+	void AdjustDocumentCharCountCache( int nCharCountDelta )
+	{
+		if( m_bDocumentCharCountValid ) m_nDocumentCharCountCache += nCharCountDelta;
+	}
+	//! 文書全体の文字数キャッシュが有効か(有効ならGetDocumentCharCountCache()がO(1)で使える) 20260806
+	bool IsDocumentCharCountCacheValid() const { return m_bDocumentCharCountValid; }
+	int GetDocumentCharCountCache() const { return m_nDocumentCharCountCache; }
+	//! 文書全体の文字数キャッシュを確定する(初回、または無効化後の再計算時に呼ぶ) 20260806
+	void SetDocumentCharCountCache( int nCharCount )
+	{
+		m_nDocumentCharCountCache = nCharCount;
+		m_bDocumentCharCountValid = true;
+	}
+#endif // NKMM_
+
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                       メンバ変数群                          //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -163,6 +182,12 @@ public:
 	HBITMAP			m_hBackImg;
 	int				m_nBackImgWidth;
 	int				m_nBackImgHeight;
+
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+private:
+	int				m_nDocumentCharCountCache = 0;		//!< 文書全体の文字数キャッシュ 20260806
+	bool			m_bDocumentCharCountValid = false;	//!< 上記キャッシュが有効か
+#endif // NKMM_
 };
 
 

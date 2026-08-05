@@ -59,6 +59,12 @@ inline int CalcOpeLineDataByteSize(const COpeLineData& lineData)
 }
 #endif // NKMM_
 
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+//! COpeLineData(1つの操作が保持する行データの配列)の合計文字数を求める(改行文字を除く、
+//! サロゲートペアは1文字)。GetDocumentWordNum()のO(1)キャッシュ更新に使う。 20260806
+int CalcOpeLineDataCharCount(const COpeLineData& lineData);
+#endif // NKMM_
+
 /*!
 	編集操作要素
 	

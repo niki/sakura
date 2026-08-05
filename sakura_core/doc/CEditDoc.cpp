@@ -244,6 +244,11 @@ void CEditDoc::Clear()
 	// テキストデータのクリア
 	m_cDocLineMgr.DeleteAllLine();
 
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	// 文字数キャッシュも無効化する(新規読み込み時に古い値を持ち越さないため) 20260806
+	InvalidateDocumentCharCountCache();
+#endif // NKMM_
+
 	// ファイルパスとアイコンのクリア
 	SetFilePathAndIcon( _T("") );
 

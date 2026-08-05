@@ -1285,8 +1285,37 @@
 //    ないことが保証される)を基準にキャッシュを設定し直す。バックワード
 //    サーチで戻ったノード数を数え、m_nPrevReferLineもその分だけ調整する
 //  - sakura_core\doc\layout\CLayoutMgr.cpp: CLayoutMgr::DeleteLayoutAsLogical()
+//  - 詳細はchangelog/NKMM_FIX_LAYOUT_DANGLING_PREVREFER.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_LAYOUT_DANGLING_PREVREFER
+
+//------------------------------------------------------------------
+// ステータスバーの文字数表示をO(1)キャッシュ化 20260806
+//  - CEditView::GetDocumentWordNum()は文書全体の文字数を求めるため、
+//    CLayoutMgr::GetLineCount()ぶん全レイアウト行を毎回ループしていた。
+//    これがCCaret::ShowCaretPosInfo()経由でキャレット移動のたびに
+//    (矢印キー1回ごとに)呼ばれるため、数百万行規模の巨大ファイルでは
+//    カーソル移動のたびに全行を舐め直すことになり、操作全般が重くなる
+//    原因になっていた(オリジナル版はOct. 30, 2000の"千万行も要らん"という
+//    コメント付きでこの文字数表示自体を持たなかった。NKMM_FIX_STATUSBARが
+//    その安全策なしに文字数表示を追加していた)
+//  - 文書全体を毎回数え直す代わりに、文字数をCEditDocにキャッシュし、
+//    実際にテキストが書き換わる唯一の関数CEditView::ReplaceData_CEditView3()
+//    (ライブ編集・Undo・Redoのいずれもここを経由する)で、そのとき挿入/削除
+//    されたテキストぶんだけを増減させる。Undoバッファ(COpeLineData)が
+//    保持するのと同じ挿入/削除データからNKMM_FIX_UNDO_BUFFER_LIMITの
+//    CalcOpeLineDataByteSize()と同じ形で文字数を積算するだけなので、
+//    ファイルサイズに関係なく編集量に比例したコストで済む
+//  - Undo記録を伴わない一部の内部処理(pcOpeBlkもpcmemCopyOfDeletedも
+//    NULL)では削除データを捕捉できないため、その場合はキャッシュを
+//    無効化し、次回表示時に1回だけ全体を数え直す(フォールバック)
+//  - sakura_core\COpe.h,cpp: CalcOpeLineDataCharCount()
+//  - sakura_core\doc\CEditDoc.h,cpp: 文字数キャッシュ本体、Clear()での無効化
+//  - sakura_core\view\CEditView_Command_New.cpp: ReplaceData_CEditView3()
+//  - sakura_core\view\CEditView.cpp: GetDocumentWordNum()
+//  - 詳細はchangelog/NKMM_FIX_STATUSBAR_WORDNUM_CACHE.md参照
+//------------------------------------------------------------------
+#define NKMM_FIX_STATUSBAR_WORDNUM_CACHE
 
 //
 //#define USE_SSE2

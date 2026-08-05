@@ -14,6 +14,10 @@
 #include "StdAfx.h"
 #include "COpe.h"
 #include "mem/CMemory.h"// 2002/2/10 aroka
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+#include "charset/charcode.h"
+#include "env/CShareData.h"
+#endif // NKMM_
 
 
 // COpeクラス構築
@@ -64,9 +68,29 @@ void CInsertOpe::DUMP( void )
 	DEBUG_TRACE( _T("\t\tm_cOpeLineData.size         = [%d]\n"), m_cOpeLineData.size() );
 	for( size_t i = 0; i < m_cOpeLineData.size(); i++ ){
 		DEBUG_TRACE( _T("\t\tm_cOpeLineData[%d].nSeq         = [%d]\n"), m_cOpeLineData[i].nSeq );
-		DEBUG_TRACE( _T("\t\tm_cOpeLineData[%d].cmemLine     = [%ls]\n"), m_cOpeLineData[i].cmemLine.GetStringPtr() );		
+		DEBUG_TRACE( _T("\t\tm_cOpeLineData[%d].cmemLine     = [%ls]\n"), m_cOpeLineData[i].cmemLine.GetStringPtr() );
 	}
 	return;
 }
+
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+// COpeLineDataの合計文字数(改行文字を除く、サロゲートペアは1文字)を求める 20260806
+int CalcOpeLineDataCharCount(const COpeLineData& lineData)
+{
+	const bool bExtEol = GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol;
+	int total = 0;
+	for( const CLineData& ld : lineData ){
+		const wchar_t* p = ld.cmemLine.GetStringPtr();
+		const int nLen = ld.cmemLine.GetStringLength();
+		// 末尾の改行文字を後方から判定して除く(CRLFの2文字にも対応)
+		int nEolLen = 0;
+		while( nEolLen < nLen && WCODE::IsLineDelimiter(p[nLen - 1 - nEolLen], bExtEol) ){
+			++nEolLen;
+		}
+		total += CNativeW::GetCharCountInRange(p, nLen, 0, nLen - nEolLen);
+	}
+	return total;
+}
+#endif // NKMM_
 
 

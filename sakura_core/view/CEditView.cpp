@@ -3628,8 +3628,19 @@ int CEditView::GetDocumentWordNum() const
 {
 	const CEditView* pView=this;
 
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	// キャッシュが有効ならO(1)。無効な場合(初回、読み込み直後、キャッシュを
+	// 追従できない編集の直後)のみ、以下で1回だけ全行を数え直して確定させる 20260806
+	if( pView->m_pcEditDoc->IsDocumentCharCountCacheValid() ){
+		return pView->m_pcEditDoc->GetDocumentCharCountCache();
+	}
+#endif // NKMM_
+
 	CLayoutInt nLineCount = pView->m_pcEditDoc->m_cLayoutMgr.GetLineCount();
 	if( 0 >= nLineCount ){ // 先頭行が実在しない
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+		pView->m_pcEditDoc->SetDocumentCharCountCache(0);
+#endif // NKMM_
 		return 0;
 	}
 
@@ -3657,6 +3668,9 @@ int CEditView::GetDocumentWordNum() const
 #endif // NKMM_
 	}
 
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	pView->m_pcEditDoc->SetDocumentCharCountCache(select_sum);
+#endif // NKMM_
 	return select_sum;
 }
 #endif // NKMM_
