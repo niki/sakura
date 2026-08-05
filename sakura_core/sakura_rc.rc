@@ -1868,10 +1868,10 @@ BEGIN
                     8,175,143,10
     GROUPBOX        "ソート",IDC_STATIC,3,200,149,40,WS_GROUP
     CONTROL         "英大文字と小文字を区別する",
-                    IDC_CHECK_bSelectClickedURL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP | WS_DISABLED,
+                    IDC_CHECK_bSortCaseSensitive,"Button",BS_AUTOCHECKBOX | WS_TABSTOP | WS_DISABLED,
                     8,213,143,10
     CONTROL         "ひらがなとカタカナを区別する",
-                    IDC_CHECK_bSelectClickedURL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP | WS_DISABLED,
+                    IDC_CHECK_bSortHiraKanaSensitive,"Button",BS_AUTOCHECKBOX | WS_TABSTOP | WS_DISABLED,
                     8,226,143,10
     GROUPBOX        "クリッカブルURL",IDC_STATIC,156,3,131,35,WS_GROUP
     CONTROL         "クリックで&URLを選択する",
