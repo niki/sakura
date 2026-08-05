@@ -560,17 +560,32 @@ CLayout* CLayoutMgr::DeleteLayoutAsLogical(
 		return NULL;
 	}
 
+#ifdef NKMM_FIX_LAYOUT_DANGLING_PREVREFER
+	/* 範囲内先頭に該当するレイアウト情報をサーチ */
+	// pLayoutInThisArea->GetPrevLayout() を「安全な直前ノード」とみなして先にキャッシュへ
+	// 設定していたが(旧実装)、直後のバックワードサーチはさらに前方まで戻ることがあり、
+	// その場合そのノードも今回の削除範囲に含まれてしまう。バックワードサーチの結果である
+	// pLayoutWork は削除範囲に絶対含まれないことが保証されるため、これを基準にキャッシュを
+	// 設定し直す。
+	CLayoutInt nStepBack = CLayoutInt(0);
+	pLayoutWork = pLayoutInThisArea->GetPrevLayout();
+	while( NULL != pLayoutWork && nLineFrom <= pLayoutWork->GetLogicLineNo()){
+		pLayoutWork = pLayoutWork->GetPrevLayout();
+		++nStepBack;
+	}
+	m_pLayoutPrevRefer = pLayoutWork;
+	m_nPrevReferLine = nLineOf_pLayoutInThisArea - CLayoutInt(1) - nStepBack;
+#else
 	// 1999.11.22
 	m_pLayoutPrevRefer = pLayoutInThisArea->GetPrevLayout();
 	m_nPrevReferLine = nLineOf_pLayoutInThisArea - CLayoutInt(1);
-
 
 	/* 範囲内先頭に該当するレイアウト情報をサーチ */
 	pLayoutWork = pLayoutInThisArea->GetPrevLayout();
 	while( NULL != pLayoutWork && nLineFrom <= pLayoutWork->GetLogicLineNo()){
 		pLayoutWork = pLayoutWork->GetPrevLayout();
 	}
-
+#endif // NKMM_
 
 
 	if( NULL == pLayoutWork ){
@@ -595,12 +610,6 @@ CLayout* CLayoutMgr::DeleteLayoutAsLogical(
 				pLayout->m_pNext->m_pPrev = pLayoutWork;
 			}
 		}
-//		if( m_pLayoutPrevRefer == pLayout ){
-//			// 1999.12.22 前にずらすだけでよいのでは
-//			m_pLayoutPrevRefer = pLayout->GetPrevLayout();
-//			--m_nPrevReferLine;
-//		}
-
 		if( ( ptDelLogicalFrom.GetY2() == pLayout->GetLogicLineNo() &&
 			  ptDelLogicalFrom.GetX2() < pLayout->GetLogicOffset() + pLayout->GetLengthWithEOL() ) ||
 			( ptDelLogicalFrom.GetY2() < pLayout->GetLogicLineNo() )
@@ -608,9 +617,17 @@ CLayout* CLayoutMgr::DeleteLayoutAsLogical(
 			(*pnDeleteLines)++;
 		}
 
+#ifndef NKMM_FIX_LAYOUT_DANGLING_PREVREFER
+//		if( m_pLayoutPrevRefer == pLayout ){
+//			// 1999.12.22 前にずらすだけでよいのでは
+//			m_pLayoutPrevRefer = pLayout->GetPrevLayout();
+//			--m_nPrevReferLine;
+//		}
+
 		if( m_pLayoutPrevRefer == pLayout ){
 			DEBUG_TRACE( _T("バグバグ\n") );
 		}
+#endif // NKMM_
 
 		delete pLayout;
 
