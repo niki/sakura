@@ -304,7 +304,7 @@ bool CShareData::InitShareData()
 			sWindow.m_nVertLineOffset = -1;			// 2005.11.10 Moca 指定桁縦線
 			sWindow.m_bUseCompatibleBMP = TRUE;		// 2007.09.09 Moca 画面キャッシュを使う	// 2009.06.09 ryoji FALSE->TRUE
 #ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
-			sWindow.m_bUseGlyphAtlasCache = FALSE;		// 20260801 グリフキャッシュ(グリフアトラス)を使う
+			sWindow.m_bUseGlyphAtlasCache = TRUE;		// 20260801 グリフキャッシュ(グリフアトラス)を使う // 20260805 安全確認済みのためデフォルトTRUEに変更
 #endif // NKMM_
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */

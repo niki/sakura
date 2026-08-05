@@ -455,9 +455,9 @@ bool CGlyphAtlasCache::DrawOrCache(
 ```
 
 ### `sakura_core/env/CShareData.cpp`
-`sWindow.m_bUseCompatibleBMP = TRUE;`(305行)の直後、**デフォルトFALSE**(初回リリースは安全側):
+`sWindow.m_bUseCompatibleBMP = TRUE;`(305行)の直後、**デフォルトTRUE**(安全確認済みのため 20260805):
 ```cpp
-	sWindow.m_bUseGlyphAtlasCache = FALSE;		// 20260801 グリフキャッシュ(グリフアトラス)を使う
+	sWindow.m_bUseGlyphAtlasCache = TRUE;		// 20260801 グリフキャッシュ(グリフアトラス)を使う // 20260805 安全確認済みのためデフォルトTRUEに変更
 ```
 
 ---
