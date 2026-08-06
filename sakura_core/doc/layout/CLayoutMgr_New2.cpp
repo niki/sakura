@@ -18,6 +18,9 @@
 #include "doc/logic/CDocLineMgr.h" // 2002/2/10 aroka
 #include "charset/charcode.h"
 #include "CSearchAgent.h"
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+#include "doc/CEditDoc.h" // 20260806 m_pcEditDoc->AdjustDocumentCharCountCache()等に必要
+#endif // NKMM_
 
 
 
@@ -68,10 +71,33 @@ void CLayoutMgr::ReplaceData_CLayoutMgr(
 	DLRArg.pcmemDeleted = pArg->pcmemDeleted;	// 削除されたデータを保存
 	DLRArg.pInsData = pArg->pInsData;			// 挿入するデータ
 	DLRArg.nDelSeq = pArg->nDelSeq;
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	// 20260806 ここがInsertData_CEditView/DeleteData2/ReplaceData_CEditView3(通常モード)
+	// 全ての唯一の合流点(CSearchAgent::ReplaceDataの2箇所の呼び出し元の1つ)。
+	// pInsDataは呼び出し後に中身が移動してしまうため、呼び出し前に数えておく。
+	const int nInsCharsForWordNumCache = DLRArg.pInsData ? CalcOpeLineDataCharCount(*DLRArg.pInsData) : 0;
+#endif // NKMM_
 	CSearchAgent(m_pcDocLineMgr).ReplaceData(
 		&DLRArg
 	);
 	pArg->nInsSeq = DLRArg.nInsSeq;
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	// 20260806 pcmemDeletedがNULLなのは「削除データを捕捉できなかった」場合と
+	// 「そもそも削除範囲が空(単純な挿入)」の場合の両方があり得る
+	// (InsertData_CEditViewはpcmemDeleted=NULLを明示的に渡すが、選択範囲は
+	// 呼び出し前に別途DeleteData()で削除済みのため、この呼び出し自体には
+	// 削除が無い)。pcmemDeletedの有無だけで判定すると、ただの1文字入力のたびに
+	// キャッシュを無効化してしまい、最適化が効かなくなる。削除範囲(ptFrom==ptTo)
+	// が空かどうかで先に判定し、空なら確実に削除文字数0として扱う。
+	if( ptFrom == ptTo ){
+		m_pcEditDoc->AdjustDocumentCharCountCache( nInsCharsForWordNumCache );
+	}else if( DLRArg.pcmemDeleted ){
+		const int nDelCharsForWordNumCache = CalcOpeLineDataCharCount(*DLRArg.pcmemDeleted);
+		m_pcEditDoc->AdjustDocumentCharCountCache( nInsCharsForWordNumCache - nDelCharsForWordNumCache );
+	}else{
+		m_pcEditDoc->InvalidateDocumentCharCountCache();
+	}
+#endif // NKMM_
 
 
 	/*--- 変更された行のレイアウト情報を再生成 ---*/

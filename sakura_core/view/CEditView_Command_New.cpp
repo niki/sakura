@@ -846,40 +846,44 @@ bool CEditView::ReplaceData_CEditView3(
 	// 2009.07.18 ryoji 置換後→置換前に位置を変更（置換後だと反転が不正になって汚い Wiki BugReport/43）
 	GetSelectionInfo().DisableSelectArea( bRedraw );
 
-#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
-	// pInsDataは呼び出し後に中身が移動してしまうため、置換前に文字数を数えておく 20260806
-	const int nInsCharsForWordNumCache = pInsData ? CalcOpeLineDataCharCount(*pInsData) : 0;
-#endif // NKMM_
-
 	/* 文字列置換 */
 	LayoutReplaceArg LRArg;
 	DocLineReplaceArg DLRArg;
 	if( bFastMode ){
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+		// 20260806 このbFastMode分岐はCSearchAgent::ReplaceDataを直接呼ぶ経路
+		// (ReplaceData_CLayoutMgrを経由しない)なので、ここで文字数差分を反映する。
+		// pInsDataは呼び出し後に中身が移動してしまうため、呼び出し前に数えておく。
+		// !bFastMode側(ReplaceData_CLayoutMgr経由)の分は、InsertData_CEditView/
+		// DeleteData2等の他の呼び出し元も含めてReplaceData_CLayoutMgr自身の中で
+		// 反映しているので、ここでは二重に数えない。
+		const int nInsCharsForWordNumCache = pInsData ? CalcOpeLineDataCharCount(*pInsData) : 0;
+#endif // NKMM_
 		DLRArg.sDelRange = sDelRangeLogic;
 		DLRArg.pcmemDeleted = pcMemDeleted;
 		DLRArg.pInsData = pInsData;
 		DLRArg.nDelSeq = nDelSeq;
 		// DLRArg.ptNewPos;
 		CSearchAgent(&GetDocument()->m_cDocLineMgr).ReplaceData( &DLRArg );
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+		// 20260806 削除範囲が空(単純な挿入)なら、pcMemDeletedの有無に関係なく
+		// 削除文字数は確実に0(CLayoutMgr_New2.cppの同種の修正と同じ理由)
+		if( sDelRangeLogic.GetFrom() == sDelRangeLogic.GetTo() ){
+			m_pcEditDoc->AdjustDocumentCharCountCache( nInsCharsForWordNumCache );
+		}else if( pcMemDeleted ){
+			const int nDelCharsForWordNumCache = CalcOpeLineDataCharCount(*pcMemDeleted);
+			m_pcEditDoc->AdjustDocumentCharCountCache( nInsCharsForWordNumCache - nDelCharsForWordNumCache );
+		}else{
+			m_pcEditDoc->InvalidateDocumentCharCountCache();
+		}
+#endif // NKMM_
 	}else{
 		LRArg.sDelRange    = sDelRange;		//!< 削除範囲レイアウト
 		LRArg.pcmemDeleted = pcMemDeleted;	//!< [out] 削除されたデータ
 		LRArg.pInsData     = pInsData;		//!< 挿入するデータ
 		LRArg.nDelSeq      = nDelSeq;	//!< 挿入するデータの長さ
-		m_pcEditDoc->m_cLayoutMgr.ReplaceData_CLayoutMgr( &LRArg );
+		m_pcEditDoc->m_cLayoutMgr.ReplaceData_CLayoutMgr( &LRArg );	// 文字数キャッシュの更新はこの関数の中で行う
 	}
-
-#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
-	// ステータスバーの文字数キャッシュを差分更新する。削除データが捕捉できて
-	// いない場合(pcOpeBlkもpcmemCopyOfDeletedも無い内部処理等)は差分が
-	// わからないため、キャッシュを無効化して次回1回だけ数え直す 20260806
-	if( pcMemDeleted ){
-		const int nDelCharsForWordNumCache = CalcOpeLineDataCharCount(*pcMemDeleted);
-		m_pcEditDoc->AdjustDocumentCharCountCache( nInsCharsForWordNumCache - nDelCharsForWordNumCache );
-	}else{
-		m_pcEditDoc->InvalidateDocumentCharCountCache();
-	}
-#endif // NKMM_
 
 	//	Jan. 30, 2001 genta
 	//	再描画の時点でファイル更新フラグが適切になっていないといけないので
