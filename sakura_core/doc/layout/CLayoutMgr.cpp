@@ -96,6 +96,9 @@ void CLayoutMgr::Init()
 
 void CLayoutMgr::_Empty()
 {
+#ifdef NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
+	m_multisetTextWidth.clear();	// 20260806 全ノードを消すので一括クリアで済む
+#endif // NKMM_
 	CLayout* pLayout = m_pLayoutTop;
 	while( pLayout ){
 		CLayout* pLayoutNext = pLayout->GetNextLayout();
@@ -103,6 +106,26 @@ void CLayoutMgr::_Empty()
 		pLayout = pLayoutNext;
 	}
 }
+
+#ifdef NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
+// pLayoutの現在の幅のエントリをm_multisetTextWidthから消す(無ければ何もしない) 20260806
+void CLayoutMgr::_TextWidthMultisetErase( CLayout* pLayout )
+{
+	CLayoutInt nWidth = pLayout->GetLayoutWidth();
+	if( nWidth <= CLayoutInt(0) ) return;
+	auto it = m_multisetTextWidth.find(std::make_pair(nWidth, pLayout));
+	if( it != m_multisetTextWidth.end() )
+		m_multisetTextWidth.erase(it);
+}
+
+// pLayoutの現在の幅でm_multisetTextWidthへエントリを追加する(幅0は無視) 20260806
+void CLayoutMgr::_TextWidthMultisetInsert( CLayout* pLayout )
+{
+	CLayoutInt nWidth = pLayout->GetLayoutWidth();
+	if( nWidth <= CLayoutInt(0) ) return;
+	m_multisetTextWidth.insert(std::make_pair(nWidth, pLayout));
+}
+#endif // NKMM_
 
 
 
@@ -420,6 +443,9 @@ CLayout* CLayoutMgr::CreateLayout(
 	// ようにしても良いと思う。
 	// （その場合CLayoutMgr::CalculateTextWidth()の呼び出し箇所をチェック）
 	pLayout->SetLayoutWidth( ( m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP ) ? nPosX : CLayoutInt(0) );
+#ifdef NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
+	_TextWidthMultisetInsert(pLayout);	// 20260806 新規ノードなので消去は不要
+#endif // NKMM_
 
 	return pLayout;
 }
@@ -627,6 +653,10 @@ CLayout* CLayoutMgr::DeleteLayoutAsLogical(
 		if( m_pLayoutPrevRefer == pLayout ){
 			DEBUG_TRACE( _T("バグバグ\n") );
 		}
+#endif // NKMM_
+
+#ifdef NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
+		_TextWidthMultisetErase(pLayout);	// 20260806 削除前に候補集合からも消す
 #endif // NKMM_
 
 		delete pLayout;

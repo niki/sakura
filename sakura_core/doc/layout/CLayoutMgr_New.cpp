@@ -309,6 +309,15 @@ BOOL CLayoutMgr::CalculateTextWidth( BOOL bCalLineLen, CLayoutInt nStart, CLayou
 
 	CLayout* pLayout;
 
+#ifdef NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+	// 全行走査のときだけ、候補リスト(m_vTextWidthTopK)もこの場で作り直す。
+	// 部分走査(拡大チェックのみ)のときは全体像が分からないため触らない。 20260806
+	std::vector<STextWidthCandidate> vTopKWork;
+	if( !bOnlyExpansion ){
+		vTopKWork.reserve(TEXTWIDTH_TOPK_MAX + 1);
+	}
+#endif // NKMM_
+
 	// 算出開始レイアウト行を探す
 	// 2013.05.13 SearchLineByLayoutYを使う
 	if( nStart == 0 ){
@@ -350,7 +359,13 @@ BOOL CLayoutMgr::CalculateTextWidth( BOOL bCalLineLen, CLayoutInt nStart, CLayou
 		// レイアウト行の長さを算出する
 		if( bCalLineLen ){
 			CLayoutInt nWidth = pLayout->CalcLayoutWidth(*this) + CLayoutInt(pLayout->GetLayoutEol().GetLen()>0?1+m_nSpacing:0);
+#ifdef NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
+			_TextWidthMultisetErase(pLayout);	// 20260806 変更前の幅のエントリを消してから
+#endif // NKMM_
 			pLayout->SetLayoutWidth( nWidth );
+#ifdef NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
+			_TextWidthMultisetInsert(pLayout);	// 変更後の幅で追加し直す
+#endif // NKMM_
 		}
 
 		// 最大幅を更新
@@ -363,9 +378,34 @@ BOOL CLayoutMgr::CalculateTextWidth( BOOL bCalLineLen, CLayoutInt nStart, CLayou
 				break;
 		}
 
+#ifdef NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+		// 全行走査中は候補リストも同時に構築する(幅の降順、最大TEXTWIDTH_TOPK_MAX件) 20260806
+		if( !bOnlyExpansion && CLayoutInt(0) < pLayout->GetLayoutWidth() ){
+			STextWidthCandidate cand;
+			cand.nWidth = pLayout->GetLayoutWidth();
+			cand.nLayoutY = i;
+			// 降順を保ったまま挿入位置を探す(K<=8なので線形探索で十分)
+			size_t nPos = 0;
+			while( nPos < vTopKWork.size() && vTopKWork[nPos].nWidth >= cand.nWidth )
+				++nPos;
+			if( nPos < (size_t)TEXTWIDTH_TOPK_MAX ){
+				vTopKWork.insert(vTopKWork.begin() + nPos, cand);
+				if( vTopKWork.size() > (size_t)TEXTWIDTH_TOPK_MAX )
+					vTopKWork.pop_back();
+			}
+		}
+#endif // NKMM_
+
 		// 次のレイアウト行のデータ
 		pLayout = pLayout->GetNextLayout();
 	}
+
+#ifdef NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+	// 全行走査したときだけ候補リストを丸ごと差し替える(部分走査時は既存のまま) 20260806
+	if( !bOnlyExpansion ){
+		m_vTextWidthTopK.swap(vTopKWork);
+	}
+#endif // NKMM_
 
 	// テキストの幅の変化をチェック
 	if( Int(nMaxLen) ){

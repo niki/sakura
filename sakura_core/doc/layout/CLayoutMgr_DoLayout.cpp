@@ -544,13 +544,62 @@ CLayoutInt CLayoutMgr::DoLayout_Range(
 
 	@date 2009.08.28 nasukoji	新規作成
 */
+#ifdef NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+/*!
+	@brief 最大幅候補リスト(m_vTextWidthTopK)を編集内容に合わせて更新する
+
+	各候補行について、この下のCalculateTextWidth_Range()がm_nTextWidthMaxLineに対して
+	行っているのと全く同じ基準で「編集範囲に含まれるので無効化」か「編集範囲より後ろなので
+	行番号をシフト」かを判定する。この関数自体はm_nTextWidth/m_nTextWidthMaxLineには
+	一切触れない(既存ロジックとは独立に、リスト側だけを追従させる)。
+
+	@date 2026.08.06 新規作成
+*/
+void CLayoutMgr::_UpdateTextWidthTopKForEdit( const CalTextWidthArg* pctwArg, CLayoutInt nInsLineNum )
+{
+	if( m_vTextWidthTopK.empty() ) return;
+
+	std::vector<STextWidthCandidate> vNew;
+	vNew.reserve(m_vTextWidthTopK.size());
+	for( const STextWidthCandidate& cand : m_vTextWidthTopK ){
+		bool bInvalidated =
+			( pctwArg->nDelLines < CLayoutInt(0) && Int(nInsLineNum) &&
+			  Int(pctwArg->ptLayout.x) && cand.nLayoutY == pctwArg->ptLayout.y ) ||
+			( pctwArg->nDelLines >= CLayoutInt(0) &&
+			  pctwArg->ptLayout.y <= cand.nLayoutY && cand.nLayoutY <= pctwArg->ptLayout.y + pctwArg->nDelLines );
+		if( bInvalidated ) continue;	// 編集範囲に含まれるので候補から外す(幅が変わった可能性がある)
+
+		STextWidthCandidate shifted = cand;
+		if( Int(nInsLineNum) && cand.nLayoutY >= pctwArg->ptLayout.y )
+			shifted.nLayoutY += nInsLineNum;	// 編集範囲より後ろなので行番号をシフト
+		vNew.push_back(shifted);
+	}
+	m_vTextWidthTopK.swap(vNew);
+}
+#endif // NKMM_
+
 void CLayoutMgr::CalculateTextWidth_Range( const CalTextWidthArg* pctwArg )
 {
+#ifdef NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
+	// m_multisetTextWidthはCreateLayout/CalculateTextWidth(bCalLineLen)/
+	// DeleteLayoutAsLogical/_Emptyの唯一のフック箇所で常に最新かつ正確なので、
+	// 「今回の編集が最大幅行に影響したか」を判定する必要が無い。全ての編集後、
+	// 集合の現在の最大値をそのまま読むだけでよい(pctwArgの中身は不要)。 20260806
+	(void)pctwArg;
+	if( m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP ){	// 「折り返さない」
+		m_nTextWidth = m_multisetTextWidth.empty() ? CLayoutInt(0) : m_multisetTextWidth.rbegin()->first;
+	}
+#else
 	if( m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP ){	// 「折り返さない」
 		CLayoutInt	nCalTextWidthLinesFrom(0);	// テキスト最大幅の算出開始レイアウト行
 		CLayoutInt	nCalTextWidthLinesTo(0);	// テキスト最大幅の算出終了レイアウト行
 		BOOL bCalTextWidth        = TRUE;		// テキスト最大幅の算出要求をON
 		CLayoutInt nInsLineNum    = m_nLines - pctwArg->nAllLinesOld;		// 追加削除行数
+
+#ifdef NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+		// この下の分岐が使うm_nTextWidthMaxLineの判定基準と同じ基準で、候補リストも先に追従させる 20260806
+		_UpdateTextWidthTopKForEdit(pctwArg, nInsLineNum);
+#endif // NKMM_
 
 		// 削除行なし時：最大幅の行を行頭以外にて改行付きで編集した
 		// 削除行あり時：最大幅の行を含んで編集した
@@ -560,9 +609,19 @@ void CLayoutMgr::CalculateTextWidth_Range( const CalTextWidthArg* pctwArg )
 		   ( pctwArg->nDelLines >= CLayoutInt(0) && Int(m_nTextWidth) &&
 		     pctwArg->ptLayout.y <= m_nTextWidthMaxLine && m_nTextWidthMaxLine <= pctwArg->ptLayout.y + pctwArg->nDelLines ))
 		{
-			// 全ラインを走査する
-			nCalTextWidthLinesFrom = -1;
-			nCalTextWidthLinesTo   = -1;
+#ifdef NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+			// 候補リストに次点が残っていれば、全行走査せずそれを新しい最大幅として採用する 20260806
+			if( !m_vTextWidthTopK.empty() ){
+				m_nTextWidth = m_vTextWidthTopK.front().nWidth;
+				m_nTextWidthMaxLine = m_vTextWidthTopK.front().nLayoutY;
+				bCalTextWidth = FALSE;
+			}else
+#endif // NKMM_
+			{
+				// 全ラインを走査する
+				nCalTextWidthLinesFrom = -1;
+				nCalTextWidthLinesTo   = -1;
+			}
 		}else if( Int(nInsLineNum) || Int(pctwArg->bInsData) ){		// 追加削除行 または 追加文字列あり
 			// 追加削除行のみを走査する
 			nCalTextWidthLinesFrom = pctwArg->ptLayout.y;
@@ -599,4 +658,5 @@ void CLayoutMgr::CalculateTextWidth_Range( const CalTextWidthArg* pctwArg )
 			CalculateTextWidth( FALSE, nCalTextWidthLinesFrom, nCalTextWidthLinesTo );
 #endif
 	}
+#endif // NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
 }

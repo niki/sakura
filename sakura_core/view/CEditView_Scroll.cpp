@@ -400,6 +400,12 @@ void CEditView::AdjustScrollBars()
 		
 		if (!bEnable ||
 		    (nMaxLineKetas_ == m_pcEditDoc->m_cLayoutMgr.GetMaxLineKetas() &&
+		     si.nMax == (Int)GetRightEdgeForScrollBar() - 1 &&	// 20260806 「折り返さない」時、テキスト最大幅(GetMaxTextWidth)の
+		                                                        // 変化(特に縮小)がこの判定に一切反映されていなかった不具合を修正。
+		                                                        // nMaxLineKetas_は折り返し桁数(設定値)の変化しか見ておらず、
+		                                                        // 「折り返さない」時の右端はGetMaxTextWidth()に依存するため、
+		                                                        // Backspace等でテキスト幅が縮んでもスクロールバーの範囲が
+		                                                        // 更新されないままになっていた。
 		     si.nPage == (Int)GetTextArea().m_nViewColNum &&
 		     si.nPos == (Int)GetTextArea().GetViewLeftCol())
 		) {

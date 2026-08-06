@@ -24,6 +24,8 @@
 
 #include <Windows.h>// 2002/2/10 aroka
 #include <vector>
+#include <set>
+#include <utility>
 #include "doc/CDocListener.h"
 #include "_main/global.h"// 2002/2/10 aroka
 #include "basis/SakuraBasis.h"
@@ -301,6 +303,9 @@ protected:
 	// 2009.08.28 nasukoji	テキスト最大幅算出用引数追加
 	CLayoutInt DoLayout_Range( CLayout* , CLogicInt, CLogicPoint, EColorIndexType, CLayoutColorInfo*, const CalTextWidthArg*, CLayoutInt* );	/* 指定レイアウト行に対応する論理行の次の論理行から指定論理行数だけ再レイアウトする */
 	void CalculateTextWidth_Range( const CalTextWidthArg* pctwArg );	/* テキストが編集されたら最大幅を算出する */	// 2009.08.28 nasukoji
+#ifdef NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+	void _UpdateTextWidthTopKForEdit( const CalTextWidthArg* pctwArg, CLayoutInt nInsLineNum );	//!< 最大幅候補リストを編集内容に合わせて更新(無効化/シフト) 20260806
+#endif // NKMM_
 	CLayout* DeleteLayoutAsLogical( CLayout*, CLayoutInt, CLogicInt , CLogicInt, CLogicPoint, CLayoutInt* );	/* 論理行の指定範囲に該当するレイアウト情報を削除 */
 	void ShiftLogicalLineNum( CLayout* , CLogicInt );	/* 指定行より後の行のレイアウト情報について、論理行番号を指定行数だけシフトする */
 
@@ -432,6 +437,32 @@ protected:
 	// テキスト最大幅を記憶（折り返し位置算出に使用）	// 2009.08.28 nasukoji
 	CLayoutInt				m_nTextWidth;				// テキスト最大幅の記憶
 	CLayoutInt				m_nTextWidthMaxLine;		// 最大幅のレイアウト行
+
+#ifdef NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+	//! 最大幅の「次点」候補(m_nTextWidthMaxLine自身を含む、幅の降順)。 20260806
+	//! 編集で最大幅行(m_nTextWidthMaxLine)が更新される際、ここに残っている
+	//! 候補があればそれを新しい最大幅として採用し、全行スキャンを回避する。
+	//! 候補が尽きたときだけ全行スキャンにフォールバックし、その結果で再構築する。
+	struct STextWidthCandidate {
+		CLayoutInt nWidth;
+		CLayoutInt nLayoutY;
+	};
+	static const int TEXTWIDTH_TOPK_MAX = 8;
+	std::vector<STextWidthCandidate>	m_vTextWidthTopK;
+#endif // NKMM_
+
+#ifdef NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
+	//! 全レイアウト行の(幅,ノード)を常時保持する順序付き集合。 20260806
+	//! CLayoutノードの生成(CreateLayout)・幅の再計算(CalculateTextWidthの
+	//! bCalLineLen分岐)・削除(DeleteLayoutAsLogical, _Empty)の唯一のフック箇所で
+	//! 追従させるため、常に最新かつ正確。最大幅はrbegin()でO(1)相当で得られ、
+	//! CalculateTextWidth_Range()は「編集が最大幅行に影響したか」を判定する
+	//! 必要が無くなる(この集合自体が常に正解を持っているため)。
+	//! 幅0のノード(折り返しあり時、または未計算の新規ノード)は追加しない。
+	std::multiset<std::pair<CLayoutInt, CLayout*>>	m_multisetTextWidth;
+	void _TextWidthMultisetErase( CLayout* pLayout );	//!< pLayoutの現在の幅のエントリを消す(無ければ何もしない)
+	void _TextWidthMultisetInsert( CLayout* pLayout );	//!< pLayoutの現在の幅でエントリを追加する(幅0は無視)
+#endif // NKMM_
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(CLayoutMgr);
