@@ -166,6 +166,9 @@
 //  - カーソル行を表示 20170611
 //  - スクロールバーの再描画をマーカー描画のタイミングに合わせて更新する 20170721
 //  ? バーにカーソルを乗せた時, フェードアウトして消えてしまう:(
+//  - 水平スクロールバーのSetScrollInfoスキップ判定がテキスト幅の縮小を見て
+//    おらず更新漏れが起きる不具合を修正。実機確認済み。詳細はchangelog/
+//    NKMM_FIX_EDITVIEW_SCRBAR_HWIDTH_SKIP.md参照 20260806
 //------------------------------------------------------------------
 #define NKMM_FIX_EDITVIEW_SCRBAR
 	#define WM_APP_SCRBAR_PAINT    (WM_APP + 2501)  // スクロールバー描画メッセージ
@@ -656,6 +659,7 @@
 //  - Direct2D/DirectWriteが利用できない環境(DLL不在など)では自動的に
 //    何もせず、従来通りのGDI描画のみになる
 //  - sakura_core\view\CColorFontRenderer.h/.cpp
+//  - 詳細はchangelog/NKMM_FIX_COLOR_FONT.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_COLOR_FONT
 
@@ -699,92 +703,40 @@
 //    を参照できないため未対応(既知の制限)
 //  - sakura_core\mem\CNativeW.h,cpp: GetCharCountInRange()
 //  - sakura_core\view\CEditView.cpp, CViewSelect.cpp, CCaret.cpp
+//  - 詳細はchangelog/NKMM_FIX_SURROGATE_CHAR_COUNT.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_SURROGATE_CHAR_COUNT
 
 //------------------------------------------------------------------
 // 正規表現ライブラリ(bregonig.dll)が見つからない場合はPCRE2にフォールバック 20260720
-//  - 検索/置換/Grep/マクロ(CBregexp)と構文強調キーワード(CRegexKeyword)の両方に適用する
-//  - DLLが「見つからない」場合のみ発動する。DLLはあるがエクスポート不整合(壊れている)
-//    場合は今まで通りエラーにする(誤って壊れたDLLを隠蔽しないため)
-//  - フォールバックエンジンにはPCRE2(libs/pcre2, BSD-3-Clause)をvendorして静的に
-//    組み込んでいる(フォールバック自体が別のDLL依存を持つと本末転倒なため)。
-//    ルックビハインド・POSIX文字クラス・Unicode文字プロパティ等、BREGEXP
-//    (Oniguruma系)相当の構文を概ねネイティブサポートする。
-//    (実装当初はstd::regex(ECMAScript文法)を使っていたが、ルックビハインド等の
-//    非対応構文が多かったためPCRE2に置き換えた。詳細はchangelog/参照)
-//  - それでもPCRE2が非対応の構文は「正規表現エラー」として通知される
-//    (既存のエラー表示経路を流用)
-//  - 設定ダイアログの「正規表現ライブラリ」テストボタン(CPropComGrep.cpp)は対象外
-//    (指定したDLLパスの妥当性を素直に検証する必要があるため、フォールバックさせない)
-//  - libs\pcre2 (新規、PCRE2 10.47をvendor)
-//  - sakura_core\extmodule\CRegexFallback.h,cpp (新規、フォールバック実装本体)
-//  - sakura_core\extmodule\CBregexpDll2.h,cpp
-//  - sakura_core\extmodule\CBregexp.cpp
-//  - sakura_core\CRegexKeyword.cpp
-//  - sakura_core\view\CEditView.cpp
-//  - (任意) sakura_core\view\colors\CColor_Numeric.cpp の REGEX_MODE==3から
-//    RegexFallback名前空間を直接利用可能(NKMM_FIX_NUMERIC_COLOR参照)
-//  - PCRE2をJIT化(pcre2_jit_compile_16)。数値ハイライト等、コンパイル済み
-//    パターンを繰り返しマッチさせる箇所の高速化が目的。JITバックエンドの
-//    sljitをlibs/deps/sljitに新規vendor(BSD, zherczeg/sljit) 20260728
+//  - 検索/置換/Grep/マクロ(CBregexp)と構文強調キーワード(CRegexKeyword)の両方に適用。
+//    DLLが「見つからない」場合のみ発動(壊れている場合は今まで通りエラー)
+//  - フォールバックエンジンにPCRE2(libs/pcre2, BSD-3-Clause)を静的vendor。
+//    JIT化(pcre2_jit_compile_16、sljitをlibs/deps/sljitに新規vendor)済み 20260728
+//  - libs\pcre2, sakura_core\extmodule\CRegexFallback.h,cpp
+//  - 詳細はchangelog/NKMM_FIX_REGEXP_FALLBACK.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_REGEXP_FALLBACK
 
 //------------------------------------------------------------------
 // タイプ別設定の色情報を全タイプで共有・統一する 20260726
-//  - 色(文字色・背景色)は常に「基本」(Types(0))の現在の設定をそのまま使う。
-//    タイプごとに変えられるのは表示/非表示(m_bDisp)・太字・下線のみ
-//  - STypeConfig::m_bUseTypeDisp(既定true)を追加。trueのときはこのタイプ自身の
-//    表示/非表示・太字・下線を使う(移行時に既存タイプの見た目が変わらないよう
-//    既定でON)。falseにすると表示/非表示・太字・下線も含めて常に基本の設定を
-//    そのまま使う(タイプ別フォント(m_bUseTypeFont)と同じトグル方式)
-//  - 共通色専用の別ストレージは持たない。基本の色を変更すれば、共有中の
-//    他タイプにも即座に反映される(ini移行処理も不要で、常に一貫した状態になる)
-//  - 「基本」自身(Types(0))は本トグルの対象外。常に自分自身の設定を使う
-//    (でなければ参照先を失う)
-//  - 色の解決はCDocTypeManager::GetTypeConfig()の1箇所でのみ行うため、
-//    描画・印刷・アウトライン・マクロなど色を参照する既存コードは無改造
-//  - 「タイプ別設定」→「色」ページに「タイプ別の表示を使う」チェックボックスを
-//    追加。文字色/背景色のコントロールは常にグレーアウト(編集不可)し基本の
-//    値を表示する。表示/非表示・太字・下線のコントロールはOFFのとき無効化する
-//  - sakura_core\types\CType.h,cpp: STypeConfig::m_bUseTypeDisp
-//  - sakura_core\env\CShareData_IO.cpp: bUseTypeDispのI/O、基本のトグル強制
-//  - sakura_core\env\CDocTypeManager.cpp: GetTypeConfig()での基本色・表示マージ
-//  - sakura_core\typeprop\CPropTypes.h,CPropTypesColor.cpp: チェックボックス
-//  - sakura_core\sakura_rc.rc,h: IDC_CHECK_USETYPECOLOR(「タイプ別の表示を使う」)
+//  - 色(文字色・背景色)は常に「基本」(Types(0))の設定をそのまま使う。タイプ
+//    ごとに変えられるのは表示/非表示・太字・下線のみ(STypeConfig::m_bUseTypeDisp
+//    でトグル)。共通色専用の別ストレージは持たず、色の解決はGetTypeConfig()の
+//    1箇所のみで行う
+//  - sakura_core\types\CType.h,cpp / env\CDocTypeManager.cpp /
+//    typeprop\CPropTypes.h,CPropTypesColor.cpp
+//  - 詳細はchangelog/NKMM_FIX_SHARED_TYPE_COLOR.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_SHARED_TYPE_COLOR
 
 //------------------------------------------------------------------
 // WSH(JScript/VBScript)に依存しないマクロエンジンとしてQuickJSを追加 20260726
-//  - WSHはJScript.dll/VBScript.dllというOS登録済みの外部COMコンポーネントに依存して
-//    おり、それらが無い(または将来廃止された)環境ではマクロ機能そのものが使えない。
-//    また一般利用者がJScript/VBAを使わずに「機能追加」をスクリプトで書けるようにしたい
-//    という要望もあり、拡張子".qjs"のマクロファイルをQuickJS(quickjs-ng, MIT)で
-//    実行できるようにした。
-//  - CMacroFactory/CMacroManagerBaseの既存の仕組み(CPPAMacroMgr等と同列)にそのまま
-//    載せている。WSH/PPAは変更・削除しておらず、両方とも従来通り使える。
-//  - マクロから呼べる関数群(CEditorIfObj等のGetMacroCommandInfo/GetMacroFuncInfoが返す
-//    MacroFuncInfoテーブルとHandleCommand/HandleFunctionの実装)はエンジンに依存しない
-//    形で既に実装されていたため、それらは一切変更していない。WSH固有だったのは
-//    IDispatch/COMオートメーション経由の呼び出し部分(CIfObj/CWSHClient)だけで、
-//    QuickJS版はそこだけをCQuickJSIfObjBinder(VARIANT⇔JSValue変換)で置き換えている。
-//  - QuickJSはファイルI/O等のOSバインディング(quickjs-libc)を含めず、インタプリタ本体
-//    のみをvendorしている。スクリプトに公開する機能はCEditorIfObj等が明示的に登録した
-//    ものだけであり、WSHのActiveXObject経由の任意のCOMオートメーションアクセスより
-//    サンドボックスは狭い。
-//  - 20260726 プラグイン機構(CWSHPlugin相当)にも対応。CQuickJSIfObjBinderは
-//    CWSHIfObj派生オブジェクトなら何であれ束縛できる設計だったため、CWSHPlugin/
-//    CWSHPlugを複製したCQuickJSPlugin/CQuickJSPlugと、CQuickJSMacroMgrへの
-//    AddParam/ClearParam追加だけで対応できた。plugin.defのType:に"qjs"を指定する。
-//  - libs\quickjs (新規、quickjs-ng v0.15.1のインタプリタ本体をvendor)
-//  - sakura_core\macro\CQuickJSMacroMgr.h,cpp (新規、CMacroManagerBase実装)
-//  - sakura_core\macro\CQuickJSIfObjBinder.h,cpp (新規、IfObj⇔QuickJS橋渡し)
-//  - sakura_core\macro\CWSHIfObj.h (Invoke*転送メソッドの追加のみ、既存実装は無改造)
-//  - sakura_core\macro\CSMacroMgr.cpp (CQuickJSMacroMgr::declare()の呼び出し追加)
-//  - sakura_core\plugin\CQuickJSPlugin.h,cpp (新規、プラグイン機構向け)
-//  - sakura_core\plugin\CPluginManager.cpp (Type: qjsの分岐追加)
+//  - WSHはOS登録済みの外部COMコンポーネント依存で、無い/廃止された環境では
+//    マクロが使えない。拡張子".qjs"のマクロファイルをQuickJS(quickjs-ng, MIT)
+//    で実行できるようにした。WSH/PPAは変更・削除せず両方とも従来通り使える
+//  - libs\quickjs (新規vendor)、sakura_core\macro\CQuickJSMacroMgr.h,cpp,
+//    CQuickJSIfObjBinder.h,cpp
 //  - 詳細はchangelog/NKMM_FIX_QUICKJS_MACRO.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_QUICKJS_MACRO
@@ -823,24 +775,11 @@
 //------------------------------------------------------------------
 // mimalloc(MIT)によるmalloc/free/calloc/realloc等の完全上書き 20260731
 //  - NKMM_USE_MIMALLOCの追加オプション。malloc()等のCRT標準関数を直接呼んでいる
-//    箇所(operator new/delete経由でない13ファイル)にも効果を及ぼしたい場合に使う
-//  - 動的CRT(/MD)でmalloc/freeを完全上書きするにはmimalloc-redirect.dllの配布が
-//    別途必要になるが、本プロジェクトは静的CRT(/MT)でビルドしているため事情が異なる。
-//    mimalloc本体(libs\mimalloc\src\static.c)を`MI_MALLOC_OVERRIDE`付きでコンパイル
-//    するだけで、malloc/free/calloc/realloc/_aligned_malloc/strdup等がリンク時に
-//    mimalloc側の実装で静的に上書きされ、redirect dllは不要
-//    (alloc-override.cの`#if defined(MI_MALLOC_OVERRIDE) && !defined(_DLL)`分岐。
-//    `_DLL`は動的CRT使用時のみ定義されるマクロなので、静的CRTでは常に条件成立する)。
-//    実際に/MTビルドで検証し、plainなmalloc/calloc/realloc/free/strdupがすべて
-//    mi_is_in_heap_region()でtrueになる(mimallocが処理している)ことを確認済み
-//  - vendor元のlibs\mimalloc\src\static.cは無改造のまま、このフラグに応じて
-//    `MI_MALLOC_OVERRIDE`を定義するためだけのForcedIncludeFileを新設
-//    (sakura_core\config\mimalloc_override_fi.h)。sakura.vcxprojのstatic.c用
-//    ClCompile項目のForcedIncludeFilesをこれに差し替える
-//  - 既知の制約: CRTのデバッグヒープ機能(_CRTDBG_MAP_ALLOCによる_malloc_dbg等への
-//    自動置換)との組み合わせは未検証。本プロジェクトはこれを使っていないため
-//    影響なしと判断している
-//  - 詳細はchangelog/NKMM_USE_MIMALLOC.md参照
+//    箇所(operator new/delete経由でない13ファイル)にも効果を及ぼしたい場合に使う。
+//    静的CRT(/MT)ビルドのため、mimalloc本体を`MI_MALLOC_OVERRIDE`付きで
+//    コンパイルするだけでredirect dll無しに静的上書きできる
+//  - sakura_core\config\mimalloc_override_fi.h (ForcedIncludeFile)
+//  - 詳細はchangelog/NKMM_USE_MIMALLOC_OVERRIDE.md参照
 //------------------------------------------------------------------
 #define NKMM_USE_MIMALLOC_OVERRIDE
 
@@ -883,51 +822,13 @@
 
 //------------------------------------------------------------------
 // タイプ別に数値ハイライトの専用実装を追加 20260730
-//  - 既存のIsNumber()(CColor_Numeric.cpp)は10進/16進/浮動小数点の基本形しか
-//    判定できない、全タイプ共通の汎用実装。タイプごとに異なる数値リテラル
-//    記法(2進数、桁区切り記号、サフィックス等)を色分けできていなかった
-//  - IsNumber()自体は変更せず、対応タイプのときだけタイプ別のIsNumberXxx()
-//    (同ファイル内)を呼ぶ形にした。IsNumberXxx()はIsNumber()の結果に
-//    差分を加算するだけなので、無効化すれば従来のIsNumber()のみの挙動に戻る
-//  - 現在のタイプの判定はSTypeConfig::m_szTypeNameを各タイプの既定名と
-//    比較して行っている(CColor_Numeric::Update()でキャッシュ)。
-//    タイプ名をユーザーが変更した場合は専用判定が働かなくなる
-//    (IsNumber()による従来の判定にフォールバックするだけなので実害はない)
-//  - 対応タイプ(段階的に拡張予定):
-//      - C/C++ 20260730: 2進数リテラル0b/0B、桁区切り記号'、整数サフィックス
-//        u/U・l/L・ll/LLの組み合わせ、long doubleのLサフィックス
-//      - Java 20260730: 2進数リテラル0b/0B、桁区切り記号_、double型の
-//        Dサフィックス
-//      - C# 20260730: 2進数リテラル0b/0B、桁区切り記号_、整数サフィックス
-//        u/U・l/Lの組み合わせ、浮動小数点サフィックスd/D・m/M
-//      - JavaScript 20260730: 2進数リテラル0b/0B、8進数リテラル0o/0O、
-//        桁区切り記号_、BigIntサフィックスn
-//      - PHP 20260730: 2進数リテラル0b/0B、8進数リテラル0o/0O、桁区切り記号_
-//      - Python 20260730: 2進数リテラル0b/0B、8進数リテラル0o/0O、
-//        桁区切り記号_、複素数サフィックスj/J
-//      - Ruby 20260730: 2進数リテラル0b/0B、8進数リテラル0o/0O、
-//        桁区切り記号_、有理数/虚数サフィックスr・i(常にr→iの順)
-//      - Perl 20260730: 2進数リテラル0b/0B、8進数リテラル0o/0O、桁区切り記号_
-//      - Visual Basic 20260730: 16進数&H、8進数&O、2進数&B(VB.NET)、
-//        型宣言文字%&@!#(VB.NET固有のS/I/L/D/F/R等は対象外)。
-//        VBの"_"は行継続文字のため桁区切りとしては扱わない
-//      - Pascal 20260730: 16進数$FF、8進数&17、2進数%1010(FreePascal拡張)、
-//        桁区切り記号_
-//      - CSS 20260730: 数値直後の単位(dimension token。10px, 1.5em, 100%)を
-//        まとめて色付け。#RRGGBBは対象外(CSS文法上「数値」ではない別トークン)
-//      - アセンブラ 20260730: MASM系の接尾辞方式の進数(16進0FFh、8進17o/17q、
-//        2進1010b/1010y)、明示的な10進数サフィックスd/D
-//  - 対応見送り: リッチテキスト(RTF)。制御ワードの数値パラメータは常に
-//    「符号+10進整数」のみで、桁区切り・進数接頭辞・サフィックスの概念が
-//    一切ないため、IsNumber()だけで過不足なく判定できる(専用実装は不要)
-//  - 既知の未対応(全言語共通、必要になったら別途拡張):
-//      - 桁区切り記号が小数点をまたぐ場合(1'234.5, 1_234.5)
-//      - マイナス符号付き16進数/2進数(-0x89a, -0b101, VBの-&HFF)。IsNumber()の
-//        '-'分岐が元々0x/0b/&等を認識しないため、"-0"だけが誤って数値扱いされる
-//      - C++のi64サフィックス(MS独自拡張、非推奨のため対象外)
-//      - VB.NET固有のS/I/L/D/F/Rサフィックス、アセンブラの浮動小数点定数・
-//        MASM以外の方言(NASM/GAS等)
-//    詳細はCColor_Numeric.cppの各言語セクションのコメント参照
+//  - 既存のIsNumber()(全タイプ共通の汎用実装)は言語ごとに異なる数値リテラル
+//    記法(2進数、桁区切り記号、サフィックス等)を色分けできなかった。対応
+//    タイプのときだけタイプ別のIsNumberXxx()で差分を加算する形にした
+//    (無効化すれば従来のIsNumber()のみの挙動に戻る)
+//  - 対応タイプ: C/C++, Java, C#, JavaScript, PHP, Python, Ruby, Perl,
+//    Visual Basic, Pascal, CSS, アセンブラ(各言語の対応記法・既知の未対応は
+//    CColor_Numeric.cppの言語別セクションのコメント参照)
 //  - sakura_core\view\colors\CColor_Numeric.h,cpp
 //  - 詳細はchangelog/NKMM_FIX_NUMERIC_LANG_LITERAL.md参照
 //------------------------------------------------------------------
@@ -993,60 +894,14 @@
 //  - (フォント,文字,前景色,背景色,セル幅,セル高さ)をキーに、ExtTextOutで
 //    一度描画した結果をHBITMAPアトラス(シェルフパッキング)へキャッシュし、
 //    以後はBitBltで再利用する。ClearTypeの見た目は完全に保持される
-//    (DispTextは常にETO_OPAQUEで背景も同時描画するため、ClearTypeの
-//    サブピクセルレンダリング結果は(フォント,文字,fg,bg)の組だけで
-//    完全に決まる)
-//  - 選択範囲のハイライトはDispTextとは別経路(EXOR反転、行単位)の
-//    ため、キャッシュされたグリフに対しても正しく機能する
-//  - 背景画像(壁紙)使用時・複数文字を1回で描画するケース(EOF記号等)・
-//    横スクロールで部分的に切れるグリフはキャッシュを使わず、常に
-//    直接描画にフォールバックする
+//  - 背景画像(壁紙)使用時・複数文字を1回で描画するケース・横スクロールで
+//    部分的に切れるグリフはキャッシュを使わず直接描画にフォールバックする
 //  - 共通設定「全般」タブでON/OFFを切り替え可能(既定OFF)
 //  - sakura_core\view\CGlyphAtlasCache.h,cpp
-//  - 20260802 バグ修正: キーにセル幅・高さが含まれておらず、同じ
-//    (フォント,文字,fg,bg)でも呼び出し元が要求するセル幅が異なる場合に
-//    キャッシュヒット時に保存済み(古い)サイズでBitBltしてしまい、画面に
-//    塗り残し(ゴミ)が出る不具合があった。フォントサイズを大きくすると
-//    誤差が拡大されて可視化しやすかった。セル幅・高さをキーに追加して修正。
-//  - 20260802 転送の2フェーズ化: DrawOrCache()は実際のBitBltをその場では
-//    行わず、CGlyphAtlasCache::m_vPendingBlitsへ積むだけにした。1回の
-//    描画パスの最後にFlushQueue()でまとめて転送する(既存のカラーフォント
-//    描画待ちキュー(CColorFontRenderer)と同じ構造)。ミス時にページ側の
-//    HDCとhdc側を1文字ごとに往復していたのをやめ、「ミスの焼き込み
-//    (ページ側のみ)」→「まとめて転送(hdc側のみ)」の2フェーズに分離した。
-//    狙いは複数行にまたがる高速な選択ドラッグ時などミスが集中する場面での
-//    再描画コスト削減だったが、ベンチマークで実際の差分(BitBltを即実行
-//    するかキュー化して最後にまとめるかだけ)を切り分けて計測したところ、
-//    速度改善は誤差レベル(ミス率0〜100%のどのケースでも数%以内)だった。
-//    支配的コストはSelectObject/SetTextColor/SetBkColor/ExtTextOutW側に
-//    あり、BitBltの発行タイミングはほぼ影響しない。性能目的というより、
-//    「通常描画→グリフアトラス→カラーフォント」という描画パスの構造を
-//    既存のカラーフォントキューと揃える、アーキテクチャ上の整理として
-//    採用している。ベンチマーク詳細はchangelog/NKMM_FIX_GLYPH_ATLAS_CACHE.md参照
-//  - sakura_core\view\CEditView_Paint.cpp: 全行描画後、カラーフォントの
-//    オーバーレイより前にFlushQueue()を呼ぶ
-//  - sakura_core\view\CEditView_Paint_Bracket.cpp: DrawBracketPair()は
-//    通常のOnPaintを介さない独立した即時描画のため、自前でDispText直後に
-//    FlushQueue()を呼ぶ(呼ばないと対括弧の強調表示が画面に出ない)
-//  - 20260802 ASCII文字のまとめ焼き(WarmUpAscii): 転送の2フェーズ化とは別に、
-//    「解決(グリフを焼く)」と「転送」を分離したことで、1文字のミスをきっかけに
-//    まとめて複数文字を焼くことも可能になった。初めて見る(フォント,fg,bg)の
-//    組み合わせで半角ASCII印字可能文字(0x20〜0x7E)のいずれかがミスしたら、
-//    その場でASCII全体をまとめて焼く。SelectObject/SetTextColor/SetBkColorの
-//    やり直しをASCII文字94個ぶんまとめて1回に償却することで、新規ファイルを
-//    開いた直後やフォント変更直後など、同じ組み合わせで短時間に多数のミスが
-//    連続する場面のコストを下げる狙い(この部分は上のBitBlt2フェーズ化と違い
-//    未計測。今後計測予定)
-//  - sakura_core\view\CGlyphAtlasCache.cpp: CGlyphAtlasCache::WarmUpAscii()
-//  - 20260802 バグ修正: 設定ON/OFFの反映がCEditDoc::OnChangeSetting()経由
-//    (設定ダイアログでOKを押したときの再反映)でしか行われておらず、共通設定で
-//    グリフキャッシュをONにしたまま起動して新規文書を開いたり、起動と同時に
-//    ファイルを開いたりすると(=OnChangeSetting()を一度も通らない)、
-//    CGlyphAtlasCacheシングルトンのコンストラクタ既定値(false)のままになり、
-//    見かけ上ONなのに実際には無効化されていた。CEditDoc::Clear()と
-//    CLoadAgent::OnLoad()のUpdateFont()呼び出し直後にも同じ同期処理を追加
-//  - sakura_core\doc\CEditDoc.cpp: CEditDoc::Clear()
-//  - sakura_core\CLoadAgent.cpp: CLoadAgent::OnLoad()
+//  - 20260802: セル幅・高さ不一致によるBitBlt塗り残しバグ修正/転送の2フェーズ化
+//    /ASCII文字まとめ焼き(WarmUpAscii)/設定ON/OFF反映漏れバグ修正、を追加
+//  - ベンチマーク・修正履歴の詳細はchangelog/NKMM_FIX_GLYPH_ATLAS_CACHE.md,
+//    NKMM_FIX_GLYPH_ATLAS_CACHE_REPORT.md, NKMM_FIX_GLYPH_ATLAS_CACHE_IMPL.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_GLYPH_ATLAS_CACHE
 
@@ -1225,65 +1080,20 @@
 
 //------------------------------------------------------------------
 // 共通設定「キー割り当て」の隣に「ショートカット一覧」タブを追加する 20260803
-//  - 既存の「キー割り当て」タブは1キーずつ選んでチェックボックス(Shift/Ctrl/Alt)＋
-//    機能一覧から割り当てる編集用UIで、293x240のダイアログが既にコントロールで
-//    埋まっており「機能名とショートカットを対にした一覧」を差し込む余白がない。
-//    編集用UIはそのまま残し、俯瞰用の読み取り専用タブを別途追加する
-//  - Winキー修飾は対象外(既存のキー割り当て自体がShift/Ctrl/Altの3つしか
-//    扱っていないため)
-//  - 一覧の生成はCKeyBind::CreateKeyBindList()を流用する(クリップボードに
-//    コピーする既存コマンド Command_CREATEKEYBINDLIST と同じロジック)。
-//    タブ区切りの出力から先頭2行(ヘッダ/区切り線)を除いた各行を
-//    [機能名, キー]の2列としてSysListView32に流し込むだけで、機能の列挙・
-//    キー割り当ての解決ロジックを新規に書く必要がない
-//  - bGetDefFuncCode=TRUEで呼び出し、ユーザーが変更していない既定の割り当ても
-//    含めた「実際に効いているショートカット」の完全な一覧を見せる
-//    (クリップボードコピー版はFALSEで、ユーザーが変更した分のみ)
-//  - タブ切り替えのたびに(PSN_SETACTIVE)再構築するため、キー割り当てタブでの
-//    未保存の変更もすぐ反映される
-//  - 新規ページクラスCPropKeybindListはCPropCommonの派生ページ共通の制約
-//    (メンバ変数を追加しない。CPropCommon::CPropCommon()のsizeofアサートで
-//    強制される、ページクラスがCPropCommonと同一メモリレイアウトである
-//    という前提を壊さないため)に従い、作業用HWNDはDispatchEvent内の
-//    staticローカル変数として持つ(CPropComKeybind.cppと同じパターン)
-//  - sakura_core\prop\CPropCommon.h,cpp: ID_PROPCOM_PAGENUM_KEYLIST,
-//    CPropKeybindList, ComPropSheetInfoList[]への登録
-//  - sakura_core\prop\CPropComKeybindList.cpp(新規)
-//  - sakura_core\sakura_rc.rc,h, String_define.h: IDD_PROP_KEYBIND_LIST,
-//    IDC_LIST_KEYBINDALL, STR_PROPCOMMON_KEYLIST
-//  - sakura_lang_en_US\sakura_lang_rc.rc: 同上を英語版としてミラー
-//    (新規ダイアログリソースはCSelectLang::getLangRsrcInstance()で選択される
-//    言語DLL側にも実体が必要なため。既存ダイアログへのコントロール追記とは
-//    異なり、ダイアログテンプレート自体が無いとページが読み込めない)
+//  - 既存の「キー割り当て」タブは1キーずつ選ぶ編集用UIで余白がなく、
+//    「機能名とショートカットを対にした一覧」を見る手段がなかったため、
+//    俯瞰用の読み取り専用タブを追加(一覧生成はCKeyBind::CreateKeyBindList()を流用)
+//  - sakura_core\prop\CPropCommon.h,cpp, CPropComKeybindList.cpp(新規)
+//  - 詳細はchangelog/NKMM_FIX_KEYBIND_LIST_TAB.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_KEYBIND_LIST_TAB
 
 //------------------------------------------------------------------
 // 表示行レイアウト管理のダングリングポインタ修正 20260805
-//  - CLayoutMgr::DeleteLayoutAsLogical()は複数論理行の削除・置換のたびに、
-//    削除範囲に該当するCLayoutノード群をdeleteする。この際、SearchLineByLayoutY()/
-//    LogicToLayout()が使う位置キャッシュm_pLayoutPrevRefer/m_nPrevReferLineを
-//    「削除範囲に含まれない安全なノード」に付け替える必要がある
-//  - 旧実装は関数冒頭でpLayoutInThisArea->GetPrevLayout()を「安全なノード」と
-//    みなして先にキャッシュへ設定していたが、直後のバックワードサーチ
-//    (削除範囲の先頭ノードpLayoutWorkを探す処理)はさらに前方まで戻ることが
-//    あり、その場合このノード自体が削除対象に含まれてしまっていた
-//    (折り返し表示が有効で、削除開始位置が論理行の先頭表示行セグメントで
-//    ない場合に発生)
-//  - この状態は削除ループ内の"バグバグ"というDEBUG_TRACEで検出されては
-//    いたが、対応する修正コードはコメントアウトされたまま放置されており、
-//    検出後もdelete pLayoutがそのまま実行されるため、m_pLayoutPrevReferは
-//    解放済みメモリを指すダングリングポインタになっていた。DEBUG_TRACEは
-//    Releaseビルドでは空マクロのため、この不具合はReleaseビルドでは無警告・
-//    無トレースで発生する
-//  - LogicToLayout()(キャレット位置変換、カーソル移動・再描画のたびに
-//    呼ばれる高頻度関数)はm_pLayoutPrevRefer->GetLogicLineNo()をNULLチェック
-//    のみで直接デリファレンスするため、上記の状態が発生した直後に呼ばれると
-//    解放済みメモリを読む未定義動作となる。ヒープの再利用状況に依存するため
-//    再現性が低く、不定期クラッシュ・表示崩壊として現れやすい
-//  - 修正: バックワードサーチの結果であるpLayoutWork(削除範囲に絶対含まれ
-//    ないことが保証される)を基準にキャッシュを設定し直す。バックワード
-//    サーチで戻ったノード数を数え、m_nPrevReferLineもその分だけ調整する
+//  - CLayoutMgr::DeleteLayoutAsLogical()で、複数論理行削除時に位置キャッシュ
+//    m_pLayoutPrevReferが削除対象ノードを指したまま残る(解放済みメモリを
+//    参照する)不具合を修正。Releaseビルドでは無警告で発生し、直後の
+//    カーソル移動・再描画で不定期クラッシュを招きうる。実機確認済み
 //  - sakura_core\doc\layout\CLayoutMgr.cpp: CLayoutMgr::DeleteLayoutAsLogical()
 //  - 詳細はchangelog/NKMM_FIX_LAYOUT_DANGLING_PREVREFER.md参照
 //------------------------------------------------------------------
@@ -1291,31 +1101,38 @@
 
 //------------------------------------------------------------------
 // ステータスバーの文字数表示をO(1)キャッシュ化 20260806
-//  - CEditView::GetDocumentWordNum()は文書全体の文字数を求めるため、
-//    CLayoutMgr::GetLineCount()ぶん全レイアウト行を毎回ループしていた。
-//    これがCCaret::ShowCaretPosInfo()経由でキャレット移動のたびに
-//    (矢印キー1回ごとに)呼ばれるため、数百万行規模の巨大ファイルでは
-//    カーソル移動のたびに全行を舐め直すことになり、操作全般が重くなる
-//    原因になっていた(オリジナル版はOct. 30, 2000の"千万行も要らん"という
-//    コメント付きでこの文字数表示自体を持たなかった。NKMM_FIX_STATUSBARが
-//    その安全策なしに文字数表示を追加していた)
-//  - 文書全体を毎回数え直す代わりに、文字数をCEditDocにキャッシュし、
-//    実際にテキストが書き換わる唯一の関数CEditView::ReplaceData_CEditView3()
-//    (ライブ編集・Undo・Redoのいずれもここを経由する)で、そのとき挿入/削除
-//    されたテキストぶんだけを増減させる。Undoバッファ(COpeLineData)が
-//    保持するのと同じ挿入/削除データからNKMM_FIX_UNDO_BUFFER_LIMITの
-//    CalcOpeLineDataByteSize()と同じ形で文字数を積算するだけなので、
-//    ファイルサイズに関係なく編集量に比例したコストで済む
-//  - Undo記録を伴わない一部の内部処理(pcOpeBlkもpcmemCopyOfDeletedも
-//    NULL)では削除データを捕捉できないため、その場合はキャッシュを
-//    無効化し、次回表示時に1回だけ全体を数え直す(フォールバック)
-//  - sakura_core\COpe.h,cpp: CalcOpeLineDataCharCount()
-//  - sakura_core\doc\CEditDoc.h,cpp: 文字数キャッシュ本体、Clear()での無効化
-//  - sakura_core\view\CEditView_Command_New.cpp: ReplaceData_CEditView3()
-//  - sakura_core\view\CEditView.cpp: GetDocumentWordNum()
+//  - GetDocumentWordNum()が矢印キー1回ごとに全行を数え直しており、巨大
+//    ファイルでカーソル移動が重くなる原因になっていた。文字数をCEditDocに
+//    キャッシュし、実際にテキストが書き換わる箇所で挿入/削除ぶんだけ差分
+//    更新する方式に変更。実機確認済み(タイプ入力で更新されない不具合が
+//    一度見つかり修正済み。詳細はchangelog参照)
+//  - sakura_core\COpe.h,cpp / doc\CEditDoc.h,cpp / view\CEditView.cpp,
+//    CEditView_Command_New.cpp / doc\layout\CLayoutMgr_New2.cpp
 //  - 詳細はchangelog/NKMM_FIX_STATUSBAR_WORDNUM_CACHE.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+
+//------------------------------------------------------------------
+// 「折り返さない」時のテキスト最大幅算出の高速化(次点候補8件方式) 20260806
+//  - 最長行が編集で無効化されるたびに全行スキャンしていたのを、幅上位8件の
+//    候補リストで大半回避。NKMM_FIX_TEXTWIDTH_MULTISET_CACHE(上位版、下記)の
+//    #else側に残置。通常はそちらが有効なので本フラグの出番はない
+//  - sakura_core\doc\layout\CLayoutMgr.h, CLayoutMgr_New.cpp,
+//    CLayoutMgr_DoLayout.cpp
+//  - 詳細はchangelog/NKMM_FIX_TEXTWIDTH_TOPK_CACHE.md参照
+//------------------------------------------------------------------
+#define NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+
+//------------------------------------------------------------------
+// 「折り返さない」時のテキスト最大幅算出をstd::multisetで常時追従 20260806
+//  - NKMM_FIX_TEXTWIDTH_TOPK_CACHEの上位版。全行の(幅,CLayout*)を常時集合で
+//    保持し、全行スキャンを原理上不要にする。CLayout*をキーに使うことで
+//    行番号シフト処理が不要。実機確認済み
+//  - sakura_core\doc\layout\CLayoutMgr.h, CLayoutMgr.cpp, CLayoutMgr_New.cpp,
+//    CLayoutMgr_DoLayout.cpp
+//  - 詳細はchangelog/NKMM_FIX_TEXTWIDTH_MULTISET_CACHE.md参照
+//------------------------------------------------------------------
+#define NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
 
 //
 //#define USE_SSE2
