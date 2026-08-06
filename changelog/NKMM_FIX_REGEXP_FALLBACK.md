@@ -203,3 +203,13 @@ x86/x64のみが選択されるため無害)、vcxprojの`ClCompile`は追加し
 `pcre2_context.c`/`pcre2_config.c`も(x64 Debugで)問題なくコンパイルできることを
 確認した。実機でのJIT有効化による速度計測(数値ハイライトの体感速度、検索/置換の
 実行時間比較等)は未実施。
+
+## 追記: CColor_Numeric.cpp側のREGEX_MODE==3利用は削除 20260806
+
+上記「追記: CColor_Numeric.cpp からの直接利用 (REGEX_MODE==3)」節が指す
+`NKMM_FIX_NUMERIC_COLOR`は、呼び出しパターン起因のコンパイル漏れ(パターンごとに
+毎回ゼロからコンパイルし直す)・リークが解消不能と判明したため無効化の上、
+コード自体を削除した。本フラグ(`NKMM_FIX_REGEXP_FALLBACK`)自体や
+`RegexFallback`名前空間は検索/置換/Grep/構文強調キーワードのフォールバックとして
+引き続き使われており影響はない。削除の経緯・削除前の実装全文は
+`changelog/NKMM_FIX_NUMERIC_COLOR.md`を参照。

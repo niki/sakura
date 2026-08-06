@@ -5,29 +5,6 @@
 #include "util/string_ex2.h"
 #include "doc/layout/CLayout.h"
 #include "types/CTypeSupport.h"
-#ifdef NKMM_FIX_NUMERIC_COLOR
-#define REGEX_MODE (3)  // 0:std::regex
-                        // 1:boost::regex
-                        // 2:BREGEXP
-                        // 3:PCRE2 (要NKMM_FIX_REGEXP_FALLBACK。bregonig.dllの
-                        //   有無に関わらず常時使用可能。20260720追加)
-#if REGEX_MODE == 0
-	#include <regex>
-	using namespace std;
-#elif REGEX_MODE == 1
-	#pragma comment(lib, "libboost_regex.lib")
-	#include <boost/regex.hpp>
-	using namespace boost;
-#elif REGEX_MODE == 2
-	#include "window/CEditWnd.h"
-#elif REGEX_MODE == 3
-	#ifdef NKMM_FIX_REGEXP_FALLBACK
-		#include "extmodule/CRegexFallback.h"
-	#else
-		#error REGEX_MODE == 3 (PCRE2) を使うには NKMM_FIX_REGEXP_FALLBACK の定義が必要です
-	#endif
-#endif
-#endif // NKMM_
 
 static int IsNumber( const CStringRef& cStr, int offset );/* 数値ならその長さを返す */	//@@@ 2001.02.17 by MIK
 #ifdef NKMM_FIX_NUMERIC_LANG_LITERAL
@@ -129,115 +106,6 @@ bool CColor_Numeric::EndColor(const CStringRef& cStr, int nPos)
  */
 static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*, int length*/)
 {
-#ifdef NKMM_FIX_NUMERIC_COLOR
-	const wchar_t *p2 = cStr.GetPtr() + offset;
-	const wchar_t *q2 = cStr.GetPtr() + cStr.GetLength();
-
-#if REGEX_MODE == 0  // std::regex
-	using _regex = wregex;                                     // 照合パターン
-	using _match = wcmatch;                                    // 文字列のパターン マッチング
-	#define _REG_IS_AVAILABLE() (1)                            // 正規表現が有効か
-	#define _REG_ENTRY(p, c)    (c == 0 || ::wcschr(p, c))     // パターンマッチングを行うか
-	#define _REG_SEARCH(pt, p, q, match, msg) \
-	                            regex_search(p, q, match, pt)  // 正規表現がマッチする部分が存在するか
-	#define _REG_STARTP(p)      (0)                            // 文字列の先頭位置
-	#define _REG_ENDP(match)    match.length(0)                // 文字列の終端位置
-	#define _REG_INIT(p)        
-	#define _REG_FREE(p)        
-	#define PREFIX                                             // 正規表現文字列に付加するプリフィックス
-	#define SUFIX                                              // 正規表現文字列に付加するサフィックス
-	#define REGSTR(x)           L##x                           // 文字列型
-	#define REGEX(x)            _regex(REGSTR(x))              // 正規表現ライブラリが扱う型
-#elif REGEX_MODE == 1  // boost::regex
-	using _regex = wregex;
-	using _match = wcmatch;
-	#define _REG_IS_AVAILABLE() (1)
-	#define _REG_ENTRY(p, c)    (c == 0 || ::wcschr(p, c))
-	#define _REG_SEARCH(pt, p, q, match, msg) \
-	                            regex_search(p, q, match, pt)
-	#define _REG_STARTP(p)      (0)
-	#define _REG_ENDP(match)    match.length(0)
-	#define _REG_INIT(p)        
-	#define _REG_FREE(p)        
-	#define PREFIX              
-	#define SUFIX               
-	#define REGSTR(x)           L##x
-	#define REGEX(x)            _regex(REGSTR(x))
-#elif REGEX_MODE == 2  // BREGEXP
-	using _regex = std::wstring;
-	using _match = BREGEXP_W*;
-	#define _REG_IS_AVAILABLE() CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.IsAvailable()
-	#define _REG_ENTRY(p, c)    (c == 0 || ::wcschr(p, c))
-	#define _REG_SEARCH(pt, p, q, match, msg) \
-	                            CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.BMatch(pt.c_str(), p, q, &(match), msg)
-	#define _REG_STARTP(p)      p
-	#define _REG_ENDP(match)    match->endp[0]
-	#define _REG_INIT(p)        p = nullptr
-	#define _REG_FREE(p)        if (p) { CEditDoc::GetInstance(0)->m_pcEditWnd->GetActiveView().m_CurRegexp.BRegfree(p); }
-	#define PREFIX              "/"
-	#define SUFIX               "/k"
-	#define REGSTR(x)           L"" PREFIX ##x SUFIX
-	#define REGEX(x)            _regex(REGSTR(x))
-#elif REGEX_MODE == 3  // PCRE2 (bregonig.dllの有無に関わらず常時利用可能。20260720追加)
-	using _regex = std::wstring;
-	using _match = BREGEXP_W*;
-	#define _REG_IS_AVAILABLE() (1)
-	#define _REG_ENTRY(p, c)    (c == 0 || ::wcschr(p, c))
-	#define _REG_SEARCH(pt, p, q, match, msg) \
-	                            RegexFallback::BMatch(pt.c_str(), p, q, &(match), msg)
-	#define _REG_STARTP(p)      p
-	#define _REG_ENDP(match)    match->endp[0]
-	#define _REG_INIT(p)        p = nullptr
-	#define _REG_FREE(p)        if (p) { RegexFallback::BRegfree(p); }
-	#define PREFIX              "/"
-	#define SUFIX               "/k"
-	#define REGSTR(x)           L"" PREFIX ##x SUFIX
-	#define REGEX(x)            _regex(REGSTR(x))
-#else  // std::regex
-	static_assert(0);
-#endif
-
-	static const struct {
-		wchar_t enter; // 最低条件
-		bool    term;  // 検索グループの終端
-		_regex  exp;   // 式
-	} sPattern[] = {
-		{L'e', false, REGEX("^[0-9]+\\.[0-9]*([eE][-+][0-9]+)([fF]?)")},  // 1e-2
-		{L'e', true,  REGEX("^(\\.[0-9]+)([eE][-+][0-9]+)([fF]?)")},      // .12e+2
-		
-		{L'.', false, REGEX("^([0-9]+\\.[0-9]*)([fF]?)")},                // 1.0f 1.f 1.
-		{L'.', true,  REGEX("^(\\.[0-9]+)([fF]?)")},                      // .1f .1
-		
-		{0,    false, REGEX("^0x[0-9a-fA-F]+")},                          // 0x123
-		{0,    true,  REGEX("^[0-9]+([uUlL]{0,2})")},                     // 123
-	};
-
-	if (_REG_IS_AVAILABLE()) {
-		int pos = 0;
-		wchar_t szMsg[80] = {}; //!< エラーメッセージ
-		_match match;
-		_REG_INIT(match);
-
-		for (auto && re : sPattern) {
-			if (_REG_ENTRY(p2, re.enter)) {
-				if (_REG_SEARCH(re.exp, p2, q2, match, szMsg)) {
-					pos = std::max<int>(_REG_ENDP(match) - _REG_STARTP(p2), pos);
-				}
-				if (re.term) {
-					if (pos > 0) break;
-				}
-			}
-		}
-
-		_REG_FREE(match);
-		return pos;
-	} else {
-		// 正規表現ライブラリが読み込まれていない
-		// xxx そのまま通常の方法で判定する
-		return 0;
-	}
-#else
-
 	const wchar_t* p;
 	const wchar_t* q;
 	int i = 0;
@@ -752,7 +620,6 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 
 	/* 数値ではない */
 	return 0;
-#endif // NKMM_
 }
 //@@@ 2001.11.07 End by MIK
 
@@ -764,7 +631,7 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 // IsNumber()は10進/16進/浮動小数点の基本形しか扱わない、全タイプ共通の
 // 汎用実装。ここでは各言語固有の記法(2進数、桁区切り記号、サフィックス等)を
 // タイプ別に補う。共通部分はIsNumber()の結果に加算する形で委譲し、
-// IsNumber()自体の実装(REGEX_MODE込み)には手を入れない。
+// IsNumber()自体の実装には手を入れない。
 // (CColor_Numeric::BeginColor()が現在のタイプに応じてIsNumberXxx()を呼び分ける。
 //  未対応のタイプは従来通りIsNumber()のみが使われる)
 //
