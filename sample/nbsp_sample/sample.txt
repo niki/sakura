@@ -1,0 +1,24 @@
+// 半角スペース / 改行禁止スペース(NBSP) 確認用サンプル (NKMM_FIX_HAN_SPACE)
+//
+// 使い方: 「表示」メニューで「制御記号を表示」(空白文字の表示)をONにして
+// このファイルを開き、各行の [ と ] の間にある空白の表示のされ方を確認する。
+//
+// - CFigure_HanSpace: 半角スペース(U+0020)を '･' で表示
+// - CFigure_ZenSpace: 全角スペース(U+3000)を専用マークで表示
+// - CFigure_NBSP    : 改行禁止スペース/NBSP(U+00A0)を半角スペースとして表示
+//                     (NKMM_FIX_HAN_SPACE有効時のみ存在するクラス)
+
+[ ]	// 半角スペース (U+0020) 1文字
+[ ]	// 改行禁止スペース/NBSP (U+00A0) 1文字
+[　]	// 全角スペース (U+3000) 1文字 (比較用)
+[	]	// タブ (比較用)
+
+// 半角スペースと改行禁止スペースが混在する例
+[     ]
+
+// 改行禁止スペースを行末近くに置いた例(折り返し設定時の挙動確認用)
+これは日本語の文章です。 This is English text with an NBSP before it, so this word should never be split across a line wrap boundary even when the window is narrow.
+
+// 改行禁止スペースのみで構成された行(比較用に全角スペースのみの行も併記)
+     
+　　　　　
