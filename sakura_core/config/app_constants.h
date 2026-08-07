@@ -36,9 +36,9 @@
 #endif
 
 #ifdef _DEBUG
-	#define _APP_NAME_2_(TYPE) TYPE("(デバッグ版)")
+	#define _APP_NAME_2_(TYPE) TYPE("(debug)")
 #else
-	#define _APP_NAME_2_(TYPE) TYPE("🍁")
+	#define _APP_NAME_2_(TYPE) TYPE("")
 #endif
 
 #define _GSTR_APPNAME_(TYPE)  _APP_NAME_(TYPE) _APP_NAME_2_(TYPE) //例:UNICODEデバッグ→_T("sakura(デバッグ版)")
@@ -59,7 +59,7 @@ const int COLUMNSPACE_MAX = 64;
 //	Aug. 14, 2005 genta 定数定義追加
 // 2007.09.07 kobake 定数名変更: MAXLINESIZE→MAXLINEKETAS
 // 2007.09.07 kobake 定数名変更: MINLINESIZE→MINLINEKETAS
-const int MAXLINEKETAS		= 32768;//10240;	//!< 1行の桁数の最大値
+const int MAXLINEKETAS		= 10240;	//!< 1行の桁数の最大値
 const int MINLINEKETAS		= 10;		//!< 1行の桁数の最小値
 const int DEFAULT_LINEKETAS = 120;  // デフォルトにする1行の桁数 .niki
 

@@ -154,10 +154,100 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_TABWND
 	#define NKMM_TABWND_FLICKER     (1)  // ウィンドウまとめモードの切り替え時にスリープを10ms入れる(ちらつき抑制) 20170406
+	                                      // → 20260807 UpdateWindow(hwnd)がhwnd自身しか同期再描画せず、
+	                                      //    エディットビュー等の子ウィンドウのWM_PAINTや、タイトルバーの
+	                                      //    WM_NCPAINTがキューに残るため、可視化直後の一瞬だけ中身が
+	                                      //    描画されない・タイトルバーが白くなる問題を追加修正。
+	                                      //    RedrawWindow(..., RDW_ALLCHILDREN | RDW_FRAME)で子ウィンドウと
+	                                      //    非クライアント領域も同期再描画。
+	                                      // → 20260807 上記だけではタイトルバーの白フラッシュが確率的に
+	                                      //    残った（DWM合成側の遷移アニメーションが原因で、アプリ側の
+	                                      //    同期描画だけでは防げない）。切り替え中だけ
+	                                      //    DwmSetWindowAttribute(DWMWA_TRANSITIONS_FORCEDISABLED, TRUE)
+	                                      //    でDWMの遷移アニメーションを止めるよう追加修正。
+	                                      // → 20260807 それでもタイトルバー/メニュー/タブが毎回ちらつく
+	                                      //    (確率的でなく再現性あり)と報告あり。CEditWnd::OnSize2()の
+	                                      //    再レイアウトをWM_SETREDRAWで抑止する修正もあわせて実施。
+	                                      // → 20260807 上記でも直らず。OutputDebugString相当のログを
+	                                      //    仕込んで実際のメッセージ列を採取したところ、切替のたびに
+	                                      //    AddEditWndList()(CAppNodeManager.cpp)がMRU(最近アクティブ)
+	                                      //    リストの並べ替えとしてTWNT_ORDERをグループ全員へ
+	                                      //    ブロードキャストしており、CTabWnd::TabWindowNotify()の
+	                                      //    TWNT_ORDERハンドラがTabCtrl_SetCurSel(m_hwndTab,nScrollPos)→
+	                                      //    TabCtrl_SetCurSel(m_hwndTab,nIndex)と選択状態を2段階で
+	                                      //    同期変更していたのが真因と判明（スクロール位置を強制的に
+	                                      //    リセットしてから目的タブを選択するための実装だが、その間の
+	                                      //    「誤った選択状態」が毎回一瞬そのまま画面に出ていた）。
+	                                      //    この2段階の選択変更をWM_SETREDRAWで挟んで抑止し、
+	                                      //    最後に一度だけRedrawWindow()で描き直すよう修正。
+	                                      //    タイトルバー/メニューのちらつきは、可視化に伴う一連の処理の
+	                                      //    体感速度が上がったことで別要因(DWM等)が目立たなくなった。
+	                                      // → 20260807 残っているごく短時間(1〜2フレーム程度)の空白は、
+	                                      //    RedrawWindow(RDW_UPDATENOW)がGDI描画をアプリ側で完了させる
+	                                      //    だけで、DWMがそれを実際に画面へ合成・提示するのを待たない
+	                                      //    ことが一因。直後のSleep(10)は「間に合うだろう」という
+	                                      //    時間当てずっぽうでしかないため、DWMが次のフレームの
+	                                      //    合成・提示を終えるまで実際に待つDwmFlush()に置き換えた
+	                                      //    （DwmFlush()が使えない環境向けにSleep(10)はフォールバックとして残す）。
+	                                      // → 20260807 DwmFlush()に変えても体感が変わらないと報告あり。
+	                                      //    ログに再度タイムスタンプを仕込んで確認したところ、
+	                                      //    マウスでタブをクリックした場合はCTabWnd::ShowHideWindow()
+	                                      //    経由で上記の修正が効くが、Ctrl+Tab等(F_NEXTWINDOW/
+	                                      //    F_PREVWINDOW)によるタブ切替はCControlTray::ActiveNextWindow/
+	                                      //    ActivePrevWindow() → util/window.cpp の ActivateFrameWindow()
+	                                      //    という別経路を通ることが判明。この関数はShowHideWindow()と
+	                                      //    違って新ウィンドウ表示後に旧ウィンドウを同期的に隠す処理が
+	                                      //    無く、AddEditWndList()発のTWNT_ORDER通知の非同期往復待ちの
+	                                      //    ままだった（NKMM_TABWND_SYNC_HIDEが2026.07.29に対応したのは
+	                                      //    ShowHideWindow()側だけで、ActivateFrameWindow()は未対応だった）。
+	                                      //    ActivateFrameWindow()にも同じ同期非表示処理
+	                                      //    （HideOtherGroupWindows()、util/window.cpp）を追加した。
+	                                      // → 20260807 あわせて、タブ項目はTCS_OWNERDRAWFIXEDでWM_DRAWITEMが
+	                                      //    毎回全面を塗りつぶすため不要なはずのデフォルトWM_ERASEBKGND
+	                                      //    （erase→redrawの二度塗り）をCTabWnd用のサブクラスプロシージャ
+	                                      //    (TabWndProc)で無効化した。
+	                                      // → 20260807 【未解決】Ctrl+Tab切替では、上記修正後もログ上は
+	                                      //    ShowHideWindow()/TWNT_ORDER関連の処理が一切発生していない
+	                                      //    （AddEditWndList()はWM_ACTIVATEAPPからのみ呼ばれ、同一デスクトップ
+	                                      //    内のプロセス間フォーカス移動でも今回のテストでは発火しなかった）
+	                                      //    にもかかわらず、可視化から約100〜150ms後の1〜2フレーム
+	                                      //    (約15〜30ms)だけタブ帯が一瞬空白/欠落するちらつきが
+	                                      //    高速連写キャプチャで再現し続けている。マウスクリックでの
+	                                      //    切替（TWNT_ORDER経由）よりこちらの方が症状が大きい。
+	                                      //    RedrawWindow/DwmFlush/WM_ERASEBKGND抑止のいずれでも解消せず、
+	                                      //    原因はまだ特定できていない。要追加調査。
+	                                      // → 20260807 ユーザーより「白くなるのと同時にウィンドウの影が
+	                                      //    濃くなる」との報告。影の濃淡はDWMの非クライアント領域の
+	                                      //    アクティブ/非アクティブ描画（WM_NCACTIVATE相当）に連動する
+	                                      //    ため、白フラッシュはSetForegroundWindow()によるアクティブ化の
+	                                      //    タイミングで起きている可能性が高いと判明。ところが、これまでの
+	                                      //    DwmSetWindowAttribute(DWMWA_TRANSITIONS_FORCEDISABLED)は
+	                                      //    CTabWnd::AdjustWindowPlacement()内だけで有効→無効を完結させて
+	                                      //    おり、SetForegroundWindow()（呼び出し元のShowHideWindow()/
+	                                      //    ActivateFrameWindow()側で、AdjustWindowPlacement()の後に呼ばれる）
+	                                      //    の時点では既に遷移アニメーションが元に戻ってしまっていた＝
+	                                      //    保護範囲から漏れていたことが真因の可能性が高い。
+	                                      //    DWM無効化・最終RedrawWindow・DwmFlushによる合成待ちを
+	                                      //    AdjustWindowPlacement()単体からShowHideWindow()/
+	                                      //    ActivateFrameWindow()側に引き上げ、「可視化開始～
+	                                      //    SetForegroundWindow()によるアクティブ化完了」までを
+	                                      //    一括で保護するよう修正。
 	#define NKMM_TAB_CLOSE_BTN_DRAW (0)  //〆 タブを閉じるボタンをグラフィカルにする 20170423
 	#define NKMM_TABWND_DRAG_THRESHOLD (1)  // タブクリックがドラッグ移動としきい値なしで誤認識され、切替えただけでタブの並びが入れ替わる問題を修正 20260718
 	#define NKMM_BUGFIX_TAB_EDGE    (1)  // 間に選択タブがあると右側のエッヂがないバグを修正 (となりのタブが上書き描画していた) 20170429
 	#define NKMM_TABWND_SYNC_HIDE   (1)  // タブ切替時、旧ウィンドウを隠す処理がTWNT_ORDER通知の非同期往復待ちになっており、新旧ウィンドウが重なって見えるちらつきの原因だったため、ウィンドウ表示直後に同期的に隠すよう修正 20260729
+	#define NKMM_TAB_CURRENT_LINE   (1)  // カレントタブの下部に線を引いて選択中のタブを分かりやすくする (#1a73e8) 20260807
+	                                      // → 20260807 固定色(#1a73e8)ではなくWindowsのアクセントカラーを
+	                                      //    使うよう変更。DwmGetColorizationColor()（dwmapi.h、Vista以降の
+	                                      //    素のWin32 API）で取得する。Windows 7/8/8.1/10/11いずれでも
+	                                      //    動作し、Win10/11の「設定→個人用設定→色」のアクセントカラー
+	                                      //    （背景から自動的に選択する設定時も含む）とも連動する。
+	                                      //    WinRTのUISettings.GetColorValue(Accent)を使う手もあるが、
+	                                      //    Windows 8以降専用でCOM初期化も要るため、互換性・実装コストの
+	                                      //    両面でDwmGetColorizationColor()を採用。Windows 7の
+	                                      //    ClassicテーマなどDWM合成が無効な環境ではAPIが失敗しうるため、
+	                                      //    GetSysColor(COLOR_HIGHLIGHT)にフォールバックする。
+	                                      //    WM_DWMCOLORIZATIONCOLORCHANGED受信時に再取得・再描画する。
 
 //------------------------------------------------------------------
 // エディット画面 スクロールバー
