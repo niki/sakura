@@ -34,7 +34,7 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 		// 塗りつぶしで消去
 		gr.FillSolidMyRect(rcClip, gr.GetTextBackColor());
 #if 1
-		// 空白で消去
+		// 半角の"･"を出力␣
 		CMyRect rcClipBottom=rcClip;
 		::ExtTextOutW_AnyBuild(
 			gr,
@@ -131,9 +131,41 @@ void CFigure_HanSpace::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pc
 
 bool CFigure_NBSP::Match(const wchar_t* pText, int nTextLen) const
 {
-	if( pText[0] == L' ' ){
+	if( pText[0] == L'\u00A0' ){	// 改行禁止スペース(NBSP)
 		return true;
 	}
 	return false;
+}
+
+void CFigure_NBSP::DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool bTrans) const
+{
+	//クリッピング矩形を計算。画面外なら描画しない
+	CMyRect rcClip;
+	const int Dx = pcView->GetTextMetrics().CalcTextWidth3(L"␣", 1);
+	const CLayoutXInt nCol = CLayoutXInt(Dx);
+	if(pcView->GetTextArea().GenerateClipRect(&rcClip,*pDispPos,nCol))
+	{
+		// 塗りつぶしで消去
+		gr.FillSolidMyRect(rcClip, gr.GetTextBackColor());
+
+		// 半角の"･"を出力␣
+		CMyRect rcClipBottom=rcClip;
+		::ExtTextOutW_AnyBuild(
+			gr,
+			pDispPos->GetDrawPos().x,
+#ifdef NKMM_LINE_MARGIN_TOP
+			pcView->GetLineMargin() +
+#endif // NKMM_
+			pDispPos->GetDrawPos().y,
+			ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
+			&rcClipBottom,
+			L"␣",
+			1,
+			pcView->GetTextMetrics().GetDxArray_AllHankaku()
+		);
+	}
+
+	//位置進める
+	pDispPos->ForwardDrawCol(nCol);
 }
 #endif // NKMM_

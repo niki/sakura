@@ -33,7 +33,11 @@ public:
 	bool Match(const wchar_t* pText, int nTextLen) const;
 
 	//action
+#ifdef NKMM_FIX_HAN_SPACE
+	void DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool trans) const override;
+#else
 	void DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool trans) const;
+#endif
 	EColorIndexType GetColorIdx(void) const{ return COLORIDX_SPACE; }
 
 #ifdef NKMM_FIX_HAN_SPACE
@@ -51,6 +55,9 @@ public:
 
 	//traits
 	bool Match(const wchar_t* pText, int nTextLen) const;
+
+	//action
+	void DispSpace(CGraphics& gr, DispPos* pDispPos, CEditView* pcView, bool trans) const override final;
 };
 #endif // NKMM_
 
