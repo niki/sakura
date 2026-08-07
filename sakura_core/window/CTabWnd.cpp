@@ -53,7 +53,36 @@
 #include "util/module.h"
 #include "util/string_ex2.h"
 #include "sakura_rc.h"
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
 
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CURRENT_LINE == 1
+/*!	カレントタブの下線に使うWindowsアクセントカラーを取得する
+
+	DwmGetColorizationColor()はVista以降(dwmapi.h)で提供されている素のWin32 APIで、
+	Windows 7/8/8.1/10/11のいずれでも動作する。Windows 10/11の「設定→個人用設定→色」の
+	アクセントカラーとも連動する（「背景から自動的に選択する」設定時も含む）。
+	WinRTの Windows.UI.ViewManagement.UISettings を使う方法もあるが、そちらはWindows 8以降
+	専用でCOM初期化が絡み実装コストも高いため、こちらのほうが互換性・実装コストの両面で優れる。
+	Windows 7のClassicテーマなどDWM合成が無効な環境ではDwmGetColorizationColor()が失敗する
+	ことがあるため、その場合はGetSysColor(COLOR_HIGHLIGHT)（選択項目色。どの環境でも必ず
+	取得できる）にフォールバックする。	20260807
+*/
+static COLORREF GetAccentColor()
+{
+	DWORD dwColor = 0;
+	BOOL bOpaqueBlend = FALSE;
+	if( SUCCEEDED( ::DwmGetColorizationColor( &dwColor, &bOpaqueBlend ) ) )
+	{
+		// dwColorは0xAARRGGBB形式。COLORREF(Win32のRGBマクロ)は0x00BBGGRRなので詰め替える。
+		BYTE r = (BYTE)( ( dwColor >> 16 ) & 0xFF );
+		BYTE g = (BYTE)( ( dwColor >>  8 ) & 0xFF );
+		BYTE b = (BYTE)(   dwColor         & 0xFF );
+		return RGB( r, g, b );
+	}
+	return ::GetSysColor( COLOR_HIGHLIGHT );	// DWM合成が無効な環境等のフォールバック
+}
+#endif // NKMM_
 
 //#if(WINVER >= 0x0500)
 #ifndef	SPI_GETFOREGROUNDLOCKTIMEOUT
@@ -131,6 +160,17 @@ LRESULT CALLBACK TabWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 	// Modified by KEITA for WIN64 2003.9.6
 	pcTabWnd = (CTabWnd*)::GetWindowLongPtr( hwnd, GWLP_USERDATA );
 
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_FLICKER == 1
+	if( pcTabWnd && uMsg == WM_ERASEBKGND )
+	{
+		// タブ項目はTCS_OWNERDRAWFIXEDでWM_DRAWITEMが毎回そのアイテム全面を塗りつぶすため、
+		// その前段でデフォルトのWM_ERASEBKGNDが背景を塗りつぶしても、直後にWM_DRAWITEMで
+		// 上書きされるだけで二度手間。この「消去してから描き直す」の二度塗りが、
+		// タブ切替時などにちらつきとして体感される一因だったため、背景消去自体を省略する。	20260807
+		return 1L;	// TRUE: 背景は消去済み扱いにする（実際の見た目はWM_DRAWITEM/WM_PAINT側で描く）
+	}
+#endif // NKMM_
+
 	if( pcTabWnd )
 	{
 		//return
@@ -202,6 +242,14 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	case WM_THEMECHANGED:
 		m_bVisualStyle = ::IsVisualStyle();
 		break;
+
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CURRENT_LINE == 1
+	case WM_DWMCOLORIZATIONCOLORCHANGED:
+		// 設定→個人用設定→色 でアクセントカラーを変更したときにDWMから飛んでくる通知。	20260807
+		m_crAccentColor = GetAccentColor();
+		::InvalidateRect( m_hwndTab, NULL, TRUE );
+		break;
+#endif // NKMM_
 
 	//default:
 	}
@@ -917,6 +965,11 @@ CTabWnd::CTabWnd()
 , m_eTabPosition( TabPosition_None )
 , m_eDragState( DRAG_NONE )
 , m_bVisualStyle( FALSE )		// 2007.04.01 ryoji
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CURRENT_LINE == 1
+, m_crAccentColor( GetAccentColor() )	// 20260807
+#else
+, m_crAccentColor( RGB(0x1a, 0x73, 0xe8) )	// 20260807
+#endif // NKMM_
 , m_bHovering( FALSE )	//	2006.02.01 ryoji
 , m_bListBtnHilighted( FALSE )	//	2006.02.01 ryoji
 , m_bCloseBtnHilighted( FALSE )	//	2006.10.21 ryoji
@@ -961,6 +1014,9 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 	gm_pOldWndProc = NULL;
 	m_hwndToolTip = NULL;
 	m_bVisualStyle = ::IsVisualStyle();	// 2007.04.01 ryoji
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CURRENT_LINE == 1
+	m_crAccentColor = GetAccentColor();	// 20260807
+#endif // NKMM_
 	m_eDragState = DRAG_NONE;	//	2005.09.29 ryoji
 	m_bHovering = FALSE;			// 2006.02.01 ryoji
 	m_bListBtnHilighted = FALSE;	// 2006.02.01 ryoji
@@ -1599,6 +1655,17 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 			DrawTabCloseBtn( gr, &rcGetItemRect, bSelected, (nTabIndex == m_nTabHover) && m_bTabCloseHover );
 		}
 
+#if defined(NKMM_FIX_TABWND) && NKMM_TAB_CURRENT_LINE == 1
+		// カレントタブの下部に線を引く（Windowsのアクセントカラーを使う）
+		if( bSelected ){
+			RECT rcCurLine = rcFullItem;
+			rcCurLine.top = rcCurLine.bottom - DpiScaleY(3);
+			HBRUSH hbrCurLine = ::CreateSolidBrush( m_crAccentColor );
+			::FillRect( gr, &rcCurLine, hbrCurLine );
+			::DeleteObject( hbrCurLine );
+		}
+#endif // NKMM_
+
 		// Vista以降ではオーナードロータブに自動で3D枠が描画されてしまうため、
 		// 描画範囲を無効化する
 		if ( IsVisualStyle() ){
@@ -1949,8 +2016,23 @@ void CTabWnd::TabWindowNotify( WPARAM wParam, LPARAM lParam )
 				// 自タブアイテム選択前に一時的に画面左端のタブアイテムを選択する
 				hwndUpDown = ::FindWindowEx( m_hwndTab, NULL, UPDOWN_CLASS, 0 );	// タブ内の Up-Down コントロール
 				nScrollPos = ( hwndUpDown != NULL && ::IsWindowVisible( hwndUpDown ) )? LOWORD( UpDown_GetPos( hwndUpDown ) ): 0;	// 2007.09.24 ryoji hwndUpDown可視の条件追加
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_FLICKER == 1
+				// タブを切り替えるたびに(自分がアクティブになるたびに)このTWNT_ORDERが
+				// グループ全員へブロードキャストされ、ここで選択状態をnScrollPos→nIndexと
+				// 2段階で変更している。TabCtrl_SetCurSel()は呼ぶたびに同期的にWM_DRAWITEMを
+				// 発生させるため、その一瞬だけ「間違ったタブが選択された状態」が実際に画面に
+				// 出てしまい、対象タブが空白になったり選択位置が一瞬ずれたりするちらつきの
+				// 原因になっていた。再描画を止めてから2段階の選択変更を行い、
+				// 最後に一度だけ描き直す。	20260807
+				::SendMessageAny( m_hwndTab, WM_SETREDRAW, (WPARAM)FALSE, (LPARAM)0 );
 				TabCtrl_SetCurSel( m_hwndTab, nScrollPos );
 				TabCtrl_SetCurSel( m_hwndTab, nIndex );
+				::SendMessageAny( m_hwndTab, WM_SETREDRAW, (WPARAM)TRUE, (LPARAM)0 );
+				::RedrawWindow( m_hwndTab, NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW );
+#else
+				TabCtrl_SetCurSel( m_hwndTab, nScrollPos );
+				TabCtrl_SetCurSel( m_hwndTab, nIndex );
+#endif // NKMM_
 
 				// 自分以外を隠す
 				// （連続切替時に TWNT_ORDER が大量発生・交錯して？画面がすべて消えてしまったりするのを防ぐ）
@@ -2262,10 +2344,23 @@ void CTabWnd::AdjustWindowPlacement( void )
 				wp.showCmd = pEditNode->m_showCmdRestore;
 			::SetWindowPos( hwnd, hwndInsertAfter, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
 			SetCarmWindowPlacement( hwnd, &wp );	// 位置を復元する
-			::UpdateWindow( hwnd );	// 強制描画
-			
+
 #if defined(NKMM_FIX_TABWND) && NKMM_TABWND_FLICKER == 1
-			::Sleep(10);  // ウィンドウ切り替え時のちらつき抑制
+			// UpdateWindow(hwnd) は hwnd 自身の再描画のみ強制するため、エディットビューなど
+			// 子ウィンドウ側の WM_PAINT や、タイトルバーなど非クライアント領域の WM_NCPAINT が
+			// メッセージキューに残ったままになる。このハンドラを抜けてメッセージループに戻るまでの間、
+			// 子ウィンドウの中身が描画されない（背景のまま見える）・タイトルバーが一瞬白くなる、
+			// といった瞬間ができてしまい、これがちらつきの正体。
+			// RDW_ALLCHILDREN で子ウィンドウ、RDW_FRAME で非クライアント領域も含めて同期的に再描画する。
+			// （RDW_ERASE / RDW_FRAME は RDW_INVALIDATE と併用しないと効果がない点に注意）	20260807
+			// Note. DWM遷移アニメーションの無効化・DwmFlush()による合成待ちは、この後で
+			// 呼ばれるSetForegroundWindow()（ここでウィンドウがアクティブ化し、影が濃くなる）
+			// までを一括でカバーする必要があるため、呼び出し元のShowHideWindow()側に移した。
+			// ここ(AdjustWindowPlacement)だけで閉じてしまうと、アクティブ化のタイミングが
+			// 保護範囲から漏れてちらつきが残ってしまう。	20260807
+			::RedrawWindow( hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_UPDATENOW | RDW_ALLCHILDREN );
+#else
+			::UpdateWindow( hwnd );	// 強制描画
 #endif // NKMM_
 		}
 	}
@@ -2317,12 +2412,28 @@ void CTabWnd::ShowHideWindow( HWND hwnd, BOOL bDisp )
 
 	if( bDisp )
 	{
-		if( m_pShareData->m_Common.m_sTabBar.m_bDispTabWnd && !m_pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin )
+		BOOL bTabWndMerge = m_pShareData->m_Common.m_sTabBar.m_bDispTabWnd && !m_pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin;
+		if( bTabWndMerge )
 		{
 			if( m_pShareData->m_sFlags.m_bEditWndChanging )
 				return;	// 切替の最中(busy)は要求を無視する
 			m_pShareData->m_sFlags.m_bEditWndChanging = TRUE;	// 編集ウィンドウ切替中ON	2007.04.03 ryoji
+		}
 
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_FLICKER == 1
+		// DWM合成下では、非表示→表示への切り替えやSetForegroundWindow()によるアクティブ化
+		// （非アクティブ→アクティブでウィンドウの影が濃くなるなど）の際にDWM自身が遷移
+		// アニメーションを行い、その最初の1フレームがまだ何も描画されていない白紙のまま
+		// 画面に出てしまうことがある。可視化(AdjustWindowPlacement)からアクティブ化
+		// (この後のTabWnd_ActivateFrameWindow→SetForegroundWindow、影の変化はここで起きる)
+		// までの一連の処理が終わるまでDWMの遷移アニメーションを止める必要があるため、
+		// AdjustWindowPlacement()内で閉じずにここで管理する。	20260807
+		BOOL bTransitionsForceDisabled = TRUE;
+		::DwmSetWindowAttribute( hwnd, DWMWA_TRANSITIONS_FORCEDISABLED, &bTransitionsForceDisabled, sizeof(bTransitionsForceDisabled) );
+#endif // NKMM_
+
+		if( bTabWndMerge )
+		{
 			// 対象ウィンドウのスレッドに位置合わせを依頼する	// 2007.04.03 ryoji
 			DWORD_PTR dwResult;
 			::SendMessageTimeout( hwnd, MYWM_TAB_WINDOW_NOTIFY, TWNT_WNDPL_ADJUST, (LPARAM)NULL,
@@ -2337,7 +2448,20 @@ void CTabWnd::ShowHideWindow( HWND hwnd, BOOL bDisp )
 		HideOtherWindows( hwnd );
 #endif // NKMM_
 
-		m_pShareData->m_sFlags.m_bEditWndChanging = FALSE;	// 編集ウィンドウ切替中OFF	2007.04.03 ryoji
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_FLICKER == 1
+		// SetForegroundWindow()によるアクティブ化(影の変化を含むNC領域の更新)まで完了した
+		// 状態を同期的に再描画し、DWMが実際に画面へ合成・提示し終えるまで待ってから
+		// 遷移アニメーションを元に戻す。DwmFlush()が使えない環境向けにSleep(10)を
+		// フォールバックとして残す。	20260807
+		::RedrawWindow( hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_UPDATENOW | RDW_ALLCHILDREN );
+		if( FAILED( ::DwmFlush() ) )
+			::Sleep(10);
+		bTransitionsForceDisabled = FALSE;
+		::DwmSetWindowAttribute( hwnd, DWMWA_TRANSITIONS_FORCEDISABLED, &bTransitionsForceDisabled, sizeof(bTransitionsForceDisabled) );
+#endif // NKMM_
+
+		if( bTabWndMerge )
+			m_pShareData->m_sFlags.m_bEditWndChanging = FALSE;	// 編集ウィンドウ切替中OFF	2007.04.03 ryoji
 	}
 	else
 	{

@@ -2229,6 +2229,44 @@ LRESULT CEditWnd::DispatchEvent(
 
 	//タブウインドウ	//@@@ 2003.05.31 MIK
 	case MYWM_TAB_WINDOW_NOTIFY:
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_FLICKER == 1
+		if( wParam == TWNT_WNDPL_ADJUST )
+		{
+			// タブ切り替えで非表示だった編集ウィンドウを可視化した直後、下のOnSize2()が
+			// ツールバー/タブ/ファンクションキー/ステータスバー/分割ウィンドウを一括で
+			// 再レイアウトする。その中の MoveWindow(...,TRUE) や子コントロールへの
+			// WM_SIZE送信がそれぞれ個別に即時再描画してしまうため、可視化直後に画面各部が
+			// 順番に描き直される様子が、タイトルバー・メニュー・タブ全体のちらつきとして見えていた。
+			// 一連の再レイアウトの間だけ描画を止め、最後に一度だけまとめて描き直す。	20260807
+			const HWND ahwndSuppress[] = {
+				GetHwnd(),
+				m_cToolbar.GetRebarHwnd(),
+				m_cToolbar.GetToolbarHwnd(),
+				m_cFuncKeyWnd.GetHwnd(),
+				m_cStatusBar.GetStatusHwnd(),
+				m_cTabWnd.GetHwnd(),
+				m_cSplitterWnd.GetHwnd(),
+			};
+			for( HWND hSuppress : ahwndSuppress ){
+				if( hSuppress ) ::SendMessage( hSuppress, WM_SETREDRAW, FALSE, 0 );
+			}
+
+			m_cTabWnd.TabWindowNotify( wParam, lParam );
+			{
+				RECT		rc;
+				::GetClientRect( GetHwnd(), &rc );
+				OnSize2( m_nWinSizeType, MAKELONG( rc.right - rc.left, rc.bottom - rc.top ), false );
+				GetActiveView().SetIMECompFormPos();
+			}
+
+			for( HWND hSuppress : ahwndSuppress ){
+				if( hSuppress ) ::SendMessage( hSuppress, WM_SETREDRAW, TRUE, 0 );
+			}
+			::RedrawWindow( GetHwnd(), NULL, NULL,
+				RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN | RDW_UPDATENOW );
+			return 0L;
+		}
+#endif // NKMM_
 		m_cTabWnd.TabWindowNotify( wParam, lParam );
 		{
 			RECT		rc;

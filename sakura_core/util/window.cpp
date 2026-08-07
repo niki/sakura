@@ -2,8 +2,11 @@
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "env/CSakuraEnvironment.h"
+#include "env/CAppNodeManager.h"
 #include <limits.h>
 #include "window.h"
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
 
 int CDPI::nDpiX = 96;
 int CDPI::nDpiY = 96;
@@ -97,6 +100,40 @@ BOOL BlockingHook( HWND hwndDlgCancel )
 
 
 
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_SYNC_HIDE == 1
+/*!	タブまとめ表示のグループ内で、指定ウィンドウ以外を隠す
+
+	CTabWnd::HideOtherWindows() と同じ処理。あちらはタブクリック時の
+	CTabWnd::ShowHideWindow() 専用（protectedメンバ）なため、Ctrl+Tab等の
+	F_NEXTWINDOW/F_PREVWINDOW経由（CControlTray::ActiveNextWindow/ActivePrevWindow
+	→ ActivateFrameWindow()、本ファイル）向けに同じロジックをここにも用意する。	20260807
+
+	@author ryoji (CTabWnd::HideOtherWindows, 2007.05.17 新規作成)
+*/
+static void HideOtherGroupWindows( HWND hwndExclude )
+{
+	DLLSHAREDATA* pShareData = &GetDllShareData();
+	if( pShareData->m_Common.m_sTabBar.m_bDispTabWnd && !pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin )
+	{
+		HWND hwnd;
+		int	i;
+		for( i = 0; i < pShareData->m_sNodes.m_nEditArrNum; i++ )
+		{
+			hwnd = pShareData->m_sNodes.m_pEditArr[i].m_hWnd;
+			if( IsSakuraMainWindow( hwnd ) )
+			{
+				if( !CAppNodeManager::IsSameGroup( hwndExclude, hwnd ) )
+					continue;
+				if( hwnd != hwndExclude && ::IsWindowVisible( hwnd ) )
+				{
+					::ShowWindow( hwnd, SW_HIDE );
+				}
+			}
+		}
+	}
+}
+#endif // NKMM_
+
 /** フレームウィンドウをアクティブにする
 	@date 2007.11.07 ryoji 対象がdisableのときは最近のポップアップをフォアグラウンド化する．
 		（モーダルダイアログやメッセージボックスを表示しているようなとき）
@@ -105,24 +142,38 @@ void ActivateFrameWindow( HWND hwnd )
 {
 	// 編集ウィンドウでタブまとめ表示の場合は表示位置を復元する
 	DLLSHAREDATA* pShareData = &GetDllShareData();
-	if( pShareData->m_Common.m_sTabBar.m_bDispTabWnd && !pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin ) {
-		if( IsSakuraMainWindow( hwnd ) ){
-			if( pShareData->m_sFlags.m_bEditWndChanging )
-				return;	// 切替の最中(busy)は要求を無視する
-			pShareData->m_sFlags.m_bEditWndChanging = TRUE;	// 編集ウィンドウ切替中ON	2007.04.03 ryoji
+	BOOL bTabWndMerge = pShareData->m_Common.m_sTabBar.m_bDispTabWnd && !pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin
+		&& IsSakuraMainWindow( hwnd );
+	if( bTabWndMerge )
+	{
+		if( pShareData->m_sFlags.m_bEditWndChanging )
+			return;	// 切替の最中(busy)は要求を無視する
+		pShareData->m_sFlags.m_bEditWndChanging = TRUE;	// 編集ウィンドウ切替中ON	2007.04.03 ryoji
+	}
 
-			// 対象ウィンドウのスレッドに位置合わせを依頼する	// 2007.04.03 ryoji
-			DWORD_PTR dwResult;
-			::SendMessageTimeout(
-				hwnd,
-				MYWM_TAB_WINDOW_NOTIFY,
-				TWNT_WNDPL_ADJUST,
-				(LPARAM)NULL,
-				SMTO_ABORTIFHUNG | SMTO_BLOCK,
-				10000,
-				&dwResult
-			);
-		}
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_FLICKER == 1
+	// CTabWnd::ShowHideWindow()と同じ理由（可視化～SetForegroundWindow()によるアクティブ化
+	// ＝影が濃くなるタイミングまでをDWMの遷移アニメーションから保護する必要がある）で、
+	// この関数の一連の処理全体をDwmSetWindowAttribute(DWMWA_TRANSITIONS_FORCEDISABLED)で
+	// 挟む。CTabWnd::AdjustWindowPlacement()内だけで完結させると、その後のSetForegroundWindow()
+	// が保護範囲から漏れてちらつきが残ってしまう。	20260807
+	BOOL bTransitionsForceDisabled = TRUE;
+	::DwmSetWindowAttribute( hwnd, DWMWA_TRANSITIONS_FORCEDISABLED, &bTransitionsForceDisabled, sizeof(bTransitionsForceDisabled) );
+#endif // NKMM_
+
+	if( bTabWndMerge )
+	{
+		// 対象ウィンドウのスレッドに位置合わせを依頼する	// 2007.04.03 ryoji
+		DWORD_PTR dwResult;
+		::SendMessageTimeout(
+			hwnd,
+			MYWM_TAB_WINDOW_NOTIFY,
+			TWNT_WNDPL_ADJUST,
+			(LPARAM)NULL,
+			SMTO_ABORTIFHUNG | SMTO_BLOCK,
+			10000,
+			&dwResult
+		);
 	}
 
 	// 対象がdisableのときは最近のポップアップをフォアグラウンド化する
@@ -140,7 +191,31 @@ void ActivateFrameWindow( HWND hwnd )
 	::SetForegroundWindow( hwndActivate );
 	::BringWindowToTop( hwndActivate );
 
-	if( pShareData )
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_SYNC_HIDE == 1
+	// Ctrl+Tab(F_NEXTWINDOW/F_PREVWINDOW)経由でのタブ切替はこの関数を通るが、
+	// CTabWnd::ShowHideWindow()（タブクリック時）と違って旧ウィンドウを隠す処理が
+	// 無く、AddEditWndList()発のTWNT_ORDER通知の非同期往復待ちになっていたため、
+	// マウスクリックでの切替と同様に新旧ウィンドウが重なって見えるちらつきが
+	// 起きていた。ウィンドウ表示直後に同期的に隠すよう修正。	20260807
+	if( bTabWndMerge )
+	{
+		HideOtherGroupWindows( hwnd );
+	}
+#endif // NKMM_
+
+#if defined(NKMM_FIX_TABWND) && NKMM_TABWND_FLICKER == 1
+	// SetForegroundWindow()によるアクティブ化(影の変化を含むNC領域の更新)まで完了した
+	// 状態を同期的に再描画し、DWMが実際に画面へ合成・提示し終えるまで待ってから
+	// 遷移アニメーションを元に戻す。DwmFlush()が使えない環境向けにSleep(10)を
+	// フォールバックとして残す。	20260807
+	::RedrawWindow( hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_UPDATENOW | RDW_ALLCHILDREN );
+	if( FAILED( ::DwmFlush() ) )
+		::Sleep(10);
+	bTransitionsForceDisabled = FALSE;
+	::DwmSetWindowAttribute( hwnd, DWMWA_TRANSITIONS_FORCEDISABLED, &bTransitionsForceDisabled, sizeof(bTransitionsForceDisabled) );
+#endif // NKMM_
+
+	if( bTabWndMerge )
 		pShareData->m_sFlags.m_bEditWndChanging = FALSE;	// 編集ウィンドウ切替中OFF	2007.04.03 ryoji
 
 	return;

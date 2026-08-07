@@ -218,6 +218,7 @@ private:
 	int			m_iIconGrep;			//!< Grepアイコンのインデックス
 
 	BOOL		m_bVisualStyle;			//!< ビジュアルスタイルかどうか	// 2007.04.01 ryoji
+	COLORREF	m_crAccentColor;		//!< カレントタブの下線に使うWindowsアクセントカラー	// 20260807
 	BOOL		m_bHovering;
 	BOOL		m_bListBtnHilighted;
 	BOOL		m_bCloseBtnHilighted;	//!< 閉じるボタンハイライト状態	// 2006.10.21 ryoji
