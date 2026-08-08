@@ -37,6 +37,12 @@ CGlyphAtlasCache::CGlyphAtlasCache()
 	, m_nFontGeneration(CViewFont::GetFontGeneration())
 	, m_bPageAllocFailed(false)
 {
+	// m_vPagesはMAX_PAGES(8)個までしか増えないため事前にreserveしておく。
+	// これが無いと、WarmUpAscii()がページ内でSGlyphAtlasPage*を反復間で
+	// 保持している間にCreatePage()のpush_backでvectorが再確保され、
+	// その生ポインタがダングリングポインタになる不具合があった
+	// (実機で解像度変更直後の文字化け・黒塗り潰しとして再現・修正確認済み)。
+	m_vPages.reserve(MAX_PAGES);
 }
 
 CGlyphAtlasCache::~CGlyphAtlasCache()
