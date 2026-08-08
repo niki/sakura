@@ -312,10 +312,10 @@ bool CShareData::InitShareData()
 #ifdef NKMM_FIX_TAB_CAPTION_COLOR
 			_tcscpy( sWindow.m_szWindowCaptionActive,
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
-				_T(" $A ${R?【ビューモード】$:【上書き禁止】$}${M?  【キーマクロの記録中】$} $<profile>") );
+				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
 			_tcscpy( sWindow.m_szWindowCaptionInactive,
 				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
-				_T(" $A ${R?【ビューモード】$:【上書き禁止】$}${M?  【キーマクロの記録中】$} $<profile>") );
+				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
 #else
 			//	Apr. 05, 2003 genta ウィンドウキャプションの初期値
 			//	Aug. 16, 2003 genta $N(ファイル名省略表示)をデフォルトに変更
