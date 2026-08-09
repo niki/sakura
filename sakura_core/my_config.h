@@ -528,6 +528,10 @@
 //    GetEmbeddedKeywordArr()による組み込みキーワードへのフォールバック 20260809
 //  - sakura_core\types\CType_Css.cpp,CType_JavaScript.cpp,CType_Php.cpp,
 //    CType_Python.cpp,CType_Ruby.cpp,CType_Csharp.cpp: 上記の組み込み配列追加
+//  - 組み込みキーワード配列の中身はsakura_keyword\*.kwdから
+//    tools\GenerateKeywordInc.ps1でsakura_core\types\generated\*.incへ生成する
+//    (generated\*.incはgit管理外のため、フレッシュcloneでは初回ビルド前に実行が必要)
+//  - 詳細はchangelog/NKMM_FIX_KEYWORDSET_UI.md参照
 //  - sakura_core\prop\CPropCommon.h,CPropComKeyword.cpp: ダイアログ側の実装
 //  - sakura_core\sakura_rc.rc,sakura_lang_rc.rc,sakura_rc.h,sakura.hh:
 //    IDC_BUTTON_KEYWORD_RELOAD, IDC_STATIC_KEYWORD_FILE

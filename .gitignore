@@ -53,13 +53,21 @@ install_manifest.txt
 compile_commands.json
 
 # Temporary files
+dbgframes/
+generated/
+
 *.tmp
 *.log
 *.bak
 *.swp
 
+Funccode_*.h
+*.inc
+
 *.user
 tags
+
+*.*_
 
 # vcpkg
 vcpkg_installed/
