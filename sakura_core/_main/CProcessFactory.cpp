@@ -245,15 +245,13 @@ bool CProcessFactory::StartControlProcess()
 	s.cbReserved2 = 0;
 	s.lpReserved2 = NULL;
 
-	TCHAR szCmdLineBuf[1024];	//	コマンドライン
+	CCommandLineString cCmdLineBuf;	//	コマンドライン(バッファ長を超える分は安全に切り詰められる)
 	TCHAR szEXE[MAX_PATH + 1];	//	アプリケーションパス名
 
 	::GetModuleFileName( NULL, szEXE, _countof( szEXE ));
+	cCmdLineBuf.AppendF( _T("\"%ts\" -NOWIN"), szEXE );
 	if( CCommandLine::getInstance()->IsSetProfile() ){
-		::auto_sprintf( szCmdLineBuf, _T("\"%ts\" -NOWIN -PROF=\"%ls\""),
-			szEXE, CCommandLine::getInstance()->GetProfileName() );
-	}else{
-		::auto_sprintf( szCmdLineBuf, _T("\"%ts\" -NOWIN"), szEXE ); // ""付加
+		cCmdLineBuf.AppendF( _T(" -PROF=\"%ls\""), CCommandLine::getInstance()->GetProfileName() );
 	}
 
 	//常駐プロセス起動
@@ -261,6 +259,9 @@ bool CProcessFactory::StartControlProcess()
 #ifdef _DEBUG
 //	dwCreationFlag |= DEBUG_PROCESS; //2007.09.22 kobake デバッグ用フラグ
 #endif
+	// CreateProcessのlpCommandLineは書き換え可能である必要があるため、ローカルバッファへコピーしてから渡す
+	TCHAR szCmdLineBuf[1024];
+	auto_strcpy_s( szCmdLineBuf, _countof( szCmdLineBuf ), cCmdLineBuf.c_str() );
 	BOOL bCreateResult = ::CreateProcess(
 		szEXE,				// 実行可能モジュールの名前
 		szCmdLineBuf,		// コマンドラインの文字列

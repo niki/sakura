@@ -1292,7 +1292,7 @@ int CDlgTagJumpList::find_key_core(
 								if( 1 <= n2 && s[2][0] ){
 									// s[2] == 絶対パス(ディレクトリ)
 									TCHAR baseWork[1024];
-									CopyDirDir( baseWork, to_tchar(s[2]), state.m_szCurPath );
+									CopyDirDir( baseWork, _countof( baseWork ), to_tchar(s[2]), state.m_szCurPath );
 									szNextPath[0] = 0;
 									if( !GetLongFileName( baseWork, szNextPath ) ){
 										// エラーなら変換前を適用
@@ -1305,7 +1305,7 @@ int CDlgTagJumpList::find_key_core(
 							// 独自拡張:ファイル名の基準ディレクトリ
 							if( state.m_bJumpPath ){
 								// パス親読み替え中は、相対パスだった場合に連結が必要
-								CopyDirDir( baseWork, to_tchar(s[1]), state.m_szCurPath );
+								CopyDirDir( baseWork, _countof( baseWork ), to_tchar(s[1]), state.m_szCurPath );
 								baseDirId = cList.AddBaseDir( baseWork );
 							}else{
 								auto_strcpy( baseWork, to_tchar(s[1]) );
@@ -1478,13 +1478,19 @@ TCHAR* CDlgTagJumpList::GetFullPathFromDepth( TCHAR* pszOutput, int count,
 	const TCHAR	*p = fileName;
 	if( p[0] == _T('\\') ){	//ドライブなし絶対パスか？
 		if( p[1] == _T('\\') ){	//ネットワークパスか？
-			_tcscpy( pszOutput, p );	//何も加工しない。
+			if( -1 == auto_snprintf_s( pszOutput, count, _T("%ts"), p ) ){	//何も加工しない。
+				return NULL;
+			}
 		}else{
 			//ドライブ加工したほうがよい？
-			_tcscpy( pszOutput, p );	//何も加工しない。
+			if( -1 == auto_snprintf_s( pszOutput, count, _T("%ts"), p ) ){	//何も加工しない。
+				return NULL;
+			}
 		}
 	}else if( _istalpha( p[0] ) && p[1] == _T(':') ){	//絶対パスか？
-		_tcscpy( pszOutput, p );	//何も加工しない。
+		if( -1 == auto_snprintf_s( pszOutput, count, _T("%ts"), p ) ){	//何も加工しない。
+			return NULL;
+		}
 	}else{
 		for( int i = 0; i < depth; i++ ){
 			//_tcscat( basePath, _T("..\\") );
@@ -1499,15 +1505,21 @@ TCHAR* CDlgTagJumpList::GetFullPathFromDepth( TCHAR* pszOutput, int count,
 
 /*!
 	ディレクトリとディレクトリを連結する
+	@param dest  [out] 連結結果の格納先
+	@param count [in]  destバッファのTCHAR単位でのサイズ
+	@param target,base [in] tagsファイルなど外部入力由来の可変長文字列(長さ無制限)なので、
+	                         destサイズを超える分は安全に切り詰める(オーバーフローさせない)
 */
-TCHAR* CDlgTagJumpList::CopyDirDir( TCHAR* dest, const TCHAR* target, const TCHAR* base )
+TCHAR* CDlgTagJumpList::CopyDirDir( TCHAR* dest, int count, const TCHAR* target, const TCHAR* base )
 {
+	// 末尾でAddLastYenFromDirectoryPathが'\\'を追加する余地を残しておく
+	int nCopyCount = ( 2 < count ) ? ( count - 2 ) : 1;
 	if( _IS_REL_PATH( target ) ){
-		auto_strcpy( dest, base );
-		AddLastYenFromDirectoryPath( dest );
-		auto_strcat( dest, target );
+		size_t nBaseLen = auto_strlen( base );
+		bool bHasSep = 0 < nBaseLen && ( base[nBaseLen - 1] == _T('\\') || base[nBaseLen - 1] == _T('/') );
+		auto_snprintf_s( dest, nCopyCount, bHasSep ? _T("%ts%ts") : _T("%ts\\%ts"), base, target );
 	}else{
-		auto_strcpy( dest, target );
+		auto_snprintf_s( dest, nCopyCount, _T("%ts"), target );
 	}
 	AddLastYenFromDirectoryPath( dest );
 	return dest;

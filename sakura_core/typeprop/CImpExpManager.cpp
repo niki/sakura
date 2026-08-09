@@ -801,7 +801,7 @@ bool CImpExpKeyHelp::Import( const wstring& sFileName, wstring& sErrMsg )
 			fclose(fp2);
 
 		//About
-		if (wcslen(p2) > DICT_ABOUT_LEN) {
+		if (wcslen(p2) >= DICT_ABOUT_LEN) {	// m_szAbout[DICT_ABOUT_LEN]に収まる必要がある(NUL分含む)ため>=で判定
 			auto_sprintf( msgBuff, LSW(STR_IMPEXP_DIC_LENGTH), DICT_ABOUT_LEN );
 			sErrMsg = msgBuff;
 			++invalid_record;
@@ -810,8 +810,9 @@ bool CImpExpKeyHelp::Import( const wstring& sFileName, wstring& sErrMsg )
 
 		//良さそうなら
 		m_Types.m_KeyHelpArr[i].m_bUse = (b_enable_flag!=0);	// 2007.02.03 genta
-		_tcscpy(m_Types.m_KeyHelpArr[i].m_szAbout, to_tchar(p4));
-		_tcscpy(m_Types.m_KeyHelpArr[i].m_szPath,  to_tchar(p3));
+		// p3(ファイルパス)・p4(About)はインポートファイル由来の長さ無制限の文字列のため、安全に切り詰める
+		auto_strcpy_s(m_Types.m_KeyHelpArr[i].m_szAbout, _countof(m_Types.m_KeyHelpArr[i].m_szAbout), to_tchar(p4));
+		m_Types.m_KeyHelpArr[i].m_szPath = to_tchar(p3);
 		i++;
 	}
 	in.Close();

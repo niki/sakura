@@ -163,16 +163,23 @@ void CEditView::ViewDiffInfo(
 
 	//	To Here Dec. 28, 2002 MIK
 
+	// ファイルパスは長さ無制限のため、固定長バッファではなく実際の長さに合わせて確保する
+	const TCHAR* pszDiffExe = _T("diff.exe");
+	const TCHAR* pszPathNew = ( nFlgFile12 ? pszFile2 : pszFile1 );
+	const TCHAR* pszPathOld = ( nFlgFile12 ? pszFile1 : pszFile2 );
+	std::vector<TCHAR> cmdlineBuf(
+		_tcslen( szExeFolder ) + _tcslen( pszDiffExe ) + _tcslen( szOption )
+		+ _tcslen( pszPathNew ) + _tcslen( pszPathOld ) + 16 /* 引用符・区切り・NUL分の余裕 */ );
 	{
-		//コマンドライン文字列作成(MAX:1024)
+		//コマンドライン文字列作成
 		auto_sprintf(
-			cmdline,
+			&cmdlineBuf[0],
 			_T("\"%ts\\%ts\" %ts \"%ts\" \"%ts\""),
 			szExeFolder,	//sakura.exeパス
-			_T("diff.exe"),		//diff.exe
+			pszDiffExe,		//diff.exe
 			szOption,		//diffオプション
-			( nFlgFile12 ? pszFile2 : pszFile1 ),
-			( nFlgFile12 ? pszFile1 : pszFile2 )
+			pszPathNew,
+			pszPathOld
 		);
 	}
 
@@ -185,7 +192,7 @@ void CEditView::ViewDiffInfo(
 		}
 		nFlgOpt |= 0x40;  // 拡張情報出力無効
 		COutputAdapterDiff oa(this, nFlgFile12);
-		bool ret = ExecCmd( cmdline, nFlgOpt, NULL, &oa );
+		bool ret = ExecCmd( &cmdlineBuf[0], nFlgOpt, NULL, &oa );
 
 		if( ret ){
 			if( oa.bDiffInfo == true && oa.nDiffLen > 0 )

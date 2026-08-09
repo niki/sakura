@@ -234,9 +234,12 @@ bool CEditView::ExecCmd( const TCHAR* pszCmd, int nFlgOpt, const TCHAR* pszCurDi
 	bool bRet = false;
 
 	//コマンドライン実行
-	TCHAR	cmdline[1024];
-	_tcscpy( cmdline, pszCmd );
-	if( CreateProcess( NULL, cmdline, NULL, NULL, TRUE,
+	// pszCmdはマクロ・外部設定などから渡される長さ無制限の文字列のため、
+	// 固定長スタックバッファではなく実際の長さに合わせて確保する(CreateProcessの
+	// lpCommandLineは書き換え可能である必要があるためstd::tstringではなくvectorを使う)
+	std::vector<TCHAR> cmdline( _tcslen( pszCmd ) + 1 );
+	_tcscpy( &cmdline[0], pszCmd );
+	if( CreateProcess( NULL, &cmdline[0], NULL, NULL, TRUE,
 				CREATE_NEW_CONSOLE, NULL, bCurDir ? pszCurDir : NULL, &sui, &pi ) == FALSE ) {
 		//実行に失敗した場合、コマンドラインベースのアプリケーションと判断して
 		// command(9x) か cmd(NT) を呼び出す
@@ -250,18 +253,23 @@ bool CEditView::ExecCmd( const TCHAR* pszCmd, int nFlgOpt, const TCHAR* pszCurDi
 		}
 
 		//コマンドライン文字列作成
+		const TCHAR* pszShell = ( IsWin32NT() ? _T("cmd.exe") : _T("command.com") );
+		const TCHAR* pszUnicodeOpt = ( outputEncoding == CODE_UNICODE ? _T("/U") : _T("") );
+		const TCHAR* pszModeOpt = ( bGetStdout ? _T("/C ") : _T("/K ") );
+		cmdline.resize( _tcslen( szCmdDir ) + _tcslen( pszShell ) + _tcslen( pszUnicodeOpt )
+			+ _tcslen( pszModeOpt ) + _tcslen( pszCmd ) + 8 /* 引用符・スペース・区切り分の余裕 */ );
 		auto_sprintf(
-			cmdline,
+			&cmdline[0],
 			_T("\"%ts\\%ts\" %ts%ts%ts"),
 			szCmdDir,
-			( IsWin32NT() ? _T("cmd.exe") : _T("command.com") ),
-			( outputEncoding == CODE_UNICODE ? _T("/U") : _T("") ),		// Unicdeモードでコマンド実行	2008/6/17 Uchi
-			( bGetStdout ? _T("/C ") : _T("/K ") ),
+			pszShell,
+			pszUnicodeOpt,		// Unicdeモードでコマンド実行	2008/6/17 Uchi
+			pszModeOpt,
 			pszCmd
 		);
-		if( CreateProcess( NULL, cmdline, NULL, NULL, TRUE,
+		if( CreateProcess( NULL, &cmdline[0], NULL, NULL, TRUE,
 					CREATE_NEW_CONSOLE, NULL, bCurDir ? pszCurDir : NULL, &sui, &pi ) == FALSE ) {
-			MessageBox( NULL, cmdline, LS(STR_EDITVIEW_EXECCMD_ERR), MB_OK | MB_ICONEXCLAMATION );
+			MessageBox( NULL, &cmdline[0], LS(STR_EDITVIEW_EXECCMD_ERR), MB_OK | MB_ICONEXCLAMATION );
 			goto finish;
 		}
 	}

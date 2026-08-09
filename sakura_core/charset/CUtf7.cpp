@@ -137,6 +137,9 @@ EConvertResult CUtf7::UTF7ToUnicode( const CMemory& cSrc, CNativeW* pDstMem )
 
 	// 必要なバッファサイズを調べて確保
 	wchar_t* pDst;
+	if( nDataLen < 0 || nDataLen > INT_MAX - 1 ){	// nDataLen+1のオーバーフロー対策
+		return RESULT_FAILURE;
+	}
 	try{
 		pDst = new wchar_t[nDataLen + 1];
 		if( pDst == NULL ){
@@ -272,6 +275,12 @@ EConvertResult CUtf7::UnicodeToUTF7( const CNativeW& cSrc, CMemory* pDstMem )
 
 	// 出力先バッファの確保
 	char *pDst;
+	// 巨大な文字列の場合 nSrcLen*5 が32bit intでオーバーフローし、
+	// 確保サイズが本来より小さくなって後段のUniToUtf7()でヒープバッファオーバーフローを
+	// 起こす可能性があるため、乗算前にオーバーフローの有無をチェックする
+	if( nSrcLen < 0 || nSrcLen > (INT_MAX - 1) / 5 ){
+		return RESULT_FAILURE;
+	}
 	try{
 		// 最大で、変換元のデータ長の５倍。
 		pDst = new char[ nSrcLen * 5 + 1 ];  // * → +ACo-
