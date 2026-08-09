@@ -190,7 +190,14 @@ void CDocEditAgent::AddLineStrX( const wchar_t* pData, int nDataLen )
 	CDocLine* pDocLine = m_pcDocLineMgr->AddNewLine();
 
 	//インスタンス設定
+#ifdef NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+	// AddLineStrXの唯一の呼び出し元はCReadManager::ReadFile_To_CDocLineMgrの
+	// ファイル読み込みループ(1行ごとに末尾追加、以降の伸長はない)なので、
+	// AllocBuffer()のべき乗切り上げ分の余白を持たせる必要がない 20260809
+	pDocLine->SetDocLineStringExact(pData, nDataLen);
+#else
 	pDocLine->SetDocLineString(pData, nDataLen);
+#endif // NKMM_
 }
 
 

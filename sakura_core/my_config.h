@@ -1366,6 +1366,29 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
 
+//------------------------------------------------------------------
+// ファイル読み込み時の行バッファを「必要分だけ」確保する(べき乗切り上げなし) 20260809
+//  - CMemory::AllocBuffer()は追記(AppendRawData等)の償却コストを抑えるため
+//    必要サイズを次のべき乗に切り上げて確保する。しかしファイル読み込みは
+//    CReadManager::ReadFile_To_CDocLineMgrが1行ずつ最終サイズ確定済みの
+//    データをCDocEditAgent::AddLineStrX→CDocLine::SetDocLineStringで
+//    一括セットするだけで、その後追記で伸長することはない。にもかかわらず
+//    従来はAllocBuffer()を共用していたため、行ごとに最大で約2倍(平均約1.4倍)
+//    の未使用余白を抱えたまま保持し続けていた(500MB程度のファイルで数百MB
+//    規模の無駄)
+//  - AllocBuffer()自体には手を入れず(編集時の償却成長の挙動を変えないため)、
+//    べき乗切り上げなしで「実データ長+8Byte整列」のみ行う
+//    AllocBufferExact()/SetRawDataExact()を別関数として追加し、
+//    ファイル読み込み経路(AddLineStrX)だけがそちらを使うようにする
+//  - AddLineStrXの呼び出し元はReadFile_To_CDocLineMgrのみ(1行末尾追加専用)
+//    なので、この経路を切り替えても編集時のタイピング性能への影響はない
+//  - sakura_core\mem\CMemory.h,cpp: AllocBufferExact(), SetRawDataExact()
+//  - sakura_core\mem\CNativeW.h,cpp: SetStringExact()
+//  - sakura_core\doc\logic\CDocLine.h,cpp: SetDocLineStringExact()
+//  - sakura_core\doc\CDocEditor.cpp: CDocEditAgent::AddLineStrX()
+//------------------------------------------------------------------
+#define NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+
 //
 //#define USE_SSE2
 

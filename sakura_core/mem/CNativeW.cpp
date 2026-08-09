@@ -60,6 +60,14 @@ void CNativeW::SetStringHoldBuffer( const wchar_t* pData, int nDataLen )
 	CNative::SetRawDataHoldBuffer(pData, nDataLen * sizeof(wchar_t));
 }
 
+#ifdef NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+// バッファの内容を置き換える(必要分だけ確保、読み込み専用) 20260809
+void CNativeW::SetStringExact( const wchar_t* pData, int nDataLen )
+{
+	CNative::SetRawDataExact(pData,nDataLen * sizeof(wchar_t));
+}
+#endif // NKMM_
+
 // バッファの内容を置き換える
 void CNativeW::SetNativeData( const CNativeW& pcNative )
 {

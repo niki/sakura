@@ -72,6 +72,14 @@ void CDocLine::SetDocLineString(const CNativeW& cData)
 	SetDocLineString(cData.GetStringPtr(), cData.GetStringLength());
 }
 
+#ifdef NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+void CDocLine::SetDocLineStringExact(const wchar_t* pData, int nLength)
+{
+	m_cLine.SetStringExact(pData, nLength);
+	SetEol();
+}
+#endif // NKMM_
+
 void CDocLine::SetDocLineStringMove(CNativeW* pcDataFrom)
 {
 	m_cLine.swap(*pcDataFrom);

@@ -57,8 +57,14 @@ public:
 #ifdef NKMM_FIX_SHRINK_LINE_BUFFER
 	void ShrinkToFit();                                    //!< 実データ長に対して過剰なバッファを縮小する(AllocBufferと対になる操作) 20260802
 #endif // NKMM_
+#ifdef NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+	void AllocBufferExact( int );                          //!< バッファサイズの調整(べき乗切り上げなし、読み込み専用) 20260809
+#endif // NKMM_
 	void SetRawData( const void* pData, int nDataLen );    //!< バッファの内容を置き換える
 	void SetRawData( const CMemory& );                     //!< バッファの内容を置き換える
+#ifdef NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+	void SetRawDataExact( const void* pData, int nDataLen ); //!< バッファの内容を置き換える(必要分だけ確保、読み込み専用) 20260809
+#endif // NKMM_
 	void SetRawDataHoldBuffer( const void* pData, int nDataLen );    //!< バッファの内容を置き換える(バッファを保持)
 	void SetRawDataHoldBuffer( const CMemory& );                     //!< バッファの内容を置き換える(バッファを保持)
 	void AppendRawData( const void* pData, int nDataLen ); //!< バッファの最後にデータを追加する

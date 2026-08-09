@@ -89,6 +89,10 @@ public:
 	void SetDocLineString(const wchar_t* pData, int nLength);
 	void SetDocLineString(const CNativeW& cData);
 	void SetDocLineStringMove(CNativeW* pcData);
+#ifdef NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+	//! ファイル読み込み専用: べき乗切り上げなしで必要分だけ確保する 20260809
+	void SetDocLineStringExact(const wchar_t* pData, int nLength);
+#endif // NKMM_
 
 	//チェーン属性
 	CDocLine* GetPrevLine(){ return m_pPrev; }

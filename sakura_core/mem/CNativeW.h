@@ -71,6 +71,9 @@ public:
 	void SetString( const wchar_t* pData, int nDataLen );      //!< バッファの内容を置き換える。nDataLenは文字単位。
 	void SetString( const wchar_t* pszData );                  //!< バッファの内容を置き換える
 	void SetStringHoldBuffer( const wchar_t* pData, int nDataLen );
+#ifdef NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+	void SetStringExact( const wchar_t* pData, int nDataLen ); //!< バッファの内容を置き換える(必要分だけ確保、読み込み専用)。nDataLenは文字単位。 20260809
+#endif // NKMM_
 	void AppendString( const wchar_t* pszData );               //!< バッファの最後にデータを追加する
 	void AppendString( const wchar_t* pszData, int nLength );  //!< バッファの最後にデータを追加する。nLengthは文字単位。成功すればtrue。メモリ確保に失敗したらfalseを返す。
 

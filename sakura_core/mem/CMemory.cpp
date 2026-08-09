@@ -355,6 +355,58 @@ void CMemory::AllocBuffer( int nNewDataLen )
 }
 
 
+#ifdef NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+/*
+|| バッファサイズの調整(読み込み専用: べき乗切り上げなし) 20260809
+|| AllocBuffer()はAppendRawData等の追記で償却コストを抑えるためべき乗切り上げ
+|| するが、ファイル読み込み(SetRawDataExact経由)は最終サイズが呼び出し時点で
+|| 確定済みで、後から追記で伸長する必要がない。そのため伸長用の余白を持たない
+|| 「必要分だけ+8Byte整列」で確保する(AllocBuffer()に手を入れず別関数として
+|| 持つのは、追記系の既存コードを巻き込まないため)。
+*/
+void CMemory::AllocBufferExact( int nNewDataLen )
+{
+	int		nWorkLen;
+	char*	pWork = NULL;
+
+	nWorkLen = ((nNewDataLen + 2) + 7) & (~7); // 8Byteごとに整列(べき乗切り上げなし)
+
+	if( m_nDataBufSize == 0 ){
+		/* 未確保の状態 */
+		pWork = malloc_char( nWorkLen );
+		m_nDataBufSize = nWorkLen;
+	}else{
+		/* 現在のバッファサイズより大きくなった場合のみ再確保する */
+		if( m_nDataBufSize < nWorkLen ){
+			if( m_nRawLen == 0 ){
+				free( m_pRawData );
+				m_pRawData = NULL;
+				pWork = malloc_char( nWorkLen );
+			}else{
+				pWork = (char*)realloc( m_pRawData, nWorkLen );
+			}
+			m_nDataBufSize = nWorkLen;
+		}else{
+			return;
+		}
+	}
+
+	if( NULL == pWork ){
+		::MYMESSAGEBOX(	NULL, MB_OKCANCEL | MB_ICONQUESTION | MB_TOPMOST, GSTR_APPNAME,
+			LS(STR_ERR_DLGMEM1), nNewDataLen
+		);
+		if( NULL != m_pRawData && 0 != nWorkLen ){
+			/* 古いバッファを解放して初期化 */
+			_Empty();
+		}
+		return;
+	}
+	m_pRawData = pWork;
+	return;
+}
+#endif // NKMM_
+
+
 #ifdef NKMM_FIX_SHRINK_LINE_BUFFER
 /*
 || ShrinkToFit専用: 指定データ長に対して確保すべきバッファサイズを求める。
@@ -413,6 +465,17 @@ void CMemory::SetRawData( const void* pData, int nDataLen )
 	_AddData( pData, nDataLen );
 	return;
 }
+
+#ifdef NKMM_FIX_LOAD_EXACT_LINE_BUFFER
+/* バッファの内容を置き換える(必要分だけ確保、読み込み専用) 20260809 */
+void CMemory::SetRawDataExact( const void* pData, int nDataLen )
+{
+	_Empty();
+	AllocBufferExact( nDataLen );
+	_AddData( pData, nDataLen );
+	return;
+}
+#endif // NKMM_
 
 /* バッファの内容を置き換える */
 void CMemory::SetRawData( const CMemory& pcmemData )
