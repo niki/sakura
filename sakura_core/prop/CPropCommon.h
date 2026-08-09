@@ -356,6 +356,8 @@ private:
 	void Reload_List_KeyWord( HWND, HWND );		//!< 選択中のセットをキーワードファイルから再読み込みする(セット単位)
 	void SwitchKeywordSetEditButtons( HWND hwndDlg, bool bCsvLoaded );	//!< CSV読み込み時、「セット追加」「セット削除」を隠し、空いた場所にキーワードファイル名を表示する
 	void UpdateKeywordFileLabel( HWND hwndDlg, int nIdx );	//!< セットに対応するキーワードファイル名の表示を更新する
+	std::wstring MakeKeywordSetDisplayName( int nIdx );	//!< セット名コンボボックスの表示文字列を作る(組み込みキーワードなら"(embed)"を付与。実際のセット名は変更しない) 20260809
+	void RefreshKeywordSetComboLabel( HWND hwndDlg, int nIdx );	//!< セット名コンボボックスの指定項目の表示だけを更新する(選択状態は維持) 20260809
 	//@}
 
 	//! 強調キーワードの色・フォントプレビュー表示

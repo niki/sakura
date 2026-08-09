@@ -499,10 +499,35 @@
 //    (ビジュアルスタイル有効時、ListViewはNM_CUSTOMDRAWのclrTextBkを無視して
 //    テーマの背景を描画してしまう。文字色(clrText)は反映されるため気付きにくい。
 //    PreventVisualStyle()でこのリストビューのテーマを無効化し、背景色を反映させる)
+//  - sakura.keywordset.csvが参照するKeyword\*.kwdが見つからない場合、実装済み
+//    タイプ(cpp.kwd,html5.kwd,plsql.kwd,COBOL.kwd,java.kwd,corba.kwd,awk.kwd,
+//    batch.kwd,pascal.kwd,tex1.kwd,tex2.kwd,perl.kwd,perlvar.kwd,vb.kwd,vb2.kwd,
+//    rtf.kwd)についてはソースに組み込み済みのキーワード配列(g_ppszKeywordsXXX)
+//    で代用し、外部ファイル無しでも強調表示できるようにする 20260809
+//    (外部ファイルが存在する場合は従来通りそちらを優先する)
+//  - 上記フォールバックにCSS(css2.1.kwd),JavaScript(ecmascript_sys.kwd),
+//    JavaScript2(javascript.kwd),PHP(php_reserved.kwd),python(python_2.5.kwd),
+//    Ruby1-4(ruby1〜4.kwd),C#/C# content(csharp.kwd,csharp-context.kwd)も追加
+//    (元々ソース未組み込みだったため、Keyword\配下の該当ファイルから起こして
+//    埋め込んだ)。ただしPHP2(php.kwd)はPHP組み込み関数一覧で1万語超と大きく、
+//    全キーワードセット共有の格納領域(MAX_KEYWORDNUM=15000)を圧迫するため
+//    埋め込み対象外とし、従来通りKeyword\php.kwdが必要 20260809
+//    (ついでにCType_Php.cppのm_nKeyWordSetIdx[0]がPHP/PHP2の両方に使われて
+//    いてPHPが常に上書きされ強調に使われていなかったバグを[0]/[1]に修正)
+//  - sakura.keywordset.csvが存在せず旧来のInitKeyword()に落ちた場合、上記10タイプ
+//    (CSHARP/CSHARP2/CSS/JS/JS2/PHP/PYTHON/RUBY1-4。PHP2除く)はPopulateKeyword2が
+//    決め打ちで組み込み配列を使わず、外部ファイルが無いと強調キーワード0件になって
+//    いた(InitKeywordFromList経由のGetEmbeddedKeywordArr()フォールバックはこの経路を
+//    通らないため)。PopulateKeyword2->PopulateKeywordに変更し、BUILD_OPT_IMPKEYWORD
+//    時はこの経路でも組み込み配列を使うようにした。PHP2のみ組み込み対象外のため
+//    PopulateKeyword2のまま 20260809
 //  - sakura_core\env\DLLSHAREDATA.h: SShare_Flags::m_bKeywordSetLoadedFromCsv
 //  - sakura_core\env\CShareData_IO.cpp: 上記フラグの設定
 //  - sakura_core\CKeyWordSetMgr.h,cpp: ClearKeyWord/SetKeyWordFile/GetKeyWordFile
-//  - sakura_core\types\CType.cpp: InitKeywordFromListでのキーワードファイル名記録
+//  - sakura_core\types\CType.cpp: InitKeywordFromListでのキーワードファイル名記録、
+//    GetEmbeddedKeywordArr()による組み込みキーワードへのフォールバック 20260809
+//  - sakura_core\types\CType_Css.cpp,CType_JavaScript.cpp,CType_Php.cpp,
+//    CType_Python.cpp,CType_Ruby.cpp,CType_Csharp.cpp: 上記の組み込み配列追加
 //  - sakura_core\prop\CPropCommon.h,CPropComKeyword.cpp: ダイアログ側の実装
 //  - sakura_core\sakura_rc.rc,sakura_lang_rc.rc,sakura_rc.h,sakura.hh:
 //    IDC_BUTTON_KEYWORD_RELOAD, IDC_STATIC_KEYWORD_FILE

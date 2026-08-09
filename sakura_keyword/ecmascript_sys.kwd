@@ -1,0 +1,49 @@
+//ECMA Script keywords
+// 2026/08/03 更新: ES2024で追加された明示的リソース管理(Explicit Resource
+//                  Management)の using / await using 宣言を追加。
+//   エビデンス: https://github.com/tc39/proposal-explicit-resource-management
+//              (TC39 Stage 4, ECMAScript仕様に統合済み)
+break
+case
+catch
+class
+const
+continue
+debugger
+default
+delete
+do
+else
+export
+extends
+finally
+for
+function
+if
+import
+in
+instanceof
+new
+return
+super
+switch
+this
+throw
+typeof
+var
+void
+while
+with
+yield
+try
+
+await
+enum
+
+let
+static
+using
+
+null
+true
+false

@@ -1,0 +1,50 @@
+// Python  キーワード定義ファイル
+// 2026/08/03 更新: 旧版はファイル名の通りPython 2.5相当のキーワード(print/execを
+//                  文予約語として含み、Python 3のasync/await/nonlocalが未収録)
+//                  だったため、現行のPython 3系のキーワードに全面更新。
+//                  print/exec はPython 3では通常の関数となり予約語ではなくなったため削除。
+//                  あわせてPython 3.10のmatch/case、3.12のtype文等のソフトキーワードを追加。
+//   エビデンス: https://docs.python.org/3/reference/lexical_analysis.html#keywords
+//              (The Python Language Reference, 2. Lexical analysis, Keywords / Soft Keywords)
+
+// 予約語(Keywords)
+False
+None
+True
+and
+as
+assert
+async
+await
+break
+class
+continue
+def
+del
+elif
+else
+except
+finally
+for
+from
+global
+if
+import
+in
+is
+lambda
+nonlocal
+not
+or
+pass
+raise
+return
+try
+while
+with
+yield
+// ソフトキーワード(Soft Keywords)
+match
+case
+type
+_

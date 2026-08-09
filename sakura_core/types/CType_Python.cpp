@@ -565,3 +565,10 @@ void CDocOutline::MakeFuncList_python( CFuncInfoArr* pcFuncInfoArr )
 }
 
 
+
+#ifdef BUILD_OPT_IMPKEYWORD
+const wchar_t* g_ppszKeywordsPYTHON[] = {
+#include "generated/python_keywords.inc"
+};
+int g_nKeywordsPYTHON = _countof(g_ppszKeywordsPYTHON);
+#endif // BUILD_OPT_IMPKEYWORD

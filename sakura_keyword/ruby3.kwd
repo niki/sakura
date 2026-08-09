@@ -1,0 +1,58 @@
+// Ruby  キーワード定義ファイル２ 組込みクラス／モジュール
+// 2026/08/03 更新: Bignum/Fixnum は Ruby 2.4 で Integer に統合され削除、
+//                  Precision モジュールも削除済みのため除去。
+//                  Array, String, Integer, Float, Complex, Rational, Set, Data,
+//                  Fiber, Ractor, Encoding, Enumerator 等、現行でよく使われる
+//                  組み込みクラス・モジュールを追加。
+//   エビデンス: https://docs.ruby-lang.org/en/master/ (Ruby Core Classes/Modules)
+// クラス
+Array
+Binding
+Class
+Complex
+Data
+Dir
+Encoding
+Enumerator
+Exception
+Fiber
+File
+Stat
+Float
+Hash
+IO
+Integer
+MatchData
+Method
+Module
+Mutex
+NilClass
+Numeric
+Object
+Proc
+Random
+Range
+Ractor
+Rational
+Regexp
+Set
+String
+Struct
+Symbol
+Thread
+ThreadGroup
+Time
+TracePoint
+UnboundMethod
+
+//モジュール
+Comparable
+Enumerable
+FileTest
+GC
+Kernel
+Math
+ObjectSpace
+Process
+Signal
+Warning

@@ -51,3 +51,16 @@ void CType_Csharp::InitTypeConfigImp(STypeConfig* pType)
 }
 
 
+
+
+#ifdef BUILD_OPT_IMPKEYWORD
+const wchar_t* g_ppszKeywordsCSHARP[] = {
+#include "generated/csharp_keywords.inc"
+};
+int g_nKeywordsCSHARP = _countof(g_ppszKeywordsCSHARP);
+
+const wchar_t* g_ppszKeywordsCSHARP2[] = {
+#include "generated/csharp2_keywords.inc"
+};
+int g_nKeywordsCSHARP2 = _countof(g_ppszKeywordsCSHARP2);
+#endif // BUILD_OPT_IMPKEYWORD

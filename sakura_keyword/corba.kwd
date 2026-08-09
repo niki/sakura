@@ -1,0 +1,85 @@
+// CORBA IDL キーワード定義ファイル
+// 2026/08/03 更新: 旧版はOMG IDL 2(基本データ型・インタフェース定義)相当の37語のみ
+//                  だったため、IDL 3 (Objects by Value) および IDL 3.x/4.2 の
+//                  CORBA Component Model (CCM) で追加されたキーワードを補完。
+//   エビデンス: https://www.omg.org/spec/IDL/4.2/PDF (OMG IDL 4.2 仕様, §7.2.4 Keywords)
+//              https://www.omg.org/spec/CORBA/3.1/Components/PDF (CORBA Component Model)
+
+//----------
+// OMG IDL 2 (基本キーワード)
+//----------
+any
+attribute
+boolean
+case
+char
+const
+context
+default
+double
+enum
+exception
+FALSE
+fixed
+float
+in
+inout
+interface
+long
+module
+Object
+octet
+oneway
+out
+raises
+readonly
+sequence
+short
+string
+struct
+switch
+TRUE
+typedef
+union
+unsigned
+void
+wchar
+wstring
+//----------
+// IDL 3 (Objects by Value / import 等)
+//----------
+abstract
+custom
+factory
+import
+local
+native
+private
+public
+truncatable
+typeid
+typeprefix
+ValueBase
+valuetype
+//----------
+// IDL 3.x / 4.2 CORBA Component Model (CCM)
+//----------
+component
+connector
+consumes
+emits
+eventtype
+finder
+getraises
+home
+manages
+mirrorport
+multiple
+port
+porttype
+primarykey
+provides
+publishes
+setraises
+supports
+uses

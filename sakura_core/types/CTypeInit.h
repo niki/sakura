@@ -26,7 +26,9 @@
 #define SAKURA_CTYPEINIT_H_
 
 // 内蔵キーワードを定義するにはこれを定義してください
-// #define BUILD_OPT_IMPKEYWORD 1
+// 20260809 sakura.keywordset.csv対応(NKMM_FIX_KEYWORDSET_UI)の組み込みキーワード
+// フォールバック(CType.cpp::GetEmbeddedKeywordArr)が使うため常時定義する
+#define BUILD_OPT_IMPKEYWORD 1
 
 void RegexAdd(STypeConfig* pType, int& keywordPos, int idx, int colorIdx, const wchar_t* keyword );
 void SetColorInfoBC(STypeConfig* pType, int index, bool bBold, COLORREF color);

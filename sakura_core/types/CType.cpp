@@ -193,6 +193,13 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 	TCHAR szKeywordDir[_MAX_PATH];
 	GetExedir( szKeywordDir, _T("Keyword\\") );
 
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+#define POPULATEKEYWORD1_SET_EMBEDDED_FLAG \
+	cKeyWordSetMgr.SetKeyWordEmbedded( nSetCount, true ); /* 20260809 共通設定ダイアログでの"(embed)"表示用 */
+#else
+#define POPULATEKEYWORD1_SET_EMBEDDED_FLAG
+#endif // NKMM_
+
 #define PopulateKeyword1(name,case_sensitive,aryname, filename) \
 	extern const wchar_t* g_ppszKeywords##aryname[]; \
 	extern int g_nKeywords##aryname; \
@@ -203,6 +210,7 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 		g_nKeywordsIdx_##aryname = ++nSetCount; \
 		cKeyWordSetMgr.AddKeyWordSet( (name), (case_sensitive) );	\
 		cKeyWordSetMgr.SetKeyWordArr( nSetCount, g_nKeywords##aryname, g_ppszKeywords##aryname ); \
+		POPULATEKEYWORD1_SET_EMBEDDED_FLAG \
 	} \
 
 #define PopulateKeyword2(name,case_sensitive, aryname, filename) \
@@ -243,24 +251,118 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData, bool bInit)
 	PopulateKeyword( L"Visual Basic2",	false,	VB2,   L"vb2.kwd" );		//Jul. 10, 2001 JEPRO
 	PopulateKeyword( L"Rich Text",		true,	RTF,   L"rtf.kwd" );		//Jul. 10, 2001 JEPRO
 	// 2013.12.22 Moca 以下ruby4まで追加
-	PopulateKeyword2( L"C#",			true,	CSHARP,  L"csharp.kwd" );
-	PopulateKeyword2( L"C# content",	true,	CSHARP2, L"csharp-context.kwd" );
-	PopulateKeyword2( L"CSS",			true,	CSS,     L"css2.1.kwd" );
-	PopulateKeyword2( L"JavaScript",	true,	JS,      L"ecmascript_sys.kwd" );
-	PopulateKeyword2( L"JavaScript2",	true,	JS2,     L"javascript.kwd" );
-	PopulateKeyword2( L"PHP",			true,	PHP,     L"php_reserved.kwd" );
+	// 20260809 CSHARP/CSHARP2/CSS/JS/JS2/PHP/PYTHON/RUBY1-4は組み込みキーワード配列を
+	// 追加したのでPopulateKeyword2 -> PopulateKeywordに変更(BUILD_OPT_IMPKEYWORD時は
+	// 外部ファイル不要になる)。PHP2(php.kwd)だけは組み込み対象外のためPopulateKeyword2のまま。
+	PopulateKeyword( L"C#",			true,	CSHARP,  L"csharp.kwd" );
+	PopulateKeyword( L"C# content",	true,	CSHARP2, L"csharp-context.kwd" );
+	PopulateKeyword( L"CSS",			true,	CSS,     L"css2.1.kwd" );
+	PopulateKeyword( L"JavaScript",	true,	JS,      L"ecmascript_sys.kwd" );
+	PopulateKeyword( L"JavaScript2",	true,	JS2,     L"javascript.kwd" );
+	PopulateKeyword( L"PHP",			true,	PHP,     L"php_reserved.kwd" );
 	PopulateKeyword2( L"PHP2",			true,	PHP2,    L"php.kwd" );
-	PopulateKeyword2( L"python",		true,	PYTHON,  L"python_2.5.kwd" );
-	PopulateKeyword2( L"Ruby1",			true,	RUBY,    L"ruby1.kwd" );
-	PopulateKeyword2( L"Ruby2",			true,	RUBY2,   L"ruby2.kwd" );
-	PopulateKeyword2( L"Ruby3",			true,	RUBY3,   L"ruby3.kwd" );
-	PopulateKeyword2( L"Ruby4",			true,	RUBY4,   L"ruby4.kwd" );
+	PopulateKeyword( L"python",		true,	PYTHON,  L"python_2.5.kwd" );
+	PopulateKeyword( L"Ruby1",			true,	RUBY,    L"ruby1.kwd" );
+	PopulateKeyword( L"Ruby2",			true,	RUBY2,   L"ruby2.kwd" );
+	PopulateKeyword( L"Ruby3",			true,	RUBY3,   L"ruby3.kwd" );
+	PopulateKeyword( L"Ruby4",			true,	RUBY4,   L"ruby4.kwd" );
 
 #undef PopulateKeyword1
 #undef PopulateKeyword2
 #undef PopulateKeyword
+#undef POPULATEKEYWORD1_SET_EMBEDDED_FLAG
 }
 #if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
+//! sakura.keywordset.csvが参照するキーワードファイル名から、ソースに組み込み済みの
+//! キーワード配列(g_ppszKeywordsXXX)を探す 20260809
+//! (Keywordフォルダに該当ファイルが無い場合のフォールバック用。
+//!  実装済みタイプ分のみ対応。対応表に無いファイル名の場合はfalseを返す)
+bool CShareData::GetEmbeddedKeywordArr(const std::wstring& filename, const wchar_t*** pppszArr, int* pnCount)
+{
+#define DECLARE_EMBEDDED_KEYWORD(aryname) \
+	extern const wchar_t* g_ppszKeywords##aryname[]; \
+	extern int g_nKeywords##aryname;
+
+	DECLARE_EMBEDDED_KEYWORD(CPP)
+	DECLARE_EMBEDDED_KEYWORD(HTML)
+	DECLARE_EMBEDDED_KEYWORD(PLSQL)
+	DECLARE_EMBEDDED_KEYWORD(COBOL)
+	DECLARE_EMBEDDED_KEYWORD(JAVA)
+	DECLARE_EMBEDDED_KEYWORD(CORBA_IDL)
+	DECLARE_EMBEDDED_KEYWORD(AWK)
+	DECLARE_EMBEDDED_KEYWORD(BAT)
+	DECLARE_EMBEDDED_KEYWORD(PASCAL)
+	DECLARE_EMBEDDED_KEYWORD(TEX)
+	DECLARE_EMBEDDED_KEYWORD(TEX2)
+	DECLARE_EMBEDDED_KEYWORD(PERL)
+	DECLARE_EMBEDDED_KEYWORD(PERL2)
+	DECLARE_EMBEDDED_KEYWORD(VB)
+	DECLARE_EMBEDDED_KEYWORD(VB2)
+	DECLARE_EMBEDDED_KEYWORD(RTF)
+	DECLARE_EMBEDDED_KEYWORD(CSS)
+	DECLARE_EMBEDDED_KEYWORD(JS)
+	DECLARE_EMBEDDED_KEYWORD(JS2)
+	DECLARE_EMBEDDED_KEYWORD(PHP)
+	DECLARE_EMBEDDED_KEYWORD(PYTHON)
+	DECLARE_EMBEDDED_KEYWORD(RUBY)
+	DECLARE_EMBEDDED_KEYWORD(RUBY2)
+	DECLARE_EMBEDDED_KEYWORD(RUBY3)
+	DECLARE_EMBEDDED_KEYWORD(RUBY4)
+	DECLARE_EMBEDDED_KEYWORD(CSHARP)
+	DECLARE_EMBEDDED_KEYWORD(CSHARP2)
+	// PHP2(php.kwd)はPHP組み込み関数一覧で1万語超のため埋め込み対象外。
+	// 外部ファイルが無い場合は従来通りKeyword\php.kwdが必要 20260809
+#undef DECLARE_EMBEDDED_KEYWORD
+
+	struct SEmbeddedKeyword {
+		const wchar_t*	pszFileName;
+		const wchar_t**	ppszArr;
+		int				nCount;
+	};
+#define EMBEDDED_KEYWORD_ENTRY(aryname, filename) \
+	{ (filename), g_ppszKeywords##aryname, g_nKeywords##aryname },
+
+	const SEmbeddedKeyword arr[] = {
+		EMBEDDED_KEYWORD_ENTRY(CPP,       L"cpp.kwd")
+		EMBEDDED_KEYWORD_ENTRY(HTML,      L"html5.kwd")
+		EMBEDDED_KEYWORD_ENTRY(PLSQL,     L"plsql.kwd")
+		EMBEDDED_KEYWORD_ENTRY(COBOL,     L"COBOL.kwd")
+		EMBEDDED_KEYWORD_ENTRY(JAVA,      L"java.kwd")
+		EMBEDDED_KEYWORD_ENTRY(CORBA_IDL, L"corba.kwd")
+		EMBEDDED_KEYWORD_ENTRY(AWK,       L"awk.kwd")
+		EMBEDDED_KEYWORD_ENTRY(BAT,       L"batch.kwd")
+		EMBEDDED_KEYWORD_ENTRY(PASCAL,    L"pascal.kwd")
+		EMBEDDED_KEYWORD_ENTRY(TEX,       L"tex1.kwd")
+		EMBEDDED_KEYWORD_ENTRY(TEX2,      L"tex2.kwd")
+		EMBEDDED_KEYWORD_ENTRY(PERL,      L"perl.kwd")
+		EMBEDDED_KEYWORD_ENTRY(PERL2,     L"perlvar.kwd")
+		EMBEDDED_KEYWORD_ENTRY(VB,        L"vb.kwd")
+		EMBEDDED_KEYWORD_ENTRY(VB2,       L"vb2.kwd")
+		EMBEDDED_KEYWORD_ENTRY(RTF,       L"rtf.kwd")
+		EMBEDDED_KEYWORD_ENTRY(CSS,       L"css2.1.kwd")
+		EMBEDDED_KEYWORD_ENTRY(JS,        L"ecmascript_sys.kwd")
+		EMBEDDED_KEYWORD_ENTRY(JS2,       L"javascript.kwd")
+		EMBEDDED_KEYWORD_ENTRY(PHP,       L"php_reserved.kwd")
+		EMBEDDED_KEYWORD_ENTRY(PYTHON,    L"python_2.5.kwd")
+		EMBEDDED_KEYWORD_ENTRY(RUBY,      L"ruby1.kwd")
+		EMBEDDED_KEYWORD_ENTRY(RUBY2,     L"ruby2.kwd")
+		EMBEDDED_KEYWORD_ENTRY(RUBY3,     L"ruby3.kwd")
+		EMBEDDED_KEYWORD_ENTRY(RUBY4,     L"ruby4.kwd")
+		EMBEDDED_KEYWORD_ENTRY(CSHARP,    L"csharp.kwd")
+		EMBEDDED_KEYWORD_ENTRY(CSHARP2,   L"csharp-context.kwd")
+	};
+#undef EMBEDDED_KEYWORD_ENTRY
+
+	for (const auto& e : arr) {
+		if (0 == _wcsicmp(e.pszFileName, filename.c_str())) {
+			*pppszArr = e.ppszArr;
+			*pnCount = e.nCount;
+			return true;
+		}
+	}
+	return false;
+}
+
 void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstring &fname)
 {
 	/* 強調キーワードのテストデータ */
@@ -280,7 +382,19 @@ void CShareData::InitKeywordFromList(DLLSHAREDATA* pShareData, const std::tstrin
 		cKeyWordSetMgr.SetKeyWordFile(nSetCount, filename.c_str());	// 20260802 セット単位の再読み込み用にファイル名を記録
 		CImpExpKeyWord impKeyword(pShareData->m_Common, nSetCount, case_sensitive);
 		std::wstring TmpMsg;
-		impKeyword.Import(std::tstring(szKeywordDir) + filename, TmpMsg);
+		if (!impKeyword.Import(std::tstring(szKeywordDir) + filename, TmpMsg)) {
+			// 20260809 Keywordフォルダに外部ファイルが無い場合、実装済みタイプなら
+			// ソースに組み込み済みのキーワードで代用する(外部ファイル無しでも強調表示できるように)
+			const wchar_t** ppszArr;
+			int nCount;
+			if (GetEmbeddedKeywordArr(filename, &ppszArr, &nCount)) {
+				cKeyWordSetMgr.SetKeyWordArr(nSetCount, nCount, ppszArr);
+				cKeyWordSetMgr.SetKeyWordEmbedded(nSetCount, true);	// 20260809
+			}
+		}
+		else {
+			cKeyWordSetMgr.SetKeyWordEmbedded(nSetCount, false);	// 20260809
+		}
 	};
 
 	cKeyWordSetMgr.ResetAllKeyWordSet();  // 再設定するため

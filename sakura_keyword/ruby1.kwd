@@ -1,0 +1,46 @@
+// Ruby  キーワード定義ファイル 予約語
+// 2026/08/03 更新: __FILE__, __LINE__, __ENCODING__, __END__ (Ruby 1.9以降の予約語)を追加。
+//   エビデンス: https://docs.ruby-lang.org/en/master/syntax/keywords_rdoc.html (Ruby Keywords)
+BEGIN
+END
+__ENCODING__
+__END__
+__FILE__
+__LINE__
+alias
+and
+begin
+break
+case
+class
+def
+defined?
+do
+else
+elsif
+end
+ensure
+false
+for
+if
+in
+module
+next
+nil
+not
+or
+redo
+rescue
+retry
+return
+self
+super
+then
+true
+undef
+unless
+until
+when
+while
+yield
+

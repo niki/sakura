@@ -130,6 +130,11 @@ public:
 	void SetKeyWordFile( int, const wchar_t* );	//!< ｎ番目のセットに対応するキーワードファイル名を設定する
 	const wchar_t* GetKeyWordFile( int ) const;	//!< ｎ番目のセットに対応するキーワードファイル名を取得する(未設定なら空文字列)
 	//@}
+	///	@name 組み込みキーワードで代用しているかどうか(共通設定ダイアログでの表示用) 20260809
+	//@{
+	void SetKeyWordEmbedded( int, bool );			//!< ｎ番目のセットの現在の内容が組み込みキーワードかどうかを設定する
+	bool GetKeyWordEmbedded( int ) const;			//!< ｎ番目のセットの現在の内容が組み込みキーワードかどうかを取得する
+	//@}
 #endif // NKMM_
 
 	/*
@@ -152,6 +157,7 @@ public:
 	int		m_nKeyWordNumArr[MAX_SETNUM];	/*!< キーワードセットに登録されているキーワード数 */
 #if defined(NKMM_FIX_KEYWORDSET_UI)
 	wchar_t	m_szKeyWordFileArr[MAX_SETNUM][MAX_PATH];	/*!< セットに対応するキーワードファイル名(sakura.keywordset.csv由来、INI未保存、セット単位の再読み込み用) 20260802 */
+	bool	m_bKeyWordEmbeddedArr[MAX_SETNUM];			/*!< セットの現在の内容が組み込みキーワードによるものか(INI未保存、共通設定ダイアログでの表示用) 20260809 */
 #endif // NKMM_
 private:
 	/*! キーワード格納領域 */

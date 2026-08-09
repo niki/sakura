@@ -1,0 +1,49 @@
+// Ruby キーワード定義ファイル 組込み変数／定数
+// 2026/08/03 修正: 改行コードが一部LFではなく単独のCRで区切られており、
+//                  $FILENAME以降 ARGV までの複数のキーワードが1行として扱われ
+//                  正しく登録されていなかった不具合を修正(改行コードをCRLFに統一)。
+//                  あわせて RUBY_ENGINE 等、現行のRubyでよく使われる定数を追加。
+//   エビデンス: https://docs.ruby-lang.org/en/master/globals_rdoc.html (Pre-defined global variables)
+
+$_
+$1
+$2
+$3
+$4
+$5
+$6
+$7
+$8
+$9
+$$
+$FILENAME
+$defout
+$stdin
+$stdout
+$stderr
+TRUE
+FALSE
+STDIN
+STDOUT
+STDERR
+ARGV
+ARGF
+ENV
+RUBY_VERSION
+RUBY_PLATFORM
+$PROGRAM_NAME
+$LOAD_PATH
+$LOADED_FEATURES
+RUBY_ENGINE
+RUBY_ENGINE_VERSION
+RUBY_DESCRIPTION
+RUBY_PATCHLEVEL
+RUBY_RELEASE_DATE
+
+// 擬似変数
+self
+nil
+true
+false
+__FILE__
+__LINE__

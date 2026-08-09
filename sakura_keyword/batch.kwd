@@ -1,0 +1,351 @@
+// MS-DOS バッチファイル キーワード定義ファイル
+// '00/11/05	初版
+// --------------------------------------------------
+//
+//
+// --------------------------------------------------
+// 英大文字小文字を区別しない
+// --------------------------------------------------
+// 設定の名前                 [MS-DOSバッチファイル]
+// ファイル拡張子             [BAT]
+// その他のインデント対象文字 [    ]            # なし
+// スマートインデント         [なし]
+// アウトライン解析方法       [    ]            # 該当せず
+// 折り返し
+//   ○ 桁数で折り返す                          # チェックなし
+// --------------------------------------------------
+// ブロックコメント           [  ]～[  ]        # なし
+// ラインコメント1            [REM ]            #  REM の後にスペースを１個(4文字)
+// ラインコメント2           [::]              # コロン２つ
+// エスケープ                 [    ]            # 関係無い
+// --------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
+// 記号の意味（あくまで目安であり、正確ではないので注意。）
+// (95)：Windows95（または旧dos）における制限（NTには無関係）
+// (NT)：WindowsNT にだけ実装
+
+// とりどめ
+// ・内部コマンド ＝ ビルトインコマンド
+// ・外部コマンド ＝ エクステンジェントコマンド
+// と書いてありますけど、気にしないでね。(^^;
+
+// ******************** 環境変数 ******************** //
+// コマンドサーチパス
+PATH
+// 実行コマンドの拡張子(NT)
+PATHEXT
+// プロンプト
+PROMPT
+// 作業ディレクトリ
+TEMP
+// 作業ディレクトリ。旧DOSソフトウェアが使うことがある。
+TMP
+// タイムゾーン。旧DOSソフトウェア、UNIX系ソフトウェアが使うことがある。
+TZ
+// CONFIG.SYS メニューで選択した名
+CONFIG
+// コマンドライン文字列(95)
+CMDLINE
+// コマンドライン文字列(NT)
+CMDCMDLINE
+// DOS の SHELL
+COMSPEC
+// DIRコマンドのデフォルトオプション
+DIRCMD
+// COPYコマンドのデフォルトオプション(95)
+COPYCMD
+// Windows 関連
+winbootdir
+windir
+// PowerShell / .NET 関連(現行環境でよく使われる)
+NUMBER_OF_PROCESSORS
+PROCESSOR_ARCHITECTURE
+USERPROFILE
+APPDATA
+LOCALAPPDATA
+PROGRAMFILES
+PROGRAMFILES(X86)
+PROGRAMDATA
+SYSTEMROOT
+SYSTEMDRIVE
+HOMEDRIVE
+HOMEPATH
+PUBLIC
+ALLUSERSPROFILE
+
+// (NT)
+// FAT
+
+
+// ******************** 内部コマンドかバッチコマンド ******************** //
+// ++++++++++ ディスク・ファイル ++++++++++ //
+DIR
+RENAME
+REN
+ERASE
+DEL
+TYPE
+COPY
+CHDIR
+CD
+MKDIR
+MD
+RMDIR
+RD
+VOL
+// ↓(95)
+TRUENAME
+LOCK
+UNLOCK
+// ↓(NT)
+PUSHD
+POPD
+MOVE
+// ↓ move は Win95 ではビルトインコマンドとしては存在しないので(NT)にしてます。
+// （エクステンジェントコマンドとしては存在します。）
+
+// ++++++++++ システム ++++++++++ //
+DATE
+TIME
+VER
+
+
+// ++++++++++ 実行 ++++++++++ //
+CALL
+EXIT
+// ↓(95)
+LOADHIGH
+LH
+// ↓(NT)
+START
+MIN
+MAX
+// ↓W
+WAIT
+SHARED
+SEPARATE
+LOW
+NORMAL
+HIGH
+REALTIME
+
+// ++++++++++ 設 ++++++++++ //
+BREAK
+VERIFY
+SET
+PROMPT
+PATH
+// ↓(NT)
+SETLOCAL
+ENDLOCAL
+DISABLEEXTENSIONS
+ENABLEEXTENSIONS
+// DPATH：APPEND（エクステンジェントコマンド）と同等のビルトインコマンド(NT)
+DPATH
+
+
+// ++++++++++ コンソール入出力等 ++++++++++ //
+CLS
+ECHO
+PAUSE
+// ↓(95)
+CHCP
+CTTY
+// ↓(NT)
+COLOR
+TITLE
+KEYS
+
+
+// ++++++++++ 主にバッチ用 ++++++++++ //
+SHIFT
+REM
+
+// - - - goto - - - //
+GOTO
+// ↓(NT)
+EOF
+
+// - - - if - - - //
+IF
+// ==
+NOT
+ERRORLEVEL
+EXIST
+// ↓(NT)
+DEFINED
+CMDEXTVERSION
+GEQ
+GTR
+LEQ
+LSS
+NEQ
+EQU
+// ELSE
+
+// - - - for - - - //
+FOR
+IN
+DO
+// ↓(95)
+LFNFOR
+// ↓(NT)
+tokens
+skip
+delims
+eol
+
+// ++++++++++ 関連付け ++++++++++ //
+// ↓(NT)
+ASSOC
+FTYPE
+
+
+// ++++++++++ 主コマンドのパラメータ等 ++++++++++ //
+ON
+OFF
+
+// ++++++++++ @ 付き（比較的使用頻度が少ないもののみ） ++++++++++ //
+@ECHO
+@PAUSE
+@TYPE
+
+
+// ******************** システムデバイスドライバ ******************** //
+NUL
+CON
+AUX
+COM1
+COM2
+COM3
+COM4
+PRN
+LPT1
+LPT2
+LPT3
+CLOCK
+CLOCK$
+CONFIG$
+
+// ******************** 外部コマンド(現行Windows 10/11でよく使われるもの) ******************** //
+// 2026/08/03 追加
+//   エビデンス: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/windows-commands
+//              (Microsoft Learn「コマンド プロンプトのコマンド」A-Z一覧)
+//              https://ss64.com/nt/ (A-Z Index of Windows CMD commands)
+XCOPY
+ROBOCOPY
+WHERE
+TIMEOUT
+FINDSTR
+FIND
+SORT
+MORE
+ATTRIB
+ICACLS
+CACLS
+TAKEOWN
+TASKLIST
+TASKKILL
+SETX
+CHOICE
+CERTUTIL
+FSUTIL
+SC
+NET
+REG
+SCHTASKS
+CLIP
+FC
+TREE
+LABEL
+FORMAT
+CHKDSK
+DISKPART
+IPCONFIG
+PING
+TRACERT
+NSLOOKUP
+SYSTEMINFO
+WHOAMI
+HOSTNAME
+SHUTDOWN
+WEVTUTIL
+MSG
+RUNAS
+GPUPDATE
+GPRESULT
+POWERSHELL
+WMIC
+MKLINK
+COMPACT
+CIPHER
+BCDEDIT
+NETSH
+
+//// KI-Shell予約コマンド（ KI-Shell 常駐時に拡張される内部コマンド）
+//// KI-Shell -> http://www.htosh.com/
+//// KI-Shell 導入＾H＾H専用の方は、行頭の行頭(//)を削除してからインポート
+//// お使いください。
+//history
+//multist
+//alias
+//unalias
+//pushd
+//popd
+//dirs
+//cdd
+//alarm
+//invoke
+//reset
+//timer
+//lapse
+//tstop
+//gstop
+//gstart
+//palette
+//color
+//beep
+//click
+//crtrest
+//retract
+//hprompt
+//err
+//ksh
+//kshlfn
+//
+//ON
+//OFF
+//CLR
+//ALL
+//REL
+
+////////////////////////////////////////////////////////////////////////////////
+//	これでいいです。
+//
+//	'99/11/26	新規作成
+//
+//	'00/08/20
+//		・$ が入力可能になったので、初期化の中止を削除した。
+//		・KI-Shell の予約コマンドを追加した。
+//		　ただし、KI-Shell を使っていない人の方が多いだろうから注釈にしてある。
+//		　利用したい人は、このファイルを編集して注釈を外してインポートして
+//		　ください。
+//
+//	'00/10/14
+//		・FOR コマンドの IN と DO を忘れていたので追加。(;^^;)
+//		　なんとかしくてください。
+//
+//	'00/11/05
+//		・Windows NT 4.0 のビルトインコマンド環境変数を追加し、全体的に整理した。
+//		　# なんだかなあ、余計にゴチャゴチャになったという説は君と僕だけの秘密。
+//		・@ が候補表示の中に含まれるようになる(らしい)ので、@echo とか echo とかが
+//		　なくなる(らしい)。そのため、一部のコマンドについては @ 付きの方も登録した。
+//
+//	'26/08/03
+//		・PATHEXT/CMDLINE 等の環境変数に加え、現行 Windows でよく使う環境変数
+//		　(USERPROFILE, APPDATA, PROGRAMFILES 等)を追加。
+//		・XCOPY, ROBOCOPY, WHERE, TIMEOUT, FINDSTR, TASKLIST/TASKKILL, REG, NETSH 等
+//		　現行 Windows 10/11 で頻用される外部コマンドの節を新設。
+//
+// ende.

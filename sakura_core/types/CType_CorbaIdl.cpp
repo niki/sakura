@@ -30,43 +30,7 @@ int g_nKeywordsIdx_CORBA_IDL = -1;
 
 #ifdef BUILD_OPT_IMPKEYWORD
 const wchar_t* g_ppszKeywordsCORBA_IDL[] = {
-	L"any",
-	L"attribute",
-	L"boolean",
-	L"case",
-	L"char",
-	L"const",
-	L"context",
-	L"default",
-	L"double",
-	L"enum",
-	L"exception",
-	L"FALSE",
-	L"fixed",
-	L"float",
-	L"in",
-	L"inout",
-	L"interface",
-	L"long",
-	L"module",
-	L"Object",
-	L"octet",
-	L"oneway",
-	L"out",
-	L"raises",
-	L"readonly",
-	L"sequence",
-	L"short",
-	L"string",
-	L"struct",
-	L"switch",
-	L"TRUE",
-	L"typedef",
-	L"unsigned",
-	L"union",
-	L"void",
-	L"wchar_t",
-	L"wstring"
+#include "generated/corba_idl_keywords.inc"
 };
 int g_nKeywordsCORBA_IDL = _countof(g_ppszKeywordsCORBA_IDL);
 #endif

@@ -1,0 +1,57 @@
+// C#コンテキスト  キーワード定義ファイル
+// 2026/08/03 更新: C# 8～13で追加された文脈依存キーワード(nullable参照型のnotnull、
+//                  関数ポインタのmanaged/unmanaged、レコードのrecord/init/with、
+//                  パターンマッチのand/or/not、C# 9のnint/nuint、
+//                  C# 11のfile/required/scoped、C# 13以降のallows/field/extension/
+//                  closed/safe 等)を追加。
+//   エビデンス: https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/
+//              (C# Keywords and contextual keywords - C# reference, Microsoft Learn)
+
+add
+alias
+allows
+and
+ascending
+args
+async
+await
+by
+closed
+descending
+dynamic
+equals
+extension
+field
+file
+from
+get
+global
+group
+init
+into
+join
+let
+managed
+nameof
+nint
+not
+notnull
+nuint
+on
+or
+orderby
+partial
+record
+remove
+required
+safe
+scoped
+select
+set
+unmanaged
+value
+var
+when
+where
+with
+yield

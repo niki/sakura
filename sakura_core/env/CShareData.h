@@ -120,6 +120,11 @@ public:
 	void InitKeyword(DLLSHAREDATA*, bool);
 #if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 	void InitKeywordFromList(DLLSHAREDATA*, const std::tstring&);
+	//! sakura.keywordset.csvが参照するキーワードファイル名から、ソースに組み込み済みの
+	//! キーワード配列(g_ppszKeywordsXXX)を探す 20260809
+	//! (Keywordフォルダに該当ファイルが無い場合のフォールバック用。共通設定「強調キーワード」
+	//!  タブの「更新」ボタンからも使う 20260809)
+	static bool GetEmbeddedKeywordArr(const std::wstring& filename, const wchar_t*** pppszArr, int* pnCount);
 #endif // NKMM_
 
 #ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE

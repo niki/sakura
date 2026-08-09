@@ -44,7 +44,7 @@ void CType_Php::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_nStringType = STRING_LITERAL_CPP;
 	pType->m_bStringLineOnly = true;
 	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_PHP;
-	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_PHP2;
+	pType->m_nKeyWordSetIdx[1] = g_nKeywordsIdx_PHP2;
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;
 	pType->m_ColorInfoArr[COLORIDX_SSTRING].m_bDisp = true;
 	pType->m_ColorInfoArr[COLORIDX_WSTRING].m_bDisp = true;
@@ -63,3 +63,10 @@ void CType_Php::InitTypeConfigImp(STypeConfig* pType)
 
 
 
+
+#ifdef BUILD_OPT_IMPKEYWORD
+const wchar_t* g_ppszKeywordsPHP[] = {
+#include "generated/php_keywords.inc"
+};
+int g_nKeywordsPHP = _countof(g_ppszKeywordsPHP);
+#endif // BUILD_OPT_IMPKEYWORD

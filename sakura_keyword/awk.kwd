@@ -1,0 +1,162 @@
+// AWK( GNU Awk (gawk) ) キーワード定義ファイル
+// 拡張子 .AWK
+// 大文字小文字を区別する
+// 2026/08/03 更新: 旧版は jgawk 2.15.2 (1990年代) ベースだったため、現行の GNU gawk
+//                  (namespace, BEGINFILE/ENDFILE, switch, ビット演算関数, 型判定関数,
+//                  gawk専用の特殊変数など) に合わせて追加。
+//   エビデンス: https://www.gnu.org/software/gawk/manual/gawk.html (The GNU Awk User's Guide)
+//              https://www.gnu.org/software/gawk/manual/html_node/BEGINFILE_002fENDFILE.html
+//              https://www.gnu.org/software/gawk/manual/html_node/Type-Functions.html
+//              https://www.gnu.org/software/gawk/manual/html_node/Namespace-Example.html
+
+// ***** 制御文 *****
+BEGIN
+BEGINFILE
+END
+ENDFILE
+next
+nextfile
+exit
+
+func
+function
+return
+
+if
+else
+for
+in
+do
+while
+break
+continue
+switch
+case
+default
+
+// ***** システム変数 *****
+// なお、$ は識別子の一部として扱われないため別項目にしている
+$0
+$1
+$2
+$3
+$4
+$5
+$6
+$7
+$8
+$9
+$10
+$11
+$12
+$13
+$14
+$15
+$16
+$17
+$18
+$19
+
+FS
+OFS
+NF
+RS
+ORS
+NR
+FNR
+
+ARGV
+ARGC
+ARGIND
+FILENAME
+
+ENVIRON
+ERRNO
+
+OFMT
+CONVFMT
+FIELDWIDTHS
+FPAT
+IGNORECASE
+RLENGTH
+RSTART
+SUBSEP
+
+// ***** gawk固有の特殊変数 *****
+PROCINFO
+TEXTDOMAIN
+BINMODE
+LINT
+FUNCTAB
+SYMTAB
+PREC
+ROUNDMODE
+
+// ***** 名前空間 *****
+@include
+@load
+@namespace
+awk
+
+// ***** 拡張関数 *****
+
+// 変数
+delete
+
+//文字列操作
+index
+jindex
+length
+jlength
+substr
+jsubstr
+match
+split
+patsplit
+sub
+gsub
+gensub
+sprintf
+tolower
+toupper
+strtonum
+
+// 入出力
+print
+printf
+getline
+system
+close
+fflush
+
+// 型判定
+typeof
+isarray
+
+// ビット演算
+and
+or
+xor
+compl
+lshift
+rshift
+
+// 算術演算
+sin
+cos
+atan2
+exp
+log
+int
+sqrt
+srand
+rand
+
+// 配列
+asort
+asorti
+
+// 時刻
+strftime
+systime
+mktime

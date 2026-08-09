@@ -104,3 +104,26 @@ void CType_Ruby::InitTypeConfigImp(STypeConfig* pType)
 
 
 
+
+
+#ifdef BUILD_OPT_IMPKEYWORD
+const wchar_t* g_ppszKeywordsRUBY[] = {
+#include "generated/ruby_keywords.inc"
+};
+int g_nKeywordsRUBY = _countof(g_ppszKeywordsRUBY);
+
+const wchar_t* g_ppszKeywordsRUBY2[] = {
+#include "generated/ruby2_keywords.inc"
+};
+int g_nKeywordsRUBY2 = _countof(g_ppszKeywordsRUBY2);
+
+const wchar_t* g_ppszKeywordsRUBY3[] = {
+#include "generated/ruby3_keywords.inc"
+};
+int g_nKeywordsRUBY3 = _countof(g_ppszKeywordsRUBY3);
+
+const wchar_t* g_ppszKeywordsRUBY4[] = {
+#include "generated/ruby4_keywords.inc"
+};
+int g_nKeywordsRUBY4 = _countof(g_ppszKeywordsRUBY4);
+#endif // BUILD_OPT_IMPKEYWORD

@@ -105,6 +105,7 @@ const CKeyWordSetMgr& CKeyWordSetMgr::operator=( CKeyWordSetMgr& cKeyWordSetMgr 
 	memcpy_raw( m_nKeyWordMaxLenArr, cKeyWordSetMgr.m_nKeyWordMaxLenArr, sizeof( m_nKeyWordMaxLenArr ) ); //2014.05.04 Moca
 #if defined(NKMM_FIX_KEYWORDSET_UI)
 	memcpy_raw( m_szKeyWordFileArr, cKeyWordSetMgr.m_szKeyWordFileArr, sizeof( m_szKeyWordFileArr ) ); // 20260802
+	memcpy_raw( m_bKeyWordEmbeddedArr, cKeyWordSetMgr.m_bKeyWordEmbeddedArr, sizeof( m_bKeyWordEmbeddedArr ) ); // 20260809
 #endif // NKMM_
 	return *this;
 }
@@ -141,6 +142,7 @@ bool CKeyWordSetMgr::AddKeyWordSet(
 	m_IsSorted[nIdx] = 0;	//MIK 2000.12.01 binary search
 #if defined(NKMM_FIX_KEYWORDSET_UI)
 	m_szKeyWordFileArr[nIdx][0] = L'\0';	// 20260802 csv経由でない限り再読み込み対象外
+	m_bKeyWordEmbeddedArr[nIdx] = false;	// 20260809
 #endif // NKMM_
 	return true;
 }
@@ -167,6 +169,7 @@ bool CKeyWordSetMgr::DelKeyWordSet( int nIdx )
 		m_nKeyWordMaxLenArr[i] = m_nKeyWordMaxLenArr[i+1];	// 2014.05.04 Moca
 #if defined(NKMM_FIX_KEYWORDSET_UI)
 		memcpy_raw( m_szKeyWordFileArr[i], m_szKeyWordFileArr[i + 1], sizeof( m_szKeyWordFileArr[0] ) );	// 20260802
+		m_bKeyWordEmbeddedArr[i] = m_bKeyWordEmbeddedArr[i + 1];	// 20260809
 #endif // NKMM_
 	}
 	m_nStartIdx[m_nKeyWordSetNum - 1] = m_nStartIdx[m_nKeyWordSetNum];	// 2007.07.14 ryoji これが無いと末尾＝最終セットの先頭になってしまう
@@ -754,6 +757,24 @@ const wchar_t* CKeyWordSetMgr::GetKeyWordFile( int nIdx ) const
 		return L"";
 	}
 	return m_szKeyWordFileArr[nIdx];
+}
+
+//! ｎ番目のセットの現在の内容が組み込みキーワードかどうかを設定する 20260809
+void CKeyWordSetMgr::SetKeyWordEmbedded( int nIdx, bool bEmbedded )
+{
+	if( nIdx < 0 || m_nKeyWordSetNum <= nIdx ){
+		return;
+	}
+	m_bKeyWordEmbeddedArr[nIdx] = bEmbedded;
+}
+
+//! ｎ番目のセットの現在の内容が組み込みキーワードかどうかを取得する 20260809
+bool CKeyWordSetMgr::GetKeyWordEmbedded( int nIdx ) const
+{
+	if( nIdx < 0 || m_nKeyWordSetNum <= nIdx ){
+		return false;
+	}
+	return m_bKeyWordEmbeddedArr[nIdx];
 }
 #endif // NKMM_
 

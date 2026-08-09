@@ -65,3 +65,15 @@ void CType_JavaScript::InitTypeConfigImp(STypeConfig* pType)
 
 
 
+
+#ifdef BUILD_OPT_IMPKEYWORD
+const wchar_t* g_ppszKeywordsJS[] = {
+#include "generated/js_keywords.inc"
+};
+int g_nKeywordsJS = _countof(g_ppszKeywordsJS);
+
+const wchar_t* g_ppszKeywordsJS2[] = {
+#include "generated/js2_keywords.inc"
+};
+int g_nKeywordsJS2 = _countof(g_ppszKeywordsJS2);
+#endif // BUILD_OPT_IMPKEYWORD

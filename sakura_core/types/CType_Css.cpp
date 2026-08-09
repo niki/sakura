@@ -49,4 +49,9 @@ void CType_Css::InitTypeConfigImp(STypeConfig* pType)
 }
 
 
-
+#ifdef BUILD_OPT_IMPKEYWORD
+const wchar_t* g_ppszKeywordsCSS[] = {
+#include "generated/css_keywords.inc"
+};
+int g_nKeywordsCSS = _countof(g_ppszKeywordsCSS);
+#endif // BUILD_OPT_IMPKEYWORD

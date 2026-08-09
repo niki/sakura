@@ -731,6 +731,32 @@ void CPropKeyword::UpdateKeywordFileLabel( HWND hwndDlg, int nIdx )
 	::SetWindowText( ::GetDlgItem( hwndDlg, IDC_STATIC_KEYWORD_FILE ), pszFile );
 }
 
+//! セット名コンボボックスの表示文字列を作る(組み込みキーワードなら"(embed)"を付与) 20260809
+//! (あくまで表示上の飾りであり、実際のセット名(GetTypeName)自体は変更しない。
+//!  リネームダイアログの初期値や削除確認ダイアログの表示には従来通りGetTypeName()を使うこと)
+std::wstring CPropKeyword::MakeKeywordSetDisplayName( int nIdx )
+{
+	CKeyWordSetMgr& cKeyWordSetMgr = m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
+	std::wstring sName = cKeyWordSetMgr.GetTypeName( nIdx );
+	if( cKeyWordSetMgr.GetKeyWordEmbedded( nIdx ) ){
+		sName += L" (embed)";
+	}
+	return sName;
+}
+
+//! セット名コンボボックスの指定項目の表示だけを更新する(選択状態は維持) 20260809
+void CPropKeyword::RefreshKeywordSetComboLabel( HWND hwndDlg, int nIdx )
+{
+	if( nIdx < 0 ){
+		return;
+	}
+	HWND hwndCombo = ::GetDlgItem( hwndDlg, IDC_COMBO_SET );
+	int nSel = Combo_GetCurSel( hwndCombo );
+	Combo_DeleteString( hwndCombo, nIdx );
+	Combo_InsertString( hwndCombo, nIdx, MakeKeywordSetDisplayName( nIdx ).c_str() );
+	Combo_SetCurSel( hwndCombo, nSel );
+}
+
 //! 選択中のセットをキーワードファイルから再読み込みする(セット単位) 20260802
 //! (sakura.keywordset.csvで指定されたファイルの内容を反映し直す。セット自体やそれ以外のセットには影響しない)
 void CPropKeyword::Reload_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
@@ -756,8 +782,24 @@ void CPropKeyword::Reload_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
 	CImpExpKeyWord cImpExpKeyWord( m_Common, nIdx, bCase );
 	std::wstring sErrMsg;
 	if( !cImpExpKeyWord.Import( sPath, sErrMsg ) ){
-		::MessageBox( hwndDlg, sErrMsg.c_str(), GSTR_APPNAME, MB_OK | MB_ICONEXCLAMATION );
+		// 20260809 ファイルの読み込みに失敗した場合、組み込みキーワードがあれば
+		// それを既定として使うかどうかユーザーに確認する
+		const wchar_t** ppszArr = NULL;
+		int nCount = 0;
+		if( CShareData::GetEmbeddedKeywordArr( pszFile, &ppszArr, &nCount )
+			&& IDYES == ::MessageBox( hwndDlg, LS(STR_PROPCOMKEYWORD_RELOAD_DEFAULT), GSTR_APPNAME, MB_YESNO | MB_ICONQUESTION ) )
+		{
+			cKeyWordSetMgr.SetKeyWordArr( nIdx, nCount, ppszArr );
+			cKeyWordSetMgr.SetKeyWordEmbedded( nIdx, true );
+		}
+		else{
+			::MessageBox( hwndDlg, sErrMsg.c_str(), GSTR_APPNAME, MB_OK | MB_ICONEXCLAMATION );
+		}
 	}
+	else{
+		cKeyWordSetMgr.SetKeyWordEmbedded( nIdx, false );
+	}
+	RefreshKeywordSetComboLabel( hwndDlg, nIdx );
 
 	/* ダイアログデータの設定 Keyword 指定キーワードセットの設定 */
 	SetKeyWordSet( hwndDlg, nIdx );
@@ -887,7 +929,11 @@ void CPropKeyword::SetData( HWND hwndDlg )
 	Combo_ResetContent( hwndWork );  /* コンボボックスを空にする */
 	if( 0 < m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nKeyWordSetNum ){
 		for( i = 0; i < m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nKeyWordSetNum; ++i ){
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+			Combo_AddString( hwndWork, MakeKeywordSetDisplayName( i ).c_str() );	// 20260809 組み込みキーワードなら"(embed)"を付与(表示のみ)
+#else
 			Combo_AddString( hwndWork, m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetTypeName( i ) );
+#endif // NKMM_
 		}
 		/* セット名コンボボックスのデフォルト選択 */
 		Combo_SetCurSel( hwndWork, m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx );
