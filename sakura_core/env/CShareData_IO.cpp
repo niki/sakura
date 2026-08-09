@@ -99,6 +99,11 @@ static bool GetTokenBool(std::istringstream &stream, char delim)
 void ShareData_IO_Sub_LogFont( CDataProfile& cProfile, const WCHAR* pszSecName,
 	const WCHAR* pszKeyLf, const WCHAR* pszKeyPointSize, const WCHAR* pszKeyFaceName, LOGFONT& lf, INT& nPointSize );
 
+#if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
+// 履歴(MRU)を旧形式(sakura.iniのキー1件ごと)で入出力する。ファイル履歴は常にこの形式で保存する 20260810
+static void ShareData_IO_Mru_Legacy( CDataProfile& cProfile );
+#endif // NKMM_
+
 template <typename T>
 void SetValueLimit(T& target, int minval, int maxval)
 {
@@ -223,6 +228,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	// 読み込みはここでini本体をもう一度開き直してブロック形式(#XXX〜#end)を試み、
 	// 見つからなければ各関数内で旧形式(MRU[00].xxxなど)にフォールバックする。
 	// 書き込みはWriteProfile()でini本体を書き終えた後にブロック形式のみ追記する(下記参照)
+	// ファイル履歴(Mru)は書き込み時にブロック形式を使わず、常に通常のini kv形式で保存する。
+	// 読み込みは旧環境がブロック形式で保存済みの場合に備えて両対応のままとする 20260810
 	if (bRead) {
 		CDataProfile cProfileHistory;
 		cProfileHistory.SetReadingMode();
@@ -234,6 +241,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		ShareData_IO_Keys(cProfile, cProfileHistory);
 		ShareData_IO_Grep(cProfile, cProfileHistory);
 		ShareData_IO_Cmd(cProfile, cProfileHistory);
+	}
+	else {
+		ShareData_IO_Mru_Legacy( cProfile );
 	}
 	// ==== 20260728 ここまで(書き込み側はWriteProfile()の直後を参照) ====
 	ShareData_IO_Folders( cProfile );
@@ -321,7 +331,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			cProfile.WriteProfile( szIniFileName, LTEXT(" sakura.ini テキストエディタ設定ファイル") );
 
 #if defined(NKMM_FIX_PROFILES) && !NKMM_SEPARATE_HISTORY && NKMM_HISTORY_BLOCK_IN_INI
-			// 履歴(Mru/Keys/Grep/Cmd)をini本体の末尾にブロック形式で追記する。
+			// 履歴(Keys/Grep/Cmd)をini本体の末尾にブロック形式で追記する。
+			// ファイル履歴(Mru)は通常のini kv形式で保存するため、WriteProfile()より前(ShareData_IO_Mru_Legacy)で処理済み 20260810
 			// WriteProfile()はini全体を作り直すため、必ずこの後で追記する必要がある 20260728
 			do {
 				std::ofstream ofs(si::util::to_bytes(szIniFileName).c_str(), std::ios::out | std::ios::app);
@@ -331,7 +342,6 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 				cProfileHistory.SetWritingMode();
 				cProfileHistory.tag_ = &ofs;
 
-				ShareData_IO_Mru(cProfile, cProfileHistory);
 				ShareData_IO_Keys(cProfile, cProfileHistory);
 				ShareData_IO_Grep(cProfile, cProfileHistory);
 				ShareData_IO_Cmd(cProfile, cProfileHistory);
