@@ -791,6 +791,48 @@
 //    ため、共有バッファを渡すと次のキー入力で解放/書き換えされうる)。
 //  - sakura_core\CSearchAgent.h,cpp / view\CEditView.h,cpp / cmd\CViewCommander.h,
 //    CViewCommander_Search.cpp / view\CEditView_Command_New.cpp
+//  - 20260810 既知の制約(修正保留・要検討): 新旧2.3.2.0の検索速度をマクロ
+//    (WSH/JScript、bench_search.js)で比較しようとしたところ、5,174,307行/
+//    500MBファイルでEditor.SearchNext()呼び出し直後にEditor.GetSelectLineFrom()
+//    を読んでも常に0(未検出)が返ることが判明。原因: 上記の非同期化は
+//    F_SEARCH_NEXT自体(F3キー・マクロ問わず同じCommand_SEARCH_NEXT経路)に
+//    掛かっているため、マクロから呼んでも対象がAsyncFindNext::Requestに
+//    回されてすぐreturnする。マクロのJScript実行はUIスレッド上で完全に
+//    同期的に進み、文の合間でメッセージポンプが回らない
+//    (CWSH.cpp内のPeekMessage/DispatchMessageは「マクロ強制終了確認
+//    ダイアログ」監視用の別スレッドにしかなく、通常のマクロ実行では出番が
+//    ない)ため、バックグラウンドスレッド完了時に飛ぶ
+//    WM_APP_ASYNC_SEARCH_DONEがマクロ実行中には一切ディスパッチされず、
+//    選択範囲(カーソル移動)への反映がマクロから見えない。
+//    影響: 20万行(NKMM_ASYNC_SEARCH_NEXT_LINE_THRESHOLD)を超える文書に対して
+//    SearchNext()を呼び、直後に選択位置/ヒット文字列を読むマクロは、この
+//    フォークでは検索結果を取得できなくなる(手元のF3操作は非同期完了後に
+//    正しく反映されるため無症状)。対応する場合はWM_APP_ASYNC_SEARCH_DONE
+//    受信までブロックする同期版マクロAPI(例: Editor.WaitForSearchNext()相当)
+//    の追加を要検討。
+//  - 20260810 上記調査中、真の検索完了時間(バックグラウンドスレッド内の
+//    SearchWord()実測)を計測するため、AsyncFindNextThreadProc内に
+//    QueryPerformanceCounterで計測しD:\github.niki\sakura\
+//    bench_async_core_times.csvへ書き出す一時的な計測コードを追加して測定した
+//    (測定後に削除済み)。初回の結果: 公式2.3.2.0(x86)がマクロ計測(同期)で
+//    230ms、フォーク(x64/x86)が実測ネット検索時間で約110〜165ms、「検索
+//    アルゴリズム自体が1.5〜2倍速くなった」と結論しかけたが、
+//    NKMM_USE_MIMALLOC/NKMM_USE_MIMALLOC_OVERRIDEを一時的に無効化して
+//    同条件で再測定したところ約256ms(x64, n=10)まで悪化し、公式ビルドと
+//    同等かむしろ遅い水準に戻った。結論を訂正: CSearchAgent::SearchWord()の
+//    走査ループ自体(SearchString/CDocLine::GetDocLineStrWithEOL/GetNextLine)
+//    は検索中に一切ヒープ確保しておらず(スキップテーブルはRequest()側で
+//    スレッド起動前に1回だけ構築済み)、フォークと公式とで検索コード自体は
+//    実質同一。したがって観測された速度差の大部分は「非同期化」でも
+//    「アルゴリズム改善」でもなく、5,174,307行分のCDocLine/文字列バッファを
+//    読み込み時にどのアロケータ(mimalloc vs 既定のCRTヒープ)が確保したかに
+//    よるメモリレイアウト(キャッシュ局所性)の差だった可能性が高い。
+//    非同期化そのものの効果は「呼び出し元(UI/マクロ)を即座に解放する」
+//    ことに限られ、走査自体の速さにはほぼ寄与していない。なお公式2.3.2.0を
+//    同一ファイルで2回計測(230ms→235ms)しOSファイルキャッシュのウォーム
+//    アップでは説明できないことは確認済み(Editor.GoFileTop()以降だけを
+//    計測しており、その時点でファイルは既にドキュメント構造へ読み込み
+//    完了済みのため、計測区間はディスクI/Oを経由しない)。
 //------------------------------------------------------------------
 #define NKMM_FIX_ASYNC_SEARCH_NEXT
 	#define WM_APP_ASYNC_SEARCH_DONE (WM_APP + 2503)  // 非同期検索完了メッセージ
