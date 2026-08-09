@@ -3215,6 +3215,28 @@ void CShareData_IO::ShareData_IO_KeyWords( CDataProfile& cProfile )
 	CKeyWordSetMgr*	pCKeyWordSetMgr = &pShare->m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
 	int				nKeyWordSetNum = pCKeyWordSetMgr->m_nKeyWordSetNum;
 
+#if defined(NKMM_FIX_KEYWORDSET_UI)
+	// 20260809 全セットが組み込みキーワードのままなら[KeyWords]セクション自体を書かない。
+	// 書いてしまうと、次回起動時からcsvが無い限りこのiniの内容が優先され続けてしまい
+	// (優先順位はchangelog/NKMM_FIX_KEYWORDSET_UI.md参照)、ソース更新後の組み込み
+	// キーワードが反映されなくなる。1つでもユーザーがカスタマイズした(組み込みでない)
+	// セットがあれば、位置(インデックス)整合性を保つため従来通り全セットを書く。
+	// (ShareData_IO_2の書き込み時、cProfileはReadProfile()せず空から組み立てて
+	//  WriteProfile()でiniを丸ごと書き直すため、ここで書かなければ古い内容が
+	//  残ることもなく[KeyWords]セクションごと消える)
+	if( !cProfile.IsReadingMode() ){
+		bool bAllEmbedded = ( 0 < nKeyWordSetNum );
+		for( i = 0; bAllEmbedded && i < nKeyWordSetNum; ++i ){
+			if( !pCKeyWordSetMgr->GetKeyWordEmbedded( i ) ){
+				bAllEmbedded = false;
+			}
+		}
+		if( bAllEmbedded ){
+			return;
+		}
+	}
+#endif // NKMM_
+
 	cProfile.IOProfileData( pszSecName, LTEXT("nCurrentKeyWordSetIdx")	, pCKeyWordSetMgr->m_nCurrentKeyWordSetIdx );
 	bool bIOSuccess = cProfile.IOProfileData( pszSecName, LTEXT("nKeyWordSetNum"), nKeyWordSetNum );
 	if( cProfile.IsReadingMode() ){

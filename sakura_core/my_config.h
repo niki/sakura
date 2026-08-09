@@ -531,6 +531,13 @@
 //  - 組み込みキーワード配列の中身はsakura_keyword\*.kwdから
 //    tools\GenerateKeywordInc.ps1でsakura_core\types\generated\*.incへ生成する
 //    (generated\*.incはgit管理外のため、フレッシュcloneでは初回ビルド前に実行が必要)
+//  - sakura.keywordset.csvが無い状態で、全キーワードセットが組み込みキーワードの
+//    ままだった場合、sakura.ini保存時に[KeyWords]セクション自体を書かないように
+//    した(sakura_core\env\CShareData_IO.cpp: ShareData_IO_KeyWords())。書いてしまうと
+//    次回起動時からcsvが無い限りそのini内容が優先され続け、ソース更新後の組み込み
+//    キーワードが反映されなくなるため。1つでもユーザーがカスタマイズした(組み込み
+//    でない)セットがあれば、位置(インデックス)整合性を保つため従来通り全セットを
+//    書く(部分的にスキップすると、他タイプのm_nKeyWordSetIdxとの対応がずれるため) 20260809
 //  - 詳細はchangelog/NKMM_FIX_KEYWORDSET_UI.md参照
 //  - sakura_core\prop\CPropCommon.h,CPropComKeyword.cpp: ダイアログ側の実装
 //  - sakura_core\sakura_rc.rc,sakura_lang_rc.rc,sakura_rc.h,sakura.hh:
