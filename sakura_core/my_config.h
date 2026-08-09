@@ -70,7 +70,7 @@
 	#define PR_VER      2,3,2,0
 	#define PR_VER_STR "2.3.2.0"
 	#define PR_VER_VAL	2320
-	#define PR_LV		260808
+	#define PR_LV		260809
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -259,6 +259,54 @@
 //  - 水平スクロールバーのSetScrollInfoスキップ判定がテキスト幅の縮小を見て
 //    おらず更新漏れが起きる不具合を修正。実機確認済み。詳細はchangelog/
 //    NKMM_FIX_EDITVIEW_SCRBAR_HWIDTH_SKIP.md参照 20260806
+//  - SB_Marker_BuildThread(バックグラウンドの検索ヒット行スキャン)とCEditView::
+//    ChangeCurRegexp()の競合クラッシュを修正 20260809
+//    - SB_Marker_BuildThreadはIsFoundLine()経由でCEditView::m_sSearchPattern
+//      (Sunday-Quickスキップ配列を保持)をバックグラウンドスレッドから読む。
+//      検索文字列入力のたびにChangeCurRegexp()がUIスレッドでm_sSearchPattern.
+//      SetPattern()を呼び、内部でReset()して配列を解放してから再構築するため、
+//      この2つが競合するとNULL/解放済みポインタを読んでクラッシュする。
+//      500万行ファイルへのインクリメンタル検索(NKMM_FIX_FIND_DIALOGのデバウンス
+//      化で連続検索が速くなったことで発生頻度が上がった)で実機クラッシュを確認・
+//      WinDbgのダンプ解析で原因特定済み(CSearchAgent::SearchStringでの
+//      アクセス違反、スタックはSB_Marker_BuildThread→IsFoundLine→
+//      IsSearchString→SearchString)。ChangeCurRegexp()がm_sSearchPatternを
+//      書き換える直前にSBMarker_->WaitForBuild(true)で実行中のビルドスレッドを
+//      中断・待機するよう修正(ReplaceAll前のCSuppressSrchKeyMarkForReplaceAll
+//      と同じ考え方)。
+//    - sakura_core\view\CEditView_Command.cpp (ChangeCurRegexp)
+//  - WM_APP_SCRBAR_PAINTハンドラのブロッキング待ちを解消 20260809
+//    - 上記の競合修正でビルドスレッドの再始動頻度が上がったことで、ビルド中に
+//      スクロールすると、スクロールが発生させる描画要求のたびに
+//      SBMarker_->WaitForBuild(false)(ビルド完了までブロック)に引っかかり、
+//      スクロールバー(実質画面全体)の更新が止まって見える不具合が顕在化した。
+//      実機確認済み。ビルド中はこの描画要求を待たずに諦めるよう変更。ビルド完了時に
+//      スレッド自身がSB_Marker_DrawRequest()で再描画を要求してくるので、それに
+//      任せれば十分(そもそもブロックして待つ必要がない設計だった)。
+//    - sakura_core\view\CEditView.cpp (WM_APP_SCRBAR_PAINTハンドラ)
+//  - 通常編集とSB_Marker_BuildThreadの競合防止・ビルドの並列化 20260809
+//    - CSuppressSrchKeyMarkForReplaceAllはReplaceAll専用のガードで、通常の
+//      タイプ入力・貼り付け・削除中にSB_Marker_BuildThreadが巨大ファイルを
+//      走査していた場合の競合(CDocLineMgrへの読み取り中の書き換え)は未対策
+//      だった。編集の唯一の合流点CEditView::ReplaceData_CEditView3の先頭で
+//      SBMarker_->WaitForBuild(true)を呼び、編集前に確実に待避させるよう修正。
+//    - 「折り返しなし」かつ正規表現でない場合に限り、SB_Marker_BuildThreadの
+//      走査ループをOpenMPで並列化(SB_Marker_DrawThreadと同じ手法)。折り返し
+//      ありはLogicToLayout()の共有ヒントキャッシュ、正規表現はCEditView::
+//      m_CurRegexpという単一の共有エンジンインスタンスがあり、どちらも複数
+//      スレッドから同時に触ると競合するため対象外(既存の逐次パスにフォール
+//      バック)。500万行ファイルでのスクロールバーマーク再構築(検索文字列
+//      入力のたびに再始動する)を高速化する目的。
+//    - sakura_core\view\CEditView_Command_New.cpp (ReplaceData_CEditView3),
+//      sakura_core\view\CEditView.cpp (SB_Marker_BuildThread)
+//  - SB_Marker_DrawThreadで同じY座標への重複描画をスキップ 20260809
+//    - スクロールバーの高さはせいぜい数百〜千数百pxしかないのに対し、ヒット数が
+//      数万〜数十万件(500万行ファイルでよくある文字列を検索した場合等)になると、
+//      大半のヒットが直前と同じピクセル行へ描画することになり、GDIのFillRect
+//      呼び出しが無駄に大量発生して描画が極端に遅くなっていた。実機確認済み。
+//      行番号順に処理しているためY座標はほぼ単調増加であり、直前と同じYなら
+//      描画をスキップするよう変更(見た目の結果は同じで、無駄な描画回数だけ減る)。
+//    - sakura_core\view\CEditView.cpp (SB_Marker_DrawThread)
 //------------------------------------------------------------------
 #define NKMM_FIX_EDITVIEW_SCRBAR
 	#define WM_APP_SCRBAR_PAINT    (WM_APP + 2501)  // スクロールバー描画メッセージ
@@ -662,8 +710,57 @@
 //    - インクリメンタル検索をする 20170621
 //    - 「検索ダイアログを自動的に閉じる」を排除 20170711
 //    - 「見つからないときにメッセージを表示」を排除 20170711
+//  - インクリメンタル検索をデバウンス化 20260809
+//    - 検索文字列コンボボックスの変更(CBN_EDITCHANGE)のたびに、UIスレッド上で
+//      同期的にF_SEARCH_NEXT(文書全体の線形スキャン)を実行していたため、
+//      数百万行規模のファイルではキー入力のたびにエディタ全体がフリーズして
+//      いた。1文字打つごとに検索文字列自体が変わるため、既存のスクロール
+//      バーマーカーキャッシュ(検索結果の行キャッシュ)は効かない
+//      (パターンが変わるたびに無効化されるため)。実際の検索実行を
+//      150msデバウンスし、連続入力中は走らせず、入力が止まってから
+//      一度だけ実行するように変更。実機確認済み(500万行ファイルで再現)
+//    - 20260809 このデバウンス用タイマーIDに1を使ったところ、同じCDlgFind
+//      ウィンドウで既に使われていたID_TIMER_FIND_SLIDEIN(スライドイン
+//      アニメーション用、これも1)と衝突していた。SetTimer()は同じHWND+
+//      同じIDだと新規タイマー作成ではなく既存タイマーの間隔を上書きする
+//      ため、ダイアログ表示中に入力するとスライドインアニメーションが
+//      デバウンスタイマーに乗っ取られ、アニメーションが完了しないまま
+//      ダイアログの位置が少しずれて止まる不具合になっていた(実機確認済み:
+//      「入力すると検索ダイアログが少し下にずれる」)。デバウンス用IDを
+//      2に変更して衝突を解消。
+//  - sakura_core\dlg\CDlgFind.cpp, CDlgFind.h
 //------------------------------------------------------------------
 #define NKMM_FIX_FIND_DIALOG
+
+//------------------------------------------------------------------
+// 次を検索(F3・検索ダイアログのインクリメンタル検索)の非同期化 20260809
+//  - デバウンス(NKMM_FIX_FIND_DIALOG側)だけでは、入力が止まるたびに走る
+//    「文書全体を線形走査して見つからないと判定する」1回分(数百万行規模の
+//    ファイルで実測150〜200ms)がUIスレッドをブロックし続けていた。実機で
+//    500万行ファイルにて確認済み。
+//  - CSearchAgent::SearchWord()の走査ループに中断フラグを追加し(同期呼び出しは
+//    nullptrを渡せば従来通り)、Command_SEARCH_NEXT()の「検索開始位置の調整
+//    (選択中テキストがある場合の特殊処理)」を伴わない単純なケース
+//    (選択なし・pcSelectLogic==NULL・すべて置換実行中でない・正規表現でない・
+//    文書が一定行数を超える)に限り、CEditView::AsyncFindNextでバックグラウンド
+//    スレッドに検索を回し、結果が出たらWM_APP_ASYNC_SEARCH_DONEで戻して
+//    カーソル移動などのUI反映を行う。上記以外(選択中の検索開始・すべて置換・
+//    正規表現・小さいファイル)は既存の同期パスをそのまま使う(挙動変更なし)。
+//  - 文書変更(タイプ入力/貼り付け/削除/Undo/Redo/すべて置換)との競合防止のため、
+//    唯一に近い合流点であるCEditView::ReplaceData_CEditView3の先頭で、実行中の
+//    検索スレッドを中断・待機してから編集を進める(ScrBarMarkerのWaitForBuild
+//    (true)と同じ考え方)。検索スレッドが参照する検索パターン文字列・オプションは
+//    共有メンバを直接参照せず、リクエスト時に独立コピーを作って渡す
+//    (CSearchStringPattern::SetPattern()はポインタを保持するだけでコピーしない
+//    ため、共有バッファを渡すと次のキー入力で解放/書き換えされうる)。
+//  - sakura_core\CSearchAgent.h,cpp / view\CEditView.h,cpp / cmd\CViewCommander.h,
+//    CViewCommander_Search.cpp / view\CEditView_Command_New.cpp
+//------------------------------------------------------------------
+#define NKMM_FIX_ASYNC_SEARCH_NEXT
+	#define WM_APP_ASYNC_SEARCH_DONE (WM_APP + 2503)  // 非同期検索完了メッセージ
+	// この行数を超える文書でのみ、対象範囲の検索を非同期化する(小さいファイルは
+	// スレッド起動のオーバーヘッド/結果反映の1フレーム遅延を避けるため従来通り同期)
+	#define NKMM_ASYNC_SEARCH_NEXT_LINE_THRESHOLD (200000)
 
 //------------------------------------------------------------------
 // アウトライン解析
@@ -994,6 +1091,47 @@
 //  - sakura_core\view\CGlyphAtlasCache.h,cpp
 //  - 20260802: セル幅・高さ不一致によるBitBlt塗り残しバグ修正/転送の2フェーズ化
 //    /ASCII文字まとめ焼き(WarmUpAscii)/設定ON/OFF反映漏れバグ修正、を追加
+//  - 20260809: 描画待ちキュー(m_vPendingBlits)がシングルトン全体で共有されて
+//    おり、複数の独立した描画パス(通常のOnPaint、対括弧強調表示の即時描画)が
+//    互いのキューを誤って一緒にFlushしてしまいうる設計上の不具合を修正
+//    - 通常のOnPaint中に対括弧の即時描画(DrawBracketPair、自前のGetDCで
+//      FlushQueueする)が挟まると、片方のFlushQueue()がもう片方の積み残しごと
+//      BitBltしてしまい、色付き矩形/線が誤った位置に描画される可能性があった。
+//      FlushQueue()にキュー位置の「印」(BeginQueue()で取得)を渡すよう変更し、
+//      各描画パスは自分がBeginQueue()した位置から末尾までしか処理・削除しない
+//      ようにした(パスが入れ子になっても互いのキューを侵さない)。
+//      これ自体は正しい修正だが、後述の「タブ切り替えで線が出る」不具合の
+//      直接の原因ではなかった(下記参照。修正後も再現した)。
+//    - sakura_core\view\CGlyphAtlasCache.h,cpp (BeginQueue追加、FlushQueueに
+//      markBegin引数追加), CEditView_Paint.cpp, CEditView_Paint_Bracket.cpp
+//      (呼び出し側でBeginQueue()を捕捉してFlushQueue()に渡すよう変更)
+//  - 「行の間隔」使用時にタブ切り替えで線状の描画異常が出る不具合を修正 20260809
+//    - タイプ別設定「行の間隔」(GetLineMargin())が非0のとき、テキスト領域に
+//      細い横線状の描画異常(色付きの矩形)が出ることがあった。タブ切り替え
+//      (フォーカス変更)だけで再現し、行の間隔=0なら再現しなかった。実機で
+//      再現・修正確認済み。
+//    - 根本原因: CTextDrawer::DispText()で、クリップ矩形rcClipの上端は
+//      マージンを含まない`y`だが、グリフキャッシュへ渡す描画先Y
+//      (旧nDrawY = GetLineMargin() + y + marginy)はマージン込みだった。
+//      一方セルの高さ(nCellHeightPx = GetHankakuDy() = 文字縦幅+行間隔)は
+//      マージン込みのまま。そのため、キャッシュ経由のBitBltは本来の行の
+//      上端(マージン部分)を塗り残したまま、次の行のマージン部分にまで
+//      はみ出して描画していた(非キャッシュのExtTextOutパスはrcClip全体を
+//      ETO_OPAQUEで塗るため問題が起きない)。
+//      調査時、「セルの余白がETO_OPAQUEで塗られていない」「AllocCell()の
+//      シェルフ再利用で高さが不一致」等の仮説も検証したが、いずれも実測で
+//      否定された(セル高さ・シェルフ割り当て・行間隔はすべて一致していた)。
+//      実際の原因は「セルの中身」ではなく「BitBlt先の基準点とセル内での
+//      グリフ描画位置がズレていたこと」だった。
+//    - DrawOrCache()/WarmUpAscii()に新しい引数nGlyphYOffsetを追加。呼び出し側
+//      (CTextDrawer.cpp)はnDestYとして必ずrcClip.top(マージン抜き)を渡し、
+//      マージン分のずらしはnGlyphYOffset(=旧nDrawY - rcClip.top)として
+//      別に渡す。セルの不透明フィル(ETO_OPAQUE)はセル全体(rcCellDest)に
+//      対して行い、実際のグリフ描画位置だけをnGlyphYOffset分ずらすことで、
+//      非キャッシュパスと同じ見た目(マージン部分は背景色、グリフはマージン
+//      分下にずれた位置)を再現する。
+//    - sakura_core\view\CGlyphAtlasCache.h,cpp (DrawOrCache/WarmUpAsciiに
+//      nGlyphYOffset引数追加), CTextDrawer.cpp (呼び出し側)
 //  - ベンチマーク・修正履歴の詳細はchangelog/NKMM_FIX_GLYPH_ATLAS_CACHE.md,
 //    NKMM_FIX_GLYPH_ATLAS_CACHE_REPORT.md, NKMM_FIX_GLYPH_ATLAS_CACHE_IMPL.md参照
 //------------------------------------------------------------------

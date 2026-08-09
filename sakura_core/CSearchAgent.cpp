@@ -472,7 +472,10 @@ int CSearchAgent::SearchWord(
 	CLogicPoint				ptSerachBegin,	//!< 検索開始位置
 	ESearchDirection		eDirection,		//!< 検索方向
 	CLogicRange*			pMatchRange,	//!< [out] マッチ範囲。ロジック単位。
-	const CSearchStringPattern&	pattern		//!< 検索パターン
+	const CSearchStringPattern&	pattern	//!< 検索パターン
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+	, const volatile bool*	pAbortFlag		//!< 非nullかつtrueで走査を打ち切る(20260809)
+#endif // NKMM_
 )
 {
 	CDocLine*	pDocLine;
@@ -505,6 +508,9 @@ int CSearchAgent::SearchWord(
 			nHitTo = ptSerachBegin.x;				// 検索開始位置
 			nIdxPos = 0;
 			while( NULL != pDocLine ){
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+				if( pAbortFlag && *pAbortFlag ){ nRetVal = 0; goto end_of_func; }
+#endif // NKMM_
 				pLine = pDocLine->GetDocLineStrWithEOL( &nLineLen );
 				nHitPos		= -1;	// -1:この行でマッチ位置なし
 				for (;;) {
@@ -555,8 +561,11 @@ int CSearchAgent::SearchWord(
 			//
 			nIdxPos = ptSerachBegin.x;
 			while( NULL != pDocLine ){
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+				if( pAbortFlag && *pAbortFlag ){ nRetVal = 0; goto end_of_func; }
+#endif // NKMM_
 				pLine = pDocLine->GetDocLineStrWithEOL( &nLineLen );
-				if(		nIdxPos <= pDocLine->GetLengthWithoutEOL() 
+				if(		nIdxPos <= pDocLine->GetLengthWithoutEOL()
 					&&	pRegexp->Match( pLine, nLineLen, nIdxPos ) ){
 					// マッチした
 					pMatchRange->SetFromX( pRegexp->GetIndex()     );	// マッチ位置from
@@ -606,6 +615,9 @@ int CSearchAgent::SearchWord(
 			CLogicInt nWork;
 			nNextWordFrom = ptSerachBegin.GetX2();
 			while( NULL != pDocLine ){
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+				if( pAbortFlag && *pAbortFlag ){ nRetVal = 0; goto end_of_func; }
+#endif // NKMM_
 				if( PrevOrNextWord( nLinePos, nNextWordFrom, &nWork, TRUE, FALSE ) ){
 					nNextWordFrom = nWork;
 					if( WhereCurrentWord( nLinePos, nNextWordFrom, &nNextWordFrom2, &nNextWordTo2 , NULL, NULL ) ){
@@ -646,6 +658,9 @@ int CSearchAgent::SearchWord(
 			pDocLine = m_pcDocLineMgr->GetLine( nLinePos );
 			CLogicInt	nNextWordFrom = ptSerachBegin.GetX2();
 			while( NULL != pDocLine ){
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+				if( pAbortFlag && *pAbortFlag ){ nRetVal = 0; goto end_of_func; }
+#endif // NKMM_
 				pLine = pDocLine->GetDocLineStrWithEOL( &nLineLen );
 				int nMatchLen;
 				pszRes = SearchStringWord(pLine, nLineLen, nNextWordFrom, searchWords, sSearchOption.bLoHiCase, &nMatchLen);
@@ -678,6 +693,9 @@ int CSearchAgent::SearchWord(
 			nIdxPos = 0;
 			pDocLine = m_pcDocLineMgr->GetLine( nLinePos );
 			while( NULL != pDocLine ){
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+				if( pAbortFlag && *pAbortFlag ){ nRetVal = 0; goto end_of_func; }
+#endif // NKMM_
 				pLine = pDocLine->GetDocLineStrWithEOL( &nLineLen );
 				nHitPos = -1;
 				for (;;) {
@@ -733,6 +751,9 @@ int CSearchAgent::SearchWord(
 			nLinePos = ptSerachBegin.GetY2();
 			pDocLine = m_pcDocLineMgr->GetLine( nLinePos );
 			while( NULL != pDocLine ){
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+				if( pAbortFlag && *pAbortFlag ){ nRetVal = 0; goto end_of_func; }
+#endif // NKMM_
 				pLine = pDocLine->GetDocLineStrWithEOL( &nLineLen );
 				pszRes = SearchString(
 					pLine,

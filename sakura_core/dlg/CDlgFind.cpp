@@ -99,6 +99,23 @@ CDlgFind::~CDlgFind() {
 #endif // NKMM_
 
 #ifdef NKMM_FIX_FIND_DIALOG
+namespace {
+	// 20260809 インクリメンタル検索のデバウンス用。
+	// 検索文字列コンボボックスの変更のたびに文書全体を同期スキャンする
+	// InstantInput()を即座に呼ぶと、数百万行規模のファイルではキー入力の
+	// たびにフリーズする(検索パターン自体が毎回変わるため、スクロール
+	// バーマーカー側のキャッシュも効かない)。連続入力中はこの時間だけ
+	// 実行を遅らせ、入力が止まってから一度だけ実行する。
+	// 20260809 このウィンドウでは既にID_TIMER_FIND_SLIDEIN(=1、下のスライドイン
+	// アニメーション用タイマー)が使われている。SetTimer()は同じHWND+同じIDだと
+	// 新規作成ではなく既存タイマーの間隔を上書きしてしまうため、うっかり同じ値
+	// (1)を使うと、入力中にスライドインタイマーがデバウンスタイマーに乗っ取られ、
+	// アニメーションが完了しないままダイアログの位置がずれて止まってしまう
+	// 不具合になる(実機確認済み)。必ず別の値にすること。
+	const UINT_PTR IDT_FIND_LIVE_SEARCH_DEBOUNCE = 2;
+	const UINT FIND_LIVE_SEARCH_DEBOUNCE_MS = 150;
+}
+
 /** 標準以外のメッセージを捕捉する
 	@date 2008.05.28 ryoji 新規作成
 */
@@ -210,17 +227,26 @@ INT_PTR CDlgFind::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lPa
 
 				pcEditView->GetSelectionInfo().DisableSelectArea(false);  // 選択解除
 
-				pcEditView->SBMarker_->WaitForDraw(true);
-				pcEditView->SBMarker_->WaitForBuild(true);
-				
-				int ret = InstantInput();
-				
-				if (ret < 0) {
-					SetStatus(ret);
-				}
-				
-				pcEditView->SB_Marker_Clear(1700);
+				// 実際の検索(文書全体の同期スキャン)は連続入力が止まってから
+				// 1回だけ行う。詳細はIDT_FIND_LIVE_SEARCH_DEBOUNCEの説明を参照。
+				::SetTimer(GetHwnd(), IDT_FIND_LIVE_SEARCH_DEBOUNCE, FIND_LIVE_SEARCH_DEBOUNCE_MS, NULL);
 			}
+		}
+		break;
+	case WM_TIMER:
+		if (wParam == IDT_FIND_LIVE_SEARCH_DEBOUNCE) {
+			::KillTimer(GetHwnd(), IDT_FIND_LIVE_SEARCH_DEBOUNCE);
+
+			pcEditView->SBMarker_->WaitForDraw(true);
+			pcEditView->SBMarker_->WaitForBuild(true);
+
+			int ret = InstantInput();
+
+			if (ret < 0) {
+				SetStatus(ret);
+			}
+
+			pcEditView->SB_Marker_Clear(1700);
 		}
 		break;
 	}

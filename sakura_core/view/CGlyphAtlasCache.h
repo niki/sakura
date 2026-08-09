@@ -120,7 +120,20 @@ public:
 		@param crFore         [in] 前景色(GetTextColor(hdc)相当)
 		@param crBack         [in] 背景色(GetBkColor(hdc)相当)
 		@param nDestX         [in] 描画先X(ExtTextOutと同じ原点)
-		@param nDestY         [in] 描画先Y
+		@param nDestY         [in] 描画先Y。行の折り返しクリップ矩形の上端
+		                          (呼び出し側のrcClip.top)であること。
+		                          行の途中(行間マージン分ずらした位置)を
+		                          渡さないこと(下記nGlyphYOffsetで表現する)。
+		@param nGlyphYOffset  [in] セル内でグリフを実際に描く際のYオフセット。
+		                          呼び出し側が行間マージン等でグリフ位置を
+		                          rcClip.topからずらして描画している場合、
+		                          そのずらし量(nDrawY - rcClip.top)を渡す。
+		                          20260809 これを渡さずnDestYに直接ずらし後の
+		                          Y座標を渡すと、セルの高さ(nCellHeightPx、
+		                          マージン込み)とBitBlt先の位置がずれ、行の
+		                          上端(マージン部分)が塗り残されたまま次の
+		                          行のマージン部分に描画がはみ出す不具合になる
+		                          (実機確認済み: 行の間隔≠0のときだけ発生)。
 		@param nCellWidthPx   [in] このグリフの描画幅(呼び出し側のDx配列合計)
 		@param nCellHeightPx  [in] 行の高さ(CTextMetrics::GetHankakuDy())
 		@param pDx            [in] ミス時の実描画に使うDx配列(nLength要素)
@@ -135,20 +148,42 @@ public:
 		const wchar_t* pData, int nLength,
 		COLORREF crFore, COLORREF crBack,
 		int nDestX, int nDestY,
+		int nGlyphYOffset,
 		int nCellWidthPx, int nCellHeightPx,
 		const int* pDx
 	);
 
+	/*!	描画パスを開始する前に呼び、その時点でのキュー位置を「印」として受け取る。
+		FlushQueue()にそのまま渡すこと。
+
+		20260809 m_vPendingBlitsはシングルトン全体で共有されている一方、
+		DrawOrCache()→FlushQueue()の呼び出しペアは「対括弧の即時描画」
+		(CEditView_Paint_Bracket.cpp)や「通常のOnPaint」(CEditView_Paint.cpp)など
+		複数の独立した描画パスから呼ばれる。これらがWM_PAINTの入れ子(例:
+		OnSetFocus/UpdateWindowの同期呼び出しや、Grepのリアルタイム表示のように
+		複数ペインが短時間に再描画される状況)で重なると、内側のパスの
+		FlushQueue()が外側のパスがまだ積んでいた分まで一緒に描画してしまい、
+		外側のパス用のグリフが内側のパスのDCへ誤って転送される
+		(実機で「置換のリアルタイム表示中に別タブへ切り替える」操作で、
+		本来出るはずのない位置に色付きの矩形/線が現れる不具合として確認・
+		修正済み)。BeginQueue()で「自分がDrawOrCache()を呼び始める前の
+		キュー位置」を覚えておき、FlushQueue()はその位置から末尾までだけを
+		処理・削除することで、外側のパス分をそのまま残せるようにする。
+	*/
+	size_t BeginQueue() const { return m_vPendingBlits.size(); }
+
 	/*!	DrawOrCache()でキューに積んだ分をまとめてBitBltする。
 
 		呼び出し側は1回の描画パス(通常のOnPaint、対括弧強調表示の即時描画など、
-		DispText経由でDrawOrCache()を呼ぶ一連の処理)の最後に必ず1回呼ぶこと。
-		キューが空なら何もしない。呼び忘れるとグリフが画面に出ないので、
-		DispTextを直接呼ぶ新しい描画経路を追加するときは必ずこれも呼ぶこと。
+		DispText経由でDrawOrCache()を呼ぶ一連の処理)の最初にBeginQueue()を呼び、
+		最後に必ずその戻り値を渡してFlushQueue()を呼ぶこと。呼び忘れると
+		グリフが画面に出ないので、DispTextを直接呼ぶ新しい描画経路を追加する
+		ときは必ずこれも呼ぶこと。
 
-		@param hdc [in] 転送先DC。DrawOrCache()に渡したhdcと同じであること。
+		@param hdc        [in] 転送先DC。DrawOrCache()に渡したhdcと同じであること。
+		@param markBegin  [in] このパスの直前にBeginQueue()で取得した値。
 	*/
-	void FlushQueue(HDC hdc);
+	void FlushQueue(HDC hdc, size_t markBegin);
 
 	//! 全ページを解放し、キャッシュを空にする。積み残しのキューも破棄する。
 	void Clear();
@@ -185,7 +220,7 @@ private:
 		                          文字自身が半角ASCIIだった」ときのnCellWidthPxを
 		                          そのまま渡すこと(全角セル幅を渡すと壊れる)
 	*/
-	void WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack, int nCellWidthPx, int nCellHeightPx);
+	void WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack, int nGlyphYOffset, int nCellWidthPx, int nCellHeightPx);
 
 #ifdef NKMM_DEBUG_GLYPH_ATLAS_DUMP
 	//! デバッグ用: 指定ページの実ピクセルをGetDIBits()で取得し、そのままbmpファイルへ書き出す

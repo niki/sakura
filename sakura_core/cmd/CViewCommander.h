@@ -268,6 +268,11 @@ public:
 	void Command_SEARCH_DIALOG( void );					/* 検索(単語検索ダイアログ) */
 	void Command_SEARCH_NEXT( bool, bool, bool, HWND, const WCHAR*, CLogicRange* = NULL );/* 次を検索 */
 	void Command_SEARCH_PREV( bool bReDraw, HWND );		/* 前を検索 */
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+	//! CEditView::AsyncFindNextの完了時に呼ばれる。Command_SEARCH_NEXTの単純な
+	//! ケース(選択なし・pcSelectLogic==NULL)向けの結果反映だけを行う簡略版。
+	void ApplyAsyncSearchNextResult( int nSearchResult, const CLayoutRange& sRangeA, bool bRedraw, HWND hwndParent );
+#endif // NKMM_
 	void Command_REPLACE_DIALOG( void );				/* 置換(置換ダイアログ) */
 	void Command_REPLACE( HWND hwndParent );			/* 置換(実行) 2002/04/08 YAZAKI 親ウィンドウを指定するように変更 */
 	void Command_REPLACE_ALL();							/* すべて置換(実行) */

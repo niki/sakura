@@ -123,7 +123,14 @@ public:
 
 	bool PrevOrNextWord( CLogicInt , CLogicInt , CLogicInt* , BOOL bLEFT, BOOL bStopsBothEnds );	/* 現在位置の左右の単語の先頭位置を調べる */
 	//	Jun. 26, 2001 genta	正規表現ライブラリの差し替え
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+	//	20260809 pAbortFlagが非nullかつtrueになったら走査を打ち切る(戻り値は0=未検出扱い)。
+	//	CEditView::AsyncFindNextがバックグラウンドスレッドからの検索を中断するために使う。
+	//	同期呼び出し(すべて置換の高速モード等)はnullptrのままでよい。
+	int SearchWord( CLogicPoint ptSerachBegin, ESearchDirection eDirection, CLogicRange* pMatchRange, const CSearchStringPattern& pattern, const volatile bool* pAbortFlag = nullptr ); /* 単語検索 */
+#else
 	int SearchWord( CLogicPoint ptSerachBegin, ESearchDirection eDirection, CLogicRange* pMatchRange, const CSearchStringPattern& pattern ); /* 単語検索 */
+#endif // NKMM_
 
 	void ReplaceData( DocLineReplaceArg* );
 private:

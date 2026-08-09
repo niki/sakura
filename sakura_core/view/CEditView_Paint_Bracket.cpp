@@ -130,6 +130,12 @@ void CEditView::DrawBracketPair( bool bDraw )
 	bool bCaretChange = false;
 	gr.SetTextBackTransparent(true);
 
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+	// 20260809 このパスが積むより前の(他の描画パス分の)キュー位置を覚えておき、
+	// 下のFlushQueue()には必ずこれを渡す。詳細はCGlyphAtlasCache::BeginQueue()参照。
+	const size_t nGlyphQueueMark = CGlyphAtlasCache::getInstance()->BeginQueue();
+#endif // NKMM_
+
 	for( int i = 0; i < 2; i++ )
 	{
 		// i=0:対括弧,i=1:カーソル位置の括弧
@@ -236,7 +242,7 @@ void CEditView::DrawBracketPair( bool bDraw )
 					// この経路は通常のOnPaint(CEditView_Paint.cpp)を介さない独立した
 					// 即時描画のため、DispText内でDrawOrCache()がキューに積んだ分を
 					// ここで自前でFlushしないと、対括弧の強調表示が画面に出ない
-					CGlyphAtlasCache::getInstance()->FlushQueue(gr);
+					CGlyphAtlasCache::getInstance()->FlushQueue(gr, nGlyphQueueMark);
 #endif // NKMM_
 					GetTextDrawer().DispNoteLine(gr, nTop, nTop + nHeight, nLeft, nLeft + (Int)charsWidth * nWidth);
 					// 2006.04.30 Moca 対括弧の縦線対応

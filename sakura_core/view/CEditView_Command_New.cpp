@@ -748,6 +748,24 @@ bool CEditView::ReplaceData_CEditView3(
 )
 {
 	assert( (bFastMode && bRedraw == false) || (!bFastMode) ); // bFastModeのときは bReadraw == false
+
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+	// 20260809 InsertData_CEditView/DeleteData2/ReplaceData_CEditView3(通常モード)の
+	// 唯一の合流点であるここで、実行中の非同期検索スレッド(CEditView::AsyncFindNext)を
+	// 中断・待機してから編集を進める。検索スレッドはCDocLineMgrを読み取り専用で
+	// 参照しているため、そのまま編集を進めると競合(クラッシュ・破壊)の恐れがある。
+	AsyncFindNext_->WaitForAbort();
+#endif // NKMM_
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+	// 20260809 同じ理由で、スクロールバーのヒット行マーカーを構築する
+	// SB_Marker_BuildThreadもCDocLineMgrを読み取り専用で参照している。
+	// 従来はCommand_REPLACE_ALL専用のCSuppressSrchKeyMarkForReplaceAllでしか
+	// ガードされておらず、通常のタイプ入力・貼り付け・削除中にビルドスレッドが
+	// 走っていた場合は同種の競合(クラッシュ・破壊)が理論上起こりうる状態だった。
+	// ここで待機することで、編集系のほぼ全経路をまとめて保護する。
+	SBMarker_->WaitForBuild(true);
+#endif // NKMM_
+
 	bool bUpdateAll = true;
 
 	bool bDelRangeUpdate = false;

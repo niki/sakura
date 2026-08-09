@@ -168,6 +168,49 @@ void CViewCommander::Command_SEARCH_NEXT(
 		goto end_of_func;
 	}
 
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+	// 20260809 「選択なし・pcSelectLogic==NULL・すべて置換実行中でない・正規表現でない・
+	// 文書が一定行数を超える」場合のみ、検索そのものをバックグラウンドスレッドへ回す。
+	// それ以外(選択中の検索開始・すべて置換・正規表現・小さいファイル)は、この下の
+	// 既存の同期パスをそのまま使う(挙動変更なし)。詳細はmy_config.h参照。
+	if( NULL == pcSelectLogic
+		&& !bReplaceAll
+		&& !m_pCommanderView->GetSelectionInfo().IsTextSelected()
+		&& !m_pCommanderView->m_sCurSearchOption.bRegularExp
+		&& GetDocument()->m_cDocLineMgr.GetLineCount() > NKMM_ASYNC_SEARCH_NEXT_LINE_THRESHOLD
+	){
+		CLayoutInt nLineNumAsync = GetCaret().GetCaretLayoutPos().GetY2();
+		CLogicInt nLineLenAsync = CLogicInt(0);
+		const CLayout* pcLayoutAsync;
+		GetDocument()->m_cLayoutMgr.GetLineStr(nLineNumAsync, &nLineLenAsync, &pcLayoutAsync);
+		CLogicInt nIdxAsync = pcLayoutAsync ? m_pCommanderView->LineColumnToIndex(pcLayoutAsync, GetCaret().GetCaretLayoutPos().GetX2()) : CLogicInt(0);
+
+		CLogicPoint ptBeginAsync;
+		if (pcLayoutAsync) {
+			ptBeginAsync = CLogicPoint(pcLayoutAsync->GetLogicOffset() + nIdxAsync, pcLayoutAsync->GetLogicLineNo());
+		} else {
+			ptBeginAsync = CLogicPoint(CLogicInt(0), CLogicInt(0));
+		}
+
+		m_pCommanderView->AsyncFindNext_->Request(
+			ptBeginAsync,
+			GetDllShareData().m_Common.m_sSearch.m_bSearchAll,
+			bRedraw,
+			bReplaceAll,
+			hwndParent,
+			m_pCommanderView->m_strCurSearchKey,
+			m_pCommanderView->m_sCurSearchOption
+		);
+
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+		if (bSBClear) {
+			m_pCommanderView->SB_Marker_Clear(802);
+		}
+#endif // NKMM_
+		return;
+	}
+#endif // NKMM_
+
 	// 検索開始位置を調整
 	bFlag1 = false;
 	if( NULL == pcSelectLogic && m_pCommanderView->GetSelectionInfo().IsTextSelected() ){	/* テキストが選択されているか */
@@ -389,6 +432,56 @@ end_of_func:;
 #endif // NKMM_
 }
 
+
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+/*! CEditView::AsyncFindNextの完了時に呼ばれる結果反映。
+
+	Command_SEARCH_NEXT内の「選択なし・pcSelectLogic==NULL・すべて置換で
+	ない」という単純なケースについて、検索結果をカーソル/選択範囲/検索
+	ダイアログへ反映する部分だけを複製したもの。選択中の検索開始やすべて
+	置換はそもそも非同期パスの対象外(既存の同期Command_SEARCH_NEXTが
+	そのまま処理する)ため、それらの分岐はここでは再現していない。
+	@date 2026.08.09
+*/
+void CViewCommander::ApplyAsyncSearchNextResult( int nSearchResult, const CLayoutRange& sRangeA, bool bRedraw, HWND hwndParent )
+{
+	if( nSearchResult ){
+		/* 選択範囲の変更 */
+		m_pCommanderView->GetSelectionInfo().SetSelectArea( sRangeA );
+		if( bRedraw ){
+			m_pCommanderView->GetSelectionInfo().DrawSelectArea();
+		}
+
+		/* カーソル移動 */
+		m_pCommanderView->AddCurrentLineToHistory();
+		GetCaret().MoveCursor( sRangeA.GetFrom(), bRedraw );
+		GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX2();
+	}
+	else{
+		GetCaret().ShowEditCaret();
+		GetCaret().ShowCaretPosInfo();
+		m_pCommanderView->SendStatusMessage(LS(STR_ERR_SRNEXT2));
+
+		CNativeW KeyName;
+		LimitStringLengthW(m_pCommanderView->m_strCurSearchKey.c_str(), m_pCommanderView->m_strCurSearchKey.size(),
+			_MAX_PATH, KeyName);
+		if( (size_t)KeyName.GetStringLength() < m_pCommanderView->m_strCurSearchKey.size() ){
+			KeyName.AppendString( L"..." );
+		}
+		AlertNotFound(
+			hwndParent,
+			false,
+			LS(STR_ERR_SRNEXT3),
+			KeyName.GetStringPtr()
+		);
+#ifdef NKMM_FIX_FIND_DIALOG
+		if (GetEditWindow()->m_cDlgFind.GetHwnd()) {
+			GetEditWindow()->m_cDlgFind.SetStatus(-2);
+		}
+#endif // NKMM_
+	}
+}
+#endif // NKMM_
 
 
 /* 前を検索 */

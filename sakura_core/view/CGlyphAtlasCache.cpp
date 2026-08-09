@@ -213,6 +213,7 @@ bool CGlyphAtlasCache::DrawOrCache(
 	const wchar_t* pData, int nLength,
 	COLORREF crFore, COLORREF crBack,
 	int nDestX, int nDestY,
+	int nGlyphYOffset,
 	int nCellWidthPx, int nCellHeightPx,
 	const int* pDx)
 {
@@ -236,7 +237,7 @@ bool CGlyphAtlasCache::DrawOrCache(
 	// 「半角ASCII文字自身のミス」のときしか渡ってこないので、そのままASCII全体の
 	// セル幅として使ってよい(全角文字のミスではこの分岐へ入らない)
 	if( nLength == 1 && pData[0] >= 0x20 && pData[0] <= 0x7E ){
-		WarmUpAscii(hFont, crFore, crBack, nCellWidthPx, nCellHeightPx);
+		WarmUpAscii(hFont, crFore, crBack, nGlyphYOffset, nCellWidthPx, nCellHeightPx);
 		it = m_mapEntries.find(key);
 		if( it != m_mapEntries.end() ){
 			const SGlyphAtlasEntry& e = it->second;
@@ -261,7 +262,14 @@ bool CGlyphAtlasCache::DrawOrCache(
 	::SetBkColor(page.hdcPage, crBack);
 	HFONT hOldFont = (HFONT)::SelectObject(page.hdcPage, hFont);
 	RECT rcCellDest = newEntry.rcCell;
-	::ExtTextOutW_AnyBuild(page.hdcPage, rcCellDest.left, rcCellDest.top,
+	// 20260809 ETO_OPAQUEによる不透明フィルはセル全体(rcCellDest)を対象にしつつ、
+	// 実際にグリフを描く位置はセルの上端からnGlyphYOffsetだけ下にずらす。
+	// (呼び出し側がnDestYを行の折り返しクリップ矩形の上端(マージン抜き)で
+	// 渡し、グリフ自体は行間マージン分だけ下にずらして描きたいケースに対応する。
+	// ここでずらさずnDestY側だけをマージン込みにすると、マージン分だけ
+	// BitBlt先が本来のクリップ矩形からずれ、行の上端が塗り残されたまま
+	// 次の行のマージン部分にはみ出して描画されてしまう)
+	::ExtTextOutW_AnyBuild(page.hdcPage, rcCellDest.left, rcCellDest.top + nGlyphYOffset,
 		ETO_CLIPPED | ETO_OPAQUE, &rcCellDest, pData, nLength, pDx);
 	::SelectObject(page.hdcPage, hOldFont);
 
@@ -281,7 +289,7 @@ bool CGlyphAtlasCache::DrawOrCache(
 //! 収まる範囲でひとまとめにする(ページ境界をまたいだら選択し直す)。
 //! 既にキャッシュ済みの文字はスキップするので、途中(ウォームアップ未完了)の
 //! 状態で複数回呼ばれても安全。
-void CGlyphAtlasCache::WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack, int nCellWidthPx, int nCellHeightPx)
+void CGlyphAtlasCache::WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack, int nGlyphYOffset, int nCellWidthPx, int nCellHeightPx)
 {
 	int dx[1] = { nCellWidthPx };
 	SGlyphAtlasPage* pCurPage = nullptr;
@@ -307,7 +315,7 @@ void CGlyphAtlasCache::WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack
 		}
 
 		RECT rcCellDest = newEntry.rcCell;
-		::ExtTextOutW_AnyBuild(page.hdcPage, rcCellDest.left, rcCellDest.top,
+		::ExtTextOutW_AnyBuild(page.hdcPage, rcCellDest.left, rcCellDest.top + nGlyphYOffset,
 			ETO_CLIPPED | ETO_OPAQUE, &rcCellDest, &ch, 1, dx);
 
 		newEntry.nCellWidthPx  = nCellWidthPx;
@@ -340,15 +348,22 @@ CGlyphAtlasCache::SStats CGlyphAtlasCache::GetStats() const
 //! DrawOrCache()が積んだ分をまとめてBitBltする。ページDCとhdcの行き来を
 //! グリフ単位で繰り返さないよう、ミスの焼き込み(ページ側)と転送(hdc側)を
 //! フェーズ分離するのが目的(詳細はヘッダのコメント、changelog参照)。
-void CGlyphAtlasCache::FlushQueue(HDC hdc)
+void CGlyphAtlasCache::FlushQueue(HDC hdc, size_t markBegin)
 {
-	for( const SGlyphAtlasBlit& blit : m_vPendingBlits ){
+	// markBeginより前は他の(外側の)描画パスがまだ積んでいる途中の分なので触らない。
+	// Clear()/ClearIfStale()でページごと破棄された場合はmarkBeginが現在のサイズを
+	// 超えていることがあるので、その場合は何もしない。
+	if( markBegin >= m_vPendingBlits.size() ) return;
+
+	for( size_t i = markBegin; i < m_vPendingBlits.size(); ++i ){
+		const SGlyphAtlasBlit& blit = m_vPendingBlits[i];
 		const SGlyphAtlasPage& page = m_vPages[blit.nPageIndex];
 		::BitBlt(hdc, blit.nDestX, blit.nDestY,
 			blit.rcSrc.right - blit.rcSrc.left, blit.rcSrc.bottom - blit.rcSrc.top,
 			page.hdcPage, blit.rcSrc.left, blit.rcSrc.top, SRCCOPY);
 	}
-	m_vPendingBlits.clear();
+	// 自分(このパス)が積んだ分だけを取り除く。外側のパス分(markBeginより前)は残す。
+	m_vPendingBlits.resize(markBegin);
 }
 
 #endif // NKMM_FIX_GLYPH_ATLAS_CACHE

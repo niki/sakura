@@ -876,6 +876,57 @@ public:
 	CKetaXInt nMaxLineKetas_ = 0;  // 前更新時の折り返し桁数
 
 #endif // NKMM_
+
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+public:
+	//! 「次を検索」の非同期実行(巨大ファイルでのUIフリーズ対策)
+	//! 対象はCommand_SEARCH_NEXT内の「選択なし・単純な前方検索」の場合のみ。
+	//! 詳細はmy_config.hのNKMM_FIX_ASYNC_SEARCH_NEXTの説明を参照。
+	class AsyncFindNext {
+	public:
+		explicit AsyncFindNext(CEditView* pEditView) : pEditView_(pEditView) {}
+		~AsyncFindNext() { WaitForAbort(); }
+
+		//! 非同期検索を要求する(呼び出し前に走っているスレッドがあれば中断・待機してから起動)
+		void Request(
+			const CLogicPoint& ptBegin,
+			bool bSearchAll,
+			bool bRedraw,
+			bool bReplaceAllUnused,
+			HWND hwndParent,
+			const std::wstring& strPattern,
+			const SSearchOption& sSearchOption
+		);
+
+		//! 実行中のスレッドがあれば中断要求を出し、終了を待つ(結果は捨てる)。
+		//! 文書を書き換える前に必ず呼ぶこと(CEditView::ReplaceData_CEditView3参照)。
+		void WaitForAbort();
+
+	public:
+		CEditView* pEditView_ = nullptr;
+
+		HANDLE hThread_ = 0;
+		bool   bThreadRunning_ = false;
+		volatile bool bAbortRequested_ = false;
+
+		int nGeneration_ = 0;  // Request()のたびにインクリメント。完了メッセージの世代照合に使う。
+
+		// スレッドへの入力(Request()内で設定してから起動。実行中は読み取り専用)
+		CLogicPoint ptBegin_;
+		bool bSearchAll_ = false;
+		bool bRedrawForResult_ = false;
+		HWND hwndParentForResult_ = nullptr;
+		std::wstring strPatternOwned_;       // 共有バッファを直接参照しない独立コピー
+		SSearchOption sSearchOptionOwned_;    // 同上
+		std::unique_ptr<CSearchStringPattern> pPattern_;
+
+		// スレッドからの出力(スレッド終了後、PostMessageより前に書き込み済み)
+		int nResultFound_ = 0;
+		CLogicRange sResultRange_;
+	};
+
+	std::unique_ptr<AsyncFindNext> AsyncFindNext_;
+#endif // NKMM_
 };
 
 

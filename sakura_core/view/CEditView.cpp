@@ -205,6 +205,9 @@ CEditView::CEditView(CEditWnd* pcEditWnd)
 #ifdef NKMM_FIX_EDITVIEW_SCRBAR
 , SBMarker_(new ScrBarMarker(this))
 #endif // NKMM_
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+, AsyncFindNext_(new AsyncFindNext(this))
+#endif // NKMM_
 {
 }
 
@@ -522,7 +525,18 @@ LRESULT CEditView::DispatchEvent(
 	case WM_APP_SCRBAR_PAINT: // スクロールバー描画
 		{
 			SB_Marker_Trace(L"WM_APP_SCRBAR_PAINT, RequestCount %d", SBMarker_->nDrawRequestCount_);
-			SBMarker_->WaitForBuild(false);
+
+			// 20260809 以前はここでWaitForBuild(false)によりビルドスレッド完了まで
+			// UIスレッドをブロックしていた。巨大ファイルで再構築が走っている間に
+			// スクロールすると、スクロール毎に生じる描画要求のたびにこれへ引っかかり、
+			// スクロールバー(実質画面全体)の更新が止まって見える不具合があった。
+			// ビルド中はこの描画要求を待たずに諦める。ビルド完了時にスレッド自身が
+			// SB_Marker_DrawRequest()で再描画を要求してくるので、それに任せればよい。
+			if (SBMarker_->bBuildThreadRunning_) {
+				SBMarker_->nDrawRequestCount_ = std::max(SBMarker_->nDrawRequestCount_ - 1, 0);
+				return 0L;
+			}
+			SBMarker_->WaitForBuild(false); // 直前に終わったスレッドのハンドル後始末(ノンブロッキング)
 
 			// 再描画したいタイミングが複数あり, メッセージがたくさん飛んでくるので
 			// リクエストカウンタが残り１のときに描画処理をする
@@ -553,6 +567,21 @@ LRESULT CEditView::DispatchEvent(
 #endif // NKMM_
 
 			::UpdateWindow(m_hwndVScrollBar);
+		}
+		return 0L;
+#endif // NKMM_
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+	case WM_APP_ASYNC_SEARCH_DONE: // 非同期「次を検索」完了
+		{
+			AsyncFindNext& rq = *AsyncFindNext_;
+			// 世代が一致しなければ、その間に新しい検索要求が発行済み(結果は古い)なので捨てる
+			if ((int)wParam == rq.nGeneration_) {
+				CLayoutRange sRangeA;
+				if (rq.nResultFound_) {
+					m_pcEditDoc->m_cLayoutMgr.LogicToLayout(rq.sResultRange_, &sRangeA);
+				}
+				GetCommander().ApplyAsyncSearchNextResult(rq.nResultFound_, sRangeA, rq.bRedrawForResult_, rq.hwndParentForResult_);
+			}
 		}
 		return 0L;
 #endif // NKMM_
@@ -3052,6 +3081,50 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg)
 
 	const int vsize = (int)vLines.size();
 
+	// 20260809 「折り返しなし」かつ正規表現でない場合のみ並列化する。
+	// 折り返しありはLogicToLayout()がCLayoutMgrの共有ヒントキャッシュを書き換える
+	// ため並列化不可(競合する)。正規表現はCEditView::m_CurRegexpという単一の
+	// 共有エンジンインスタンスをスレッド間で使い回すことになり、これも並列化不可
+	// (エンジン内部の一致状態が競合する)。それ以外(通常文字列/単語検索、折り返し
+	// なし)は行ごとに完全独立な読み取り専用処理なので、SB_Marker_DrawThreadと
+	// 同じくOpenMPで並列化してよい。行数が多いファイルほど効果が大きい。
+	bool bCanParallelize = bNoTextWrap && !pEditView->m_sCurSearchOption.bRegularExp;
+
+	if (bCanParallelize) {
+		int nSearchFoundLine = 0;
+		int nMarkFoundLine = 0;
+
+		#pragma omp parallel for schedule(dynamic, 4096) reduction(+:nSearchFoundLine,nMarkFoundLine)
+		for (int i = 0; i < vsize; i++) {
+			if (rSBMarker.bExitRequestBuildThread_) {  // 中断要求後は以降の行の処理を省略する
+				continue;
+			}
+
+			const CDocLine *pCDocLine = vLines[i];
+
+			uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? NKMM_SCRBAR_FOUND_MAGIC : 0u;
+			uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? NKMM_SCRBAR_MARK_MAGIC : 0u;
+
+			if ((uFoundMagic | uMarkMagic) != 0u) {
+				// 折り返しなしなので ロジック行＝レイアウト行
+				vCache[i] = (uint32_t)i | (uFoundMagic | uMarkMagic);
+				if (uFoundMagic != 0u) nSearchFoundLine++;
+				if (uMarkMagic != 0u) nMarkFoundLine++;
+			}
+		}
+
+		rSBMarker.nSearchFoundLine_ = nSearchFoundLine;
+		rSBMarker.nMarkFoundLine_ = nMarkFoundLine;
+
+		if (rSBMarker.bExitRequestBuildThread_) {  // 中断
+			SB_Marker_Trace(L"  >>>> abort CacheBuildThread");
+			goto end_thread;
+		}
+
+		// キャッシュと入れ替え
+		rSBMarker.vLines_.swap(vCache);
+	}
+	else {
 	for (int i = 0; i < vsize; i++) {
 		const CDocLine *pCDocLine = vLines[i];
 
@@ -3095,6 +3168,7 @@ unsigned __stdcall SB_Marker_BuildThread(void *arg)
 
 	// キャッシュと入れ替え
 	rSBMarker.vLines_.swap(vCache);
+	}
 
 end_thread:
 	if (!rSBMarker.bExitRequestBuildThread_) {
@@ -3165,15 +3239,17 @@ start_thread:
 			HDC hdc = ::GetDC(pEditView->m_hwndVScrollBar);
 			CGraphics gr(hdc);
 
-			// 描画関数
-			auto fnDrawMark = [=, &gr](uint32_t ln, int left, int width, int height, COLORREF clr) {
+			// 行番号(ln)からスクロールバー上のY座標(マージン補正前)を求める
+			auto fnLineToY = [=](uint32_t ln) -> int {
+				return nBarTop +
+				       (bEnable ? ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight))
+				                : ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum *
+				                         nBarHeight)));
+			};
+
+			// 指定Y座標に矩形を1つ描画する
+			auto fnDrawMarkAtY = [=, &gr](int y, int left, int width, int height, COLORREF clr) {
 				int x = 1;
-				int y = nBarTop;
-
-				y += bEnable ? ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight))
-				             : ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum *
-				                      nBarHeight));
-
 				int margin = 0;  // スクロールバーの領域を超えた時のマージン
 				int x2 = x + left;
 				int y2 = y - height / 2;  // 中央にくるように
@@ -3187,6 +3263,12 @@ start_thread:
 				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + width, y2 + height + margin}, clr);
 			};
 
+			// 20260809 ヒット件数がスクロールバーの高さ(ピクセル数)よりずっと多い
+			// (よくある検索語で数万〜数十万ヒットする巨大ファイル等)場合、大半の
+			// ヒットが直前と同じYへ描画することになり、GDI呼び出しが無駄に大量に
+			// なって描画が極端に遅くなっていた。行番号順に処理しているのでYは
+			// ほぼ単調増加であり、直前と同じYなら描画をスキップしてよい。
+			int nLastFoundY = INT_MIN;
 #ifdef _OPENMP
 			#pragma omp for
 #endif
@@ -3197,7 +3279,11 @@ start_thread:
 
 				// 検索行
 				if (ln & NKMM_SCRBAR_FOUND_MAGIC) {
-					fnDrawMark(ln, foundLeft, foundWidth, foundHeight, clrSearch);
+					int y = fnLineToY(ln);
+					if (y != nLastFoundY) {
+						nLastFoundY = y;
+						fnDrawMarkAtY(y, foundLeft, foundWidth, foundHeight, clrSearch);
+					}
 				}
 
 				if (rSBMarker.bRestartRequestDrawThread_) {  // やり直し
@@ -3208,6 +3294,7 @@ start_thread:
 				}
 			}
 
+			int nLastMarkY = INT_MIN;
 #ifdef _OPENMP
 			#pragma omp for
 #endif
@@ -3218,7 +3305,11 @@ start_thread:
 
 				// ブックマーク行
 				if (ln & NKMM_SCRBAR_MARK_MAGIC) {
-					fnDrawMark(ln, markLeft, markWidth, markHeight, clrMark);
+					int y = fnLineToY(ln);
+					if (y != nLastMarkY) {
+						nLastMarkY = y;
+						fnDrawMarkAtY(y, markLeft, markWidth, markHeight, clrMark);
+					}
 				}
 
 				if (rSBMarker.bRestartRequestDrawThread_) {  // やり直し
@@ -3672,5 +3763,84 @@ int CEditView::GetDocumentWordNum() const
 	pView->m_pcEditDoc->SetDocumentCharCountCache(select_sum);
 #endif // NKMM_
 	return select_sum;
+}
+#endif // NKMM_
+
+#ifdef NKMM_FIX_ASYNC_SEARCH_NEXT
+//----------------------
+// 非同期「次を検索」
+//----------------------
+namespace {
+unsigned __stdcall AsyncFindNextThreadProc(void *arg)
+{
+	CEditView *pEditView = (CEditView *)arg;
+	CEditView::AsyncFindNext &rq = *pEditView->AsyncFindNext_;
+
+	CSearchAgent cAgent(&pEditView->m_pcEditDoc->m_cDocLineMgr);
+
+	int nResult = cAgent.SearchWord(rq.ptBegin_, SEARCH_FORWARD, &rq.sResultRange_, *rq.pPattern_, &rq.bAbortRequested_);
+
+	if (!nResult && rq.bSearchAll_ && !rq.bAbortRequested_) {
+		// 先頭（末尾）から再検索 (Command_SEARCH_NEXTの同期パスと同じ挙動)
+		nResult = cAgent.SearchWord(CLogicPoint(CLogicInt(0), CLogicInt(0)), SEARCH_FORWARD, &rq.sResultRange_, *rq.pPattern_, &rq.bAbortRequested_);
+	}
+
+	bool bAborted = rq.bAbortRequested_;
+	rq.nResultFound_ = bAborted ? 0 : nResult;
+	rq.bThreadRunning_ = false;
+
+	if (!bAborted) {
+		::PostMessage(pEditView->GetHwnd(), WM_APP_ASYNC_SEARCH_DONE, (WPARAM)rq.nGeneration_, 0);
+	}
+
+	_endthreadex(0);
+	return 0;
+}
+} // namespace
+
+void CEditView::AsyncFindNext::Request(
+	const CLogicPoint &ptBegin,
+	bool bSearchAll,
+	bool bRedraw,
+	bool bReplaceAllUnused,
+	HWND hwndParent,
+	const std::wstring &strPattern,
+	const SSearchOption &sSearchOption
+)
+{
+	WaitForAbort();  // 前回分が残っていれば中断・待機してから差し替える(常にスレッドは高々1つ)
+
+	++nGeneration_;
+
+	ptBegin_ = ptBegin;
+	bSearchAll_ = bSearchAll;
+	bRedrawForResult_ = bRedraw;
+	hwndParentForResult_ = hwndParent;
+	strPatternOwned_ = strPattern;         // 共有バッファを参照しない独立コピー
+	sSearchOptionOwned_ = sSearchOption;   // 同上
+
+	pPattern_ = std::make_unique<CSearchStringPattern>();
+	if (!pPattern_->SetPattern(pEditView_->GetHwnd(), strPatternOwned_.c_str(), (int)strPatternOwned_.size(), sSearchOptionOwned_, nullptr)) {
+		// 通常起きない(正規表現は呼び出し側で除外済み)。念のため何もせず諦める。
+		pPattern_.reset();
+		return;
+	}
+
+	nResultFound_ = 0;
+	bAbortRequested_ = false;
+	bThreadRunning_ = true;
+	hThread_ = (HANDLE)_beginthreadex(NULL, 0, &AsyncFindNextThreadProc, (void *)pEditView_, 0, NULL);
+}
+
+void CEditView::AsyncFindNext::WaitForAbort()
+{
+	if (bThreadRunning_) {
+		bAbortRequested_ = true;
+		::WaitForSingleObject(hThread_, INFINITE);
+	}
+	if (hThread_ != 0) {
+		::CloseHandle(hThread_);
+		hThread_ = 0;
+	}
 }
 #endif // NKMM_

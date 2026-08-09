@@ -616,6 +616,12 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 //	MY_RUNNINGTIMER( cRunningTimer, "CEditView::OnPaint" );
 	CGraphics gr(_hdc);
 
+#ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
+	// 20260809 このOnPaintが積むより前の(他の描画パス分の)キュー位置を覚えておき、
+	// 下のFlushQueue()には必ずこれを渡す。詳細はCGlyphAtlasCache::BeginQueue()参照。
+	const size_t nGlyphQueueMark = CGlyphAtlasCache::getInstance()->BeginQueue();
+#endif // NKMM_
+
 	// 2004.01.28 Moca デスクトップに作画しないように
 	if( NULL == GetHwnd() || NULL == _hdc )return;
 
@@ -863,7 +869,7 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	//DispText中にDrawOrCache()が積んだグリフアトラスのBitBltをまとめて
 	//転送する。カラーフォントのオーバーレイより前に済ませる必要がある
 	//(オーバーレイは確定した下地のピクセルの上に重ね描きするため)。
-	CGlyphAtlasCache::getInstance()->FlushQueue(gr);
+	CGlyphAtlasCache::getInstance()->FlushQueue(gr, nGlyphQueueMark);
 #endif // NKMM_
 
 #ifdef NKMM_FIX_COLOR_FONT

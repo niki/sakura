@@ -393,6 +393,15 @@ BOOL CEditView::ChangeCurRegexp( bool bRedrawIfChanged )
 	}
 	m_bCurSearchUpdate = false;
 	if( bChangeState ){
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+		// 20260809 SB_Marker_BuildThreadはIsFoundLine()経由でm_sSearchPatternを
+		// バックグラウンドスレッドから読み取る。ここでSetPattern()がm_sSearchPattern
+		// を書き換え中(内部でReset()して配列を解放してから再構築する)にそれと競合すると、
+		// 解放済み/NULLのSunday-Quickスキップ配列を読んでクラッシュする
+		// (実機で確認済み: CSearchAgent::SearchStringでのアクセス違反)。
+		// 書き換え前に実行中のビルドスレッドを中断・待機して競合を防ぐ。
+		SBMarker_->WaitForBuild(true);
+#endif // NKMM_
 		if( !m_sSearchPattern.SetPattern(this->GetHwnd(), m_strCurSearchKey.c_str(), m_strCurSearchKey.size(),
 			m_sCurSearchOption, &m_CurRegexp) ){
 				m_bCurSrchKeyMark = false;

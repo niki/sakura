@@ -163,9 +163,18 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, int marginy, const wchar
 					HFONT hFont = (HFONT)::GetCurrentObject(hdc, OBJ_FONT);
 					COLORREF crFore = ::GetTextColor(hdc);
 					COLORREF crBack = ::GetBkColor(hdc);
+					// 20260809 セルの高さ(nCellHeightPx=GetHankakuDy())はrcClip
+					// (行間マージンを含む折り返しクリップ矩形)の高さと一致する。
+					// BitBlt先はnDrawY(マージン込みのグリフ描画位置)ではなく
+					// rcClip.top(マージン抜きの行の上端)にし、マージン分の
+					// ずらしはnGlyphYOffsetとしてセル内部の描画位置にのみ
+					// 適用する(マージン込みの座標を両方に効かせると、行の
+					// 上端が塗り残されたまま次の行のマージン部分に描画が
+					// はみ出す不具合になる。実機確認済み)。
 					bCached = pAtlas->DrawOrCache(
 						hdc, hFont, pDrawData, nDrawLength, crFore, crBack,
-						nDrawX, nDrawY, nCellWidth, pMetrics->GetHankakuDy(), pDrawDxArray
+						nDrawX, rcClip.top, nDrawY - rcClip.top,
+						nCellWidth, pMetrics->GetHankakuDy(), pDrawDxArray
 					);
 				}
 			}
