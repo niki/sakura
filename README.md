@@ -1,6 +1,7 @@
 # sakura editor
 <p>
-  <a href="https://github.com/niki/sakura/blob/main/LICENSE"><img src="https://img.shields.io/github/license/niki/sakura" alt="GitHub license"></a>
+  <!-- <a href="https://github.com/niki/sakura/blob/main/LICENSE"><img src="https://img.shields.io/github/license/niki/sakura" alt="License"></a> -->
+  <a href="https://github.com/niki/sakura/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Zlib-blue" alt="License: Zlib"></a>
   <!-- <a href="https://github.com/niki/sakura/actions"><img src="https://github.com/niki/sakura/actions/workflows/main.yml/badge.svg" alt="build sakura"></a> -->
   <a href="https://github.com/niki/sakura/releases"><img src="https://img.shields.io/github/v/release/niki/sakura" alt="GitHub release"></a>
   <a href="https://github.com/niki/sakura/commits"><img src="https://img.shields.io/github/last-commit/niki/sakura" alt="GitHub last commit"></a>
