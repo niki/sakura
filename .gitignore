@@ -76,6 +76,8 @@ vcpkg_installed/
 *.dwo
 
 # test output & cache
+_dbg/
+_*/
 Testing/
 .cache/
 HeaderMake/Release/
