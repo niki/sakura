@@ -1,0 +1,11 @@
+; Php Rule Ex File
+;Mode=Regex
+^[ \t]*class\b /// class
+^[ \t]*abstract[ \t]+class\b /// class
+^[ \t]*function\b /// function
+^[ \t]*private[ \t]+function\b /// function
+^[ \t]*protected[ \t]+function\b /// function
+^[ \t]*public[ \t]+function\b /// function
+^[ \t]*private[ \t]+static[ \t]+function\b /// function
+^[ \t]*protected[ \t]+static[ \t]+function\b /// function
+^[ \t]*public[ \t]+static[ \t]+function\b /// function

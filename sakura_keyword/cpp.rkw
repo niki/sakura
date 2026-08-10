@@ -1,0 +1,12 @@
+﻿// 正規表現キーワード Ver1
+RxKey[000]=WQT,/(?<=include)\s+?\<(.+)(?<=\>)/k
+RxKey[001]=RK3,/(?<=defined)\s*?(?<=\()(.+)(?<=\))/k
+RxKey[002]=RK2,/(?<=define|ifndef|ifdef|if)\s+?[[:word:]]+/k
+RxKey[003]=RK1,/(?<=#)\s*?(if)(\s+)(defined|!defined)/k
+RxKey[004]=RK1,/(?<=#)\s*?(elif|else|ifdef|ifndef|endif|if|define|undef|include|pragma|line|warning|warn|error)/k
+RxKey[005]=RK4,/(?<=[[:^word:]])[k|e][[:upper:]][[:word:]]*/k
+RxKey[006]=RK5,/(?<=class|struct|union|enum)\s+?(?=[a-zA-Z])[[:word:]]+(::[[:word:]]+|)/k
+RxKey[007]=RK6,/\w+_\b/k
+RxKey[008]=RK6,/\bm_\w+\b/k
+RxKey[009]=RK7,/\b(this)\b/k
+RxKey[010]=RK8,/\b(nullptr|NULL|true|false)\b/k
