@@ -204,6 +204,174 @@ x86/x64のみが選択されるため無害)、vcxprojの`ClCompile`は追加し
 確認した。実機でのJIT有効化による速度計測(数値ハイライトの体感速度、検索/置換の
 実行時間比較等)は未実施。
 
+## 追記: ReplaceAllの前置文字列二重挿入バグ(PCRE2フォールバック限定) 20260810
+
+対象ファイル: `sakura_core/extmodule/CRegexFallback.cpp`(`DoSubst()`/`BSubstEx()`/
+`BREGEXP_W_Fallback`)。原因調査後、下記「修正」の通り実装・検証済み。
+
+### 症状
+
+正規表現ReplaceAllを実行すると、**マッチが行頭以外の位置にある行すべて**で、
+「行頭から最初のマッチ位置までの前置文字列」が結果に1回余分に挿入される。
+
+例: `ReplaceAll("([0-9]+)", "$1", ...)` (数字を数字自身に置換するだけの、
+実質no-opのはずの置換)を1回実行しただけで、
+
+```
+置換前: lorem ipsum dolor sit amet va=0 vb=31 vc=262 vd=393 ve=524 vf=655
+置換後: lorem ipsum dolor sit amet va=lorem ipsum dolor sit amet va=0 vb=31 vc=262 vd=393 ve=524 vf=655
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ここが余分に増える
+```
+
+マッチした数字自体(`$1`が指す内容)や、2箇所目以降のマッチは正しい。壊れるのは
+「1行の中で最初に見つかったマッチより前の部分」だけ、1行につきちょうど1回。
+
+### 再現条件
+
+- 検索/置換ダイアログの「すべて置換」ボタン、またはマクロの`ReplaceAll()`。
+  どちらも内部的に同じ`CViewCommander::Command_REPLACE_ALL()`
+  ([CViewCommander_Search.cpp:926](../sakura_core/cmd/CViewCommander_Search.cpp#L926))
+  を通る。
+- 正規表現ON。**バックリファレンス使用の有無、繰り返し回数は無関係**。1回の
+  `ReplaceAll`実行で、行頭ではない位置にマッチするパターンであれば再現する。
+- **`bregonig.dll`/`bregonig64.dll`が見つからず、PCRE2フォールバックが有効な
+  環境限定**(下記「挙動の違い」参照)。
+
+### 挙動の違い: 実bregonig.dll vs PCRE2フォールバック
+
+実物の`bregonig64.dll`(`Publish/bregonig190130.zip`に同梱)を`sakura.exe`と
+同じディレクトリに置いて同一条件で検証し、フォールバック時の結果と比較した。
+
+| パターン | 実`bregonig64.dll` | PCRE2フォールバック |
+|---|---|---|
+| `([0-9]+)` → `$1` | 完全にクリーン(置換なし版とバイト単位で一致) | **前置文字列が二重挿入される(本バグ)** |
+| `\b(?:lorem\|ipsum\|dolor\|sit\|amet)\b` → `$0` | `$0`をリテラル文字列として置換してしまう(別問題、下記) | クリーン(`$0`を全体一致のバックリファレンスとして正しく解釈) |
+
+前者(`$1`)が今回の本題。後者(`$0`)は逆にPCRE2フォールバックの方が「正しく」
+見える結果になっているが、これは**PCRE2とbregonig(Oniguruma系)で`$0`の
+構文サポートに違いがある**ことによる非互換であり、本バグとは別種の問題
+(修正はスコープ外、記録のみ)。
+
+### 根本原因
+
+`CBregexp::Replace()`([CBregexp.cpp:566-570](../sakura_core/extmodule/CBregexp.cpp#L566-L570))は、
+`ExistBSubstEx()`が真のとき`BSubstEx(NULL, szTarget, szTarget+nStart, szTarget+nLen, ...)`
+を呼ぶ。`targetbeg`に行頭(`szTarget`)を渡すのは、戻り読み(lookbehind)などの
+正規表現機能が「検索開始位置より前の文脈」を参照できるようにするための設計。
+
+`ExistBSubstEx()`([CBregexpDll2.h:94](../sakura_core/extmodule/CBregexpDll2.h#L94))は
+`m_bFallback || m_BSubstEx!=NULL`——**フォールバック時は無条件に`true`**を返すため、
+フォールバック中は必ず`BSubstEx`経路(下記のバグを持つ経路)を通る。
+
+PCRE2フォールバックの`DoSubst()`([CRegexFallback.cpp:251-324](../sakura_core/extmodule/CRegexFallback.cpp#L251-L324))は、
+この`targetbeg`(行頭)を**そのまま`pcre2_substitute_16()`の`subject`引数として渡している**。
+
+```cpp
+PCRE2_SPTR16 subject = reinterpret_cast<PCRE2_SPTR16>(targetbeg);       // 行頭
+PCRE2_SIZE subjectLen = static_cast<PCRE2_SIZE>(targetendp - targetbeg);
+PCRE2_SIZE startOffset = static_cast<PCRE2_SIZE>(target - targetbeg);   // マッチ検索開始位置
+...
+pcre2_substitute_16(code, subject, subjectLen, startOffset, options, ...)
+```
+
+`options`に`PCRE2_SUBSTITUTE_REPLACEMENT_ONLY`を指定していないため、PCRE2は
+仕様通り「`subject`全体(行頭からマッチ前の未変更部分も含む)を、マッチ部分だけ
+置換後文字列に差し替えて返す」。**PCRE2はドキュメント通りに正しく動作している。**
+
+一方、呼び出し元の`Command_REPLACE_ALL`
+([CViewCommander_Search.cpp:1553](../sakura_core/cmd/CViewCommander_Search.cpp#L1553))は、
+`cRegexp.GetString()`が「マッチ位置から始まる(前置文字列を含まない)文字列」で
+あることを前提に、その一部を`Command_INSTEXT`で挿入している。ドキュメント側に
+既にある前置文字列はそのまま残っているところに、戻り値に含まれる同じ前置文字列を
+もう一度挿入する形になるため、二重になる。
+
+### まとめ: どちらの規約も単体では正しいが、噛み合っていない
+
+- **PCRE2**: 「`subject`全体を対象に、`REPLACEMENT_ONLY`無指定なら前置文字列
+  込みで返す」という自身のAPI契約通りに動いている。
+- **`Command_REPLACE_ALL`側の前提**: 「`GetString()`はマッチ位置から始まる」
+  という、恐らく実`bregonig.dll`の`BSubstEx`の実際の挙動(前置文字列を出力に
+  含めない)に基づいて書かれたコード。
+- **`DoSubst()`**: 上記2つの間を取り持つはずが、`targetbeg`(lookbehind用の
+  文脈)と`subject`(出力に反映される範囲)を区別せず同じポインタとして
+  PCRE2に渡してしまったため、両者の前提のズレがそのまま症状として表面化した。
+
+修正の方向性としては、`DoSubst()`側で`PCRE2_SUBSTITUTE_REPLACEMENT_ONLY`を
+使うか、出力から前置文字列(`target - targetbeg`分)を切り落としてから
+`BREGEXP_W_Fallback`に格納する、のいずれかが妥当と考えられる。
+→ 後者の方針で修正した(下記「修正」参照)。
+
+### 修正
+
+`BREGEXP_W_Fallback`のコンストラクタに`skip`引数(既定値0)を追加し、
+`outp`(`GetString()`の起点)をバッファ先頭から`skip`文字分ずらせるようにした。
+バッファ自体(`outHeap`)は引き続き全体を所有するため、追加コピーは発生しない。
+
+```cpp
+explicit BREGEXP_W_Fallback(std::unique_ptr<wchar_t[]> buf = nullptr, size_t len = 0, size_t skip = 0)
+    : BREGEXP_W(MakeBaseW(buf.get() + skip, buf.get() + len))
+    , outHeap(std::move(buf))
+{
+}
+```
+
+`DoSubst()`の呼び出し箇所で、`pcre2_substitute_16()`に渡した`startOffset`
+(検索開始位置。`targetbeg`起点の未変更プレフィックス長そのもの)をそのまま
+`skip`として渡すだけでよい。
+
+```cpp
+BREGEXP_W_Fallback* result = new BREGEXP_W_Fallback(std::move(buf), outLen, startOffset);
+```
+
+`vStartp`/`vEndp`(`GetIndex()`/`GetMatchLen()`が参照するマッチ位置情報、
+`m_szTarget`=`targetbeg`起点の絶対ポインタが前提)は元々の計算のまま変更して
+いない——今回のバグは出力文字列(`GetString()`)側だけの問題で、マッチ位置の
+報告自体は最初から正しかったため。
+
+`BSubst()`(Exなし、`targetbeg==target`で呼ばれる)は`startOffset`が常に0に
+なるため、`skip=0`でこれまで通り無変更。前述の「実bregonig.dllでは再現しない
+`$0`のリテラル置換問題」はbregonig側の構文差異であり、この修正の対象外
+(今回は未対応のまま)。
+
+### 修正後の動作確認
+
+`msbuild /t:sakura:ClCompile /p:SelectedFiles=..\sakura_core\extmodule\CRegexFallback.cpp`
+によるファイル単位ビルド(Release x64)で0エラー・0警告を確認後、フルビルド
+(リンクまで)して`sakura.exe`を再生成した(`bregonig64.dll`は置かず、PCRE2
+フォールバックを強制した状態)。
+
+- 1プロセス=1回の`FileNew()`+1回の`ReplaceAll()`という最小構成の検証:
+  `ReplaceAll("([0-9]+)", "$1", ...)`・`ReplaceAll("\\b(?:lorem|ipsum|dolor|sit|amet)\\b", "$0", ...)`
+  いずれも、**置換なしのbaselineとバイト単位で完全に一致**(前置文字列の
+  二重挿入が解消)。
+- `macro_bench/BenchmarkRegex.qjs`相当(Simple/Alt各5回、計10回の
+  `ReplaceAll`)を再実行したところ、結果ドキュメントのサイズは
+  1,435,395バイト(baseline 1,434,781バイト+ログ分)で**膨張なし**。
+  修正前は同条件で約20MBまで膨れ上がっていた。
+  タイミングも副次的に改善した: Simple total=1636ms/avg=327.20ms、
+  Alt total=1442ms/avg=288.40ms(修正前の同条件はSimple total=3188ms、
+  Alt total=5690ms程度)。これは壊れたドキュメントがパスを重ねるごとに
+  肥大化し、後続の`ReplaceAll`の対象データ量そのものが増えていたことの
+  裏返しと考えられる。
+
+### 発覚の経緯
+
+`NKMM_FIX_EDITVIEW_SCRBAR`(スクロールバーマーカーのスレッドプール化)の
+回帰確認で`macro_bench/BenchmarkRegex.qjs`を実行した際に偶然発見。
+その変更(ScrBarMarkerのキャッシュ処理)とは無関係であることは`git stash`に
+よるA/B比較で確認済み。詳細な調査過程は
+`changelog/NKMM_FIX_EDITVIEW_SCRBAR_THREADPOOL.md`の「追記: macro_bench/
+BenchmarkRegex.qjsによる回帰確認」を参照(本追記はその内容を整理・確定させた
+最終レポート)。
+
+### 動作確認について
+
+`msbuild /t:sakura:ClCompile`によるファイル単位ビルドは行っていない(調査のみ、
+コード変更なし)。フルビルド(Release x64)した`sakura.exe`に対し、非対話マクロ
+(`InfoMsg`をファイル書き込みに置き換えたもの)で1プロセス=1回の`FileNew()`+
+1回の`ReplaceAll()`という最小構成の検証を、PCRE2フォールバック時と実
+`bregonig64.dll`使用時それぞれで実施し、上記の表の内容を確認した。
+
 ## 追記: CColor_Numeric.cpp側のREGEX_MODE==3利用は削除 20260806
 
 上記「追記: CColor_Numeric.cpp からの直接利用 (REGEX_MODE==3)」節が指す

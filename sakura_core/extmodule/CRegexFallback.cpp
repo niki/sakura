@@ -35,8 +35,14 @@ BREGEXP_W MakeBaseW(wchar_t* outp, wchar_t* outendp)
 //! 引数に取るのもこの目的のため)。
 //! code(コンパイル済みパターン)はポインタの持ち主が1つに定まるようmove-onlyにする。
 struct BREGEXP_W_Fallback : public BREGEXP_W {
-	explicit BREGEXP_W_Fallback(std::unique_ptr<wchar_t[]> buf = nullptr, size_t len = 0)
-		: BREGEXP_W(MakeBaseW(buf.get(), buf.get() + len))
+	//! skip: outp側の読み取り開始位置をbuf先頭から何文字分後ろにずらすか。
+	//! DoSubst()がpcre2_substitute()にtargetbeg起点のsubjectを渡すため、
+	//! bufの先頭にはtargetbeg..target(検索開始位置)の未変更プレフィックスが
+	//! そのまま含まれる。呼び出し元(CBregexp::Replace)はGetString()が検索
+	//! 開始位置から始まる文字列だと仮定しているため、既定では読み飛ばす。
+	//! バッファ自体(outHeap)は引き続き全体を所有する。
+	explicit BREGEXP_W_Fallback(std::unique_ptr<wchar_t[]> buf = nullptr, size_t len = 0, size_t skip = 0)
+		: BREGEXP_W(MakeBaseW(buf.get() + skip, buf.get() + len))
 		, outHeap(std::move(buf))
 	{
 	}
@@ -314,7 +320,11 @@ BREGEXP_W_Fallback* DoSubst(pcre2_code_16* code, bool bGlobal, const std::wstrin
 	}
 
 	count = rc;
-	BREGEXP_W_Fallback* result = new BREGEXP_W_Fallback(std::move(buf), outLen);
+	// 20260810 bufの先頭にはtargetbeg..target(startOffset文字分)の未変更
+	// プレフィックスが含まれるため、GetString()はそこを読み飛ばして返す。
+	// (呼び出し元は「検索開始位置から始まる文字列」を期待している。詳細は
+	// changelog/NKMM_FIX_REGEXP_FALLBACK.md参照)
+	BREGEXP_W_Fallback* result = new BREGEXP_W_Fallback(std::move(buf), outLen, startOffset);
 	result->vStartp = std::move(vStartp);
 	result->vEndp = std::move(vEndp);
 	result->startp = result->vStartp.data();
