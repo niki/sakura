@@ -358,6 +358,96 @@
 //      対象外。
 //    - sakura_core\view\CEditView.h (mtxDrawState_),
 //      sakura_core\view\CEditView.cpp (Draw/DrawWorkCallback)
+//  - スクロールバー上の検索/ブックマークのマークをクリックしたら、一番近い
+//    マーク行へジャンプする機能を追加 20260810
+//    - VScrollBarWndProc(既存のホバー再描画フック)でWM_LBUTTONDOWNを追加で
+//      捕捉。クリックYに最も近いマーク行(検索/ブックマーク、許容誤差数px)が
+//      あればCEditView::_SB_Marker_HitTestAndJump()経由でMoveCursorSelecting()
+//      によりその行へジャンプし、メッセージを消費する(既定のスクロールバー
+//      動作=ページスクロール/サム位置ジャンプは行わない)。マークが無い位置の
+//      クリックは従来通りCallWindowProc()へ素通しし、既定動作に任せる。
+//    - Y座標→レイアウト行の変換はSB_Marker_DrawThread(DrawWorkCallback)の
+//      fnLineToYと同じ式を使用(表示側と当たり判定側の対応がズレないように)。
+//    - つまみ(現在の表示位置)の上をクリックした場合はマークジャンプより優先して
+//      つまみドラッグさせる(HitTest冒頭でxyThumbTop/xyThumbBottom範囲内なら
+//      即falseを返す)。これが無いと、たまたまマークがつまみの位置に重なった時に
+//      スクロールバーをつまんで動かせなくなってしまう。
+//    - sakura_core\view\CEditView.h (ScrBarMarker::HitTest,
+//      CEditView::_SB_Marker_HitTestAndJump),
+//      sakura_core\view\CEditView.cpp (ScrBarMarker::HitTest実装,
+//      _SB_Marker_HitTestAndJump実装),
+//      sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc)
+//  - マウスホバー開始時にもマーカーを再描画するように変更 20260810
+//    - 従来はWM_MOUSELEAVE(ホバー解除)時のみマーカーを再描画しており、ホバー中は
+//      Explorerテーマのフェードアニメーションでマークが消えたままになっていた
+//      (クリックジャンプ機能を使うにも、マークがどこにあるか見えないと押しにくい)。
+//    - WM_MOUSEMOVEのたびに毎回再描画すると呼び出し過多になるため、SetProp/
+//      GetPropでスクロールバーHWNDにホバー中フラグを持たせ、「非ホバー→ホバー」
+//      の遷移が起きた最初の1回だけSB_Marker_CallPaint()を呼ぶようにした。
+//      Draw()側は元々実行中の再描画要求をbRestartRequestDrawThread_に集約する
+//      デバウンス機構を持つため、仮に高頻度で呼んでも多重実行にはならないが、
+//      遷移時のみに絞ることでロック取得等の無駄な呼び出し自体を減らしている。
+//    - sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc)
+//  - ホバー遷移時の1回描画だけでは不十分だった問題を修正 20260810
+//    - 実機確認したところ、Explorerテーマのフェードアニメーションはホバー開始
+//      から数百msかけて複数フレームに渡り自前描画を続けており、遷移時に1回
+//      再描画するだけではアニメーション後半のフレームでマークが再び消されて
+//      しまっていた。ホバー中(WM_MOUSEMOVE〜WM_MOUSELEAVE)はSetTimer()で
+//      50ms間隔のタイマーを回し、WM_MOUSELEAVE/WM_DESTROYでKillTimer()する
+//      ように変更。高頻度に呼んでもDraw()側のデバウンス機構(既述)により
+//      多重実行にはならないため安全。
+//    - sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc)
+//  - マーク描画を不透明な塗り潰しから半透明合成(AlphaBlend)に変更 20260810
+//    - 「ミニマップのような半透明のつまみにマークを重ねたい」という要望に対し、
+//      つまみを自前で再描画する(範囲判定・線の集合での再構築等)よりも簡単な
+//      方法として、GDIのAlphaBlend()で合成するだけにした。AlphaBlend()は
+//      呼び出し時点で画面に既に描かれている内容(つまみでもトラックでも)と
+//      自動的に合成してくれるため、つまみの位置を判定したり自前で再描画したり
+//      する必要が無い。CGraphics::AlphaBlendMyRect()を新設し、検索/ブックマーク/
+//      カーソル行のマーク描画をFillSolidMyRect()から差し替えた。不透明度は
+//      NKMM_SCRBAR_MARK_ALPHA(既定220/255)。
+//    - sakura_core\uiparts\CGraphics.h/.cpp (AlphaBlendMyRect),
+//      sakura_core\view\CEditView.cpp (DrawWorkCallback)
+//  - ホバー中のタイマー再描画でCPU使用率が跳ね上がる不具合を修正 20260810
+//    - 実機確認したところ、AlphaBlendMyRect呼び出しごとのGDIオブジェクト生成
+//      (CGraphicsインスタンス生存中は使い回すよう修正済み、下記)を疑ったが
+//      それだけでは解消せず、真因はScrBarMarker::Draw()内の
+//      SetScrollInfo(..., TRUE)だった。redraw=TRUEはネイティブスクロールバーの
+//      全面再描画(Explorerテーマのホバーアニメーション再トリガーを含む)を伴う
+//      重い呼び出しで、これを50ms間隔のホバータイマーから毎回呼んでいたため、
+//      再描画→テーマアニメーション再発火→マーク消失→再描画...という負荷の
+//      高いループになっていた。
+//    - Draw()に bUpdateScrollInfo引数(既定true)を追加し、falseならGetScrollInfo/
+//      SetScrollInfo(TRUE)/GetScrollBarInfoのブロックを丸ごとスキップするように
+//      変更(ホバー中は位置・範囲そのものは変化しないため不要)。ホバータイマー
+//      専用の軽量エントリポイント_SB_Marker_HoverRedraw()を新設し、
+//      WM_APP_SCRBAR_PAINTのメッセージキューも経由せず直接Draw(false)を呼ぶ。
+//    - あわせて、AlphaBlendMyRect()が呼び出しのたびにCreateCompatibleDC/
+//      CreateCompatibleBitmapしていたのを、CGraphicsインスタンスの生存期間中
+//      1x1メモリDC/ビットマップを使い回す方式に変更(こちらも副次的な負荷要因)。
+//    - sakura_core\view\CEditView.h/.cpp (ScrBarMarker::Draw,
+//      CEditView::_SB_Marker_HoverRedraw),
+//      sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc),
+//      sakura_core\uiparts\CGraphics.h/.cpp (AlphaBlendMyRect)
+//  - 上記の対策でもホバー中のCPU使用率が高いままだった問題への追加対策 20260810
+//    - SetScrollInfo(TRUE)を止めた後も改善しなかったため再調査。DrawWorkCallback()
+//      が呼ばれるたびに、色設定をRegKey(NKMM_REGKEY).get_s()でレジストリから
+//      都度読んでいた(1回のget_s()でRegOpenKeyEx+RegQueryValueEx x2+
+//      RegCloseKeyの計4回、3色で12回のレジストリアクセス)ことと、ホバー中は
+//      アニメーションが収まった後もWM_MOUSELEAVEまでタイマーを回し続けていた
+//      (アニメーションは実際には数百msで収まるはずが、ホバーしている間ずっと
+//      50ms間隔でDrawWorkCallback()のフルパイプライン=OpenMPスキャン・GetDC/
+//      ReleaseDC・スレッドプール投入等を再実行していた)ことの2点を是正。
+//    - 色キャッシュ(clrSearchCache_/clrMarkCache_/clrCursorCache_)を追加し、
+//      コンストラクタとBuildWorkCallback()(実際にドキュメントが変化した時だけ
+//      走る経路)でのみレジストリを読み直すように変更。DrawWorkCallback()は
+//      キャッシュを読むだけになった。
+//    - ホバー再描画タイマーに上限Tick数(NKMM_SB_HOVER_REDRAW_MAX_TICKS、既定
+//      8回=400ms)を設け、バーストが終わったら(ホバーし続けていても)自動的に
+//      KillTimer()するように変更。
+//    - sakura_core\view\CEditView.h/.cpp (ScrBarMarker::RefreshColorCache,
+//      clrSearchCache_/clrMarkCache_/clrCursorCache_),
+//      sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc)
 //------------------------------------------------------------------
 #define NKMM_FIX_EDITVIEW_SCRBAR
 	#define WM_APP_SCRBAR_PAINT    (WM_APP + 2501)  // スクロールバー描画メッセージ
@@ -372,11 +462,20 @@
 	#define NKMM_SCRBAR_MARK_COLOR   _T("#ff0032") //_T("#ff0000") //_T("#d80000")
 	// キャレットのある行の色 (REG/EditViewScrBarMarkColor:#d80000)
 	#define NKMM_SCRBAR_CURSOR_COLOR _T("#0026ff") //_T("#0000cd") //_T("#00d800")
+	// マーク描画の不透明度 (0:完全透明〜255:不透明)。AlphaBlend()で背景(つまみ等)と
+	// 合成するため、つまみに重なったマークは自然に透けて見える 20260810
+	#define NKMM_SCRBAR_MARK_ALPHA   (220)
 
 	#define NKMM_EDITVIEW_H_SCRBAR_REDRAW_TIMING  (1)  // 水平スクロールバーの更新タイミングを修正
 	// システム(Explorer)風の細いスクロールバーにする 20260717
 	// SetWindowTheme(hwnd, L"Explorer", NULL) を適用する。テーマ無効環境では従来通りの見た目にフォールバックする
 	#define NKMM_SCRBAR_SYSTEM_STYLE (1)
+	// スクロールバー上の検索/ブックマークのマークをクリックしたら該当行へジャンプする 20260810
+	// VScrollBarWndProcのサブクラス化(NKMM_SCRBAR_SYSTEM_STYLE)を前提とするため、そちらが無効な場合は動作しない
+	#define NKMM_SCRBAR_MARKER_CLICK_JUMP (1)
+	// マウスホバー開始時にもマーカーを再描画する(ホバー中もマーク位置が見えるように) 20260810
+	// 同じくNKMM_SCRBAR_SYSTEM_STYLEのサブクラス化が前提
+	#define NKMM_SCRBAR_MARKER_HOVER_REDRAW (1)
 
 //------------------------------------------------------------------
 // 行間を上揃えではなく下揃えにする

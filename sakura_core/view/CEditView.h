@@ -809,7 +809,11 @@ public:
 		void Clear(int foo);                   // クリア (再構築要求) foo:マーキング用
 		void Build(bool bCacheClear, int foo); // 再構築 foo:マーキング用
 		void DrawRequest();                    // 描画リクエスト
-		void Draw();                           // 描画
+		// 描画。bUpdateScrollInfo=falseにすると、GetScrollInfo/SetScrollInfo(re
+		// draw=TRUE)による正規スクロールバーの強制再描画をスキップする(ホバー中の
+		// 高頻度な上乗せ描画専用。SetScrollInfo(TRUE)はネイティブ側の全面再描画=
+		// テーマのホバーアニメーション再トリガーを伴うため非常に重い)
+		void Draw(bool bUpdateScrollInfo = true);
 
 		// 登録・削除
 		bool Add(int nLayoutY, uint32_t magic);
@@ -817,7 +821,11 @@ public:
 		
 		// 検索文字列のある行か確認
 		bool IsFoundLine(const CDocLine *pCDocLine);
-		
+
+		// クリックされたスクロールバー上のY座標(クライアント座標)に最も近い
+		// マーク行(検索/ブックマーク)を探す。見つかればそのレイアウト行を*pOutLayoutYへ返す
+		bool HitTest(int nClientY, CLayoutInt *pOutLayoutY);
+
 		// スレッドを待つ
 		void WaitForBuild(bool abort = false);
 		void WaitForDraw(bool abort = false);
@@ -840,6 +848,19 @@ public:
 
 		int nSearchFoundLine_ = 0;                  // 見つかった検索行の数
 		int nMarkFoundLine_ = 0;                    // 見つかったブックマーク行の数
+
+		// 20260810 マーク描画色のキャッシュ。以前はDrawWorkCallback()の呼び出しの
+		// たびにRegKey(NKMM_REGKEY).get_s()で都度レジストリを読んでいた(1回の
+		// get_s()でRegOpenKeyEx+RegQueryValueEx x2+RegCloseKeyの計4回のレジストリ
+		// アクセス、3色で12回)。ホバー中は50ms間隔でDrawWorkCallback()が繰り返し
+		// 走るため、これが無視できないCPU負荷になっていた。色が変わるのは設定変更
+		// 時だけなので、コンストラクタとBuildWorkCallback()(実際にドキュメントが
+		// 変化した時だけ走る)でのみ読み直し、DrawWorkCallback()はこのキャッシュを
+		// 読むだけにする。
+		COLORREF clrSearchCache_ = 0;
+		COLORREF clrMarkCache_ = 0;
+		COLORREF clrCursorCache_ = 0;
+		void RefreshColorCache();                   // レジストリから色キャッシュを再読み込み
 
 		//std::mutex mtxCacheMutex_;
 		// 20260810 bBuildThreadRunning_の解除とbRebuildPending_の確認を不可分に
@@ -875,6 +896,12 @@ public:
 	void _SB_Marker_Build(bool bCacheClear, int foo); // 再構築 foo:マーキング用
 	void _SB_Marker_DrawRequest();                    // 描画リクエスト
 	void _SB_Marker_Draw();                           // 描画
+#if NKMM_SCRBAR_MARKER_CLICK_JUMP
+	bool _SB_Marker_HitTestAndJump(int nClientY);     // スクロールバークリック位置のマーク行へジャンプ
+#endif // NKMM_SCRBAR_MARKER_CLICK_JUMP
+#if NKMM_SCRBAR_MARKER_HOVER_REDRAW
+	void _SB_Marker_HoverRedraw();                    // ホバー中の軽量再描画(SetScrollInfo更新を伴わない)
+#endif // NKMM_SCRBAR_MARKER_HOVER_REDRAW
 
 	int GetDocumentWordNum() const;
 	

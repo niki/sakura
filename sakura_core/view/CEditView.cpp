@@ -3063,6 +3063,10 @@ void CALLBACK CEditView::ScrBarMarker::BuildWorkCallback(PTP_CALLBACK_INSTANCE /
 		rSBMarker.nMarkFoundLine_ = 0;
 		rSBMarker.nDrawRequestCount_ = 0;
 
+		// 20260810 色キャッシュもここ(実際にドキュメントが変化した時だけ走る経路)で
+		// 更新する。DrawWorkCallback()側は都度レジストリを読まずこのキャッシュを使う
+		rSBMarker.RefreshColorCache();
+
 		// ラインの配列を作成
 		const CLayoutInt nAllLines = pEditView->m_pcEditDoc->m_cLayoutMgr.GetLineCount();
 		std::vector<const CDocLine *> vLines;
@@ -3226,12 +3230,14 @@ void CALLBACK CEditView::ScrBarMarker::DrawWorkCallback(PTP_CALLBACK_INSTANCE /*
 	int nBarHeight = rSBMarker.sbi_.rcScrollBar.bottom - rSBMarker.sbi_.rcScrollBar.top -
 	                 (nCyVScroll /*rSBMarker.sbi_.dxyLineButton*/ * 2);
 
-	COLORREF clrSearch = si::ColorString::ToCOLORREF(
-	    RegKey(NKMM_REGKEY).get_s(_T("EditViewScrBarFoundColor"), NKMM_SCRBAR_FOUND_COLOR));
-	COLORREF clrMark = si::ColorString::ToCOLORREF(
-	    RegKey(NKMM_REGKEY).get_s(_T("EditViewScrBarMarkColor"), NKMM_SCRBAR_MARK_COLOR));
-	COLORREF clrCursor = si::ColorString::ToCOLORREF(
-	    RegKey(NKMM_REGKEY).get_s(_T("EditViewScrBarCursorColor"), NKMM_SCRBAR_CURSOR_COLOR));
+	// 20260810 以前はここで毎回RegKey(NKMM_REGKEY).get_s()を呼んでいた(1回のget_s()
+	// でRegOpenKeyEx+RegQueryValueEx x2+RegCloseKeyの計4回、3色で12回のレジストリ
+	// アクセス)。ホバー中は50ms間隔でDrawWorkCallback()が繰り返し走るため無視できない
+	// 負荷になっていたので、コンストラクタ/BuildWorkCallback()で更新されるキャッシュを
+	// 読むだけにした。
+	COLORREF clrSearch = rSBMarker.clrSearchCache_;
+	COLORREF clrMark = rSBMarker.clrMarkCache_;
+	COLORREF clrCursor = rSBMarker.clrCursorCache_;
 
 
 start_thread:
@@ -3270,6 +3276,9 @@ start_thread:
 			};
 
 			// 指定Y座標に矩形を1つ描画する
+			// 20260810 半透明合成(AlphaBlendMyRect)で描くことで、つまみ(サム)に
+			// マークが重なった時に自然に透けて見えるようにしている(つまみの範囲を
+			// 判定したり、つまみ自体を自前で再描画したりする必要が無い)
 			auto fnDrawMarkAtY = [=, &gr](int y, int left, int width, int height, COLORREF clr) {
 				int x = 1;
 				int margin = 0;  // スクロールバーの領域を超えた時のマージン
@@ -3282,7 +3291,7 @@ start_thread:
 				else if (y2 + height > nBarTop + nBarHeight) {
 					margin = (nBarTop + nBarHeight) - (y2 + height);
 				}
-				gr.FillSolidMyRect(/*RECT*/ {x2, y2 + margin, x2 + width, y2 + height + margin}, clr);
+				gr.AlphaBlendMyRect(/*RECT*/ {x2, y2 + margin, x2 + width, y2 + height + margin}, clr, NKMM_SCRBAR_MARK_ALPHA);
 			};
 
 			// 20260809 ヒット件数がスクロールバーの高さ(ピクセル数)よりずっと多い
@@ -3364,7 +3373,7 @@ start_thread:
 
 		const int w = std::max(DpiScaleX(1), nCxVScroll - DpiScaleX(1));
 		const int h = std::max(DpiScaleY(1), DpiScaleY(2));
-		gr.FillSolidMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor);
+		gr.AlphaBlendMyRect(/*RECT*/{x, y, x + w, y + h}, clrCursor, NKMM_SCRBAR_MARK_ALPHA);
 
 		::ReleaseDC(pEditView->m_hwndVScrollBar, hdc);
 	}
@@ -3417,6 +3426,21 @@ CEditView::ScrBarMarker::ScrBarMarker(CEditView *pView)
 	// 使い回す(編集のたびに_beginthreadexでスレッドを新規生成していたのをやめた)。
 	pBuildWork_ = ::CreateThreadpoolWork(&ScrBarMarker::BuildWorkCallback, pEditView_, nullptr);
 	pDrawWork_  = ::CreateThreadpoolWork(&ScrBarMarker::DrawWorkCallback,  pEditView_, nullptr);
+
+	RefreshColorCache();
+}
+
+//----------------------
+// 色キャッシュの再読み込み
+//----------------------
+void CEditView::ScrBarMarker::RefreshColorCache()
+{
+	clrSearchCache_ = si::ColorString::ToCOLORREF(
+	    RegKey(NKMM_REGKEY).get_s(_T("EditViewScrBarFoundColor"), NKMM_SCRBAR_FOUND_COLOR));
+	clrMarkCache_ = si::ColorString::ToCOLORREF(
+	    RegKey(NKMM_REGKEY).get_s(_T("EditViewScrBarMarkColor"), NKMM_SCRBAR_MARK_COLOR));
+	clrCursorCache_ = si::ColorString::ToCOLORREF(
+	    RegKey(NKMM_REGKEY).get_s(_T("EditViewScrBarCursorColor"), NKMM_SCRBAR_CURSOR_COLOR));
 }
 
 //----------------------
@@ -3563,7 +3587,7 @@ void CEditView::ScrBarMarker::DrawRequest()
 //----------------------
 // 描画
 //----------------------
-void CEditView::ScrBarMarker::Draw()
+void CEditView::ScrBarMarker::Draw(bool bUpdateScrollInfo)
 {
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 
@@ -3585,20 +3609,28 @@ void CEditView::ScrBarMarker::Draw()
 		return;
 	}
 
+	// 20260810 bUpdateScrollInfo=falseの場合はこのブロックを丸ごとスキップする。
+	// SetScrollInfo(..., TRUE)はネイティブスクロールバーの全面再描画(テーマの
+	// ホバーアニメーション再トリガーを含む)を伴う重い呼び出しで、ホバー中に
+	// 高頻度で呼ぶとCPU使用率が跳ね上がることが実機で確認された。ホバー中は
+	// スクロールバーの位置・範囲自体は変化しないため、このブロックは通常の
+	// (編集/スクロール契機の)Draw()呼び出しでのみ必要。
+	if (bUpdateScrollInfo) {
 #if 1 // @@ 描画する際にスクロールバーを更新する 20170721
-	SCROLLINFO si;
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_ALL;
-	::GetScrollInfo(pEditView_->m_hwndVScrollBar, SB_CTL, &si);
+		SCROLLINFO si;
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_ALL;
+		::GetScrollInfo(pEditView_->m_hwndVScrollBar, SB_CTL, &si);
 
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
-	::SetScrollInfo(pEditView_->m_hwndVScrollBar, SB_CTL, &si, TRUE);
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
+		::SetScrollInfo(pEditView_->m_hwndVScrollBar, SB_CTL, &si, TRUE);
 #endif // @@
 
-	// スクロールバーの情報を取得
-	sbi_.cbSize = sizeof(sbi_);
-	::GetScrollBarInfo(pEditView_->m_hwndVScrollBar, OBJID_CLIENT, &sbi_);
+		// スクロールバーの情報を取得
+		sbi_.cbSize = sizeof(sbi_);
+		::GetScrollBarInfo(pEditView_->m_hwndVScrollBar, OBJID_CLIENT, &sbi_);
+	}
 
 	// キャッシュ描画ワーク投入 (bDrawThreadRunning_は上のロック内で設定済み)
 	::SubmitThreadpoolWork(pDrawWork_);
@@ -3708,6 +3740,66 @@ bool CEditView::ScrBarMarker::IsFoundLine(const CDocLine *pCDocLine)
 	}
 }
 
+//----------------------
+// クリック位置に最も近いマーク行を検索
+//----------------------
+bool CEditView::ScrBarMarker::HitTest(int nClientY, CLayoutInt *pOutLayoutY)
+{
+	if (nSearchFoundLine_ == 0 && nMarkFoundLine_ == 0) return false;  // マークなし
+
+	SCROLLBARINFO sbi;
+	sbi.cbSize = sizeof(sbi);
+	if (!::GetScrollBarInfo(pEditView_->m_hwndVScrollBar, OBJID_CLIENT, &sbi)) return false;
+
+	// つまみ(現在の表示位置)の上をクリックした場合はマークジャンプより優先してつまみドラッグ
+	// させる。マークがちょうどつまみの位置に重なっていると、ドラッグ開始のはずのクリックが
+	// ジャンプに奪われ、スクロールバーをつまんで動かせなくなってしまうため。
+	// xyThumbTop/xyThumbBottomはクライアント座標(SCROLLBARINFO仕様)なのでnClientYと直接比較できる。
+	if (sbi.xyThumbTop < sbi.xyThumbBottom && sbi.xyThumbTop <= nClientY && nClientY <= sbi.xyThumbBottom) {
+		return false;
+	}
+
+	// 以下、DrawWorkCallback()と同じ式でY座標を求める(表示位置と当たり判定がズレないように)
+	const CLayoutInt nEofMargin = CLayoutInt(1); // EOFのマージン
+	const CLayoutInt nAllLines = pEditView_->m_pcEditDoc->m_cLayoutMgr.GetLineCount() + nEofMargin;
+	bool bEnable = (pEditView_->GetTextArea().m_nViewRowNum < nAllLines);
+
+	int nCyVScroll = ::GetSystemMetrics(SM_CYVSCROLL);
+	int nBarTop = nCyVScroll;
+	int nBarHeight = sbi.rcScrollBar.bottom - sbi.rcScrollBar.top - (nCyVScroll * 2);
+	if (nBarHeight <= 0) return false;
+
+	auto fnLineToY = [=](uint32_t ln) -> int {
+		return nBarTop +
+		       (bEnable ? ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / ToInt(nAllLines) * nBarHeight))
+		                : ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / ToInt(pEditView_->GetTextArea().m_nViewRowNum) *
+		                         nBarHeight)));
+	};
+
+	const int nTolerance = std::max(DpiScaleY(4), 4);  // クリック許容範囲(px)
+
+	bool bFound = false;
+	int nBestDist = INT_MAX;
+	uint32_t nBestLine = 0;
+
+	for (uint32_t ln : vLines_) {
+		if ((ln & NKMM_SCRBAR_MAGIC_MASK) == 0u) continue;  // マークの無い行はスキップ
+
+		int y = fnLineToY(ln);
+		int nDist = t_abs(y - nClientY);
+		if (nDist <= nTolerance && nDist < nBestDist) {
+			nBestDist = nDist;
+			nBestLine = ln & NKMM_SCRBAR_LINEN_MASK;
+			bFound = true;
+		}
+	}
+
+	if (bFound && pOutLayoutY) {
+		*pOutLayoutY = CLayoutInt((int)nBestLine);
+	}
+	return bFound;
+}
+
 void CEditView::ScrBarMarker::WaitForBuild(bool abort)
 {
 	if (bBuildThreadRunning_) {
@@ -3769,6 +3861,43 @@ void CEditView::_SB_Marker_Draw()
 {
 	SBMarker_->Draw();
 }
+
+#if NKMM_SCRBAR_MARKER_CLICK_JUMP
+//----------------------
+// クリック位置のマーク行へジャンプ
+//----------------------
+bool CEditView::_SB_Marker_HitTestAndJump(int nClientY)
+{
+	if (!SBMarker_) return false;
+
+	CLayoutInt nLayoutY;
+	if (!SBMarker_->HitTest(nClientY, &nLayoutY)) return false;
+
+	AddCurrentLineToHistory();  // ジャンプ前の位置を履歴に残す
+#ifdef NKMM_FIX_CENTERING_CURSOR_JUMP
+	GetDllShareData().m_sFlags.m_nCenteringCursor++;  // ジャンプ後カーソル行を中央に
+#endif // NKMM_
+	MoveCursorSelecting(CLayoutPoint(CLayoutInt(0), nLayoutY), false);
+	return true;
+}
+#endif // NKMM_SCRBAR_MARKER_CLICK_JUMP
+
+#if NKMM_SCRBAR_MARKER_HOVER_REDRAW
+//----------------------
+// ホバー中の軽量再描画
+//----------------------
+void CEditView::_SB_Marker_HoverRedraw()
+{
+	// 20260810 メッセージキュー(WM_APP_SCRBAR_PAINT)を経由せず直接Draw()を呼ぶ。
+	// ホバー中はタイマーで高頻度に呼ばれるため、PostMessage経由の
+	// nDrawRequestCount_カウンタや、構築スレッド稼働チェックを介さず、
+	// Draw()自身が持つデバウンス(bDrawThreadRunning_)にそのまま任せる。
+	// bUpdateScrollInfo=falseで、重いSetScrollInfo(TRUE)呼び出しを回避する。
+	if (SBMarker_) {
+		SBMarker_->Draw(/*bUpdateScrollInfo=*/false);
+	}
+}
+#endif // NKMM_SCRBAR_MARKER_HOVER_REDRAW
 
 int CEditView::GetDocumentWordNum() const
 {

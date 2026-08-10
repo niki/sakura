@@ -41,27 +41,106 @@
 namespace {
 	WNDPROC g_pOldVScrollBarWndProc = NULL;
 
+#if NKMM_SCRBAR_MARKER_HOVER_REDRAW
+	// ホバー中かどうかをスクロールバーHWND単位で覚えておくためのプロパティ名
+	// (分割ウィンドウ等でスクロールバーが複数存在するためHWNDごとに保持する)
+	const TCHAR* const NKMM_SB_HOVER_PROP = _T("NKMM_ScrBarHover");
+	// タイマー稼働中の残りTick数を覚えておくためのプロパティ名
+	const TCHAR* const NKMM_SB_HOVER_TICK_PROP = _T("NKMM_ScrBarHoverTick");
+	// ホバー再描画用タイマーID・周期・バースト回数(周期x回数の間だけ再描画し続けて自動停止する)
+	const UINT_PTR NKMM_SB_HOVER_REDRAW_TIMER_ID = 6200;
+	const UINT     NKMM_SB_HOVER_REDRAW_INTERVAL_MS = 50;
+	const UINT_PTR NKMM_SB_HOVER_REDRAW_MAX_TICKS = 8;  // 50ms x 8 = 400ms
+#endif // NKMM_SCRBAR_MARKER_HOVER_REDRAW
+
 	// Explorerテーマのホバー(フェード)アニメーションでバー全体が自前で
-	// 再描画され、マーカー描画が消されてしまうため、ホバー解除
-	// (WM_MOUSELEAVE)を検知してマーカーのカスタムドローを再実行する
+	// 再描画され、マーカー描画が消されてしまうため、ホバー開始直後は
+	// タイマーでマーカーのカスタムドローを再実行し続け、アニメーションが
+	// 収まる頃合い(NKMM_SB_HOVER_REDRAW_MAX_TICKS回)で自動停止する
 	LRESULT CALLBACK VScrollBarWndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	{
 		switch( msg ){
 		case WM_MOUSEMOVE:
 			{
+#if NKMM_SCRBAR_MARKER_HOVER_REDRAW
+				if( NULL == ::GetProp( hwnd, NKMM_SB_HOVER_PROP ) ){
+					// 非ホバー→ホバーへの遷移。フェードアニメーションが数百msかけて
+					// 自前描画を続け、1回の再描画だけでは消されてしまうことがあるため、
+					// 短いバースト(NKMM_SB_HOVER_REDRAW_MAX_TICKS回)だけタイマーで
+					// 再描画し続ける。ホバーしたままアニメーションが収まった後は
+					// ネイティブ側からの再描画は起きないので、タイマーは自動停止して
+					// 良い(ホバーし続けている間ずっとタイマーを回すとCPU負荷になる)。
+					::SetProp( hwnd, NKMM_SB_HOVER_PROP, (HANDLE)1 );
+					::SetProp( hwnd, NKMM_SB_HOVER_TICK_PROP, (HANDLE)0 );
+					CEditView* pView = (CEditView*)::GetWindowLongPtr( ::GetParent(hwnd), 0 );
+					if( NULL != pView ){
+						pView->SB_Marker_CallPaint(6100);	// ホバー開始でマーカー再描画
+					}
+					::SetTimer( hwnd, NKMM_SB_HOVER_REDRAW_TIMER_ID, NKMM_SB_HOVER_REDRAW_INTERVAL_MS, NULL );
+				}
+#endif // NKMM_SCRBAR_MARKER_HOVER_REDRAW
 				TRACKMOUSEEVENT tme = { sizeof(tme), TME_LEAVE, hwnd, 0 };
 				::TrackMouseEvent( &tme );
 			}
 			break;
+#if NKMM_SCRBAR_MARKER_HOVER_REDRAW
+		case WM_TIMER:
+			if( wParam == NKMM_SB_HOVER_REDRAW_TIMER_ID ){
+				UINT_PTR nTick = (UINT_PTR)::GetProp( hwnd, NKMM_SB_HOVER_TICK_PROP ) + 1;
+				if( nTick >= NKMM_SB_HOVER_REDRAW_MAX_TICKS ){
+					// バースト終了。ホバー中フラグ(NKMM_SB_HOVER_PROP)は残したままにし、
+					// WM_MOUSEMOVE毎の再トリガーは起きないようにする(WM_MOUSELEAVEまで)
+					::KillTimer( hwnd, NKMM_SB_HOVER_REDRAW_TIMER_ID );
+					::RemoveProp( hwnd, NKMM_SB_HOVER_TICK_PROP );
+				}
+				else {
+					::SetProp( hwnd, NKMM_SB_HOVER_TICK_PROP, (HANDLE)nTick );
+				}
+
+				CEditView* pView = (CEditView*)::GetWindowLongPtr( ::GetParent(hwnd), 0 );
+				if( NULL != pView ){
+					// 20260810 SB_Marker_CallPaint()(PostMessage経由、SetScrollInfo(TRUE)を
+					// 伴う)から_SB_Marker_HoverRedraw()(直接呼び出し、SetScrollInfoをスキップ)
+					// に変更。SetScrollInfo(TRUE)によるネイティブ側の全面再描画が50ms周期で
+					// 発生しCPU使用率が跳ね上がっていたため。Draw()側のデバウンスは維持される。
+					pView->_SB_Marker_HoverRedraw();
+				}
+				return 0;
+			}
+			break;
+#endif // NKMM_SCRBAR_MARKER_HOVER_REDRAW
 		case WM_MOUSELEAVE:
 			{
+#if NKMM_SCRBAR_MARKER_HOVER_REDRAW
+				::RemoveProp( hwnd, NKMM_SB_HOVER_PROP );
+				::RemoveProp( hwnd, NKMM_SB_HOVER_TICK_PROP );
+				::KillTimer( hwnd, NKMM_SB_HOVER_REDRAW_TIMER_ID );
+#endif // NKMM_SCRBAR_MARKER_HOVER_REDRAW
 				CEditView* pView = (CEditView*)::GetWindowLongPtr( ::GetParent(hwnd), 0 );
 				if( NULL != pView ){
 					pView->SB_Marker_CallPaint(6000);	// ホバー解除でマーカー再描画
 				}
 			}
 			break;
+#if NKMM_SCRBAR_MARKER_CLICK_JUMP
+		case WM_LBUTTONDOWN:
+			{
+				CEditView* pView = (CEditView*)::GetWindowLongPtr( ::GetParent(hwnd), 0 );
+				if( NULL != pView ){
+					int y = (short)HIWORD( lParam );
+					if( pView->_SB_Marker_HitTestAndJump( y ) ){
+						return 0;	// マーククリックとして処理済み。既定のスクロールバー動作(サム位置ジャンプ等)は行わない
+					}
+				}
+			}
+			break;	// マーク以外のクリックは通常通りCallWindowProcへ渡す
+#endif // NKMM_SCRBAR_MARKER_CLICK_JUMP
 		case WM_DESTROY:
+#if NKMM_SCRBAR_MARKER_HOVER_REDRAW
+			::KillTimer( hwnd, NKMM_SB_HOVER_REDRAW_TIMER_ID );
+			::RemoveProp( hwnd, NKMM_SB_HOVER_PROP );
+			::RemoveProp( hwnd, NKMM_SB_HOVER_TICK_PROP );
+#endif // NKMM_SCRBAR_MARKER_HOVER_REDRAW
 			::SetWindowLongPtr( hwnd, GWLP_WNDPROC, (LONG_PTR)g_pOldVScrollBarWndProc );
 			break;
 		}

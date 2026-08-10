@@ -234,6 +234,12 @@ public:
 	{
 		::ExtTextOut(m_hdc, rc.left, rc.top, ETO_OPAQUE|ETO_CLIPPED, &rc, _T(""), 0, NULL);
 	}
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+	//! 矩形塗り潰し(半透明合成)
+	//! GDIのAlphaBlend()で塗るため、呼び出し時点で描かれている背景(スクロール
+	//! バーのつまみ等)と自然に混ざって見える。alphaは0(完全透明)〜255(不透明)
+	void AlphaBlendMyRect(const RECT& rc, COLORREF color, BYTE alpha);
+#endif // NKMM_
 
 	static void DrawDropRect(LPCRECT lpRectNew, SIZE sizeNew, LPCRECT lpRectLast, SIZE sizeLast);	// ドロップ先の矩形を描画する
 	void DrawRect(int x1, int y1, int x2, int y2);
@@ -266,6 +272,16 @@ private:
 	HBRUSH				m_hbrOrg;
 	HBRUSH				m_hbrCurrent;
 	bool				m_bDynamicBrush;	//m_hbrCurrentを動的に作成した場合はtrue
+
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+	// AlphaBlendMyRect用の1x1メモリDC/ビットマップ。20260810 呼び出しのたびに
+	// CreateCompatibleDC/CreateCompatibleBitmapしていたことでスクロールバーの
+	// ホバー時再描画(高頻度)時にCPU負荷が跳ね上がったため、CGraphicsのインスタンス
+	// 生存中は使い回すようにした(初回のAlphaBlendMyRect呼び出し時に遅延生成)
+	HDC					m_hdcAlphaBlendMem;
+	HBITMAP				m_hbmAlphaBlendMem;
+	HBITMAP				m_hbmAlphaBlendMemOld;
+#endif // NKMM_
 };
 
 #endif /* SAKURA_CGRAPHICS_BA5156BF_99C6_4854_8131_CE8B091A5EFF9_H_ */

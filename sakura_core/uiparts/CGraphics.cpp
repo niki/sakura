@@ -6,6 +6,47 @@
 #include "CGraphics.h"
 #include "util/std_macro.h"
 
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+#pragma comment(lib, "msimg32.lib")	// AlphaBlend()用
+
+//! 矩形塗り潰し(半透明合成)
+//! 20260810 スクロールバーマーカーがつまみ等の背景と自然に混ざって見えるように追加。
+//! 転送元は1x1の単色ビットマップにし、AlphaBlend()に転送先サイズまで引き伸ばして
+//! 合成させる(ソース側にピクセル単位のアルファは持たせず、定数アルファのみ使う)。
+//! 20260810 呼び出しのたびにCreateCompatibleDC/CreateCompatibleBitmapしていたところ、
+//! スクロールバーのホバー時再描画(高頻度)でCPU使用率が跳ね上がる不具合が実機で
+//! 確認されたため、1x1メモリDC/ビットマップをCGraphicsインスタンスの生存期間中
+//! 使い回すように変更(初回呼び出し時に遅延生成、破棄はデストラクタで行う)。
+void CGraphics::AlphaBlendMyRect(const RECT& rc, COLORREF color, BYTE alpha)
+{
+	int width = rc.right - rc.left;
+	int height = rc.bottom - rc.top;
+	if (width <= 0 || height <= 0) return;
+
+	if (!m_hdcAlphaBlendMem) {
+		m_hdcAlphaBlendMem = ::CreateCompatibleDC(m_hdc);
+		if (!m_hdcAlphaBlendMem) return;
+		m_hbmAlphaBlendMem = ::CreateCompatibleBitmap(m_hdc, 1, 1);
+		if (!m_hbmAlphaBlendMem) {
+			::DeleteDC(m_hdcAlphaBlendMem);
+			m_hdcAlphaBlendMem = NULL;
+			return;
+		}
+		m_hbmAlphaBlendMemOld = (HBITMAP)::SelectObject(m_hdcAlphaBlendMem, m_hbmAlphaBlendMem);
+	}
+
+	::SetPixel(m_hdcAlphaBlendMem, 0, 0, color);
+
+	BLENDFUNCTION bf = {};
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = alpha;
+	bf.AlphaFormat = 0;	// ソースにピクセル単位のアルファチャンネルは無い(定数アルファのみ使う)
+
+	::AlphaBlend(m_hdc, rc.left, rc.top, width, height, m_hdcAlphaBlendMem, 0, 0, 1, 1, bf);
+}
+#endif // NKMM_
+
 class CGDIStock
 {
 public:
@@ -40,6 +81,12 @@ void CGraphics::Init(HDC hdc)
 	m_hbrOrg = NULL;
 	m_hbrCurrent = NULL;
 	m_bDynamicBrush = false;
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+	//AlphaBlendMyRect用(遅延生成)
+	m_hdcAlphaBlendMem = NULL;
+	m_hbmAlphaBlendMem = NULL;
+	m_hbmAlphaBlendMemOld = NULL;
+#endif // NKMM_
 }
 
 CGraphics::~CGraphics()
@@ -49,6 +96,14 @@ CGraphics::~CGraphics()
 	ClearPen();
 	ClearBrush();
 	RestoreTextColors();
+
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+	if (m_hdcAlphaBlendMem) {
+		::SelectObject(m_hdcAlphaBlendMem, m_hbmAlphaBlendMemOld);
+		::DeleteObject(m_hbmAlphaBlendMem);
+		::DeleteDC(m_hdcAlphaBlendMem);
+	}
+#endif // NKMM_
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
