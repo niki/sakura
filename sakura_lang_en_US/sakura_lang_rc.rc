@@ -4548,6 +4548,7 @@ BEGIN
 	STR_PROPCOMMON_KEYLIST			"Key Binding (Experimental)"
 	STR_ERR_DLGKEYBINDLIST_FILTERHINT	"Filter by function name / key"
 	STR_PROPCOMKEYWORD_RELOAD_DEFAULT	"Failed to load the keyword file. Use the built-in default keywords instead?"
+	STR_ERR_DLGKEYBINDLIST_CAPTUREHINT	"Press a key"
 	STR_PROPCOMMON_CUSTMENU		"Custom Menu"
 	STR_PROPCOMMON_TOOLBAR		"Tool Bar"
 	STR_PROPCOMMON_KEYWORD		"Keyword Highlight"

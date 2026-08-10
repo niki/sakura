@@ -101,6 +101,79 @@ static LRESULT CALLBACK FilterEditSubclassProc(
 	return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
 }
 
+//! 「キー入力」欄(直接入力)でキーを検知したことを親ダイアログへ伝える私用メッセージ。
+//! wParam=検知した仮想キーコード、lParam=検知した修飾キー(_SHIFT|_CTRL|_ALT) 20260810
+static const UINT WM_NKMM_KEYBINDLIST_CAPTURE = WM_APP + 0x210;
+
+/*! 「キー入力」欄(直接入力)のサブクラスプロシージャ。
+	既存のコンボ+Shift/Ctrl/Altチェックボックス方式とは別の、もう一つの入力方法として
+	追加する(まずは2系統を並行して用意し、結果は共通の状態(コンボ+チェックボックス)へ
+	反映する)。フォーカス中に押されたキーを検知し、仮想キーコードと修飾キーの状態を
+	WM_NKMM_KEYBINDLIST_CAPTUREで親ダイアログへ通知するだけで、一覧への反映自体は
+	親側(DispatchEvent)が行う 20260810
+
+	@date 20260810 新規作成。WM_GETDLGCODEでDLGC_WANTALLKEYSを返し、Tab/Esc/矢印
+		キーなどダイアログ側が先取りするキーもできるだけこの欄で検知できるようにして
+		いるが、それでも一部のキー(例えばAltを伴う組み合わせなど)はシステムメニュー等に
+		奪われて検知できないことがある既知の制限
+*/
+static LRESULT CALLBACK CaptureEditSubclassProc(
+	HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData )
+{
+	if( WM_KEYDOWN == uMsg || WM_SYSKEYDOWN == uMsg ){
+		int	nVirtKey = (int)wParam;
+		// 修飾キー単体の押下はキー本体ではないので無視し、次のキーを待つ
+		if( VK_SHIFT != nVirtKey && VK_LSHIFT != nVirtKey && VK_RSHIFT != nVirtKey
+		 && VK_CONTROL != nVirtKey && VK_LCONTROL != nVirtKey && VK_RCONTROL != nVirtKey
+		 && VK_MENU != nVirtKey && VK_LMENU != nVirtKey && VK_RMENU != nVirtKey
+		){
+			int	nModifier = 0;
+			if( 0 != ( ::GetKeyState( VK_SHIFT )   & 0x8000 ) ){ nModifier |= _SHIFT; }
+			if( 0 != ( ::GetKeyState( VK_CONTROL ) & 0x8000 ) ){ nModifier |= _CTRL;  }
+			if( 0 != ( ::GetKeyState( VK_MENU )    & 0x8000 ) ){ nModifier |= _ALT;   }
+			::SendMessage( ::GetParent( hwnd ), WM_NKMM_KEYBINDLIST_CAPTURE, (WPARAM)nVirtKey, (LPARAM)nModifier );
+		}
+		return 0;	// Editの既定処理(フォーカス移動・システムメニュー起動等)をさせない
+	}else if( WM_CHAR == uMsg || WM_SYSCHAR == uMsg ){
+		return 0;	// ES_READONLYでも文字入力扱いでビープが鳴るため、確実に止める
+	}else if( WM_GETDLGCODE == uMsg ){
+		return DLGC_WANTALLKEYS;	// Tab/Esc/矢印キーもこの欄で(できるだけ)検知する
+	}else if( WM_PAINT == uMsg ){
+		// 未入力かつ非フォーカス時は、絞り込み欄(FilterEditSubclassProc)と同じ要領で
+		// ヒント文字を薄い色で自前描画する 20260810
+		TCHAR	szText[8];
+		::GetWindowText( hwnd, szText, _countof(szText) );
+		if( L'\0' == szText[0] && ::GetFocus() != hwnd ){
+			PAINTSTRUCT	ps;
+			HDC	hdc = ::BeginPaint( hwnd, &ps );
+			RECT	rc;
+			::GetClientRect( hwnd, &rc );
+			::FillRect( hdc, &rc, (HBRUSH)( COLOR_WINDOW + 1 ) );
+			::SetBkMode( hdc, TRANSPARENT );
+			::SetTextColor( hdc, NKMM_KEYBINDLIST_PLACEHOLDER_COLOR );
+			HFONT	hFont = (HFONT)::SendMessage( hwnd, WM_GETFONT, 0, 0 );
+			HFONT	hOldFont = ( NULL != hFont ) ? (HFONT)::SelectObject( hdc, hFont ) : NULL;
+			RECT	rcLabel = rc;
+			rcLabel.left += 2;
+			::DrawText( hdc, LS(STR_ERR_DLGKEYBINDLIST_CAPTUREHINT), -1, &rcLabel,
+				DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX );
+			if( NULL != hOldFont ){
+				::SelectObject( hdc, hOldFont );
+			}
+			::EndPaint( hwnd, &ps );
+			return 0;
+		}
+	}else if( WM_SETFOCUS == uMsg || WM_KILLFOCUS == uMsg ){
+		LRESULT	lr = ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+		::InvalidateRect( hwnd, NULL, TRUE );	// ヒント文字の表示/非表示切り替えを反映する
+		return lr;
+	}else if( WM_NCDESTROY == uMsg ){
+		::RemoveWindowSubclass( hwnd, CaptureEditSubclassProc, uIdSubclass );
+	}
+	return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+}
+
 INT_PTR CALLBACK CPropKeybindList::DlgProc_page(
 	HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
@@ -229,6 +302,11 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			// サブクラス化して自前で薄い色のヒント文字を描画する 20260804
 			::SetWindowSubclass( ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_FILTER ),
 				FilterEditSubclassProc, 0, 0 );
+
+			// 「キー入力」欄(直接入力)。既存のコンボ+チェックボックスとは別の、
+			// もう一つの入力方法として並行して使えるようにする 20260810
+			::SetWindowSubclass( ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_CAPTURE ),
+				CaptureEditSubclassProc, 0, 0 );
 
 			/* ダイアログデータの設定 */
 			SetData( hwndDlg );
@@ -549,6 +627,47 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			break;
 		}
 		break;
+
+	case WM_NKMM_KEYBINDLIST_CAPTURE:
+		// 「キー入力」欄(直接入力)でキーを検知した通知。wParam=仮想キーコード、
+		// lParam=検知した修飾キー(_SHIFT|_CTRL|_ALT)。一覧のキー名と一致すれば、
+		// もう一方の入力方法(コンボ+チェックボックス)へ結果を反映して共有する 20260810
+		{
+			int	nVirtKey  = (int)wParam;
+			int	nModifier = (int)lParam;
+
+			int	nKeyIndex = -1;
+			for( int i = 0; i < m_Common.m_sKeyBind.m_nKeyNameArrNum; ++i ){
+				if( m_Common.m_sKeyBind.m_pKeyNameArr[i].m_nKeyCode == nVirtKey ){
+					nKeyIndex = i;
+					break;
+				}
+			}
+
+			if( 0 <= nKeyIndex ){
+				HWND	hCombo = ::GetDlgItem( hwndDlg, IDC_COMBO_KEYBINDLIST_KEY );
+
+				s_bShiftChecked = 0 != ( nModifier & _SHIFT );
+				s_bCtrlChecked  = 0 != ( nModifier & _CTRL );
+				s_bAltChecked   = 0 != ( nModifier & _ALT );
+				Combo_SetCurSel( hCombo, nKeyIndex );
+
+				::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_SHIFT ), NULL, TRUE );
+				::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_CTRL ), NULL, TRUE );
+				::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_ALT ), NULL, TRUE );
+
+				// 直接入力欄自体にも、検知した組み合わせを表示してフィードバックする
+				std::wstring	sCombo;
+				if( s_bShiftChecked ){ sCombo += L"Shift+"; }
+				if( s_bCtrlChecked )  { sCombo += L"Ctrl+";  }
+				if( s_bAltChecked )   { sCombo += L"Alt+";   }
+				sCombo += m_Common.m_sKeyBind.m_pKeyNameArr[nKeyIndex].m_szKeyName;
+				::SetWindowText( ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_CAPTURE ), sCombo.c_str() );
+
+				FocusMatchingRow( hwndDlg );
+			}
+		}
+		return TRUE;
 
 	case WM_NOTIFY:
 		pNMHDR = (NMHDR*)lParam;
