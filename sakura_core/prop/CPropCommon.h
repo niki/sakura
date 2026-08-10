@@ -293,6 +293,7 @@ private:
 	void ReflectSelection( HWND, int );	//!< 選択行のショートカットを上部の設定コントロールに反映する 20260803
 	void FocusMatchingRow( HWND );	//!< 上部の設定コントロールと一致する行を一覧内でフォーカスする 20260803
 	int  FindMatchingRow( HWND );	//!< 上部の設定コントロールと一致する行の番号を返す(無ければ-1) 20260803
+	bool IsKeyAssigned( int nKeyIndex, int nModifier );	//!< 指定したキー+修飾キーの組み合わせが既に何かに割り当て済みか調べる(ドロップダウン各項目の警告色判定用) 20260805
 	void UpdateActionArea( HWND );	//!< 機能名欄・登録/解除ボタン・キー警告色を選択状態に合わせて更新する 20260803
 	void UpdateStickyHeader( HWND );	//!< 先頭に見えている行の種別を、スクロールしても固定表示するオーバーレイに反映する 20260804
 	void Import( HWND );	//!< キー割り当て設定をインポートする(キー割り当てタブと共通) 20260804

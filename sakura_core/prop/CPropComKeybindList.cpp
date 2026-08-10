@@ -22,8 +22,14 @@
 //! 「登録」ボタンで選択中の行に何を割り当てるか調べるために使う 20260803
 static std::vector<EFunctionCode>	s_vRowFuncCodes;
 
-//! キーが既に何かに割り当て済みのときの警告色(セマンティックカラー:警告黄) 20260803
-static const COLORREF	NKMM_KEYBINDLIST_WARN_COLOR = RGB( 255, 240, 120 );
+//! キーが既に何かに割り当て済みのときの警告色(セマンティックカラー:警告黄。
+//! クリーム背景+琥珀色文字の配色) 20260803
+//! @date 20260805 警告バナーの見本に合わせた配色に変更
+//! @date 20260805 背景が白地とほぼ差がなく、枠のないリスト項目の塗りでは
+//! 行の端まで塗られているのに中央付近しか色が見えず「高さが縮んだ」ように
+//! 見えてしまっていたため、判別しやすい濃さに調整
+static const COLORREF	NKMM_KEYBINDLIST_WARN_COLOR      = RGB( 255, 244, 196 );
+static const COLORREF	NKMM_KEYBINDLIST_WARN_TEXT_COLOR = RGB( 180, 120, 10 );
 
 //! 一覧で選択中の行の背景色・文字色(セマンティックカラー:エラー赤。
 //! エラーバナー等で使われる薄紅背景+濃い赤文字の配色) 20260803
@@ -138,7 +144,9 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			// DWLP_USERが設定されておらずCPropCommon::DlgProcのdefault:分岐がインスタンスを
 			// 取得できずFALSEを返してしまう時点)に飛んでくる可能性があり信頼できないため 20260803
 			::SendMessage( hCombo, CB_SETITEMHEIGHT, (WPARAM)-1, (LPARAM)14 );	// 閉じているときの表示部分
-			::SendMessage( hCombo, CB_SETITEMHEIGHT, (WPARAM)0, (LPARAM)14 );	// ドロップダウンリストの項目
+			// ドロップダウンリストの項目。14だと警告色の塗りが窮屈に見えたため
+			// 少し高くして余白を持たせる 20260805
+			::SendMessage( hCombo, CB_SETITEMHEIGHT, (WPARAM)0, (LPARAM)17 );
 			// チェックボックスは開くたびに未チェック状態から始める
 			// (BS_OWNERDRAWのためチェック状態はこちらで保持している) 20260803
 			s_bShiftChecked = false;
@@ -310,13 +318,24 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			LPDRAWITEMSTRUCT	pdis = (LPDRAWITEMSTRUCT)lParam;
 			if( IDC_COMBO_KEYBINDLIST_KEY == pdis->CtlID ){
 				bool	bEditArea = ( 0 != ( pdis->itemState & ODS_COMBOBOXEDIT ) );
-				bool	bConflict = ( 0 <= FindMatchingRow( hwndDlg ) );
+				bool	bConflict;
+				if( bEditArea ){
+					bConflict = ( 0 <= FindMatchingRow( hwndDlg ) );
+				}else{
+					// ドロップダウンの各項目は、その項目自体のキー+現在チェック中の
+					// 修飾キーの組み合わせで割り当て済みか個別に判定する 20260805
+					int	nModifier = 0;
+					if( s_bShiftChecked ){ nModifier |= _SHIFT; }
+					if( s_bCtrlChecked )  { nModifier |= _CTRL;  }
+					if( s_bAltChecked )   { nModifier |= _ALT;   }
+					bConflict = ( (int)pdis->itemID >= 0 ) && IsKeyAssigned( (int)pdis->itemID, nModifier );
+				}
 
 				COLORREF	crBack;
 				COLORREF	crText;
-				if( bEditArea && bConflict ){
+				if( bConflict ){
 					crBack = NKMM_KEYBINDLIST_WARN_COLOR;
-					crText = ::GetSysColor( COLOR_WINDOWTEXT );
+					crText = NKMM_KEYBINDLIST_WARN_TEXT_COLOR;
 				}else if( 0 != ( pdis->itemState & ODS_SELECTED ) ){
 					crBack = ::GetSysColor( COLOR_HIGHLIGHT );
 					crText = ::GetSysColor( COLOR_HIGHLIGHTTEXT );
@@ -376,7 +395,7 @@ INT_PTR CPropKeybindList::DispatchEvent(
 				TCHAR	szLabel[32];
 				::GetWindowText( pdis->hwndItem, szLabel, _countof(szLabel) );
 				::SetBkMode( pdis->hDC, TRANSPARENT );
-				::SetTextColor( pdis->hDC, ::GetSysColor( COLOR_WINDOWTEXT ) );
+				::SetTextColor( pdis->hDC, bConflict ? NKMM_KEYBINDLIST_WARN_TEXT_COLOR : ::GetSysColor( COLOR_WINDOWTEXT ) );
 				RECT	rcLabel = pdis->rcItem;
 				rcLabel.left = rcCheck.right + 4;
 				::DrawText( pdis->hDC, szLabel, -1, &rcLabel, DT_SINGLELINE | DT_VCENTER );	// &の下線(アクセスキー)を活かすためDT_NOPREFIXは付けない
@@ -966,6 +985,25 @@ int CPropKeybindList::FindMatchingRow( HWND hwndDlg )
 		}
 	}
 	return -1;
+}
+
+/*! 指定したキー(nKeyIndex)+修飾キー(nModifier)の組み合わせが既に
+	何らかの機能に割り当て済みか調べる
+	@date 20260805
+
+	キーのドロップダウンリストを開いたとき、各項目(キー)ごとに現在チェック中の
+	修飾キーとの組み合わせで割り当て済みかどうかを個別に判定して警告色表示するために使う。
+	FindMatchingRow()と同じくCKeyBind::GetFuncCodeAt()で判定するが、コンボの
+	現在の選択ではなく任意のキー番号を指定できる点が異なる。
+*/
+bool CPropKeybindList::IsKeyAssigned( int nKeyIndex, int nModifier )
+{
+	if( nKeyIndex < 0 || m_Common.m_sKeyBind.m_nKeyNameArrNum <= nKeyIndex ){
+		return false;
+	}
+	EFunctionCode	nFuncCode = CKeyBind::GetFuncCodeAt(
+		m_Common.m_sKeyBind.m_pKeyNameArr[nKeyIndex], nModifier, TRUE );
+	return F_DISABLE != nFuncCode;
 }
 
 /*! 上部の設定コントロール(Shift/Ctrl/Alt + キー)と一致する行を一覧内で探し、
