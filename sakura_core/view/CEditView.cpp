@@ -3066,7 +3066,7 @@ void CALLBACK CEditView::ScrBarMarker::BuildWorkCallback(PTP_CALLBACK_INSTANCE /
 		// ラインの配列を作成
 		const CLayoutInt nAllLines = pEditView->m_pcEditDoc->m_cLayoutMgr.GetLineCount();
 		std::vector<const CDocLine *> vLines;
-		vLines.reserve(nAllLines + 1);
+		vLines.reserve((size_t)ToInt(nAllLines + 1));
 
 		// 要素を詰め込む
 		{
@@ -3078,9 +3078,9 @@ void CALLBACK CEditView::ScrBarMarker::BuildWorkCallback(PTP_CALLBACK_INSTANCE /
 		}
 
 		// キャッシュ用
-		std::vector<uint32_t> vCache(nAllLines + 1, 0u);
+		std::vector<uint32_t> vCache((size_t)ToInt(nAllLines + 1), 0u);
 
-		CLayoutInt nLineHint = CLogicInt(0);
+		CLayoutInt nLineHint = CLayoutInt(0);
 		bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
 
 		const int vsize = (int)vLines.size();
@@ -3136,12 +3136,12 @@ void CALLBACK CEditView::ScrBarMarker::BuildWorkCallback(PTP_CALLBACK_INSTANCE /
 				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? NKMM_SCRBAR_MARK_MAGIC : 0u;
 
 				if ((uFoundMagic | uMarkMagic) != 0u) {
-					CLogicInt nLogicY = i;
+					CLogicInt nLogicY(i);
 					CLayoutInt nLayoutY;
 
 					if (bNoTextWrap) {  // 折り返しなし
 						// ロジック行＝レイアウト行
-						nLayoutY = nLogicY;
+						nLayoutY = CLayoutInt(ToInt(nLogicY));
 					}
 					else {
 						// ロジック行→レイアウト行
@@ -3152,7 +3152,7 @@ void CALLBACK CEditView::ScrBarMarker::BuildWorkCallback(PTP_CALLBACK_INSTANCE /
 					}
 
 					// キャッシュに登録
-					vCache[i] = (uint32_t)nLayoutY | (uFoundMagic | uMarkMagic);
+					vCache[i] = (uint32_t)ToInt(nLayoutY) | (uFoundMagic | uMarkMagic);
 					if (uFoundMagic != 0u) rSBMarker.nSearchFoundLine_++;
 					if (uMarkMagic != 0u) rSBMarker.nMarkFoundLine_++;
 					//rSBMarker.Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
@@ -3264,8 +3264,8 @@ start_thread:
 			// 行番号(ln)からスクロールバー上のY座標(マージン補正前)を求める
 			auto fnLineToY = [=](uint32_t ln) -> int {
 				return nBarTop +
-				       (bEnable ? ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / nAllLines * nBarHeight))
-				                : ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / pEditView->GetTextArea().m_nViewRowNum *
+				       (bEnable ? ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / ToInt(nAllLines) * nBarHeight))
+				                : ((int)((float)(ln & NKMM_SCRBAR_LINEN_MASK) / ToInt(pEditView->GetTextArea().m_nViewRowNum) *
 				                         nBarHeight)));
 			};
 
@@ -3354,10 +3354,10 @@ start_thread:
 		int x = 1;
 		int y = nBarTop;
 
-		y += bEnable ? ((int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / nAllLines *
+		y += bEnable ? ((int)((float)ToInt(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) / ToInt(nAllLines) *
 		                      nBarHeight))
-		             : ((int)((float)(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
-		                      pEditView->GetTextArea().m_nViewRowNum * nBarHeight));
+		             : ((int)((float)ToInt(pEditView->GetCaret().GetCaretLayoutPos().GetY2()) /
+		                      ToInt(pEditView->GetTextArea().m_nViewRowNum) * nBarHeight));
 
 		//gr.FillSolidMyRect(/*RECT*/{x, nBarTop, x + nCxVScroll - 1, nBarTop + nBarHeight}, ::GetSysColor(COLOR_MENU));
 		//gr.FillSolidMyRect(/*RECT*/{x, nThumbTop, x + nCxVScroll - 1, nThumbBottom}, ::GetSysColor(COLOR_SCROLLBAR));
@@ -3496,7 +3496,7 @@ void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo)
 
 	// 行数が変わっていたら強制更新
 	if (nLastLineCount_ != nAllLines) {
-		nLastLineCount_ = nAllLines;
+		nLastLineCount_ = ToInt(nAllLines);
 		bCacheClear = true;
 	}
 
@@ -3697,7 +3697,7 @@ func_end:
 bool CEditView::ScrBarMarker::IsFoundLine(const CDocLine *pCDocLine)
 {
 	if (pEditView_->m_bCurSrchKeyMark && pCDocLine->GetLengthWithoutEOL() > 0) {
-		int nSearchStart, nSearchEnd;
+		CLogicInt nSearchStart, nSearchEnd;
 		int nResult = pEditView_->IsSearchString(
 		                  CStringRef(pCDocLine->GetPtr(), pCDocLine->GetLengthWithoutEOL()),
 		                  CLogicInt(0), &nSearchStart, &nSearchEnd);

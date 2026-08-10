@@ -1547,7 +1547,7 @@ LRESULT CEditWnd::DispatchEvent(
 						GetDocument()->m_pcEditWnd->RedrawAllViews( NULL );
 					}
 					else if (nId >= 3) {
-						GetDocument()->m_pcEditWnd->ChangeLayoutParam(false, CLayoutInt(width_tbl[nId - 3]),
+						GetDocument()->m_pcEditWnd->ChangeLayoutParam(false, width_tbl[nId - 3],
 						                                              pLayoutMgr->m_tsvInfo.m_nTsvMode,
 						                                              pLayoutMgr->GetMaxLineKetas());
 						// 2009.08.28 nasukoji	「折り返さない」選択時にTAB幅が変更されたらテキスト最大幅の再算出が必要

@@ -283,13 +283,13 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 				CLogicInt nLogicY = nY;
 				CLogicPoint ptXY = {0, nLogicY};
 				CLayoutPoint ptLayout;
-				GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLogicY);
+				GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout);
 				
 				if (cBookmark.IsBookmarked()) {
-					m_pCommanderView->SBMarker_->Add(ptLayout.y, NKMM_SCRBAR_MARK_MAGIC);  // 登録
+					m_pCommanderView->SBMarker_->Add(ToInt(ptLayout.y), NKMM_SCRBAR_MARK_MAGIC);  // 登録
 				}
 				else {
-					m_pCommanderView->SBMarker_->Del(ptLayout.y, NKMM_SCRBAR_MARK_MAGIC);  // 削除
+					m_pCommanderView->SBMarker_->Del(ToInt(ptLayout.y), NKMM_SCRBAR_MARK_MAGIC);  // 削除
 				}
 				m_pCommanderView->SB_Marker_CallPaint(4001);
 			}
@@ -306,13 +306,13 @@ void CViewCommander::Command_BOOKMARK_SET(void)
 			CLogicInt nLogicY = GetCaret().GetCaretLogicPos().GetY2();
 			CLogicPoint ptXY = {0, nLogicY};
 			CLayoutPoint ptLayout;
-			GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout, nLogicY);
+			GetDocument()->m_cLayoutMgr.LogicToLayout(ptXY, &ptLayout);
 			
 			if (cBookmark.IsBookmarked()) {
-				m_pCommanderView->SBMarker_->Add(ptLayout.y, NKMM_SCRBAR_MARK_MAGIC);  // 登録
+				m_pCommanderView->SBMarker_->Add(ToInt(ptLayout.y), NKMM_SCRBAR_MARK_MAGIC);  // 登録
 			}
 			else {
-				m_pCommanderView->SBMarker_->Del(ptLayout.y, NKMM_SCRBAR_MARK_MAGIC);  // 削除
+				m_pCommanderView->SBMarker_->Del(ToInt(ptLayout.y), NKMM_SCRBAR_MARK_MAGIC);  // 削除
 			}
 			m_pCommanderView->SB_Marker_CallPaint(4002);
 		}

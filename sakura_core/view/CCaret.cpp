@@ -186,7 +186,7 @@ CLayoutInt CCaret::MoveCursor(
 #ifdef NKMM_FIX_SCROLL
 		nCaretMarginY = NKMM_VERTICAL_SCROLL_MARGIN;
 		if( nCaretMarginY < 0 )
-			nCaretMarginY = CLayoutInt(0);
+			nCaretMarginY = 0;
 #else
 		//	2001/10/20 novice
 		nCaretMarginY = (Int)m_pEditView->GetTextArea().m_nViewRowNum / nCaretMarginRate;
@@ -241,7 +241,7 @@ CLayoutInt CCaret::MoveCursor(
 			( area.GetViewLeftCol() + area.m_nViewColNum - nScrollMarginRight ) - ptWk_CaretPos.GetX2();
 #ifdef NKMM_FIX_SCROLL
 		if (nScrollColNum != 0) {
-			static const int kSize = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(NKMM_HORIZONTAL_SCROLL_MARGIN));
+			static const int kSize = ToInt(m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(NKMM_HORIZONTAL_SCROLL_MARGIN)));
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize
@@ -256,7 +256,7 @@ CLayoutInt CCaret::MoveCursor(
 		nScrollColNum = area.GetViewLeftCol() + nScrollMarginLeft - ptWk_CaretPos.GetX2();
 #ifdef NKMM_FIX_SCROLL
 		if (nScrollColNum != 0) {
-			static const int kSize = m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(NKMM_HORIZONTAL_SCROLL_MARGIN));
+			static const int kSize = ToInt(m_pEditView->GetTextMetrics().GetLayoutXDefault(CKetaXInt(NKMM_HORIZONTAL_SCROLL_MARGIN)));
 			if (kSize > 1) {
 				nScrollColNum = (nScrollColNum < 0)
 				                    ? -(-nScrollColNum + kSize - 1) / kSize * kSize
@@ -902,7 +902,7 @@ void CCaret::ShowCaretPosInfo()
 #ifdef NKMM_FIX_SURROGATE_CHAR_COUNT
 				// サロゲートペア文字(絵文字等)を1文字として数える 20260719
 				CLogicInt nIdx = GetCaretLogicPos().GetX() - pcLayout->GetLogicOffset();
-				ptCaret.x = pLine ? CNativeW::GetCharCountInRange( pLine, nLineLen, 0, nIdx ) : (Int)nIdx;
+				ptCaret.x = pLine ? (Int)CNativeW::GetCharCountInRange( pLine, nLineLen, 0, nIdx ) : (Int)nIdx;
 #else
 				ptCaret.x = (Int)GetCaretLogicPos().GetX() - pcLayout->GetLogicOffset();
 #endif // NKMM_

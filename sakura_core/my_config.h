@@ -1145,8 +1145,15 @@
 //    コンパイルするだけでredirect dll無しに静的上書きできる
 //  - sakura_core\config\mimalloc_override_fi.h (ForcedIncludeFile)
 //  - 詳細はchangelog/NKMM_USE_MIMALLOC_OVERRIDE.md参照
+//  - 20260810 Debug(/MTd)ではlibucrtd.libの_expand(expand.obj)とmimalloc側の
+//    _expand定義が衝突し LNK2005/LNK1169 でリンクに失敗することが判明した。
+//    NKMM_USE_MIMALLOC_OVERRIDE.mdの検証はRelease|Win32のみで、Debug/x64は
+//    未検証だったことが原因。DebugビルドはCRTの通常のデバッグヒープを使う方が
+//    デバッグ用途としても好都合なため、Release(NDEBUG)限定にした
 //------------------------------------------------------------------
+#if !defined(_DEBUG)
 #define NKMM_USE_MIMALLOC_OVERRIDE
+#endif
 
 #if defined(NKMM_USE_MIMALLOC_OVERRIDE) && !defined(NKMM_USE_MIMALLOC)
 #error NKMM_USE_MIMALLOC_OVERRIDE requires NKMM_USE_MIMALLOC to also be defined

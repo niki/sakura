@@ -66,6 +66,16 @@
 
 #endif
 
+// 20260810 CLogicInt/CLayoutIntから素のintを取り出すヘルパー。USE_STRICT_INT有効時は
+// CStrictIntegerのGetValue()を呼ぶ必要があるが、無効時はCLogicInt/CLayoutIntが
+// 素のintそのものでGetValue()が存在しないため、呼び出し側で#ifdefせずに済むように
+// このヘルパーで吸収する
+#ifdef USE_STRICT_INT
+template<typename T> inline int ToInt(const T& v){ return v.GetValue(); }
+#else
+inline int ToInt(int v){ return v; }
+#endif
+
 typedef CLogicInt  CLogicXInt;
 typedef CLogicInt  CLogicYInt;
 typedef CLayoutInt CLayoutXInt;

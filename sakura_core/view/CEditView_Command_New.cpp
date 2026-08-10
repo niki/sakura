@@ -336,11 +336,11 @@ void CEditView::InsertData_CEditView(
 		m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(*pptNewPos, &ptLogic);
 		pCDocLine = m_pcEditDoc->m_cDocLineMgr.GetLine(ptLogic.y);
 		if (SBMarker_->IsFoundLine(pCDocLine)) {
-			SBMarker_->Add(pptNewPos->y, NKMM_SCRBAR_FOUND_MAGIC);
+			SBMarker_->Add(ToInt(pptNewPos->y), NKMM_SCRBAR_FOUND_MAGIC);
 			SB_Marker_Trace(L"SBMarker_::Add 703");
 		}
 		else {
-			SBMarker_->Del(pptNewPos->y, NKMM_SCRBAR_FOUND_MAGIC);
+			SBMarker_->Del(ToInt(pptNewPos->y), NKMM_SCRBAR_FOUND_MAGIC);
 			SB_Marker_Trace(L"SBMarker_::Del 703");
 		}
 	}
