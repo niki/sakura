@@ -443,7 +443,7 @@ void CSakuraEnvironment::ExpandParameter(const wchar_t* pszSource, wchar_t* pszB
 					HIWORD( dwVersionMS ),
 					LOWORD( dwVersionMS ),
 					HIWORD( dwVersionLS ),
-					LOWORD( dwVersionLS )
+					PR_LV//LOWORD( dwVersionLS )
 				);
 				q = wcs_pushW( q, q_max - q, buf, len );
 				++p;

@@ -40,7 +40,6 @@
 #ifdef NKMM_USE_MIMALLOC
 #include <mimalloc.h>
 #endif
-#include "macro/CWSH.h"
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//12900
@@ -86,19 +85,19 @@ const DWORD p_helpids[] = {	//12900
 #endif // NKMM_
 
 #if defined(__BORLANDC__)
-#  define COMPILER_TYPE "B"
-#  define COMPILER_VER  __BORLANDC__ 
+#  define COMPILER_TYPE "Borland"
+#  define COMPILER_VER  __BORLANDC__
 #elif defined(__GNUG__)
-#  define COMPILER_TYPE "G"
+#  define COMPILER_TYPE "GNUC"
 #  define COMPILER_VER (__GNUC__ * 10000 + __GNUC_MINOR__  * 100 + __GNUC_PATCHLEVEL__)
 #elif defined(__INTEL_COMPILER)
-#  define COMPILER_TYPE "I"
+#  define COMPILER_TYPE "Intel"
 #  define COMPILER_VER __INTEL_COMPILER
 #elif defined(__DMC__)
-#  define COMPILER_TYPE "D"
+#  define COMPILER_TYPE "DMC"
 #  define COMPILER_VER __DMC__
 #elif defined(_MSC_VER)
-#  define COMPILER_TYPE "V"
+#  define COMPILER_TYPE "MSC"
 #  define COMPILER_VER _MSC_VER
 #else
 #  define COMPILER_TYPE "U"
@@ -224,12 +223,11 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef NKMM_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d-%02d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		HIWORD( dwVersionLS ),
-		LOWORD( dwVersionLS ),
-		PR_LV
+		PR_LV//LOWORD( dwVersionLS )
 	);
 #else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d\r\n"),
@@ -244,13 +242,13 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	cmemMsg.AppendString( _T("\r\n") );
 
 	// 共有メモリ情報
-	auto_sprintf( szMsg,  _T("      Share Ver: %3d\r\n"),
+	auto_sprintf( szMsg,  _T("    Share Ver: %3d\r\n"),
 		N_SHAREDATA_VERSION
 	);
 	cmemMsg.AppendString( szMsg );
 
 	// コンパイル情報
-	cmemMsg.AppendString( _T("      Compile Info: ") );
+	cmemMsg.AppendString( _T("    Compile Info: ") );
 	int Compiler_ver = COMPILER_VER;
 	auto_sprintf( szMsg, _T(COMPILER_TYPE) _T(TARGET_M_SUFFIX) _T("%d ")
 			TSTR_TARGET_MODE _T(" WIN%03x/I%03x/C%03x/N%03x\r\n"),
@@ -262,7 +260,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	// 更新日情報
 	CFileTime cFileTime;
 	GetLastWriteTimestamp( szFile, &cFileTime );
-	auto_sprintf( szMsg,  _T("      Last Modified: %d/%d/%d %02d:%02d:%02d\r\n"),
+	auto_sprintf( szMsg,  _T("    Last Modified: %d/%d/%d %02d:%02d:%02d\r\n"),
 		cFileTime->wYear,
 		cFileTime->wMonth,
 		cFileTime->wDay,
@@ -274,7 +272,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 
 	// パッチの情報をコンパイル時に渡せるようにする
 #ifdef SKR_PATCH_INFO
-	cmemMsg.AppendString( _T("      ") );
+	cmemMsg.AppendString( _T("    ") );
 	const TCHAR* ptszPatchInfo = to_tchar(SKR_PATCH_INFO);
 	int patchInfoLen = auto_strlen(ptszPatchInfo);
 	cmemMsg.AppendString( ptszPatchInfo, t_min(80, patchInfoLen) );
@@ -283,40 +281,25 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 
 	// 使用ライブラリのバージョン情報 20260726
 #ifdef NKMM_FIX_REGEXP_FALLBACK
-	auto_sprintf( szMsg, _T("      %s (BSD-3-Clause)\r\n"), to_tchar(RegexFallback::Pcre2LibraryVersion()) );
+	auto_sprintf( szMsg, _T("    %s (BSD-3-Clause)\r\n"), to_tchar(RegexFallback::Pcre2LibraryVersion()) );
 	cmemMsg.AppendString( szMsg );
-	auto_sprintf( szMsg, _T("      %s\r\n"), to_tchar(RegexFallback::SljitLibraryVersion()) );
+	auto_sprintf( szMsg, _T("    %s\r\n"), to_tchar(RegexFallback::SljitLibraryVersion()) );
 	cmemMsg.AppendString( szMsg );
 #endif
 #ifdef NKMM_FIX_QUICKJS_MACRO
-	auto_sprintf( szMsg, _T("      QuickJS %s (MIT)\r\n"), to_tchar(JS_GetVersion()) );
+	auto_sprintf( szMsg, _T("    QuickJS %s (MIT)\r\n"), to_tchar(JS_GetVersion()) );
 	cmemMsg.AppendString( szMsg );
 #endif
 #ifdef NKMM_USE_MIMALLOC
 	{
 		int nMiVer = mi_version(); // major*10000 + minor*100 + patch 20260727
-		auto_sprintf( szMsg, _T("      mimalloc %d.%d.%d (MIT)\r\n"),
+		auto_sprintf( szMsg, _T("    mimalloc %d.%d.%d (MIT)\r\n"),
 			nMiVer / 10000, (nMiVer / 100) % 100, nMiVer % 100
 		);
 		cmemMsg.AppendString( szMsg );
 	}
 	cmemMsg.AppendString( _T("\r\n") );
 #endif
-	// WSH(JScript/VBScript)は実行環境のOSに登録されたCOMコンポーネントに
-	// 依存するため、バージョンは固定値ではなく実行時に取得する 20260726
-	{
-		const wchar_t* pszJScriptVer = GetWSHEngineVersion( L"JScript" );
-		if( pszJScriptVer[0] != L'\0' ){
-			auto_sprintf( szMsg, _T("      JScript %s\r\n"), to_tchar(pszJScriptVer) );
-			cmemMsg.AppendString( szMsg );
-		}
-		const wchar_t* pszVBScriptVer = GetWSHEngineVersion( L"VBScript" );
-		if( pszVBScriptVer[0] != L'\0' ){
-			auto_sprintf( szMsg, _T("      VBScript %s\r\n"), to_tchar(pszVBScriptVer) );
-			cmemMsg.AppendString( szMsg );
-		}
-	}
-
 	::DlgItem_SetText( GetHwnd(), IDC_EDIT_VER, cmemMsg.GetStringPtr() );
 
 	//	From Here Jun. 8, 2001 genta

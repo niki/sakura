@@ -67,10 +67,10 @@
 // バージョン情報ダイアログの変更 20170315
 //------------------------------------------------------------------
 #define NKMM_FIX_VERDLG
-	#define PR_VER      2,3,2,0
-	#define PR_VER_STR "2.3.2.0"
+	#define PR_VER      2,3,2,260810	// 2.4系に倣う
+	#define PR_VER_STR "2.3.2.260810"
 	#define PR_VER_VAL	2320
-	#define PR_LV		260809
+	#define PR_LV		260810
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
@@ -307,6 +307,57 @@
 //      行番号順に処理しているためY座標はほぼ単調増加であり、直前と同じYなら
 //      描画をスキップするよう変更(見た目の結果は同じで、無駄な描画回数だけ減る)。
 //    - sakura_core\view\CEditView.cpp (SB_Marker_DrawThread)
+//  - キャッシュ作成/描画をスレッドプール(PTP_WORK)化 20260810
+//    - SB_Marker_BuildThread/SB_Marker_DrawThreadは_beginthreadexで編集/描画の
+//      たびにOSスレッドを新規生成しており、生成コストに加えて起動直後に
+//      ::Sleep(10)で呼び出し元(UIスレッド)を固定10msブロックしていた。編集の
+//      たびにこの経路を通ると1回あたり最低10ms以上かかる。詳細は
+//      changelog/NKMM_FIX_EDITVIEW_SCRBAR_THREADPOOL.md参照。
+//    - CreateThreadpoolWork()でビルド用/描画用のPTP_WORKをScrBarMarker生成時に
+//      1個ずつ作成し、以降はSubmitThreadpoolWork()で使い回す。スレッド生成が
+//      無くなるため、Sleep(10)による head-start待ちも不要になった。
+//    - ビルド実行中に来た再構築要求は、旧実装のようにWaitForBuild(true)で
+//      UIスレッドをブロックして強制中断・作り直す代わりに、bRebuildPending_
+//      フラグを立てるだけにした。BuildWorkCallback側はdo-whileで完了直後に
+//      このフラグを確認し、立っていればもう一度最新のドキュメント状態で
+//      スキャンし直す(取りこぼし防止、UIスレッドは常にノンブロッキング)。
+//    - WaitForBuild/WaitForDrawはWaitForSingleObject(ハンドル)から
+//      WaitForThreadpoolWorkCallbacks(work, fCancelPendingCallbacks)に置き換え。
+//      abort=trueの場合は未開始分をキャンセルしつつ実行中分の完了を待つ点は
+//      旧実装(中断フラグ+INFINITE待ち)と同じ。
+//    - CEditView単位(=分割ウィンドウ/タブ単位)でスレッドを常駐させる案も検討
+//      したが、開いているウィンドウ数だけスレッドが増える(既知の未解決事象、
+//      NKMM_FIX_SCRBAR_MARKER_REPLACEALL_PERF.md追記6参照)ため見送り、
+//      プロセス既定のスレッドプールを共有する方式にした。
+//    - m_CurRegexp共有競合(NKMM_FIX_SCRBAR_MARKER_REPLACEALL_PERF.md参照)とは
+//      無関係な変更のため、その対策(CSuppressSrchKeyMarkForReplaceAll等)は
+//      そのまま維持している。
+//    - sakura_core\view\CEditView.h (ScrBarMarker),
+//      sakura_core\view\CEditView.cpp (BuildWorkCallback/DrawWorkCallback/
+//      Build/Draw/WaitForBuild/WaitForDraw/コンストラクタ/デストラクタ)
+//  - bRebuildPending_取りこぼしレースの修正(mutex導入) 20260810
+//    - コードレビューで、BuildWorkCallback終了処理の「pending確認→running解除」の
+//      間にBuild()が割り込むと、その時に立てたbRebuildPending_を誰も消費せず
+//      再構築要求が黙って失われるTOCTOUレースがあることに気付いた。
+//    - mtxBuildState_(std::mutex)を新設し、Build()側の「running確認→pending/
+//      running設定」とBuildWorkCallback側の「pending確認→pending消費 or
+//      running解除」を、それぞれ同じロックの中で不可分に行うよう修正。
+//    - 描画側(SB_Marker_DrawThread由来のbRestartRequestDrawThread_/
+//      bDrawThreadRunning_)にも理屈上は同種のレースが残っていたため、
+//      mtxDrawState_として同じ対策を追加(下記の別項参照)。
+//    - sakura_core\view\CEditView.h (mtxBuildState_),
+//      sakura_core\view\CEditView.cpp (Build/BuildWorkCallback)
+//  - 描画側(bRestartRequestDrawThread_)取りこぼしレースの修正(mutex導入) 20260810
+//    - 上記と同じ種類のレースがDraw()/DrawWorkCallbackにも存在した(移植元の
+//      SB_Marker_DrawThreadから変更していない既存ロジックだが、同じ対策を転用)。
+//    - mtxDrawState_(std::mutex)を新設し、Draw()側の「running確認→restart/
+//      running設定」と、DrawWorkCallback側(描画が完走してend_threadへ
+//      フォールスルーする直前)の「restart確認→pending消費 or running解除」を、
+//      それぞれ同じロックの中で不可分に行うよう修正。中断(bExitRequestDrawThread_)
+//      経路はWaitForDraw(true)がUIスレッドをブロックするためレースの心配が無く、
+//      対象外。
+//    - sakura_core\view\CEditView.h (mtxDrawState_),
+//      sakura_core\view\CEditView.cpp (Draw/DrawWorkCallback)
 //------------------------------------------------------------------
 #define NKMM_FIX_EDITVIEW_SCRBAR
 	#define WM_APP_SCRBAR_PAINT    (WM_APP + 2501)  // スクロールバー描画メッセージ
@@ -983,6 +1034,11 @@
 //  - フォールバックエンジンにPCRE2(libs/pcre2, BSD-3-Clause)を静的vendor。
 //    JIT化(pcre2_jit_compile_16、sljitをlibs/deps/sljitに新規vendor)済み 20260728
 //  - libs\pcre2, sakura_core\extmodule\CRegexFallback.h,cpp
+//  - ReplaceAllで行頭以外にマッチした場合、行頭からマッチ位置までの前置文字列が
+//    結果に二重挿入される不具合を修正(DoSubst()がpcre2_substitute()に渡す
+//    subjectをtargetbeg起点にしていたため、戻り読み用の文脈がそのまま出力に
+//    混入していた。出力からstartOffset分を読み飛ばすよう修正)。実bregonig.dll
+//    使用時は元々発生しないフォールバック限定の不具合だった 20260810
 //  - 詳細はchangelog/NKMM_FIX_REGEXP_FALLBACK.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_REGEXP_FALLBACK
