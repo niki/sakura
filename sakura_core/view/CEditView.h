@@ -44,6 +44,8 @@
 #include <Windows.h>
 #include <ObjIdl.h>  // LPDATAOBJECT
 #include <ShellAPI.h>  // HDROP
+#include <atomic>  // ScrBarMarker: PTP_WORKワーカーとUIスレッド間のフラグ共有用
+#include <mutex>   // ScrBarMarker: bBuildThreadRunning_/bRebuildPending_の複合操作を保護
 #include "CTextMetrics.h"
 #include "CTextDrawer.h"
 #include "CTextArea.h"
@@ -820,28 +822,49 @@ public:
 		void WaitForBuild(bool abort = false);
 		void WaitForDraw(bool abort = false);
 
+	private:
+		// 20260810 スレッドプール(PTP_WORK)化。編集のたびに_beginthreadexで
+		// スレッドを新規生成していたのを、常駐ワーカーへの投入(SubmitThreadpoolWork)に
+		// 変更しスレッド生成コストを無くす。詳細はmy_config.h NKMM_FIX_EDITVIEW_SCRBAR
+		// のコメント参照。
+		static void CALLBACK BuildWorkCallback(PTP_CALLBACK_INSTANCE instance, void *pv, PTP_WORK work);
+		static void CALLBACK DrawWorkCallback(PTP_CALLBACK_INSTANCE instance, void *pv, PTP_WORK work);
+
 	public:
 		CEditView *pEditView_ = nullptr;
-		
+
 		int nLastLineCount_ = 0;                    // 最後に更新した時の行数
 		std::vector<uint32_t> vLines_;              // キャッシュ
-		
+
 		std::tstring strKey_;                       // 構築時のキー
-		
+
 		int nSearchFoundLine_ = 0;                  // 見つかった検索行の数
 		int nMarkFoundLine_ = 0;                    // 見つかったブックマーク行の数
-		
+
 		//std::mutex mtxCacheMutex_;
-		HANDLE hBuildThread_ = 0;                   // キャッシュ作成スレッドハンドル
-		bool   bBuildThreadRunning_ = false;        //   スレッド稼働状態
-		bool   bExitRequestBuildThread_ = false;    //   スレッド終了リクエスト
-		
-		HANDLE hDrawThread_ = 0;                    // キャッシュ描画スレッドハンドル
-		bool   bDrawThreadRunning_ = false;         //   スレッド稼働状態
-		bool   bExitRequestDrawThread_ = false;     //   スレッド終了リクエスト
-		bool   bRestartRequestDrawThread_ = false;  //   描画やり直しリクエスト
+		// 20260810 bBuildThreadRunning_の解除とbRebuildPending_の確認を不可分に
+		// 行うためのロック。「Build()が running を見てpendingを立てる」タイミングと
+		// 「BuildWorkCallbackがpendingを見てrunningを解除する」タイミングがTOCTOU
+		// レースを起こし、再構築要求を取りこぼす経路があったため導入した。
+		// 呼び出し頻度が低い(デバウンス発火時・行数変化時のみ)ためロック競合の
+		// 心配はない。bBuildThreadRunning_自体は他所(CallPaint()等)から非同期に
+		// ロック無しで読まれる箇所があるためstd::atomic<bool>のままにしてある。
+		std::mutex mtxBuildState_;
+		PTP_WORK pBuildWork_ = nullptr;                    // キャッシュ作成ワーク
+		std::atomic<bool> bBuildThreadRunning_ = false;    //   稼働状態 (mtxBuildState_で保護される複合操作あり)
+		std::atomic<bool> bExitRequestBuildThread_ = false;//   終了リクエスト
+		std::atomic<bool> bRebuildPending_ = false;        //   実行中に来た再構築要求 (mtxBuildState_で保護)
+
+		// 20260810 bDrawThreadRunning_の解除とbRestartRequestDrawThread_の確認を
+		// 不可分に行うためのロック。mtxBuildState_と同じ理由(TOCTOUレースによる
+		// 再描画要求の取りこぼし防止)。
+		std::mutex mtxDrawState_;
+		PTP_WORK pDrawWork_ = nullptr;                     // キャッシュ描画ワーク
+		std::atomic<bool> bDrawThreadRunning_ = false;     //   稼働状態 (mtxDrawState_で保護される複合操作あり)
+		std::atomic<bool> bExitRequestDrawThread_ = false; //   終了リクエスト
+		std::atomic<bool> bRestartRequestDrawThread_ = false; // 描画やり直しリクエスト (mtxDrawState_で保護)
 		int    nDrawRequestCount_ = 0;              //   描画リクエスト回数
-		
+
 		SCROLLBARINFO sbi_;
 	};
 	

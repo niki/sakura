@@ -3040,153 +3040,175 @@ void CEditView::RequestUpdateWindow()
 //----------------------
 // キャッシュ作成
 //----------------------
-unsigned __stdcall SB_Marker_BuildThread(void *arg)
+void CALLBACK CEditView::ScrBarMarker::BuildWorkCallback(PTP_CALLBACK_INSTANCE /*instance*/, void *pv, PTP_WORK /*work*/)
 {
-	CEditView *pEditView = (CEditView *)arg;
-
-	// 構築時のキーを記録
-	if (pEditView->m_sSearchPattern.GetKey()) {
-		pEditView->SBMarker_->strKey_ = pEditView->m_sSearchPattern.GetKey();
-	}
-	else {
-		pEditView->SBMarker_->strKey_ = _T("");
-	}
-
-	// リセット
-	pEditView->SBMarker_->nSearchFoundLine_ = 0;
-	pEditView->SBMarker_->nMarkFoundLine_ = 0;
-	pEditView->SBMarker_->nDrawRequestCount_ = 0;
-
-	// ラインの配列を作成
-	const CLayoutInt nAllLines = pEditView->m_pcEditDoc->m_cLayoutMgr.GetLineCount();
-	std::vector<const CDocLine *> vLines;
-	vLines.reserve(nAllLines + 1);
-
-	// 要素を詰め込む
-	{
-		const CDocLine *pCDocLine = pEditView->m_pcEditDoc->m_cDocLineMgr.GetDocLineTop();
-		while (pCDocLine) {
-			vLines.push_back(pCDocLine);
-			pCDocLine = pCDocLine->GetNextLine();
-		}
-	}
-
-	// キャッシュ用
-	std::vector<uint32_t> vCache(nAllLines + 1, 0u);
-
+	CEditView *pEditView = (CEditView *)pv;
 	CEditView::ScrBarMarker &rSBMarker = *pEditView->SBMarker_;
 
-	CLayoutInt nLineHint = CLogicInt(0);
-	bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
-
-	const int vsize = (int)vLines.size();
-
-	// 20260809 「折り返しなし」かつ正規表現でない場合のみ並列化する。
-	// 折り返しありはLogicToLayout()がCLayoutMgrの共有ヒントキャッシュを書き換える
-	// ため並列化不可(競合する)。正規表現はCEditView::m_CurRegexpという単一の
-	// 共有エンジンインスタンスをスレッド間で使い回すことになり、これも並列化不可
-	// (エンジン内部の一致状態が競合する)。それ以外(通常文字列/単語検索、折り返し
-	// なし)は行ごとに完全独立な読み取り専用処理なので、SB_Marker_DrawThreadと
-	// 同じくOpenMPで並列化してよい。行数が多いファイルほど効果が大きい。
-	bool bCanParallelize = bNoTextWrap && !pEditView->m_sCurSearchOption.bRegularExp;
-
-	if (bCanParallelize) {
-		int nSearchFoundLine = 0;
-		int nMarkFoundLine = 0;
-
-		#pragma omp parallel for schedule(dynamic, 4096) reduction(+:nSearchFoundLine,nMarkFoundLine)
-		for (int i = 0; i < vsize; i++) {
-			if (rSBMarker.bExitRequestBuildThread_) {  // 中断要求後は以降の行の処理を省略する
-				continue;
-			}
-
-			const CDocLine *pCDocLine = vLines[i];
-
-			uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? NKMM_SCRBAR_FOUND_MAGIC : 0u;
-			uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? NKMM_SCRBAR_MARK_MAGIC : 0u;
-
-			if ((uFoundMagic | uMarkMagic) != 0u) {
-				// 折り返しなしなので ロジック行＝レイアウト行
-				vCache[i] = (uint32_t)i | (uFoundMagic | uMarkMagic);
-				if (uFoundMagic != 0u) nSearchFoundLine++;
-				if (uMarkMagic != 0u) nMarkFoundLine++;
-			}
-		}
-
-		rSBMarker.nSearchFoundLine_ = nSearchFoundLine;
-		rSBMarker.nMarkFoundLine_ = nMarkFoundLine;
-
-		if (rSBMarker.bExitRequestBuildThread_) {  // 中断
-			SB_Marker_Trace(L"  >>>> abort CacheBuildThread");
-			goto end_thread;
-		}
-
-		// キャッシュと入れ替え
-		rSBMarker.vLines_.swap(vCache);
-	}
-	else {
-	for (int i = 0; i < vsize; i++) {
-		const CDocLine *pCDocLine = vLines[i];
-
-		uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? NKMM_SCRBAR_FOUND_MAGIC : 0u;
-		uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? NKMM_SCRBAR_MARK_MAGIC : 0u;
-
-		if ((uFoundMagic | uMarkMagic) != 0u) {
-			CLogicInt nLogicY = i;
-			CLayoutInt nLayoutY;
-
-			if (bNoTextWrap) {  // 折り返しなし
-				// ロジック行＝レイアウト行
-				nLayoutY = nLogicY;
-			}
-			else {
-				// ロジック行→レイアウト行
-				CLayoutPoint ptLayout;
-				pEditView->m_pcEditDoc->m_cLayoutMgr.LogicToLayout(/*CLogicPoint*/ {0, nLogicY}, &ptLayout,
-				                                                   nLineHint);
-				nLayoutY = ptLayout.y;
-			}
-
-			// キャッシュに登録
-			vCache[i] = (uint32_t)nLayoutY | (uFoundMagic | uMarkMagic);
-			if (uFoundMagic != 0u) rSBMarker.nSearchFoundLine_++;
-			if (uMarkMagic != 0u) rSBMarker.nMarkFoundLine_++;
-			//rSBMarker.Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
-			//rSBMarker.Add(nLayoutY, uMarkMagic);   // ブックマーク
-
-			nLineHint = nLayoutY;
+	// 20260810 スレッドプール化に伴い、実行中に来た再構築要求(bRebuildPending_)を
+	// 取りこぼさないよう、1回のコールバック起動でdo-whileにより複数パス回せるようにした。
+	// 「編集のたびに新規スレッドを起動する」旧実装と違い、ここでは常駐ワーカーが
+	// ループするだけなので、要求を1つのパスにまとめても速度面の不利益はない。
+	do {
+		// 構築時のキーを記録
+		if (pEditView->m_sSearchPattern.GetKey()) {
+			rSBMarker.strKey_ = pEditView->m_sSearchPattern.GetKey();
 		}
 		else {
-			nLineHint++;
+			rSBMarker.strKey_ = _T("");
 		}
 
-		if (rSBMarker.bExitRequestBuildThread_) {  // 中断
-			SB_Marker_Trace(L"  >>>> abort CacheBuildThread");
-			goto end_thread;
+		// リセット
+		rSBMarker.nSearchFoundLine_ = 0;
+		rSBMarker.nMarkFoundLine_ = 0;
+		rSBMarker.nDrawRequestCount_ = 0;
+
+		// ラインの配列を作成
+		const CLayoutInt nAllLines = pEditView->m_pcEditDoc->m_cLayoutMgr.GetLineCount();
+		std::vector<const CDocLine *> vLines;
+		vLines.reserve(nAllLines + 1);
+
+		// 要素を詰め込む
+		{
+			const CDocLine *pCDocLine = pEditView->m_pcEditDoc->m_cDocLineMgr.GetDocLineTop();
+			while (pCDocLine) {
+				vLines.push_back(pCDocLine);
+				pCDocLine = pCDocLine->GetNextLine();
+			}
 		}
-	}
 
-	// キャッシュと入れ替え
-	rSBMarker.vLines_.swap(vCache);
-	}
+		// キャッシュ用
+		std::vector<uint32_t> vCache(nAllLines + 1, 0u);
 
-end_thread:
+		CLayoutInt nLineHint = CLogicInt(0);
+		bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);
+
+		const int vsize = (int)vLines.size();
+
+		// 20260809 「折り返しなし」かつ正規表現でない場合のみ並列化する。
+		// 折り返しありはLogicToLayout()がCLayoutMgrの共有ヒントキャッシュを書き換える
+		// ため並列化不可(競合する)。正規表現はCEditView::m_CurRegexpという単一の
+		// 共有エンジンインスタンスをスレッド間で使い回すことになり、これも並列化不可
+		// (エンジン内部の一致状態が競合する)。それ以外(通常文字列/単語検索、折り返し
+		// なし)は行ごとに完全独立な読み取り専用処理なので、SB_Marker_DrawThreadと
+		// 同じくOpenMPで並列化してよい。行数が多いファイルほど効果が大きい。
+		bool bCanParallelize = bNoTextWrap && !pEditView->m_sCurSearchOption.bRegularExp;
+
+		if (bCanParallelize) {
+			int nSearchFoundLine = 0;
+			int nMarkFoundLine = 0;
+
+			#pragma omp parallel for schedule(dynamic, 4096) reduction(+:nSearchFoundLine,nMarkFoundLine)
+			for (int i = 0; i < vsize; i++) {
+				if (rSBMarker.bExitRequestBuildThread_) {  // 中断要求後は以降の行の処理を省略する
+					continue;
+				}
+
+				const CDocLine *pCDocLine = vLines[i];
+
+				uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? NKMM_SCRBAR_FOUND_MAGIC : 0u;
+				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? NKMM_SCRBAR_MARK_MAGIC : 0u;
+
+				if ((uFoundMagic | uMarkMagic) != 0u) {
+					// 折り返しなしなので ロジック行＝レイアウト行
+					vCache[i] = (uint32_t)i | (uFoundMagic | uMarkMagic);
+					if (uFoundMagic != 0u) nSearchFoundLine++;
+					if (uMarkMagic != 0u) nMarkFoundLine++;
+				}
+			}
+
+			rSBMarker.nSearchFoundLine_ = nSearchFoundLine;
+			rSBMarker.nMarkFoundLine_ = nMarkFoundLine;
+
+			if (rSBMarker.bExitRequestBuildThread_) {  // 中断
+				SB_Marker_Trace(L"  >>>> abort CacheBuildThread");
+				break;
+			}
+
+			// キャッシュと入れ替え
+			rSBMarker.vLines_.swap(vCache);
+		}
+		else {
+			for (int i = 0; i < vsize; i++) {
+				const CDocLine *pCDocLine = vLines[i];
+
+				uint32_t uFoundMagic = rSBMarker.IsFoundLine(pCDocLine) ? NKMM_SCRBAR_FOUND_MAGIC : 0u;
+				uint32_t uMarkMagic  = CBookmarkGetter(pCDocLine).IsBookmarked() ? NKMM_SCRBAR_MARK_MAGIC : 0u;
+
+				if ((uFoundMagic | uMarkMagic) != 0u) {
+					CLogicInt nLogicY = i;
+					CLayoutInt nLayoutY;
+
+					if (bNoTextWrap) {  // 折り返しなし
+						// ロジック行＝レイアウト行
+						nLayoutY = nLogicY;
+					}
+					else {
+						// ロジック行→レイアウト行
+						CLayoutPoint ptLayout;
+						pEditView->m_pcEditDoc->m_cLayoutMgr.LogicToLayout(/*CLogicPoint*/ {0, nLogicY}, &ptLayout,
+						                                                   nLineHint);
+						nLayoutY = ptLayout.y;
+					}
+
+					// キャッシュに登録
+					vCache[i] = (uint32_t)nLayoutY | (uFoundMagic | uMarkMagic);
+					if (uFoundMagic != 0u) rSBMarker.nSearchFoundLine_++;
+					if (uMarkMagic != 0u) rSBMarker.nMarkFoundLine_++;
+					//rSBMarker.Add(nLayoutY, uFoundMagic);  // 検索文字列のある行
+					//rSBMarker.Add(nLayoutY, uMarkMagic);   // ブックマーク
+
+					nLineHint = nLayoutY;
+				}
+				else {
+					nLineHint++;
+				}
+
+				if (rSBMarker.bExitRequestBuildThread_) {  // 中断
+					SB_Marker_Trace(L"  >>>> abort CacheBuildThread");
+					goto build_pass_aborted;
+				}
+			}
+
+			// キャッシュと入れ替え
+			rSBMarker.vLines_.swap(vCache);
+		}
+		continue;
+
+	build_pass_aborted:
+		break;
+	} while ([&rSBMarker]() {
+		// 20260810 「pending確認」と「running解除」をmtxBuildState_で一体化する。
+		// Build()側の「running確認→pending設定」もこの同じロックを取るため、
+		// 「解除する直前にpendingが立ったのに誰にも拾われない」TOCTOUレースが
+		// 起きない(Build()呼び出しは必ずこのロックの外側でrunning==falseを
+		// 観測してから新規投入するか、ロックの中でpendingを立てるかのどちらかに
+		// なる)。
+		std::lock_guard<std::mutex> lock(rSBMarker.mtxBuildState_);
+		if (rSBMarker.bRebuildPending_) {
+			rSBMarker.bRebuildPending_ = false;
+			return true;   // もう1周
+		}
+		rSBMarker.bBuildThreadRunning_ = false;
+		return false;   // 終了
+	}());  // 実行中に来た要求を1回だけまとめて回す
+
 	if (!rSBMarker.bExitRequestBuildThread_) {
 		pEditView->SB_Marker_DrawRequest();  // 描画要求
 	}
 	rSBMarker.bExitRequestBuildThread_ = false;
-	rSBMarker.bBuildThreadRunning_ = false;
+	rSBMarker.bRebuildPending_ = false;
+	rSBMarker.bBuildThreadRunning_ = false;  // 中断(break)経路の後始末(こちらはWaitForBuild(true)がUIスレッドを
+	                                          // ブロックして待つため、上記ロックの取り合いレースは発生しない)
 	SB_Marker_Trace(L"  >>> finish SB_Marker_BuildThread %d", rSBMarker.vLines_.size());
-	_endthreadex(0);
-	return 0;
 }
 
 //----------------------
 // キャッシュ描画
 //----------------------
-unsigned __stdcall SB_Marker_DrawThread(void *arg)
+void CALLBACK CEditView::ScrBarMarker::DrawWorkCallback(PTP_CALLBACK_INSTANCE /*instance*/, void *pv, PTP_WORK /*work*/)
 {
-	CEditView *pEditView = (CEditView *)arg;
+	CEditView *pEditView = (CEditView *)pv;
 
 	/* 垂直スクロールバー */
 	const CLayoutInt	nEofMargin = CLayoutInt(1); // EOFのマージン
@@ -3359,16 +3381,30 @@ start_thread:
 		goto start_thread;
 	}
 
+	// 20260810 loop_break==eLoopBreak_None(完走)の場合のみここに来る(Abortは
+	// 上でgoto end_threadしており、この区間には来ない=WaitForDraw(true)が
+	// UIスレッドをブロックして待つ設計のためレースの心配が無い)。
+	// ループ内の最終チェックからrunning解除までの隙間で来たDraw()呼び出しを
+	// 取りこぼさないよう、running解除の"直前"にmtxDrawState_の下でもう一度
+	// restart要求を確認する(Build側のbRebuildPending_対策と同じ考え方)。
+	{
+		std::lock_guard<std::mutex> lock(rSBMarker.mtxDrawState_);
+		if (rSBMarker.bRestartRequestDrawThread_) {
+			rSBMarker.bRestartRequestDrawThread_ = false;
+			SB_Marker_Trace(L"  >>>> restart CacheDrawThread (late)");
+			goto start_thread;
+		}
+		rSBMarker.bDrawThreadRunning_ = false;
+	}
+
 end_thread:
 	if (!rSBMarker.bExitRequestDrawThread_) {
 		::PostMessage(pEditView->GetHwnd(), WM_APP_SCRBAR_ENDPAINT, 0, 0);  // 描画終了要求
 	}
 	rSBMarker.bRestartRequestDrawThread_ = false;
 	rSBMarker.bExitRequestDrawThread_ = false;
-	rSBMarker.bDrawThreadRunning_ = false;
+	rSBMarker.bDrawThreadRunning_ = false;  // Abort経路の後始末(通常完走経路は上で既に解除済みなのでno-op)
 	SB_Marker_Trace(L"  >>> finish SB_Marker_DrawThread %d", rSBMarker.vLines_.size());
-	_endthreadex(0);
-	return 0;
 }
 
 //----------------------
@@ -3377,6 +3413,10 @@ end_thread:
 CEditView::ScrBarMarker::ScrBarMarker(CEditView *pView)
 	: pEditView_(pView)
 {
+	// 20260810 常駐ワーク化。ここで一度だけ作成し、以降はSubmitThreadpoolWork()で
+	// 使い回す(編集のたびに_beginthreadexでスレッドを新規生成していたのをやめた)。
+	pBuildWork_ = ::CreateThreadpoolWork(&ScrBarMarker::BuildWorkCallback, pEditView_, nullptr);
+	pDrawWork_  = ::CreateThreadpoolWork(&ScrBarMarker::DrawWorkCallback,  pEditView_, nullptr);
 }
 
 //----------------------
@@ -3387,6 +3427,9 @@ CEditView::ScrBarMarker::~ScrBarMarker()
 	::KillTimer(pEditView_->GetHwnd(), IDT_SCRBAR_MARKER_DEBOUNCE);
 	WaitForBuild(true);
 	WaitForDraw(true);
+
+	if (pBuildWork_) { ::CloseThreadpoolWork(pBuildWork_); pBuildWork_ = nullptr; }
+	if (pDrawWork_)  { ::CloseThreadpoolWork(pDrawWork_);  pDrawWork_  = nullptr; }
 }
 
 //----------------------
@@ -3432,11 +3475,10 @@ void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo)
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 
 	// 20260728 描画抑制中(SetDrawSwitch(false)中、ReplaceAll等のバルク編集)は
-	// 新規スレッドの起動+Sleep(10)はしない(これが編集1回につき最低10ms以上
-	// かかり、数百秒規模の性能劣化を起こしていた)。
-	// ただし、既に実行中のビルド/描画スレッドが残っている場合はここで確実に
+	// 新規ワークの投入はしない。
+	// ただし、既に実行中のビルド/描画ワークが残っている場合はここで確実に
 	// 停止させる(WaitForBuild/WaitForDraw)。これを省略すると、直前の操作
-	// (InsText等)で起動したバックグラウンドスレッドがドキュメントを読みながら、
+	// (InsText等)で起動したバックグラウンド処理がドキュメントを読みながら、
 	// このあとに続く一括編集(ReplaceAll等)がメインスレッドでドキュメントを
 	// 書き換える、という競合状態になり、ドキュメント破損の原因になりうる。
 	// vLines_はクリアだけしておき、描画再開後の最初のClear()呼び出し
@@ -3458,36 +3500,53 @@ void CEditView::ScrBarMarker::Build(bool bCacheClear, int foo)
 		bCacheClear = true;
 	}
 
-	// 描画スレッドを中断
+	// 描画ワークを中断
 	WaitForDraw(true);
 
-	if (bCacheClear) {
-		WaitForBuild(true);
-
-		// キャッシュをクリア
-		vLines_.clear();
+	// 20260810 スレッドプール化。以前はbCacheClear時にWaitForBuild(true)で
+	// 実行中のビルドを強制中断・UIスレッドをブロックして待ってから作り直して
+	// いたが、常駐ワーカーへの投入方式ではその必要がない。実行中なら
+	// bRebuildPending_を立てるだけにして、完了直後にワーカー自身がもう一度
+	// 最新状態でスキャンする(BuildWorkCallback参照)。
+	//
+	// 「running確認→pending設定」と、BuildWorkCallback側の「pending確認→
+	// running解除」がmtxBuildState_を介さず別々のatomic<bool>だと、両者の
+	// タイミングが重なったときに再構築要求を取りこぼすTOCTOUレースが起きる
+	// (running解除の直前でpendingを立てても誰にも消費されない)。このため
+	// running確認からpending設定/running設定までをmtxBuildState_で一体化する。
+	bool bNeedSubmit = false;
+	bool bNeedDrawRequest = false;
+	{
+		std::lock_guard<std::mutex> lock(mtxBuildState_);
+		if (bBuildThreadRunning_) {
+			if (bCacheClear) bRebuildPending_ = true;
+		}
+		else {
+			if (bCacheClear) {
+				vLines_.clear();
+			}
+			if (vLines_.empty()) {
+				bBuildThreadRunning_ = true;
+				bNeedSubmit = true;
+			}
+			else {
+				bNeedDrawRequest = true;
+			}
+		}
 	}
 
-	// 更新
-	if (vLines_.empty()) {
-		WaitForBuild(true);
-
-		// キャッシュ作成スレッド起動
-		bBuildThreadRunning_ = true;
-		hBuildThread_ = (HANDLE)_beginthreadex(NULL, 0, &SB_Marker_BuildThread, (void *)pEditView_, 0, NULL);
-		::Sleep(10);
+	if (bNeedSubmit) {
+		// キャッシュ作成ワーク投入(常駐ワーカーへ渡すだけなのでSleep(10)は不要)
+		::SubmitThreadpoolWork(pBuildWork_);
 		SB_Marker_Trace(L"ScrBarMarker::Build (%d) start: %d", foo, vLines_.size());
 	}
+	else if (bNeedDrawRequest) {
+		// 描画
+		SB_Marker_Trace(L"ScrBarMarker::Build (%d) cache : %d", foo, vLines_.size());
+		DrawRequest();
+	}
 	else {
-		if (bBuildThreadRunning_) {
-			// キャッシュ作成中
-			SB_Marker_Trace(L"ScrBarMarker::Build (%d) create wait...", foo);
-			//::WaitForSingleObject(hBuildThread_, INFINITE);
-		} else {
-			// 描画
-			SB_Marker_Trace(L"ScrBarMarker::Build (%d) cache : %d", foo, vLines_.size());
-			DrawRequest();
-		}
+		SB_Marker_Trace(L"ScrBarMarker::Build (%d) create wait...", foo);
 	}
 }
 
@@ -3508,17 +3567,22 @@ void CEditView::ScrBarMarker::Draw()
 {
 	if (CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode) return;
 
-	//std::lock_guard<std::mutex> lock(mtxCacheMutex_);
-
-	if (bDrawThreadRunning_) {
-		bRestartRequestDrawThread_ = true;  // やり直し
+	// 20260810 running確認とrestart設定/running設定をmtxDrawState_で不可分に
+	// 行う(Build()側のmtxBuildState_対策と同じ理由)。
+	bool bNeedSubmit = false;
+	{
+		std::lock_guard<std::mutex> lock(mtxDrawState_);
+		if (bDrawThreadRunning_) {
+			bRestartRequestDrawThread_ = true;  // やり直し
+		}
+		else {
+			bDrawThreadRunning_ = true;
+			bNeedSubmit = true;
+		}
+	}
+	if (!bNeedSubmit) {
 		SB_Marker_Trace(L" *** %s: bRestartRequestDrawThread_", _T(__FUNCTION__));
 		return;
-	}
-	if (hDrawThread_ != 0) {
-		::CloseHandle(hDrawThread_);
-		hDrawThread_ = 0;
-		SB_Marker_Trace(L" *** %s: CloseHandle(hDrawThread_)", _T(__FUNCTION__));
 	}
 
 #if 1 // @@ 描画する際にスクロールバーを更新する 20170721
@@ -3536,9 +3600,8 @@ void CEditView::ScrBarMarker::Draw()
 	sbi_.cbSize = sizeof(sbi_);
 	::GetScrollBarInfo(pEditView_->m_hwndVScrollBar, OBJID_CLIENT, &sbi_);
 
-	// キャッシュ描画スレッド起動
-	bDrawThreadRunning_ = true;
-	hDrawThread_ = (HANDLE)_beginthreadex(NULL, 0, &SB_Marker_DrawThread, (void *)pEditView_, 0, NULL);
+	// キャッシュ描画ワーク投入 (bDrawThreadRunning_は上のロック内で設定済み)
+	::SubmitThreadpoolWork(pDrawWork_);
 	SB_Marker_Trace(L"ScrBarMarker::Draw start: %d", vLines_.size());
 }
 
@@ -3649,14 +3712,11 @@ void CEditView::ScrBarMarker::WaitForBuild(bool abort)
 {
 	if (bBuildThreadRunning_) {
 		if (abort) bExitRequestBuildThread_ = true;  // 中断
-		::WaitForSingleObject(hBuildThread_, INFINITE);
+		// fCancelPendingCallbacks=abort: まだ開始していない投入分はキャンセルし、
+		// 実行中のコールバックは完了(中断フラグを見て自ら抜けるのを含む)を待つ。
+		::WaitForThreadpoolWorkCallbacks(pBuildWork_, abort ? TRUE : FALSE);
 		bExitRequestBuildThread_ = false;
 		SB_Marker_Trace(L" *** %s: bBuildThreadRunning_", _T(__FUNCTION__));
-	}
-	if (hBuildThread_ != 0) {
-		::CloseHandle(hBuildThread_);
-		hBuildThread_ = 0;
-		SB_Marker_Trace(L" *** %s: CloseHandle(hBuildThread_)", _T(__FUNCTION__));
 	}
 }
 
@@ -3664,14 +3724,9 @@ void CEditView::ScrBarMarker::WaitForDraw(bool abort)
 {
 	if (bDrawThreadRunning_) {
 		if (abort) bExitRequestDrawThread_ = true;  // 中断
-		::WaitForSingleObject(hDrawThread_, INFINITE);
+		::WaitForThreadpoolWorkCallbacks(pDrawWork_, abort ? TRUE : FALSE);
 		bExitRequestDrawThread_ = false;
 		SB_Marker_Trace(L" *** %s: bDrawThreadRunning_", _T(__FUNCTION__));
-	}
-	if (hDrawThread_ != 0) {
-		::CloseHandle(hDrawThread_);
-		hDrawThread_ = 0;
-		SB_Marker_Trace(L" *** %s: CloseHandle(hDrawThread_)", _T(__FUNCTION__));
 	}
 }
 
