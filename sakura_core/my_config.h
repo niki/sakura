@@ -57,7 +57,7 @@
 // lf.lfHeight = DpiPointsToPixels(-10); // 高DPI対応（ポイント数から算出）
 
 // 修正者
-#define NKMM_AUTHOR       "CAT-ech Co."
+#define NKMM_AUTHOR       "Yu-zuki."
 #define NKMM_AUTHOR_PAGE  "https://github.com/niki/sakura"
 
 // 拡張用レジストリキー
