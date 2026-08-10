@@ -39,13 +39,26 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 	++s_nGeneration;
 #endif // NKMM_
 
+#ifdef NKMM_FIX_FONT_QUALITY
+	// 共通設定「全般」の描画品質で上書きする。ChooseFontコモンダイアログは
+	// lfQuality用のUIを持たず、フォント選択のたびに値が保持されるとは限らないため、
+	// フォント側のlfQualityではなくこの設定を常に優先する
+	const BYTE nFontQuality = (BYTE)GetDllShareData().m_Common.m_sWindow.m_nFontQuality;
+#endif // NKMM_
+
 	/* フォント作成 */
 	lf = *plf;
+#ifdef NKMM_FIX_FONT_QUALITY
+	lf.lfQuality = nFontQuality;
+#endif // NKMM_
 	m_hFont_HAN = CreateFontIndirect( &lf );
 	m_LogFont = lf;
 
 	/* 太字フォント作成 */
 	lf = *plf;
+#ifdef NKMM_FIX_FONT_QUALITY
+	lf.lfQuality = nFontQuality;
+#endif // NKMM_
 	lf.lfWeight += 300;
 	if( 1000 < lf.lfWeight ){
 		lf.lfWeight = 1000;
@@ -54,12 +67,18 @@ void CViewFont::CreateFont(const LOGFONT *plf)
 
 	/* 下線フォント作成 */
 	lf = *plf;
+#ifdef NKMM_FIX_FONT_QUALITY
+	lf.lfQuality = nFontQuality;
+#endif // NKMM_
 	
 	lf.lfUnderline = TRUE;
 	m_hFont_HAN_UL = CreateFontIndirect( &lf );
 
 	/* 太字下線フォント作成 */
 	lf = *plf;
+#ifdef NKMM_FIX_FONT_QUALITY
+	lf.lfQuality = nFontQuality;
+#endif // NKMM_
 	lf.lfUnderline = TRUE;
 	lf.lfWeight += 300;
 	if( 1000 < lf.lfWeight ){

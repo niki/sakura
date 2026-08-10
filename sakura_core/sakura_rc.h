@@ -878,6 +878,9 @@
 #define IDC_BUTTON_KEYBINDLIST_RELEASE  1742
 #define IDC_STATIC_KEYBINDLIST_STICKYHEADER 1743
 #endif // NKMM_
+#ifdef NKMM_FIX_FONT_QUALITY
+#define IDC_COMBO_FONTQUALITY           1744
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -886,7 +889,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        232
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1744
+#define _APS_NEXT_CONTROL_VALUE         1745
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

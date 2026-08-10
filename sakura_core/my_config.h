@@ -688,15 +688,55 @@
 //#define NKMM_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
 
 //------------------------------------------------------------------
-// メニューアイコン (未実装)
+// メニューアイコン
 //  ! ビットマップメニュー
 //      ::InsertMenuItem( hMenu, 0xFFFFFFFF, TRUE, &mii );
 //      http://home.a00.itscom.net/hatada/windows/introduction/menu01.html
 //      http://eternalwindows.jp/winbase/menu/menu10.html
 //    起動時にアイコンの数だけHBITMAPを生成する
 //      \sakura_core\uiparts\CImageListMgr.cpp
+//  - アイコン付きメニューだけオーナードローで、アイコンなしメニューは通常の
+//    テーマメニューという見た目の不一致を修正 20260810
+//    (「メニューにアイコンを表示」をONにすると、Vista以降でもオーナードロー
+//    になり見た目がXP風になる問題が2010.03.29のコメントに既知の課題として
+//    残っていた。CMenuDrawer::MyAppendMenuの
+//    `if( m_bMenuIcon || !IsWinVista_or_later() ) nFlagAdd = MF_OWNERDRAW;`
+//    が原因で、Vista以降でもm_bMenuIcon==trueなら常にオーナードローされていた)
+//    Vista以降はMF_OWNERDRAWをやめ、MIIM_BITMAP/hbmpItemに32bppアルファ付き
+//    ビットマップ(透過色をアルファ0に変換したもの)を設定することで、通常の
+//    テーマメニューのままアイコンを表示できるようにした。チェック中の項目は
+//    テーマが自動でハイライト枠を描画する。オーナードローはVista未満のみ
+//    引き続き使用する(アクセスキー分の詰め処理のため)。
+//    - sakura_core\uiparts\CImageListMgr.h,cpp: GetAlphaBitmap()を追加。
+//      アイコン番号ごとに32bppアルファ付きビットマップを生成してキャッシュする
+//      (破棄はデストラクタ、またはResetExtend()での明示リセット時)
+//    - sakura_core\uiparts\CMenuDrawer.cpp: MyAppendMenu()で、Vista以降かつ
+//      アイコンありの項目にMIIM_BITMAPを設定するよう変更
+//  - サブメニュー(「折り返し方法」「入力改行コード指定」等)だけインデントが
+//    揃わずアイコン列が無い状態で表示される不具合を修正 20260810
+//    (サブメニュー項目はAppendMenu系の慣習で子HMENUの値がnFuncId引数に渡される
+//    ため、CMenuDrawer::MyAppendMenu内では「nFuncId!=0」の通常項目の分岐に
+//    入る。しかしGetIconIdByFuncId()にHMENUの値を渡しても対応する機能アイコンは
+//    見つからずbitmapIdx==-1のままになるため、実アイコンがない項目としてMIIM_BITMAP
+//    を一切設定していなかった。テーマメニューは「兄弟項目にMIIM_BITMAPがあれば
+//    無条件に自動整列する」わけではなく、自分自身がMIIM_BITMAPを持たない項目は
+//    インデントされないと判明。実アイコンの有無によらず、アイコン付きメニューが
+//    有効な間はサブメニュー項目にも必ずMIIM_BITMAPを設定するよう修正し、実アイコンが
+//    無い場合はCImageListMgr::GetBlankBitmap()(全画素アルファ0の16x16プレース
+//    ホルダ、1個だけ生成してキャッシュ)を代わりに設定して兄弟項目とインデントを
+//    揃えるようにした。セパレータ(MF_SEPARATOR)はテーマメニューが全幅で描画する
+//    ため対象外)
+//  - 上記2件の修正後、メニューを開くと項目のテキストごと何も表示されなくなる
+//    不具合を修正 20260810
+//    (MIIM_BITMAPを追加した際、mii.fMaskに元々あった`MIIM_TYPE`をそのまま
+//    残していたのが原因。MIIM_TYPEはMIIM_BITMAP/MIIM_FTYPE/MIIM_STRINGを
+//    束ねた旧式の複合フラグで、MSDNにも「MIIM_BITMAPと同時に指定すると
+//    動作が不定になる」と明記されている。実機でも項目が空欄になる形で
+//    再現した。MIIM_TYPEを、MIIM_BITMAPと共存できる現代的な代替
+//    (MIIM_FTYPE+MIIM_STRING)に置き換えて修正。
+//    - sakura_core\uiparts\CMenuDrawer.cpp: MyAppendMenu()のmii.fMask
 //------------------------------------------------------------------
-//#define NKMM_FIX_MENUICON
+#define NKMM_FIX_MENUICON
 
 //------------------------------------------------------------------
 // 検索 (未実装)
@@ -1270,6 +1310,26 @@
 //    NKMM_FIX_GLYPH_ATLAS_CACHE_REPORT.md, NKMM_FIX_GLYPH_ATLAS_CACHE_IMPL.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_GLYPH_ATLAS_CACHE
+
+//------------------------------------------------------------------
+// 描画品質(アンチエイリアスの種類)を選べるようにする 20260810
+//  - LOGFONT.lfQualityは値ごとにDEFAULT/DRAFT/PROOF/NONANTIALIASED/
+//    ANTIALIASED/CLEARTYPE/CLEARTYPE_NATURALの7種類が選べるが、これまでは
+//    全箇所でDRAFT_QUALITY(1)固定でハードコードされていた
+//  - 共通設定「全般」タブの「描画」グループに「描画品質」ドロップリストを追加。
+//    タイプ別/共通のどちらのフォントを使っていてもこの設定値で上書きする
+//    (LOGFONT側のlfQualityは無視する。ChooseFontコモンダイアログはlfQuality用の
+//    UIを持たず、フォント選択のたびに値が保持されるとは限らないため、
+//    フォント選択とは独立した1つのグローバル設定にした)
+//  - 既定値はDRAFT_QUALITY(1)。これまでの見た目を変えない
+//  - sakura_core\env\CommonSetting.h: CommonSetting_Window::m_nFontQuality
+//  - sakura_core\env\CShareData.cpp: 既定値の設定
+//  - sakura_core\env\CShareData_IO.cpp: ShareData_IO_Common()での読み書き
+//  - sakura_core\prop\CPropComGeneral.cpp: ダイアログ側の実装
+//  - sakura_core\view\CViewFont.cpp: CreateFont()での上書き適用
+//  - sakura_core\sakura_rc.rc,sakura_rc.h,sakura.hh: IDC_COMBO_FONTQUALITY
+//------------------------------------------------------------------
+#define NKMM_FIX_FONT_QUALITY
 
 //------------------------------------------------------------------
 // グリフアトラスのページ内容を実DIBのままBMPファイルへダンプするデバッグ機能 20260801

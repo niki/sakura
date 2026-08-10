@@ -566,6 +566,9 @@
 #ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
 #define HIDC_CHECK_GLYPHATLASCACHE				10924 //グリフキャッシュを使う 20260801
 #endif // NKMM_
+#ifdef NKMM_FIX_FONT_QUALITY
+#define HIDC_COMBO_FONTQUALITY					10925 //描画品質(アンチエイリアスの種類) 20260810
+#endif // NKMM_
 #define HIDC_HOTKEY_TRAYMENU					10940 //左クリックメニューのショートカットキー
 #define HIDC_EDIT_REPEATEDSCROLLLINENUM			10941 //スクロール行数
 #define HIDC_EDIT_MAX_MRU_FILE					10942 //ファイル履歴の最大数

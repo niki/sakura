@@ -20,6 +20,19 @@
 #include "sakura_rc.h"
 #include "sakura.hh"
 
+#ifdef NKMM_FIX_FONT_QUALITY
+// 20260810 描画品質(LOGFONT.lfQuality)
+//  - ClearType(5,6)は背景色に依存した描画のため、二重バッファ構成との相性が
+//    悪く色にじみが強調されうる。選択肢からは外し、0/1/2/4のみを提示する
+struct SFontQualityItem { BYTE nValue; const wchar_t* pszName; };
+static const SFontQualityItem FontQualityArr[] = {
+	{ DRAFT_QUALITY,          L"標準(既定)" },
+	{ DEFAULT_QUALITY,        L"自動(Windowsにお任せ)" },
+	{ PROOF_QUALITY,          L"高品質" },
+	{ ANTIALIASED_QUALITY,    L"滑らかに表示(アンチエイリアス)" },
+};
+#endif // NKMM_
+
 //@@@ 2001.02.04 Start by MIK: Popup Help
 TYPE_NAME_ID<int> SpecialScrollModeArr[] = {
 	{ 0,						STR_SCROLL_WITH_NO_KEY },		//_T("組み合わせなし") },
@@ -57,6 +70,9 @@ static const DWORD p_helpids[] = {	//10900
 	IDC_CHECK_MEMDC,				HIDC_CHECK_MEMDC,					//画面キャッシュを使う
 #ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
 	IDC_CHECK_GLYPHATLASCACHE,		HIDC_CHECK_GLYPHATLASCACHE,			//グリフキャッシュを使う
+#endif // NKMM_
+#ifdef NKMM_FIX_FONT_QUALITY
+	IDC_COMBO_FONTQUALITY,			HIDC_COMBO_FONTQUALITY,				//描画品質
 #endif // NKMM_
 	IDC_COMBO_WHEEL_PAGESCROLL,		HIDC_COMBO_WHEEL_PAGESCROLL,		// 組み合わせてホイール操作した時ページスクロールする		// 2009.01.17 nasukoji
 	IDC_COMBO_WHEEL_HSCROLL,		HIDC_COMBO_WHEEL_HSCROLL,			// 組み合わせてホイール操作した時横スクロールする			// 2009.01.17 nasukoji
@@ -377,6 +393,22 @@ void CPropGeneral::SetData( HWND hwndDlg )
 	::CheckDlgButton( hwndDlg, IDC_CHECK_GLYPHATLASCACHE, m_Common.m_sWindow.m_bUseGlyphAtlasCache );
 #endif // NKMM_
 
+#ifdef NKMM_FIX_FONT_QUALITY
+	// 20260810 描画品質
+	{
+		HWND hwndComboQuality = ::GetDlgItem( hwndDlg, IDC_COMBO_FONTQUALITY );
+		Combo_ResetContent( hwndComboQuality );
+		int nSelPosQuality = 0;
+		for( int q = 0; q < _countof( FontQualityArr ); ++q ){
+			Combo_InsertString( hwndComboQuality, q, FontQualityArr[q].pszName );
+			if( FontQualityArr[q].nValue == (BYTE)m_Common.m_sWindow.m_nFontQuality ){
+				nSelPosQuality = q;
+			}
+		}
+		Combo_SetCurSel( hwndComboQuality, nSelPosQuality );
+	}
+#endif // NKMM_
+
 	/* ファイルの履歴MAX */
 	::SetDlgItemInt( hwndDlg, IDC_EDIT_MAX_MRU_FILE, m_Common.m_sGeneral.m_nMRUArrNum_MAX, FALSE );
 
@@ -460,6 +492,17 @@ int CPropGeneral::GetData( HWND hwndDlg )
 #ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
 	// 20260801 グリフキャッシュ(グリフアトラス)を使う
 	m_Common.m_sWindow.m_bUseGlyphAtlasCache = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_GLYPHATLASCACHE );
+#endif // NKMM_
+
+#ifdef NKMM_FIX_FONT_QUALITY
+	// 20260810 描画品質
+	{
+		HWND hwndComboQuality = ::GetDlgItem( hwndDlg, IDC_COMBO_FONTQUALITY );
+		int nSelPosQuality = Combo_GetCurSel( hwndComboQuality );
+		if( 0 <= nSelPosQuality && nSelPosQuality < _countof( FontQualityArr ) ){
+			m_Common.m_sWindow.m_nFontQuality = FontQualityArr[nSelPosQuality].nValue;
+		}
+	}
 #endif // NKMM_
 
 	hwndCombo = ::GetDlgItem( hwndDlg, IDC_COMBO_WHEEL_PAGESCROLL );

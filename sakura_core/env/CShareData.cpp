@@ -306,6 +306,9 @@ bool CShareData::InitShareData()
 #ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
 			sWindow.m_bUseGlyphAtlasCache = TRUE;		// 20260801 グリフキャッシュ(グリフアトラス)を使う // 20260805 安全確認済みのためデフォルトTRUEに変更
 #endif // NKMM_
+#ifdef NKMM_FIX_FONT_QUALITY
+			sWindow.m_nFontQuality = DRAFT_QUALITY;	// 20260810 描画品質。これまでの固定値(DRAFT_QUALITY)を既定にし、見た目を変えない
+#endif // NKMM_
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
 

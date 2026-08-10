@@ -117,6 +117,9 @@ struct CommonSetting_Window
 #ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
 	BOOL			m_bUseGlyphAtlasCache;		//!< グリフキャッシュ(グリフアトラス)を使う 20260801
 #endif // NKMM_
+#ifdef NKMM_FIX_FONT_QUALITY
+	int				m_nFontQuality;				//!< 描画品質(LOGFONT.lfQuality相当。DRAFT_QUALITY等) 20260810
+#endif // NKMM_
 
 	//位置と大きさの設定
 	EWinSizeMode	m_eSaveWindowSize;			//!< ウィンドウサイズ継承・固定 EWinSizeModeに順ずる 2004.05.13 Moca

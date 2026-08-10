@@ -2018,6 +2018,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 #ifdef NKMM_FIX_GLYPH_ATLAS_CACHE
 	cProfile.IOProfileData( pszSecName, LTEXT("bUseGlyphAtlasCache")		, common.m_sWindow.m_bUseGlyphAtlasCache ); // 20260801 グリフキャッシュ(グリフアトラス)を使う
 #endif // NKMM_
+#ifdef NKMM_FIX_FONT_QUALITY
+	cProfile.IOProfileData( pszSecName, LTEXT("nFontQuality")				, common.m_sWindow.m_nFontQuality ); // 20260810 描画品質
+#endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("bCopyAndDisablSelection")	, common.m_sEdit.m_bCopyAndDisablSelection );/* コピーしたら選択解除 */
 	cProfile.IOProfileData( pszSecName, LTEXT("bEnableNoSelectCopy")		, common.m_sEdit.m_bEnableNoSelectCopy );/* 選択なしでコピーを可能にする */	// 2007.11.18 ryoji
 	cProfile.IOProfileData( pszSecName, LTEXT("bEnableLineModePaste")		, common.m_sEdit.m_bEnableLineModePaste );/* ラインモード貼り付けを可能にする */	// 2007.10.08 ryoji
