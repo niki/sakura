@@ -144,9 +144,9 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			// DWLP_USERが設定されておらずCPropCommon::DlgProcのdefault:分岐がインスタンスを
 			// 取得できずFALSEを返してしまう時点)に飛んでくる可能性があり信頼できないため 20260803
 			::SendMessage( hCombo, CB_SETITEMHEIGHT, (WPARAM)-1, (LPARAM)14 );	// 閉じているときの表示部分
-			// ドロップダウンリストの項目。14だと警告色の塗りが窮屈に見えたため
-			// 少し高くして余白を持たせる 20260805
-			::SendMessage( hCombo, CB_SETITEMHEIGHT, (WPARAM)0, (LPARAM)17 );
+			// ドロップダウンリストの項目。14だと警告色の塗りが窮屈に見えたため、
+			// ファイル一覧のアイコン行くらいの余裕を目安にさらに高くする 20260805
+			::SendMessage( hCombo, CB_SETITEMHEIGHT, (WPARAM)0, (LPARAM)22 );
 			// チェックボックスは開くたびに未チェック状態から始める
 			// (BS_OWNERDRAWのためチェック状態はこちらで保持している) 20260803
 			s_bShiftChecked = false;
