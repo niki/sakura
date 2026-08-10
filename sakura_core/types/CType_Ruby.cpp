@@ -67,6 +67,13 @@ void CType_Ruby::InitTypeConfigImp(STypeConfig* pType)
 	int keywordPos = 0;
 	int idx = 0;
 	pType->m_bUseRegexKeyword = true;
+	// 正規表現キーワード(sakura_keyword\Ruby.rkw由来、generated\ruby_regex.incに変換済み)。
+	// 元々ここに手書きされていたRegexAdd()列と1件を除き同一内容だったため、
+	// 手書き側を正としてRuby.rkwへ逆変換した上でこの#includeに置き換えた 20260810
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+#include "generated/ruby_regex.inc"
+#else
+	// NKMM_FIX_REGEX_OUTLINE_EMBED無効時は元の手書き内容のまま(generated/ruby_regex.incと等価) 20260811
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_KEYWORD3, L"/defined\\?/k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_KEYWORD4, L"/\\/[^\\n]*\\//k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_KEYWORD2, L"/\\$[\\&\\`\\'\\+\\~\\!\\@\\/\\\\\\,\\.\\<\\>\\*\\:\\\"]/k" );
@@ -100,6 +107,7 @@ void CType_Ruby::InitTypeConfigImp(STypeConfig* pType)
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_KEYWORD4, L"/Thread\\.(abort_on_exception|critical|current|exit|fork|kill|main|new|pass|start|stop)/k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_KEYWORD4, L"/Time\\.(at|gm|local|mktime|new|now|times)/k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_KEYWORD4, L"/Dir\\.(chdir|chroot|delete|entries|foreach|getwd|glob|mkdir|open|pwd|rmdir|unlink)/k" );
+#endif // NKMM_
 }
 
 

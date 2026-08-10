@@ -69,6 +69,14 @@ void CType_Cpp::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp = true;			//	Sep. 21, 2002 genta 対括弧の強調をデフォルトONに
 	pType->m_bUseHokanByFile = true;										/*! 入力補完 開いているファイル内から候補を探す */
 	pType->m_bStringLineOnly = true; // 文字列は行内のみ
+
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+	// 正規表現キーワード(sakura_keyword\cpp.rkw由来、generated\cpp_regex.incに変換済み) 20260810
+	int keywordPos = 0;
+	int idx = 0;
+	pType->m_bUseRegexKeyword = true;
+#include "generated/cpp_regex.inc"
+#endif // NKMM_
 }
 
 

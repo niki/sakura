@@ -1,6 +1,6 @@
 # NKMM_FIX_KEYWORDSET_UI 組み込みキーワード化 対応レポート
 
-対象フラグ: `NKMM_FIX_KEYWORDSET_UI`（既存フラグの機能拡張）+ `BUILD_OPT_IMPKEYWORD`（既存だが無効化されていたスイッチを有効化）
+対象フラグ: `NKMM_FIX_KEYWORDSET_UI`（既存フラグの機能拡張）+ `BUILD_OPT_IMPKEYWORD`（既存だが無効化されていたスイッチを有効化）+ `NKMM_FIX_REGEX_OUTLINE_EMBED`（新規、フェーズ8・9の`.rkw`/`.rule`埋め込み分。`.kwd`とは仕組みが別物のため別フラグに分離）
 
 対象ファイル(主なもの):
 
@@ -109,6 +109,45 @@ CSS / JavaScript / JavaScript2 / PHP / python / Ruby1-4 / C# / C# content は、
 
 `ShareData_IO_2(bRead=false)`（書き込み経路）は`ReadProfile()`を呼ばず`CDataProfile`を空から組み立て、`WriteProfile()`でini全体を書き直す実装だったため、`IOProfileData()`の呼び出しを丸ごとスキップするだけで済み、古い`[KeyWords]`内容が残留する心配も無いことを確認した上で実装した。
 
+### フェーズ8: 正規表現キーワード(`.rkw`)への対応拡張
+
+`.kwd`(強調キーワード)とは別に、`.rkw`(正規表現キーワード。`RxKey[999]=ColorName,/pattern/flags`形式、`CImpExpRegex::Import()`が読む書式)も同じ`tools\GenerateKeywordInc.ps1`で扱えるようにした。`$Targets`の各要素は`File`(.kwd)か`Regex`(.rkw)のどちらか一方を持ち、スクリプト側で分岐する。
+
+- `.kwd`は`CKeyWordSetMgr::SetKeyWordArr()`向けの`L"キーワード",`データ配列として`<name>_keywords.inc`に出力(従来通り)。
+- `.rkw`は`STypeConfig::m_RegexKeywordArr`/`m_RegexKeywordList`向けに、`RegexAdd( pType, keywordPos, idx++, COLORIDX_XXX, L"/pattern/flags" );`という**関数呼び出し文の並び**として`<name>_regex.inc`に出力する(データ配列ではない)。消費側は`CType_JavaScript.cpp`が元々手書きしていた`RegexAdd()`呼び出し列と同じ形で、`InitTypeConfigImp()`内の`int keywordPos = 0; int idx = 0; pType->m_bUseRegexKeyword = true;`の直後に`#include`する。
+- `.rkw`のColorName(3文字コード、例: `KW1`→`COLORIDX_KEYWORD1`、`RK1`→`COLORIDX_REGEX1`、`WQT`→`COLORIDX_WSTRING`)からCOLORIDX定数名への対応表は、`CColorStrategy.cpp`の`g_ColorAttributeArr`と`EColorIndexType.h`のenum定義を突き合わせて`$ColorNameMap`としてスクリプトに持たせた(順序で対応しているテーブルなので、片方だけ増減すると対応がずれる点に注意)。
+
+**`.rkw`には`.kwd`のような自動フォールバック機構が無いことに注意**: `.kwd`は`sakura.keywordset.csv`経由で起動のたびに自動読み込みされ、無ければ組み込みにフォールバックするが、`.rkw`はタイプ別設定「正規表現キーワード」タブの手動インポートでのみ読み込まれる仕組みで、そもそも自動読み込みの起点が無い。そのため`.rkw`の組み込みは「ソースに直接書けば動く」形にする以外の選択肢が無く、実行時フォールバックの概念自体が存在しない。
+
+実際に`sakura_keyword/cpp.rkw`(11件)を追加し、`CType_Cpp.cpp`の`InitTypeConfigImp()`に`generated/cpp_regex.inc`を組み込んだ。生成結果が元の`cpp.rkw`と1件ずつ一致すること(ColorNameのマッピング、バックスラッシュの二重エスケープ含む)を目視確認し、ビルドが通ることを確認済み。
+
+続けて`perl.rkw`(25件)・`Ruby.rkw`(33件)も追加した。Perlは`CType_Perl.cpp`に既存の`RegexAdd()`呼び出しが無かったため、CPPと同じ手順でそのまま`#include`を追加するだけで済んだ。
+
+Rubyは事情が異なった。**`CType_Ruby.cpp`には元々`Ruby.rkw`と同内容の`RegexAdd()`手書き列(33件)が既に存在していた**(このリポジトリではRubyタイプの正規表現キーワードは元から実装済みだった)。単純に`#include`を追加すると全件が二重に登録されてしまうところだった。1行ずつ突き合わせたところ、32件は完全一致だったが**1件だけ食い違いがあった**: `&`始まりのブロック引数パターン(`/\&\$*\w([\w\d']|::)*/k`)の色が、手書き側は`COLORIDX_REGEX2`、`Ruby.rkw`側は`RK3`(`COLORIDX_REGEX3`)。
+
+どちらが正しいか判断がつかなかったため、ユーザーに確認したところ「手書き側(実際に長年使われてきた挙動)を正として、Ruby.rkwへ逆変換してから使う」という方針が示された。そこで、
+
+1. `CType_Ruby.cpp`の33件の`RegexAdd()`呼び出しをパースし、C++文字列リテラルのエスケープを逆変換(`\\`→`\`、`\"`→`"`)、COLORIDX定数名を3文字コードへ逆マッピングする一時スクリプトを書いて`Ruby.rkw`を上書き生成した。
+2. 生成した`Ruby.rkw`を`tools\GenerateKeywordInc.ps1`に通し、出力が手書きブロックとバイト単位で完全一致すること(改行コードの差を除く)を確認した(往復検証)。
+3. `CType_Ruby.cpp`の手書き33行を`#include "generated/ruby_regex.inc"`に置き換えた。
+
+この一時スクリプト自体も、最初はスクリプトファイル自身がBOM無しUTF-8で保存されており、埋め込んだ日本語コメントがPowerShellにShift-JISとして誤読され文字化けする問題が起きた(`tools\GenerateKeywordInc.ps1`のときと同じ原因)。UTF-8 BOM付きで保存し直して解決した。
+
+### フェーズ9: アウトライン解析ルール(`.rule`)への対応拡張
+
+`.kwd`/`.rkw`とはさらに別物の`.rule`(アウトライン解析ルール。`CDocOutline::ReadRuleFile()`が読む`key1,key2 /// GroupName,Lv=1`/`;Mode=Regex`等の書式)も同じ`tools\GenerateKeywordInc.ps1`で扱えるようにした(`$Targets`に`Rule`メンバーを追加)。
+
+`.kwd`/`.rkw`との決定的な違いは、**`.rule`はCDocOutline自身がアウトライン表示のたびにファイル全体を都度パースする**実装だったこと。`.kwd`(`sakura.keywordset.csv`経由で起動時に1回読み込み、`CKeyWordSetMgr`に格納)や`.rkw`(手動インポートで`STypeConfig`のフィールドに一括変換)のように「あらかじめパース済みのデータ構造」へ変換する対象が無いため、1行ずつの解析は不要。そのぶんスクリプト側の実装は`.kwd`/`.rkw`より単純で、**ファイル内容をそのままC++11のraw文字列リテラル`LR"RULEDATA(...)RULEDATA"`として書き出すだけ**(エスケープ一切不要。ただし区切り文字列`)RULEDATA"`がファイル内容に含まれていたら生成時にエラーにする安全策を入れた)。
+
+消費側も`.rkw`と同様に自動読み込みの起点が無いため、CType_*.cpp側を変更する必要が無い。その代わり、`CDocOutline::ReadRuleFile()`自体(`sakura_core/doc/CDocOutline.cpp`)を改修した:
+
+- 埋め込み文字列3つ(JS/Ruby/PHP)を`#include`で定義し、`GetEmbeddedOutlineRule()`でファイル名(ディレクトリ部分を除いた末尾)から対応する文字列を引けるようにした。
+- `ReadRuleFile()`本体は、`CTextInputStream_AbsIni`が実ファイルを開けなかった場合のみ、埋め込み文字列を`\n`区切りで分割した`std::vector<std::wstring>`にフォールバックする。既存のパース処理本体(`while`ループの中身)は一切変更せず、ループ条件と行取得部分だけを「ファイルから読むか埋め込み配列から読むか」で分岐させる形にした(`SplitEmbeddedRuleLines()`が`CTextInputStream_AbsIni::ReadLineW()`相当の`\r\n`/`\n`両対応の行分割を行う)。
+
+ハマった点: `CDocOutline.cpp`は`sakura_core/doc/`に置かれており、生成物は`sakura_core/types/generated/`にあるため、`.kwd`/`.rkw`の消費側(`CType_*.cpp`、同じ`types/`配下)のような`#include "generated/xxx.inc"`という相対パスでは見つからない。`#include "../types/generated/xxx.inc"`と1階層上がる相対パスに直す必要があった。
+
+`sakura_keyword/lua.rule`も置かれているが、このリポジトリに`CType_Lua.cpp`は存在しないため対応先が無く、対象外とした。
+
 ---
 
 ## 見つけて直した不具合
@@ -187,3 +226,6 @@ PHP2のみ、従来通り`Keyword\php.kwd`が必要。
 - `NKMM_FIX_KEYWORDSET_UI`のガード漏れが無いことを確認するため、`NKMM_USE_KEYWORDSET_CSV`を一時的に`0`にして（`NKMM_FIX_KEYWORDSET_UI`が未定義になる状態で）フルビルドし、エラーが出ないことを確認してから設定を元に戻した(フェーズ7追加時も同様に再確認)。
 - 生成スクリプトは、実際の`sakura_keyword\`一式に対する生成に加え、意図的にファイルを1件除いた状態でも残り26件が正常に生成されエラーで停止しないことを確認。
 - 実機での強調表示・ダイアログ操作（「更新」ボタンのYes/No確認、`(embed)`表示）の目視確認はユーザー側で実施。フェーズ6の不具合2はその過程で報告・修正した。
+- フェーズ8・9(`.rkw`/`.rule`埋め込み)は実装当初、他フォークルールの「変更はNKMM_FIX_*フラグでガードする」規約への準拠が漏れていた(ユーザー指摘で発覚)。事後に`NKMM_FIX_REGEX_OUTLINE_EMBED`を新設し、`CType_Cpp.cpp`/`CType_Perl.cpp`(新規追加分、無効時は何も追加しない)・`CType_Ruby.cpp`(無効時は元の手書き33行の`RegexAdd()`に戻す)・`CDocOutline.cpp`(無効時は`ReadRuleFile()`が元通りファイル読み込み失敗時に即0を返す)をガードした。
+- `CDocOutline.cpp`側は最初、`bUseEmbedded`という実行時boolに頼って`while`条件や行取得を`bUseEmbedded ? ... : ...`という三項演算子だけで済ませていた(フラグ無効時は`bUseEmbedded`が常にfalseになるので機能的には元と同じだが、`CType_Ruby.cpp`のような「無効時は元のコードにテキストとして戻る」形にはなっていなかった)。これも指摘を受けて、変数宣言・`while`条件・行取得・`file.Close()`の4箇所すべてを`#ifdef`/`#else`で分岐させ、無効時は元の`while( file.Good() && nCount < nMaxCount )`/`file.ReadLineW()`/`file.Close()`にテキストとして戻るよう修正した。
+- `NKMM_FIX_KEYWORDSET_UI`と同じ手順(フラグを一時的にコメントアウトしてフルビルド→エラー無し→復元)で、上記2回とも無効化ビルドを確認済み。

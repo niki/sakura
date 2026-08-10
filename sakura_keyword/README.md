@@ -52,6 +52,57 @@
 格納領域(`CKeyWordSetMgr.h` の `MAX_KEYWORDNUM=15000`)を圧迫するため埋め込みを見送っています。
 実行時に `Keyword\php.kwd` が無い場合、PHP2セットは空のままです。
 
+## 正規表現キーワード(`*.rkw`)
+
+`*.kwd`(強調キーワード、`CKeyWordSetMgr`経由)とは別に、`*.rkw`(正規表現キーワード、
+`STypeConfig::m_RegexKeywordArr`/`m_RegexKeywordList`経由)も同じ`sakura_keyword\`・同じ
+`tools\GenerateKeywordInc.ps1`で扱う(20260810)。ただし消費のされ方が異なる点に注意:
+
+- `.kwd`は`sakura.keywordset.csv`経由で**起動のたびに自動読み込み**され、ファイルが無ければ
+  組み込み配列にフォールバックする(詳細は「読み込み優先順位」章参照)。
+- `.rkw`はタイプ別設定「正規表現キーワード」タブの**手動インポートでのみ**読み込まれる仕組みで、
+  起動時の自動読み込み・フォールバックの機構自体が存在しない。そのため`.rkw`の組み込みは、
+  該当`CType_*.cpp`の`InitTypeConfigImp()`に直接`RegexAdd()`呼び出し列を`#include`する形を取る
+  (既存のJavaScriptタイプの手書き`RegexAdd()`と同じやり方を自動生成しているだけで、実行時の
+  フォールバック判定は無い)。
+
+| ファイル | 対応する CType_*.cpp | 生成物 |
+|---|---|---|
+| cpp.rkw | CType_Cpp.cpp | generated/cpp_regex.inc |
+| perl.rkw | CType_Perl.cpp | generated/perl_regex.inc |
+| Ruby.rkw | CType_Ruby.cpp | generated/ruby_regex.inc |
+
+**Ruby.rkwは注意**: CType_Ruby.cppには元々このファイルと同内容の`RegexAdd()`手書き列があった
+(このリポジトリでは元からRubyタイプの正規表現キーワードは実装済みだった)。1件だけ食い違いが
+あり(`&`始まりのブロック引数パターンの色が手書き側`COLORIDX_REGEX2`、当時のRuby.rkw側は
+`COLORIDX_REGEX3`)、手書き側(=実際に長年使われてきた挙動)を正として採用し、Ruby.rkwを
+その内容に合わせて上書きした上で`#include`に置き換えた。今後Ruby.rkwを編集する際は
+この経緯を踏まえること。
+
+## アウトライン解析ルール(`*.rule`)
+
+`*.kwd`/`*.rkw`とはさらに別物。`CDocOutline::ReadRuleFile()`(`key1,key2 /// GroupName,Lv=1`や
+`;Mode=Regex`等の書式)が読む、アウトライン解析用のルールファイル(20260811)。この形式は
+`CDocOutline`自身がテキスト全体を都度パースする作りのため、`.kwd`/`.rkw`のように1行ずつ
+解析してデータ配列や関数呼び出し列に変換する必要が無く、**ファイル内容をそのままC++11の
+raw文字列リテラルとして埋め込むだけ**(エスケープ不要)。
+
+| ファイル | 対応する CType_*.cpp(`m_szOutlineRuleFilename`) | 生成物 |
+|---|---|---|
+| JavaScript.rule | CType_JavaScript.cpp | generated/js_rule.inc |
+| Ruby.rule | CType_Ruby.cpp | generated/ruby_rule.inc |
+| php.rule | CType_Php.cpp | generated/php_rule.inc |
+
+**`.rule`にも`.kwd`のような自動読み込みの起点自体が無い**(`.rkw`と同様)。`CDocOutline::ReadRuleFile()`
+はアウトライン表示のたびに`Keyword\*.rule`を都度ディスクから読みに行く実装で、これをキャッシュ・
+一括ロードする仕組みは元から存在しない。そのため`.rkw`と違い**CType_*.cpp側の変更は不要**で、
+`CDocOutline.cpp`(`sakura_core/doc/`)側に埋め込み文字列3つと`GetEmbeddedOutlineRule()`を追加し、
+`ReadRuleFile()`が実ファイルを開けなかったときだけそちらにフォールバックするよう1箇所だけ改修した
+(ファイル名は`m_szOutlineRuleFilename`のディレクトリ部分を除いた末尾で照合する)。
+
+`sakura_keyword/lua.rule`も置かれているが、このリポジトリには`CType_Lua.cpp`(Luaタイプ)が
+存在しないため対応先が無く、対象外。
+
 ## 再生成方法
 
 ```powershell
@@ -59,7 +110,8 @@
 ```
 
 `sakura_core\types\generated\*.inc` を再生成します(引数省略時はこの `sakura_keyword\` を参照)。
-実行後は `git diff sakura_core/types/generated/` で差分を確認してからコミットしてください。
+`generated\*.inc` は `.gitignore` 対象のため `git diff` では差分が見えない。生成後は
+`generated\*.inc` の中身を目視するか、`sakura.sln` をビルドしてエラーが無いことで確認すること。
 
 ### 注意: 16タイプ分は現時点で未同期
 

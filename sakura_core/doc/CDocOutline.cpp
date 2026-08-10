@@ -18,6 +18,7 @@
 
 #include "StdAfx.h"
 #include <string.h>
+#include <vector>
 #include "doc/CDocOutline.h"
 #include "doc/CEditDoc.h"
 #include "doc/logic/CDocLine.h"
@@ -48,21 +49,97 @@ struct SOneRule {
 
 
 
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+// 組み込みアウトラインルール(sakura_keyword\*.ruleから tools\GenerateKeywordInc.ps1 で生成) 20260811
+// 実ファイル(Keyword\*.rule)が見つからない場合のReadRuleFile()のフォールバックとして使う。
+// .kwd/.rkwと違いCDocOutline自身がテキスト全体をパースするため、ファイル内容をそのまま
+// raw文字列リテラルとして埋め込むだけで良い(エスケープ不要)。
+static const wchar_t* g_pszOutlineRuleJS =
+#include "../types/generated/js_rule.inc"
+;
+static const wchar_t* g_pszOutlineRuleRUBY =
+#include "../types/generated/ruby_rule.inc"
+;
+static const wchar_t* g_pszOutlineRulePHP =
+#include "../types/generated/php_rule.inc"
+;
+
+//! ルールファイル名(ディレクトリ部分を除いたファイル名で比較)から組み込みルール文字列を探す 20260811
+static const wchar_t* GetEmbeddedOutlineRule( const TCHAR* pszFilename )
+{
+	std::wstring name = to_wchar(pszFilename);
+	size_t pos = name.find_last_of(L"\\/");
+	const wchar_t* pszBasename = (pos == std::wstring::npos) ? name.c_str() : name.c_str() + pos + 1;
+
+	struct SEmbeddedRule {
+		const wchar_t*	pszFileName;
+		const wchar_t*	pszContent;
+	};
+	const SEmbeddedRule arr[] = {
+		{ L"JavaScript.rule", g_pszOutlineRuleJS },
+		{ L"Ruby.rule",       g_pszOutlineRuleRUBY },
+		{ L"php.rule",        g_pszOutlineRulePHP },
+	};
+	for( const auto& e : arr ){
+		if( 0 == _wcsicmp( e.pszFileName, pszBasename ) ){
+			return e.pszContent;
+		}
+	}
+	return NULL;
+}
+
+//! 埋め込み文字列を改行(\r\n または \n)単位に分割する(CTextInputStream_AbsIni::ReadLineW()相当) 20260811
+static void SplitEmbeddedRuleLines( const wchar_t* pszText, std::vector<std::wstring>& lines )
+{
+	std::wstring all( pszText );
+	size_t start = 0;
+	while( start <= all.length() ){
+		size_t pos = all.find( L'\n', start );
+		std::wstring line = (pos == std::wstring::npos) ? all.substr( start ) : all.substr( start, pos - start );
+		if( !line.empty() && line.back() == L'\r' ){
+			line.pop_back();
+		}
+		lines.push_back( line );
+		if( pos == std::wstring::npos ){
+			break;
+		}
+		start = pos + 1;
+	}
+}
+#endif // NKMM_
+
 /*! ルールファイルを読み込み、ルール構造体の配列を作成する
 
 	@date 2002.04.01 YAZAKI
 	@date 2002.11.03 Moca 引数nMaxCountを追加。バッファ長チェックをするように変更
 	@date 2013.06.02 _tfopen_absini,fgetwsをCTextInputStream_AbsIniに変更。UTF-8対応。Regex対応
 	@date 2014.06.20 RegexReplace 正規表現置換モード追加
+	@date 20260811 実ファイルが見つからない場合、組み込みルール文字列があればそれにフォールバックする
 */
 int CDocOutline::ReadRuleFile( const TCHAR* pszFilename, SOneRule* pcOneRule, int nMaxCount, bool& bRegex, std::wstring& title )
 {
 	// 2003.06.23 Moca 相対パスは実行ファイルからのパスとして開く
 	// 2007.05.19 ryoji 相対パスは設定ファイルからのパスを優先
 	CTextInputStream_AbsIni	file = CTextInputStream_AbsIni( pszFilename );
+
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+	// 20260811 実ファイルが開けない場合、組み込みのルール文字列があればそれを使う
+	std::vector<std::wstring> embeddedLines;
+	bool bUseEmbedded = false;
+	size_t nEmbeddedIdx = 0;
+	if( !file.Good() ){
+		const wchar_t* pszEmbedded = GetEmbeddedOutlineRule( pszFilename );
+		if( NULL == pszEmbedded ){
+			return 0;
+		}
+		bUseEmbedded = true;
+		SplitEmbeddedRuleLines( pszEmbedded, embeddedLines );
+	}
+#else
 	if( !file.Good() ){
 		return 0;
 	}
+#endif // NKMM_
 	std::wstring	strLine;
 	wchar_t			szLine[LINEREADBUFSIZE];
 	wchar_t			szText[256];
@@ -83,8 +160,13 @@ int CDocOutline::ReadRuleFile( const TCHAR* pszFilename, SOneRule* pcOneRule, in
 	// RegexMode /// GroupName,Lv=1
 	// 正規表現置換モード
 	// RegexReplace /// TitleReplace /// GroupName
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+	while( ( bUseEmbedded ? ( nEmbeddedIdx < embeddedLines.size() ) : file.Good() ) && nCount < nMaxCount ){
+		strLine = bUseEmbedded ? embeddedLines[nEmbeddedIdx++] : file.ReadLineW();
+#else
 	while( file.Good() && nCount < nMaxCount ){
 		strLine = file.ReadLineW();
+#endif // NKMM_
 		pszWork = wcsstr( strLine.c_str(), pszDelimit );
 		if( NULL != pszWork && 0 < strLine.length() && strLine[0] != cComment ){
 			int nLen = pszWork - strLine.c_str();
@@ -203,7 +285,13 @@ int CDocOutline::ReadRuleFile( const TCHAR* pszFilename, SOneRule* pcOneRule, in
 			}
 		}
 	}
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+	if( !bUseEmbedded ){
+		file.Close();
+	}
+#else
 	file.Close();
+#endif // NKMM_
 	return nCount;
 }
 

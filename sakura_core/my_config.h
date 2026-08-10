@@ -1689,6 +1689,26 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_LOAD_EXACT_LINE_BUFFER
 
+//------------------------------------------------------------------
+// 正規表現キーワード(.rkw)・アウトライン解析ルール(.rule)の組み込みフォールバック 20260811
+//  - NKMM_FIX_KEYWORDSET_UI(強調キーワード.kwd)の続きとして、同じsakura_keyword\に
+//    置いた.rkw/.ruleもtools\GenerateKeywordInc.ps1でsakura_core\types\generated\*.incへ
+//    変換し、対応する実ファイル(Keyword\*.rkw, Keyword\*.rule)が見つからない場合の
+//    フォールバックとして使う。.kwdとは仕組みが別物(sakura.keywordset.csv経由の
+//    自動読み込みが無く、.rkwはタイプ別設定「正規表現キーワード」タブの手動インポート、
+//    .ruleはCDocOutline::ReadRuleFile()がアウトライン表示のたびに都度読む)ため、
+//    NKMM_FIX_KEYWORDSET_UIとは別のフラグとして分離した
+//  - .rkw: CType_Cpp.cpp(新規11件)/CType_Perl.cpp(新規25件)/CType_Ruby.cpp(既存の
+//    手書きRegexAdd()33件と1件だけ色が食い違っていたため、手書き側を正としてRuby.rkwへ
+//    逆変換し#includeへ置換。フラグ無効時は元の手書き33行に戻る)
+//  - .rule: CDocOutline.cpp: ReadRuleFile()が実ファイルを開けない場合のみ、
+//    embedded文字列(JS/Ruby/PHP)にフォールバックする。元々.ruleには組み込みの仕組みが
+//    一切無かった(常にKeyword\*.rule依存)ため、フラグ無効時は元通りfile.Good()が
+//    falseなら0件を返すだけの挙動に戻る
+//  - 詳細はchangelog/NKMM_FIX_KEYWORDSET_UI.mdのフェーズ8・9参照
+//------------------------------------------------------------------
+#define NKMM_FIX_REGEX_OUTLINE_EMBED
+
 //
 //#define USE_SSE2
 

@@ -51,6 +51,14 @@ void CType_Perl::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;			/* 半角数値を色分け表示 */
 	pType->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp = true;	//対括弧の強調をデフォルトON	//Sep. 21, 2002 genta
 	pType->m_bStringLineOnly = true; // 文字列は行内のみ
+
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+	// 正規表現キーワード(sakura_keyword\perl.rkw由来、generated\perl_regex.incに変換済み) 20260810
+	int keywordPos = 0;
+	int idx = 0;
+	pType->m_bUseRegexKeyword = true;
+#include "generated/perl_regex.inc"
+#endif // NKMM_
 }
 
 
