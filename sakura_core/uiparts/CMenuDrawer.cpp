@@ -813,6 +813,10 @@ void CMenuDrawer::MyAppendMenu(
 	TCHAR		szLabel[_MAX_PATH * 2+ 30];
 	TCHAR		szKey[10];
 	int			nFlagAdd = 0;
+#ifdef NKMM_FIX_MENUICON
+	int			nMenuIconBitmapIdx = -1;	// MIIM_BITMAPで使うアイコン番号(Vista以降の通常メニュー表示用)。実アイコンがなければ-1のまま
+	bool		bMenuIconSlot = false;		// この項目にMIIM_BITMAPを設定するか(実アイコンがなくても、兄弟項目とインデントを揃えるため空のプレースホルダを設定する)
+#endif // NKMM_
 
 	if( nForceIconId == -1 ) nForceIconId = nFuncId;	//お気に入り	//@@@ 2003.04.08 MIK
 
@@ -821,7 +825,7 @@ void CMenuDrawer::MyAppendMenu(
 		_tcsncpy( szLabel, pszLabel, _countof( szLabel ) - 1 );
 		szLabel[ _countof( szLabel ) - 1 ] = _T('\0');
 	}
-	auto_strcpy( szKey, pszKey); 
+	auto_strcpy( szKey, pszKey);
 	if( nFuncId != 0 ){
 		/* メニューラベルの作成 */
 		CKeyBind::GetMenuLabel(
@@ -835,30 +839,56 @@ void CMenuDrawer::MyAppendMenu(
 			_countof(szLabel)
 		 );
 
-		/* アイコン用ビットマップを持つものは、オーナードロウにする */
+		/* アイコン用ビットマップを持つものは、オーナードロウ、またはMIIM_BITMAPで表示する */
 		{
 			MyMenuItemInfo item;
 			item.m_nBitmapIdx = -1;
 			item.m_nFuncId = nFuncId;
 			item.m_cmemLabel.SetString( szLabel );
-			// メニュー項目をオーナー描画にして、アイコンを表示する
+			/* 機能のビットマップの情報を覚えておく */
+			item.m_nBitmapIdx = GetIconIdByFuncId( nForceIconId );
+
 			// 2010.03.29 アクセスキーの分を詰めるためいつもオーナードローにする。ただしVista未満限定
 			// Vista以上ではメニューもテーマが適用されるので、オーナードローにすると見た目がXP風になってしまう。
+#ifdef NKMM_FIX_MENUICON
+			// 2026.08.10 Vista以上はオーナードローをやめ、MIIM_BITMAPで通常のテーマメニューとしてアイコンを表示する。
+			// 実アイコンを持たない項目(サブメニュー等、nFuncIdが実は子HMENUの値になっている)も、
+			// 兄弟項目とインデントを揃えるため空のプレースホルダをMIIM_BITMAPに設定する。
+			if( !IsWinVista_or_later() ){
+				if( m_pShareData->m_Common.m_sWindow.m_bMenuIcon ){
+					nFlagAdd = MF_OWNERDRAW;
+				}
+			}else if( m_pShareData->m_Common.m_sWindow.m_bMenuIcon ){
+				bMenuIconSlot = true;
+				nMenuIconBitmapIdx = item.m_nBitmapIdx;
+			}
+#else
 			if( m_pShareData->m_Common.m_sWindow.m_bMenuIcon || !IsWinVista_or_later() ){
 				nFlagAdd = MF_OWNERDRAW;
 			}
-			/* 機能のビットマップの情報を覚えておく */
-			item.m_nBitmapIdx = GetIconIdByFuncId( nForceIconId );
+#endif // NKMM_
 			m_menuItems.push_back( item );
 		}
 	}else{
 #ifdef DRAW_MENU_ICON_BACKGROUND_3DFACE
 		// セパレータかサブメニュー
+#ifdef NKMM_FIX_MENUICON
+		if( !IsWinVista_or_later() && ( nFlag & (MF_SEPARATOR | MF_POPUP) ) ){
+			if( m_pShareData->m_Common.m_sWindow.m_bMenuIcon ){
+					nFlagAdd = MF_OWNERDRAW;
+			}
+		}else if( IsWinVista_or_later() && ( nFlag & MF_POPUP ) && m_pShareData->m_Common.m_sWindow.m_bMenuIcon ){
+			// サブメニューは実アイコンを持たないため、兄弟項目とインデントを揃える空のプレースホルダを設定する
+			// (セパレータは全幅で描画されるため対象外)
+			bMenuIconSlot = true;
+		}
+#else
 		if( nFlag & (MF_SEPARATOR | MF_POPUP) ){
 			if( m_pShareData->m_Common.m_sWindow.m_bMenuIcon || !IsWinVista_or_later() ){
 					nFlagAdd = MF_OWNERDRAW;
 			}
 		}
+#endif // NKMM_
 #endif
 	}
 
@@ -867,7 +897,15 @@ void CMenuDrawer::MyAppendMenu(
 	//	Aug. 31, 2001 genta
 	mii.cbSize = SIZEOF_MENUITEMINFO; //Win95対策済みのsizeof(MENUITEMINFO)値
 
+#ifdef NKMM_FIX_MENUICON
+	// MIIM_TYPEはMIIM_BITMAP/MIIM_FTYPE/MIIM_STRINGの複合フラグの旧式表現で、
+	// MSDN上もMIIM_BITMAPと同時使用すると動作が不定になると明記されている
+	// (実機でテキストが描画されなくなる不具合を確認)。
+	// MIIM_BITMAPを設定するため、現代的な代替(MIIM_FTYPE+MIIM_STRING)を使う。
+	mii.fMask = MIIM_CHECKMARKS | MIIM_DATA | MIIM_ID | MIIM_STATE | MIIM_SUBMENU | MIIM_FTYPE | MIIM_STRING;
+#else
 	mii.fMask = MIIM_CHECKMARKS | MIIM_DATA | MIIM_ID | MIIM_STATE | MIIM_SUBMENU | MIIM_TYPE;
+#endif // NKMM_
 	mii.fType = 0;
 	if( MF_OWNERDRAW	& ( nFlag | nFlagAdd ) ) mii.fType |= MFT_OWNERDRAW;
 	if( MF_SEPARATOR	& ( nFlag | nFlagAdd ) ) mii.fType |= MFT_SEPARATOR;
@@ -886,6 +924,20 @@ void CMenuDrawer::MyAppendMenu(
 	mii.dwItemData = (ULONG_PTR)this;
 	mii.dwTypeData = szLabel;
 	mii.cch = 0;
+
+#ifdef NKMM_FIX_MENUICON
+	if( bMenuIconSlot && NULL != m_pcIcons ){
+		// 実アイコンがあればそれを、なければ兄弟項目とインデントを揃えるための空のプレースホルダを使う
+		HBITMAP hbmpIcon = ( -1 != nMenuIconBitmapIdx ) ? m_pcIcons->GetAlphaBitmap( nMenuIconBitmapIdx ) : NULL;
+		if( NULL == hbmpIcon ){
+			hbmpIcon = m_pcIcons->GetBlankBitmap();
+		}
+		if( NULL != hbmpIcon ){
+			mii.fMask |= MIIM_BITMAP;
+			mii.hbmpItem = hbmpIcon;
+		}
+	}
+#endif // NKMM_
 
 	// メニュー内の指定された位置に、新しいメニュー項目を挿入します。
 	::InsertMenuItem( hMenu, 0xFFFFFFFF, TRUE, &mii );

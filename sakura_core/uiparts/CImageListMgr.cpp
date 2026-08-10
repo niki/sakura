@@ -55,6 +55,10 @@ static void FillSolidRect( HDC hdc, int x, int y, int cx, int cy, COLORREF clr)
 //	Destructor
 CImageListMgr::~CImageListMgr()
 {
+#ifdef NKMM_FIX_MENUICON
+	ClearAlphaBitmapCache();
+#endif // NKMM_
+
 	//	2003.07.21 Image Listの代わりに描画用bitmapを解放
 	if( m_hIconBitmap != NULL ){
 		DeleteObject( m_hIconBitmap );
@@ -360,6 +364,116 @@ bool CImageListMgr::Draw(int index, HDC dc, int x, int y, int fstyle ) const
 	return true;
 }
 
+#ifdef NKMM_FIX_MENUICON
+/*! @brief メニュー(MIIM_BITMAP)用の32bppアルファ付きビットマップを返す
+
+	通常のテーマ付きメニュー(オーナードローなし)でもアイコンが表示できるように、
+	透過色をアルファ0(完全透明)に変換した32bppビットマップを作成する。
+	一度作成したビットマップはインスタンス破棄まで保持し、使い回す。
+
+	@date 2026.08.10
+*/
+HBITMAP CImageListMgr::GetAlphaBitmap(int index) const
+{
+	if( m_hIconBitmap == NULL || index < 0 ){
+		return NULL;
+	}
+
+	std::map<int, HBITMAP>::const_iterator it = m_mapAlphaBitmap.find( index );
+	if( it != m_mapAlphaBitmap.end() ){
+		return it->second;
+	}
+
+	BITMAPINFO bmi = {};
+	bmi.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+	bmi.bmiHeader.biWidth = m_cx;
+	bmi.bmiHeader.biHeight = -m_cy; // トップダウンDIB
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biCompression = BI_RGB;
+
+	void* pBits = NULL;
+	HBITMAP hbmpAlpha = ::CreateDIBSection( NULL, &bmi, DIB_RGB_COLORS, &pBits, NULL, 0 );
+	if( hbmpAlpha == NULL || pBits == NULL ){
+		return NULL;
+	}
+
+	HDC hdcSrc = ::CreateCompatibleDC( NULL );
+	HBITMAP hSrcOld = (HBITMAP)::SelectObject( hdcSrc, m_hIconBitmap );
+
+	HDC hdcDst = ::CreateCompatibleDC( NULL );
+	HBITMAP hDstOld = (HBITMAP)::SelectObject( hdcDst, hbmpAlpha );
+
+	::BitBlt( hdcDst, 0, 0, m_cx, m_cy, hdcSrc,
+		( index % MAX_X ) * m_cx, ( index / MAX_X ) * m_cy, SRCCOPY );
+
+	::SelectObject( hdcDst, hDstOld );
+	::SelectObject( hdcSrc, hSrcOld );
+	::DeleteDC( hdcDst );
+	::DeleteDC( hdcSrc );
+
+	// 透過色の画素をアルファ0に、それ以外をアルファ255(不透明)にする
+	const BYTE transR = GetRValue( m_cTrans );
+	const BYTE transG = GetGValue( m_cTrans );
+	const BYTE transB = GetBValue( m_cTrans );
+	BYTE* p = (BYTE*)pBits;
+	for( int i = 0; i < m_cx * m_cy; i++, p += 4 ){
+		if( p[2] == transR && p[1] == transG && p[0] == transB ){
+			p[0] = p[1] = p[2] = p[3] = 0; // 完全透明
+		}else{
+			p[3] = 0xFF; // 不透明
+		}
+	}
+
+	m_mapAlphaBitmap[index] = hbmpAlpha;
+	return hbmpAlpha;
+}
+
+/*! @brief メニュー(MIIM_BITMAP)用の完全透明な16x16ビットマップを返す
+
+	実アイコンを持たない項目(サブメニュー等)に割り当てることで、
+	実アイコンを持つ兄弟項目とインデントを揃えるためのプレースホルダ。
+
+	@date 2026.08.10
+*/
+HBITMAP CImageListMgr::GetBlankBitmap() const
+{
+	const int BLANK_KEY = -2; // 実在のアイコン番号(0以上)と衝突しない予約キー
+
+	std::map<int, HBITMAP>::const_iterator it = m_mapAlphaBitmap.find( BLANK_KEY );
+	if( it != m_mapAlphaBitmap.end() ){
+		return it->second;
+	}
+
+	BITMAPINFO bmi = {};
+	bmi.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+	bmi.bmiHeader.biWidth = m_cx;
+	bmi.bmiHeader.biHeight = -m_cy; // トップダウンDIB
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biCompression = BI_RGB;
+
+	void* pBits = NULL;
+	HBITMAP hbmpBlank = ::CreateDIBSection( NULL, &bmi, DIB_RGB_COLORS, &pBits, NULL, 0 );
+	if( hbmpBlank == NULL ){
+		return NULL;
+	}
+	// CreateDIBSectionの確保領域はゼロ初期化されるため、全画素アルファ0(透明)のまま使える
+
+	m_mapAlphaBitmap[BLANK_KEY] = hbmpBlank;
+	return hbmpBlank;
+}
+
+//! アルファ付きメニューアイコンのキャッシュを破棄する
+void CImageListMgr::ClearAlphaBitmapCache() const
+{
+	for( std::map<int, HBITMAP>::iterator it = m_mapAlphaBitmap.begin(); it != m_mapAlphaBitmap.end(); ++it ){
+		::DeleteObject( it->second );
+	}
+	m_mapAlphaBitmap.clear();
+}
+#endif // NKMM_
+
 /*!	アイコン数を返す
 
 	@date 2003.07.21 genta 個数を自分で管理する必要がある．
@@ -443,4 +557,7 @@ void CImageListMgr::ResetExtend()
 {
 	m_nIconCount = MAX_TOOLBAR_ICON_COUNT;
 	Extend(false);
+#ifdef NKMM_FIX_MENUICON
+	ClearAlphaBitmapCache();
+#endif // NKMM_
 }

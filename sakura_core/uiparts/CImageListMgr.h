@@ -33,6 +33,9 @@
 #define _CIMAGELIST_MGR_H_
 
 #include "_main/global.h"
+#ifdef NKMM_FIX_MENUICON
+#include <map>
+#endif // NKMM_
 
 /*! @brief ImageListの管理
 
@@ -87,6 +90,27 @@ public:
 	//! アイコンの追加を元に戻す
 	void ResetExtend();
 
+#ifdef NKMM_FIX_MENUICON
+	/*! @brief メニュー(MIIM_BITMAP)用の32bppアルファ付きビットマップを返す
+
+		通常のテーマ付きメニューにアイコンを表示するための、
+		透過色をアルファ0に変換したビットマップを作成しキャッシュする。
+		戻り値の所有権はCImageListMgrにあるため、呼び出し側でDeleteObjectしないこと。
+
+		@param index [in] アイコン番号
+		@retval NULL 作成に失敗した、またはindexが不正
+	*/
+	HBITMAP GetAlphaBitmap(int index) const;
+
+	/*! @brief メニュー(MIIM_BITMAP)用の完全透明な16x16ビットマップを返す
+
+		実アイコンを持たない項目(サブメニュー等)に割り当てることで、
+		実アイコンを持つ兄弟項目とインデントを揃えるためのプレースホルダ。
+		戻り値の所有権はCImageListMgrにあるため、呼び出し側でDeleteObjectしないこと。
+	*/
+	HBITMAP GetBlankBitmap() const;
+#endif // NKMM_
+
 	/*!
 		イメージのToolBarへの登録
 	
@@ -114,6 +138,14 @@ protected:
 	HBITMAP m_hIconBitmap;
 
 	int m_nIconCount;	//!<	アイコンの個数
+
+#ifdef NKMM_FIX_MENUICON
+	//! GetAlphaBitmapで作成したビットマップのキャッシュ
+	mutable std::map<int, HBITMAP> m_mapAlphaBitmap;
+
+	//! アルファ付きメニューアイコンのキャッシュを破棄する
+	void ClearAlphaBitmapCache() const;
+#endif // NKMM_
 
 	//	オリジナルテキストエディタからの描画関数
 	//	2003.08.27 Moca 背景を透過処理するので背景色の指定は不要に
