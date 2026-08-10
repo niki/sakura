@@ -657,12 +657,7 @@ INT_PTR CPropKeybindList::DispatchEvent(
 				::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_ALT ), NULL, TRUE );
 
 				// 直接入力欄自体にも、検知した組み合わせを表示してフィードバックする
-				std::wstring	sCombo;
-				if( s_bShiftChecked ){ sCombo += L"Shift+"; }
-				if( s_bCtrlChecked )  { sCombo += L"Ctrl+";  }
-				if( s_bAltChecked )   { sCombo += L"Alt+";   }
-				sCombo += m_Common.m_sKeyBind.m_pKeyNameArr[nKeyIndex].m_szKeyName;
-				::SetWindowText( ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_CAPTURE ), sCombo.c_str() );
+				UpdateCaptureText( hwndDlg, nKeyIndex );
 
 				FocusMatchingRow( hwndDlg );
 			}
@@ -1065,6 +1060,12 @@ void CPropKeybindList::ReflectSelection( HWND hwndDlg, int nItem )
 	::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_CTRL ), NULL, TRUE );
 	::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_ALT ), NULL, TRUE );
 
+	// 「キー入力」欄(直接入力)にも、一覧側から選んだショートカットを反映する。
+	// 逆方向(直接入力欄でキーを押す→一覧に反映)はWM_NKMM_KEYBINDLIST_CAPTUREの
+	// ハンドラが担当しており、この欄はどちらの操作をしても常に今の指定内容を
+	// 表示する 20260810
+	UpdateCaptureText( hwndDlg, Combo_GetCurSel( hCombo ) );
+
 	UpdateActionArea( hwndDlg );
 }
 
@@ -1196,6 +1197,32 @@ void CPropKeybindList::UpdateActionArea( HWND hwndDlg )
 	::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_CTRL ), NULL, TRUE );
 	::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_ALT ), NULL, TRUE );
 	::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_COMBO_KEYBINDLIST_KEY ), NULL, TRUE );
+}
+
+/*! 「キー入力」欄(直接入力)の表示文字列を更新する
+	@date 20260810
+
+	nKeyIndexが指すキー名と、現在のs_bShiftChecked/CtrlChecked/AltCheckedを
+	組み合わせた文字列("Ctrl+Z"等)を表示する。nKeyIndexが負なら空にして
+	プレースホルダー("キーを押す")が見える状態に戻す。コンボ+チェックボックスと
+	直接入力欄のどちらを操作しても、もう一方に結果を反映して常に一致させるために
+	ReflectSelection()とWM_NKMM_KEYBINDLIST_CAPTUREのハンドラの両方から呼ぶ。
+*/
+void CPropKeybindList::UpdateCaptureText( HWND hwndDlg, int nKeyIndex )
+{
+	HWND	hCapture = ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_CAPTURE );
+
+	if( nKeyIndex < 0 || m_Common.m_sKeyBind.m_nKeyNameArrNum <= nKeyIndex ){
+		::SetWindowText( hCapture, L"" );
+		return;
+	}
+
+	std::wstring	sCombo;
+	if( s_bShiftChecked ){ sCombo += L"Shift+"; }
+	if( s_bCtrlChecked )  { sCombo += L"Ctrl+";  }
+	if( s_bAltChecked )   { sCombo += L"Alt+";   }
+	sCombo += m_Common.m_sKeyBind.m_pKeyNameArr[nKeyIndex].m_szKeyName;
+	::SetWindowText( hCapture, sCombo.c_str() );
 }
 
 /*! リスト先頭に見えている行の種別を、固定表示オーバーレイに反映する
