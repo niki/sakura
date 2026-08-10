@@ -52,6 +52,10 @@ void CType_Xml::InitTypeConfigImp(STypeConfig* pType)
 	int keywordPos = 0;
 	int idx = 0;
 	pType->m_bUseRegexKeyword = true;
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+	// 正規表現キーワード(sakura_keyword\Xml.rkw由来、generated\xml_regex.incに変換済み) 20260811
+#include "generated/xml_regex.inc"
+#else
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_COMMENT, L"/<!--.*?-->/k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_COMMENT, L"/<!--[^\\r\\n]*/k" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_COMMENT, L"/<!\\[CDATA\\[[^\\r\\n]?*\\]\\]>/k" );
@@ -65,6 +69,7 @@ void CType_Xml::InitTypeConfigImp(STypeConfig* pType)
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_REGEX4, L"/\\b[a-z][a-z0-9_:\\-]+(?==\")/ki" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_REGEX5, L"/&(([a-z]{1,9})|(#((x[0-9a-f]{1,8})|([0-9]{1,12}))));/ki" );
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_REGEX1, L"/&/k" );
+#endif // NKMM_
 }
 
 

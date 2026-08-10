@@ -66,8 +66,18 @@ void CType_Text::InitTypeConfigImp(STypeConfig* pType)
 	//正規表現キーワード
 	int keywordPos = 0;
 	int idx = 0;
+#ifdef NKMM_FIX_TEXTTYPE_URL_REGEX
+	// 20260811 直後のC:\～/\\～クリッカブル化ルールが登録されるだけで
+	// 一度も有効化されていなかった不具合を修正
+	pType->m_bUseRegexKeyword = true;
+#endif // NKMM_
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+	// 正規表現キーワード(sakura_keyword\Text.rkw由来、generated\text_regex.incに変換済み) 20260811
+#include "generated/text_regex.inc"
+#else
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_URL, L"/(?<=\")(\\b[a-zA-Z]:|\\B\\\\\\\\)[^\"\\r\\n]*/k" );    //   ""で挟まれた C:\～, \\～ にマッチするパターン
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_URL, L"/(\\b[a-zA-Z]:\\\\|\\B\\\\\\\\)[\\w\\-_.\\\\\\/$%~]*/k" );    //   C:\～, \\～ にマッチするパターン
+#endif // NKMM_
 	pType->m_bUseHokanByKeyword = false;					// 強調キーワードから入力補完
 }
 

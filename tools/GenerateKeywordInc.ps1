@@ -130,6 +130,9 @@ $Targets = @(
 	@{ Name = 'CPP';        Regex = 'cpp.rkw' }
 	@{ Name = 'PERL';       Regex = 'perl.rkw' }
 	@{ Name = 'RUBY';       Regex = 'ruby.rkw' }
+	@{ Name = 'JS';         Regex = 'JavaScript.rkw' }
+	@{ Name = 'TEXT';       Regex = 'Text.rkw' }
+	@{ Name = 'XML';        Regex = 'Xml.rkw' }
 
 	# アウトライン解析ルールファイル(.rule)。出力は<name>_rule.inc 20260811
 	@{ Name = 'JS';         Rule = 'JavaScript.rule' }

@@ -59,8 +59,13 @@ void CType_JavaScript::InitTypeConfigImp(STypeConfig* pType)
 	// 正規表現リテラルは文脈依存なので、厳密には定義できないことに注意
 	// 正規表現リテラル中に/*や、//があった場合などもおかしくなる
 	// 「ret = a / b /i;」のような場合にも色が変わることに注意
+#ifdef NKMM_FIX_REGEX_OUTLINE_EMBED
+	// 正規表現キーワード(sakura_keyword\JavaScript.rkw由来、generated\js_regex.incに変換済み) 20260811
+#include "generated/js_regex.inc"
+#else
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_COMMENT, L"/\\/\\*(\\*[^\\/]|[^\\*]\\/|[^\\*\\/])*\\*\\//k" ); // コメント /* */ 行内にあると、正規表現キーワード色になってしまう対策
 	RegexAdd( pType, keywordPos, idx++, COLORIDX_REGEX1, L"/(?<=[^a-zA-Z0-9_])\\/(\\\\.|[^\\\\\\/\\r\\n]){1,400}\\/[gimy]{0,4}/k" ); // 正規表現リテラル
+#endif // NKMM_
 }
 
 
