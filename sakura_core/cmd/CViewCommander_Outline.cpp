@@ -63,6 +63,15 @@ BOOL CViewCommander::Command_FUNCLIST(
 		/* タイプ別に設定されたアウトライン解析方法 */
 		nOutlineType = m_pCommanderView->m_pTypeData->m_eDefaultOutline;
 	}
+#ifdef NKMM_FIX_OUTLINE
+	// 20260811: OUTLINE_C_CPP(「C/C++」自動判別)のまま以下のSHOW_NORMAL/
+	// SHOW_TOGGLE判定に入ると、ダイアログ側が保持する解決済みの型
+	// (MakeFuncList_C内でファイル拡張子から求めたOUTLINE_C/OUTLINE_CPP)との
+	// 比較(CheckListType)が常に不一致になり、「型が違うので再解析」の経路に
+	// 落ちてしまう。ここで先に解決しておく(この関数はOUTLINE_C_CPP以外は
+	// 素通しするため、他の種別には影響しない)。
+	nOutlineType = CDocOutline::ResolveOutlineType_C_CPP( nOutlineType, GetDocument()->m_cDocFile.GetFilePath() );
+#endif // NKMM_
 
 	if( NULL != GetEditWindow()->m_cDlgFuncList.GetHwnd() && nAction != SHOW_RELOAD ){
 		switch(nAction ){

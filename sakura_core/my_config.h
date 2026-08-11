@@ -1033,8 +1033,168 @@
 //------------------------------------------------------------------
 // アウトライン解析
 //  - 正規表現を使用した場合はマッチした文字列のみリストに登録 20170608
+//  - 大規模ファイル(クラス数の多いファイル)でのフリーズ対策 20260811
+//    - Editor.Outline(1)(SHOW_RELOAD)はCommand_FUNCLISTからMakeFuncList_C→
+//      CDlgFuncList::SetData→SetTreeJavaまで完全にUIスレッド同期実行。
+//      MakeFuncList_C自体の解析コストは行数が多いだけなら軽い(実測: 35万行/
+//      関数20個のファイルで34〜106ms)。問題は関数を「クラス名::メソッド」で
+//      分類するCDlgFuncList::SetTreeJavaのツリー構築側。
+//    - 原因: 既存のツリー兄弟ノードをTreeView_GetNextSibling+
+//      TreeView_GetItemTextVector(いずれも実SendMessage)で逐次比較して
+//      クラスノードを探していたため、クラス数に比例して1関数あたりの
+//      挿入コストが増えていた(実測、bench_outline.jsマクロ: 同じ関数数でも
+//      500クラスに分散させると2,500関数フラットの場合の約5〜6倍
+//      (0.15〜0.18秒→0.6〜1.0秒)、2,000クラス/10,000関数では約20倍
+//      (0.45〜0.83秒→3.9〜5.7秒))。(親ノード,クラス名)→ノードのマップ
+//      (mapClassNode)に置き換えてO(1)化。表示上のラベル文字列ではなく生の
+//      クラス名だけをキーにしているが、マップへの登録を新規作成時のみ行う
+//      ことで「同名の既存ノードが複数あれば最初の項目を親にする」という
+//      既存仕様は保持。修正後、2,000クラス/10,000関数ケースは3.9〜5.7秒→
+//      1.2〜3.0秒に改善(実測)。
+//    - あわせてTreeView_InsertItemのhInsertAfterを常にTVI_LASTにしていた
+//      箇所も、親ノード→最後に追加した子ノードのマップ(mapLastChild)を使う
+//      形に統一。
+//    - しかし実測の結果、分類先クラスのないフラットな関数のみのファイル
+//      (例: 50,000関数/35万行)はこの修正後も1回目12〜15秒、2回目以降20〜27秒
+//      のフリーズが残ることが判明(fine-grained計測で、TreeView_Expandでは
+//      なく本体の挿入ループ自体が支配的と判明)。TVI_LASTを明示ハンドルに
+//      置き換えても改善しなかったことから、真因は探索コストではなくWin32
+//      TreeViewコントロール自体が同一親への数万件の子挿入を仮想化なしに
+//      処理する構造的な限界と判断(LVS_OWNERDATAに相当する仮想ツリーモードは
+//      TreeViewに存在しない)。
+//    - 対応: この「クラス階層がほぼ無いのに関数数だけ多いファイル」
+//      (ShouldUseVirtualFlatList()の判定: 総関数数3,000以上かつ
+//      「クラス名::メソッド」形式の割合30%以下)に限り、SetTreeJava(TreeView)
+//      でなく仮想リスト(SetListFlatVirtual)で表示するようにした。行のテキストは
+//      LVN_GETDISPINFOで表示時に都度m_pcFuncInfoArrから供給するため、
+//      ListView_InsertItemを関数の数だけ呼ばない。列ヘッダクリックでの並び替えは
+//      ListView_SortItems(仮想リスト非対応)でなく表示順序マップ
+//      (m_vecVirtualListOrder)自体をstd::sortする形に変更(比較関数は既存の
+//      CompareFunc_Asc/Descをそのまま再利用)。選択項目の取得(GetData())も
+//      lParamでなくこのマップ経由に変更。実測(bench_outline.jsマクロ、
+//      50,000関数/35万行): 12〜27秒→92〜196ms。
+//    - 20260811 仮想リスト用に別コントロールIDC_LIST_FL_VIRTUALを新設
+//      (sakura_rc.rc/.h)。LVS_OWNERDATAは生成後に動的付け外しできない
+//      (comctl32の既知の制約)ため、既存IDC_LIST_FLに対し実行時に
+//      SetWindowLongPtrでスタイルを立てる初版の実装では行が1件も描画され
+//      なかった(実機で発覚)。IDC_LIST_FLと全く同じ位置・サイズで
+//      LVS_OWNERDATAを最初から持つ専用コントロールを重ねて配置し、
+//      表示/非表示のみ切り替える方式に修正。GetActiveListHwnd()で
+//      どちらが有効かを一元判定し、OnInitDialogの列作成・OnNotify・GetData・
+//      SyncColor・フォント設定・ドッキング時のコントロール制御など、影響する
+//      全箇所をこれ経由に統一した。sakura_rc.rc(Shift-JIS/CP932)を素朴な
+//      編集で保存しUTF-8化されファイル全体の日本語文字列が破損する事故が
+//      あり、PowerShellで[System.Text.Encoding]::GetEncoding(932)を明示して
+//      バイト単位で復旧・再編集した(このファイルの編集時は要注意)。
+//    - 20260811 クラスが多いファイル(2,000クラス/10,000関数)は
+//      ハッシュマップ化(修正1)だけでは2回目以降の開閉が1.0秒→2.6〜3.0秒へ
+//      悪化する問題が別途見つかった。原因はTreeView_DeleteAllItemsが
+//      「前回解析結果を消す」際、ノード数に比例して遅い(約12,000ノードで
+//      1.3秒)ことで、TreeView_InsertItemと対称の問題。DestroyWindowしての
+//      再生成も試したが同じ内部コスト(TVN_DELETEITEM通知の全ノード分発行)を
+//      通るため悪化するだけで無効だった。最初は「総関数数8,000以上は無条件で
+//      仮想リストにフォールバックする」対応で凌いだが、ツリー表示(折りたたみ/
+//      展開)というUXを犠牲にするトレードオフだったため、ツリー表示を維持した
+//      まま高速化する方式に差し替えた: 大量ノードが残っているTreeViewを都度
+//      その場でクリアするのではなく、新しいTreeViewコントロールを動的生成して
+//      IDC_TREE_FLの座(ダイアログアイテムID、GWLP_ID)を明け渡し、古い方は
+//      スクラッチID(IDC_TREE_FL_CLEANUP_SCRATCH)に退避した上で後始末を
+//      WM_APP_OUTLINE_CLEANUP_TREEにより非同期(ダイアログが表示され応答可能に
+//      なった後)に回す。削除コスト自体は変わらない(TreeView_DeleteAllItems/
+//      DestroyWindowどちらも同じ内部コスト)が、ユーザーが新しい内容を見るまでの
+//      体感速度はそのコストの影響を受けなくなる。上記「総関数数8,000以上は
+//      無条件で仮想リスト」のしきい値は撤去し、元の「クラス階層がほぼ無い場合
+//      のみ」判定に戻した。
+//    - 20260811 マクロで3連続Editor.Outline(1)呼び出しを計測する既存の
+//      bench_outline.jsでは、この非同期化の効果は測れない(スクリプトの各文の
+//      間でWindowsメッセージポンプが回らないため、PostMessageで積んだ
+//      後始末が一切処理されずキューに残ったまま次のOutline()呼び出しに
+//      突入する。Editor.Sleep()もWScript.Sleep()も同様に不可、いずれも
+//      メッセージポンプを回さない/実装されていない)。実際に非同期後始末が
+//      機能するかは、ExitAll()を呼ばないマクロでOutline()を3回呼んだ直後に
+//      スクリプトを終了させ、アプリが通常のアイドルループに戻ってから
+//      一時的なトレースログ(計測後に削除済み)でposted/processedの
+//      タイムスタンプを確認して検証した(マクロ終了後、数秒以内に2件とも
+//      正しく処理されることを確認)。
+//    - 20260811 実ファイル(Release64\dummy_novel_50mb.txt、50MB/418,770行の
+//      テキスト、55,836トピック)で検証したところ、上記のダブルバッファ
+//      リングを実装したにもかかわらず2回目以降が約29秒に悪化する不具合が
+//      発覚。原因は2つ: (1) `m_nTreeItemCount`をSetTreeJavaでしか更新して
+//      おらず、プレーンテキスト/HTML/TeX/ルールファイル等が使うSetTree()
+//      では常に0のままでダブルバッファリングの判定自体が発火しなかった
+//      (SetTree()の末尾にも同様の更新を追加)。(2) それを直しただけでは
+//      むしろ悪化(29秒→29,931ms)し、新しくCreateWindowExで生成した
+//      TreeViewにWM_SETREDRAW(FALSE)を適用し忘れていたことが原因と判明
+//      (SetData冒頭のWM_SETREDRAWは古い(まもなく破棄される)方のハンドルに
+//      しか効いておらず、新しいウィンドウには何の抑制もかかっていなかった)。
+//      両方直して29秒→1秒前後に改善(実測)。教訓: SetTreeJavaだけを対象に
+//      検証していたため、構造的によく似た別関数(SetTree)への横展開漏れに
+//      気づけなかった。合成テストファイルは常にSetTreeJava経路(C/C++)を
+//      通るため、ユーザーが指定した実ファイルでのテストがなければ発見
+//      できなかった不具合。
+//    - sakura_core\outline\CDlgFuncList.cpp (SetTreeJava, SetTree, SetData,
+//      SetListFlatVirtual, ShouldUseVirtualFlatList, GetActiveListHwnd,
+//      SortListView, GetData, OnNotify[LVN_GETDISPINFO],
+//      DispatchEvent[WM_APP_OUTLINE_CLEANUP_TREE]),
+//      sakura_core\sakura_rc.rc/.h (IDC_LIST_FL_VIRTUAL, IDC_TREE_FL_CLEANUP_SCRATCH)
+//    - 20260811 なお、巨大ファイル(10万行超)の解析中にキャンセル可能な進捗
+//      ダイアログ(CDlgCancel、Grep等と同じ方式)を出す対応も一度実装し実機で
+//      動作確認まで行ったが、C/C++型(MakeFuncList_C)にしか適用しておらず、
+//      他の言語別解析関数(MakeFuncList_Java/Perl/pythonなど)に広げるには
+//      型ごとに同じ仕組みを個別に組み込む必要があると判断し、その方針は
+//      見送って当該対応は削除した。
+//    - 20260811 「解析ダイアログを閉じた後にビジー状態になる/2回目以降の
+//      開閉が遅い」報告を受け、CDlgFuncList::OnDestroy()を修正。ダイアログ
+//      破棄時、大量ノード(m_nTreeItemCount > 500)を持つTreeViewが子ウィンドウ
+//      として通常のWM_DESTROYカスケードに巻き込まれると、修正2で対策した
+//      TreeView_DeleteAllItems相当のコスト(ノード数に比例)がダイアログを
+//      閉じる操作そのものをブロックする。SetParent(hwnd, NULL)でTreeViewを
+//      ダイアログから切り離し、SetWindowLongPtr(GWLP_WNDPROC,...)で最小限の
+//      自己破棄用ウィンドウプロシージャ(OutlineOrphanTreeWndProc)に差し替えた
+//      上でPostMessage(WM_APP_OUTLINE_CLEANUP_TREE)により後始末を非同期化。
+//      これによりダイアログ自体はTreeViewの中身を待たず即座に閉じる。
+//    - 20260811 上記と同時に、「アウトライン解析ダイアログを開いたまま
+//      F11(トグルで閉じる)を押しても閉じない/再解析扱いになる」不具合を
+//      発見。原因はCViewCommander::Command_FUNCLIST()で、SHOW_NORMAL/
+//      SHOW_TOGGLEの分岐がnOutlineTypeとダイアログ側の保持値m_nOutlineTypeを
+//      CheckListType()で比較するが、この時点のnOutlineTypeは
+//      m_pTypeData->m_eDefaultOutlineから取得した未解決の値(C/C++自動判別の
+//      OUTLINE_C_CPP)のままである一方、m_nOutlineTypeはMakeFuncList_C内で
+//      ファイル拡張子から解決済みの具体的な値(OUTLINE_C/OUTLINE_CPP)を
+//      保持しているため、型が同じでも常に不一致と判定され「型が違うので
+//      再解析」経路に落ちて閉じる操作が効かなくなっていた。この解決ロジックを
+//      CDocOutline::ResolveOutlineType_C_CPP()として切り出し、
+//      Command_FUNCLIST冒頭(OUTLINE_DEFAULT解決の直後、SHOW_NORMAL/
+//      SHOW_TOGGLE判定の直前)でも同じ解決を行うよう修正。実機
+//      (classes_2000x5.cpp、dummy_novel_50mb.txt)でOutline(1)→Outline(2)の
+//      トグル閉じが機能することを確認、あわせてOutline(0)(SHOW_NORMAL)の
+//      同一種別での再アクティブ化、および.c/.cppでの拡張子別解決
+//      (OUTLINE_C=0 / OUTLINE_CPP=16)が意図通り異なる値になることも
+//      別途確認した。
+//      sakura_core\doc\CDocOutline.h, sakura_core\types\CType_Cpp.cpp
+//      (ResolveOutlineType_C_CPP), sakura_core\cmd\CViewCommander_Outline.cpp
+//    - 20260811 SetTreeJava()のクラスノード探索をハッシュマップ化した際
+//      (修正1)、置き換え後のO(1)実装だけを書いて元のO(n)実装(TreeView_GetNextSibling
+//      +TreeView_GetItemTextVectorでの逐次比較)を削除しており、他の全ての対応が
+//      守っている「#ifdef NKMM_FIX_OUTLINE / #else <元の実装> / #endif」という
+//      このファイル内の規約から外れていた(NKMM_FIX_OUTLINEを未定義にすると
+//      mapClassNode/InsertChildFastが未定義でコンパイルエラーになり、フラグで
+//      元の動作へ戻せなかった)。SetTreeJava内の3箇所(クラスノード検索/生成、
+//      グローバルノード生成、メソッドノード生成)をそれぞれ#else節で元のTVI_LAST
+//      挿入+TreeView_GetNextSibling探索に戻せる形に修正。NKMM_FIX_OUTLINEを
+//      一時的に未定義にしてソリューション全体を再ビルドし、エラーなく
+//      コンパイルできることを確認した上でフラグを戻した。
+//    - 20260811 既知の限界(未対応): SetTree()系種別(プレーンテキスト/HTML/
+//      TeX/WZTXT等)はフラットで極端に件数が多い場合に未対応。実ファイル
+//      (500MB/約69万トピック、ほぼ全て同一深さ)で10分以上・CPU時間900秒超
+//      応答なしを確認。原因はSortTree()→TreeView_SortChildrenCB()が
+//      TVI_ROOT直下69万件を一括ソートする箇所と推測(SetTreeJavaのフラット
+//      版で使ったSetListFlatVirtualと同種の仮想リスト化で対応可能と思われるが、
+//      対象種別が広いため今回は見送り)。
+//    - 詳細はchangelog/NKMM_FIX_OUTLINE.md参照(調査経緯・全計測値・既知の制限)
 //------------------------------------------------------------------
 #define NKMM_FIX_OUTLINE
+	#define WM_APP_OUTLINE_CLEANUP_TREE (WM_APP + 2504)  // 古いTreeViewコントロールの非同期後始末
 
 //------------------------------------------------------------------
 // アンドゥ, リドゥ

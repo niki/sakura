@@ -348,17 +348,19 @@ CLogicInt CCppPreprocessMng::ScanLine( const wchar_t* str, CLogicInt _length )
 	@param pcFuncInfoArr [out] 関数一覧を返すためのクラス。
 	ここに関数のリストを登録する。
 */
-void CDocOutline::MakeFuncList_C( CFuncInfoArr* pcFuncInfoArr ,EOutlineType& nOutlineType,
-	const TCHAR* pszFileName, bool bVisibleMemberFunc
-)
+#ifdef NKMM_FIX_OUTLINE
+//! OUTLINE_C_CPPをファイル拡張子からOUTLINE_C/OUTLINE_CPPへ解決する 20260811
+//!
+//! 元は MakeFuncList_C 内だけにあったインライン処理を切り出したもの。
+//! CViewCommander::Command_FUNCLIST の SHOW_NORMAL/SHOW_TOGGLE 判定
+//! (CDlgFuncList::CheckListType)でも同じ解決を先に行わないと、ダイアログ側が
+//! 保持する解決済みの型(例: OUTLINE_CPP)と、都度 m_pTypeData->m_eDefaultOutline
+//! から再取得した未解決の型(OUTLINE_C_CPP)が食い違い、「型が違う」と誤判定
+//! されて常に再解析経路に落ちてしまう(実機で発覚: SHOW_TOGGLEで閉じたつもりが
+//! 実際には再解析→再表示され、「アウトライン解析ダイアログを閉じた後に
+//! ビジー状態になる」ように見える)。
+EOutlineType CDocOutline::ResolveOutlineType_C_CPP( EOutlineType nOutlineType, const TCHAR* pszFileName )
 {
-#ifdef _DEBUG
-// #define TRACE_OUTLINE
-#endif
-	const wchar_t*	pLine;
-	CLogicInt	nLineLen;
-	CLogicInt	i;
-	// 2015.11.14 C/C++のファイル名による判定
 	if( nOutlineType == OUTLINE_C_CPP ){
 		if( CheckEXT( pszFileName, _T("c") ) ){
 			nOutlineType = OUTLINE_C;
@@ -376,6 +378,42 @@ void CDocOutline::MakeFuncList_C( CFuncInfoArr* pcFuncInfoArr ,EOutlineType& nOu
 			nOutlineType = OUTLINE_CPP;
 		}
 	}
+	return nOutlineType;
+}
+#endif // NKMM_
+
+void CDocOutline::MakeFuncList_C( CFuncInfoArr* pcFuncInfoArr ,EOutlineType& nOutlineType,
+	const TCHAR* pszFileName, bool bVisibleMemberFunc
+)
+{
+#ifdef _DEBUG
+// #define TRACE_OUTLINE
+#endif
+	const wchar_t*	pLine;
+	CLogicInt	nLineLen;
+	CLogicInt	i;
+	// 2015.11.14 C/C++のファイル名による判定
+#ifdef NKMM_FIX_OUTLINE
+	nOutlineType = ResolveOutlineType_C_CPP( nOutlineType, pszFileName );
+#else
+	if( nOutlineType == OUTLINE_C_CPP ){
+		if( CheckEXT( pszFileName, _T("c") ) ){
+			nOutlineType = OUTLINE_C;
+		}else if( CheckEXT( pszFileName, _T("cpp") ) ){
+			nOutlineType = OUTLINE_CPP;
+		}else if( CheckEXT( pszFileName, _T("c++") ) ){
+			nOutlineType = OUTLINE_CPP;
+		}else if( CheckEXT( pszFileName, _T("cxx") ) ){
+			nOutlineType = OUTLINE_CPP;
+		}else if( CheckEXT( pszFileName, _T("hpp") ) ){
+			nOutlineType = OUTLINE_CPP;
+		}else if( CheckEXT( pszFileName, _T("h++") ) ){
+			nOutlineType = OUTLINE_CPP;
+		}else if( CheckEXT( pszFileName, _T("hxx") ) ){
+			nOutlineType = OUTLINE_CPP;
+		}
+	}
+#endif // NKMM_
 
 	// 2002/10/27 frozen　ここから
 	// nNestLevelを nNestLevel_global を nNestLevel_func に分割した。

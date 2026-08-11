@@ -48,6 +48,9 @@ public:
 	void	MakeFuncList_RuleFile( CFuncInfoArr*, std::tstring& );											//!< ルールファイルを使ってリスト作成 2002.04.01 YAZAKI
 	int		ReadRuleFile( const TCHAR*, SOneRule*, int, bool&, std::wstring& );	//!< ルールファイル読込 2002.04.01 YAZAKI
 	void	MakeFuncList_BookMark( CFuncInfoArr* );											//!< ブックマークリスト作成 //2001.12.03 hor
+#ifdef NKMM_FIX_OUTLINE
+	static EOutlineType ResolveOutlineType_C_CPP( EOutlineType nOutlineType, const TCHAR* pszFileName );	//!< OUTLINE_C_CPPをファイル拡張子からOUTLINE_C/OUTLINE_CPPへ解決する 20260811
+#endif // NKMM_
 private:
 	CEditDoc* m_pcDocRef;
 };

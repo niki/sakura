@@ -237,6 +237,9 @@ BEGIN
     CONTROL         "List1",IDC_LIST_FL,"SysListView32",LVS_REPORT |
                     LVS_SINGLESEL | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,0,
                     0,234,252
+    CONTROL         "List2",IDC_LIST_FL_VIRTUAL,"SysListView32",LVS_REPORT |
+                    LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER |
+                    WS_TABSTOP,0,0,234,252
     PUSHBUTTON      "Å•",IDC_BUTTON_MENU,1,255,10,14,NOT WS_TABSTOP
     CONTROL         "Å°",IDC_BUTTON_WINSIZE,"Button",BS_AUTOCHECKBOX |
                     BS_PUSHLIKE,12,255,10,14

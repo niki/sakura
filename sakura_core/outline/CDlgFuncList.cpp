@@ -53,6 +53,10 @@
 #include <Uxtheme.h>
 #pragma comment(lib, "uxtheme.lib")
 #endif // NKMM_
+#ifdef NKMM_FIX_OUTLINE
+#include <unordered_map>
+#include <algorithm>
+#endif // NKMM_
 
 // 画面ドッキング用の定義	// 2010.06.05 ryoji
 #define DEFINE_SYNCCOLOR
@@ -72,6 +76,7 @@ const DWORD p_helpids[] = {	//12200
 	IDC_BUTTON_HELP,					HIDC_FL_BUTTON_HELP,	//ヘルプ
 	IDC_CHECK_bAutoCloseDlgFuncList,	HIDC_FL_CHECK_bAutoCloseDlgFuncList,	//自動的に閉じる
 	IDC_LIST_FL,						HIDC_FL_LIST1,			//トピックリスト	IDC_LIST1->IDC_LIST_FL	2008/7/3 Uchi
+	IDC_LIST_FL_VIRTUAL,				HIDC_FL_LIST1,			//トピックリスト(仮想) 20260811
 	IDC_TREE_FL,						HIDC_FL_TREE1,			//トピックツリー	IDC_TREE1->IDC_TREE_FL	2008/7/3 Uchi
 	IDC_CHECK_bFunclistSetFocusOnJump,	HIDC_FL_CHECK_bFunclistSetFocusOnJump,	//ジャンプでフォーカス移動する
 	IDC_CHECK_bMarkUpBlankLineEnable,	HIDC_FL_CHECK_bMarkUpBlankLineEnable,	//空行を無視する
@@ -90,6 +95,7 @@ static const SAnchorList anchorList[] = {
 	{IDC_BUTTON_HELP, ANCHOR_BOTTOM},
 	{IDC_CHECK_bAutoCloseDlgFuncList, ANCHOR_BOTTOM},
 	{IDC_LIST_FL, ANCHOR_ALL},
+	{IDC_LIST_FL_VIRTUAL, ANCHOR_ALL},
 	{IDC_TREE_FL, ANCHOR_ALL},
 	{IDC_CHECK_bFunclistSetFocusOnJump, ANCHOR_BOTTOM},
 	{IDC_CHECK_bMarkUpBlankLineEnable , ANCHOR_BOTTOM},
@@ -220,6 +226,9 @@ CDlgFuncList::CDlgFuncList() : CDialog(true)
 	m_ptDefaultSize.x = -1;
 	m_ptDefaultSize.y = -1;
 	m_bDummyLParamMode = false;
+#ifdef NKMM_FIX_OUTLINE
+	m_bVirtualListMode = false;
+#endif // NKMM_
 }
 
 
@@ -234,6 +243,21 @@ INT_PTR CDlgFuncList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 
 	switch( wMsg ){
+#ifdef NKMM_FIX_OUTLINE
+	case WM_APP_OUTLINE_CLEANUP_TREE:
+		// 20260811: SetData()でTreeViewを作り直した際に置き去りにした古い方の
+		// 後始末(TreeView_DeleteAllItems相当のコスト)をここで非同期に行う。
+		// ダイアログが既に新しい内容を表示し応答可能になった後にこのメッセージが
+		// 処理されるため、削除コスト自体は変わらなくても体感速度には影響しない。
+		{
+			HWND hwndOldTree = (HWND)wParam;
+			if( ::IsWindow( hwndOldTree ) ){
+				TreeView_DeleteAllItems( hwndOldTree );
+				::DestroyWindow( hwndOldTree );
+			}
+		}
+		return 0L;
+#endif // NKMM_
 	case WM_ACTIVATEAPP:
 		if( IsDocking() )
 			break;
@@ -419,23 +443,115 @@ void CDlgFuncList::SetData()
 	HWND			hwndTree;
 	hwndList = ::GetDlgItem( GetHwnd(), IDC_LIST_FL );
 	hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
+#ifdef NKMM_FIX_OUTLINE
+	HWND hwndListVirtual = ::GetDlgItem( GetHwnd(), IDC_LIST_FL_VIRTUAL );
+#endif // NKMM_
 
 	m_bDummyLParamMode = false;
 	m_vecDummylParams.clear();
+
+#ifdef NKMM_FIX_OUTLINE
+	// 20260811: 再解析(SHOW_RELOAD)のたびに数万件のリスト/ツリー項目を1件ずつ
+	// 再構築するため、既に表示中のダイアログ(ドッキング等)ではその都度の
+	// 再描画/スクロールバー再計算コストが無視できない。構築完了までWM_SETREDRAW
+	// で描画を止める(非表示中でもコントロール内部の再描画関連処理は動くため)。
+	::SendMessage( hwndList, WM_SETREDRAW, FALSE, 0 );
+	::SendMessage( hwndListVirtual, WM_SETREDRAW, FALSE, 0 );
+	::SendMessage( hwndTree, WM_SETREDRAW, FALSE, 0 );
+#endif // NKMM_
 
 	//2002.02.08 hor 隠しといてアイテム削除→あとで表示
 	::ShowWindow( hwndList, SW_HIDE );
 	::ShowWindow( hwndTree, SW_HIDE );
 	ListView_DeleteAllItems( hwndList );
+#ifdef NKMM_FIX_OUTLINE
+	// 20260811: 前回の解析結果が大量(数千ノード超)に残っている場合、
+	// TreeView_DeleteAllItemsはノード数に比例して遅い(実測:約12,000ノードで
+	// 1.3秒。TreeView_InsertItemと対称の問題で、DestroyWindowしての再生成でも
+	// 同じ内部コスト(TVN_DELETEITEM通知の全ノード分発行)がかかり回避できない
+	// ことを確認済み)。この場合は同期的にクリアするのではなく、新しい
+	// TreeViewを動的生成してIDC_TREE_FLの座(ダイアログアイテムID)を明け渡し、
+	// 古い方はスクラッチIDへ退避した上で後始末(WM_APP_OUTLINE_CLEANUP_TREE)を
+	// ダイアログが表示され応答可能になった後に非同期で行う。削除コスト自体は
+	// 変わらないが、ユーザーが新しい内容を見るまでの体感速度はその影響を
+	// 受けなくなる。ツリー表示(折りたたみ/展開)はそのまま維持できる。
+	const int TREE_RECREATE_THRESHOLD = 500;
+	if( m_nTreeItemCount > TREE_RECREATE_THRESHOLD ){
+		RECT rcOldTree;
+		::GetWindowRect( hwndTree, &rcOldTree );
+		::MapWindowPoints( NULL, GetHwnd(), (LPPOINT)&rcOldTree, 2 );
+		LONG_PTR nOldStyle = ::GetWindowLongPtr( hwndTree, GWL_STYLE );
+		LONG_PTR nOldExStyle = ::GetWindowLongPtr( hwndTree, GWL_EXSTYLE );
+		HFONT hOldTreeFont = (HFONT)::SendMessage( hwndTree, WM_GETFONT, 0, 0 );
+		HWND hwndOldTree = hwndTree;
+
+		// 古い方はIDだけ明け渡す(表示上はもう使わない。実データはまだ残っている)
+		::SetWindowLongPtr( hwndOldTree, GWLP_ID, (LONG_PTR)IDC_TREE_FL_CLEANUP_SCRATCH );
+
+		HWND hwndNewTree = ::CreateWindowEx( (DWORD)nOldExStyle, _T("SysTreeView32"), _T("Tree1"), (DWORD)nOldStyle,
+			rcOldTree.left, rcOldTree.top, rcOldTree.right - rcOldTree.left, rcOldTree.bottom - rcOldTree.top,
+			GetHwnd(), (HMENU)(INT_PTR)IDC_TREE_FL, G_AppInstance(), NULL );
+		if( NULL != hwndNewTree ){
+			if( NULL != hOldTreeFont ){
+				::SendMessage( hwndNewTree, WM_SETFONT, (WPARAM)hOldTreeFont, MAKELPARAM(FALSE, 0) );
+			}
+			// 20260811: 新しく作ったツリーにもWM_SETREDRAW(FALSE)を適用する。
+			// 元のhwndTree(古い方)に対しては既にSetData冒頭で適用済みだが、
+			// この新しいウィンドウはそれとは別のハンドルなので個別に止めないと
+			// 再描画抑制の恩恵を受けられない(非表示中でも内部処理は動くため、
+			// この後のSetTreeJava/SetTree等での大量件数の構築が数十倍遅くなる。
+			// 実機の50MB/41万行の実ファイルで発覚: 数万ノードの構築が約1秒→
+			// 約29秒に悪化していた)。終了時のWM_SETREDRAW(TRUE)はhwndTree
+			// (=この新しいウィンドウ)に対して行われるので対称に戻る。
+			::SendMessage( hwndNewTree, WM_SETREDRAW, FALSE, 0 );
+			hwndTree = hwndNewTree;
+			SyncColor();	// ドッキング時の配色をこの新しいツリーにも適用する(非ドッキング時は何もしない)
+			// 後始末は非同期(表示・応答可能になった後)に回す
+			::PostMessage( GetHwnd(), WM_APP_OUTLINE_CLEANUP_TREE, (WPARAM)hwndOldTree, 0 );
+		}else{
+			// 生成失敗時は諦めて古い方をそのまま使う(取り違えないようIDを戻す)
+			::SetWindowLongPtr( hwndOldTree, GWLP_ID, (LONG_PTR)IDC_TREE_FL );
+			TreeView_DeleteAllItems( hwndOldTree );
+		}
+		m_nTreeItemCount = 0;
+	}else{
+		TreeView_DeleteAllItems( hwndTree );
+	}
+#else
 	TreeView_DeleteAllItems( hwndTree );
+#endif // NKMM_
 	::ShowWindow( GetItemHwnd(IDC_BUTTON_SETTING), SW_HIDE );
 
+#ifdef NKMM_FIX_OUTLINE
+	// 既定は仮想(LVS_OWNERDATA)モードでない。仮想リストが必要な分岐
+	// (SetListFlatVirtual)でのみtrueにする。LVS_OWNERDATAは生成後の動的な
+	// 切替に対応していない(comctl32の既知の制約)ため、IDC_LIST_FL(通常)と
+	// IDC_LIST_FL_VIRTUAL(LVS_OWNERDATA固定、リソース側で付与済み)を
+	// 別コントロールとして用意し、表示/非表示だけを切り替える。
+	::ShowWindow( hwndListVirtual, SW_HIDE );
+	ListView_SetItemCountEx( hwndListVirtual, 0, LVSICF_NOSCROLL );
+	m_bVirtualListMode = false;
+	m_vecVirtualListOrder.clear();
+#endif // NKMM_
 
 	SetDocLineFuncList();
 	if( OUTLINE_C_CPP == m_nListType || OUTLINE_CPP == m_nListType ){	/* C++メソッドリスト */
-		m_nViewType = VIEWTYPE_TREE;
-		SetTreeJava( GetHwnd(), TRUE );	// Jan. 04, 2002 genta Java Method Treeに統合
-		::SetWindowText( GetHwnd(), LS(STR_DLGFNCLST_TITLE_CPP) );
+#ifdef NKMM_FIX_OUTLINE
+		if( ShouldUseVirtualFlatList() ){
+			// クラス階層がほぼ無いのに関数数だけ多いファイル。TreeViewは
+			// 同一親への大量の子挿入を仮想化なしに処理する構造的な限界が
+			// あるため(実測で数十秒級のフリーズ)、この場合だけ仮想
+			// (LVS_OWNERDATA)ListViewのフラット一覧で代替する。
+			m_nViewType = VIEWTYPE_LIST;
+			SetListFlatVirtual();
+			::SetWindowText( GetHwnd(), LS(STR_DLGFNCLST_TITLE_CPP) );
+		}else
+#endif // NKMM_
+		{
+			m_nViewType = VIEWTYPE_TREE;
+			SetTreeJava( GetHwnd(), TRUE );	// Jan. 04, 2002 genta Java Method Treeに統合
+			::SetWindowText( GetHwnd(), LS(STR_DLGFNCLST_TITLE_CPP) );
+		}
 	}
 	else if( OUTLINE_FILE == m_nListType ){	//@@@ 2002.04.01 YAZAKI アウトライン解析にルールファイル導入
 		m_nViewType = VIEWTYPE_TREE;
@@ -732,9 +848,22 @@ void CDlgFuncList::SetData()
 		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHECK_bFunclistSetFocusOnJump ), TRUE );
 	}
 
+#ifdef NKMM_FIX_OUTLINE
+	::SendMessage( hwndList, WM_SETREDRAW, TRUE, 0 );
+	::SendMessage( hwndListVirtual, WM_SETREDRAW, TRUE, 0 );
+	::SendMessage( hwndTree, WM_SETREDRAW, TRUE, 0 );
+	::InvalidateRect( hwndList, NULL, TRUE );
+	::InvalidateRect( hwndListVirtual, NULL, TRUE );
+	::InvalidateRect( hwndTree, NULL, TRUE );
+#endif // NKMM_
+
 	//2002.02.08 hor
 	//（IDC_LIST_FLもIDC_TREE_FLも常に存在していて、m_nViewTypeによって、どちらを表示するかを選んでいる）
+#ifdef NKMM_FIX_OUTLINE
+	HWND hwndShow = (VIEWTYPE_LIST != m_nViewType) ? hwndTree : ( m_bVirtualListMode ? hwndListVirtual : hwndList );
+#else
 	HWND hwndShow = (VIEWTYPE_LIST == m_nViewType)? hwndList: hwndTree;
+#endif // NKMM_
 	::ShowWindow( hwndShow, SW_SHOW );
 	if( ::GetForegroundWindow() == MyGetAncestor( GetHwnd(), GA_ROOT ) && IsChild( GetHwnd(), GetFocus()) )
 		::SetFocus( hwndShow );
@@ -867,18 +996,33 @@ int CDlgFuncList::GetData( void )
 
 	m_cFuncInfo = NULL;
 	m_sJumpFile = _T("");
+#ifdef NKMM_FIX_OUTLINE
+	hwndList = GetActiveListHwnd();
+#else
 	hwndList = ::GetDlgItem( GetHwnd(), IDC_LIST_FL );
+#endif // NKMM_
 	if( m_nViewType == VIEWTYPE_LIST ){
 		//	List
 		nItem = ListView_GetNextItem( hwndList, -1, LVNI_ALL | LVNI_SELECTED );
 		if( -1 == nItem ){
 			return -1;
 		}
-		item.mask = LVIF_PARAM;
-		item.iItem = nItem;
-		item.iSubItem = 0;
-		ListView_GetItem( hwndList, &item );
-		m_cFuncInfo = m_pcFuncInfoArr->GetAt( item.lParam );
+#ifdef NKMM_FIX_OUTLINE
+		if( m_bVirtualListMode ){
+			// 仮想リストはlParamを保持しないため、表示順序マップ経由でインデックスを求める
+			if( nItem < 0 || (size_t)nItem >= m_vecVirtualListOrder.size() ){
+				return -1;
+			}
+			m_cFuncInfo = m_pcFuncInfoArr->GetAt( m_vecVirtualListOrder[nItem] );
+		}else
+#endif // NKMM_
+		{
+			item.mask = LVIF_PARAM;
+			item.iItem = nItem;
+			item.iSubItem = 0;
+			ListView_GetItem( hwndList, &item );
+			m_cFuncInfo = m_pcFuncInfoArr->GetAt( item.lParam );
+		}
 	}else{
 		hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
 		if( NULL != hwndTree ){
@@ -917,9 +1061,156 @@ int CDlgFuncList::GetData( void )
 	return 1;
 }
 
+#ifdef NKMM_FIX_OUTLINE
+//! クラス階層がほぼ無いのに関数数だけ多いファイルか(SetTreeJavaでなく仮想ListViewを使うべきか) 20260811
+bool CDlgFuncList::ShouldUseVirtualFlatList() const
+{
+	const int VIRTUAL_LIST_MIN_FUNCS = 3000;			// これ未満ならTreeViewでも実用上問題ない
+	const double VIRTUAL_LIST_MAX_MEMBER_RATIO = 0.3;	// 「クラス名::メソッド」形式の割合がこれ以下ならフラット扱い
+	// 20260811: クラスが多いファイルの「前回分のTreeViewノードを消す処理が遅い」
+	// 問題は、ここで仮想ListViewに逃がすのではなく、SetData側でTreeViewを
+	// 動的に作り直して古い方の後始末を非同期化する方式(WM_APP_OUTLINE_CLEANUP_TREE)
+	// で対応した。そのためこの関数はクラス階層がほぼ無いフラットなファイルの
+	// 判定のみを行う。
+
+	int nNum = m_pcFuncInfoArr->GetNum();
+	if( nNum < VIRTUAL_LIST_MIN_FUNCS ) return false;
+
+	int nMember = 0;
+	for( int i = 0; i < nNum; ++i ){
+		const CFuncInfo* pcFuncInfo = m_pcFuncInfoArr->GetAt(i);
+		if( NULL != _tcsstr( pcFuncInfo->m_cmemFuncName.GetStringPtr(), _T("::") ) ){
+			++nMember;
+		}
+	}
+	return ( (double)nMember / nNum ) <= VIRTUAL_LIST_MAX_MEMBER_RATIO;
+}
+
+//! 現在有効なリストビュー(IDC_LIST_FLかIDC_LIST_FL_VIRTUALか)のHWNDを返す
+//! LVS_OWNERDATAはコントロール生成後に動的切替できない(comctl32の既知の制約)ため、
+//! IDC_LIST_FL_VIRTUALをLVS_OWNERDATA固定の別コントロールとしてリソース側に
+//! 用意し(sakura_rc.rc)、表示/非表示だけを切り替えている。
+HWND CDlgFuncList::GetActiveListHwnd() const
+{
+	return ::GetDlgItem( GetHwnd(), m_bVirtualListMode ? IDC_LIST_FL_VIRTUAL : IDC_LIST_FL );
+}
+
+/*! リストビューコントロールの初期化：仮想(LVS_OWNERDATA)フラット一覧
+
+	クラス階層のないフラットな巨大関数リスト用。行のテキストはLVN_GETDISPINFOで
+	都度供給するため、ListView_InsertItemを関数の数だけ呼ばない。
+*/
+void CDlgFuncList::SetListFlatVirtual()
+{
+	m_bVirtualListMode = true;
+	HWND hwndList = ::GetDlgItem( GetHwnd(), IDC_LIST_FL_VIRTUAL );
+	int nNum = m_pcFuncInfoArr->GetNum();
+
+	::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_BUTTON_COPY ), TRUE );
+
+	/* クリップボードにコピーするテキストを編集 */
+	m_cmemClipText.SetString( L"" );
+	{
+		const int nBuffLenTag = 13 + wcslen(to_wchar(m_pcFuncInfoArr->m_szFilePath));
+		int nBuffLen = 0;
+		for( int i = 0; i < nNum; ++i ){
+			nBuffLen += m_pcFuncInfoArr->GetAt(i)->m_cmemFuncName.GetStringLength();
+		}
+		m_cmemClipText.AllocStringBuffer( nBuffLen + nBuffLenTag * nNum );
+	}
+	for( int i = 0; i < nNum; ++i ){
+		const CFuncInfo* pcFuncInfo = m_pcFuncInfoArr->GetAt(i);
+		WCHAR szText[2048];
+		auto_sprintf( szText, L"%ts(%d,%d): ", m_pcFuncInfoArr->m_szFilePath.c_str(),
+			pcFuncInfo->m_nFuncLineCRLF, pcFuncInfo->m_nFuncColCRLF );
+		m_cmemClipText.AppendString( szText );
+		m_cmemClipText.AppendNativeDataT( pcFuncInfo->m_cmemFuncName );
+		m_cmemClipText.AppendString( L"\r\n" );
+	}
+
+	/* 表示順序を登場順で初期化。列ヘッダクリックによる並び替えはSortListViewが行う */
+	m_vecVirtualListOrder.resize( nNum );
+	for( int i = 0; i < nNum; ++i ){
+		m_vecVirtualListOrder[i] = i;
+	}
+
+	ListView_SetItemCountEx( hwndList, nNum, LVSICF_NOSCROLL );
+
+	// 仮想リストではLVSCW_AUTOSIZEが全項目の走査を前提とし信頼できないため固定幅にする
+	ListView_SetColumnWidth( hwndList, FL_COL_ROW, DpiScaleX(60) );
+	ListView_SetColumnWidth( hwndList, FL_COL_COL, DpiScaleX(50) );
+	ListView_SetColumnWidth( hwndList, FL_COL_NAME, DpiScaleX(400) );
+	ListView_SetColumnWidth( hwndList, FL_COL_REMARK, DpiScaleX(120) );
+
+	DWORD dwExStyle = ListView_GetExtendedListViewStyle( hwndList );
+	dwExStyle |= LVS_EX_FULLROWSELECT;
+	ListView_SetExtendedListViewStyle( hwndList, dwExStyle );
+
+	SortListView( hwndList, m_nSortCol );	// 列ヘッダ設定+既定ソート順の適用
+
+	/* 現在カーソル位置に最も近い項目を選択 */
+	bool bSelected = false;
+	int nSelectedLine = 0, nSelectedLineTop = 0;
+	CLayoutInt nFuncLineOld(-1), nFuncColOld(-1);
+	CLayoutInt nFuncLineTop(INT_MAX), nFuncColTop(INT_MAX);
+	for( int i = 0; i < nNum; ++i ){
+		const CFuncInfo* pcFuncInfo = m_pcFuncInfoArr->GetAt(i);
+		if( !bSelected ){
+			if( pcFuncInfo->m_nFuncLineLAYOUT < nFuncLineTop
+				|| (pcFuncInfo->m_nFuncLineLAYOUT == nFuncLineTop && pcFuncInfo->m_nFuncColLAYOUT <= nFuncColTop) ){
+				nFuncLineTop = pcFuncInfo->m_nFuncLineLAYOUT;
+				nFuncColTop = pcFuncInfo->m_nFuncColLAYOUT;
+				nSelectedLineTop = i;
+			}
+		}
+		if( (nFuncLineOld < pcFuncInfo->m_nFuncLineLAYOUT
+			|| (nFuncLineOld == pcFuncInfo->m_nFuncColLAYOUT && nFuncColOld <= pcFuncInfo->m_nFuncColLAYOUT))
+		  && (pcFuncInfo->m_nFuncLineLAYOUT < m_nCurLine
+			|| (pcFuncInfo->m_nFuncLineLAYOUT == m_nCurLine && pcFuncInfo->m_nFuncColLAYOUT <= m_nCurCol)) ){
+			nFuncLineOld = pcFuncInfo->m_nFuncLineLAYOUT;
+			nFuncColOld = pcFuncInfo->m_nFuncColLAYOUT;
+			bSelected = true;
+			nSelectedLine = i;
+		}
+	}
+	if( 0 < nNum && !bSelected ){
+		bSelected = true;
+		nSelectedLine = nSelectedLineTop;
+	}
+	if( bSelected ){
+		int nDisplayIndex = 0;
+		for( size_t k = 0; k < m_vecVirtualListOrder.size(); ++k ){
+			if( m_vecVirtualListOrder[k] == nSelectedLine ){ nDisplayIndex = (int)k; break; }
+		}
+		ListView_SetItemState( hwndList, nDisplayIndex, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+		ListView_EnsureVisible( hwndList, nDisplayIndex, FALSE );
+	}
+
+	::ShowWindow( hwndList, SW_SHOW );
+}
+#endif // NKMM_
+
 /* Java/C++メソッドツリーの最大ネスト深さ */
 // 2016.03.06 vector化で16 -> 32 まで増やしておく
 #define MAX_JAVA_TREE_NEST 32
+
+#ifdef NKMM_FIX_OUTLINE
+namespace {
+	//! SetTreeJavaのクラスノード検索キャッシュ用キー(親ノード×クラス名)
+	struct SOutlineTreeNodeKey {
+		HTREEITEM		hParent;
+		std::tstring	sName;
+		bool operator==(const SOutlineTreeNodeKey& rhs) const {
+			return hParent == rhs.hParent && sName == rhs.sName;
+		}
+	};
+	struct SOutlineTreeNodeKeyHash {
+		size_t operator()(const SOutlineTreeNodeKey& k) const {
+			return std::hash<void*>()((void*)k.hParent) * 131 + std::hash<std::tstring>()(k.sName);
+		}
+	};
+}
+#endif // NKMM_
 
 /*! ツリーコントロールの初期化：Javaメソッドツリー
 
@@ -944,9 +1235,29 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 	HTREEITEM		htiItem;
 	HTREEITEM		htiSelectedTop = NULL;
 	HTREEITEM		htiSelected = NULL;
-	TV_ITEM			tvi;
 	int				nClassNest;
 	std::vector<std::tstring> vStrClasses;
+#ifdef NKMM_FIX_OUTLINE
+	// 20260811: 大規模ファイル(数万関数)でのアウトライン解析フリーズ対策。
+	// 元実装はクラスノード検索をTreeView_GetNextSibling+TreeView_GetItemTextVector
+	// (毎回SendMessage)で兄弟ノードを逐次比較しており、クラス数に比例して遅くなる
+	// うえ、新規ノード追加はすべてTVI_LASTで行っていたため、同一親への大量追加
+	// (例:分類先クラスのないグローバル関数が数万個)はcomctl32が兄弟リストの末尾を
+	// 毎回たどることで実質O(n^2)になっていた。実測(50,000関数/35万行, Editor.Outline(1)
+	// をマクロ計測): 約12〜20秒のUIフリーズ。クラス名→ノードのマップと、親ノード→
+	// 最後に追加した子ノードのマップをこの関数内でキャッシュし、どちらもO(1)化する。
+	std::unordered_map<SOutlineTreeNodeKey, HTREEITEM, SOutlineTreeNodeKeyHash> mapClassNode;
+	std::unordered_map<HTREEITEM, HTREEITEM> mapLastChild;
+	auto InsertChildFast = [&]( HTREEITEM hParent, TV_INSERTSTRUCT& tvisArg ) -> HTREEITEM {
+		auto itLast = mapLastChild.find( hParent );
+		tvisArg.hInsertAfter = ( itLast != mapLastChild.end() ) ? itLast->second : TVI_LAST;
+		HTREEITEM hNew = TreeView_InsertItem( hwndTree, &tvisArg );
+		mapLastChild[hParent] = hNew;
+		return hNew;
+	};
+#else
+	TV_ITEM			tvi;
+#endif // NKMM_
 
 	::EnableWindow( ::GetDlgItem( GetHwnd() , IDC_BUTTON_COPY ), TRUE );
 	m_bDummyLParamMode = true;
@@ -1046,8 +1357,10 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 			pWork = pWork + m; // 2 == lstrlen( "::" );
 
 			/* クラス名のアイテムが登録されているか */
-			htiClass = TreeView_GetFirstVisible( hwndTree );
 			HTREEITEM htiParent = TVI_ROOT;
+#ifndef NKMM_FIX_OUTLINE
+			htiClass = TreeView_GetFirstVisible( hwndTree );
+#endif // NKMM_
 			for( k = 0; k < nClassNest; ++k ){
 				//	Apr. 1, 2001 genta
 				//	追加文字列を全角にしたのでメモリもそれだけ必要
@@ -1059,6 +1372,45 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 				// となっているとみなし、szClassArr[k] が 「クラス名」と一致すれば、それを親ノードに設定。
 				// ただし、一致する項目が複数ある場合は最初の項目を親ノードにする。
 				// 一致しない場合は「(クラス名)(半角スペース一個)クラス」のノードを作成する。
+#ifdef NKMM_FIX_OUTLINE
+				// 20260811 NKMM_FIX_OUTLINE: 元は既存の兄弟ノードをTreeView_GetNextSibling+
+				// TreeView_GetItemTextVectorで逐次比較(クラス数に比例したSendMessage)して
+				// いたが、(親ノード,クラス名)→ノードのマップに置き換えてO(1)化。表示上の
+				// ラベル文字列(クラス名+追加文字列)ではなく生のクラス名だけをキーにして
+				// いるが、「先に作成された方を親にする」という既存仕様は、マップへの登録を
+				// 新規作成時のみ行う(検索一致時は上書きしない)ことで同じ挙動を保っている。
+				SOutlineTreeNodeKey key{ htiParent, vStrClasses[k] };
+				auto itFound = mapClassNode.find( key );
+				if( itFound != mapClassNode.end() ){
+					htiClass = itFound->second;
+				}else{
+					// 2002/10/28 frozen 上からここへ移動
+					std::tstring strClassName = vStrClasses[k];
+
+					if( bAddClass )
+					{
+						if( pcFuncInfo->m_nInfo == FL_OBJ_NAMESPACE )
+						{
+							//_tcscat( pClassName, _T(" 名前空間") );
+							strClassName += to_tchar(m_pcFuncInfoArr->GetAppendText(FL_OBJ_NAMESPACE).c_str());
+						}
+						else
+							//_tcscat( pClassName, _T(" クラス") );
+							strClassName += to_tchar(m_pcFuncInfoArr->GetAppendText(FL_OBJ_CLASS).c_str());
+					}
+					tvis.hParent = htiParent;
+					tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
+					tvis.item.pszText = const_cast<TCHAR*>(strClassName.c_str());
+					// 2016.03.06 item.lParamは登録順の連番に変更
+					tvis.item.lParam = nlParamCount;
+					m_vecDummylParams.push_back(nlParamCount);
+					nlParamCount++;
+
+					htiClass = InsertChildFast( htiParent, tvis );
+					mapClassNode[key] = htiClass;
+				}
+				htiParent = htiClass;
+#else
 				size_t nClassNameLen = vStrClasses[k].size();
 				for( ; NULL != htiClass ; htiClass = TreeView_GetNextSibling( hwndTree, htiClass ))
 				{
@@ -1086,7 +1438,7 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 				if( NULL == htiClass ){
 					// 2002/10/28 frozen 上からここへ移動
 					std::tstring strClassName = vStrClasses[k];
-					
+
 					if( bAddClass )
 					{
 						if( pcFuncInfo->m_nInfo == FL_OBJ_NAMESPACE )
@@ -1112,10 +1464,8 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 					//none
 				}
 				htiParent = htiClass;
-				//if( k + 1 >= nClassNest ){
-				//	break;
-				//}
 				htiClass = TreeView_GetChild( hwndTree, htiClass );
+#endif // NKMM_
 			}
 			htiClass = htiParent;
 		}else{
@@ -1136,14 +1486,20 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 
 					::ZeroMemory( &tvg, sizeof(tvg));
 					tvg.hParent = TVI_ROOT;
+#ifndef NKMM_FIX_OUTLINE
 					tvg.hInsertAfter = TVI_LAST;
+#endif // NKMM_
 					tvg.item.mask = TVIF_TEXT | TVIF_PARAM;
 					//tvg.item.pszText = const_cast<TCHAR*>(_T("グローバル"));
 					tvg.item.pszText = const_cast<TCHAR*>(sGlobal.c_str());
 					tvg.item.lParam = nlParamCount;
 					m_vecDummylParams.push_back(nlParamCount);
 					nlParamCount++;
+#ifdef NKMM_FIX_OUTLINE
+					htiGlobal = InsertChildFast( TVI_ROOT, tvg );
+#else
 					htiGlobal = TreeView_InsertItem( hwndTree, &tvg );
+#endif // NKMM_
 				}
 				htiClass = htiGlobal;
 			}
@@ -1163,12 +1519,18 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 
 /* 該当クラス名のアイテムの子として、メソッドのアイテムを登録 */
 		tvis.hParent = htiClass;
+#ifndef NKMM_FIX_OUTLINE
 		tvis.hInsertAfter = TVI_LAST;
+#endif // NKMM_
 		tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
 		tvis.item.pszText = const_cast<TCHAR*>(strFuncName.c_str());
 		tvis.item.lParam = nlParamCount;
 		nlParamCount++;
+#ifdef NKMM_FIX_OUTLINE
+		htiItem = InsertChildFast( htiClass, tvis );
+#else
 		htiItem = TreeView_InsertItem( hwndTree, &tvis );
+#endif // NKMM_
 
 		/* クリップボードにコピーするテキストを編集 */
 		WCHAR szText[2048];
@@ -1654,6 +2016,17 @@ end_of_func:;
 	}
 
 	free( phParentStack );
+
+#ifdef NKMM_FIX_OUTLINE
+	// 20260811: SetTreeJava以外(プレーンテキスト/HTML/TeX/ルールファイル/
+	// WZTXT/XML/Python/汎用ツリー等、SetTreeを使う全種別)はm_nTreeItemCountを
+	// 更新していなかったため、SetData側のTreeViewダブルバッファリング判定
+	// (m_nTreeItemCount > TREE_RECREATE_THRESHOLD)が一切発火せず、これらの
+	// 種別は「前回分のTreeView_DeleteAllItemsが重い」問題の対象から漏れていた
+	// (実機で50MB/41万行の実ファイルにより発覚: 2回目以降の再解析が22〜25秒に
+	// 悪化)。SetTreeJavaと同様にここでも更新する。
+	m_nTreeItemCount = nFuncInfoArrNum;
+#endif // NKMM_
 }
 
 
@@ -1668,7 +2041,7 @@ void CDlgFuncList::SetDocLineFuncList()
 	}
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	CDocLineMgr* pcDocLineMgr = &pcEditView->GetDocument()->m_cDocLineMgr;
-	
+
 	CFuncListManager().ResetAllFucListMark(pcDocLineMgr, false);
 	int i;
 	int num = m_pcFuncInfoArr->GetNum();
@@ -1912,6 +2285,45 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	col.iSubItem = FL_COL_REMARK;
 	ListView_InsertColumn( hwndList, FL_COL_REMARK, &col);
 
+#ifdef NKMM_FIX_OUTLINE
+	// 20260811: IDC_LIST_FL_VIRTUAL(仮想リスト用、LVS_OWNERDATA固定)にも
+	// IDC_LIST_FLと同じ列を用意しておく(SetListFlatVirtual/SortListViewは
+	// 列が既に存在する前提でListView_SetColumn/SetColumnWidthを呼ぶため)。
+	{
+		HWND hwndListVirtual = ::GetDlgItem( hwndDlg, IDC_LIST_FL_VIRTUAL );
+		ListView_SetExtendedListViewStyle( hwndListVirtual,
+			ListView_GetExtendedListViewStyle(hwndListVirtual) | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP );
+
+		col.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+		col.fmt = LVCFMT_LEFT;
+		col.cx = rc.right - rc.left - ( nColWidthArr[1] + nColWidthArr[2] + nColWidthArr[3] ) - nCxVScroll - 8;
+		col.pszText = const_cast<TCHAR*>(LS(STR_DLGFNCLST_LIST_LINE_M));
+		col.iSubItem = FL_COL_ROW;
+		ListView_InsertColumn( hwndListVirtual, FL_COL_ROW, &col);
+
+		col.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+		col.fmt = LVCFMT_LEFT;
+		col.cx = nColWidthArr[FL_COL_COL];
+		col.pszText = const_cast<TCHAR*>(LS(STR_DLGFNCLST_LIST_COL));
+		col.iSubItem = FL_COL_COL;
+		ListView_InsertColumn( hwndListVirtual, FL_COL_COL, &col);
+
+		col.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+		col.fmt = LVCFMT_LEFT;
+		col.cx = nColWidthArr[FL_COL_NAME];
+		col.pszText = const_cast<TCHAR*>(LS(STR_DLGFNCLST_LIST_FUNC));
+		col.iSubItem = FL_COL_NAME;
+		ListView_InsertColumn( hwndListVirtual, FL_COL_NAME, &col);
+
+		col.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+		col.fmt = LVCFMT_LEFT;
+		col.cx = nColWidthArr[FL_COL_REMARK];
+		col.pszText = const_cast<TCHAR*>(_T(" "));
+		col.iSubItem = FL_COL_REMARK;
+		ListView_InsertColumn( hwndListVirtual, FL_COL_REMARK, &col);
+	}
+#endif // NKMM_
+
 	/* アウトライン位置とサイズを初期化する */ // 20060201 aroka
 	CEditView* pcEditView=(CEditView*)m_lParam;
 	if( pcEditView != NULL ){
@@ -2030,6 +2442,9 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 			case IDC_STATIC_nSortType:
 			case IDC_COMBO_nSortType:
 			case IDC_LIST_FL:
+#ifdef NKMM_FIX_OUTLINE
+			case IDC_LIST_FL_VIRTUAL:
+#endif // NKMM_
 			case IDC_TREE_FL:
 				continue;
 			}
@@ -2084,6 +2499,13 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 		//HFONT hFont = SetMainFont(GetItemHwnd(IDC_LIST_FL));
 		m_cFontText[1].SetFont(hFontOld, hFont, GetItemHwnd(IDC_LIST_FL));
+#ifdef NKMM_FIX_OUTLINE
+		// IDC_LIST_FL_VIRTUALはIDC_LIST_FLと表示上入れ替わるだけの別コントロール
+		// なので同じフォントを適用しておく(所有権はm_cFontText[1]のまま)
+		if (hFont) {
+			::SendMessage(GetItemHwnd(IDC_LIST_FL_VIRTUAL), WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
+		}
+#endif // NKMM_
 	}
 #endif // NKMM_
 
@@ -2155,7 +2577,11 @@ BOOL CDlgFuncList::OnBnClicked( int wID )
 		if(m_nViewType == VIEWTYPE_TREE){
 			::SetFocus( ::GetDlgItem( GetHwnd(), IDC_TREE_FL ) );
 		}else{
+#ifdef NKMM_FIX_OUTLINE
+			::SetFocus( GetActiveListHwnd() );
+#else
 			::SetFocus( ::GetDlgItem( GetHwnd(), IDC_LIST_FL ) );
+#endif // NKMM_
 		}
 		return TRUE;
 	case IDC_BUTTON_SETTING:
@@ -2188,7 +2614,11 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 	pnlv = (NM_LISTVIEW*)lParam;
 
 	CEditView* pcEditView=(CEditView*)m_lParam;
+#ifdef NKMM_FIX_OUTLINE
+	hwndList = GetActiveListHwnd();
+#else
 	hwndList = ::GetDlgItem( GetHwnd(), IDC_LIST_FL );
+#endif // NKMM_
 	hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
 
 	if( hwndTree == pnmh->hwndFrom ){
@@ -2245,6 +2675,55 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 	}else
 	if( hwndList == pnmh->hwndFrom ){
 		switch( pnmh->code ){
+#ifdef NKMM_FIX_OUTLINE
+		case LVN_GETDISPINFO:
+			if( m_bVirtualListMode ){
+				NMLVDISPINFO* pdi = (NMLVDISPINFO*)lParam;
+				int nDisplayIndex = pdi->item.iItem;
+				if( nDisplayIndex < 0 || (size_t)nDisplayIndex >= m_vecVirtualListOrder.size() ){
+					return TRUE;
+				}
+				const CFuncInfo* pcFuncInfo = m_pcFuncInfoArr->GetAt( m_vecVirtualListOrder[nDisplayIndex] );
+				if( NULL == pcFuncInfo || 0 == (pdi->item.mask & LVIF_TEXT) ){
+					return TRUE;
+				}
+				switch( pdi->item.iSubItem ){
+				case FL_COL_ROW:
+					auto_sprintf( pdi->item.pszText, _T("%d"),
+						m_bLineNumIsCRLF ? ToInt(pcFuncInfo->m_nFuncLineCRLF) : ToInt(pcFuncInfo->m_nFuncLineLAYOUT) );
+					break;
+				case FL_COL_COL:
+					auto_sprintf( pdi->item.pszText, _T("%d"),
+						m_bLineNumIsCRLF ? ToInt(pcFuncInfo->m_nFuncColCRLF) : ToInt(pcFuncInfo->m_nFuncColLAYOUT) );
+					break;
+				case FL_COL_NAME:
+					_tcsncpy( pdi->item.pszText, pcFuncInfo->m_cmemFuncName.GetStringPtr(), pdi->item.cchTextMax - 1 );
+					pdi->item.pszText[pdi->item.cchTextMax - 1] = _T('\0');
+					break;
+				case FL_COL_REMARK:
+					{
+						const TCHAR* pszRemark = _T("");
+						switch( pcFuncInfo->m_nInfo ){
+						case 1:  pszRemark = LS(STR_DLGFNCLST_REMARK01); break;
+						case 10: pszRemark = LS(STR_DLGFNCLST_REMARK02); break;
+						case 20: pszRemark = LS(STR_DLGFNCLST_REMARK03); break;
+						case 11: pszRemark = LS(STR_DLGFNCLST_REMARK04); break;
+						case 21: pszRemark = LS(STR_DLGFNCLST_REMARK05); break;
+						case 31: pszRemark = LS(STR_DLGFNCLST_REMARK06); break;
+						case 41: pszRemark = LS(STR_DLGFNCLST_REMARK07); break;
+						case 50: pszRemark = LS(STR_DLGFNCLST_REMARK08); break;
+						case 51: pszRemark = LS(STR_DLGFNCLST_REMARK09); break;
+						case 52: pszRemark = LS(STR_DLGFNCLST_REMARK10); break;
+						}
+						_tcsncpy( pdi->item.pszText, pszRemark, pdi->item.cchTextMax - 1 );
+						pdi->item.pszText[pdi->item.cchTextMax - 1] = _T('\0');
+					}
+					break;
+				}
+				return TRUE;
+			}
+			break;
+#endif // NKMM_
 		case LVN_COLUMNCLICK:
 //			MYTRACE( _T("LVN_COLUMNCLICK\n") );
 			m_nSortCol =  pnlv->iSubItem;
@@ -2390,7 +2869,34 @@ void CDlgFuncList::SortListView(HWND hwndList, int sortcol)
 		ListView_SetColumn( hwndList, col_no, &col );
 	// To Here 2001.12.07 hor
 
-		ListView_SortItems( hwndList, (m_bSortDesc ? CompareFunc_Desc : CompareFunc_Asc), (LPARAM)this );
+#ifdef NKMM_FIX_OUTLINE
+		if( m_bVirtualListMode ){
+			// LVS_OWNERDATAはListView_SortItemsに非対応。表示順序マップ自体を
+			// 並び替える。選択中の項目は物理インデックスでなくm_pcFuncInfoArr上の
+			// インデックスで覚えておき、ソート後に再度その表示位置を選択する。
+			int nSelIndex = ListView_GetNextItem( hwndList, -1, LVNI_ALL | LVNI_SELECTED );
+			int nSelFuncInfoIdx = ( 0 <= nSelIndex && (size_t)nSelIndex < m_vecVirtualListOrder.size() )
+				? m_vecVirtualListOrder[nSelIndex] : -1;
+
+			std::sort( m_vecVirtualListOrder.begin(), m_vecVirtualListOrder.end(),
+				[this]( int a, int b ){
+					return ( m_bSortDesc ? CompareFunc_Desc( a, b, (LPARAM)this ) : CompareFunc_Asc( a, b, (LPARAM)this ) ) < 0;
+				} );
+
+			if( 0 <= nSelFuncInfoIdx ){
+				for( size_t k = 0; k < m_vecVirtualListOrder.size(); ++k ){
+					if( m_vecVirtualListOrder[k] == nSelFuncInfoIdx ){
+						ListView_SetItemState( hwndList, (int)k, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+						break;
+					}
+				}
+			}
+			::InvalidateRect( hwndList, NULL, TRUE );
+		}else
+#endif // NKMM_
+		{
+			ListView_SortItems( hwndList, (m_bSortDesc ? CompareFunc_Desc : CompareFunc_Asc), (LPARAM)this );
+		}
 	}
 	//	2005.04.23 zenryaku 選択された項目が見えるようにする
 
@@ -2500,8 +3006,44 @@ static int CALLBACK Compare_by_ItemTextDesc(LPARAM lParam1, LPARAM lParam2, LPAR
 	return Compare_by_ItemText(lParam2, lParam1, lParamSort);
 }
 
+#ifdef NKMM_FIX_OUTLINE
+//! 20260811: ダイアログを閉じるとき、大量ノードを抱えたTreeViewの子ウィンドウは
+//! DestroyWindowの通常のカスケード(親→子の順にWM_DESTROY)に任せると、その場で
+//! TreeView_DeleteAllItemsと同じ内部コスト(ノード数に比例、実測で万単位のノード
+//! で数十秒)が同期的にかかり、ダイアログを閉じる操作自体がビジー状態になる。
+//! これを避けるため、ダイアログ自身が破棄される直前(OnDestroy)に、この
+//! ウィンドウ手続きへ差し替えた上でSetParent(NULL)してダイアログから切り離し、
+//! 自分自身にWM_APP_OUTLINE_CLEANUP_TREEをPostMessageする。ダイアログの破棄は
+//! 即座に完了し、切り離されたツリーの後始末はメッセージループがアイドルに
+//! 戻ってから非同期に行われる。
+static LRESULT CALLBACK OutlineOrphanTreeWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+{
+	if( uMsg == WM_APP_OUTLINE_CLEANUP_TREE ){
+		TreeView_DeleteAllItems( hwnd );
+		::DestroyWindow( hwnd );
+		return 0L;
+	}
+	return ::DefWindowProc( hwnd, uMsg, wParam, lParam );
+}
+#endif // NKMM_
+
 BOOL CDlgFuncList::OnDestroy( void )
 {
+#ifdef NKMM_FIX_OUTLINE
+	// 20260811: ダイアログ自身の子ウィンドウ破棄カスケードが始まる前に、
+	// 大量ノードを抱えたツリーだけ切り離しておく(このOnDestroy自体は
+	// WM_DESTROYハンドラであり、まだ子ウィンドウは破棄されていない時点)。
+	if( m_nTreeItemCount > 500 ){
+		HWND hwndTreeToDetach = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
+		if( NULL != hwndTreeToDetach ){
+			::SetWindowLongPtr( hwndTreeToDetach, GWLP_WNDPROC, (LONG_PTR)OutlineOrphanTreeWndProc );
+			::ShowWindow( hwndTreeToDetach, SW_HIDE );
+			::SetParent( hwndTreeToDetach, NULL );
+			::PostMessage( hwndTreeToDetach, WM_APP_OUTLINE_CLEANUP_TREE, 0, 0 );
+		}
+		m_nTreeItemCount = 0;
+	}
+#endif // NKMM_
 #ifdef NKMM_FIX_OUTLINE_DIALOG
 	m_cFontText[0].ReleaseOnDestroy();
 	m_cFontText[1].ReleaseOnDestroy();
@@ -2862,6 +3404,13 @@ void CDlgFuncList::SyncColor( void )
 	ListView_SetTextBkColor( hwndList, clrBack );
 	ListView_SetBkColor( hwndList, clrBack );
 	::InvalidateRect( hwndList, NULL, TRUE );
+#ifdef NKMM_FIX_OUTLINE
+	HWND hwndListVirtual = ::GetDlgItem( GetHwnd(), IDC_LIST_FL_VIRTUAL );
+	ListView_SetTextColor( hwndListVirtual, clrText );
+	ListView_SetTextBkColor( hwndListVirtual, clrBack );
+	ListView_SetBkColor( hwndListVirtual, clrBack );
+	::InvalidateRect( hwndListVirtual, NULL, TRUE );
+#endif // NKMM_
 #endif
 }
 
@@ -3818,6 +4367,9 @@ BOOL CDlgFuncList::OnContextMenu( WPARAM wParam, LPARAM lParam )
 	HWND hwndFrom = (HWND)wParam;
 	if( ::SendMessage( GetHwnd(), WM_NCHITTEST, 0, lParam ) == HTCAPTION
 			|| hwndFrom == ::GetDlgItem( GetHwnd(), IDC_LIST_FL )
+#ifdef NKMM_FIX_OUTLINE
+			|| hwndFrom == ::GetDlgItem( GetHwnd(), IDC_LIST_FL_VIRTUAL )
+#endif // NKMM_
 			|| hwndFrom == ::GetDlgItem( GetHwnd(), IDC_TREE_FL )
 	){
 		POINT pt;

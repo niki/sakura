@@ -143,6 +143,11 @@ protected:
 	void SetTreeFile();				// ツリーコントロールの初期化：ファイルツリー
 	void SetListVB( void );			/* リストビューコントロールの初期化：VisualBasic */		// Jul 10, 2003  little YOSHI
 	void SetDocLineFuncList();
+#ifdef NKMM_FIX_OUTLINE
+	bool ShouldUseVirtualFlatList() const;	//!< クラス階層のないフラットな巨大関数リストか(SetTreeJavaでなく仮想ListViewを使うべきか)
+	void SetListFlatVirtual();				//!< リストビューコントロールの初期化：仮想(LVS_OWNERDATA)フラット一覧
+	HWND GetActiveListHwnd() const;		//!< 現在有効なリストビュー(IDC_LIST_FLかIDC_LIST_FL_VIRTUALか)のHWNDを返す
+#endif // NKMM_
 
 	void SetTreeFileSub( HTREEITEM, const TCHAR* );
 	// 2002/11/1 frozen 
@@ -200,6 +205,15 @@ private:
 	int m_nTreeItemCount;
 	bool m_bDummyLParamMode;				//!< m_vecDummylParams有効/無効
 	std::vector<int> m_vecDummylParams;		//!< ダミー要素の識別値
+#ifdef NKMM_FIX_OUTLINE
+	// 20260811: クラス階層のないフラットな巨大関数リスト(例:5万関数)をSetTreeJavaの
+	// TreeViewに流し込むと、Win32 TreeViewが同一親への大量の子挿入を仮想化なしに
+	// 処理する構造的な限界により数十秒級のフリーズになる(実測)。この場合のみ
+	// IDC_LIST_FLをLVS_OWNERDATA(仮想リスト)で運用し、表示に必要な行のテキストだけ
+	// LVN_GETDISPINFOで都度供給することでO(1)描画にする。
+	bool m_bVirtualListMode;					//!< IDC_LIST_FLがLVS_OWNERDATA(仮想)モードで動作中か
+	std::vector<int> m_vecVirtualListOrder;	//!< 表示インデックス→m_pcFuncInfoArrのインデックス(ソート順を保持)
+#endif // NKMM_
 
 	// 選択中の関数情報
 	CFuncInfo* m_cFuncInfo;
@@ -225,7 +239,7 @@ private:
 
 	POINT				m_ptDefaultSize;
 	POINT				m_ptDefaultSizeClient;
-	RECT				m_rcItems[12];
+	RECT				m_rcItems[13];
 	
 #ifdef NKMM_FIX_OUTLINE_DIALOG
 	CFontAutoDeleter		m_cFontText[2];
