@@ -1,18 +1,27 @@
 # sakura editor
 <p>
-  <!-- <a href="https://github.com/niki/sakura/blob/main/LICENSE"><img src="https://img.shields.io/github/license/niki/sakura" alt="License"></a> -->
-  <a href="https://github.com/niki/sakura/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Zlib-blue" alt="License: Zlib"></a>
-  <!-- <a href="https://github.com/niki/sakura/actions"><img src="https://github.com/niki/sakura/actions/workflows/main.yml/badge.svg" alt="build sakura"></a> -->
-  <a href="https://github.com/niki/sakura/releases"><img src="https://img.shields.io/github/v/release/niki/sakura" alt="GitHub release"></a>
-  <a href="https://github.com/niki/sakura/commits"><img src="https://img.shields.io/github/last-commit/niki/sakura" alt="GitHub last commit"></a>
-  <a href="https://github.com/niki/sakura/stargazers"><img src="https://img.shields.io/github/stars/niki/sakura?style=social" alt="GitHub stars"></a>
+  <!-- 1行目：環境・仕様・ライセンス -->
+  <a href="https://github.com/niki/sakura/releases">
+    <img src="https://img.shields.io/github/v/release/niki/sakura?color=blue" alt="release">
+  </a>
+  <img src="https://img.shields.io/badge/platform-Windows-0078D6" alt="platform">
+  <img src="https://img.shields.io/badge/C%2B%2B-20-00599C?logo=c%2B%2B&logoColor=white" alt="C++">
+  <a href="https://github.com/niki/sakura/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-Zlib-blue" alt="License: Zlib">
+  </a>
+  <br>
+  <!-- 2行目：独自機能・アクティビティ -->
+  <img src="https://img.shields.io/badge/DirectWrite-Supported-0078D6?logo=windows&logoColor=white" alt="DirectWrite">
+  <img src="https://img.shields.io/badge/Color_Font-Supported-ff69b4?logo=artstation&logoColor=white" alt="Color Font">
+  <img src="https://img.shields.io/github/last-commit/niki/sakura" alt="last commit">
+  <a href="https://github.com/niki/sakura/stargazers">
+    <img src="https://img.shields.io/github/stars/niki/sakura?style=social" alt="Stars">
+  </a>
+  <br>
+  <a href="https://note.com/katakotori/n/n7463242cc326">
+    <img src="https://img.shields.io/badge/note-記事を読む(Read article)-2cb696?logo=note&logoColor=white" alt="note">
+  </a>
 </p>
-
-サクラエディタ 改修（2.3.2.0ベース）<br>
-
-改修内容・ダウンロードはこちらから。
-
-[https://note.com/katakotori/n/n7463242cc326](https://note.com/katakotori/n/n7463242cc326)
 
 <hr>
 
