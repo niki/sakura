@@ -479,7 +479,7 @@ BOOL CViewCommander::HandleCommand(
 	// 2006.09.03 Moca F_CHGMOD_EOLで break 忘れの修正
 	case F_CHGMOD_EOL:		Command_CHGMOD_EOL( (EEolType)lparam1 );break;	//入力する改行コードを設定
 	// To Here 2003.06.23 Moca
-	case F_CANCEL_MODE:		Command_CANCEL_MODE();break;	//各種モードの取り消し
+	case F_CANCEL_MODE:		Command_CANCEL_MODE(0, true);break;	//各種モードの取り消し(ESC等の明示操作なのでダイアログクローズを許可)
 
 	/* 設定系 */
 	case F_SHOWTOOLBAR:		Command_SHOWTOOLBAR();break;	/* ツールバーの表示/非表示 */

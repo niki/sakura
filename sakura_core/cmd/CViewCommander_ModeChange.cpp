@@ -101,8 +101,12 @@ void CViewCommander::Command_CHG_CHARSET(
 
 /** 各種モードの取り消し
 	@param whereCursorIs 選択をキャンセルした後、キャレットをどこに置くか。0=動かさない。1=左上。2=右下。
+	@param bAllowCloseDialog NKMM_CLOSE_DIALOG_WITH_MODE_CANCELLATIONによる検索/置換等ダイアログの
+		自動クローズを許可するか。この関数はCommand_LEFT/RIGHTでの選択解除やUndo/Redo前処理からも
+		内部的に呼ばれるため、既定はfalseとし、ユーザーが明示的にモード取り消し(ESCキー、F_CANCEL_MODE)
+		を行った場合のみtrueを渡す。20260811
 */
-void CViewCommander::Command_CANCEL_MODE( int whereCursorIs )
+void CViewCommander::Command_CANCEL_MODE( int whereCursorIs, bool bAllowCloseDialog )
 {
 	bool bBoxSelect = false;
 	if( m_pCommanderView->GetSelectionInfo().IsTextSelected() ) {
@@ -158,6 +162,7 @@ void CViewCommander::Command_CANCEL_MODE( int whereCursorIs )
 		}
 	}
 #if defined(NKMM_FIX_DIALOG) && NKMM_CLOSE_DIALOG_WITH_MODE_CANCELLATION
+	if (bAllowCloseDialog)
 	{
 		CEditWnd *pEditWnd = m_pCommanderView->m_pcEditWnd;
 		if (pEditWnd->m_cDlgFind.GetHwnd()) { // 「検索」ダイアログ

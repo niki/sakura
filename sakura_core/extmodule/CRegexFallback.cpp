@@ -295,7 +295,11 @@ BREGEXP_W_Fallback* DoSubst(pcre2_code_16* code, bool bGlobal, const std::wstrin
 		vEndp[i]   = const_cast<wchar_t*>(targetbeg) + e;
 	}
 
-	uint32_t options = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH | PCRE2_SUBSTITUTE_MATCHED;
+	// 20260811 PCRE2_SUBSTITUTE_EXTENDEDが無いと置換文字列中の\n \r \t等のバックスラッシュ
+	// エスケープが解釈されずリテラルの2文字("\"+"n")のまま挿入されてしまう
+	// (bregonig.dll側はPerl互換のs///として\nを実改行に解釈するため、この差異が
+	// フォールバック時のみ発生する不具合になっていた)。
+	uint32_t options = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH | PCRE2_SUBSTITUTE_MATCHED | PCRE2_SUBSTITUTE_EXTENDED;
 	if (bGlobal) options |= PCRE2_SUBSTITUTE_GLOBAL;
 	PCRE2_SPTR16 repl = reinterpret_cast<PCRE2_SPTR16>(replacementTemplate.c_str());
 	PCRE2_SIZE replLen = static_cast<PCRE2_SIZE>(replacementTemplate.size());

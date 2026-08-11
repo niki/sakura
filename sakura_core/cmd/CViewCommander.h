@@ -320,7 +320,7 @@ public:
 	void Command_CHGMOD_INS( void );	/* 挿入／上書きモード切り替え */
 	void Command_CHG_CHARSET( ECodeType, bool );	/* 文字コードセット指定 */	// 2010/6/15 Uchi
 	void Command_CHGMOD_EOL( EEolType );	/* 入力する改行コードを設定 2003.06.23 moca */
-	void Command_CANCEL_MODE( int whereCursorIs = 0 );	/* 各種モードの取り消し */
+	void Command_CANCEL_MODE( int whereCursorIs = 0, bool bAllowCloseDialog = false );	/* 各種モードの取り消し */
 
 	/* 設定系 */
 	void Command_SHOWTOOLBAR( void );		/* ツールバーの表示/非表示 */
