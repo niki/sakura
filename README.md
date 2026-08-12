@@ -28,6 +28,9 @@
 機能追加やバグの修正などを行っています。<br>
 別のエディタも使用しているため、目新しい機能はつっこんでいければいいなと。<br>
 
+<!-- ![](https://drive.google.com/file/d/1nWvonr39GWAdrt5uzmFgDlanZPwD77uY/view?usp=drive_link) -->
+![](https://lh3.googleusercontent.com/d/1nWvonr39GWAdrt5uzmFgDlanZPwD77uY)
+
 <b>[Added features]</b><br>
 
 <b>■ 描画・見た目</b><br>
