@@ -95,6 +95,62 @@
 
 ステップ2で`NKMM_FIX_COLOR_FONT`ガードを外し無条件化していたが、レビューで指摘を受け再検討。`GetFontGeneration()`/`s_nGeneration`は`CColorFontRenderer`(`NKMM_FIX_COLOR_FONT`)と`CGlyphAtlasCache`(`NKMM_FIX_GLYPH_ATLAS_CACHE`)の**両方**が使う共有機能であり、単純にどちらか一方のマクロだけでガードすると、もう一方だけを有効にしたビルド構成で「未定義のメンバを参照」というコンパイルエラーになる。無条件化(ガード無し)でも動作上は問題ないが、他の箇所を全て`#ifdef`で統一する方針に合わせ、`#if defined(NKMM_FIX_COLOR_FONT) || defined(NKMM_FIX_GLYPH_ATLAS_CACHE)`という正しい条件(いずれか一方でも有効なら含める)でガードし直した。`CommonSetting.h`側の4項目(いずれか一方の機能にしか使われない単独の設定値)とは性質が異なり、**複数機能が共有する土台コードは「OR条件」でガードする**必要がある点に注意。
 
+## 9. 描画待ちキューが複数の描画パス間で共有され、誤って一緒にFlushされる不具合を修正 20260809
+
+対象: `sakura_core/view/CGlyphAtlasCache.h` / `.cpp`(`BeginQueue`追加、
+`FlushQueue`に`markBegin`引数追加)、`CEditView_Paint.cpp`,
+`CEditView_Paint_Bracket.cpp`(呼び出し側でBeginQueue()を捕捉してFlushQueue()に渡す)
+
+描画待ちキュー(`m_vPendingBlits`)がシングルトン全体で共有されており、複数の
+独立した描画パス(通常の`OnPaint`、対括弧強調表示の即時描画)が互いのキューを
+誤って一緒にFlushしてしまいうる設計上の不具合があった。通常の`OnPaint`中に
+対括弧の即時描画(`DrawBracketPair`、自前の`GetDC`で`FlushQueue`する)が挟まると、
+片方の`FlushQueue()`がもう片方の積み残しごと`BitBlt`してしまい、色付き矩形/線が
+誤った位置に描画される可能性があった。
+
+`FlushQueue()`にキュー位置の「印」(`BeginQueue()`で取得)を渡すよう変更し、各
+描画パスは自分が`BeginQueue()`した位置から末尾までしか処理・削除しないように
+した(パスが入れ子になっても互いのキューを侵さない)。
+
+これ自体は正しい修正だが、次項の「タブ切り替えで線が出る」不具合の直接の原因
+ではなかった(修正後も再現した)。
+
+## 10. 「行の間隔」使用時にタブ切り替えで線状の描画異常が出る不具合を修正 20260809
+
+対象: `sakura_core/view/CGlyphAtlasCache.h` / `.cpp`(`DrawOrCache`/`WarmUpAscii`に
+`nGlyphYOffset`引数追加), `CTextDrawer.cpp`(呼び出し側)
+
+### 症状
+
+タイプ別設定「行の間隔」(`GetLineMargin()`)が非0のとき、テキスト領域に細い
+横線状の描画異常(色付きの矩形)が出ることがあった。タブ切り替え(フォーカス変更)
+だけで再現し、行の間隔=0なら再現しなかった。実機で再現・修正確認済み。
+
+### 根本原因
+
+`CTextDrawer::DispText()`で、クリップ矩形`rcClip`の上端はマージンを含まない`y`
+だが、グリフキャッシュへ渡す描画先Y(旧`nDrawY = GetLineMargin() + y + marginy`)
+はマージン込みだった。一方セルの高さ(`nCellHeightPx = GetHankakuDy()` = 文字縦幅+
+行間隔)はマージン込みのまま。そのため、キャッシュ経由の`BitBlt`は本来の行の
+上端(マージン部分)を塗り残したまま、次の行のマージン部分にまではみ出して
+描画していた(非キャッシュの`ExtTextOut`パスは`rcClip`全体を`ETO_OPAQUE`で塗る
+ため問題が起きない)。
+
+調査時、「セルの余白が`ETO_OPAQUE`で塗られていない」「`AllocCell()`のシェルフ
+再利用で高さが不一致」等の仮説も検証したが、いずれも実測で否定された(セル
+高さ・シェルフ割り当て・行間隔はすべて一致していた)。実際の原因は「セルの
+中身」ではなく「`BitBlt`先の基準点とセル内でのグリフ描画位置がズレていたこと」
+だった。
+
+### 修正
+
+`DrawOrCache()`/`WarmUpAscii()`に新しい引数`nGlyphYOffset`を追加。呼び出し側
+(`CTextDrawer.cpp`)は`nDestY`として必ず`rcClip.top`(マージン抜き)を渡し、マージン
+分のずらしは`nGlyphYOffset`(=旧`nDrawY - rcClip.top`)として別に渡す。セルの
+不透明フィル(`ETO_OPAQUE`)はセル全体(`rcCellDest`)に対して行い、実際のグリフ
+描画位置だけを`nGlyphYOffset`分ずらすことで、非キャッシュパスと同じ見た目
+(マージン部分は背景色、グリフはマージン分下にずれた位置)を再現する。
+
 ## 未実施・今後の課題
 
 - 実際に起動した`sakura.exe`上でチェックボックスをON/OFFし、GUI越しに目視確認する検証はまだ行っていない(今回は`CGlyphAtlasCache`と同一のGDI呼び出し列を標準スタンドアロンスクリプトで再現し、アルゴリズムレベルでの検証に留めている)。実機での最終確認は次セッションで実施予定。

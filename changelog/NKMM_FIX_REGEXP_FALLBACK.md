@@ -399,15 +399,8 @@ uint32_t options = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH | PCRE2_SUBSTITUTE_MATCHED |
 
 同じコミットで、置換ダイアログの「置換」ボタンを連続で押すとダイアログが
 閉じてしまう不具合も修正した。こちらはPCRE2/正規表現フォールバックとは
-無関係で、`Command_CANCEL_MODE()`の呼び出し元の一つ(`F_CANCEL_MODE`
-ハンドラ)が、ユーザーの明示的なモード取り消し操作でなくても
-`NKMM_CLOSE_DIALOG_WITH_MODE_CANCELLATION`(`NKMM_FIX_DIALOG`, 2017年
-導入)経路でダイアログを閉じてしまっていたことが原因。`Command_CANCEL_MODE`
-に`bAllowCloseDialog`引数(既定`false`)を追加し、ESC等の明示操作
-(`F_CANCEL_MODE`)からの呼び出しのみ`true`を渡すことで、選択解除や
-Undo/Redo前処理からの内部的な呼び出しではダイアログを閉じないよう
-修正した。詳細な報告書は無く、`sakura_core/cmd/CViewCommander_ModeChange.cpp`
-のコメント(20260811)に経緯を記載している。
+無関係な別経路の問題のため、独立したレポート
+[NKMM_FIX_DIALOG_CANCEL_MODE.md](NKMM_FIX_DIALOG_CANCEL_MODE.md)を参照。
 
 ## 追記: CColor_Numeric.cpp側のREGEX_MODE==3利用は削除 20260806
 

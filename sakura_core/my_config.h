@@ -154,84 +154,12 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_TABWND
 	#define NKMM_TABWND_FLICKER     (1)  // ウィンドウまとめモードの切り替え時にスリープを10ms入れる(ちらつき抑制) 20170406
-	                                      // → 20260807 UpdateWindow(hwnd)がhwnd自身しか同期再描画せず、
-	                                      //    エディットビュー等の子ウィンドウのWM_PAINTや、タイトルバーの
-	                                      //    WM_NCPAINTがキューに残るため、可視化直後の一瞬だけ中身が
-	                                      //    描画されない・タイトルバーが白くなる問題を追加修正。
-	                                      //    RedrawWindow(..., RDW_ALLCHILDREN | RDW_FRAME)で子ウィンドウと
-	                                      //    非クライアント領域も同期再描画。
-	                                      // → 20260807 上記だけではタイトルバーの白フラッシュが確率的に
-	                                      //    残った（DWM合成側の遷移アニメーションが原因で、アプリ側の
-	                                      //    同期描画だけでは防げない）。切り替え中だけ
-	                                      //    DwmSetWindowAttribute(DWMWA_TRANSITIONS_FORCEDISABLED, TRUE)
-	                                      //    でDWMの遷移アニメーションを止めるよう追加修正。
-	                                      // → 20260807 それでもタイトルバー/メニュー/タブが毎回ちらつく
-	                                      //    (確率的でなく再現性あり)と報告あり。CEditWnd::OnSize2()の
-	                                      //    再レイアウトをWM_SETREDRAWで抑止する修正もあわせて実施。
-	                                      // → 20260807 上記でも直らず。OutputDebugString相当のログを
-	                                      //    仕込んで実際のメッセージ列を採取したところ、切替のたびに
-	                                      //    AddEditWndList()(CAppNodeManager.cpp)がMRU(最近アクティブ)
-	                                      //    リストの並べ替えとしてTWNT_ORDERをグループ全員へ
-	                                      //    ブロードキャストしており、CTabWnd::TabWindowNotify()の
-	                                      //    TWNT_ORDERハンドラがTabCtrl_SetCurSel(m_hwndTab,nScrollPos)→
-	                                      //    TabCtrl_SetCurSel(m_hwndTab,nIndex)と選択状態を2段階で
-	                                      //    同期変更していたのが真因と判明（スクロール位置を強制的に
-	                                      //    リセットしてから目的タブを選択するための実装だが、その間の
-	                                      //    「誤った選択状態」が毎回一瞬そのまま画面に出ていた）。
-	                                      //    この2段階の選択変更をWM_SETREDRAWで挟んで抑止し、
-	                                      //    最後に一度だけRedrawWindow()で描き直すよう修正。
-	                                      //    タイトルバー/メニューのちらつきは、可視化に伴う一連の処理の
-	                                      //    体感速度が上がったことで別要因(DWM等)が目立たなくなった。
-	                                      // → 20260807 残っているごく短時間(1〜2フレーム程度)の空白は、
-	                                      //    RedrawWindow(RDW_UPDATENOW)がGDI描画をアプリ側で完了させる
-	                                      //    だけで、DWMがそれを実際に画面へ合成・提示するのを待たない
-	                                      //    ことが一因。直後のSleep(10)は「間に合うだろう」という
-	                                      //    時間当てずっぽうでしかないため、DWMが次のフレームの
-	                                      //    合成・提示を終えるまで実際に待つDwmFlush()に置き換えた
-	                                      //    （DwmFlush()が使えない環境向けにSleep(10)はフォールバックとして残す）。
-	                                      // → 20260807 DwmFlush()に変えても体感が変わらないと報告あり。
-	                                      //    ログに再度タイムスタンプを仕込んで確認したところ、
-	                                      //    マウスでタブをクリックした場合はCTabWnd::ShowHideWindow()
-	                                      //    経由で上記の修正が効くが、Ctrl+Tab等(F_NEXTWINDOW/
-	                                      //    F_PREVWINDOW)によるタブ切替はCControlTray::ActiveNextWindow/
-	                                      //    ActivePrevWindow() → util/window.cpp の ActivateFrameWindow()
-	                                      //    という別経路を通ることが判明。この関数はShowHideWindow()と
-	                                      //    違って新ウィンドウ表示後に旧ウィンドウを同期的に隠す処理が
-	                                      //    無く、AddEditWndList()発のTWNT_ORDER通知の非同期往復待ちの
-	                                      //    ままだった（NKMM_TABWND_SYNC_HIDEが2026.07.29に対応したのは
-	                                      //    ShowHideWindow()側だけで、ActivateFrameWindow()は未対応だった）。
-	                                      //    ActivateFrameWindow()にも同じ同期非表示処理
-	                                      //    （HideOtherGroupWindows()、util/window.cpp）を追加した。
-	                                      // → 20260807 あわせて、タブ項目はTCS_OWNERDRAWFIXEDでWM_DRAWITEMが
-	                                      //    毎回全面を塗りつぶすため不要なはずのデフォルトWM_ERASEBKGND
-	                                      //    （erase→redrawの二度塗り）をCTabWnd用のサブクラスプロシージャ
-	                                      //    (TabWndProc)で無効化した。
-	                                      // → 20260807 【未解決】Ctrl+Tab切替では、上記修正後もログ上は
-	                                      //    ShowHideWindow()/TWNT_ORDER関連の処理が一切発生していない
-	                                      //    （AddEditWndList()はWM_ACTIVATEAPPからのみ呼ばれ、同一デスクトップ
-	                                      //    内のプロセス間フォーカス移動でも今回のテストでは発火しなかった）
-	                                      //    にもかかわらず、可視化から約100〜150ms後の1〜2フレーム
-	                                      //    (約15〜30ms)だけタブ帯が一瞬空白/欠落するちらつきが
-	                                      //    高速連写キャプチャで再現し続けている。マウスクリックでの
-	                                      //    切替（TWNT_ORDER経由）よりこちらの方が症状が大きい。
-	                                      //    RedrawWindow/DwmFlush/WM_ERASEBKGND抑止のいずれでも解消せず、
-	                                      //    原因はまだ特定できていない。要追加調査。
-	                                      // → 20260807 ユーザーより「白くなるのと同時にウィンドウの影が
-	                                      //    濃くなる」との報告。影の濃淡はDWMの非クライアント領域の
-	                                      //    アクティブ/非アクティブ描画（WM_NCACTIVATE相当）に連動する
-	                                      //    ため、白フラッシュはSetForegroundWindow()によるアクティブ化の
-	                                      //    タイミングで起きている可能性が高いと判明。ところが、これまでの
-	                                      //    DwmSetWindowAttribute(DWMWA_TRANSITIONS_FORCEDISABLED)は
-	                                      //    CTabWnd::AdjustWindowPlacement()内だけで有効→無効を完結させて
-	                                      //    おり、SetForegroundWindow()（呼び出し元のShowHideWindow()/
-	                                      //    ActivateFrameWindow()側で、AdjustWindowPlacement()の後に呼ばれる）
-	                                      //    の時点では既に遷移アニメーションが元に戻ってしまっていた＝
-	                                      //    保護範囲から漏れていたことが真因の可能性が高い。
-	                                      //    DWM無効化・最終RedrawWindow・DwmFlushによる合成待ちを
-	                                      //    AdjustWindowPlacement()単体からShowHideWindow()/
-	                                      //    ActivateFrameWindow()側に引き上げ、「可視化開始～
-	                                      //    SetForegroundWindow()によるアクティブ化完了」までを
-	                                      //    一括で保護するよう修正。
+	                                      // → 20260807 タイトルバー/メニュー/タブ帯が切替時に一瞬白くなる
+	                                      //    別種のちらつきを全8ラウンドで調査・修正(UpdateWindowの非同期
+	                                      //    範囲、DWM遷移アニメーション、TabCtrl_SetCurSelの2段階選択、
+	                                      //    Ctrl+Tab側のActivateFrameWindow()未対応、WM_ERASEBKGND二度塗り等)。
+	                                      //    Ctrl+Tab切替特有の一瞬の空白1点のみ未解決。
+	                                      //    詳細はchangelog/NKMM_TABWND_SYNC_HIDE.md「追記」参照
 	#define NKMM_TAB_CLOSE_BTN_DRAW (0)  //〆 タブを閉じるボタンをグラフィカルにする 20170423
 	#define NKMM_TABWND_DRAG_THRESHOLD (1)  // タブクリックがドラッグ移動としきい値なしで誤認識され、切替えただけでタブの並びが入れ替わる問題を修正 20260718
 	#define NKMM_BUGFIX_TAB_EDGE    (1)  // 間に選択タブがあると右側のエッヂがないバグを修正 (となりのタブが上書き描画していた) 20170429
@@ -256,198 +184,17 @@
 //  - カーソル行を表示 20170611
 //  - スクロールバーの再描画をマーカー描画のタイミングに合わせて更新する 20170721
 //  ? バーにカーソルを乗せた時, フェードアウトして消えてしまう:(
-//  - 水平スクロールバーのSetScrollInfoスキップ判定がテキスト幅の縮小を見て
-//    おらず更新漏れが起きる不具合を修正。実機確認済み。詳細はchangelog/
-//    NKMM_FIX_EDITVIEW_SCRBAR_HWIDTH_SKIP.md参照 20260806
-//  - SB_Marker_BuildThread(バックグラウンドの検索ヒット行スキャン)とCEditView::
-//    ChangeCurRegexp()の競合クラッシュを修正 20260809
-//    - SB_Marker_BuildThreadはIsFoundLine()経由でCEditView::m_sSearchPattern
-//      (Sunday-Quickスキップ配列を保持)をバックグラウンドスレッドから読む。
-//      検索文字列入力のたびにChangeCurRegexp()がUIスレッドでm_sSearchPattern.
-//      SetPattern()を呼び、内部でReset()して配列を解放してから再構築するため、
-//      この2つが競合するとNULL/解放済みポインタを読んでクラッシュする。
-//      500万行ファイルへのインクリメンタル検索(NKMM_FIX_FIND_DIALOGのデバウンス
-//      化で連続検索が速くなったことで発生頻度が上がった)で実機クラッシュを確認・
-//      WinDbgのダンプ解析で原因特定済み(CSearchAgent::SearchStringでの
-//      アクセス違反、スタックはSB_Marker_BuildThread→IsFoundLine→
-//      IsSearchString→SearchString)。ChangeCurRegexp()がm_sSearchPatternを
-//      書き換える直前にSBMarker_->WaitForBuild(true)で実行中のビルドスレッドを
-//      中断・待機するよう修正(ReplaceAll前のCSuppressSrchKeyMarkForReplaceAll
-//      と同じ考え方)。
-//    - sakura_core\view\CEditView_Command.cpp (ChangeCurRegexp)
-//  - WM_APP_SCRBAR_PAINTハンドラのブロッキング待ちを解消 20260809
-//    - 上記の競合修正でビルドスレッドの再始動頻度が上がったことで、ビルド中に
-//      スクロールすると、スクロールが発生させる描画要求のたびに
-//      SBMarker_->WaitForBuild(false)(ビルド完了までブロック)に引っかかり、
-//      スクロールバー(実質画面全体)の更新が止まって見える不具合が顕在化した。
-//      実機確認済み。ビルド中はこの描画要求を待たずに諦めるよう変更。ビルド完了時に
-//      スレッド自身がSB_Marker_DrawRequest()で再描画を要求してくるので、それに
-//      任せれば十分(そもそもブロックして待つ必要がない設計だった)。
-//    - sakura_core\view\CEditView.cpp (WM_APP_SCRBAR_PAINTハンドラ)
-//  - 通常編集とSB_Marker_BuildThreadの競合防止・ビルドの並列化 20260809
-//    - CSuppressSrchKeyMarkForReplaceAllはReplaceAll専用のガードで、通常の
-//      タイプ入力・貼り付け・削除中にSB_Marker_BuildThreadが巨大ファイルを
-//      走査していた場合の競合(CDocLineMgrへの読み取り中の書き換え)は未対策
-//      だった。編集の唯一の合流点CEditView::ReplaceData_CEditView3の先頭で
-//      SBMarker_->WaitForBuild(true)を呼び、編集前に確実に待避させるよう修正。
-//    - 「折り返しなし」かつ正規表現でない場合に限り、SB_Marker_BuildThreadの
-//      走査ループをOpenMPで並列化(SB_Marker_DrawThreadと同じ手法)。折り返し
-//      ありはLogicToLayout()の共有ヒントキャッシュ、正規表現はCEditView::
-//      m_CurRegexpという単一の共有エンジンインスタンスがあり、どちらも複数
-//      スレッドから同時に触ると競合するため対象外(既存の逐次パスにフォール
-//      バック)。500万行ファイルでのスクロールバーマーク再構築(検索文字列
-//      入力のたびに再始動する)を高速化する目的。
-//    - sakura_core\view\CEditView_Command_New.cpp (ReplaceData_CEditView3),
-//      sakura_core\view\CEditView.cpp (SB_Marker_BuildThread)
-//  - SB_Marker_DrawThreadで同じY座標への重複描画をスキップ 20260809
-//    - スクロールバーの高さはせいぜい数百〜千数百pxしかないのに対し、ヒット数が
-//      数万〜数十万件(500万行ファイルでよくある文字列を検索した場合等)になると、
-//      大半のヒットが直前と同じピクセル行へ描画することになり、GDIのFillRect
-//      呼び出しが無駄に大量発生して描画が極端に遅くなっていた。実機確認済み。
-//      行番号順に処理しているためY座標はほぼ単調増加であり、直前と同じYなら
-//      描画をスキップするよう変更(見た目の結果は同じで、無駄な描画回数だけ減る)。
-//    - sakura_core\view\CEditView.cpp (SB_Marker_DrawThread)
-//  - キャッシュ作成/描画をスレッドプール(PTP_WORK)化 20260810
-//    - SB_Marker_BuildThread/SB_Marker_DrawThreadは_beginthreadexで編集/描画の
-//      たびにOSスレッドを新規生成しており、生成コストに加えて起動直後に
-//      ::Sleep(10)で呼び出し元(UIスレッド)を固定10msブロックしていた。編集の
-//      たびにこの経路を通ると1回あたり最低10ms以上かかる。詳細は
-//      changelog/NKMM_FIX_EDITVIEW_SCRBAR_THREADPOOL.md参照。
-//    - CreateThreadpoolWork()でビルド用/描画用のPTP_WORKをScrBarMarker生成時に
-//      1個ずつ作成し、以降はSubmitThreadpoolWork()で使い回す。スレッド生成が
-//      無くなるため、Sleep(10)による head-start待ちも不要になった。
-//    - ビルド実行中に来た再構築要求は、旧実装のようにWaitForBuild(true)で
-//      UIスレッドをブロックして強制中断・作り直す代わりに、bRebuildPending_
-//      フラグを立てるだけにした。BuildWorkCallback側はdo-whileで完了直後に
-//      このフラグを確認し、立っていればもう一度最新のドキュメント状態で
-//      スキャンし直す(取りこぼし防止、UIスレッドは常にノンブロッキング)。
-//    - WaitForBuild/WaitForDrawはWaitForSingleObject(ハンドル)から
-//      WaitForThreadpoolWorkCallbacks(work, fCancelPendingCallbacks)に置き換え。
-//      abort=trueの場合は未開始分をキャンセルしつつ実行中分の完了を待つ点は
-//      旧実装(中断フラグ+INFINITE待ち)と同じ。
-//    - CEditView単位(=分割ウィンドウ/タブ単位)でスレッドを常駐させる案も検討
-//      したが、開いているウィンドウ数だけスレッドが増える(既知の未解決事象、
-//      NKMM_FIX_SCRBAR_MARKER_REPLACEALL_PERF.md追記6参照)ため見送り、
-//      プロセス既定のスレッドプールを共有する方式にした。
-//    - m_CurRegexp共有競合(NKMM_FIX_SCRBAR_MARKER_REPLACEALL_PERF.md参照)とは
-//      無関係な変更のため、その対策(CSuppressSrchKeyMarkForReplaceAll等)は
-//      そのまま維持している。
-//    - sakura_core\view\CEditView.h (ScrBarMarker),
-//      sakura_core\view\CEditView.cpp (BuildWorkCallback/DrawWorkCallback/
-//      Build/Draw/WaitForBuild/WaitForDraw/コンストラクタ/デストラクタ)
-//  - bRebuildPending_取りこぼしレースの修正(mutex導入) 20260810
-//    - コードレビューで、BuildWorkCallback終了処理の「pending確認→running解除」の
-//      間にBuild()が割り込むと、その時に立てたbRebuildPending_を誰も消費せず
-//      再構築要求が黙って失われるTOCTOUレースがあることに気付いた。
-//    - mtxBuildState_(std::mutex)を新設し、Build()側の「running確認→pending/
-//      running設定」とBuildWorkCallback側の「pending確認→pending消費 or
-//      running解除」を、それぞれ同じロックの中で不可分に行うよう修正。
-//    - 描画側(SB_Marker_DrawThread由来のbRestartRequestDrawThread_/
-//      bDrawThreadRunning_)にも理屈上は同種のレースが残っていたため、
-//      mtxDrawState_として同じ対策を追加(下記の別項参照)。
-//    - sakura_core\view\CEditView.h (mtxBuildState_),
-//      sakura_core\view\CEditView.cpp (Build/BuildWorkCallback)
-//  - 描画側(bRestartRequestDrawThread_)取りこぼしレースの修正(mutex導入) 20260810
-//    - 上記と同じ種類のレースがDraw()/DrawWorkCallbackにも存在した(移植元の
-//      SB_Marker_DrawThreadから変更していない既存ロジックだが、同じ対策を転用)。
-//    - mtxDrawState_(std::mutex)を新設し、Draw()側の「running確認→restart/
-//      running設定」と、DrawWorkCallback側(描画が完走してend_threadへ
-//      フォールスルーする直前)の「restart確認→pending消費 or running解除」を、
-//      それぞれ同じロックの中で不可分に行うよう修正。中断(bExitRequestDrawThread_)
-//      経路はWaitForDraw(true)がUIスレッドをブロックするためレースの心配が無く、
-//      対象外。
-//    - sakura_core\view\CEditView.h (mtxDrawState_),
-//      sakura_core\view\CEditView.cpp (Draw/DrawWorkCallback)
-//  - スクロールバー上の検索/ブックマークのマークをクリックしたら、一番近い
-//    マーク行へジャンプする機能を追加 20260810
-//    - VScrollBarWndProc(既存のホバー再描画フック)でWM_LBUTTONDOWNを追加で
-//      捕捉。クリックYに最も近いマーク行(検索/ブックマーク、許容誤差数px)が
-//      あればCEditView::_SB_Marker_HitTestAndJump()経由でMoveCursorSelecting()
-//      によりその行へジャンプし、メッセージを消費する(既定のスクロールバー
-//      動作=ページスクロール/サム位置ジャンプは行わない)。マークが無い位置の
-//      クリックは従来通りCallWindowProc()へ素通しし、既定動作に任せる。
-//    - Y座標→レイアウト行の変換はSB_Marker_DrawThread(DrawWorkCallback)の
-//      fnLineToYと同じ式を使用(表示側と当たり判定側の対応がズレないように)。
-//    - つまみ(現在の表示位置)の上をクリックした場合はマークジャンプより優先して
-//      つまみドラッグさせる(HitTest冒頭でxyThumbTop/xyThumbBottom範囲内なら
-//      即falseを返す)。これが無いと、たまたまマークがつまみの位置に重なった時に
-//      スクロールバーをつまんで動かせなくなってしまう。
-//    - sakura_core\view\CEditView.h (ScrBarMarker::HitTest,
-//      CEditView::_SB_Marker_HitTestAndJump),
-//      sakura_core\view\CEditView.cpp (ScrBarMarker::HitTest実装,
-//      _SB_Marker_HitTestAndJump実装),
-//      sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc)
-//  - マウスホバー開始時にもマーカーを再描画するように変更 20260810
-//    - 従来はWM_MOUSELEAVE(ホバー解除)時のみマーカーを再描画しており、ホバー中は
-//      Explorerテーマのフェードアニメーションでマークが消えたままになっていた
-//      (クリックジャンプ機能を使うにも、マークがどこにあるか見えないと押しにくい)。
-//    - WM_MOUSEMOVEのたびに毎回再描画すると呼び出し過多になるため、SetProp/
-//      GetPropでスクロールバーHWNDにホバー中フラグを持たせ、「非ホバー→ホバー」
-//      の遷移が起きた最初の1回だけSB_Marker_CallPaint()を呼ぶようにした。
-//      Draw()側は元々実行中の再描画要求をbRestartRequestDrawThread_に集約する
-//      デバウンス機構を持つため、仮に高頻度で呼んでも多重実行にはならないが、
-//      遷移時のみに絞ることでロック取得等の無駄な呼び出し自体を減らしている。
-//    - sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc)
-//  - ホバー遷移時の1回描画だけでは不十分だった問題を修正 20260810
-//    - 実機確認したところ、Explorerテーマのフェードアニメーションはホバー開始
-//      から数百msかけて複数フレームに渡り自前描画を続けており、遷移時に1回
-//      再描画するだけではアニメーション後半のフレームでマークが再び消されて
-//      しまっていた。ホバー中(WM_MOUSEMOVE〜WM_MOUSELEAVE)はSetTimer()で
-//      50ms間隔のタイマーを回し、WM_MOUSELEAVE/WM_DESTROYでKillTimer()する
-//      ように変更。高頻度に呼んでもDraw()側のデバウンス機構(既述)により
-//      多重実行にはならないため安全。
-//    - sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc)
-//  - マーク描画を不透明な塗り潰しから半透明合成(AlphaBlend)に変更 20260810
-//    - 「ミニマップのような半透明のつまみにマークを重ねたい」という要望に対し、
-//      つまみを自前で再描画する(範囲判定・線の集合での再構築等)よりも簡単な
-//      方法として、GDIのAlphaBlend()で合成するだけにした。AlphaBlend()は
-//      呼び出し時点で画面に既に描かれている内容(つまみでもトラックでも)と
-//      自動的に合成してくれるため、つまみの位置を判定したり自前で再描画したり
-//      する必要が無い。CGraphics::AlphaBlendMyRect()を新設し、検索/ブックマーク/
-//      カーソル行のマーク描画をFillSolidMyRect()から差し替えた。不透明度は
-//      NKMM_SCRBAR_MARK_ALPHA(既定220/255)。
-//    - sakura_core\uiparts\CGraphics.h/.cpp (AlphaBlendMyRect),
-//      sakura_core\view\CEditView.cpp (DrawWorkCallback)
-//  - ホバー中のタイマー再描画でCPU使用率が跳ね上がる不具合を修正 20260810
-//    - 実機確認したところ、AlphaBlendMyRect呼び出しごとのGDIオブジェクト生成
-//      (CGraphicsインスタンス生存中は使い回すよう修正済み、下記)を疑ったが
-//      それだけでは解消せず、真因はScrBarMarker::Draw()内の
-//      SetScrollInfo(..., TRUE)だった。redraw=TRUEはネイティブスクロールバーの
-//      全面再描画(Explorerテーマのホバーアニメーション再トリガーを含む)を伴う
-//      重い呼び出しで、これを50ms間隔のホバータイマーから毎回呼んでいたため、
-//      再描画→テーマアニメーション再発火→マーク消失→再描画...という負荷の
-//      高いループになっていた。
-//    - Draw()に bUpdateScrollInfo引数(既定true)を追加し、falseならGetScrollInfo/
-//      SetScrollInfo(TRUE)/GetScrollBarInfoのブロックを丸ごとスキップするように
-//      変更(ホバー中は位置・範囲そのものは変化しないため不要)。ホバータイマー
-//      専用の軽量エントリポイント_SB_Marker_HoverRedraw()を新設し、
-//      WM_APP_SCRBAR_PAINTのメッセージキューも経由せず直接Draw(false)を呼ぶ。
-//    - あわせて、AlphaBlendMyRect()が呼び出しのたびにCreateCompatibleDC/
-//      CreateCompatibleBitmapしていたのを、CGraphicsインスタンスの生存期間中
-//      1x1メモリDC/ビットマップを使い回す方式に変更(こちらも副次的な負荷要因)。
-//    - sakura_core\view\CEditView.h/.cpp (ScrBarMarker::Draw,
-//      CEditView::_SB_Marker_HoverRedraw),
-//      sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc),
-//      sakura_core\uiparts\CGraphics.h/.cpp (AlphaBlendMyRect)
-//  - 上記の対策でもホバー中のCPU使用率が高いままだった問題への追加対策 20260810
-//    - SetScrollInfo(TRUE)を止めた後も改善しなかったため再調査。DrawWorkCallback()
-//      が呼ばれるたびに、色設定をRegKey(NKMM_REGKEY).get_s()でレジストリから
-//      都度読んでいた(1回のget_s()でRegOpenKeyEx+RegQueryValueEx x2+
-//      RegCloseKeyの計4回、3色で12回のレジストリアクセス)ことと、ホバー中は
-//      アニメーションが収まった後もWM_MOUSELEAVEまでタイマーを回し続けていた
-//      (アニメーションは実際には数百msで収まるはずが、ホバーしている間ずっと
-//      50ms間隔でDrawWorkCallback()のフルパイプライン=OpenMPスキャン・GetDC/
-//      ReleaseDC・スレッドプール投入等を再実行していた)ことの2点を是正。
-//    - 色キャッシュ(clrSearchCache_/clrMarkCache_/clrCursorCache_)を追加し、
-//      コンストラクタとBuildWorkCallback()(実際にドキュメントが変化した時だけ
-//      走る経路)でのみレジストリを読み直すように変更。DrawWorkCallback()は
-//      キャッシュを読むだけになった。
-//    - ホバー再描画タイマーに上限Tick数(NKMM_SB_HOVER_REDRAW_MAX_TICKS、既定
-//      8回=400ms)を設け、バーストが終わったら(ホバーし続けていても)自動的に
-//      KillTimer()するように変更。
-//    - sakura_core\view\CEditView.h/.cpp (ScrBarMarker::RefreshColorCache,
-//      clrSearchCache_/clrMarkCache_/clrCursorCache_),
-//      sakura_core\view\CEditView_Scroll.cpp (VScrollBarWndProc)
+//  - 水平スクロールバーのSetScrollInfoスキップ判定の更新漏れを修正。詳細は
+//    changelog/NKMM_FIX_EDITVIEW_SCRBAR_HWIDTH_SKIP.md参照 20260806
+//  - SB_Marker_BuildThreadとChangeCurRegexp()の競合クラッシュ修正、
+//    WM_APP_SCRBAR_PAINTのブロッキング待ち解消、通常編集との競合防止・
+//    ビルドの並列化(OpenMP)、DrawThreadの重複描画スキップ 20260809
+//  - キャッシュ作成/描画をスレッドプール(PTP_WORK)化。詳細はchangelog/
+//    NKMM_FIX_EDITVIEW_SCRBAR_THREADPOOL.md参照(bRebuildPending_/
+//    bRestartRequestDrawThread_のTOCTOUレース修正(mutex導入)も同ファイルに追記) 20260810
+//  - スクロールバー上のマーククリックでジャンプ、ホバー中の再描画、
+//    半透明合成(AlphaBlend)への変更、ホバー中のCPU使用率対策(2段階) 20260810
+//  - 上記2件の詳細はchangelog/NKMM_FIX_SCRBAR_MARKER_INTERACTION.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_EDITVIEW_SCRBAR
 	#define WM_APP_SCRBAR_PAINT    (WM_APP + 2501)  // スクロールバー描画メッセージ
@@ -632,66 +379,17 @@
 
 //------------------------------------------------------------------
 // 共通設定「強調キーワード」タブの、sakura.keywordset.csv対応強化 20260802
-//  - sakura.keywordset.csvから読み込んだかどうかのフラグを共有メモリに持ち、
-//    読み込んでいる間は「強調キーワード」タブの編集系コントロール(セット追加/
-//    削除/名称変更/キーワード追加・編集・削除・大文字小文字区別/インポート/
-//    エクスポート/整理)をDisableにする(次回起動時にcsvへ上書きされ編集内容が
-//    失われるため)
-//  - 「変更」ボタンと同じ位置に「更新」ボタンを重ねて配置し、csv側のキーワード
-//    ファイルからセット単位で再読み込みできるようにする(再読込可能な時だけ
-//    「変更」の代わりに表示)
-//  - csv読み込み時は「セット追加」「セット削除」ボタンも隠し、空いた場所に
-//    現在のセットが使用しているキーワードファイル名を表示する
-//  - キーワード一覧に、実際にエディタで使われる強調表示色・太字/下線・
-//    フォントをプレビュー表示する(色は常に「基本」に統一されるが、太字/下線/
-//    フォントはタイプ別の設定(m_bUseTypeDisp/m_bUseTypeFont)を反映する)
-//  - 上記プレビューで背景色が反映されない問題を修正 20260803
-//    (ビジュアルスタイル有効時、ListViewはNM_CUSTOMDRAWのclrTextBkを無視して
-//    テーマの背景を描画してしまう。文字色(clrText)は反映されるため気付きにくい。
-//    PreventVisualStyle()でこのリストビューのテーマを無効化し、背景色を反映させる)
-//  - sakura.keywordset.csvが参照するKeyword\*.kwdが見つからない場合、実装済み
-//    タイプ(cpp.kwd,html5.kwd,plsql.kwd,COBOL.kwd,java.kwd,corba.kwd,awk.kwd,
-//    batch.kwd,pascal.kwd,tex1.kwd,tex2.kwd,perl.kwd,perlvar.kwd,vb.kwd,vb2.kwd,
-//    rtf.kwd)についてはソースに組み込み済みのキーワード配列(g_ppszKeywordsXXX)
-//    で代用し、外部ファイル無しでも強調表示できるようにする 20260809
-//    (外部ファイルが存在する場合は従来通りそちらを優先する)
-//  - 上記フォールバックにCSS(css2.1.kwd),JavaScript(ecmascript_sys.kwd),
-//    JavaScript2(javascript.kwd),PHP(php_reserved.kwd),python(python_2.5.kwd),
-//    Ruby1-4(ruby1〜4.kwd),C#/C# content(csharp.kwd,csharp-context.kwd)も追加
-//    (元々ソース未組み込みだったため、Keyword\配下の該当ファイルから起こして
-//    埋め込んだ)。ただしPHP2(php.kwd)はPHP組み込み関数一覧で1万語超と大きく、
-//    全キーワードセット共有の格納領域(MAX_KEYWORDNUM=15000)を圧迫するため
-//    埋め込み対象外とし、従来通りKeyword\php.kwdが必要 20260809
-//    (ついでにCType_Php.cppのm_nKeyWordSetIdx[0]がPHP/PHP2の両方に使われて
-//    いてPHPが常に上書きされ強調に使われていなかったバグを[0]/[1]に修正)
-//  - sakura.keywordset.csvが存在せず旧来のInitKeyword()に落ちた場合、上記10タイプ
-//    (CSHARP/CSHARP2/CSS/JS/JS2/PHP/PYTHON/RUBY1-4。PHP2除く)はPopulateKeyword2が
-//    決め打ちで組み込み配列を使わず、外部ファイルが無いと強調キーワード0件になって
-//    いた(InitKeywordFromList経由のGetEmbeddedKeywordArr()フォールバックはこの経路を
-//    通らないため)。PopulateKeyword2->PopulateKeywordに変更し、BUILD_OPT_IMPKEYWORD
-//    時はこの経路でも組み込み配列を使うようにした。PHP2のみ組み込み対象外のため
-//    PopulateKeyword2のまま 20260809
-//  - sakura_core\env\DLLSHAREDATA.h: SShare_Flags::m_bKeywordSetLoadedFromCsv
-//  - sakura_core\env\CShareData_IO.cpp: 上記フラグの設定
-//  - sakura_core\CKeyWordSetMgr.h,cpp: ClearKeyWord/SetKeyWordFile/GetKeyWordFile
-//  - sakura_core\types\CType.cpp: InitKeywordFromListでのキーワードファイル名記録、
-//    GetEmbeddedKeywordArr()による組み込みキーワードへのフォールバック 20260809
-//  - sakura_core\types\CType_Css.cpp,CType_JavaScript.cpp,CType_Php.cpp,
-//    CType_Python.cpp,CType_Ruby.cpp,CType_Csharp.cpp: 上記の組み込み配列追加
-//  - 組み込みキーワード配列の中身はsakura_keyword\*.kwdから
-//    tools\GenerateKeywordInc.ps1でsakura_core\types\generated\*.incへ生成する
-//    (generated\*.incはgit管理外のため、フレッシュcloneでは初回ビルド前に実行が必要)
-//  - sakura.keywordset.csvが無い状態で、全キーワードセットが組み込みキーワードの
-//    ままだった場合、sakura.ini保存時に[KeyWords]セクション自体を書かないように
-//    した(sakura_core\env\CShareData_IO.cpp: ShareData_IO_KeyWords())。書いてしまうと
-//    次回起動時からcsvが無い限りそのini内容が優先され続け、ソース更新後の組み込み
-//    キーワードが反映されなくなるため。1つでもユーザーがカスタマイズした(組み込み
-//    でない)セットがあれば、位置(インデックス)整合性を保つため従来通り全セットを
-//    書く(部分的にスキップすると、他タイプのm_nKeyWordSetIdxとの対応がずれるため) 20260809
+//  - sakura.keywordset.csvから読み込み中は編集系コントロールをDisableにし、
+//    「更新」ボタンでセット単位の再読込・キーワードのプレビュー表示に対応
+//  - Keyword\*.kwdが見つからない場合、実装済み22タイプ(PHP2除く)はソースに
+//    組み込み済みのキーワード配列(g_ppszKeywordsXXX)で代用するフォールバックを追加
+//    (外部ファイルがあれば従来通りそちらを優先) 20260809
+//  - 見つけて直した不具合: CType_Php.cppのキーワードセット割り当てミス(PHP/PHP2が
+//    同じ[0]に代入されPHPが上書きされていた)、csv不在時の旧InitKeyword()経路で
+//    10タイプが組み込みフォールバックを使わず0件になっていた問題、等
+//  - sakura.keywordset.csvが無く全セット組み込みのままの場合はini保存時に
+//    [KeyWords]セクション自体を書かない(ソース更新後の反映が止まるのを防ぐ)
 //  - 詳細はchangelog/NKMM_FIX_KEYWORDSET_UI.md参照
-//  - sakura_core\prop\CPropCommon.h,CPropComKeyword.cpp: ダイアログ側の実装
-//  - sakura_core\sakura_rc.rc,sakura_lang_rc.rc,sakura_rc.h,sakura.hh:
-//    IDC_BUTTON_KEYWORD_RELOAD, IDC_STATIC_KEYWORD_FILE
 //------------------------------------------------------------------
 #if defined(NKMM_FIX_PROFILES) && NKMM_USE_KEYWORDSET_CSV
 	#define NKMM_FIX_KEYWORDSET_UI
@@ -794,46 +492,11 @@
 //      http://eternalwindows.jp/winbase/menu/menu10.html
 //    起動時にアイコンの数だけHBITMAPを生成する
 //      \sakura_core\uiparts\CImageListMgr.cpp
-//  - アイコン付きメニューだけオーナードローで、アイコンなしメニューは通常の
-//    テーマメニューという見た目の不一致を修正 20260810
-//    (「メニューにアイコンを表示」をONにすると、Vista以降でもオーナードロー
-//    になり見た目がXP風になる問題が2010.03.29のコメントに既知の課題として
-//    残っていた。CMenuDrawer::MyAppendMenuの
-//    `if( m_bMenuIcon || !IsWinVista_or_later() ) nFlagAdd = MF_OWNERDRAW;`
-//    が原因で、Vista以降でもm_bMenuIcon==trueなら常にオーナードローされていた)
-//    Vista以降はMF_OWNERDRAWをやめ、MIIM_BITMAP/hbmpItemに32bppアルファ付き
-//    ビットマップ(透過色をアルファ0に変換したもの)を設定することで、通常の
-//    テーマメニューのままアイコンを表示できるようにした。チェック中の項目は
-//    テーマが自動でハイライト枠を描画する。オーナードローはVista未満のみ
-//    引き続き使用する(アクセスキー分の詰め処理のため)。
-//    - sakura_core\uiparts\CImageListMgr.h,cpp: GetAlphaBitmap()を追加。
-//      アイコン番号ごとに32bppアルファ付きビットマップを生成してキャッシュする
-//      (破棄はデストラクタ、またはResetExtend()での明示リセット時)
-//    - sakura_core\uiparts\CMenuDrawer.cpp: MyAppendMenu()で、Vista以降かつ
-//      アイコンありの項目にMIIM_BITMAPを設定するよう変更
-//  - サブメニュー(「折り返し方法」「入力改行コード指定」等)だけインデントが
-//    揃わずアイコン列が無い状態で表示される不具合を修正 20260810
-//    (サブメニュー項目はAppendMenu系の慣習で子HMENUの値がnFuncId引数に渡される
-//    ため、CMenuDrawer::MyAppendMenu内では「nFuncId!=0」の通常項目の分岐に
-//    入る。しかしGetIconIdByFuncId()にHMENUの値を渡しても対応する機能アイコンは
-//    見つからずbitmapIdx==-1のままになるため、実アイコンがない項目としてMIIM_BITMAP
-//    を一切設定していなかった。テーマメニューは「兄弟項目にMIIM_BITMAPがあれば
-//    無条件に自動整列する」わけではなく、自分自身がMIIM_BITMAPを持たない項目は
-//    インデントされないと判明。実アイコンの有無によらず、アイコン付きメニューが
-//    有効な間はサブメニュー項目にも必ずMIIM_BITMAPを設定するよう修正し、実アイコンが
-//    無い場合はCImageListMgr::GetBlankBitmap()(全画素アルファ0の16x16プレース
-//    ホルダ、1個だけ生成してキャッシュ)を代わりに設定して兄弟項目とインデントを
-//    揃えるようにした。セパレータ(MF_SEPARATOR)はテーマメニューが全幅で描画する
-//    ため対象外)
-//  - 上記2件の修正後、メニューを開くと項目のテキストごと何も表示されなくなる
-//    不具合を修正 20260810
-//    (MIIM_BITMAPを追加した際、mii.fMaskに元々あった`MIIM_TYPE`をそのまま
-//    残していたのが原因。MIIM_TYPEはMIIM_BITMAP/MIIM_FTYPE/MIIM_STRINGを
-//    束ねた旧式の複合フラグで、MSDNにも「MIIM_BITMAPと同時に指定すると
-//    動作が不定になる」と明記されている。実機でも項目が空欄になる形で
-//    再現した。MIIM_TYPEを、MIIM_BITMAPと共存できる現代的な代替
-//    (MIIM_FTYPE+MIIM_STRING)に置き換えて修正。
-//    - sakura_core\uiparts\CMenuDrawer.cpp: MyAppendMenu()のmii.fMask
+//  - アイコン付きメニューだけオーナードローで見た目がXP風になる不一致を解消し、
+//    Vista以降はMIIM_BITMAP+32bppアルファビットマップでテーマメニューのまま
+//    アイコン表示するよう変更。付随してサブメニューのインデント不揃い、
+//    MIIM_TYPE併用によるメニュー項目消失の2件も修正 20260810
+//  - 詳細はchangelog/NKMM_FIX_MENUICON.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_MENUICON
 
@@ -936,93 +599,22 @@
 //    - インクリメンタル検索をする 20170621
 //    - 「検索ダイアログを自動的に閉じる」を排除 20170711
 //    - 「見つからないときにメッセージを表示」を排除 20170711
-//  - インクリメンタル検索をデバウンス化 20260809
-//    - 検索文字列コンボボックスの変更(CBN_EDITCHANGE)のたびに、UIスレッド上で
-//      同期的にF_SEARCH_NEXT(文書全体の線形スキャン)を実行していたため、
-//      数百万行規模のファイルではキー入力のたびにエディタ全体がフリーズして
-//      いた。1文字打つごとに検索文字列自体が変わるため、既存のスクロール
-//      バーマーカーキャッシュ(検索結果の行キャッシュ)は効かない
-//      (パターンが変わるたびに無効化されるため)。実際の検索実行を
-//      150msデバウンスし、連続入力中は走らせず、入力が止まってから
-//      一度だけ実行するように変更。実機確認済み(500万行ファイルで再現)
-//    - 20260809 このデバウンス用タイマーIDに1を使ったところ、同じCDlgFind
-//      ウィンドウで既に使われていたID_TIMER_FIND_SLIDEIN(スライドイン
-//      アニメーション用、これも1)と衝突していた。SetTimer()は同じHWND+
-//      同じIDだと新規タイマー作成ではなく既存タイマーの間隔を上書きする
-//      ため、ダイアログ表示中に入力するとスライドインアニメーションが
-//      デバウンスタイマーに乗っ取られ、アニメーションが完了しないまま
-//      ダイアログの位置が少しずれて止まる不具合になっていた(実機確認済み:
-//      「入力すると検索ダイアログが少し下にずれる」)。デバウンス用IDを
-//      2に変更して衝突を解消。
-//  - sakura_core\dlg\CDlgFind.cpp, CDlgFind.h
+//  - インクリメンタル検索をデバウンス化(150ms、数百万行ファイルでの入力毎の
+//    フリーズを解消)。デバウンス用タイマーIDがスライドインアニメーション用と
+//    衝突していた問題もあわせて修正 20260809
+//  - 詳細はchangelog/NKMM_FIX_FIND_DIALOG_DEBOUNCE.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_FIND_DIALOG
 
 //------------------------------------------------------------------
 // 次を検索(F3・検索ダイアログのインクリメンタル検索)の非同期化 20260809
-//  - デバウンス(NKMM_FIX_FIND_DIALOG側)だけでは、入力が止まるたびに走る
-//    「文書全体を線形走査して見つからないと判定する」1回分(数百万行規模の
-//    ファイルで実測150〜200ms)がUIスレッドをブロックし続けていた。実機で
-//    500万行ファイルにて確認済み。
-//  - CSearchAgent::SearchWord()の走査ループに中断フラグを追加し(同期呼び出しは
-//    nullptrを渡せば従来通り)、Command_SEARCH_NEXT()の「検索開始位置の調整
-//    (選択中テキストがある場合の特殊処理)」を伴わない単純なケース
-//    (選択なし・pcSelectLogic==NULL・すべて置換実行中でない・正規表現でない・
-//    文書が一定行数を超える)に限り、CEditView::AsyncFindNextでバックグラウンド
-//    スレッドに検索を回し、結果が出たらWM_APP_ASYNC_SEARCH_DONEで戻して
-//    カーソル移動などのUI反映を行う。上記以外(選択中の検索開始・すべて置換・
-//    正規表現・小さいファイル)は既存の同期パスをそのまま使う(挙動変更なし)。
-//  - 文書変更(タイプ入力/貼り付け/削除/Undo/Redo/すべて置換)との競合防止のため、
-//    唯一に近い合流点であるCEditView::ReplaceData_CEditView3の先頭で、実行中の
-//    検索スレッドを中断・待機してから編集を進める(ScrBarMarkerのWaitForBuild
-//    (true)と同じ考え方)。検索スレッドが参照する検索パターン文字列・オプションは
-//    共有メンバを直接参照せず、リクエスト時に独立コピーを作って渡す
-//    (CSearchStringPattern::SetPattern()はポインタを保持するだけでコピーしない
-//    ため、共有バッファを渡すと次のキー入力で解放/書き換えされうる)。
-//  - sakura_core\CSearchAgent.h,cpp / view\CEditView.h,cpp / cmd\CViewCommander.h,
-//    CViewCommander_Search.cpp / view\CEditView_Command_New.cpp
-//  - 20260810 既知の制約(修正保留・要検討): 新旧2.3.2.0の検索速度をマクロ
-//    (WSH/JScript、bench_search.js)で比較しようとしたところ、5,174,307行/
-//    500MBファイルでEditor.SearchNext()呼び出し直後にEditor.GetSelectLineFrom()
-//    を読んでも常に0(未検出)が返ることが判明。原因: 上記の非同期化は
-//    F_SEARCH_NEXT自体(F3キー・マクロ問わず同じCommand_SEARCH_NEXT経路)に
-//    掛かっているため、マクロから呼んでも対象がAsyncFindNext::Requestに
-//    回されてすぐreturnする。マクロのJScript実行はUIスレッド上で完全に
-//    同期的に進み、文の合間でメッセージポンプが回らない
-//    (CWSH.cpp内のPeekMessage/DispatchMessageは「マクロ強制終了確認
-//    ダイアログ」監視用の別スレッドにしかなく、通常のマクロ実行では出番が
-//    ない)ため、バックグラウンドスレッド完了時に飛ぶ
-//    WM_APP_ASYNC_SEARCH_DONEがマクロ実行中には一切ディスパッチされず、
-//    選択範囲(カーソル移動)への反映がマクロから見えない。
-//    影響: 20万行(NKMM_ASYNC_SEARCH_NEXT_LINE_THRESHOLD)を超える文書に対して
-//    SearchNext()を呼び、直後に選択位置/ヒット文字列を読むマクロは、この
-//    フォークでは検索結果を取得できなくなる(手元のF3操作は非同期完了後に
-//    正しく反映されるため無症状)。対応する場合はWM_APP_ASYNC_SEARCH_DONE
-//    受信までブロックする同期版マクロAPI(例: Editor.WaitForSearchNext()相当)
-//    の追加を要検討。
-//  - 20260810 上記調査中、真の検索完了時間(バックグラウンドスレッド内の
-//    SearchWord()実測)を計測するため、AsyncFindNextThreadProc内に
-//    QueryPerformanceCounterで計測しD:\github.niki\sakura\
-//    bench_async_core_times.csvへ書き出す一時的な計測コードを追加して測定した
-//    (測定後に削除済み)。初回の結果: 公式2.3.2.0(x86)がマクロ計測(同期)で
-//    230ms、フォーク(x64/x86)が実測ネット検索時間で約110〜165ms、「検索
-//    アルゴリズム自体が1.5〜2倍速くなった」と結論しかけたが、
-//    NKMM_USE_MIMALLOC/NKMM_USE_MIMALLOC_OVERRIDEを一時的に無効化して
-//    同条件で再測定したところ約256ms(x64, n=10)まで悪化し、公式ビルドと
-//    同等かむしろ遅い水準に戻った。結論を訂正: CSearchAgent::SearchWord()の
-//    走査ループ自体(SearchString/CDocLine::GetDocLineStrWithEOL/GetNextLine)
-//    は検索中に一切ヒープ確保しておらず(スキップテーブルはRequest()側で
-//    スレッド起動前に1回だけ構築済み)、フォークと公式とで検索コード自体は
-//    実質同一。したがって観測された速度差の大部分は「非同期化」でも
-//    「アルゴリズム改善」でもなく、5,174,307行分のCDocLine/文字列バッファを
-//    読み込み時にどのアロケータ(mimalloc vs 既定のCRTヒープ)が確保したかに
-//    よるメモリレイアウト(キャッシュ局所性)の差だった可能性が高い。
-//    非同期化そのものの効果は「呼び出し元(UI/マクロ)を即座に解放する」
-//    ことに限られ、走査自体の速さにはほぼ寄与していない。なお公式2.3.2.0を
-//    同一ファイルで2回計測(230ms→235ms)しOSファイルキャッシュのウォーム
-//    アップでは説明できないことは確認済み(Editor.GoFileTop()以降だけを
-//    計測しており、その時点でファイルは既にドキュメント構造へ読み込み
-//    完了済みのため、計測区間はディスクI/Oを経由しない)。
+//  - デバウンス(NKMM_FIX_FIND_DIALOG側)だけでは防げない、数百万行ファイルで
+//    1回の検索実行(150〜200ms)がUIスレッドをブロックする問題を、条件を
+//    満たす場合のみバックグラウンドスレッドへ検索を回すことで解消
+//  - 既知の制約: マクロからSearchNext()直後に選択位置を読むと非同期化前提が
+//    崩れて常に未検出(0)が返る(要対応検討)。速度比較の再測定では、体感差の
+//    大部分は非同期化自体でなくmimallocのメモリレイアウト差と判明 20260810
+//  - 詳細はchangelog/NKMM_FIX_ASYNC_SEARCH_NEXT.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_ASYNC_SEARCH_NEXT
 	#define WM_APP_ASYNC_SEARCH_DONE (WM_APP + 2503)  // 非同期検索完了メッセージ
@@ -1033,164 +625,17 @@
 //------------------------------------------------------------------
 // アウトライン解析
 //  - 正規表現を使用した場合はマッチした文字列のみリストに登録 20170608
-//  - 大規模ファイル(クラス数の多いファイル)でのフリーズ対策 20260811
-//    - Editor.Outline(1)(SHOW_RELOAD)はCommand_FUNCLISTからMakeFuncList_C→
-//      CDlgFuncList::SetData→SetTreeJavaまで完全にUIスレッド同期実行。
-//      MakeFuncList_C自体の解析コストは行数が多いだけなら軽い(実測: 35万行/
-//      関数20個のファイルで34〜106ms)。問題は関数を「クラス名::メソッド」で
-//      分類するCDlgFuncList::SetTreeJavaのツリー構築側。
-//    - 原因: 既存のツリー兄弟ノードをTreeView_GetNextSibling+
-//      TreeView_GetItemTextVector(いずれも実SendMessage)で逐次比較して
-//      クラスノードを探していたため、クラス数に比例して1関数あたりの
-//      挿入コストが増えていた(実測、bench_outline.jsマクロ: 同じ関数数でも
-//      500クラスに分散させると2,500関数フラットの場合の約5〜6倍
-//      (0.15〜0.18秒→0.6〜1.0秒)、2,000クラス/10,000関数では約20倍
-//      (0.45〜0.83秒→3.9〜5.7秒))。(親ノード,クラス名)→ノードのマップ
-//      (mapClassNode)に置き換えてO(1)化。表示上のラベル文字列ではなく生の
-//      クラス名だけをキーにしているが、マップへの登録を新規作成時のみ行う
-//      ことで「同名の既存ノードが複数あれば最初の項目を親にする」という
-//      既存仕様は保持。修正後、2,000クラス/10,000関数ケースは3.9〜5.7秒→
-//      1.2〜3.0秒に改善(実測)。
-//    - あわせてTreeView_InsertItemのhInsertAfterを常にTVI_LASTにしていた
-//      箇所も、親ノード→最後に追加した子ノードのマップ(mapLastChild)を使う
-//      形に統一。
-//    - しかし実測の結果、分類先クラスのないフラットな関数のみのファイル
-//      (例: 50,000関数/35万行)はこの修正後も1回目12〜15秒、2回目以降20〜27秒
-//      のフリーズが残ることが判明(fine-grained計測で、TreeView_Expandでは
-//      なく本体の挿入ループ自体が支配的と判明)。TVI_LASTを明示ハンドルに
-//      置き換えても改善しなかったことから、真因は探索コストではなくWin32
-//      TreeViewコントロール自体が同一親への数万件の子挿入を仮想化なしに
-//      処理する構造的な限界と判断(LVS_OWNERDATAに相当する仮想ツリーモードは
-//      TreeViewに存在しない)。
-//    - 対応: この「クラス階層がほぼ無いのに関数数だけ多いファイル」
-//      (ShouldUseVirtualFlatList()の判定: 総関数数3,000以上かつ
-//      「クラス名::メソッド」形式の割合30%以下)に限り、SetTreeJava(TreeView)
-//      でなく仮想リスト(SetListFlatVirtual)で表示するようにした。行のテキストは
-//      LVN_GETDISPINFOで表示時に都度m_pcFuncInfoArrから供給するため、
-//      ListView_InsertItemを関数の数だけ呼ばない。列ヘッダクリックでの並び替えは
-//      ListView_SortItems(仮想リスト非対応)でなく表示順序マップ
-//      (m_vecVirtualListOrder)自体をstd::sortする形に変更(比較関数は既存の
-//      CompareFunc_Asc/Descをそのまま再利用)。選択項目の取得(GetData())も
-//      lParamでなくこのマップ経由に変更。実測(bench_outline.jsマクロ、
-//      50,000関数/35万行): 12〜27秒→92〜196ms。
-//    - 20260811 仮想リスト用に別コントロールIDC_LIST_FL_VIRTUALを新設
-//      (sakura_rc.rc/.h)。LVS_OWNERDATAは生成後に動的付け外しできない
-//      (comctl32の既知の制約)ため、既存IDC_LIST_FLに対し実行時に
-//      SetWindowLongPtrでスタイルを立てる初版の実装では行が1件も描画され
-//      なかった(実機で発覚)。IDC_LIST_FLと全く同じ位置・サイズで
-//      LVS_OWNERDATAを最初から持つ専用コントロールを重ねて配置し、
-//      表示/非表示のみ切り替える方式に修正。GetActiveListHwnd()で
-//      どちらが有効かを一元判定し、OnInitDialogの列作成・OnNotify・GetData・
-//      SyncColor・フォント設定・ドッキング時のコントロール制御など、影響する
-//      全箇所をこれ経由に統一した。sakura_rc.rc(Shift-JIS/CP932)を素朴な
-//      編集で保存しUTF-8化されファイル全体の日本語文字列が破損する事故が
-//      あり、PowerShellで[System.Text.Encoding]::GetEncoding(932)を明示して
-//      バイト単位で復旧・再編集した(このファイルの編集時は要注意)。
-//    - 20260811 クラスが多いファイル(2,000クラス/10,000関数)は
-//      ハッシュマップ化(修正1)だけでは2回目以降の開閉が1.0秒→2.6〜3.0秒へ
-//      悪化する問題が別途見つかった。原因はTreeView_DeleteAllItemsが
-//      「前回解析結果を消す」際、ノード数に比例して遅い(約12,000ノードで
-//      1.3秒)ことで、TreeView_InsertItemと対称の問題。DestroyWindowしての
-//      再生成も試したが同じ内部コスト(TVN_DELETEITEM通知の全ノード分発行)を
-//      通るため悪化するだけで無効だった。最初は「総関数数8,000以上は無条件で
-//      仮想リストにフォールバックする」対応で凌いだが、ツリー表示(折りたたみ/
-//      展開)というUXを犠牲にするトレードオフだったため、ツリー表示を維持した
-//      まま高速化する方式に差し替えた: 大量ノードが残っているTreeViewを都度
-//      その場でクリアするのではなく、新しいTreeViewコントロールを動的生成して
-//      IDC_TREE_FLの座(ダイアログアイテムID、GWLP_ID)を明け渡し、古い方は
-//      スクラッチID(IDC_TREE_FL_CLEANUP_SCRATCH)に退避した上で後始末を
-//      WM_APP_OUTLINE_CLEANUP_TREEにより非同期(ダイアログが表示され応答可能に
-//      なった後)に回す。削除コスト自体は変わらない(TreeView_DeleteAllItems/
-//      DestroyWindowどちらも同じ内部コスト)が、ユーザーが新しい内容を見るまでの
-//      体感速度はそのコストの影響を受けなくなる。上記「総関数数8,000以上は
-//      無条件で仮想リスト」のしきい値は撤去し、元の「クラス階層がほぼ無い場合
-//      のみ」判定に戻した。
-//    - 20260811 マクロで3連続Editor.Outline(1)呼び出しを計測する既存の
-//      bench_outline.jsでは、この非同期化の効果は測れない(スクリプトの各文の
-//      間でWindowsメッセージポンプが回らないため、PostMessageで積んだ
-//      後始末が一切処理されずキューに残ったまま次のOutline()呼び出しに
-//      突入する。Editor.Sleep()もWScript.Sleep()も同様に不可、いずれも
-//      メッセージポンプを回さない/実装されていない)。実際に非同期後始末が
-//      機能するかは、ExitAll()を呼ばないマクロでOutline()を3回呼んだ直後に
-//      スクリプトを終了させ、アプリが通常のアイドルループに戻ってから
-//      一時的なトレースログ(計測後に削除済み)でposted/processedの
-//      タイムスタンプを確認して検証した(マクロ終了後、数秒以内に2件とも
-//      正しく処理されることを確認)。
-//    - 20260811 実ファイル(Release64\dummy_novel_50mb.txt、50MB/418,770行の
-//      テキスト、55,836トピック)で検証したところ、上記のダブルバッファ
-//      リングを実装したにもかかわらず2回目以降が約29秒に悪化する不具合が
-//      発覚。原因は2つ: (1) `m_nTreeItemCount`をSetTreeJavaでしか更新して
-//      おらず、プレーンテキスト/HTML/TeX/ルールファイル等が使うSetTree()
-//      では常に0のままでダブルバッファリングの判定自体が発火しなかった
-//      (SetTree()の末尾にも同様の更新を追加)。(2) それを直しただけでは
-//      むしろ悪化(29秒→29,931ms)し、新しくCreateWindowExで生成した
-//      TreeViewにWM_SETREDRAW(FALSE)を適用し忘れていたことが原因と判明
-//      (SetData冒頭のWM_SETREDRAWは古い(まもなく破棄される)方のハンドルに
-//      しか効いておらず、新しいウィンドウには何の抑制もかかっていなかった)。
-//      両方直して29秒→1秒前後に改善(実測)。教訓: SetTreeJavaだけを対象に
-//      検証していたため、構造的によく似た別関数(SetTree)への横展開漏れに
-//      気づけなかった。合成テストファイルは常にSetTreeJava経路(C/C++)を
-//      通るため、ユーザーが指定した実ファイルでのテストがなければ発見
-//      できなかった不具合。
-//    - sakura_core\outline\CDlgFuncList.cpp (SetTreeJava, SetTree, SetData,
-//      SetListFlatVirtual, ShouldUseVirtualFlatList, GetActiveListHwnd,
-//      SortListView, GetData, OnNotify[LVN_GETDISPINFO],
-//      DispatchEvent[WM_APP_OUTLINE_CLEANUP_TREE]),
-//      sakura_core\sakura_rc.rc/.h (IDC_LIST_FL_VIRTUAL, IDC_TREE_FL_CLEANUP_SCRATCH)
-//    - 20260811 なお、巨大ファイル(10万行超)の解析中にキャンセル可能な進捗
-//      ダイアログ(CDlgCancel、Grep等と同じ方式)を出す対応も一度実装し実機で
-//      動作確認まで行ったが、C/C++型(MakeFuncList_C)にしか適用しておらず、
-//      他の言語別解析関数(MakeFuncList_Java/Perl/pythonなど)に広げるには
-//      型ごとに同じ仕組みを個別に組み込む必要があると判断し、その方針は
-//      見送って当該対応は削除した。
-//    - 20260811 「解析ダイアログを閉じた後にビジー状態になる/2回目以降の
-//      開閉が遅い」報告を受け、CDlgFuncList::OnDestroy()を修正。ダイアログ
-//      破棄時、大量ノード(m_nTreeItemCount > 500)を持つTreeViewが子ウィンドウ
-//      として通常のWM_DESTROYカスケードに巻き込まれると、修正2で対策した
-//      TreeView_DeleteAllItems相当のコスト(ノード数に比例)がダイアログを
-//      閉じる操作そのものをブロックする。SetParent(hwnd, NULL)でTreeViewを
-//      ダイアログから切り離し、SetWindowLongPtr(GWLP_WNDPROC,...)で最小限の
-//      自己破棄用ウィンドウプロシージャ(OutlineOrphanTreeWndProc)に差し替えた
-//      上でPostMessage(WM_APP_OUTLINE_CLEANUP_TREE)により後始末を非同期化。
-//      これによりダイアログ自体はTreeViewの中身を待たず即座に閉じる。
-//    - 20260811 上記と同時に、「アウトライン解析ダイアログを開いたまま
-//      F11(トグルで閉じる)を押しても閉じない/再解析扱いになる」不具合を
-//      発見。原因はCViewCommander::Command_FUNCLIST()で、SHOW_NORMAL/
-//      SHOW_TOGGLEの分岐がnOutlineTypeとダイアログ側の保持値m_nOutlineTypeを
-//      CheckListType()で比較するが、この時点のnOutlineTypeは
-//      m_pTypeData->m_eDefaultOutlineから取得した未解決の値(C/C++自動判別の
-//      OUTLINE_C_CPP)のままである一方、m_nOutlineTypeはMakeFuncList_C内で
-//      ファイル拡張子から解決済みの具体的な値(OUTLINE_C/OUTLINE_CPP)を
-//      保持しているため、型が同じでも常に不一致と判定され「型が違うので
-//      再解析」経路に落ちて閉じる操作が効かなくなっていた。この解決ロジックを
-//      CDocOutline::ResolveOutlineType_C_CPP()として切り出し、
-//      Command_FUNCLIST冒頭(OUTLINE_DEFAULT解決の直後、SHOW_NORMAL/
-//      SHOW_TOGGLE判定の直前)でも同じ解決を行うよう修正。実機
-//      (classes_2000x5.cpp、dummy_novel_50mb.txt)でOutline(1)→Outline(2)の
-//      トグル閉じが機能することを確認、あわせてOutline(0)(SHOW_NORMAL)の
-//      同一種別での再アクティブ化、および.c/.cppでの拡張子別解決
-//      (OUTLINE_C=0 / OUTLINE_CPP=16)が意図通り異なる値になることも
-//      別途確認した。
-//      sakura_core\doc\CDocOutline.h, sakura_core\types\CType_Cpp.cpp
-//      (ResolveOutlineType_C_CPP), sakura_core\cmd\CViewCommander_Outline.cpp
-//    - 20260811 SetTreeJava()のクラスノード探索をハッシュマップ化した際
-//      (修正1)、置き換え後のO(1)実装だけを書いて元のO(n)実装(TreeView_GetNextSibling
-//      +TreeView_GetItemTextVectorでの逐次比較)を削除しており、他の全ての対応が
-//      守っている「#ifdef NKMM_FIX_OUTLINE / #else <元の実装> / #endif」という
-//      このファイル内の規約から外れていた(NKMM_FIX_OUTLINEを未定義にすると
-//      mapClassNode/InsertChildFastが未定義でコンパイルエラーになり、フラグで
-//      元の動作へ戻せなかった)。SetTreeJava内の3箇所(クラスノード検索/生成、
-//      グローバルノード生成、メソッドノード生成)をそれぞれ#else節で元のTVI_LAST
-//      挿入+TreeView_GetNextSibling探索に戻せる形に修正。NKMM_FIX_OUTLINEを
-//      一時的に未定義にしてソリューション全体を再ビルドし、エラーなく
-//      コンパイルできることを確認した上でフラグを戻した。
-//    - 20260811 既知の限界(未対応): SetTree()系種別(プレーンテキスト/HTML/
-//      TeX/WZTXT等)はフラットで極端に件数が多い場合に未対応。実ファイル
-//      (500MB/約69万トピック、ほぼ全て同一深さ)で10分以上・CPU時間900秒超
-//      応答なしを確認。原因はSortTree()→TreeView_SortChildrenCB()が
-//      TVI_ROOT直下69万件を一括ソートする箇所と推測(SetTreeJavaのフラット
-//      版で使ったSetListFlatVirtualと同種の仮想リスト化で対応可能と思われるが、
-//      対象種別が広いため今回は見送り)。
+//  - 大規模ファイル(クラス数の多いファイル・フラットな巨大関数リスト)での
+//    アウトライン解析フリーズ対策 20260811
+//    - クラスノード探索をO(n)→O(1)化(ハッシュマップ)。分類先クラスの
+//      無いフラットな関数のみのファイルはTreeViewでなく仮想リスト
+//      (LVS_OWNERDATA)で表示(50,000関数/35万行で12〜27秒→92〜196ms)
+//    - 大量ノードを持つ2回目以降の開閉・ダイアログを閉じる際の後始末を
+//      非同期化(ダブルバッファリング、WM_APP_OUTLINE_CLEANUP_TREE)
+//    - OUTLINE_C_CPP型の解決漏れでF11トグルが効かない不具合を修正
+//      (CDocOutline::ResolveOutlineType_C_CPP()として解決ロジックを共通化)
+//    - 既知の限界: SetTree()系種別(プレーンテキスト/HTML/TeX等)はフラットで
+//      極端に件数が多い場合(500MB/約69万トピック等)は未対応
 //    - 詳細はchangelog/NKMM_FIX_OUTLINE.md参照(調査経緯・全計測値・既知の制限)
 //------------------------------------------------------------------
 #define NKMM_FIX_OUTLINE
@@ -1531,47 +976,9 @@
 //  - sakura_core\view\CGlyphAtlasCache.h,cpp
 //  - 20260802: セル幅・高さ不一致によるBitBlt塗り残しバグ修正/転送の2フェーズ化
 //    /ASCII文字まとめ焼き(WarmUpAscii)/設定ON/OFF反映漏れバグ修正、を追加
-//  - 20260809: 描画待ちキュー(m_vPendingBlits)がシングルトン全体で共有されて
-//    おり、複数の独立した描画パス(通常のOnPaint、対括弧強調表示の即時描画)が
-//    互いのキューを誤って一緒にFlushしてしまいうる設計上の不具合を修正
-//    - 通常のOnPaint中に対括弧の即時描画(DrawBracketPair、自前のGetDCで
-//      FlushQueueする)が挟まると、片方のFlushQueue()がもう片方の積み残しごと
-//      BitBltしてしまい、色付き矩形/線が誤った位置に描画される可能性があった。
-//      FlushQueue()にキュー位置の「印」(BeginQueue()で取得)を渡すよう変更し、
-//      各描画パスは自分がBeginQueue()した位置から末尾までしか処理・削除しない
-//      ようにした(パスが入れ子になっても互いのキューを侵さない)。
-//      これ自体は正しい修正だが、後述の「タブ切り替えで線が出る」不具合の
-//      直接の原因ではなかった(下記参照。修正後も再現した)。
-//    - sakura_core\view\CGlyphAtlasCache.h,cpp (BeginQueue追加、FlushQueueに
-//      markBegin引数追加), CEditView_Paint.cpp, CEditView_Paint_Bracket.cpp
-//      (呼び出し側でBeginQueue()を捕捉してFlushQueue()に渡すよう変更)
-//  - 「行の間隔」使用時にタブ切り替えで線状の描画異常が出る不具合を修正 20260809
-//    - タイプ別設定「行の間隔」(GetLineMargin())が非0のとき、テキスト領域に
-//      細い横線状の描画異常(色付きの矩形)が出ることがあった。タブ切り替え
-//      (フォーカス変更)だけで再現し、行の間隔=0なら再現しなかった。実機で
-//      再現・修正確認済み。
-//    - 根本原因: CTextDrawer::DispText()で、クリップ矩形rcClipの上端は
-//      マージンを含まない`y`だが、グリフキャッシュへ渡す描画先Y
-//      (旧nDrawY = GetLineMargin() + y + marginy)はマージン込みだった。
-//      一方セルの高さ(nCellHeightPx = GetHankakuDy() = 文字縦幅+行間隔)は
-//      マージン込みのまま。そのため、キャッシュ経由のBitBltは本来の行の
-//      上端(マージン部分)を塗り残したまま、次の行のマージン部分にまで
-//      はみ出して描画していた(非キャッシュのExtTextOutパスはrcClip全体を
-//      ETO_OPAQUEで塗るため問題が起きない)。
-//      調査時、「セルの余白がETO_OPAQUEで塗られていない」「AllocCell()の
-//      シェルフ再利用で高さが不一致」等の仮説も検証したが、いずれも実測で
-//      否定された(セル高さ・シェルフ割り当て・行間隔はすべて一致していた)。
-//      実際の原因は「セルの中身」ではなく「BitBlt先の基準点とセル内での
-//      グリフ描画位置がズレていたこと」だった。
-//    - DrawOrCache()/WarmUpAscii()に新しい引数nGlyphYOffsetを追加。呼び出し側
-//      (CTextDrawer.cpp)はnDestYとして必ずrcClip.top(マージン抜き)を渡し、
-//      マージン分のずらしはnGlyphYOffset(=旧nDrawY - rcClip.top)として
-//      別に渡す。セルの不透明フィル(ETO_OPAQUE)はセル全体(rcCellDest)に
-//      対して行い、実際のグリフ描画位置だけをnGlyphYOffset分ずらすことで、
-//      非キャッシュパスと同じ見た目(マージン部分は背景色、グリフはマージン
-//      分下にずれた位置)を再現する。
-//    - sakura_core\view\CGlyphAtlasCache.h,cpp (DrawOrCache/WarmUpAsciiに
-//      nGlyphYOffset引数追加), CTextDrawer.cpp (呼び出し側)
+//  - 20260809: 複数描画パス間で描画待ちキューが誤って一緒にFlushされる不具合、
+//    および「行の間隔」使用時にタブ切り替えで線状の描画異常が出る不具合
+//    (BitBlt先の基準点とグリフ描画位置のズレが原因)を修正
 //  - ベンチマーク・修正履歴の詳細はchangelog/NKMM_FIX_GLYPH_ATLAS_CACHE.md,
 //    NKMM_FIX_GLYPH_ATLAS_CACHE_REPORT.md, NKMM_FIX_GLYPH_ATLAS_CACHE_IMPL.md参照
 //------------------------------------------------------------------
