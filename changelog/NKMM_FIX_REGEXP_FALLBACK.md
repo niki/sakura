@@ -372,6 +372,43 @@ BenchmarkRegex.qjsによる回帰確認」を参照(本追記はその内容を�
 1回の`ReplaceAll()`という最小構成の検証を、PCRE2フォールバック時と実
 `bregonig64.dll`使用時それぞれで実施し、上記の表の内容を確認した。
 
+## 追記: PCRE2_SUBSTITUTE_EXTENDED未指定による置換文字列中のエスケープ解釈漏れ 20260811
+
+対象ファイル: `sakura_core/extmodule/CRegexFallback.cpp`(`DoSubst()`)。
+
+### 症状
+
+PCRE2フォールバック時、置換文字列中に`\n`/`\r`/`\t`等のバックスラッシュ
+エスケープを書いても、実際の改行/タブとして解釈されずリテラルの2文字
+(`\`+`n`等)のまま挿入されてしまう。実`bregonig.dll`はPerl互換の`s///`と
+して`\n`を実改行に解釈するため、この差異はPCRE2フォールバック時にのみ
+発生する不具合になっていた。
+
+### 原因・修正
+
+`pcre2_substitute_16()`に渡す`options`に`PCRE2_SUBSTITUTE_EXTENDED`が
+指定されていなかった。このフラグはPCRE2側で置換文字列中のバックスラッシュ
+エスケープ(`\n`/`\r`/`\t`等)を解釈させるために必要で、`DoSubst()`の
+`options`初期化に`PCRE2_SUBSTITUTE_EXTENDED`を追加して解決した。
+
+```cpp
+uint32_t options = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH | PCRE2_SUBSTITUTE_MATCHED | PCRE2_SUBSTITUTE_EXTENDED;
+```
+
+### 関連: 単発置換を連続実行するとダイアログが閉じる不具合(同時修正)
+
+同じコミットで、置換ダイアログの「置換」ボタンを連続で押すとダイアログが
+閉じてしまう不具合も修正した。こちらはPCRE2/正規表現フォールバックとは
+無関係で、`Command_CANCEL_MODE()`の呼び出し元の一つ(`F_CANCEL_MODE`
+ハンドラ)が、ユーザーの明示的なモード取り消し操作でなくても
+`NKMM_CLOSE_DIALOG_WITH_MODE_CANCELLATION`(`NKMM_FIX_DIALOG`, 2017年
+導入)経路でダイアログを閉じてしまっていたことが原因。`Command_CANCEL_MODE`
+に`bAllowCloseDialog`引数(既定`false`)を追加し、ESC等の明示操作
+(`F_CANCEL_MODE`)からの呼び出しのみ`true`を渡すことで、選択解除や
+Undo/Redo前処理からの内部的な呼び出しではダイアログを閉じないよう
+修正した。詳細な報告書は無く、`sakura_core/cmd/CViewCommander_ModeChange.cpp`
+のコメント(20260811)に経緯を記載している。
+
 ## 追記: CColor_Numeric.cpp側のREGEX_MODE==3利用は削除 20260806
 
 上記「追記: CColor_Numeric.cpp からの直接利用 (REGEX_MODE==3)」節が指す

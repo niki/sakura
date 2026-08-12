@@ -228,4 +228,38 @@ PHP2のみ、従来通り`Keyword\php.kwd`が必要。
 - 実機での強調表示・ダイアログ操作（「更新」ボタンのYes/No確認、`(embed)`表示）の目視確認はユーザー側で実施。フェーズ6の不具合2はその過程で報告・修正した。
 - フェーズ8・9(`.rkw`/`.rule`埋め込み)は実装当初、他フォークルールの「変更はNKMM_FIX_*フラグでガードする」規約への準拠が漏れていた(ユーザー指摘で発覚)。事後に`NKMM_FIX_REGEX_OUTLINE_EMBED`を新設し、`CType_Cpp.cpp`/`CType_Perl.cpp`(新規追加分、無効時は何も追加しない)・`CType_Ruby.cpp`(無効時は元の手書き33行の`RegexAdd()`に戻す)・`CDocOutline.cpp`(無効時は`ReadRuleFile()`が元通りファイル読み込み失敗時に即0を返す)をガードした。
 - `CDocOutline.cpp`側は最初、`bUseEmbedded`という実行時boolに頼って`while`条件や行取得を`bUseEmbedded ? ... : ...`という三項演算子だけで済ませていた(フラグ無効時は`bUseEmbedded`が常にfalseになるので機能的には元と同じだが、`CType_Ruby.cpp`のような「無効時は元のコードにテキストとして戻る」形にはなっていなかった)。これも指摘を受けて、変数宣言・`while`条件・行取得・`file.Close()`の4箇所すべてを`#ifdef`/`#else`で分岐させ、無効時は元の`while( file.Good() && nCount < nMaxCount )`/`file.ReadLineW()`/`file.Close()`にテキストとして戻るよう修正した。
+
+---
+
+## 追記: JS/Text/Xmlへの正規表現キーワード組み込み化、およびTextタイプ未発火バグの修正 20260811
+
+対象フラグ: `NKMM_FIX_REGEX_OUTLINE_EMBED`(既存、対象タイプを追加)/
+`NKMM_FIX_TEXTTYPE_URL_REGEX`(新規)。
+
+対象ファイル(主なもの):
+- `sakura_core/types/CType_JavaScript.cpp`・`CType_Text.cpp`・`CType_Xml.cpp`
+- `sakura_keyword/JavaScript.rkw`・`Text.rkw`・`Xml.rkw`(新規)
+- `tools/GenerateKeywordInc.ps1`(`$Targets`に`JS`/`TEXT`/`XML`の`.rkw`エントリを追加)
+- `sakura_core/my_config.h`(フラグ定義)
+
+### 内容
+
+フェーズ8・9で対応した`.rkw`(正規表現キーワード)埋め込みの対象を、
+それまでのC/C++・Perl・Rubyに加えてJavaScript・Text・Xmlの3タイプへ拡張した。
+各タイプの`InitTypeConfigImp()`内に手書きされていた`RegexAdd()`呼び出し列を
+対応する`sakura_keyword/*.rkw`へ抽出し、`generated/js_regex.inc`・
+`text_regex.inc`・`xml_regex.inc`として組み込み、フラグ無効時は元の
+手書き`RegexAdd()`列にそのまま戻る構成にした(既存タイプと同じ方式)。
+
+### 副次的に見つかった不具合: Textタイプの正規表現キーワードが一度も有効化されていなかった
+
+`CType_Text.cpp`は`C:\～`・`\\～`をクリッカブルにする`RegexAdd()`を2件
+登録していたが、他の正規表現キーワード使用タイプ(Xml/Cpp/Ruby/Perl/
+JavaScript)と異なり`pType->m_bUseRegexKeyword`を一度も`true`にしていな
+かった。既定値は`CType.cpp`側で`false`のため、この2件は登録されるだけで
+実際には一度も有効化されていなかった(パスのクリッカブル化が機能していな
+かった)。
+
+`NKMM_FIX_TEXTTYPE_URL_REGEX`を新設し、`CType_Text::InitTypeConfigImp()`
+冒頭で`pType->m_bUseRegexKeyword = true;`を設定するよう修正した。
 - `NKMM_FIX_KEYWORDSET_UI`と同じ手順(フラグを一時的にコメントアウトしてフルビルド→エラー無し→復元)で、上記2回とも無効化ビルドを確認済み。
