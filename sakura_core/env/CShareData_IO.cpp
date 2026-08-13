@@ -131,6 +131,11 @@ void SetValueLimit(T& target, int maxval)
 void CShareData_IO::ConfirmAndDeleteMissingHistory()
 {
 	DLLSHAREDATA* pShare = &GetDllShareData();
+
+	if( !pShare->m_Common.m_sGeneral.m_bConfirmDeleteMissingHistory ){
+		return;
+	}
+
 	SShare_History& hist = pShare->m_sHistory;
 
 	bool aRemoveMru[MAX_MRU] = {};
@@ -165,7 +170,8 @@ void CShareData_IO::ConfirmAndDeleteMissingHistory()
 	}
 
 	// この時点ではまだメインウィンドウが無いので、オーナー無しで表示する
-	const int nRet = TopConfirmMessage( NULL,
+	// 誤って削除しないよう、既定フォーカスは「いいえ」側にしておく(MB_DEFBUTTON2)
+	const int nRet = TopCustomMessage( NULL, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2,
 		_T("最近使ったファイル・フォルダの履歴のうち、%d件のパスが見つかりませんでした。\n")
 		_T("履歴から削除しますか？\n\n%ts"),
 		nRemoveCount, strList.c_str() );
@@ -2020,6 +2026,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	SetValueLimit( common.m_sGeneral.m_nMRUArrNum_MAX, MAX_MRU );
 	cProfile.IOProfileData( pszSecName, LTEXT("nOPENFOLDERArrNum_MAX")	, common.m_sGeneral.m_nOPENFOLDERArrNum_MAX );
 	SetValueLimit( common.m_sGeneral.m_nOPENFOLDERArrNum_MAX, MAX_OPENFOLDER );
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+	cProfile.IOProfileData( pszSecName, LTEXT("bConfirmDeleteMissingHistory"), common.m_sGeneral.m_bConfirmDeleteMissingHistory );
+#endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispTOOLBAR")			, common.m_sWindow.m_bDispTOOLBAR );
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispSTATUSBAR")			, common.m_sWindow.m_bDispSTATUSBAR );
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispFUNCKEYWND")		, common.m_sWindow.m_bDispFUNCKEYWND );

@@ -84,6 +84,9 @@ struct CommonSetting_General
 	//履歴
 	int		m_nMRUArrNum_MAX;				//!< ファイルの履歴MAX
 	int		m_nOPENFOLDERArrNum_MAX;		//!< フォルダの履歴MAX
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+	BOOL	m_bConfirmDeleteMissingHistory;	//!< 起動時に存在しない履歴を確認して削除する 20260813
+#endif // NKMM_
 
 	//ノーカテゴリ
 	BOOL	m_bFileOpen2Open;

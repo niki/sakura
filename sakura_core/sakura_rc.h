@@ -152,6 +152,7 @@
 #define IDC_LIST_FL                     1084
 #define IDC_LIST_FL_VIRTUAL             1746
 #define IDC_TREE_FL_CLEANUP_SCRATCH     1747
+#define IDC_CHECK_DELETE_MISSING_HISTORY 1748
 #define IDC_CHECK_DispTOOLBAR           1085
 #define IDC_EDIT_AUTOBACKUP_INTERVAL    1086
 #define IDC_BUTTON_OPENHELP1            1087

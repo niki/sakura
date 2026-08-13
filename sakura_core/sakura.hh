@@ -569,6 +569,9 @@
 #ifdef NKMM_FIX_FONT_QUALITY
 #define HIDC_COMBO_FONTQUALITY					10925 //描画品質(アンチエイリアスの種類) 20260810
 #endif // NKMM_
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+#define HIDC_CHECK_DELETE_MISSING_HISTORY			10926 //起動時に存在しない履歴を確認して削除する 20260813
+#endif // NKMM_
 #define HIDC_HOTKEY_TRAYMENU					10940 //左クリックメニューのショートカットキー
 #define HIDC_EDIT_REPEATEDSCROLLLINENUM			10941 //スクロール行数
 #define HIDC_EDIT_MAX_MRU_FILE					10942 //ファイル履歴の最大数

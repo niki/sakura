@@ -375,6 +375,11 @@
 	#define NKMM_SEPARATE_HISTORY                    (0)  // 履歴は別ファイルで扱う (sakura.recent) 20170502
 	#define NKMM_HISTORY_BLOCK_IN_INI                (1)  // NKMM_SEPARATE_HISTORYが0のとき、履歴(Mru/Keys/Grep/Cmd)をsakura.ini内にブロック形式(#XXX〜#end)で保存する。読み込みは新形式(ブロック)/旧形式(MRU[00].xxx=など)の両方に対応、書き込みは新形式のみ。iniファイル肥大化対策 20260728
 	#define NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP (1)  // 起動時に存在しないファイル・フォルダの履歴は削除する (ndef(NKMM_FIX_PROFILES)の時の処理がない) 20170410
+	// 20260813 sakura_rc.rc の #if で使う短縮名。rc.exeのプリプロセッサは識別子を31文字で
+	// 切り詰めてしまい、上のNKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP(41文字)をそのまま
+	// #if で使うと定義側と参照側が一致せず未定義扱いになる(コントロールが黙って消える)ため、
+	// .rc専用に値を直接持つ別名を用意する。値は上と常に同じにすること。
+	#define NKMM_RC_DELHIST (1)
 	#define NKMM_USE_KEYWORDSET_CSV                  (1)  // sakura.keywordset.csvを用意し、強調キーワードの管理はこのファイルで行う 20170513
 
 //------------------------------------------------------------------

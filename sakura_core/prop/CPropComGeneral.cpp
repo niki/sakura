@@ -62,6 +62,9 @@ static const DWORD p_helpids[] = {	//10900
 	IDC_EDIT_REPEATEDSCROLLLINENUM,	HIDC_EDIT_REPEATEDSCROLLLINENUM,	//スクロール行数
 	IDC_EDIT_MAX_MRU_FILE,			HIDC_EDIT_MAX_MRU_FILE,				//ファイル履歴の最大数
 	IDC_EDIT_MAX_MRU_FOLDER,		HIDC_EDIT_MAX_MRU_FOLDER,			//フォルダ履歴の最大数
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+	IDC_CHECK_DELETE_MISSING_HISTORY, HIDC_CHECK_DELETE_MISSING_HISTORY,	//起動時に存在しない履歴を確認して削除する
+#endif // NKMM_
 	IDC_RADIO_CARETTYPE0,			HIDC_RADIO_CARETTYPE0,				//カーソル形状（Windows風）
 	IDC_RADIO_CARETTYPE1,			HIDC_RADIO_CARETTYPE1,				//カーソル形状（MS-DOS風）
 	IDC_SPIN_REPEATEDSCROLLLINENUM,	HIDC_EDIT_REPEATEDSCROLLLINENUM,
@@ -415,6 +418,11 @@ void CPropGeneral::SetData( HWND hwndDlg )
 	/* フォルダの履歴MAX */
 	::SetDlgItemInt( hwndDlg, IDC_EDIT_MAX_MRU_FOLDER, m_Common.m_sGeneral.m_nOPENFOLDERArrNum_MAX, FALSE );
 
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+	// 20260813 起動時に存在しない履歴を確認して削除する
+	::CheckDlgButton( hwndDlg, IDC_CHECK_DELETE_MISSING_HISTORY, m_Common.m_sGeneral.m_bConfirmDeleteMissingHistory );
+#endif // NKMM_
+
 	/* タスクトレイを使う */
 	::CheckDlgButton( hwndDlg, IDC_CHECK_USETRAYICON, m_Common.m_sGeneral.m_bUseTaskTray );
 // From Here 2001.12.03 hor
@@ -543,6 +551,11 @@ int CPropGeneral::GetData( HWND hwndDlg )
 		cRecentFolder.UpdateView();
 		cRecentFolder.Terminate();
 	}
+
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+	// 20260813 起動時に存在しない履歴を確認して削除する
+	m_Common.m_sGeneral.m_bConfirmDeleteMissingHistory = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_DELETE_MISSING_HISTORY );
+#endif // NKMM_
 
 	/* タスクトレイを使う */
 	m_Common.m_sGeneral.m_bUseTaskTray = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_USETRAYICON );
