@@ -1331,6 +1331,23 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 
+//------------------------------------------------------------------
+// 「キー入力」欄(直接入力)でマウス操作もキー割り当てとして検知できるようにする 20260813
+//  - NKMM_FIX_KEYBIND_LIST_TAB(IDD_PROP_KEYBIND_LIST)の子機能。有効時のみ意味を持つ
+//  - ダブル/トリプル/クアドラプルクリック、右クリック、中クリック、サイドボタン
+//    (XBUTTON1/2)、縦横ホイールを、func/CKeyBind.hのVKEX_*疑似キーコードとして
+//    検知し、実キー確定時と同じWM_NKMM_KEYBINDLIST_CAPTURE経由で一覧・コンボへ反映する
+//  - ダブルクリックまではEDITコントロールが標準で検知するが、トリプル/クアドラプルに
+//    相当するWindowsメッセージは存在しないため、ダブルクリック時刻・座標を起点に
+//    GetDoubleClickTime()/SM_CXDOUBLECLK等と同じしきい値で自前に数える
+//  - 右クリックは既定のコンテキストメニューを出さないようWM_CONTEXTMENUも抑止する
+//  - XBUTTON1→左サイドクリック、XBUTTON2→右サイドクリックの対応は、既存の
+//    CEditView::DispatchEvent()のWM_XBUTTONDOWN処理(OnXLBUTTONDOWN/OnXRBUTTONDOWN)
+//    に合わせた
+//  - sakura_core\prop\CPropComKeybindList.cpp
+//------------------------------------------------------------------
+#define NKMM_FIX_KEYBIND_CAPTURE_MOUSE
+
 //
 //#define USE_SSE2
 

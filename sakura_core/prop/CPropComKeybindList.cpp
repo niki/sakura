@@ -234,6 +234,41 @@ static LRESULT CALLBACK FilterEditSubclassProc(
 //! wParam=検知した仮想キーコード、lParam=検知した修飾キー(_SHIFT|_CTRL|_ALT) 20260810
 static const UINT WM_NKMM_KEYBINDLIST_CAPTURE = WM_APP + 0x210;
 
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_MOUSE
+//! マウス操作をVKEX_*(func/CKeyBind.hのマウス疑似キーコード)として親ダイアログへ
+//! 報告する。実キー確定時と同じWM_NKMM_KEYBINDLIST_CAPTUREに乗せるので、以降の
+//! 一覧反映・コンボ同期はキー入力の確定パスとまったく同じ処理を通る 20260813
+static void ReportCapturedMouseVKEX( HWND hwnd, int nVkex )
+{
+	int	nModifier = 0;
+	if( 0 != ( ::GetKeyState( VK_SHIFT )   & 0x8000 ) ){ nModifier |= _SHIFT; }
+	if( 0 != ( ::GetKeyState( VK_CONTROL ) & 0x8000 ) ){ nModifier |= _CTRL;  }
+	if( 0 != ( ::GetKeyState( VK_MENU )    & 0x8000 ) ){ nModifier |= _ALT;   }
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+	s_bCapturePreviewActive = false;
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+	::SendMessage( ::GetParent( hwnd ), WM_NKMM_KEYBINDLIST_CAPTURE, (WPARAM)nVkex, (LPARAM)nModifier );
+}
+
+//! 左クリックの連続回数を数えるための状態。WM_LBUTTONDBLCLKまでは既定のEDIT
+//! コントロールが検知してくれるが、トリプル/クアドラプルクリックに相当する
+//! メッセージはWindowsに存在しないため、間隔・移動量から自前で数える 20260813
+static int		s_nLButtonClickCount = 0;
+static DWORD	s_dwLButtonLastClickTick = 0;
+static POINT	s_ptLButtonLastClick = { 0, 0 };
+
+//! 直前のクリックと同じ連続クリック列とみなせるか(ダブルクリック判定と同じ
+//! 間隔・移動量のしきい値を流用する) 20260813
+static bool IsContinuingLButtonClickSequence( const POINT& pt )
+{
+	if( 0 == s_nLButtonClickCount ){ return false; }
+	if( ::GetTickCount() - s_dwLButtonLastClickTick > ::GetDoubleClickTime() ){ return false; }
+	if( abs( pt.x - s_ptLButtonLastClick.x ) > ::GetSystemMetrics( SM_CXDOUBLECLK ) / 2 ){ return false; }
+	if( abs( pt.y - s_ptLButtonLastClick.y ) > ::GetSystemMetrics( SM_CYDOUBLECLK ) / 2 ){ return false; }
+	return true;
+}
+#endif // NKMM_FIX_KEYBIND_CAPTURE_MOUSE
+
 #ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 //! 指定した仮想キーコードがShift/Ctrl/Alt(左右どちらでも)かどうかを調べる 20260814
 static bool IsModifierVKey( int nVirtKey )
@@ -311,11 +346,18 @@ static LRESULT CALLBACK CaptureEditSubclassProc(
 		int	nVirtKey = (int)wParam;
 #ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 		if( IsModifierVKey( nVirtKey ) ){
-			// 装飾キー単体の押下。以前に実キーで確定した表示が残っていても、
-			// 新しい入力を始めた時点でリセットする(その後のキー入力を優先し、
-			// 確定済みの内容を保持・復元することはしない) 20260814
-			s_bCapturePreviewActive = true;
-			UpdateCapturePreviewText( hwnd );
+			// 装飾キーを押しっぱなしにするとWindowsのキーリピートでWM_KEYDOWNが
+			// 送られ続ける(lParamのbit30が1になる)。ここで毎回プレビュー表示に
+			// 戻してしまうと、装飾キーを押したままマウスクリックで確定させた
+			// 直後の表示が、続くリピート分でまたプレビュー表示へ上書きされて
+			// 見えてしまう。押した瞬間(bit30が0、リピートでない)だけ反応する 20260813
+			if( 0 == ( lParam & 0x40000000 ) ){
+				// 装飾キー単体の押下。以前に実キーで確定した表示が残っていても、
+				// 新しい入力を始めた時点でリセットする(その後のキー入力を優先し、
+				// 確定済みの内容を保持・復元することはしない) 20260814
+				s_bCapturePreviewActive = true;
+				UpdateCapturePreviewText( hwnd );
+			}
 		}else{
 			int	nModifier = 0;
 			if( 0 != ( ::GetKeyState( VK_SHIFT )   & 0x8000 ) ){ nModifier |= _SHIFT; }
@@ -339,6 +381,15 @@ static LRESULT CALLBACK CaptureEditSubclassProc(
 			::SendMessage( ::GetParent( hwnd ), WM_NKMM_KEYBINDLIST_CAPTURE, (WPARAM)nVirtKey, (LPARAM)nModifier );
 		}
 #endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+		if( VK_MENU == nVirtKey || VK_LMENU == nVirtKey || VK_RMENU == nVirtKey ){
+			// AltはWindows内部で「システムキー」として扱われ、WM_SYSKEYDOWNを
+			// 既定処理へ渡さずに握りつぶすと、内部のメニューモード追跡が中途半端な
+			// 状態のまま残り、直後のマウスクリック(右クリック等)がそちらに奪われて
+			// しまう。装飾キー単体の押下では既定処理側で目立った副作用は起きない
+			// ため、Altだけは既定処理も通す(Shift/Ctrlはシステムキーではないため
+			// 対象外) 20260813
+			return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+		}
 		return 0;	// Editの既定処理(フォーカス移動・システムメニュー起動等)をさせない
 #ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 	}else if( WM_KEYUP == uMsg || WM_SYSKEYUP == uMsg ){
@@ -359,8 +410,61 @@ static LRESULT CALLBACK CaptureEditSubclassProc(
 				s_bCapturePreviewActive = false;
 			}
 		}
+		if( VK_MENU == nVirtKey || VK_LMENU == nVirtKey || VK_RMENU == nVirtKey ){
+			return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );	// 20260813 押下側と同じ理由
+		}
 		return 0;
 #endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_MOUSE
+	}else if( WM_LBUTTONDOWN == uMsg || WM_LBUTTONDBLCLK == uMsg ){
+		// 3回目以降の連続クリックも、Windowsは(予想に反して)WM_LBUTTONDOWNではなく
+		// WM_LBUTTONDBLCLKとして送ってくる(直前のクリックとの間隔・距離が既定の
+		// ダブルクリック判定内であれば、内部の判定はクリック回数のパリティに関係なく
+		// 毎回働くため)。そのためWM_LBUTTONDOWNとWM_LBUTTONDBLCLKを区別せず、同じ
+		// 連続クリック判定ロジックで数える 20260813
+		POINT	pt = { (short)LOWORD(lParam), (short)HIWORD(lParam) };
+		if( IsContinuingLButtonClickSequence( pt ) ){
+			// 4回目以降はクアドラプルクリックとして数え続ける(それ以上は区別しない) 20260813
+			if( s_nLButtonClickCount < 4 ){ ++s_nLButtonClickCount; }
+		}else{
+			// 新しい連続クリック列の開始。WM_LBUTTONDBLCLKで来た場合は既にEDIT
+			// コントロールが2回分とみなした結果なので2から、WM_LBUTTONDOWNなら
+			// 1から数え直す 20260813
+			s_nLButtonClickCount = ( WM_LBUTTONDBLCLK == uMsg ) ? 2 : 1;
+		}
+		s_dwLButtonLastClickTick = ::GetTickCount();
+		s_ptLButtonLastClick = pt;
+
+		if( s_nLButtonClickCount < 2 ){
+			// 単発クリックの1回目はキー割り当てとして報告しない(通常のフォーカス/
+			// カーソル移動はそのまま既定処理に任せる) 20260813
+			return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+		}
+		ReportCapturedMouseVKEX( hwnd,
+			( 2 == s_nLButtonClickCount ) ? VKEX_DBL_CLICK :
+			( 3 == s_nLButtonClickCount ) ? VKEX_TRI_CLICK : VKEX_QUA_CLICK );
+		return 0;
+	}else if( WM_RBUTTONDOWN == uMsg ){
+		ReportCapturedMouseVKEX( hwnd, VKEX_R_CLICK );
+		return 0;
+	}else if( WM_RBUTTONUP == uMsg || WM_CONTEXTMENU == uMsg ){
+		return 0;	// 右クリックをキー割り当てとして使うため、既定のコンテキストメニューは出さない
+	}else if( WM_MBUTTONDOWN == uMsg ){
+		ReportCapturedMouseVKEX( hwnd, VKEX_MDL_CLICK );
+		return 0;
+	}else if( WM_XBUTTONDOWN == uMsg ){
+		// XBUTTON1/2とサイドクリックの対応は、既存のCEditView::DispatchEvent()の
+		// WM_XBUTTONDOWN処理(OnXLBUTTONDOWN=XBUTTON1, OnXRBUTTONDOWN=XBUTTON2)に合わせる 20260813
+		ReportCapturedMouseVKEX( hwnd, ( XBUTTON1 == HIWORD(wParam) ) ? VKEX_LSD_CLICK : VKEX_RSD_CLICK );
+		return TRUE;
+	}else if( WM_MOUSEWHEEL == uMsg ){
+		ReportCapturedMouseVKEX( hwnd, ( 0 < (short)HIWORD(wParam) ) ? VKEX_WHEEL_UP : VKEX_WHEEL_DOWN );
+		return 0;
+	}else if( WM_MOUSEHWHEEL == uMsg ){
+		ReportCapturedMouseVKEX( hwnd, ( 0 < (short)HIWORD(wParam) ) ? VKEX_WHEEL_RIGHT : VKEX_WHEEL_LEFT );
+		return TRUE;	// WM_MOUSEHWHEELは処理した場合TRUEを返す必要がある(MSDNの記載は誤り。
+						// 詳細はCEditView_Mouse.cppのWM_MOUSEHWHEEL処理のコメント参照) 20260813
+#endif // NKMM_FIX_KEYBIND_CAPTURE_MOUSE
 	}else if( WM_CHAR == uMsg || WM_SYSCHAR == uMsg ){
 		return 0;	// ES_READONLYでも文字入力扱いでビープが鳴るため、確実に止める
 	}else if( WM_GETDLGCODE == uMsg ){
@@ -1496,16 +1600,19 @@ bool CPropKeybindList::IsKeyAssigned( int nKeyIndex, int nModifier )
 /*! 上部の設定コントロール(Shift/Ctrl/Alt + キー)と一致する行を一覧内で探し、
 	見える位置までスクロールしてフォーカスする
 	@date 20260803
+	@date 20260813 一致する行がない場合は選択を解除するように変更。以前の
+		選択(別のキーに対応する行)が残ったままだと、UpdateActionArea()が
+		そのまま機能名欄に表示してしまい、現在指定中のキーには何も割り当てが
+		無いにもかかわらず別の機能名が割り当て済みであるかのように見えていた
 
-	ReflectSelection()の逆方向。一致する行がなければ選択はそのままにする。
-	いずれの場合もUpdateActionArea()で機能名欄・登録/解除ボタン・キーの
-	警告色を最新の状態に更新する。
+	ReflectSelection()の逆方向。いずれの場合もUpdateActionArea()で機能名欄・
+	登録/解除ボタン・キーの警告色を最新の状態に更新する。
 */
 void CPropKeybindList::FocusMatchingRow( HWND hwndDlg )
 {
 	int	nMatch = FindMatchingRow( hwndDlg );
+	HWND	hListView = ::GetDlgItem( hwndDlg, IDC_LIST_KEYBINDALL );
 	if( 0 <= nMatch ){
-		HWND	hListView = ::GetDlgItem( hwndDlg, IDC_LIST_KEYBINDALL );
 		ListView_SetItemState( hListView, -1, 0, LVIS_SELECTED );	// 既存の選択を解除
 		ListView_SetItemState( hListView, nMatch, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
 		ListView_EnsureVisible( hListView, nMatch, FALSE );
@@ -1514,6 +1621,10 @@ void CPropKeybindList::FocusMatchingRow( HWND hwndDlg )
 		// (例えばマウスを動かすまで)スティッキーの内容が古いまま反映されない
 		// ことがあるため、ここで直接呼んで即座に反映する 20260804
 		UpdateStickyHeader( hwndDlg );
+	}else{
+		// 一致する行が無いのに以前の選択(別のキーの行)が残っていると紛らわしい
+		// ため、選択を解除してUpdateActionArea()側で機能名欄を空にする 20260813
+		ListView_SetItemState( hListView, -1, 0, LVIS_SELECTED );
 	}
 	UpdateActionArea( hwndDlg );
 }
