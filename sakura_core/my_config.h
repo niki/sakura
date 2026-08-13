@@ -1287,6 +1287,50 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_TEXTTYPE_URL_REGEX
 
+//------------------------------------------------------------------
+// 「キー割り当て(実験機能)」タブに、組み込みキーマッププリセットの選択コンボを追加 20260812
+//  - NKMM_FIX_KEYBIND_LIST_TAB(IDD_PROP_KEYBIND_LIST)の子機能。有効時のみ意味を持つ
+//  - keybind_presets/*.key(VSCode/Visual Studio/Visual Studio 6/Visual Basic 6/
+//    C# 2005/ReSharper)をsakura_rc.rcにRCDATAとして埋め込み、実行時にFindResource+
+//    一時ファイル経由でCImpExpKeybind::Import()へ渡す(keybind_presetsフォルダは
+//    実行時に不要)
+//  - プリセット適用は必ず「CShareData::ResetKeyBindToDefault()で既定へ戻してから、
+//    選んだプリセットの差分をインポートする」方式。直前まで別プリセットが当たって
+//    いた場合の残留を防ぐ。先頭の「サクラエディタ」はnResId=0扱いで、差分インポート
+//    無しの初期化のみ(NKMM_FIX_KEYBIND_TOOLBAR_RESETの「初期化」ボタンをこの
+//    プリセットへ統合したため、このタブでは初期化ボタン自体を置き換える)
+//  - コンボは常に現在のキー割り当てを再判定して表示する(DetectCurrentPresetIndex/
+//    UpdatePresetCombo)。全プリセットについて「初期化→インポート」をm_Commonの
+//    コピー上でシミュレートして現在値と比較するため、どのプリセットとも一致しない
+//    ときは先頭の「カスタマイズ」を選択状態にする
+//  - sakura_core\sakura_rc.h,rc: IDC_COMBO_KEYBINDLIST_PRESET, IDR_KEYBINDPRESET_*
+//    (無効時はNKMM_FIX_KEYBIND_TOOLBAR_RESETの「初期化」ボタンを代わりに配置)
+//  - sakura_core\prop\CPropComKeybindList.cpp, CPropCommon.h
+//------------------------------------------------------------------
+#define NKMM_FIX_KEYBIND_PRESET_COMBO
+
+//------------------------------------------------------------------
+// 「キー入力」欄(直接入力)を強化: 警告色/フォント/装飾キーのライブプレビュー 20260814
+//  - NKMM_FIX_KEYBIND_LIST_TAB(IDD_PROP_KEYBIND_LIST)の子機能。有効時のみ意味を持つ
+//  - 既に割り当て済みのキーを示しているときはコンボ/チェックボックスと同じ警告色
+//    (黄色地)で塗る。ES_READONLYのEditはWM_CTLCOLOREDITではなくWM_CTLCOLORSTATICが
+//    来る点に注意。ビジュアルスタイルの影響でフォーカスが無いと背景が灰色になって
+//    しまう既知の制限があり、その状態では文字色だけ黒にして読めるようにしている
+//  - 隣の「機能名」欄(IDC_EDIT_KEYBINDLIST_FUNCNAME)も同じ白背景に揃える
+//  - 既定フォント(9pt)だと欄の高さに対して文字が小さく見えるため、11pt相当の
+//    専用フォントを作成してWM_SETFONTで設定する(m_hKeybindListCaptureFont)
+//  - Shift/Ctrl/Altだけを押している間、何も表示が変わらず反応が分かりにくいという
+//    指摘を受け、装飾キーの押下/解放ごとに「Shift+Ctrl+」のような未確定プレビューを
+//    表示する。実キーで確定した後でも次に装飾キーを押した時点でリセットし、以前の
+//    内容は保持・復元しない(その後の入力を常に優先する)。プレビュー中は上部の
+//    Shift/Ctrl/Altチェックボックスとキーコンボも同期させる(コンボは実キー未確定の
+//    間は「未選択」にする)
+//  - 欄の位置・幅も読みやすさのため調整(無効時は元のコンパクトな配置に戻す)
+//  - sakura_core\sakura_rc.rc: EDITTEXT IDC_EDIT_KEYBINDLIST_CAPTUREの位置・サイズ
+//  - sakura_core\prop\CPropComKeybindList.cpp, CPropCommon.h
+//------------------------------------------------------------------
+#define NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+
 //
 //#define USE_SSE2
 

@@ -190,6 +190,10 @@ protected:
 														//!< 変数はCPropCommon自身に置く(ページクラスに置くと、全ページで
 														//!< 共有される単一のCPropCommonインスタンスをそのページの型として
 														//!< reinterpretする際に実際の確保サイズを超えてアクセスすることになるため) 20260803
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+	HFONT		m_hKeybindListCaptureFont = NULL;		//!< 「キー入力」欄(直接入力)を少し大きく表示するための拡大フォント。
+														//!< 置き場所の理由はm_hKeybindListBoldFontと同じ 20260814
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 #endif // NKMM_
 #if defined(NKMM_FIX_KEYWORDSET_UI)
 	//! 強調キーワードの色・フォントプレビュー表示用データ。CPropKeyword固有に見えるが、
@@ -299,9 +303,13 @@ private:
 	void UpdateStickyHeader( HWND );	//!< 先頭に見えている行の種別を、スクロールしても固定表示するオーバーレイに反映する 20260804
 	void Import( HWND );	//!< キー割り当て設定をインポートする(キー割り当てタブと共通) 20260804
 	void Export( HWND );	//!< キー割り当て設定をエクスポートする(キー割り当てタブと共通) 20260804
-#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+#ifdef NKMM_FIX_KEYBIND_PRESET_COMBO
+	void ApplyPreset( HWND, int nPresetIndex );	//!< 組み込みのキー割り当てプリセットを適用する。index 0(「サクラエディタ」)は初期化のみ行う(初期化ボタンを統合) 20260812
+	int  DetectCurrentPresetIndex();	//!< 現在のキー割り当てと一致する組み込みプリセットのインデックスを返す(無ければ-1) 20260813
+	void UpdatePresetCombo( HWND );	//!< プリセット選択コンボの選択項目を、現在のキー割り当てに合わせて更新する 20260813
+#elif defined(NKMM_FIX_KEYBIND_TOOLBAR_RESET)
 	void InitializeToDefault( HWND );	//!< キー割り当てを既定値に戻す(キー割り当てタブと共通) 20260804
-#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
+#endif // NKMM_FIX_KEYBIND_PRESET_COMBO
 };
 #endif // NKMM_FIX_KEYBIND_LIST_TAB
 

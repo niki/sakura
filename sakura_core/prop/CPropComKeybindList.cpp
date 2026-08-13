@@ -18,6 +18,109 @@
 #include <string>
 #include <vector>
 
+#ifdef NKMM_FIX_KEYBIND_PRESET_COMBO
+//! 組み込みキー割り当てプリセット1件分の情報 20260812
+struct SKeybindPresetInfo {
+	int				nResId;		//!< sakura_rc.rcのRCDATA(IDR_KEYBINDPRESET_*)のリソースID。
+									//!< 0の場合はインポートせず初期化のみ行う(「サクラエディタ」用) 20260813
+	const wchar_t*	pszName;	//!< プリセット選択コンボの表示名
+};
+
+/*! 組み込みキー割り当てプリセットの一覧 20260812
+
+	元データはリポジトリ直下のkeybind_presets/*.key。sakura_rc.rcでRCDATAとして
+	実行ファイルへ埋め込まれているため、実行時にkeybind_presetsフォルダそのものは
+	不要(インストール環境を問わず動作させるため)。表示名の並びはkeybind_presets/README.md
+	の対応表に合わせている。
+	@date 20260813 先頭の「サクラエディタ」はnResId=0にして、CShareData::
+		ResetKeyBindToDefault()による初期化のみで表現するように変更(初期化ボタンを
+		廃止しプリセットコンボに一本化したため)。ビルド時点の既定値を常にそのまま使う
+		形になり、Default.key(既定のスナップショットをエクスポートしたもの)を
+		インポートする方式のような、ファイルが実際の既定値と食い違う心配が無くなる。
+*/
+static const SKeybindPresetInfo	s_KeybindPresetTable[] = {
+	{ 0,                                L"サクラエディタ 2.3.2.0" },
+	{ IDR_KEYBINDPRESET_VSCODE,        L"Visual Studio Code" },
+	{ IDR_KEYBINDPRESET_VISUALSTUDIO,  L"Visual Studio" },
+	{ IDR_KEYBINDPRESET_VISUALSTUDIO6, L"Visual Studio 6 / Visual C++ 6" },
+	{ IDR_KEYBINDPRESET_VISUALBASIC6,  L"Visual Basic 6" },
+	{ IDR_KEYBINDPRESET_CSHARP2005,    L"Visual C# 2005(Visual Studio 2005)" },
+	{ IDR_KEYBINDPRESET_RESHARPER,     L"ReSharper(Visual Studio拡張)" },
+};
+
+//! プリセット選択コンボの先頭項目(index 0)の表示文字列。現在のキー割り当てが
+//! s_KeybindPresetTableのどれとも一致しないときにこれを選択状態にする 20260813
+static const wchar_t	szKeybindPresetCustomLabel[] = L"カスタマイズ";
+
+/*! 指定したプリセットのRCDATA(元はkeybind_presets/*.key)を一時ファイル経由で
+	targetCommonへインポートする
+	@date 20260813 ApplyPreset()から切り出し。プリセットの一致判定(シミュレーション)にも
+		使うため、対象をm_Commonに固定せず引数で受け取るようにした
+
+	CImpExpKeybind::Import()はファイルパスしか受け付けない(内部でCDataProfile::ReadProfileが
+	ファイルを開くため)ので、リソースの内容を一時ファイルへそのままのバイト列で書き出してから
+	インポートし、インポート後に削除する。
+*/
+static bool ImportPresetKeyBindInto( HINSTANCE hInst, CommonSetting& targetCommon, int nPresetIndex, wstring& sErrMsg )
+{
+	if( nPresetIndex < 0 || _countof(s_KeybindPresetTable) <= (size_t)nPresetIndex ){
+		return false;
+	}
+	const SKeybindPresetInfo&	info = s_KeybindPresetTable[nPresetIndex];
+
+	HRSRC	hResInfo = ::FindResource( hInst, MAKEINTRESOURCE(info.nResId), RT_RCDATA );
+	if( NULL == hResInfo ){
+		return false;	// プリセットのリソースが見つからない(ビルド不整合)
+	}
+	HGLOBAL	hResData = ::LoadResource( hInst, hResInfo );
+	const void*	pResData = ( NULL != hResData ) ? ::LockResource( hResData ) : NULL;
+	DWORD	dwResSize = ::SizeofResource( hInst, hResInfo );
+	if( NULL == pResData || 0 == dwResSize ){
+		return false;
+	}
+
+	TCHAR	szTempDir[_MAX_PATH];
+	TCHAR	szTempFile[_MAX_PATH];
+	if( 0 == ::GetTempPath( _MAX_PATH, szTempDir )
+	 || 0 == ::GetTempFileName( szTempDir, _T("skb"), 0, szTempFile )
+	){
+		return false;
+	}
+
+	HANDLE	hFile = ::CreateFile( szTempFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY, NULL );
+	bool	bWriteOk = false;
+	if( INVALID_HANDLE_VALUE != hFile ){
+		DWORD	dwWritten = 0;
+		bWriteOk = ( 0 != ::WriteFile( hFile, pResData, dwResSize, &dwWritten, NULL ) ) && ( dwWritten == dwResSize );
+		::CloseHandle( hFile );
+	}
+
+	bool	bImportOk = false;
+	if( bWriteOk ){
+		CImpExpKeybind	cImpExpKeybind( targetCommon );
+		bImportOk = cImpExpKeybind.Import( to_wchar( szTempFile ), sErrMsg );
+	}
+
+	::DeleteFile( szTempFile );
+
+	return bImportOk;
+}
+
+/*! キー割り当て2つが機能的に等しいか調べる 20260813
+
+	有効データ数(m_nKeyNameArrNum)と、そのぶんのm_pKeyNameArrの内容だけを比較する。
+	m_VKeyToKeyNameArrはm_pKeyNameArrから機械的に導出される逆引き用のキャッシュに過ぎず、
+	比較対象に含めなくても機能的な一致判定としては十分なため対象外にしている。
+*/
+static bool IsSameKeyBind( const CommonSetting_KeyBind& a, const CommonSetting_KeyBind& b )
+{
+	if( a.m_nKeyNameArrNum != b.m_nKeyNameArrNum ){
+		return false;
+	}
+	return 0 == memcmp( a.m_pKeyNameArr, b.m_pKeyNameArr, sizeof(KEYDATA) * a.m_nKeyNameArrNum );
+}
+#endif // NKMM_FIX_KEYBIND_PRESET_COMBO
+
 //! 一覧の各行(nRow)が表す機能コード。ヘッダ行はF_DISABLEを積む。
 //! 「登録」ボタンで選択中の行に何を割り当てるか調べるために使う 20260803
 static std::vector<EFunctionCode>	s_vRowFuncCodes;
@@ -45,6 +148,16 @@ static const COLORREF	NKMM_KEYBINDLIST_HEADER_COLOR = RGB( 170, 170, 170 );
 //! システム側が使い続けるため、FillRect用の使い捨てブラシと違い即座には
 //! 破棄できない。WM_DESTROYで破棄する 20260804
 static HBRUSH	s_hbrStickyHeaderBack = NULL;
+
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+//! 「キー入力」欄(直接入力)が、既に何かに割り当て済みのキーを示しているときの
+//! 警告色背景ブラシ。s_hbrStickyHeaderBackと同じ理由でWM_DESTROYまで使い回す 20260814
+static HBRUSH	s_hbrCaptureWarnBack = NULL;
+
+//! 「キー入力」欄(直接入力)で、装飾キーを押している間のライブプレビュー表示中かどうか。
+//! 実キーが押されて確定するとfalseに戻る 20260814
+static bool	s_bCapturePreviewActive = false;
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 
 //! Shift/Ctrl/Altチェックボックスのチェック状態。
 //! WM_CTLCOLORBTNの背景色返却は標準のBS_AUTOCHECKBOXでは効かない
@@ -92,6 +205,22 @@ static LRESULT CALLBACK FilterEditSubclassProc(
 			return 0;
 		}
 	}else if( WM_SETFOCUS == uMsg || WM_KILLFOCUS == uMsg ){
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+		if( WM_KILLFOCUS == uMsg && s_bCapturePreviewActive ){
+			// Alt+Tabなどでフォーカスが外れ、装飾キーのWM_KEYUPを取れないまま
+			// プレビュー表示が残ってしまうのを防ぐ。Alt+Tab中はGetKeyStateがまだ
+			// Alt押下中を返すことがあるため、ここは実際の押下状態を見ずに
+			// 強制的に全て未チェック・コンボ未選択にする 20260814
+			HWND	hwndParent = ::GetParent( hwnd );
+			::SetWindowText( hwnd, L"" );
+			s_bShiftChecked = s_bCtrlChecked = s_bAltChecked = false;
+			::InvalidateRect( ::GetDlgItem( hwndParent, IDC_CHECK_SHIFT ), NULL, TRUE );
+			::InvalidateRect( ::GetDlgItem( hwndParent, IDC_CHECK_CTRL ), NULL, TRUE );
+			::InvalidateRect( ::GetDlgItem( hwndParent, IDC_CHECK_ALT ), NULL, TRUE );
+			Combo_SetCurSel( ::GetDlgItem( hwndParent, IDC_COMBO_KEYBINDLIST_KEY ), -1 );
+			s_bCapturePreviewActive = false;
+		}
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 		LRESULT	lr = ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
 		::InvalidateRect( hwnd, NULL, TRUE );	// ヒント文字の表示/非表示切り替えを反映する
 		return lr;
@@ -105,6 +234,56 @@ static LRESULT CALLBACK FilterEditSubclassProc(
 //! wParam=検知した仮想キーコード、lParam=検知した修飾キー(_SHIFT|_CTRL|_ALT) 20260810
 static const UINT WM_NKMM_KEYBINDLIST_CAPTURE = WM_APP + 0x210;
 
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+//! 指定した仮想キーコードがShift/Ctrl/Alt(左右どちらでも)かどうかを調べる 20260814
+static bool IsModifierVKey( int nVirtKey )
+{
+	return VK_SHIFT == nVirtKey || VK_LSHIFT == nVirtKey || VK_RSHIFT == nVirtKey
+	    || VK_CONTROL == nVirtKey || VK_LCONTROL == nVirtKey || VK_RCONTROL == nVirtKey
+	    || VK_MENU == nVirtKey || VK_LMENU == nVirtKey || VK_RMENU == nVirtKey;
+}
+
+//! 上部の設定コントロール(Shift/Ctrl/Altチェックボックス + キーコンボ)を、
+//! 「キー入力」欄(直接入力)でのライブプレビュー中の装飾キー状態に同期させる
+//! @date 20260814
+//!
+//! s_bShiftChecked等を現在の実際の押下状態(GetKeyState)に合わせて更新し、
+//! チェックボックスを再描画する。まだ実キーは押されていない(=どのキーへの
+//! 割り当てかは未定)ため、キーコンボの選択は解除して「未選択」にする。
+//! 全キーが離された状態でこれを呼べば、結果としてチェックボックスは全て
+//! 未チェックに、コンボも未選択に戻る 20260814
+static void SyncKeySetControlsToLiveModifierState( HWND hwnd )
+{
+	HWND	hwndParent = ::GetParent( hwnd );
+
+	s_bShiftChecked = ( 0 != ( ::GetKeyState( VK_SHIFT )   & 0x8000 ) );
+	s_bCtrlChecked  = ( 0 != ( ::GetKeyState( VK_CONTROL ) & 0x8000 ) );
+	s_bAltChecked   = ( 0 != ( ::GetKeyState( VK_MENU )    & 0x8000 ) );
+
+	::InvalidateRect( ::GetDlgItem( hwndParent, IDC_CHECK_SHIFT ), NULL, TRUE );
+	::InvalidateRect( ::GetDlgItem( hwndParent, IDC_CHECK_CTRL ), NULL, TRUE );
+	::InvalidateRect( ::GetDlgItem( hwndParent, IDC_CHECK_ALT ), NULL, TRUE );
+
+	// まだ実キーが押されていない間は、直前まで選ばれていたキーをコンボに
+	// 残さない(装飾キーだけの状態と食い違って見えるため) 20260814
+	Combo_SetCurSel( ::GetDlgItem( hwndParent, IDC_COMBO_KEYBINDLIST_KEY ), -1 );
+}
+
+//! 現在押されている装飾キーだけを"Shift+Ctrl+Alt+"のように並べた文字列を欄へ表示する
+//! (まだ実キーが押されておらず確定していないことが分かるよう、末尾は"+"で終わる)。
+//! 上部のチェックボックス+キーコンボも同じ状態に同期させる 20260814
+static void UpdateCapturePreviewText( HWND hwnd )
+{
+	std::wstring	sPreview;
+	if( 0 != ( ::GetKeyState( VK_SHIFT )   & 0x8000 ) ){ sPreview += L"Shift+"; }
+	if( 0 != ( ::GetKeyState( VK_CONTROL ) & 0x8000 ) ){ sPreview += L"Ctrl+";  }
+	if( 0 != ( ::GetKeyState( VK_MENU )    & 0x8000 ) ){ sPreview += L"Alt+";   }
+	::SetWindowText( hwnd, sPreview.c_str() );
+
+	SyncKeySetControlsToLiveModifierState( hwnd );
+}
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+
 /*! 「キー入力」欄(直接入力)のサブクラスプロシージャ。
 	既存のコンボ+Shift/Ctrl/Altチェックボックス方式とは別の、もう一つの入力方法として
 	追加する(まずは2系統を並行して用意し、結果は共通の状態(コンボ+チェックボックス)へ
@@ -116,6 +295,13 @@ static const UINT WM_NKMM_KEYBINDLIST_CAPTURE = WM_APP + 0x210;
 		キーなどダイアログ側が先取りするキーもできるだけこの欄で検知できるようにして
 		いるが、それでも一部のキー(例えばAltを伴う組み合わせなど)はシステムメニュー等に
 		奪われて検知できないことがある既知の制限
+	@date 20260814 装飾キーだけを押している間、何も表示が変わらず反応しているのか
+		分かりにくいという指摘を受け、装飾キーの押下/解放(WM_KEYDOWN/WM_KEYUP)ごとに
+		「Shift+Ctrl+」のような未確定プレビューを表示するようにした。実キーを押して
+		確定する動作(WM_NKMM_KEYBINDLIST_CAPTUREを送る)は従来通り変更していない
+	@date 20260814 実キーで確定した後でも、次に装飾キーを押した時点でその確定表示を
+		リセットする(以前の内容を保持・復元することはしない)ように変更。以後のキー
+		入力を常に優先し、確定済みの表示に固執しないようにするため
 */
 static LRESULT CALLBACK CaptureEditSubclassProc(
 	HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
@@ -123,6 +309,24 @@ static LRESULT CALLBACK CaptureEditSubclassProc(
 {
 	if( WM_KEYDOWN == uMsg || WM_SYSKEYDOWN == uMsg ){
 		int	nVirtKey = (int)wParam;
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+		if( IsModifierVKey( nVirtKey ) ){
+			// 装飾キー単体の押下。以前に実キーで確定した表示が残っていても、
+			// 新しい入力を始めた時点でリセットする(その後のキー入力を優先し、
+			// 確定済みの内容を保持・復元することはしない) 20260814
+			s_bCapturePreviewActive = true;
+			UpdateCapturePreviewText( hwnd );
+		}else{
+			int	nModifier = 0;
+			if( 0 != ( ::GetKeyState( VK_SHIFT )   & 0x8000 ) ){ nModifier |= _SHIFT; }
+			if( 0 != ( ::GetKeyState( VK_CONTROL ) & 0x8000 ) ){ nModifier |= _CTRL;  }
+			if( 0 != ( ::GetKeyState( VK_MENU )    & 0x8000 ) ){ nModifier |= _ALT;   }
+			// 実キーが押されて確定するので、プレビュー中の表示は親側のUpdateCaptureText()に
+			// 委ねる(この後の処理で上書きされる) 20260814
+			s_bCapturePreviewActive = false;
+			::SendMessage( ::GetParent( hwnd ), WM_NKMM_KEYBINDLIST_CAPTURE, (WPARAM)nVirtKey, (LPARAM)nModifier );
+		}
+#else
 		// 修飾キー単体の押下はキー本体ではないので無視し、次のキーを待つ
 		if( VK_SHIFT != nVirtKey && VK_LSHIFT != nVirtKey && VK_RSHIFT != nVirtKey
 		 && VK_CONTROL != nVirtKey && VK_LCONTROL != nVirtKey && VK_RCONTROL != nVirtKey
@@ -134,7 +338,29 @@ static LRESULT CALLBACK CaptureEditSubclassProc(
 			if( 0 != ( ::GetKeyState( VK_MENU )    & 0x8000 ) ){ nModifier |= _ALT;   }
 			::SendMessage( ::GetParent( hwnd ), WM_NKMM_KEYBINDLIST_CAPTURE, (WPARAM)nVirtKey, (LPARAM)nModifier );
 		}
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 		return 0;	// Editの既定処理(フォーカス移動・システムメニュー起動等)をさせない
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+	}else if( WM_KEYUP == uMsg || WM_SYSKEYUP == uMsg ){
+		int	nVirtKey = (int)wParam;
+		if( IsModifierVKey( nVirtKey ) && s_bCapturePreviewActive ){
+			// このキー自身はGetKeyStateで既に「離した」状態を返すはずなので、
+			// 他に押されたままの装飾キーが無ければ空欄に戻す(リセットしたままにする。
+			// 確定済みの内容へは戻さない) 20260814
+			bool	bAnyModifierDown =
+				( 0 != ( ::GetKeyState( VK_SHIFT )   & 0x8000 ) )
+			 || ( 0 != ( ::GetKeyState( VK_CONTROL ) & 0x8000 ) )
+			 || ( 0 != ( ::GetKeyState( VK_MENU )    & 0x8000 ) );
+			if( bAnyModifierDown ){
+				UpdateCapturePreviewText( hwnd );
+			}else{
+				::SetWindowText( hwnd, L"" );
+				SyncKeySetControlsToLiveModifierState( hwnd );	// 全チェックボックス解除・コンボ未選択に戻す
+				s_bCapturePreviewActive = false;
+			}
+		}
+		return 0;
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 	}else if( WM_CHAR == uMsg || WM_SYSCHAR == uMsg ){
 		return 0;	// ES_READONLYでも文字入力扱いでビープが鳴るため、確実に止める
 	}else if( WM_GETDLGCODE == uMsg ){
@@ -165,6 +391,12 @@ static LRESULT CALLBACK CaptureEditSubclassProc(
 			return 0;
 		}
 	}else if( WM_SETFOCUS == uMsg || WM_KILLFOCUS == uMsg ){
+		if( WM_KILLFOCUS == uMsg && s_bCapturePreviewActive ){
+			// Alt+Tabなどでフォーカスが外れ、装飾キーのWM_KEYUPを取れないまま
+			// プレビュー表示が残ってしまうのを防ぐ 20260814
+			::SetWindowText( hwnd, L"" );
+			s_bCapturePreviewActive = false;
+		}
 		LRESULT	lr = ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
 		::InvalidateRect( hwnd, NULL, TRUE );	// ヒント文字の表示/非表示切り替えを反映する
 		return lr;
@@ -226,6 +458,49 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			s_bCtrlChecked  = false;
 			s_bAltChecked   = false;
 
+#ifdef NKMM_FIX_KEYBIND_PRESET_COMBO
+			// プリセット選択コンボ。index 0は「カスタマイズ」(現在のキー割り当てが
+			// どのプリセットとも一致しないときの表示用。選択操作としての意味は持たない)、
+			// 以降にs_KeybindPresetTableの各プリセット名を並べる。実際に現在の状態に
+			// 合わせた選択は、この後のSetData()経由のUpdatePresetCombo()で行う 20260813
+			{
+				HWND	hComboPreset = ::GetDlgItem( hwndDlg, IDC_COMBO_KEYBINDLIST_PRESET );
+				Combo_AddString( hComboPreset, szKeybindPresetCustomLabel );
+				for( size_t i = 0; i < _countof(s_KeybindPresetTable); ++i ){
+					Combo_AddString( hComboPreset, s_KeybindPresetTable[i].pszName );
+				}
+
+				// 本体(閉じた状態)は初期化ボタンと同じ幅のまま、ドロップダウンだけ
+				// 一番長い項目に合わせて広げる。CB_SETDROPPEDWIDTHはダイアログの
+				// 右端をはみ出しても構わない(ポップアップとして別ウィンドウで
+				// 表示されるため)ので、本体の幅に制約されず見切れを防げる 20260812
+				{
+					HDC	hdc = ::GetDC( hComboPreset );
+					HFONT	hFont = (HFONT)::SendMessage( hComboPreset, WM_GETFONT, 0, 0 );
+					HFONT	hOldFont = ( NULL != hFont ) ? (HFONT)::SelectObject( hdc, hFont ) : NULL;
+
+					int	nMaxWidth = 0;
+					SIZE	sz;
+					::GetTextExtentPoint32( hdc, szKeybindPresetCustomLabel, (int)wcslen( szKeybindPresetCustomLabel ), &sz );
+					nMaxWidth = sz.cx;
+					for( size_t i = 0; i < _countof(s_KeybindPresetTable); ++i ){
+						::GetTextExtentPoint32( hdc, s_KeybindPresetTable[i].pszName,
+							(int)wcslen( s_KeybindPresetTable[i].pszName ), &sz );
+						if( nMaxWidth < sz.cx ){ nMaxWidth = sz.cx; }
+					}
+
+					if( NULL != hOldFont ){
+						::SelectObject( hdc, hOldFont );
+					}
+					::ReleaseDC( hComboPreset, hdc );
+
+					// 左右の文字余白 + 垂直スクロールバー分の余裕を足す 20260812
+					::SendMessage( hComboPreset, CB_SETDROPPEDWIDTH,
+						(WPARAM)( nMaxWidth + 24 + ::GetSystemMetrics( SM_CXVSCROLL ) ), 0 );
+				}
+			}
+#endif // NKMM_FIX_KEYBIND_PRESET_COMBO
+
 			hListView = ::GetDlgItem( hwndDlg, IDC_LIST_KEYBINDALL );
 			// LVS_EX_GRIDLINESで行・列を罫線で区切って見やすくする。
 			// LVS_EX_DOUBLEBUFFERは画面全体をオフスクリーンで合成してから
@@ -274,6 +549,25 @@ INT_PTR CPropKeybindList::DispatchEvent(
 					m_hKeybindListBoldFont = ::CreateFontIndirect( &lf );
 				}
 			}
+
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+			// 「キー入力」欄(直接入力)は、ダイアログの既定フォント(9pt)のままだと
+			// 高さに対して文字が小さく、下側に余白(灰色部分)が目立って見えるため、
+			// 少し大きいフォント(11pt相当)を専用に作って設定する(WM_DESTROYで破棄する) 20260814
+			{
+				HWND	hCapture = ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_CAPTURE );
+				HFONT	hCaptureBaseFont = (HFONT)::SendMessage( hCapture, WM_GETFONT, 0, 0 );
+				LOGFONT	lfCapture;
+				::ZeroMemory( &lfCapture, sizeof_raw( lfCapture ) );
+				if( NULL != hCaptureBaseFont && ::GetObject( hCaptureBaseFont, sizeof_raw( lfCapture ), &lfCapture ) ){
+					lfCapture.lfHeight = ::MulDiv( lfCapture.lfHeight, 11, 9 );	// 9pt -> 11pt相当
+					m_hKeybindListCaptureFont = ::CreateFontIndirect( &lfCapture );
+					if( NULL != m_hKeybindListCaptureFont ){
+						::SendMessage( hCapture, WM_SETFONT, (WPARAM)m_hKeybindListCaptureFont, TRUE );
+					}
+				}
+			}
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 
 			RECT	rc;
 			::GetClientRect( hListView, &rc );
@@ -367,11 +661,25 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			::DeleteObject( m_hKeybindListBoldFont );
 			m_hKeybindListBoldFont = NULL;
 		}
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+		// 「キー入力」欄の拡大フォントを破棄する 20260814
+		if( NULL != m_hKeybindListCaptureFont ){
+			::DeleteObject( m_hKeybindListCaptureFont );
+			m_hKeybindListCaptureFont = NULL;
+		}
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 		// 種別固定表示オーバーレイの背景ブラシを破棄する 20260804
 		if( NULL != s_hbrStickyHeaderBack ){
 			::DeleteObject( s_hbrStickyHeaderBack );
 			s_hbrStickyHeaderBack = NULL;
 		}
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+		// 「キー入力」欄の警告色背景ブラシを破棄する 20260814
+		if( NULL != s_hbrCaptureWarnBack ){
+			::DeleteObject( s_hbrCaptureWarnBack );
+			s_hbrCaptureWarnBack = NULL;
+		}
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 		break;
 
 	case WM_CTLCOLORSTATIC:
@@ -386,6 +694,43 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, (LONG_PTR)s_hbrStickyHeaderBack );
 			return TRUE;
 		}
+#ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
+		// 「キー入力」欄(直接入力)。ES_READONLYのEditはWM_CTLCOLOREDITではなく
+		// WM_CTLCOLORSTATICが飛んでくる。既に何かに割り当て済みのキーを表示している
+		// ときは、コンボやチェックボックスと同じ警告色で塗る 20260814
+		// @date 20260814 フォーカスが無いとビジュアルスタイルの影響で背景が黄色ではなく
+		// 灰色になってしまう(既知の制限。ListView等で使っているPreventVisualStyle()を
+		// このEditにも使えば解消できる可能性はあるが未検証)。その状態で警告色の文字色
+		// (琥珀)のままだと灰色地に読みづらいため、非フォーカス時は文字色だけ黒にする
+		if( (HWND)lParam == ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_CAPTURE ) ){
+			HDC	hdcStatic = (HDC)wParam;
+			bool	bConflict = ( 0 <= FindMatchingRow( hwndDlg ) );
+			bool	bFocused  = ( ::GetFocus() == (HWND)lParam );
+			if( bConflict ){
+				::SetBkColor( hdcStatic, NKMM_KEYBINDLIST_WARN_COLOR );
+				::SetTextColor( hdcStatic, bFocused ? NKMM_KEYBINDLIST_WARN_TEXT_COLOR : ::GetSysColor( COLOR_WINDOWTEXT ) );
+				if( NULL == s_hbrCaptureWarnBack ){
+					s_hbrCaptureWarnBack = ::CreateSolidBrush( NKMM_KEYBINDLIST_WARN_COLOR );
+				}
+				::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, (LONG_PTR)s_hbrCaptureWarnBack );
+			}else{
+				::SetBkColor( hdcStatic, ::GetSysColor( COLOR_WINDOW ) );
+				::SetTextColor( hdcStatic, ::GetSysColor( COLOR_WINDOWTEXT ) );
+				::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, (LONG_PTR)(HBRUSH)( COLOR_WINDOW + 1 ) );
+			}
+			return TRUE;
+		}
+		// 「機能名」欄(選択中の機能名の表示専用、ES_READONLY)。既定のまま(グレーがかった
+		// 「無効」風の見た目)だと、上の「キー入力」欄(白背景にした)とだけ見た目が違って
+		// 目立ってしまうため、こちらも同じ白背景にして揃える 20260814
+		if( (HWND)lParam == ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_FUNCNAME ) ){
+			HDC	hdcStatic = (HDC)wParam;
+			::SetBkColor( hdcStatic, ::GetSysColor( COLOR_WINDOW ) );
+			::SetTextColor( hdcStatic, ::GetSysColor( COLOR_WINDOWTEXT ) );
+			::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, (LONG_PTR)(HBRUSH)( COLOR_WINDOW + 1 ) );
+			return TRUE;
+		}
+#endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
 		break;
 
 	case WM_DRAWITEM:
@@ -519,6 +864,27 @@ INT_PTR CPropKeybindList::DispatchEvent(
 				return TRUE;
 			}
 			break;
+#ifdef NKMM_FIX_KEYBIND_PRESET_COMBO
+		case IDC_COMBO_KEYBINDLIST_PRESET:
+			// プリセットを選んだら適用する。index 0の「カスタマイズ」は現在の状態を
+			// 表す表示専用の項目で、選んでも何もしない(選び直せば元々の選択に戻る) 20260813
+			if( CBN_SELCHANGE == HIWORD(wParam) ){
+				HWND	hComboPreset = (HWND)lParam;
+				int	nSel = Combo_GetCurSel( hComboPreset );
+				if( 0 < nSel ){
+					ApplyPreset( hwndDlg, nSel - 1 );	// ApplyPreset内でコンボの選択も更新する
+				}
+				return TRUE;
+			}
+			break;
+#elif defined(NKMM_FIX_KEYBIND_TOOLBAR_RESET)
+		case IDC_BUTTON_INITIALIZE:	/* 初期化 */
+			if( BN_CLICKED == HIWORD(wParam) ){
+				InitializeToDefault( hwndDlg );
+				return TRUE;
+			}
+			break;
+#endif // NKMM_FIX_KEYBIND_PRESET_COMBO
 		case IDC_EDIT_KEYBINDLIST_FILTER:
 			// 機能名/キーの一部一致で一覧を絞り込む。入力のたびに一覧を作り直す 20260803
 			if( EN_CHANGE == HIWORD(wParam) ){
@@ -542,14 +908,6 @@ INT_PTR CPropKeybindList::DispatchEvent(
 				return TRUE;
 			}
 			break;
-#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
-		case IDC_BUTTON_INITIALIZE:	/* 初期化 */
-			if( BN_CLICKED == HIWORD(wParam) ){
-				InitializeToDefault( hwndDlg );
-				return TRUE;
-			}
-			break;
-#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
 		case IDC_BUTTON_KEYBINDLIST_REGISTER:
 			// 追加: キーセット→リスト。現在指定中のキーセットを選択中の機能に追加する。
 			// 貼り付け(F9, Shift+Ins, Ctrl+V)のように1つの機能に複数キーを持たせたい
@@ -587,6 +945,9 @@ INT_PTR CPropKeybindList::DispatchEvent(
 				ListView_EnsureVisible( hListView, nSelected, TRUE );
 
 				UpdateActionArea( hwndDlg );
+#ifdef NKMM_FIX_KEYBIND_PRESET_COMBO
+				UpdatePresetCombo( hwndDlg );
+#endif // NKMM_FIX_KEYBIND_PRESET_COMBO
 				return TRUE;
 			}
 			break;
@@ -622,6 +983,9 @@ INT_PTR CPropKeybindList::DispatchEvent(
 				}
 
 				UpdateActionArea( hwndDlg );
+#ifdef NKMM_FIX_KEYBIND_PRESET_COMBO
+				UpdatePresetCombo( hwndDlg );
+#endif // NKMM_FIX_KEYBIND_PRESET_COMBO
 				return TRUE;
 			}
 			break;
@@ -846,6 +1210,9 @@ INT_PTR CPropKeybindList::DispatchEvent(
 void CPropKeybindList::SetData( HWND hwndDlg )
 {
 	UpdateList( hwndDlg );
+#ifdef NKMM_FIX_KEYBIND_PRESET_COMBO
+	UpdatePresetCombo( hwndDlg );
+#endif // NKMM_FIX_KEYBIND_PRESET_COMBO
 }
 
 /* ダイアログデータの取得(読み取り専用ページのため何もしない) */
@@ -1197,6 +1564,7 @@ void CPropKeybindList::UpdateActionArea( HWND hwndDlg )
 	::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_CTRL ), NULL, TRUE );
 	::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_CHECK_ALT ), NULL, TRUE );
 	::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_COMBO_KEYBINDLIST_KEY ), NULL, TRUE );
+	::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_CAPTURE ), NULL, TRUE );	// 20260814
 }
 
 /*! 「キー入力」欄(直接入力)の表示文字列を更新する
@@ -1296,6 +1664,9 @@ void CPropKeybindList::Import( HWND hwndDlg )
 
 	UpdateList( hwndDlg );
 	UpdateActionArea( hwndDlg );
+#ifdef NKMM_FIX_KEYBIND_PRESET_COMBO
+	UpdatePresetCombo( hwndDlg );
+#endif // NKMM_FIX_KEYBIND_PRESET_COMBO
 }
 
 /*! キー割り当て設定をエクスポートする(キー割り当てタブのExport()と同じ) 20260804 */
@@ -1306,7 +1677,90 @@ void CPropKeybindList::Export( HWND hwndDlg )
 	cImpExpKeybind.ExportUI( G_AppInstance(), hwndDlg );
 }
 
-#ifdef NKMM_FIX_KEYBIND_TOOLBAR_RESET
+#ifdef NKMM_FIX_KEYBIND_PRESET_COMBO
+/*! 組み込みのキー割り当てプリセット(s_KeybindPresetTable)を適用する
+	@date 20260812
+	@date 20260813 「サクラエディタの既定へ初期化してから、プリセットの差分を再適用する」
+		方式に変更。直前まで別のプリセットが適用されていた場合でも、そのプリセットにしか
+		無い上書きが残ってしまわないようにするため(CShareData::ResetKeyBindToDefault()を
+		先に呼ぶ)。適用後はUpdatePresetCombo()で選択項目も実際の状態に合わせて更新する
+	@date 20260813 単独の「初期化」ボタンはプリセットコンボの先頭項目「サクラエディタ」
+		(nResId=0、差分インポート無しで初期化のみ行う)に統合し、廃止した
+
+	プリセットの実体はsakura_rc.rcにRCDATAとして埋め込まれた.keyファイル相当のデータ
+	(元はkeybind_presets/*.key)。
+*/
+void CPropKeybindList::ApplyPreset( HWND hwndDlg, int nPresetIndex )
+{
+	if( nPresetIndex < 0 || _countof(s_KeybindPresetTable) <= (size_t)nPresetIndex ){
+		return;
+	}
+	const SKeybindPresetInfo&	info = s_KeybindPresetTable[nPresetIndex];
+
+	if( IDCANCEL == ::MYMESSAGEBOX( hwndDlg, MB_OKCANCEL | MB_ICONQUESTION, GSTR_APPNAME,
+		LS(STR_PROPCOMKEYBINDLIST_PRESET_CONFIRM), info.pszName ) ){
+		// キャンセルされても、コンボ自体は選んだ項目の表示に切り替わってしまっている
+		// (ネイティブのコンボボックスは、ドロップダウンで項目をクリックした時点で
+		// CBN_SELCHANGEの前に表示が変わる仕様のため)。実際には何も変更していないので、
+		// 現在の状態に合わせて表示を戻す 20260813
+		UpdatePresetCombo( hwndDlg );
+		return;
+	}
+
+	CShareData::ResetKeyBindToDefault( m_Common.m_sKeyBind );
+
+	if( 0 != info.nResId ){	// 0(「サクラエディタ」)は初期化のみで、差分インポートは無い
+		std::wstring	sErrMsg;
+		if( !ImportPresetKeyBindInto( G_AppInstance(), m_Common, nPresetIndex, sErrMsg ) ){
+			if( !sErrMsg.empty() ){
+				ErrorMessage( hwndDlg, _T("%ls"), sErrMsg.c_str() );
+			}
+		}
+	}
+
+	UpdateList( hwndDlg );
+	UpdateActionArea( hwndDlg );
+	UpdatePresetCombo( hwndDlg );
+}
+
+/*! 現在のキー割り当てと一致する組み込みプリセットのインデックスを返す
+	@return s_KeybindPresetTable内のインデックス。どれとも一致しなければ-1 20260813
+
+	各プリセットについて「サクラエディタの既定へ初期化してからプリセットをインポートした
+	結果」をm_Commonのコピー上でシミュレートし、現在のキー割り当て(m_Common.m_sKeyBind)と
+	比較する。実データ(m_Common)には一切触れない。
+*/
+int CPropKeybindList::DetectCurrentPresetIndex()
+{
+	for( size_t i = 0; i < _countof(s_KeybindPresetTable); ++i ){
+		CommonSetting	cScratch = m_Common;
+		CShareData::ResetKeyBindToDefault( cScratch.m_sKeyBind );
+
+		if( 0 != s_KeybindPresetTable[i].nResId ){	// 0(「サクラエディタ」)は初期化のみ
+			std::wstring	sDummyErr;
+			if( !ImportPresetKeyBindInto( G_AppInstance(), cScratch, (int)i, sDummyErr ) ){
+				continue;
+			}
+		}
+		if( IsSameKeyBind( cScratch.m_sKeyBind, m_Common.m_sKeyBind ) ){
+			return (int)i;
+		}
+	}
+	return -1;
+}
+
+/*! プリセット選択コンボの選択項目を、現在のキー割り当てに合わせて更新する
+	@date 20260813
+
+	どのプリセットとも一致しなければ「カスタマイズ」(index 0)を選択する。
+*/
+void CPropKeybindList::UpdatePresetCombo( HWND hwndDlg )
+{
+	HWND	hComboPreset = ::GetDlgItem( hwndDlg, IDC_COMBO_KEYBINDLIST_PRESET );
+	int	nMatch = DetectCurrentPresetIndex();
+	Combo_SetCurSel( hComboPreset, ( 0 <= nMatch ) ? ( nMatch + 1 ) : 0 );
+}
+#elif defined(NKMM_FIX_KEYBIND_TOOLBAR_RESET)
 /*! キー割り当てを既定値に戻す(キー割り当てタブのInitializeToDefault()と同じ) 20260804 */
 void CPropKeybindList::InitializeToDefault( HWND hwndDlg )
 {
@@ -1320,6 +1774,6 @@ void CPropKeybindList::InitializeToDefault( HWND hwndDlg )
 	UpdateList( hwndDlg );
 	UpdateActionArea( hwndDlg );
 }
-#endif // NKMM_FIX_KEYBIND_TOOLBAR_RESET
+#endif // NKMM_FIX_KEYBIND_PRESET_COMBO
 
 #endif // NKMM_FIX_KEYBIND_LIST_TAB
