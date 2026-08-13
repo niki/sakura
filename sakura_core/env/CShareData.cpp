@@ -312,23 +312,16 @@ bool CShareData::InitShareData()
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
 
-#ifdef NKMM_FIX_TAB_CAPTION_COLOR
-			_tcscpy( sWindow.m_szWindowCaptionActive,
-				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
-				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-			_tcscpy( sWindow.m_szWindowCaptionInactive,
-				_T("${w?$h$:アウトプット$:${I?$f$:$f${U?*$} - $E$} -")
-				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-#else
 			//	Apr. 05, 2003 genta ウィンドウキャプションの初期値
 			//	Aug. 16, 2003 genta $N(ファイル名省略表示)をデフォルトに変更
+			//	2026.08.13 NKMM_FIX_TAB_CAPTION_COLOR有効時専用だった書式が
+			//	この書式と重複していたため統合(タブ側のタブ名カラー機能自体には影響しない)
 			_tcscpy( sWindow.m_szWindowCaptionActive,
 				_T("${w?$h$:アウトプット$:${I?$f$n$:$N$n$}$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
 			_tcscpy( sWindow.m_szWindowCaptionInactive,
 				_T("${w?$h$:アウトプット$:$f$n$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-#endif // NKMM_
 		}
 
 		// [タブバー]タブ
@@ -339,11 +332,9 @@ bool CShareData::InitShareData()
 			sTabBar.m_bDispTabWndMultiWin = FALSE;	//タブウインドウ表示	//@@@ 2003.05.31 MIK
 			wcscpy(	//@@@ 2003.06.13 MIK
 				sTabBar.m_szTabWndCaption,
-#ifdef NKMM_FIX_TAB_CAPTION_COLOR
-				L"${w?【Grep】$h$:【アウトプット】$:$f$}${U?*$}${R?【ビューモード】$:【上書き禁止】$}"
-#else
+				//	2026.08.13 NKMM_FIX_TAB_CAPTION_COLOR有効時専用だった書式が
+				//	この書式と重複していたため統合(タブ側のタブ名カラー機能自体には影響しない)
 				L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
-#endif // NKMM_
 			);
 			sTabBar.m_bSameTabWidth = FALSE;			//タブを等幅にする			//@@@ 2006.01.28 ryoji
 			sTabBar.m_bDispTabIcon = TRUE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
