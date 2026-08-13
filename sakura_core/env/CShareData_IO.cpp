@@ -116,6 +116,103 @@ void SetValueLimit(T& target, int maxval)
 	SetValueLimit( target, 0, maxval );
 }
 
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+/*!
+	起動時、読み込んだ履歴(最近使ったファイル/フォルダ)のうち実在しないパスを一覧表示し、
+	削除してよいかどうかをユーザに確認したうえで履歴から取り除く。
+
+	@note コントロールプロセスの初期化完了(SetEvent)後に呼ぶこと。LoadShareData()の中で
+		同期的に呼ぶと、確認ダイアログが出ている間コントロールプロセスの初期化完了イベントが
+		シグナルされず、他のウィンドウの起動が10秒のタイムアウトで「ビジー状態」エラーになる。
+
+	@date 2026.08.13 これまでは読み込み時に無条件で(確認なしに)削除していたが、
+		対象を見せたうえで選べるようにした。
+*/
+void CShareData_IO::ConfirmAndDeleteMissingHistory()
+{
+	DLLSHAREDATA* pShare = &GetDllShareData();
+	SShare_History& hist = pShare->m_sHistory;
+
+	bool aRemoveMru[MAX_MRU] = {};
+	bool aRemoveFolder[MAX_OPENFOLDER] = {};
+	int nRemoveCount = 0;
+	std::tstring strList;
+
+	for( int i = 0; i < hist.m_nMRUArrNum; i++ ){
+		const TCHAR* pszPath = hist.m_fiMRUArr[i].m_szPath;
+		if( pszPath[0] != _T('\0') && !fexist(pszPath) ){
+			aRemoveMru[i] = true;
+			nRemoveCount++;
+			strList += pszPath;
+			strList += _T("\n");
+		}
+	}
+	for( int i = 0; i < hist.m_nOPENFOLDERArrNum; i++ ){
+		const TCHAR* pszPath = hist.m_szOPENFOLDERArr[i].c_str();
+		if( pszPath[0] != _T('\0') && !fexist(pszPath) ){
+			aRemoveFolder[i] = true;
+			nRemoveCount++;
+			strList += pszPath;
+			strList += _T("\n");
+		}
+	}
+
+	if( 0 == nRemoveCount ){
+		return;
+	}
+	if( false == strList.empty() ){
+		strList.resize( strList.size() - 1 );	// 末尾の改行を除去
+	}
+
+	// この時点ではまだメインウィンドウが無いので、オーナー無しで表示する
+	const int nRet = TopConfirmMessage( NULL,
+		_T("最近使ったファイル・フォルダの履歴のうち、%d件のパスが見つかりませんでした。\n")
+		_T("履歴から削除しますか？\n\n%ts"),
+		nRemoveCount, strList.c_str() );
+	if( IDYES != nRet ){
+		return;
+	}
+
+	EditInfo	fiInit;
+	fiInit.m_nCharCode = CODE_DEFAULT;
+	fiInit.m_nViewLeftCol = CLayoutInt(0);
+	fiInit.m_nViewTopLine = CLayoutInt(0);
+	fiInit.m_ptCursor.Set(CLogicInt(0), CLogicInt(0));
+	_tcscpy( fiInit.m_szPath, _T("") );
+	fiInit.m_szMarkLines[0] = L'\0';
+
+	int nNewMruCount = 0;
+	for( int i = 0; i < hist.m_nMRUArrNum; i++ ){
+		if( aRemoveMru[i] ) continue;
+		if( nNewMruCount != i ){
+			hist.m_fiMRUArr[nNewMruCount] = hist.m_fiMRUArr[i];
+			hist.m_bMRUArrFavorite[nNewMruCount] = hist.m_bMRUArrFavorite[i];
+		}
+		nNewMruCount++;
+	}
+	for( int i = nNewMruCount; i < hist.m_nMRUArrNum; i++ ){
+		hist.m_fiMRUArr[i] = fiInit;
+		hist.m_bMRUArrFavorite[i] = false;
+	}
+	hist.m_nMRUArrNum = nNewMruCount;
+
+	int nNewFolderCount = 0;
+	for( int i = 0; i < hist.m_nOPENFOLDERArrNum; i++ ){
+		if( aRemoveFolder[i] ) continue;
+		if( nNewFolderCount != i ){
+			hist.m_szOPENFOLDERArr[nNewFolderCount] = hist.m_szOPENFOLDERArr[i];
+			hist.m_bOPENFOLDERArrFavorite[nNewFolderCount] = hist.m_bOPENFOLDERArrFavorite[i];
+		}
+		nNewFolderCount++;
+	}
+	for( int i = nNewFolderCount; i < hist.m_nOPENFOLDERArrNum; i++ ){
+		hist.m_szOPENFOLDERArr[i][0] = L'\0';
+		hist.m_bOPENFOLDERArrFavorite[i] = false;
+	}
+	hist.m_nOPENFOLDERArrNum = nNewFolderCount;
+}
+#endif // NKMM_
+
 /* 共有データのロード */
 bool CShareData_IO::LoadShareData()
 {
@@ -470,12 +567,6 @@ static bool ShareData_IO_Mru_Block( CDataProfile& cProfileHistory )
 				std::istringstream stream(line_buffer);
 				std::wstring path = GetTokenStringW(stream, ',');
 
-#if NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!fexist(path.c_str())) {
-					return false;
-				}
-#endif // NKMM_
-
 				EditInfo *pfiWork = &hist.m_fiMRUArr[index];
 				_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
 				pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
@@ -548,12 +639,6 @@ static bool ShareData_IO_Mru_Block( CDataProfile& cProfileHistory )
 				std::istringstream stream(line_buffer);
 
 				std::wstring dir = GetTokenStringW(stream, ',');
-
-#if NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!fexist(dir.c_str())) {
-					return false;
-				}
-#endif // NKMM_
 
 				hist.m_szOPENFOLDERArr[index].Assign(dir.c_str());
 				hist.m_bOPENFOLDERArrFavorite[index] = GetTokenBool(stream, ',');
@@ -758,12 +843,6 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				std::istringstream stream(line_buffer);
 				std::wstring path = GetTokenStringW(stream, ',');
 
-#if NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!fexist(path.c_str())) {
-					return false;
-				}
-#endif // NKMM_
-
 				EditInfo *pfiWork = &hist.m_fiMRUArr[index];
 				_tcsncpy(pfiWork->m_szPath, path.c_str(), _MAX_PATH);
 				pfiWork->m_szPath[_MAX_PATH - 1] = _T('\0');
@@ -833,12 +912,6 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 				std::istringstream stream(line_buffer);
 
 				std::wstring dir = GetTokenStringW(stream, ',');
-
-#if NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-				if (!fexist(dir.c_str())) {
-					return false;
-				}
-#endif // NKMM_
 
 				hist.m_szOPENFOLDERArr[index].Assign(dir.c_str());
 				hist.m_bOPENFOLDERArrFavorite[index] = GetTokenBool(stream, ',');

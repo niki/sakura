@@ -128,6 +128,13 @@ bool CControlProcess::InitializeProcess()
 		return false;
 	}
 
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+	// 初期化完了イベントのシグナル後に呼ぶ。ここより前で確認ダイアログを出すと、
+	// 他のウィンドウがコントロールプロセスの初期化完了を10秒待ってタイムアウトし、
+	// 「ビジー状態」エラーになってしまう。
+	CShareData_IO::ConfirmAndDeleteMissingHistory();
+#endif // NKMM_
+
 	return true;
 }
 

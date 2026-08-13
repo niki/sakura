@@ -40,6 +40,13 @@ public:
 	//セーブ・ロード
 	static bool LoadShareData();	/* 共有データのロード */
 	static void SaveShareData();	/* 共有データの保存 */
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+	// 2026.08.13 実在しない履歴(最近使ったファイル/フォルダ)を一覧確認したうえで削除する。
+	// コントロールプロセスの初期化完了(SetEvent)後に呼ぶこと。ここでLoadShareData()の
+	// 中から呼んでしまうと、確認ダイアログが出ている間コントロールプロセスの初期化が
+	// 完了しないため、他のウィンドウの起動が「ビジー状態」タイムアウトで失敗する。
+	static void ConfirmAndDeleteMissingHistory();
+#endif // NKMM_
 
 protected:
 	static bool ShareData_IO_2( bool );	/* 共有データの保存 */
