@@ -1,0 +1,22 @@
+# 拡張子の大部分(.h/.c/.cpp/.js/.css)はUTF-8で、実際にCP932(Shift-JIS)なのは
+# 以下のビルドツール5ファイルのみ(2026-08-13、全854ファイルを実バイト列で確認済み)。
+# 拡張子一括でdiff=sjisを付けると、UTF-8である720以上のファイルまで巻き込んで
+# diff.sjis.textconvドライバ設定時に壊れるため、パス指定に絞っている。
+HeaderMake/HeaderMake.cpp diff=sjis
+MakefileMake/MakefileMake.cpp diff=sjis
+btool/RcCvt.cpp diff=sjis
+btool/RcCvt.h diff=sjis
+btool/mrc2grc.cpp diff=sjis
+
+*.png binary
+*.jpg binary
+*.zip binary
+
+# sakura_core/sakura_rc.rc は UTF-16LE (rc.exeがCP932前提でUTF-8を誤読するため)。
+# working-tree-encoding=UTF-16 を試したが、このパスへの過去コミット(UTF-16化より前、
+# 生のCP932で保存されている)にgit stash/checkout/bisect等で触れると
+# 「failed to encode ... from UTF-8 to UTF-16」で作業ツリーが壊れることを確認したため、
+# 安全のため設定しないことにした。diffはBinary files differ表示のままで妥協する。
+sakura_core/sakura_rc.rc -diff
+
+# sakura_lang_en_US/sakura_lang_rc.rc は実際はUTF-8(CP932ではない)。
