@@ -102,6 +102,9 @@ static const SAnchorList anchorList[] = {
 	{IDC_COMBO_nSortType, ANCHOR_TOP},
 	{IDC_BUTTON_WINSIZE, ANCHOR_BOTTOM}, // 20060201 aroka
 	{IDC_BUTTON_MENU, ANCHOR_BOTTOM},
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	{IDC_EDIT_FL_FILTER, ANCHOR_TOP_LEFT_RIGHT}, // 20260814 絞り込みBox：横幅だけ追従、高さ・上端は固定
+#endif // NKMM_
 };
 
 //関数リストの列
@@ -111,6 +114,55 @@ enum EFuncListCol {
 	FL_COL_NAME		= 2,	//関数名
 	FL_COL_REMARK	= 3		//備考
 };
+
+#ifdef NKMM_FIX_OUTLINE_FILTER
+//! 絞り込みBoxのプレースホルダー文字色。CPropComKeybindListの絞り込み欄(20260803)と同じ配色。
+static const COLORREF NKMM_OUTLINE_FILTER_PLACEHOLDER_COLOR = RGB( 190, 190, 190 );
+
+/*! 絞り込みBox(IDC_EDIT_FL_FILTER)のサブクラスプロシージャ
+
+	EM_SETCUEBANNERは文字色を指定できず常にシステム既定の濃さで描画されるため、
+	CPropComKeybindList::FilterEditSubclassProc(sakura_core/prop/CPropComKeybindList.cpp)
+	と同じ手法で、未入力かつ非フォーカス時だけ自前でヒント文字を薄い色で描画する。
+	@date 20260814
+*/
+static LRESULT CALLBACK OutlineFilterEditSubclassProc(
+	HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData )
+{
+	if( WM_PAINT == uMsg ){
+		TCHAR szText[8];
+		::GetWindowText( hwnd, szText, _countof(szText) );
+		if( _T('\0') == szText[0] && ::GetFocus() != hwnd ){
+			PAINTSTRUCT ps;
+			HDC hdc = ::BeginPaint( hwnd, &ps );
+			RECT rc;
+			::GetClientRect( hwnd, &rc );
+			::FillRect( hdc, &rc, (HBRUSH)( COLOR_WINDOW + 1 ) );
+			::SetBkMode( hdc, TRANSPARENT );
+			::SetTextColor( hdc, NKMM_OUTLINE_FILTER_PLACEHOLDER_COLOR );
+			HFONT hFont = (HFONT)::SendMessage( hwnd, WM_GETFONT, 0, 0 );
+			HFONT hOldFont = ( NULL != hFont ) ? (HFONT)::SelectObject( hdc, hFont ) : NULL;
+			RECT rcLabel = rc;
+			rcLabel.left += 2;
+			::DrawText( hdc, LS(STR_DLGFNCLST_FILTER_HINT), -1, &rcLabel,
+				DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX );
+			if( NULL != hOldFont ){
+				::SelectObject( hdc, hOldFont );
+			}
+			::EndPaint( hwnd, &ps );
+			return 0;
+		}
+	}else if( WM_SETFOCUS == uMsg || WM_KILLFOCUS == uMsg ){
+		LRESULT lr = ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+		::InvalidateRect( hwnd, NULL, TRUE );	// ヒント文字の表示/非表示切り替えを反映する
+		return lr;
+	}else if( WM_NCDESTROY == uMsg ){
+		::RemoveWindowSubclass( hwnd, OutlineFilterEditSubclassProc, uIdSubclass );
+	}
+	return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+}
+#endif // NKMM_
 
 /*! ソート比較用プロシージャ */
 int CALLBACK CDlgFuncList::CompareFunc_Asc( LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort )
@@ -228,6 +280,9 @@ CDlgFuncList::CDlgFuncList() : CDialog(true)
 	m_bDummyLParamMode = false;
 #ifdef NKMM_FIX_OUTLINE
 	m_bVirtualListMode = false;
+#endif // NKMM_
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	m_sOutlineFilterText = _T("");
 #endif // NKMM_
 }
 
@@ -436,6 +491,27 @@ void CDlgFuncList::ChangeView( LPARAM pcEditView )
 	return;
 }
 
+#ifdef NKMM_FIX_OUTLINE_FILTER
+/*! 絞り込みBoxの文字列に(大文字小文字区別なしで)部分一致するか
+
+	絞り込み未指定(m_sOutlineFilterTextが空)なら常にtrueを返す。
+	m_sOutlineFilterTextは事前に小文字化して保持している(OnTimer参照)。
+	@date 20260814
+*/
+bool CDlgFuncList::MatchesOutlineFilter( const TCHAR* pszName ) const
+{
+	if( m_sOutlineFilterText.empty() ){
+		return true;
+	}
+	if( NULL == pszName ){
+		return false;
+	}
+	std::tstring sName( pszName );
+	for( size_t i = 0; i < sName.size(); ++i ){ sName[i] = (TCHAR)::towlower( sName[i] ); }
+	return std::tstring::npos != sName.find( m_sOutlineFilterText );
+}
+#endif // NKMM_
+
 /*! ダイアログデータの設定 */
 void CDlgFuncList::SetData()
 {
@@ -607,6 +683,9 @@ void CDlgFuncList::SetData()
 	else if ( OUTLINE_FILETREE == m_nListType ){
 		m_nViewType = VIEWTYPE_TREE;
 		SetTreeFile();
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		ApplyOutlineFilterToFileTree();
+#endif // NKMM_
 		::SetWindowText( GetHwnd(), LS(F_FILETREE) );	// ファイルツリー
 	}
 	else if( OUTLINE_TREE == m_nListType ){ /* 汎用ツリー */
@@ -693,6 +772,11 @@ void CDlgFuncList::SetData()
 		bSelected = false;
 		for( i = 0; i < m_pcFuncInfoArr->GetNum(); ++i ){
 			pcFuncInfo = m_pcFuncInfoArr->GetAt( i );
+#ifdef NKMM_FIX_OUTLINE_FILTER
+			if( !MatchesOutlineFilter( pcFuncInfo->m_cmemFuncName.GetStringPtr() ) ){
+				continue;
+			}
+#endif // NKMM_
 			if( !bSelected ){
 				if( pcFuncInfo->m_nFuncLineLAYOUT < nFuncLineTop
 					|| (pcFuncInfo->m_nFuncLineLAYOUT == nFuncLineTop && pcFuncInfo->m_nFuncColLAYOUT <= nFuncColTop) ){
@@ -717,9 +801,24 @@ void CDlgFuncList::SetData()
 			bSelected = true;
 			nSelectedLine =  nSelectedLineTop;
 		}
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		int nDisplayIndex = 0;
+		int nSelectedDisplayIndex = -1;
+#endif // NKMM_
 		for( i = 0; i < m_pcFuncInfoArr->GetNum(); ++i ){
 			/* 現在の解析結果要素 */
 			pcFuncInfo = m_pcFuncInfoArr->GetAt( i );
+#ifdef NKMM_FIX_OUTLINE_FILTER
+			if( !MatchesOutlineFilter( pcFuncInfo->m_cmemFuncName.GetStringPtr() ) ){
+				continue;
+			}
+			int nItemIndex = nDisplayIndex;
+			if( bSelected && i == nSelectedLine ){
+				nSelectedDisplayIndex = nDisplayIndex;
+			}
+#else
+			int nItemIndex = i;
+#endif // NKMM_
 
 			//	From Here Apr. 23, 2005 genta 行番号を左端へ
 			/* 行番号の表示 false=折り返し単位／true=改行単位 */
@@ -730,7 +829,7 @@ void CDlgFuncList::SetData()
 			}
 			item.mask = LVIF_TEXT | LVIF_PARAM;
 			item.pszText = szText;
-			item.iItem = i;
+			item.iItem = nItemIndex;
 			item.lParam	= i;
 			item.iSubItem = FL_COL_ROW;
 			ListView_InsertItem( hwndList, &item);
@@ -744,13 +843,13 @@ void CDlgFuncList::SetData()
 			}
 			item.mask = LVIF_TEXT;
 			item.pszText = szText;
-			item.iItem = i;
+			item.iItem = nItemIndex;
 			item.iSubItem = FL_COL_COL;
 			ListView_SetItem( hwndList, &item);
 
 			item.mask = LVIF_TEXT;
 			item.pszText = const_cast<TCHAR*>(pcFuncInfo->m_cmemFuncName.GetStringPtr());
-			item.iItem = i;
+			item.iItem = nItemIndex;
 			item.iSubItem = FL_COL_NAME;
 			ListView_SetItem( hwndList, &item);
 			//	To Here Apr. 23, 2005 genta 行番号を左端へ
@@ -771,7 +870,7 @@ void CDlgFuncList::SetData()
 
 				item.pszText = const_cast<TCHAR*>(_T(""));
 			}
-			item.iItem = i;
+			item.iItem = nItemIndex;
 			item.iSubItem = FL_COL_REMARK;
 			ListView_SetItem( hwndList, &item);
 
@@ -804,6 +903,9 @@ void CDlgFuncList::SetData()
 				m_cmemClipText.AppendNativeDataT(pcFuncInfo->m_cmemFuncName);
 				m_cmemClipText.AppendString(L"\r\n");
 			}
+#ifdef NKMM_FIX_OUTLINE_FILTER
+			++nDisplayIndex;
+#endif // NKMM_
 		}
 		//2002.02.08 hor Listは列幅調整とかを実行する前に表示しとかないと変になる
 		::ShowWindow( hwndList, SW_SHOW );
@@ -822,6 +924,15 @@ void CDlgFuncList::SetData()
 		dwExStyle |= LVS_EX_FULLROWSELECT;
 		ListView_SetExtendedListViewStyle( hwndList, dwExStyle );
 
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		// nSelectedLineはm_pcFuncInfoArr上のインデックスなので、絞り込みで表示行数が
+		// 詰まった実際の表示位置(nSelectedDisplayIndex)に読み替える 20260814
+		if( bSelected && nSelectedDisplayIndex < 0 ){
+			bSelected = false;
+		}else if( bSelected ){
+			nSelectedLine = nSelectedDisplayIndex;
+		}
+#endif // NKMM_
 		if( bSelected ){
 			ListView_GetItemRect( hwndList, 0, &rc, LVIR_BOUNDS );
 			ListView_Scroll( hwndList, 0, nSelectedLine * ( rc.bottom - rc.top ) );
@@ -1129,12 +1240,23 @@ void CDlgFuncList::SetListFlatVirtual()
 	}
 
 	/* 表示順序を登場順で初期化。列ヘッダクリックによる並び替えはSortListViewが行う */
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	// 絞り込みBoxに一致する項目のインデックスだけを登場順で積む
+	m_vecVirtualListOrder.clear();
+	m_vecVirtualListOrder.reserve( nNum );
+	for( int i = 0; i < nNum; ++i ){
+		if( MatchesOutlineFilter( m_pcFuncInfoArr->GetAt(i)->m_cmemFuncName.GetStringPtr() ) ){
+			m_vecVirtualListOrder.push_back( i );
+		}
+	}
+#else
 	m_vecVirtualListOrder.resize( nNum );
 	for( int i = 0; i < nNum; ++i ){
 		m_vecVirtualListOrder[i] = i;
 	}
+#endif // NKMM_
 
-	ListView_SetItemCountEx( hwndList, nNum, LVSICF_NOSCROLL );
+	ListView_SetItemCountEx( hwndList, (int)m_vecVirtualListOrder.size(), LVSICF_NOSCROLL );
 
 	// 仮想リストではLVSCW_AUTOSIZEが全項目の走査を前提とし信頼できないため固定幅にする
 	ListView_SetColumnWidth( hwndList, FL_COL_ROW, DpiScaleX(60) );
@@ -1155,6 +1277,11 @@ void CDlgFuncList::SetListFlatVirtual()
 	CLayoutInt nFuncLineTop(INT_MAX), nFuncColTop(INT_MAX);
 	for( int i = 0; i < nNum; ++i ){
 		const CFuncInfo* pcFuncInfo = m_pcFuncInfoArr->GetAt(i);
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		if( !MatchesOutlineFilter( pcFuncInfo->m_cmemFuncName.GetStringPtr() ) ){
+			continue;
+		}
+#endif // NKMM_
 		if( !bSelected ){
 			if( pcFuncInfo->m_nFuncLineLAYOUT < nFuncLineTop
 				|| (pcFuncInfo->m_nFuncLineLAYOUT == nFuncLineTop && pcFuncInfo->m_nFuncColLAYOUT <= nFuncColTop) ){
@@ -1292,6 +1419,14 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 	bSelected = FALSE;
 	for( i = 0; i < m_pcFuncInfoArr->GetNum(); ++i ){
 		pcFuncInfo = m_pcFuncInfoArr->GetAt( i );
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		if( !MatchesOutlineFilter( pcFuncInfo->m_cmemFuncName.GetStringPtr() ) ){
+			// 非一致のメソッド(リーフ)だけを飛ばす。クラスノードはmapClassNodeにより
+			// このメソッドを処理する際に初めて遅延生成されるため、一致するメソッドが
+			// 他に無いクラスは自動的に非表示のままになる(二段階の可視性判定は不要) 20260814
+			continue;
+		}
+#endif // NKMM_
 		const TCHAR*		pWork;
 		pWork = pcFuncInfo->m_cmemFuncName.GetStringPtr();
 		int m = 0;
@@ -1635,6 +1770,11 @@ void CDlgFuncList::SetListVB (void)
 	bSelected = FALSE;
 	for( i = 0; i < m_pcFuncInfoArr->GetNum(); ++i ){
 		pcFuncInfo = m_pcFuncInfoArr->GetAt( i );
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		if( !MatchesOutlineFilter( pcFuncInfo->m_cmemFuncName.GetStringPtr() ) ){
+			continue;
+		}
+#endif // NKMM_
 		if( !bSelected ){
 			if( pcFuncInfo->m_nFuncLineLAYOUT < nFuncLineTop
 				|| (pcFuncInfo->m_nFuncLineLAYOUT == nFuncLineTop && pcFuncInfo->m_nFuncColLAYOUT <= nFuncColTop) ){
@@ -1661,9 +1801,24 @@ void CDlgFuncList::SetListVB (void)
 	}
 
 	TCHAR			szText[2048];
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	int nDisplayIndex = 0;
+	int nSelectedDisplayIndex = -1;
+#endif // NKMM_
 	for( i = 0; i < m_pcFuncInfoArr->GetNum(); ++i ){
 		/* 現在の解析結果要素 */
 		pcFuncInfo = m_pcFuncInfoArr->GetAt( i );
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		if( !MatchesOutlineFilter( pcFuncInfo->m_cmemFuncName.GetStringPtr() ) ){
+			continue;
+		}
+		int nItemIndex = nDisplayIndex;
+		if( bSelected && i == nSelectedLine ){
+			nSelectedDisplayIndex = nDisplayIndex;
+		}
+#else
+		int nItemIndex = i;
+#endif // NKMM_
 
 		//	From Here Apr. 23, 2005 genta 行番号を左端へ
 		/* 行番号の表示 false=折り返し単位／true=改行単位 */
@@ -1674,7 +1829,7 @@ void CDlgFuncList::SetListVB (void)
 		}
 		item.mask = LVIF_TEXT | LVIF_PARAM;
 		item.pszText = szText;
-		item.iItem = i;
+		item.iItem = nItemIndex;
 		item.iSubItem = FL_COL_ROW;
 		item.lParam	= i;
 		ListView_InsertItem( hwndList, &item);
@@ -1688,13 +1843,13 @@ void CDlgFuncList::SetListVB (void)
 		}
 		item.mask = LVIF_TEXT;
 		item.pszText = szText;
-		item.iItem = i;
+		item.iItem = nItemIndex;
 		item.iSubItem = FL_COL_COL;
 		ListView_SetItem( hwndList, &item);
 
 		item.mask = LVIF_TEXT;
 		item.pszText = const_cast<TCHAR*>(pcFuncInfo->m_cmemFuncName.GetStringPtr());
-		item.iItem = i;
+		item.iItem = nItemIndex;
 		item.iSubItem = FL_COL_NAME;
 		ListView_SetItem( hwndList, &item);
 		//	To Here Apr. 23, 2005 genta 行番号を左端へ
@@ -1781,7 +1936,7 @@ void CDlgFuncList::SetListVB (void)
 			auto_sprintf(szTypeOption, _T("%ts（%ts）"), szType, szOption);
 		}
 		item.pszText = szTypeOption;
-		item.iItem = i;
+		item.iItem = nItemIndex;
 		item.iSubItem = FL_COL_REMARK;
 		ListView_SetItem( hwndList, &item);
 
@@ -1816,6 +1971,9 @@ void CDlgFuncList::SetListVB (void)
 			m_cmemClipText.AppendNativeDataT(pcFuncInfo->m_cmemFuncName);
 			m_cmemClipText.AppendString(L"\r\n");
 		}
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		++nDisplayIndex;
+#endif // NKMM_
 	}
 
 	//2002.02.08 hor Listは列幅調整とかを実行する前に表示しとかないと変になる
@@ -1829,6 +1987,13 @@ void CDlgFuncList::SetListVB (void)
 	ListView_SetColumnWidth( hwndList, FL_COL_COL, ListView_GetColumnWidth( hwndList, FL_COL_COL ) + 16 );
 	ListView_SetColumnWidth( hwndList, FL_COL_NAME, ListView_GetColumnWidth( hwndList, FL_COL_NAME ) + 16 );
 	ListView_SetColumnWidth( hwndList, FL_COL_REMARK, ListView_GetColumnWidth( hwndList, FL_COL_REMARK ) + 16 );
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	if( bSelected && nSelectedDisplayIndex < 0 ){
+		bSelected = FALSE;
+	}else if( bSelected ){
+		nSelectedLine = nSelectedDisplayIndex;
+	}
+#endif // NKMM_
 	if( bSelected ){
 		ListView_GetItemRect( hwndList, 0, &rc, LVIR_BOUNDS );
 		ListView_Scroll( hwndList, 0, nSelectedLine * ( rc.bottom - rc.top ) );
@@ -1885,8 +2050,57 @@ void CDlgFuncList::SetTree(bool tagjump, bool nolabel)
 		m_cmemClipText.AllocStringBuffer( nBuffLen + nBuffLenTag * nCount );
 	}
 
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	// 絞り込みBox用: m_nDepthの並びから「子孫に一致がある祖先」も可視にする2パス。
+	// 非一致の葉を単純に飛ばすだけだと、その葉が実は祖先ノード(構造ノード)だった
+	// 場合に子の親がいなくなってしまうため、SetTreeJavaのような単純continueは
+	// できない。以下のvParentDataIdxはこの後の本チェック(phParentStack、
+	// HTREEITEM版)と同じ深さスタック機構をデータインデックス版で再現したもの 20260814
+	bool bFilterActive = !m_sOutlineFilterText.empty();
+	std::vector<int> vFilterVisible;
+	if( bFilterActive ){
+		std::vector<int> vParentDataIdx( nFuncInfoArrNum, -1 );
+		{
+			std::vector<int> vStackDataIdx( 4, -1 );
+			int sp = 0;
+			for( int k = 0; k < nFuncInfoArrNum; k++ ){
+				const CFuncInfo* pcFuncInfoK = m_pcFuncInfoArr->GetAt(k);
+				if( sp != pcFuncInfoK->m_nDepth ){
+					if( (int)vStackDataIdx.size() <= pcFuncInfoK->m_nDepth + 1 ){
+						vStackDataIdx.resize( pcFuncInfoK->m_nDepth + 4, -1 );
+					}
+					sp = pcFuncInfoK->m_nDepth;
+				}
+				vParentDataIdx[k] = vStackDataIdx[sp];
+				if( (int)vStackDataIdx.size() <= sp + 1 ){
+					vStackDataIdx.resize( sp + 4, -1 );
+				}
+				vStackDataIdx[sp+1] = k;
+			}
+		}
+		vFilterVisible.assign( nFuncInfoArrNum, 0 );
+		for( int k = 0; k < nFuncInfoArrNum; k++ ){
+			vFilterVisible[k] = MatchesOutlineFilter( m_pcFuncInfoArr->GetAt(k)->m_cmemFuncName.GetStringPtr() ) ? 1 : 0;
+		}
+		// 子孫(k)に一致があれば親(vParentDataIdx[k])も可視にする。末尾から辿ることで
+		// 多段階の祖先へも連鎖的に伝播する
+		for( int k = nFuncInfoArrNum - 1; k >= 0; k-- ){
+			if( vFilterVisible[k] && vParentDataIdx[k] >= 0 ){
+				vFilterVisible[ vParentDataIdx[k] ] = 1;
+			}
+		}
+	}
+#endif // NKMM_
+
 	for (i = 0; i < nFuncInfoArrNum; i++){
 		CFuncInfo* pcFuncInfo = m_pcFuncInfoArr->GetAt(i);
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		if( bFilterActive && !vFilterVisible[i] ){
+			// 非可視の親配下には可視の子が存在し得ない(上の2パス目の性質上保証される)
+			// ため、phParentStackへの登録もまとめて省いてよい
+			continue;
+		}
+#endif // NKMM_
 
 		/*	新しいアイテムを作成
 			現在の親の下にぶら下げる形で、最後に追加する。
@@ -2147,6 +2361,61 @@ void CDlgFuncList::SetTreeFile()
 	}
 #endif // NKMM_
 }
+
+#ifdef NKMM_FIX_OUTLINE_FILTER
+/*! ファイルツリー(SetTreeFile構築後)へ絞り込みを事後適用する
+
+	SetTreeFile()はGrep列挙により未展開フォルダの中身を遅延構築する(展開時に
+	TVN_ITEMEXPANDING経由でSetTreeFileSubが呼ばれて初めて子が実体化する)ため、
+	他のビューのようにm_pcFuncInfoArrに対して絞り込みを掛けることができない。
+	ここでは「現在ツリーに実体化済みのノード」だけを対象に、ラベルが絞り込み
+	文字列に一致するか・可視な子を持つかをボトムアップに判定し、どちらも
+	満たさない枝をTreeView_DeleteItemで畳む。未展開フォルダは自分のラベルの
+	一致でのみ判定し、中身を先読み展開することはしない(既知の制約) 20260814
+*/
+void CDlgFuncList::ApplyOutlineFilterToFileTree()
+{
+	if( m_sOutlineFilterText.empty() ){
+		return;
+	}
+	HWND hwndTree = ::GetDlgItem( GetHwnd(), IDC_TREE_FL );
+	HTREEITEM hItem = TreeView_GetFirstVisible( hwndTree );	// SetTreeFile直後のexpand-allループと同じ流儀(まだスクロールされていないのでルート先頭と等価)
+	while( NULL != hItem ){
+		HTREEITEM hNext = TreeView_GetNextSibling( hwndTree, hItem );
+		if( !ApplyOutlineFilterToFileTreeSub( hwndTree, hItem ) ){
+			TreeView_DeleteItem( hwndTree, hItem );
+		}
+		hItem = hNext;
+	}
+}
+
+/*! ApplyOutlineFilterToFileTreeの再帰ヘルパ。自身が絞り込みに一致するか、
+	可視な子を1つでも持てばtrue(削除せず残す)を返す
+*/
+bool CDlgFuncList::ApplyOutlineFilterToFileTreeSub( HWND hwndTree, HTREEITEM hItem )
+{
+	TCHAR szText[_MAX_PATH];
+	TVITEM tvItem;
+	tvItem.mask = TVIF_HANDLE | TVIF_TEXT;
+	tvItem.hItem = hItem;
+	tvItem.pszText = szText;
+	tvItem.cchTextMax = _countof(szText);
+	bool bSelfMatch = ( TreeView_GetItem( hwndTree, &tvItem ) && MatchesOutlineFilter( szText ) );
+
+	bool bAnyVisibleChild = false;
+	HTREEITEM hChild = TreeView_GetChild( hwndTree, hItem );
+	while( NULL != hChild ){
+		HTREEITEM hNext = TreeView_GetNextSibling( hwndTree, hChild );
+		if( ApplyOutlineFilterToFileTreeSub( hwndTree, hChild ) ){
+			bAnyVisibleChild = true;
+		}else{
+			TreeView_DeleteItem( hwndTree, hChild );
+		}
+		hChild = hNext;
+	}
+	return bSelfMatch || bAnyVisibleChild;
+}
+#endif // NKMM_
 
 
 void CDlgFuncList::SetTreeFileSub( HTREEITEM hParent, const TCHAR* pszFile )
@@ -2445,6 +2714,9 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 #ifdef NKMM_FIX_OUTLINE
 			case IDC_LIST_FL_VIRTUAL:
 #endif // NKMM_
+#ifdef NKMM_FIX_OUTLINE_FILTER
+			case IDC_EDIT_FL_FILTER:
+#endif // NKMM_
 			case IDC_TREE_FL:
 				continue;
 			}
@@ -2453,6 +2725,12 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	}
 
 	SyncColor();
+
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	// 絞り込みBoxに未入力時のヒント文字を自前描画させる(EM_SETCUEBANNERは文字色を
+	// 指定できないため。CPropComKeybindListの絞り込み欄と同じ手法) 20260814
+	::SetWindowSubclass( GetItemHwnd( IDC_EDIT_FL_FILTER ), OutlineFilterEditSubclassProc, 0, 0 );
+#endif // NKMM_
 
 	::GetWindowRect( hwndDlg, &rc );
 	m_ptDefaultSize.x = rc.right - rc.left;
@@ -2504,6 +2782,12 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		// なので同じフォントを適用しておく(所有権はm_cFontText[1]のまま)
 		if (hFont) {
 			::SendMessage(GetItemHwnd(IDC_LIST_FL_VIRTUAL), WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
+		}
+#endif // NKMM_
+#ifdef NKMM_FIX_OUTLINE_FILTER
+		// 絞り込みBoxにもリスト/ツリーと同じフォントを適用する(所有権はm_cFontText[1]のまま) 20260814
+		if (hFont) {
+			::SendMessage(GetItemHwnd(IDC_EDIT_FL_FILTER), WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
 		}
 #endif // NKMM_
 	}
@@ -3124,6 +3408,25 @@ BOOL CDlgFuncList::OnCbnSelEndOk( HWND hwndCtl, int wID )
 
 }
 
+#ifdef NKMM_FIX_OUTLINE_FILTER
+/*! 絞り込みBox(IDC_EDIT_FL_FILTER)のEN_CHANGE
+
+	キー入力毎の即時再構築は大規模ファイルで重いため、デバウンス(200ms、
+	CDlgTagJumpList::StartTimerと同様のパターン)してからOnTimer(wParam==5)で
+	実際の絞り込み・再構築(SetData())を行う。
+	@date 20260814
+*/
+BOOL CDlgFuncList::OnEnChange( HWND hwndCtl, int wID )
+{
+	if( wID == IDC_EDIT_FL_FILTER ){
+		::KillTimer( GetHwnd(), 5 );
+		::SetTimer( GetHwnd(), 5, 200, NULL );
+		return TRUE;
+	}
+	return CDialog::OnEnChange( hwndCtl, wID );
+}
+#endif // NKMM_
+
 static void SortTree_Sub(HWND hWndTree,HTREEITEM htiParent, STreeViewSortData& data, int nSortType)
 {
 	if( SORTTYPE_ATOZ == nSortType || SORTTYPE_ZTOA == nSortType ){
@@ -3615,6 +3918,19 @@ INT_PTR CDlgFuncList::OnTimer( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		::KillTimer(hwnd, 4);
 		HWND hwndTree = ::GetDlgItem(hwnd, IDC_TREE_FL);
 		TreeView_ExpandAll(hwndTree, false, 64);
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	}else if( wParam == 5 ){
+		// 絞り込みBoxのデバウンスタイマー(200ms)。CDlgTagJumpList::StartTimerと同様の
+		// パターン。SetData()は全ビューの再構築を一括で行うため、これを呼び直すだけで
+		// 絞り込み後の再表示が完了する 20260814
+		::KillTimer( hwnd, 5 );
+		TCHAR szFilter[256];
+		::GetWindowText( ::GetDlgItem( hwnd, IDC_EDIT_FL_FILTER ), szFilter, _countof(szFilter) );
+		std::tstring sFilter( szFilter );
+		for( size_t i = 0; i < sFilter.size(); ++i ){ sFilter[i] = (TCHAR)::towlower( sFilter[i] ); }
+		m_sOutlineFilterText = sFilter;
+		SetData();
+#endif // NKMM_
 	}
 
 	if( !IsDocking() )

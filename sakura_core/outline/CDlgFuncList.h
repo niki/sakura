@@ -131,6 +131,9 @@ protected:
 	BOOL OnDestroy(void); // 20060201 aroka
 	BOOL OnCbnSelEndOk( HWND hwndCtl, int wID );
 	BOOL OnContextMenu( WPARAM, LPARAM );
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	BOOL OnEnChange( HWND hwndCtl, int wID );	//!< 絞り込みBox(IDC_EDIT_FL_FILTER)のEN_CHANGE
+#endif // NKMM_
 	void SetData();	/* ダイアログデータの設定 */
 	int GetData( void );	/* ダイアログデータの取得 */
 
@@ -147,6 +150,11 @@ protected:
 	bool ShouldUseVirtualFlatList() const;	//!< クラス階層のないフラットな巨大関数リストか(SetTreeJavaでなく仮想ListViewを使うべきか)
 	void SetListFlatVirtual();				//!< リストビューコントロールの初期化：仮想(LVS_OWNERDATA)フラット一覧
 	HWND GetActiveListHwnd() const;		//!< 現在有効なリストビュー(IDC_LIST_FLかIDC_LIST_FL_VIRTUALか)のHWNDを返す
+#endif // NKMM_
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	bool MatchesOutlineFilter( const TCHAR* pszName ) const;	//!< 絞り込み文字列に(大文字小文字区別なしで)部分一致するか。絞り込み未指定なら常にtrue
+	void ApplyOutlineFilterToFileTree();	//!< ファイルツリー(SetTreeFile構築後)へ絞り込みを事後適用する
+	bool ApplyOutlineFilterToFileTreeSub( HWND hwndTree, HTREEITEM hItem );	//!< 再帰ヘルパ。可視(自身一致or可視な子を持つ)ならtrue
 #endif // NKMM_
 
 	void SetTreeFileSub( HTREEITEM, const TCHAR* );
@@ -214,6 +222,9 @@ private:
 	bool m_bVirtualListMode;					//!< IDC_LIST_FLがLVS_OWNERDATA(仮想)モードで動作中か
 	std::vector<int> m_vecVirtualListOrder;	//!< 表示インデックス→m_pcFuncInfoArrのインデックス(ソート順を保持)
 #endif // NKMM_
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	std::tstring m_sOutlineFilterText;			//!< 絞り込みBoxの現在の文字列(小文字化済み、空="絞り込みなし")
+#endif // NKMM_
 
 	// 選択中の関数情報
 	CFuncInfo* m_cFuncInfo;
@@ -239,7 +250,11 @@ private:
 
 	POINT				m_ptDefaultSize;
 	POINT				m_ptDefaultSizeClient;
+#ifdef NKMM_FIX_OUTLINE_FILTER
+	RECT				m_rcItems[14];	// 20260814: 絞り込みBox(IDC_EDIT_FL_FILTER)分の1エントリを追加(anchorListと同数)
+#else
 	RECT				m_rcItems[13];
+#endif // NKMM_
 	
 #ifdef NKMM_FIX_OUTLINE_DIALOG
 	CFontAutoDeleter		m_cFontText[2];

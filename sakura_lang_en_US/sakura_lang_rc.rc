@@ -3865,6 +3865,8 @@ BEGIN
 	STR_DLGFNCLST_SORTTYPE2		"Alphabetical Order"
 	STR_DLGFNCLST_SORTTYPE2_2	"Alphabetical Order (Desc)"
 
+	STR_DLGFNCLST_FILTER_HINT	"Filter"
+
 	// NOT complete....
 	STR_DLGFNCLST_APND_DECLARE		"(Declaration)" 
 	STR_DLGFNCLST_APND_CLASS		" class"

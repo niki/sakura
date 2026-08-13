@@ -153,6 +153,7 @@
 #define IDC_LIST_FL_VIRTUAL             1746
 #define IDC_TREE_FL_CLEANUP_SCRATCH     1747
 #define IDC_CHECK_DELETE_MISSING_HISTORY 1748
+#define IDC_EDIT_FL_FILTER              1749
 #define IDC_CHECK_DispTOOLBAR           1085
 #define IDC_EDIT_AUTOBACKUP_INTERVAL    1086
 #define IDC_BUTTON_OPENHELP1            1087
@@ -902,7 +903,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        250
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1747
+#define _APS_NEXT_CONTROL_VALUE         1750
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif
