@@ -684,6 +684,13 @@ void CViewCommander::Command_TAB_DUPLICATE( void )
 			);
 		}
 	}
+
+	// 20260814 バグ修正: OpenNewEditor()呼び出し中(タブグループ参加待ちの
+	// 同期処理)や、その後のReorderTab()+TWNT_REFRESH通知の間に、複製元
+	// 自身のステータスバー(ファイル名欄を含む)が再描画されずファイル名が
+	// 表示されないままになることがあったため、複製処理の完了時に複製元の
+	// ステータスバーを明示的に再表示させる。
+	GetCaret().ShowCaretPosInfo();
 	return;
 }
 #endif // NKMM_

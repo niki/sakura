@@ -2846,6 +2846,15 @@ void CEditView::OnAfterLoad(const SLoadInfo& sLoadInfo)
 	GetCaret().m_nCaretPosX_Prev = CLayoutInt(0);
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	// 20260814 バグ修正: ウィンドウ複製(タブグループ参加)等、読み込み完了までの
+	// 間にレイアウト未構築の状態でGetDocumentWordNum()が呼ばれてしまう経路が
+	// 存在すると、文字数キャッシュが0のまま確定してしまい、以後編集するまで
+	// ステータスバーの文字数表示が0に固定されたままになる。読み込み完了が
+	// 確定するこの時点で改めて無効化しておき、直後のShowCaretPosInfo()で
+	// レイアウト構築済みの正しい値を必ず数え直させる。
+	m_pcEditDoc->InvalidateDocumentCharCountCache();
+#endif // NKMM_
 	//	2004.05.13 Moca 改行コードの設定内からここに移動
 	m_pcEditWnd->GetActiveView().GetCaret().ShowCaretPosInfo();
 }
