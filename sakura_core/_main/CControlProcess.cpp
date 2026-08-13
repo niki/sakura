@@ -92,6 +92,13 @@ bool CControlProcess::InitializeProcess()
 	// 2007.05.19 ryoji 「設定を保存して終了する」オプション処理（sakuext連携用）を追加
 	TCHAR szIniFile[_MAX_PATH];
 	CShareData_IO::LoadShareData();
+#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
+	// 初期化完了イベント(SetEvent)より前に呼ぶこと。削除対象があるときだけ確認
+	// ダイアログを出す実装なので、通常時(削除対象なし)はここでの遅延はほぼ無い。
+	// 逆にSetEventの後で呼ぶと、他のプロセスがブロック解除されてメインウィンドウの
+	// 作成を始めてしまい、確認ダイアログからフォーカスを奪ってしまう問題があった。
+	CShareData_IO::ConfirmAndDeleteMissingHistory();
+#endif // NKMM_
 	CFileNameManager::getInstance()->GetIniFileName( szIniFile, strProfileName.c_str() );	// 出力iniファイル名
 	if( !fexist(szIniFile) || CCommandLine::getInstance()->IsWriteQuit() ){
 		/* レジストリ項目 作成 */
@@ -127,13 +134,6 @@ bool CControlProcess::InitializeProcess()
 		TopErrorMessage( NULL, LS(STR_ERR_CTRLMTX4) );
 		return false;
 	}
-
-#if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
-	// 初期化完了イベントのシグナル後に呼ぶ。ここより前で確認ダイアログを出すと、
-	// 他のウィンドウがコントロールプロセスの初期化完了を10秒待ってタイムアウトし、
-	// 「ビジー状態」エラーになってしまう。
-	CShareData_IO::ConfirmAndDeleteMissingHistory();
-#endif // NKMM_
 
 	return true;
 }

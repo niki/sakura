@@ -349,7 +349,10 @@ bool CProcessFactory::WaitForInitializedControlProcess()
 		return true;
 	}
 	DWORD dwRet;
-	dwRet = ::WaitForSingleObject( hEvent, 10000 );	// 最大10秒間待つ
+	// 20260813 起動時に「存在しない履歴を削除するか」の確認ダイアログが出ている間は
+	// コントロールプロセスの初期化完了イベントがシグナルされないため、10秒だと
+	// ユーザがダイアログに気づく前にタイムアウトし得る。30秒に緩和した。
+	dwRet = ::WaitForSingleObject( hEvent, 30000 );	// 最大30秒間待つ
 	if( WAIT_TIMEOUT == dwRet ){	// コントロールプロセスの初期化が終了しない
 		::CloseHandle( hEvent );
 		TopErrorMessage( NULL, _T("エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。") );
