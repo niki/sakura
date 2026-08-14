@@ -238,6 +238,9 @@ bool CShareData::InitShareData()
 #ifdef NKMM_SESSION_RESTORE
 			sGeneral.m_bRestoreSession = FALSE;	// 20260814 終了時に開いていたファイルを次回起動時に自動復元する（既定OFF）
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+			sGeneral.m_bRestoreSessionBuffer = FALSE;	// 20260814 セッション復元時、未保存の変更内容もバッファから復元する（既定OFF）
+#endif // NKMM_
 
 			sGeneral.m_nCaretType = 0;					/* カーソルのタイプ 0=win 1=dos */
 			sGeneral.m_bIsINSMode = true;				/* 挿入／上書きモード */

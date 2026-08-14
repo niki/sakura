@@ -90,6 +90,9 @@ struct CommonSetting_General
 #ifdef NKMM_SESSION_RESTORE
 	BOOL	m_bRestoreSession;				//!< 終了時に開いていたファイルを次回起動時に自動復元する 20260814
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	BOOL	m_bRestoreSessionBuffer;		//!< セッション復元時、未保存の変更内容もバッファから復元する 20260814
+#endif // NKMM_
 
 	//ノーカテゴリ
 	BOOL	m_bFileOpen2Open;

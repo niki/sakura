@@ -575,6 +575,9 @@
 #ifdef NKMM_SESSION_RESTORE
 #define HIDC_CHECK_RESTORE_SESSION				10927 //終了時に開いていたファイルを次回起動時に自動復元する 20260814
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+#define HIDC_CHECK_RESTORE_SESSION_BUFFER			10928 //未保存の変更内容もバッファから復元する 20260814
+#endif // NKMM_
 #define HIDC_HOTKEY_TRAYMENU					10940 //左クリックメニューのショートカットキー
 #define HIDC_EDIT_REPEATEDSCROLLLINENUM			10941 //スクロール行数
 #define HIDC_EDIT_MAX_MRU_FILE					10942 //ファイル履歴の最大数

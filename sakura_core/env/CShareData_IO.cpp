@@ -29,6 +29,9 @@
 #include "CShareData.h"
 #include "util/string_ex2.h"
 #include "util/window.h"
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+#include "util/file.h"
+#endif // NKMM_
 #include "view/CEditView.h" // SColorStrategyInfo
 #include "view/colors/CColorStrategy.h"
 #include "plugin/CPlugin.h"
@@ -222,8 +225,72 @@ void CShareData_IO::ConfirmAndDeleteMissingHistory()
 #endif // NKMM_
 
 #ifdef NKMM_SESSION_RESTORE
+#ifdef NKMM_SESSION_RESTORE_BUFFER
 /*!
-	現在開いているファイルパス一覧をsakuraLoadShareData.iniの[Session]セクションに保存する。
+	SessionBuffers\フォルダ（バッファ内容バックアップの置き場所）の絶対パスを返す（末尾\付き）。
+	sakura.iniと同じフォルダ配下に置く。
+
+	@date 2026.08.14 新規作成
+*/
+std::wstring CShareData_IO::GetSessionBufferDir()
+{
+	TCHAR szIniFileName[_MAX_PATH + 1];
+	std::tstring strProfileName = to_tchar(CCommandLine::getInstance()->GetProfileName());
+	CFileNameManager::getInstance()->GetIniFileName( szIniFileName, strProfileName.c_str(), TRUE );
+
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	_tsplitpath( szIniFileName, szDrive, szDir, NULL, NULL );
+
+	std::wstring strDir = std::wstring(szDrive) + std::wstring(szDir) + L"SessionBuffers\\";
+	return strDir;
+}
+
+/*!
+	SessionBuffers\フォルダ配下の連番バックアップファイルの絶対パスを返す。
+
+	@date 2026.08.14 新規作成
+*/
+std::wstring CShareData_IO::GetSessionBufferFilePath( int index )
+{
+	WCHAR szName[32];
+	auto_sprintf( szName, L"%d.swp", index );
+	return GetSessionBufferDir() + szName;
+}
+
+/*!
+	SessionBuffers\フォルダの中身を全て消す（無ければ作る）。
+
+	@note 呼び出し側（CloseAllEditor()等）が、新しいバックアップファイルをダンプする
+		「前」に呼ぶことを想定している。「参照されなくなったファイルだけ消す」方式
+		（過去の実装）だと、ini書き込みが（読み取り専用等の理由で）早期returnした場合に
+		直前のダンプが残骸として残る、といった抜け道があったため、無条件の全消去＋
+		書き直しに変更した。タイミングによりファイルが使用中でロックされている等の
+		理由で削除できない場合は無視する（次回の全消去時に再度試みる。それ以上は
+		追わない＝「タイミングが悪いときは仕方ない」）
+
+	@date 2026.08.14 新規作成
+*/
+void CShareData_IO::ClearSessionBufferDir()
+{
+	std::wstring strDir = GetSessionBufferDir();
+	::CreateDirectory( strDir.c_str(), NULL );	// 無ければ作る。既に存在する等の失敗は無視する
+
+	WIN32_FIND_DATA fd;
+	std::wstring strPattern = strDir + L"*.*";
+	HANDLE hFind = ::FindFirstFile( strPattern.c_str(), &fd );
+	if( hFind != INVALID_HANDLE_VALUE ){
+		do{
+			if( fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) continue;
+			::DeleteFile( (strDir + fd.cFileName).c_str() );
+		}while( ::FindNextFile( hFind, &fd ) );
+		::FindClose( hFind );
+	}
+}
+#endif // NKMM_
+
+/*!
+	現在開いているファイルの一覧をsakuraLoadShareData.iniの[Session]セクションに保存する。
 
 	@note 他の設定項目と違い、アプリ完全終了時（最後の編集ウィンドウが閉じるとき）に
 		一度だけ呼ばれるスナップショットなので、DLLSHAREDATA(共有メモリ)には持たせず、
@@ -232,8 +299,13 @@ void CShareData_IO::ConfirmAndDeleteMissingHistory()
 		内容はそのまま保たれる（ShareData_IO_2の書き込み側のように全設定を作り直す必要はない）。
 
 	@date 2026.08.14 新規作成
+	@date 2026.08.14 NKMM_SESSION_RESTORE_BUFFER: bModified/szBufキーを追加。SessionBuffers\
+		フォルダ自体の管理（全消去）はこの関数の責務ではなく、呼び出し側がこの関数を呼ぶ
+		「前」にClearSessionBufferDir()を呼び、その後で各バックアップファイルをダンプして
+		からこの関数でiniへの参照を書く、という順序を守ること（20260814(3)、過去の
+		「参照されなくなったファイルだけ消す」reconcile方式から変更）
 */
-void CShareData_IO::SaveSessionFileList( const std::vector<std::wstring>& paths )
+void CShareData_IO::SaveSessionFileList( const std::vector<SSessionEntry>& entries )
 {
 	if( GetDllShareData().m_Common.m_sOthers.m_bIniReadOnly ){
 		return;
@@ -250,30 +322,45 @@ void CShareData_IO::SaveSessionFileList( const std::vector<std::wstring>& paths 
 	cProfile.SetWritingMode();
 
 	const WCHAR* pszSecName = LTEXT("Session");
-	int nCount = (int)paths.size();
+	int nCount = (int)entries.size();
 	cProfile.IOProfileData( pszSecName, LTEXT("_Session_Counts"), nCount );
 
 	WCHAR szKeyName[64];
 	for( int i = 0; i < nCount; ++i ){
 		auto_sprintf( szKeyName, LTEXT("Session[%02d].szPath"), i );
-		std::wstring path = paths[i];
+		std::wstring path = entries[i].path;
 		cProfile.IOProfileData( pszSecName, szKeyName, path );
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		auto_sprintf( szKeyName, LTEXT("Session[%02d].bModified"), i );
+		bool bModified = entries[i].bModified;
+		cProfile.IOProfileData( pszSecName, szKeyName, bModified );
+		if( bModified ){
+			auto_sprintf( szKeyName, LTEXT("Session[%02d].szBuf"), i );
+			// iniにはファイル名のみ保存する（プロファイルフォルダが移動しても壊れないように）
+			std::wstring strBufName = GetFileTitlePointer( entries[i].bufFile.c_str() );
+			cProfile.IOProfileData( pszSecName, szKeyName, strBufName );
+		}
+#endif // NKMM_
 	}
 
 	cProfile.WriteProfile( szIniFileName, LTEXT(" sakura.ini テキストエディタ設定ファイル") );
 }
 
 /*!
-	sakura.iniの[Session]セクションから、前回終了時に開いていたファイルパス一覧を読み込む。
+	sakura.iniの[Session]セクションから、前回終了時に開いていたファイルの一覧を読み込む。
+	NKMM_SESSION_RESTORE_BUFFER: bModifiedがtrueのエントリは、対応するバックアップ
+	ファイル(SessionBuffers\配下)が実在するときだけbufFileを絶対パスで埋める。
+	既に消費されて存在しない場合は静かにbModified=falseへ落とす（呼び出し側は
+	通常のパスオープンにフォールバックできる）。
 
-	@retval true  1件以上のパスを読み込めた
+	@retval true  1件以上のエントリを読み込めた
 	@retval false iniが無い、またはセッションが保存されていない
 
 	@date 2026.08.14 新規作成
 */
-bool CShareData_IO::LoadSessionFileList( std::vector<std::wstring>& paths )
+bool CShareData_IO::LoadSessionFileList( std::vector<SSessionEntry>& entries )
 {
-	paths.clear();
+	entries.clear();
 
 	TCHAR szIniFileName[_MAX_PATH + 1];
 	std::tstring strProfileName = to_tchar(CCommandLine::getInstance()->GetProfileName());
@@ -292,14 +379,31 @@ bool CShareData_IO::LoadSessionFileList( std::vector<std::wstring>& paths )
 
 	WCHAR szKeyName[64];
 	for( int i = 0; i < nCount; ++i ){
+		SSessionEntry entry;
 		auto_sprintf( szKeyName, LTEXT("Session[%02d].szPath"), i );
-		std::wstring path;
-		if( cProfile.IOProfileData( pszSecName, szKeyName, path ) && !path.empty() ){
-			paths.push_back( path );
+		cProfile.IOProfileData( pszSecName, szKeyName, entry.path );
+
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		auto_sprintf( szKeyName, LTEXT("Session[%02d].bModified"), i );
+		cProfile.IOProfileData( pszSecName, szKeyName, entry.bModified );
+		if( entry.bModified ){
+			auto_sprintf( szKeyName, LTEXT("Session[%02d].szBuf"), i );
+			std::wstring strBufName;
+			cProfile.IOProfileData( pszSecName, szKeyName, strBufName );
+			std::wstring strBufPath = strBufName.empty() ? std::wstring() : GetSessionBufferDir() + strBufName;
+			if( !strBufPath.empty() && IsFileExists( strBufPath.c_str(), true ) ){
+				entry.bufFile = strBufPath;
+			}else{
+				entry.bModified = false;	// 消費済み/存在しない→通常のパスオープンにフォールバック
+			}
 		}
+#endif // NKMM_
+
+		if( entry.path.empty() && !entry.bModified ) continue;	// 無意味なエントリは無視（壊れたini対策）
+		entries.push_back( entry );
 	}
 
-	return !paths.empty();
+	return !entries.empty();
 }
 #endif // NKMM_
 
@@ -2115,6 +2219,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 #endif // NKMM_
 #ifdef NKMM_SESSION_RESTORE
 	cProfile.IOProfileData( pszSecName, LTEXT("bRestoreSession"), common.m_sGeneral.m_bRestoreSession );
+#endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	cProfile.IOProfileData( pszSecName, LTEXT("bRestoreSessionBuffer"), common.m_sGeneral.m_bRestoreSessionBuffer );
 #endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispTOOLBAR")			, common.m_sWindow.m_bDispTOOLBAR );
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispSTATUSBAR")			, common.m_sWindow.m_bDispSTATUSBAR );

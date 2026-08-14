@@ -104,9 +104,23 @@ bool CNormalProcess::InitializeProcess()
 		EditInfo fiCheck;
 		CCommandLine::getInstance()->GetEditInfo( &fiCheck );
 		if( fiCheck.m_szPath[0] == _T('\0') ){
-			std::vector<std::wstring> vSessionPaths;
-			if( CShareData_IO::LoadSessionFileList( vSessionPaths ) ){
-				CCommandLine::getInstance()->SetFilesForSessionRestore( vSessionPaths );
+			std::vector<CShareData_IO::SSessionEntry> vSessionEntries;
+			if( CShareData_IO::LoadSessionFileList( vSessionEntries ) ){
+				// 20260814 NKMM_SESSION_RESTORE_BUFFER: 「バッファ内容の復元」チェックボックスが
+				// 解釈を決める。OFFならbModified/bufFileを無視し、パスが空(=無題)のエントリは
+				// 開く意味が無いので除外する（従来のパス一覧のみの復元と同じ挙動になる）
+				bool bBufferMode = !!GetDllShareData().m_Common.m_sGeneral.m_bRestoreSessionBuffer;
+				std::vector<std::wstring> vPaths;
+				std::vector<std::wstring> vBufPaths;
+				for( size_t i = 0; i < vSessionEntries.size(); ++i ){
+					const CShareData_IO::SSessionEntry& e = vSessionEntries[i];
+					if( !bBufferMode && e.path.empty() ) continue;
+					vPaths.push_back( e.path );
+					vBufPaths.push_back( bBufferMode ? e.bufFile : std::wstring() );
+				}
+				if( !vPaths.empty() ){
+					CCommandLine::getInstance()->SetFilesForSessionRestore( vPaths, vBufPaths );
+				}
 			}
 		}
 	}
@@ -426,6 +440,20 @@ bool CNormalProcess::InitializeProcess()
 		}
 	}
 
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	{
+		// 20260814 セッション：バッファ内容の復元。実ファイル/無題どちらの分岐でもここを通る。
+		// -BUFRESTORE=（別プロセスとして開かれた追加ファイル）またはセッション復元時の
+		// 直接注入（先頭ファイル、自プロセス内）のいずれかで設定される
+		const wchar_t* pszBufRestore = CCommandLine::getInstance()->GetBufRestorePath();
+		if( pszBufRestore && pszBufRestore[0] != L'\0' ){
+			pEditWnd->GetDocument()->m_cDocFileOperation.RestoreBufferOverlay( pszBufRestore );
+			// バックアップファイルはここでは削除しない。掃除はCloseAllEditor()側の
+			// 一括再構築のみで行う（復元は副作用のない読み取り専用操作とする）
+		}
+	}
+#endif // NKMM_
+
 	SetMainWindow( pEditWnd->GetHwnd() );
 
 	//	YAZAKI 2002/05/30 IMEウィンドウの位置がおかしいのを修正。
@@ -580,6 +608,18 @@ void CNormalProcess::OpenFiles( HWND hwnd )
 		for( i = 0; i < fileNum; i++ ){
 			// ファイル名差し替え
 			_tcscpy( fi.m_szPath, CCommandLine::getInstance()->GetFileName(i) );
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+			// 20260814 セッション：バッファ内容の復元。i番目の追加ファイルに対応する
+			// 復元元パスがあれば引き継ぐ（fiはループ間で使い回すので無い場合は明示的にクリア）
+			{
+				const wchar_t* pszBufRestore = CCommandLine::getInstance()->GetBufRestorePathForFile( i );
+				if( pszBufRestore ){
+					_tcscpy( fi.m_szBufRestorePath, pszBufRestore );
+				}else{
+					fi.m_szBufRestorePath[0] = _T('\0');
+				}
+			}
+#endif // NKMM_
 			bool ret = CControlTray::OpenNewEditor2( GetProcessInstance(), hwnd, &fi, bViewMode );
 			if( ret == false ){
 				break;

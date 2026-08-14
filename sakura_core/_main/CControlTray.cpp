@@ -1521,6 +1521,11 @@ bool CControlTray::OpenNewEditor2(
 		if( pfi->m_ptCursor.y >= 0					)cCmdLine.AppendF( _T(" -Y=%d"), pfi->m_ptCursor.y +1 );
 		if( pfi->m_nViewLeftCol >= CLayoutInt(0)	)cCmdLine.AppendF( _T(" -VX=%d"), (Int)pfi->m_nViewLeftCol + 1 );
 		if( pfi->m_nViewTopLine >= CLayoutInt(0)	)cCmdLine.AppendF( _T(" -VY=%d"), (Int)pfi->m_nViewTopLine + 1 );
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		// 20260814 セッション：バッファ内容の復元。別プロセスとして開く子ウィンドウへ
+		// 復元元パスをコマンドラインで橋渡しする
+		if( pfi->m_szBufRestorePath[0] != _T('\0') )cCmdLine.AppendF( _T(" -BUFRESTORE=\"%ts\""), pfi->m_szBufRestorePath );
+#endif // NKMM_
 	}
 	SLoadInfo sLoadInfo;
 	sLoadInfo.cFilePath = pfi ? pfi->m_szPath : _T("");
@@ -1664,7 +1669,13 @@ BOOL CControlTray::CloseAllEditor(
 	EditNode*	pWndArr;
 	int		n;
 
-	n = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pWndArr, FALSE );
+	// 20260814(3) bSort=TRUEで、実際のタブ表示順(ドラッグ操作で並べ替えたm_nIndex順)に
+	// 並んだ配列を取得する。以前はFALSE（生成順に近いスロット順）だったため、
+	// タブを並べ替えた状態で「すべて閉じる」→セッション復元すると、閉じる処理も
+	// セッション保存の並び順も表示順と食い違い、復元後にタブの並びが変わって
+	// しまっていた。ここをTRUEにすることで、閉じる処理自体もタブの端から順に
+	// 行われるようになり、セッション保存の並び順も表示順と一致する
+	n = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pWndArr, TRUE );
 	if( 0 == n ){
 		return TRUE;
 	}
@@ -1696,20 +1707,52 @@ BOOL CControlTray::CloseAllEditor(
 		}
 	}
 	if( bClosingEverything && GetDllShareData().m_Common.m_sGeneral.m_bRestoreSession ){
-		std::vector<std::wstring> vSessionPaths;
-		if( n >= 2 ){
-			for( int i = 0; i < n; ++i ){
-				if( pWndArr[i].m_bIsGrep ) continue;	// Grep結果ウィンドウは対象外
-				::SendMessageAny( pWndArr[i].GetHwnd(), MYWM_GETFILEINFO, 0, 0 );
-				const EditInfo* pfi = (EditInfo*)&GetDllShareData().m_sWorkBuffer.m_EditInfo_MYWM_GETFILEINFO;
-				if( pfi->m_szPath[0] != _T('\0') ){	// 無題（未保存）バッファは対象外
-					vSessionPaths.push_back( pfi->m_szPath );
+		std::vector<CShareData_IO::SSessionEntry> vSessionEntries;
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		// 20260814 未保存の変更内容もバッファから復元する（既存の「セッションの復元」に
+		// 依存する別チェックボックス。未保存内容が平文でプロファイルフォルダに残るため）
+		bool bBufferMode = !!GetDllShareData().m_Common.m_sGeneral.m_bRestoreSessionBuffer;
+		// 20260814(3) 保存の直前にSessionBuffers\を無条件で全消去してから書き直す。
+		// バッファ機能を後からOFFに戻した場合でも、この全終了のタイミングで
+		// 古いバックアップファイルが残らず掃除される
+		CShareData_IO::ClearSessionBufferDir();
+#endif // NKMM_
+		for( int i = 0; i < n; ++i ){
+			if( pWndArr[i].m_bIsGrep ) continue;	// Grep結果ウィンドウは対象外
+			::SendMessageAny( pWndArr[i].GetHwnd(), MYWM_GETFILEINFO, 0, 0 );
+			const EditInfo* pfi = (EditInfo*)&GetDllShareData().m_sWorkBuffer.m_EditInfo_MYWM_GETFILEINFO;
+			bool bUntitled = ( pfi->m_szPath[0] == _T('\0') );
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+			if( bBufferMode ){
+				if( bUntitled && !pfi->m_bIsModified ) continue;	// 空の無題バッファは対象外（従来通り）
+				// 20260814(2) 無題(パス無し)で変更ありのバッファは、パスによる代替の
+				// 復元手段が無い（保存しなければ内容そのものが失われる）ため、n==1
+				// （他に閉じるウィンドウが無い単独終了）でも保存対象とする。
+				// 名前付きファイルは従来通りn>=2のときのみ対象（単独終了は通常起動と
+				// 同じ意味なので対象外のまま）
+				if( n < 2 && !( bUntitled && pfi->m_bIsModified ) ) continue;
+				CShareData_IO::SSessionEntry entry( pfi->m_szPath );
+				if( pfi->m_bIsModified ){
+					entry.bModified = true;
+					entry.bufFile = CShareData_IO::GetSessionBufferFilePath( (int)vSessionEntries.size() );
+					// ダンプ先パスをワークバッファ経由で渡し、対象ウィンドウ自身に
+					// 現在のバッファ内容を書き出させる（同期メッセージ）
+					_tcscpy( GetDllShareData().m_sWorkBuffer.m_szDumpBufferTargetPath_MYWM_DUMPBUFFER, entry.bufFile.c_str() );
+					::SendMessageAny( pWndArr[i].GetHwnd(), MYWM_DUMPBUFFER, 0, 0 );
 				}
+				vSessionEntries.push_back( entry );
+				continue;
+			}
+#endif // NKMM_
+			if( n < 2 ) continue;	// 単独終了は通常起動と同じ意味なので対象外（従来通り）
+			if( !bUntitled ){	// 無題（未保存）バッファは対象外
+				vSessionEntries.push_back( CShareData_IO::SSessionEntry( pfi->m_szPath ) );
 			}
 		}
-		// n==1の場合はvSessionPathsが空のまま。SaveSessionFileList()は[Session]を
-		// 0件で上書きするので、古いセッションは明示的にクリアされる
-		CShareData_IO::SaveSessionFileList( vSessionPaths );
+		// 何も対象が無ければvSessionEntriesは空のまま。SaveSessionFileList()は[Session]を
+		// 0件で上書きするので、古いセッションは明示的にクリアされる（SessionBuffers\の
+		// 掃除は上のClearSessionBufferDir()で既に済んでいる）
+		CShareData_IO::SaveSessionFileList( vSessionEntries );
 
 		// これから閉じる各ウィンドウのWM_DESTROYへ「セッションは処理済み」を伝える。
 		// RequestCloseEditor()はSendMessage(同期)で1枚ずつ閉じ切るので、戻ってきた
@@ -1994,8 +2037,8 @@ void CControlTray::OnDestroy()
 	   クリア）と「そもそも書かれていない」を区別せず両方バックアップ対象にしないと、
 	   1枚終了時の「空で上書き」がSaveShareData()に食われてセクションごと消えてしまう
 	   20260814 */
-	std::vector<std::wstring> vSessionPathsBackup;
-	CShareData_IO::LoadSessionFileList( vSessionPathsBackup );
+	std::vector<CShareData_IO::SSessionEntry> vSessionEntriesBackup;
+	CShareData_IO::LoadSessionFileList( vSessionEntriesBackup );
 #endif // NKMM_
 
 	/* 共有データの保存 */
@@ -2003,7 +2046,7 @@ void CControlTray::OnDestroy()
 
 #ifdef NKMM_SESSION_RESTORE
 	if( GetDllShareData().m_Common.m_sGeneral.m_bRestoreSession ){
-		CShareData_IO::SaveSessionFileList( vSessionPathsBackup );
+		CShareData_IO::SaveSessionFileList( vSessionEntriesBackup );
 	}
 #endif // NKMM_
 

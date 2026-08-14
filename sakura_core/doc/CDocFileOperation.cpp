@@ -39,6 +39,9 @@
 #include "env/CSakuraEnvironment.h"
 #include "plugin/CPlugin.h"
 #include "plugin/CJackManager.h"
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+#include "CReadManager.h"
+#endif // NKMM_
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -222,6 +225,71 @@ void CDocFileOperation::ReloadCurrentFile(
 	}
 }
 
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+/*!	セッション：バッファ内容の復元
+
+	backupFilePathの内容でバッファを丸ごと置き換え、変更フラグを立てる。
+	FileLoad()/ReloadCurrentFile()と違い、InitDoc()（変更フラグをfalseへリセット）や
+	SetFilePathAndIcon()（現在のファイルパス＝ドキュメント識別情報の変更）は一切呼ばない。
+	マクロ・プラグインフックも通さない。CSaveAgent::OnSave()が使う
+	CWriteManager::WriteFile_From_CDocLineMgr()（バッファ→ファイルの生ダンプ）に対応する、
+	ファイル→バッファの生ロードのみを行う。
+
+	@param backupFilePath [in] バックアップファイル(UTF-8+BOM、CloseAllEditor()のMYWM_DUMPBUFFERで書き出したもの)のパス
+
+	@retval true  上書きに成功した
+	@retval false backupFilePathが存在しない、または読み込みに失敗した（呼び出し側は通常のパスオープンにフォールバックできる）
+
+	@date 2026.08.14 新規作成
+*/
+bool CDocFileOperation::RestoreBufferOverlay( const WCHAR* backupFilePath )
+{
+	if( !fexist( backupFilePath ) ) return false;	// 消費済み/存在しない→静かに諦める
+
+	SLoadInfo sLoadInfo;
+	sLoadInfo.cFilePath = backupFilePath;
+	sLoadInfo.eCharCode = CODE_UTF8;
+
+	CReadManager cReader;
+	EConvertResult eResult = cReader.ReadFile_To_CDocLineMgr(
+		&m_pcDocRef->m_cDocLineMgr,
+		sLoadInfo,
+		&m_pcDocRef->m_cDocFile.m_sFileInfo
+	);
+	if( eResult == RESULT_FAILURE ) return false;
+
+#ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
+	// 文書全体の文字数キャッシュを無効化する。ReadFile_To_CDocLineMgr()はCDocLineMgrを
+	// 直接書き換えるため、この差分をキャッシュ側は感知できない 20260815
+	m_pcDocRef->InvalidateDocumentCharCountCache();
+#endif // NKMM_
+
+	// レイアウト情報の再計算（CLoadAgent::OnLoad()と同じ呼び出し方。ドキュメントタイプは
+	// 変更しないので現在のm_cDocType属性をそのまま使う）
+	const STypeConfig& ref = m_pcDocRef->m_cDocType.GetDocumentAttribute();
+	CKetaXInt nMaxLineKetas = ref.m_nMaxLineKetas;
+	if( ref.m_nTextWrapMethod != WRAP_SETTING_WIDTH )
+		nMaxLineKetas = CKetaXInt(MAXLINEKETAS);
+	m_pcDocRef->m_cLayoutMgr.SetLayoutInfo( true, true, ref, ref.m_nTabSpace, ref.m_nTsvMode, nMaxLineKetas, CLayoutXInt(-1), &m_pcDocRef->m_pcEditWnd->GetLogfont() );
+	m_pcDocRef->m_pcEditWnd->ClearViewCaretPosInfo();
+
+	// 未保存の変更を復元した、という状態を明示する
+	m_pcDocRef->m_cDocEditor.SetModified( true, true );
+
+	// 画面の更新。通常のロードフロー（DoLoadFlow→NotifyFinalLoad→CLoadAgent::OnFinalLoad()）
+	// をバイパスしているため、ここで明示的に再描画・スクロールバー更新をしないと、
+	// 起動直後の初回描画は元の内容（未変更のディスク内容、または空の無題）のまま残ってしまい、
+	// 他のタブに切り替える等の再描画が起きるまで反映されない 20260814(2)
+	CEditWnd* pWnd = m_pcDocRef->m_pcEditWnd;
+	pWnd->Views_RedrawAll();
+	::InvalidateRect( pWnd->GetHwnd(), NULL, TRUE );
+	CCaret& cCaret = pWnd->GetActiveView().GetCaret();
+	cCaret.MoveCursor( cCaret.GetCaretLayoutPos(), true );
+	pWnd->GetActiveView().AdjustScrollBars();
+
+	return true;
+}
+#endif // NKMM_
 
 
 

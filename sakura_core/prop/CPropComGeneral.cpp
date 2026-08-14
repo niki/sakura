@@ -68,6 +68,9 @@ static const DWORD p_helpids[] = {	//10900
 #ifdef NKMM_SESSION_RESTORE
 	IDC_CHECK_RESTORE_SESSION,		HIDC_CHECK_RESTORE_SESSION,			//終了時に開いていたファイルを次回起動時に自動復元する
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	IDC_CHECK_RESTORE_SESSION_BUFFER,	HIDC_CHECK_RESTORE_SESSION_BUFFER,	//未保存の変更内容もバッファから復元する
+#endif // NKMM_
 	IDC_RADIO_CARETTYPE0,			HIDC_RADIO_CARETTYPE0,				//カーソル形状（Windows風）
 	IDC_RADIO_CARETTYPE1,			HIDC_RADIO_CARETTYPE1,				//カーソル形状（MS-DOS風）
 	IDC_SPIN_REPEATEDSCROLLLINENUM,	HIDC_EDIT_REPEATEDSCROLLLINENUM,
@@ -151,6 +154,20 @@ INT_PTR CPropGeneral::DispatchEvent(
 
 			case IDC_CHECK_STAYTASKTRAY:	/* タスクトレイに常駐 */
 				return TRUE;
+
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+			case IDC_CHECK_RESTORE_SESSION:	/* セッションの復元 */
+				// 20260814 「セッションの復元」がOFFなら「バッファ内容の復元」も意味が無いため連動して無効化
+				if( ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_RESTORE_SESSION ) ){
+					::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER ), TRUE );
+				}else{
+					::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER ), FALSE );
+				}
+				return TRUE;
+
+			case IDC_CHECK_RESTORE_SESSION_BUFFER:	/* バッファ内容の復元 */
+				return TRUE;
+#endif // NKMM_
 
 			case IDC_BUTTON_CLEAR_MRU_FILE:
 				/* ファイルの履歴をクリア */
@@ -429,6 +446,11 @@ void CPropGeneral::SetData( HWND hwndDlg )
 	// 20260814 終了時に開いていたファイルを次回起動時に自動復元する
 	::CheckDlgButton( hwndDlg, IDC_CHECK_RESTORE_SESSION, m_Common.m_sGeneral.m_bRestoreSession );
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	// 20260814 未保存の変更内容もバッファから復元する（「セッションの復元」がOFFなら無効化）
+	::CheckDlgButton( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER, m_Common.m_sGeneral.m_bRestoreSessionBuffer );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER ), m_Common.m_sGeneral.m_bRestoreSession );
+#endif // NKMM_
 
 	/* タスクトレイを使う */
 	::CheckDlgButton( hwndDlg, IDC_CHECK_USETRAYICON, m_Common.m_sGeneral.m_bUseTaskTray );
@@ -566,6 +588,10 @@ int CPropGeneral::GetData( HWND hwndDlg )
 #ifdef NKMM_SESSION_RESTORE
 	// 20260814 終了時に開いていたファイルを次回起動時に自動復元する
 	m_Common.m_sGeneral.m_bRestoreSession = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_RESTORE_SESSION );
+#endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	// 20260814 未保存の変更内容もバッファから復元する
+	m_Common.m_sGeneral.m_bRestoreSessionBuffer = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER );
 #endif // NKMM_
 
 	/* タスクトレイを使う */

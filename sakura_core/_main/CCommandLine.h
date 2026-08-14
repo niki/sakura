@@ -104,14 +104,40 @@ public:
 	//! セッション復元用に、保存されていたファイルパス一覧をコマンドライン起動と同じ形（
 	//! 先頭ファイルはm_fi、残りはm_vFiles）に流し込む。既存の複数ファイル起動経路を
 	//! そのまま再利用するための注入用メソッド 20260814
-	void SetFilesForSessionRestore( const std::vector<std::wstring>& paths )
+	//! bufPathsが与えられた場合、pathsと同じインデックスで対応するバッファ内容の
+	//! 復元元パス（空なら無し）を、先頭はm_cmBufRestorePathへ、残りはm_vBufRestorePathsへ
+	//! 振り分ける（NKMM_SESSION_RESTORE_BUFFER）
+	void SetFilesForSessionRestore( const std::vector<std::wstring>& paths
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		, const std::vector<std::wstring>& bufPaths
+#endif // NKMM_
+	)
 	{
 		if( paths.empty() ) return;
 		_tcscpy( m_fi.m_szPath, paths[0].c_str() );
 		m_vFiles.clear();
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		if( !bufPaths.empty() && !bufPaths[0].empty() ){
+			m_cmBufRestorePath.SetString( bufPaths[0].c_str() );
+		}
+		m_vBufRestorePaths.clear();
+#endif // NKMM_
 		for( size_t i = 1; i < paths.size(); ++i ){
 			m_vFiles.push_back( paths[i] );
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+			m_vBufRestorePaths.push_back( i < bufPaths.size() ? bufPaths[i] : std::wstring() );
+#endif // NKMM_
 		}
+	}
+#endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	//! 先頭ファイル用のバッファ復元元パス（コマンドライン -BUFRESTORE= またはセッション復元注入で設定される）
+	LPCWSTR GetBufRestorePath() const { return m_cmBufRestorePath.GetStringPtr(); }
+	//! m_vFiles[i]（i番目の追加ファイル）に対応するバッファ復元元パス。無ければNULL 20260814
+	const wchar_t* GetBufRestorePathForFile( int i ) const
+	{
+		if( i < 0 || (size_t)i >= m_vBufRestorePaths.size() || m_vBufRestorePaths[i].empty() ) return NULL;
+		return m_vBufRestorePaths[i].c_str();
 	}
 #endif // NKMM_
 
@@ -132,6 +158,10 @@ private:
 	CNativeW	m_cmMacroType;		//! [out] マクロ種別
 	CNativeW	m_cmProfile;		//! プロファイル名
 	std::vector<std::tstring> m_vFiles;	//!< ファイル名(複数)
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	CNativeW	m_cmBufRestorePath;			//!< 先頭ファイル用のバッファ復元元パス 20260814
+	std::vector<std::wstring> m_vBufRestorePaths;	//!< m_vFilesと対応するバッファ復元元パス(空文字列=無し) 20260814
+#endif // NKMM_
 };
 
 ///////////////////////////////////////////////////////////////////////

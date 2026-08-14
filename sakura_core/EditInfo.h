@@ -52,6 +52,11 @@ struct EditInfo {
 	//各種状態
 	bool		m_bIsModified;							//!< 変更フラグ
 
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	//セッション：バッファ内容の復元 20260814
+	TCHAR		m_szBufRestorePath[_MAX_PATH];			//!< 起動直後にこのパスの内容でバッファを上書きする(空なら何もしない)
+#endif // NKMM_
+
 	//GREPモード
 	bool		m_bIsGrep;								//!< Grepのウィンドウか
 	wchar_t		m_szGrepKey[1024];
@@ -88,6 +93,9 @@ struct EditInfo {
 		m_szPath[0] = '\0';
 		m_szMarkLines[0] = L'\0';
 		m_szDocType[0] = '\0';
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		m_szBufRestorePath[0] = '\0';
+#endif // NKMM_
 	}
 };
 

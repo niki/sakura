@@ -72,6 +72,9 @@
 #include "doc/layout/CLayout.h"
 #include "debug/CRunningTimer.h"
 #include "sakura_rc.h"
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+#include "CWriteManager.h"
+#endif // NKMM_
 
 
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたので
@@ -1834,8 +1837,13 @@ LRESULT CEditWnd::DispatchEvent(
 			&& !m_pShareData->m_sFlags.m_bSessionHandledByCloseAll
 			&& m_pShareData->m_sNodes.m_nEditArrNum == 1 )
 		{
-			std::vector<std::wstring> vEmptyPaths;
-			CShareData_IO::SaveSessionFileList( vEmptyPaths );
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+			// 20260814(3) セッションを空クリアするのに合わせ、SessionBuffers\の
+			// 古いバックアップファイルも掃除する
+			CShareData_IO::ClearSessionBufferDir();
+#endif // NKMM_
+			std::vector<CShareData_IO::SSessionEntry> vEmptyEntries;
+			CShareData_IO::SaveSessionFileList( vEmptyEntries );
 		}
 #endif // NKMM_
 
@@ -1935,6 +1943,28 @@ LRESULT CEditWnd::DispatchEvent(
 		/* 編集ファイル情報を格納 */
 		GetDocument()->GetEditInfo( pfi );
 		return 0L;
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	case MYWM_DUMPBUFFER:
+		/* セッション：現在のバッファ内容を指定パスへダンプする(トレイ→エディタ) 20260814
+		   DoSaveFlow/FileSaveAsは通らない。マクロ・プラグイン・ドキュメント識別情報
+		   （現在のファイルパス／変更フラグ）を一切変更しない、純粋なバッファ→ファイルの
+		   生ダンプ。UTF-8+BOM固定で書き出す（復元時はCReadManagerで同じ形式を前提に読む） */
+		{
+			const WCHAR* pszTargetPath = m_pShareData->m_sWorkBuffer.m_szDumpBufferTargetPath_MYWM_DUMPBUFFER;
+			SSaveInfo sSaveInfo;
+			sSaveInfo.cFilePath = to_tchar(pszTargetPath);
+			sSaveInfo.eCharCode = CODE_UTF8;
+			sSaveInfo.bBomExist = true;
+			sSaveInfo.cEol = EOL_NONE;	// 改行コード無変換（バッファの内容をそのまま保存）
+			try{
+				CWriteManager cWriter;
+				cWriter.WriteFile_From_CDocLineMgr( GetDocument()->m_cDocLineMgr, sSaveInfo );
+			}catch(...){
+				return FALSE;
+			}
+		}
+		return TRUE;
+#endif // NKMM_
 #ifdef NKMM_FIX_TRAY_TYPELIST_CURRENT_TYPE
 	case MYWM_GET_CURRENT_DOCTYPE:
 		/* トレイから「タイプ別設定一覧」を開く際、現在の文書のタイプをデフォルト選択にするための問い合わせ */

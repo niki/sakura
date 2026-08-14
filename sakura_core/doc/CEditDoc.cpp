@@ -893,6 +893,19 @@ BOOL CEditDoc::OnFileClose(bool bGrepNoConfirm)
 		if (!m_cDocEditor.IsModified() && !m_cDocFile.IsChgCodeSet()) {
 			return TRUE;
 		}
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		// 20260814(4) セッション：バッファ内容の復元がONで、かつCloseAllEditor()による
+		// 全終了処理中（＝この内容はバッファとして自動的に退避され、次回起動時に
+		// 復元される）であれば、無題（パス未確定）バッファは変更の有無に関わらず
+		// 保存確認を出さない。名前付きファイルは、バッファ退避があってもユーザーが
+		// きちんと保存したいかどうかは別問題なので、従来通り確認する
+		if( !m_cDocFile.GetFilePathClass().IsValidPath()
+			&& GetDllShareData().m_sFlags.m_bSessionHandledByCloseAll
+			&& GetDllShareData().m_Common.m_sGeneral.m_bRestoreSessionBuffer )
+		{
+			return TRUE;
+		}
+#endif // NKMM_
 	}
 
 	// -- -- 保存確認 -- -- //

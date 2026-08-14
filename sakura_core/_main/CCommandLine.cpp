@@ -61,6 +61,9 @@
 #define CMDLINEOPT_GROUP		500  //!< タブモードのグループを指定して開く
 #define CMDLINEOPT_PROF			501  //!< プロファイルを選択
 #define CMDLINEOPT_PROFMGR		502  //!< プロファイルマネージャを起動時に表示
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+#define CMDLINEOPT_BUFRESTORE	503  //!< セッション：起動直後にこのパスの内容でバッファを上書きする 20260814
+#endif // NKMM_
 
 /*!
 	コマンドラインのチェックを行って、オプション番号と
@@ -131,6 +134,9 @@ int CCommandLine::CheckCommandLine(
 		{_T("M"),		1,			CMDLINEOPT_M, false},		// 2009.06.14 syat
 		{_T("MTYPE"),	5,			CMDLINEOPT_MTYPE, false},	// 2009.06.14 syat
 		{_T("PROF"),	4,			CMDLINEOPT_PROF, true},	// 2013.12.20 Moca
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		{_T("BUFRESTORE"),	10,		CMDLINEOPT_BUFRESTORE, false},	// 2026.08.14 セッション：バッファ内容の復元
+#endif // NKMM_
 		{NULL, 0, 0}
 	};
 
@@ -499,6 +505,11 @@ void CCommandLine::ParseCommandLine( LPCTSTR pszCmdLineSrc, bool bResponse )
 			case CMDLINEOPT_PROFMGR:
 				m_bProfileMgr = true;
 				break;
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+			case CMDLINEOPT_BUFRESTORE:	// 2026.08.14 セッション：バッファ内容の復元
+				m_cmBufRestorePath.SetStringT( arg );
+				break;
+#endif // NKMM_
 			}
 		}
 		pszToken = my_strtok<TCHAR>( pszCmdLineWork, nCmdLineWorkLen, &nPos, _T(" ") );

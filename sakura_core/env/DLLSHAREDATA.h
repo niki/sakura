@@ -130,6 +130,9 @@ public:
 	EditInfo			m_EditInfo_MYWM_GETFILEINFO;	//MYWM_GETFILEINFOデータ受け渡し用	####美しくない
 	CLogicPoint			m_LogicPoint;					//!< カーソル位置
 	STypeConfig			m_TypeConfig;
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	WCHAR				m_szDumpBufferTargetPath_MYWM_DUMPBUFFER[_MAX_PATH];	//!< MYWM_DUMPBUFFERデータ受け渡し用 20260814
+#endif // NKMM_
 };
 
 //! 共有ハンドル

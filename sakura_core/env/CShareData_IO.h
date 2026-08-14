@@ -53,8 +53,32 @@ public:
 #ifdef NKMM_SESSION_RESTORE
 	// 2026.08.14 終了時に開いていたファイルの一覧をsakura.iniの[Session]セクションへ保存/読込する。
 	// DLLSHAREDATA(共有メモリ)は経由せず、iniファイルへ直接読み書きする（詳細は実装側コメント参照）。
-	static void SaveSessionFileList( const std::vector<std::wstring>& paths );
-	static bool LoadSessionFileList( std::vector<std::wstring>& paths );
+	//
+	// 20260814 NKMM_SESSION_RESTORE_BUFFER: pathが空文字列のエントリは無題バッファを表す。
+	// bModifiedがtrueのエントリはbufFile（SessionBuffers\配下の絶対パス）にバッファ内容の
+	// バックアップを持つ。SessionBuffers\フォルダの中身の管理（全消去）は
+	// ClearSessionBufferDir()の責務であり、呼び出し側が保存前に明示的に呼ぶ。
+	// SaveSessionFileList()自体はiniの[Session]セクションの読み書きのみを行う。
+	struct SSessionEntry {
+		std::wstring path;			//!< 空 = 無題バッファ
+		bool bModified = false;	//!< true:バッファ内容の復元が必要
+		std::wstring bufFile;		//!< bModified時のみ有効。SessionBuffers\配下の絶対パス
+		SSessionEntry() = default;
+		explicit SSessionEntry( const std::wstring& p ) : path(p) {}
+	};
+	static void SaveSessionFileList( const std::vector<SSessionEntry>& entries );
+	static bool LoadSessionFileList( std::vector<SSessionEntry>& entries );
+
+	// SessionBuffers\フォルダ（バッファ内容バックアップの置き場所）の絶対パスを返す（末尾\付き）
+	static std::wstring GetSessionBufferDir();
+	// SessionBuffers\フォルダ配下の連番バックアップファイルの絶対パスを返す
+	static std::wstring GetSessionBufferFilePath( int index );
+	// 20260814(3) SessionBuffers\フォルダの中身を全て消す（無ければ作る）。
+	// 「参照されなくなったファイルだけ消す」方式だと、ini書き込みが（読み取り専用等の理由で）
+	// 早期returnした場合に直前のダンプが残骸として残る等の抜け道があったため、
+	// 保存の直前に無条件で全消去してから書き直す方式に変更した。タイミングによりファイルが
+	// 使用中でロックされている等の理由で削除できない場合は無視する（次回の全消去時に再度試みる）
+	static void ClearSessionBufferDir();
 #endif // NKMM_
 
 protected:

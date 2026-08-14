@@ -764,6 +764,11 @@ enum e_PM_SETCARETPOS_SELECTSTATE {
 #define MYWM_GET_CURRENT_DOCTYPE (WM_APP+226)
 #endif // NKMM_
 
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+//! セッション：現在のバッファ内容を指定パスへダンプさせる(トレイ→エディタ) 20260814
+#define MYWM_DUMPBUFFER (WM_APP+227)
+#endif // NKMM_
+
 /* 再変換対応 */ // 20020331 aroka
 #ifndef WM_IME_REQUEST
 #define MYWM_IME_REQUEST 0x288  // ==WM_IME_REQUEST

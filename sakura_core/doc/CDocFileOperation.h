@@ -68,6 +68,11 @@ public:
 	bool FileSaveAs( const WCHAR* filename = NULL,ECodeType eCodeType = CODE_NONE, EEolType eEolType = EOL_NONE, bool bDialog = true);	//!< ダイアログでファイル名を入力させ、保存。	// 2006.12.30 ryoji
 	bool FileSave();			//!< 上書き保存。ファイル名が指定されていなかったらダイアログで入力を促す。	// 2006.12.30 ryoji
 
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	//セッション：バッファ内容の復元
+	bool RestoreBufferOverlay( const WCHAR* backupFilePath );	//!< 20260814 現在のドキュメント識別情報(パス)を変えずに、バッファ内容だけを指定ファイルの内容で上書きし、変更フラグを立てる
+#endif // NKMM_
+
 	//クローズ
 	bool FileClose();			//!< 閉じて(新規)	// 2006.12.30 ryoji
 
