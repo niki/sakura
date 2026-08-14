@@ -65,6 +65,22 @@
 
 //------------------------------------------------------------------
 // バージョン情報ダイアログの変更 20170315
+//  - 20260814: 「Compile Info」欄を詰め込み表記(例: "MSC_A64 1944 WPR
+//    WIN601/I800/C000/N601")から、Compiler/Running OSの2行に分けた
+//    ラベル付き表記へ変更。常に0になるWin9x系(_WIN32_WINDOWS)の表示と、
+//    形骸化した_WIN32_IEの表示は削除。WINVER(ビルド時の最小要求バージョン)は
+//    バグ報告用途では実際に動いているOSの方が重要なため、Compiler行の
+//    末尾に"targets Win7+"のようにおまけ表示するだけにとどめ、代わりに
+//    「Running OS: Windows 11 (build 22631)」のように実行中のOSを表示する。
+//    GetVersionEx()はマニフェストのcompatibility宣言が無いとWindows 8.1
+//    以降で嘘の値を返す(互換シム)ため、ntdll.dllのRtlGetVersion()を使って
+//    回避している。表示行数が1→2行に増える分、IDD_ABOUTダイアログと
+//    IDC_EDIT_ABOUTの高さも15DU広げてボタン列を下にずらし、ライセンス
+//    表記(PCRE2/sljit/QuickJS/mimalloc)が枠外に隠れないようにした
+//  - sakura_core\dlg\CDlgAbout.cpp: COMPILER_TYPE_LABEL等のラベル定義,
+//    GetRunningOsLabel(), OnInitDialog()内のコンパイル情報生成部分
+//  - sakura_core\sakura_rc.rc: IDD_ABOUT, IDC_EDIT_ABOUT, IDOK,
+//    IDC_BUTTON_LICENSE, IDC_BUTTON_COPYの座標(UTF-16LEファイル)
 //------------------------------------------------------------------
 #define NKMM_FIX_VERDLG
 	#define PR_VER      2,3,2,PR_LV	// 2.4系に倣う

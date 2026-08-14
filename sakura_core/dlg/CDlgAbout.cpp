@@ -20,6 +20,7 @@
 
 #include "StdAfx.h"
 #include <ShellAPI.h>
+#include <winternl.h> // 20260814 RtlGetVersion(実行中OSの取得)用
 #include "dlg/CDlgAbout.h"
 #include "uiparts/HandCursor.h"
 #include "util/file.h"
@@ -151,6 +152,100 @@ const DWORD p_helpids[] = {	//12900
 #  endif
 #endif // NKMM_
 
+#ifdef NKMM_FIX_VERDLG
+// 20260814 「Compile Info」を詰め込み表記(例: MSC_A64 1944 WPR WIN601/I800/C000/N601)から
+// ラベル付きの複数行表記へ変更するための一般ユーザー向けラベル
+#if defined(__BORLANDC__)
+#  define COMPILER_TYPE_LABEL "Borland C++"
+#elif defined(__GNUG__)
+#  define COMPILER_TYPE_LABEL "GCC"
+#elif defined(__INTEL_COMPILER)
+#  define COMPILER_TYPE_LABEL "Intel C++"
+#elif defined(__DMC__)
+#  define COMPILER_TYPE_LABEL "Digital Mars C++"
+#elif defined(_MSC_VER)
+#  define COMPILER_TYPE_LABEL "MSVC"
+#else
+#  define COMPILER_TYPE_LABEL "Unknown Compiler"
+#endif
+
+#if defined(_M_IA64)
+#  define TARGET_ARCH_LABEL "IA64"
+#elif defined(_M_AMD64)
+#  define TARGET_ARCH_LABEL "x64"
+#elif defined(_M_IX86)
+#  define TARGET_ARCH_LABEL "x86"
+#else
+#  define TARGET_ARCH_LABEL "?"
+#endif
+
+#ifdef _UNICODE
+#  define TARGET_CHARSET_LABEL "Unicode"
+#else
+#  define TARGET_CHARSET_LABEL "ANSI"
+#endif
+
+#ifdef _DEBUG
+#  define TARGET_DEBUG_LABEL "Debug"
+#else
+#  define TARGET_DEBUG_LABEL "Release"
+#endif
+
+// WINVER(ビルド時の最小要求バージョン)は「Compiler:」行の末尾におまけ表示する。
+// コンパイル時定数なので実行時判定は不要。
+#if WINVER >= 0x0A00
+#  define TARGET_MIN_OS_LABEL "Win10+"
+#elif WINVER >= 0x0603
+#  define TARGET_MIN_OS_LABEL "Win8.1+"
+#elif WINVER >= 0x0602
+#  define TARGET_MIN_OS_LABEL "Win8+"
+#elif WINVER >= 0x0601
+#  define TARGET_MIN_OS_LABEL "Win7+"
+#else
+#  define TARGET_MIN_OS_LABEL "?"
+#endif
+
+//! 実際に動作しているOSのバージョンを取得して表示用文字列を作る。
+//! WINVER(ビルド時の最小要求バージョン)ではなく、バグ報告等に必要な
+//! 「今動いているOS」を出す。GetVersionEx()はWindows 8.1以降、アプリの
+//! マニフェストにcompatibility宣言が無いと実際のバージョンを返さない
+//! (互換シムにより偽装される)ため、ntdll.dllのRtlGetVersion()を使って
+//! 迂回する(多くのソフトで使われている一般的な手法)。
+static void GetRunningOsLabel( TCHAR* pszBuf, size_t nBufLen )
+{
+	typedef LONG (WINAPI *RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+
+	RTL_OSVERSIONINFOW info = {};
+	info.dwOSVersionInfoSize = sizeof(info);
+
+	HMODULE hNtdll = ::GetModuleHandleW(L"ntdll.dll");
+	RtlGetVersionPtr pRtlGetVersion = hNtdll
+		? (RtlGetVersionPtr)::GetProcAddress(hNtdll, "RtlGetVersion")
+		: NULL;
+
+	if( pRtlGetVersion == NULL || pRtlGetVersion(&info) != 0 ){
+		auto_sprintf( pszBuf, _T("Windows (version unknown)") );
+		return;
+	}
+
+	LPCTSTR pszName;
+	if( info.dwMajorVersion == 10 && info.dwBuildNumber >= 22000 ){
+		pszName = _T("Windows 11");
+	}else if( info.dwMajorVersion == 10 ){
+		pszName = _T("Windows 10");
+	}else if( info.dwMajorVersion == 6 && info.dwMinorVersion == 3 ){
+		pszName = _T("Windows 8.1");
+	}else if( info.dwMajorVersion == 6 && info.dwMinorVersion == 2 ){
+		pszName = _T("Windows 8");
+	}else if( info.dwMajorVersion == 6 && info.dwMinorVersion == 1 ){
+		pszName = _T("Windows 7");
+	}else{
+		pszName = _T("Windows");
+	}
+	auto_sprintf( pszBuf, _T("%s (build %d)"), pszName, info.dwBuildNumber );
+}
+#endif // NKMM_
+
 //	From Here Nov. 7, 2000 genta
 /*!
 	標準以外のメッセージを捕捉する
@@ -248,6 +343,25 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	cmemMsg.AppendString( szMsg );
 
 	// コンパイル情報
+#ifdef NKMM_FIX_VERDLG
+	// 20260814 詰め込み表記(旧: "Compile Info: MSC_A64 1944 WPR WIN601/I800/C000/N601")から
+	// ラベル付き表記へ変更(一般ユーザーにも読めるように)。行数が増えて
+	// ライセンス表記がIDC_EDIT_ABOUTからはみ出さないよう2行に収めてある。
+	// 「Target Windows」的なビルド時最小要求バージョン(WINVER)は報告用途では
+	// 意味が薄いので廃止し、代わりに実際に動作中のOSを出す
+	auto_sprintf( szMsg, _T("    Compiler: ") _T(COMPILER_TYPE_LABEL) _T(" %d (") _T(TARGET_ARCH_LABEL)
+			_T("), ") _T(TARGET_CHARSET_LABEL) _T(" ") _T(TARGET_DEBUG_LABEL)
+			_T(", targets ") _T(TARGET_MIN_OS_LABEL) _T("\r\n"),
+		COMPILER_VER
+	);
+	cmemMsg.AppendString( szMsg );
+	{
+		TCHAR szOsBuf[64];
+		GetRunningOsLabel( szOsBuf, _countof(szOsBuf) );
+		auto_sprintf( szMsg, _T("    Running OS: %s\r\n"), szOsBuf );
+		cmemMsg.AppendString( szMsg );
+	}
+#else
 	cmemMsg.AppendString( _T("    Compile Info: ") );
 	int Compiler_ver = COMPILER_VER;
 	auto_sprintf( szMsg, _T(COMPILER_TYPE) _T(TARGET_M_SUFFIX) _T("%d ")
@@ -256,6 +370,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		WINVER, _WIN32_IE, MY_WIN32_WINDOWS, MY_WIN32_WINNT
 	);
 	cmemMsg.AppendString( szMsg );
+#endif // NKMM_
 
 	// 更新日情報
 	CFileTime cFileTime;
