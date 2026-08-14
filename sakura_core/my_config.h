@@ -1377,6 +1377,55 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_KEYBIND_CAPTURE_MOUSE
 
+//------------------------------------------------------------------
+// 対括弧の強調表示を通常の行描画パスに統合する 20260814
+//  - 従来、対括弧の強調表示(COLORIDX_BRACKET_PAIR)はCEditView::DrawBracketPair()が
+//    ::GetDC(GetHwnd())で独自にDCを取り、通常のOnPaint(CEditView_Paint.cppの
+//    DrawLayoutLine/CheckChangeColorによる色決定パイプライン)を介さず1〜2文字だけ
+//    即時描画する形だった。この即時描画はカーソルの横移動・削除のたびに
+//    CCaret::MoveCursor()から呼ばれる(erase→再計算→draw の3回)上、通常の
+//    OnPaint2()自体からも毎回の全体再描画のたびに呼ばれていた(erase/drawの
+//    2箇所)。消去時は「元の色」を求めるためGetColorIndex()で行頭から1文字ずつ
+//    色戦略を再生する重い処理も伴い、背景画像(壁紙)使用時はCreateCompatibleDC/
+//    BitBltも自前で行い、グリフアトラスキャッシュ(NKMM_FIX_GLYPH_ATLAS_CACHE)の
+//    描画待ちキューも自前でFlushする必要があった(通常のOnPaintパスを通らない
+//    独立した描画経路だったため)
+//  - この変更では、対括弧の位置(m_ptBracketPairPos_PHY/m_ptBracketCaretPos_PHY)を
+//    DrawLayoutLine()末尾のオーバーレイ(DispBracketPairInLine)として、選択範囲の
+//    反転描画(DispTextSelected)と同様に通常の行描画の一部にする。DrawBracketPair()
+//    自体は「対象の行だけをOnPaint()経由で部分再描画する」だけに縮小し、
+//    カーソル行背景色(COLORIDX_CARETLINEBG)のCaretUnderLineON()と同じ
+//    PAINTSTRUCT.rcPaintを絞ったOnPaint()呼び出しパターンを踏襲する
+//    (erase時はm_bBracketPairSuppressDrawで一時的にオーバーレイを止めてから
+//    同じ行を再描画するだけで、GetColorIndex()による色の再計算は不要になった)。
+//    OnPaint2()側の明示的なDrawBracketPair(false)/(true)呼び出しは、通常描画に
+//    オーバーレイが組み込まれたことで不要になったため削除した
+//  - ドキュメント編集によりm_ptBracketPairPos_PHYが指す位置が既に括弧でなくなって
+//    いる場合に備え、DispBracketPairInLine内でもIsBracket()による有効性チェックを
+//    行う(該当行が実際に再描画される時だけ働くので、キー入力のたびに毎回は走らない)
+//  - 無効化するとCEditView_Paint_Bracket.cppの旧実装(即時描画)に戻る。
+//    対括弧強調表示のON/OFF体感差のベンチマーク比較用に残してある
+//  - 20260814 macro_bench/bench_bracket_pair.jsで前後のRelease版を計測(往復移動
+//    ・削除ともウォームアップ後の同一範囲往復で、レイアウト計算コストを除外)。
+//    move_bounce: 前792μs/回 → 後780μs/回、delete_back: 前2.0μs/回 → 後2.2μs/回と
+//    どちらもノイズレベルの差で、体感速度としての明確な改善は確認できなかった。
+//    旧実装の独自GDI呼び出し分の削減と、新実装が行っている対象行まるごとの
+//    OnPaint()再描画コストがおおよそ相殺している模様。それでも、対括弧だけが
+//    通常のOnPaintパイプラインを迂回する特別扱いになっていたこと自体が
+//    アーキテクチャ上の一貫性の問題として残っていたため、速度上のメリットが
+//    なくてもこの統合を採用することにした([[feedback_architecture_over_raw_perf]]参照)
+//  - 20260814(同日中に再検討): DrawLayoutLine/OnPaint2という描画の中核部分に
+//    渡って書き換える範囲がまるごと入れ替わる規模になり、速度上の裏付けが
+//    ノイズレベルしかない状態でそれを背負うのは見合わないと判断し、既定を
+//    無効(旧実装)に戻した。実装・計測結果・このコメントの経緯は温存してあるので、
+//    再度有効化して比較したくなったら#defineを戻すだけでよい
+//  - sakura_core\view\CEditView_Paint_Bracket.cpp: DrawBracketPair, 新規
+//    DispBracketPairInLine, RepaintBracketPairLines
+//  - sakura_core\view\CEditView_Paint.cpp: DrawLayoutLine, OnPaint2
+//  - sakura_core\view\CEditView.h: 上記の宣言, m_bBracketPairSuppressDraw
+//------------------------------------------------------------------
+//#define NKMM_FIX_BRACKET_PAIR_INLINE // 20260814 既定は旧実装側に戻した。上のコメント参照
+
 //
 //#define USE_SSE2
 

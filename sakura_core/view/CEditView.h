@@ -519,6 +519,13 @@ public:
 						const wchar_t* dnChar, const wchar_t* upChar, int* mode );	//	対括弧の後方検索	// modeの追加 02/09/19 ai
 	void DrawBracketPair( bool );								/* 対括弧の強調表示 02/09/18 ai */
 	bool IsBracket( const wchar_t*, CLogicInt, CLogicInt );					/* 括弧判定 03/01/09 ai */
+#ifdef NKMM_FIX_BRACKET_PAIR_INLINE
+	void DispBracketPairInLine( SColorStrategyInfo* pInfo );	//!< 対括弧の強調表示(DrawLayoutLineへ統合されたオーバーレイ描画)
+private:
+	void RepaintBracketPairLines();							//!< 対括弧の強調位置を含む行だけを部分再描画する
+	bool m_bBracketPairSuppressDraw = false;					//!< true の間はDispBracketPairInLineが何も描かない(消去用)
+public:
+#endif // NKMM_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                           補完                              //

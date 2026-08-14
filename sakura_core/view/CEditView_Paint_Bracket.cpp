@@ -93,6 +93,223 @@ void CEditView::SetBracketPairPos( bool flag )
 	return;
 }
 
+#ifdef NKMM_FIX_BRACKET_PAIR_INLINE
+/*!
+	対括弧の強調表示位置を含む行だけを部分再描画する。
+
+	CCaretUnderLine::CaretUnderLineON()がカーソル行背景色(COLORIDX_CARETLINEBG)の
+	ためにやっているのと同じ、PAINTSTRUCT.rcPaintを対象行だけに絞ったOnPaint()の
+	即席呼び出し。実際の対括弧の色付けはDrawLayoutLine()末尾のDispBracketPairInLine()
+	が通常の行描画の一部として行うので、ここでは「その行を再描画する」以外の
+	作業は不要。
+
+	@date 2026.08.14
+*/
+void CEditView::RepaintBracketPairLines()
+{
+	if( !GetDrawSwitch() ){
+		return;
+	}
+
+	CLayoutPoint ptPairLayout;
+	CLayoutPoint ptCaretLayout;
+	m_pcEditDoc->m_cLayoutMgr.LogicToLayout( m_ptBracketPairPos_PHY,  &ptPairLayout );
+	m_pcEditDoc->m_cLayoutMgr.LogicToLayout( m_ptBracketCaretPos_PHY, &ptCaretLayout );
+
+	CLayoutInt aY[2] = { ptPairLayout.y, ptCaretLayout.y };
+	for( int i = 0; i < 2; i++ ){
+		if( i == 1 && aY[1] == aY[0] ){
+			continue;	// 同じ行なら二重に再描画しない
+		}
+		CLayoutInt y = aY[i];
+		if( y < GetTextArea().GetViewTopLine() || y > GetTextArea().GetBottomLine() ){
+			continue;	// 表示領域外
+		}
+
+		PAINTSTRUCT ps = {};
+		ps.rcPaint.left   = 0;
+		ps.rcPaint.right  = GetTextArea().GetAreaRight();
+		ps.rcPaint.top    = GetTextArea().GenerateYPx(y);
+		ps.rcPaint.bottom = ps.rcPaint.top + GetTextMetrics().GetHankakuDy();
+
+		HDC hdc = this->GetDC();
+		OnPaint( hdc, &ps, FALSE );
+		this->ReleaseDC( hdc );
+	}
+}
+
+/*!
+	対括弧の強調表示(消去/再描画のトリガー)
+
+	@date 2002/09/18 ai
+	@date 2003/02/18 ai 再描画対応の為大改造
+	@date 2026/08/14 独自の即時GDI描画をやめ、対象行をOnPaint()経由で
+		部分再描画するだけにした。実際の色付けはDrawLayoutLine()に統合された
+		DispBracketPairInLine()が担当する(NKMM_FIX_BRACKET_PAIR_INLINE参照)
+*/
+void CEditView::DrawBracketPair( bool bDraw )
+{
+	// 03/03/06 ai すべて置換、すべて置換後のUndo&Redoがかなり遅い問題に対応
+	if( m_bDoing_UndoRedo || !GetDrawSwitch() ){
+		return;
+	}
+
+	if( !m_pTypeData->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp ){
+		return;
+	}
+
+	// 括弧の強調表示位置が未登録の場合は終了
+	if( m_ptBracketPairPos_PHY.HasNegative() || m_ptBracketCaretPos_PHY.HasNegative() ){
+		return;
+	}
+
+	// 描画指定(bDraw=true)				かつ
+	// ( テキストが選択されている		又は
+	//   選択範囲を描画している			又は
+	//   フォーカスを持っていない		又は
+	//   アクティブなペインではない )	場合は終了
+	if( bDraw
+	 &&( GetSelectionInfo().IsTextSelected() || GetSelectionInfo().m_bDrawSelectArea || !m_bDrawBracketPairFlag
+	 || ( m_pcEditWnd->GetActivePane() != m_nMyIndex ) ) ){
+		return;
+	}
+
+	// bDraw==falseはこの行の「今表示されているはずの強調表示」を消すための
+	// 部分再描画。DispBracketPairInLine()を一時的に黙らせてから同じ行を
+	// 再描画すれば、通常の色でその行が描き直されるので事足りる
+	// (位置情報(m_ptBracketPairPos_PHY等)自体はここではクリアしない。
+	// SetFocus/KillFocusをまたいでも同じ強調位置を再利用する既存の挙動を保つため)
+	m_bBracketPairSuppressDraw = !bDraw;
+	RepaintBracketPairLines();
+	m_bBracketPairSuppressDraw = false;
+}
+
+/*!
+	対括弧の強調表示(DrawLayoutLine()末尾から呼ばれるオーバーレイ描画本体)
+
+	選択範囲の反転描画(DispTextSelected)と同じ位置付けで、通常の行描画が
+	終わった直後に「この行に対括弧の強調位置が乗っているか」を確認して
+	1文字分だけ色を上書きする。通常のOnPaintパスの一部として実行されるため、
+	独自のGetDC/CreateCompatibleDC/GlyphAtlasCacheのFlush等は一切不要になる。
+
+	@date 2026/08/14
+*/
+void CEditView::DispBracketPairInLine( SColorStrategyInfo* pInfo )
+{
+	if( m_bBracketPairSuppressDraw ){
+		return;
+	}
+	if( m_bDoing_UndoRedo || !GetDrawSwitch() ){
+		return;
+	}
+	if( !m_pTypeData->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp ){
+		return;
+	}
+	if( m_ptBracketPairPos_PHY.HasNegative() || m_ptBracketCaretPos_PHY.HasNegative() ){
+		return;
+	}
+	if( GetSelectionInfo().IsTextSelected() || GetSelectionInfo().m_bDrawSelectArea || !m_bDrawBracketPairFlag
+	 || ( m_pcEditWnd->GetActivePane() != m_nMyIndex ) ){
+		return;
+	}
+
+	const CLayoutInt nCurLine = pInfo->m_pDispPos->GetLayoutLineRef();
+	bool bCaretChange = false;
+
+	for( int i = 0; i < 2; i++ )
+	{
+		// i=0:対括弧,i=1:カーソル位置の括弧
+		CLayoutPoint	ptColLine;
+
+		if( i == 0 ){
+			m_pcEditDoc->m_cLayoutMgr.LogicToLayout( m_ptBracketPairPos_PHY,  &ptColLine );
+		}else{
+			m_pcEditDoc->m_cLayoutMgr.LogicToLayout( m_ptBracketCaretPos_PHY, &ptColLine );
+		}
+
+		if( ptColLine.y != nCurLine ){
+			continue;	// この行の担当ではない
+		}
+		if( ( ptColLine.x < GetTextArea().GetViewLeftCol() ) || ( ptColLine.x > GetTextArea().GetRightCol() ) ){
+			continue;	// 横スクロールで表示範囲外
+		}
+
+		const CLayout* pcLayout;
+		CLogicInt		nLineLen;
+		const wchar_t*	pLine = m_pcEditDoc->m_cLayoutMgr.GetLineStr( ptColLine.GetY2(), &nLineLen, &pcLayout );
+		if( !pLine ){
+			continue;
+		}
+
+		CLogicInt	OutputX = LineColumnToIndex( pcLayout, ptColLine.GetX2() );
+
+		// 編集によりこの位置が既に括弧でなくなっている場合は何もしない
+		// (次のカーソル移動でSetBracketPairPos()が改めて位置を計算し直す)
+		if( !IsBracket( pLine, OutputX, CLogicInt(1) ) ){
+			continue;
+		}
+
+		CTypeSupport    cCuretLineBg(this,COLORIDX_CARETLINEBG);
+		EColorIndexType nColorIndexBg = (cCuretLineBg.IsDisp() && ptColLine.GetY2() == GetCaret().GetCaretLayoutPos().GetY2()
+			? COLORIDX_CARETLINEBG
+			: CTypeSupport(this,COLORIDX_EVENLINEBG).IsDisp() && ptColLine.GetY2() % 2 == 1
+				? COLORIDX_EVENLINEBG
+				: COLORIDX_TEXT);
+		// 03/03/03 ai カーソルの左に括弧があり括弧が強調表示されている状態でShift+←で選択開始すると
+		//             選択範囲内に反転表示されない部分がある問題の修正
+		CLayoutInt caretX = GetCaret().GetCaretLayoutPos().GetX2();
+		bool bCaretHide = (!bCaretChange && (ptColLine.x == caretX || ptColLine.x + 1 == caretX) && GetCaret().GetCaretShowFlag());
+		if( bCaretHide ){
+			bCaretChange = true;
+			GetCaret().HideCaret_( GetHwnd() );	// キャレットが一瞬消えるのを防止
+		}
+		{
+			int nWidth  = GetTextMetrics().GetHankakuDx();
+			int nHeight = GetTextMetrics().GetHankakuDy();
+			int nLeft = (GetTextArea().GetDocumentLeftClientPointX()) + GetTextMetrics().GetCharPxWidth(ptColLine.x);
+			int nTop  = (Int)( ptColLine.GetY2() - GetTextArea().GetViewTopLine() ) * nHeight + GetTextArea().GetAreaTop();
+			CLayoutXInt charsWidth = m_pcEditDoc->m_cLayoutMgr.GetLayoutXOfChar(pLine, nLineLen, OutputX);
+
+			//色設定
+			CTypeSupport cTextType(this,COLORIDX_TEXT);
+			cTextType.SetGraphicsState_WhileThisObj(pInfo->m_gr);
+			CTypeSupport cColorIndexType(this,COLORIDX_BRACKET_PAIR);
+			CTypeSupport cColorIndexBgType(this,nColorIndexBg);
+			CTypeSupport* pcColorBack = &cColorIndexType;
+			if( cColorIndexType.GetBackColor() == cTextType.GetBackColor() && nColorIndexBg != COLORIDX_TEXT ){
+				pcColorBack = &cColorIndexBgType;
+			}
+
+			SetCurrentColor( pInfo->m_gr, COLORIDX_BRACKET_PAIR, COLORIDX_BRACKET_PAIR, nColorIndexBg );
+			bool bTrans = false;
+			if( IsBkBitmap() &&
+					cTextType.GetBackColor() == pcColorBack->GetBackColor() ){
+				bTrans = true;
+				RECT rcChar;
+				rcChar.left  = nLeft;
+				rcChar.top = nTop;
+				rcChar.right = nLeft + GetTextMetrics().GetCharPxWidth(charsWidth);
+				rcChar.bottom = nTop + nHeight;
+				HDC hdcBgImg = ::CreateCompatibleDC(pInfo->m_gr);
+				HBITMAP hBmpOld = (HBITMAP)::SelectObject(hdcBgImg, m_pcEditDoc->m_hBackImg);
+				DrawBackImage(pInfo->m_gr, rcChar, hdcBgImg);
+				::SelectObject(hdcBgImg, hBmpOld);
+				::DeleteDC(hdcBgImg);
+			}
+			DispPos sPos(nWidth, nHeight);
+			sPos.InitDrawPos(CMyPoint(nLeft, nTop));
+			GetTextDrawer().DispText(pInfo->m_gr, &sPos, 0, &pLine[OutputX], 1, bTrans);
+			GetTextDrawer().DispNoteLine(pInfo->m_gr, nTop, nTop + nHeight, nLeft, nLeft + (Int)charsWidth * nWidth);
+			// 2006.04.30 Moca 対括弧の縦線対応
+			GetTextDrawer().DispVerticalLines(pInfo->m_gr, nTop, nTop + nHeight, ptColLine.x, ptColLine.x + charsWidth); //※括弧が全角幅である場合を考慮
+			cTextType.RewindGraphicsState(pInfo->m_gr);
+		}
+	}
+	if( bCaretChange ){
+		GetCaret().ShowCaret_( GetHwnd() );	// キャレットが一瞬消えるのを防止
+	}
+}
+#else // NKMM_FIX_BRACKET_PAIR_INLINE
 /*!
 	対括弧の強調表示
 	@date 2002/09/18 ai
@@ -263,6 +480,7 @@ void CEditView::DrawBracketPair( bool bDraw )
 
 	::ReleaseDC( GetHwnd(), gr );
 }
+#endif // NKMM_FIX_BRACKET_PAIR_INLINE
 
 
 //======================================================================

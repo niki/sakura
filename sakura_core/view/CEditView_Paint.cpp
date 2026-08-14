@@ -712,11 +712,16 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 		}
 	}
 
+#ifndef NKMM_FIX_BRACKET_PAIR_INLINE
 	/* 03/02/18 対括弧の強調表示(消去) ai */
 	if( !bUseMemoryDC ){
 		// MemoryDCだとスクロール時に先に括弧だけ表示されて不自然なので後でやる。
 		DrawBracketPair( false );
 	}
+	// NKMM_FIX_BRACKET_PAIR_INLINE有効時は、対括弧の強調表示はDrawLayoutLine()内の
+	// DispBracketPairInLine()が通常の行描画の一部として行うため、ここでの
+	// 明示的なerase/draw呼び出しは不要(my_config.h参照)
+#endif // NKMM_
 
 	// 背景の表示
 	if( bTransText ){
@@ -887,8 +892,10 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	/* メモリＤＣを利用した再描画の場合はメモリＤＣに描画した内容を画面へコピーする */
 	if( bUseMemoryDC ){
+#ifndef NKMM_FIX_BRACKET_PAIR_INLINE
 		// 2010.10.11 先に描くと背景固定のスクロールなどでの表示が不自然になる
 		DrawBracketPair( false );
+#endif // NKMM_
 
 		::BitBlt(
 			hdcOld,
@@ -911,8 +918,10 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	}
 	// To Here 2007.09.09 Moca
 
+#ifndef NKMM_FIX_BRACKET_PAIR_INLINE
 	/* 03/02/18 対括弧の強調表示(描画) ai */
 	DrawBracketPair( true );
+#endif // NKMM_
 
 	/* キャレットを現在位置に表示します */
 	if( bCaretShowFlag_Old )	// 2008.06.09 ryoji
@@ -1357,6 +1366,11 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 					: CLayoutInt(0))
 		);
 	}
+
+#ifdef NKMM_FIX_BRACKET_PAIR_INLINE
+	// 対括弧の強調表示(選択反転の後、通常の行描画の一部として上書き描画する)
+	DispBracketPairInLine(pInfo);
+#endif // NKMM_
 
 	//NKMM_FIX_COLOR_FONT: カラーフォント(絵文字等)のグリフ描画待ちキューは、ここでは
 	//flushしない。1行ごとにDirect2DのBindDC/BeginDraw/EndDrawを繰り返すと、
