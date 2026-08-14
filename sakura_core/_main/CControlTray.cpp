@@ -1668,10 +1668,64 @@ BOOL CControlTray::CloseAllEditor(
 	if( 0 == n ){
 		return TRUE;
 	}
-	
+
+#ifdef NKMM_SESSION_RESTORE
+	/* セッション（開いていたファイルの自動復元）用に、この「閉じる」操作で
+	   実際に編集ウィンドウが0枚になる（＝他に残るグループが無い）場合だけ、
+	   閉じ始める前の完全なファイル一覧をここでスナップショットしておく。
+	   nGroup==0（サクラエディタの全終了／編集の全終了）はもちろん、
+	   nGroup!=0（特定グループだけを閉じる操作。タイトルバーの×等、設定次第で
+	   ここを通ることがある）でも、そのグループ以外に開いているウィンドウが
+	   無ければ結果的に全終了と同じなので同様に扱う。
+	   個々のウィンドウがWM_DESTROYで閉じ終わるタイミングを都度チェックする
+	   方式は、複数ウィンドウ（実体は別プロセス）が前後して閉じる際に自分
+	   以外が既に配列から消えてしまう競合があったため、「閉じ始める前」に
+	   確実に全件取れるこの時点に一本化した 20260814
+
+	   ウィンドウが1枚だけの終了は、通常の単一ファイル起動と同じなので復元対象外とする。
+	   その場合は空リストで上書きし、以前の（複数ウィンドウ終了時の）古いセッションが
+	   残り続けないようにする 20260814 */
+	bool bClosingEverything = ( nGroup == 0 );
+	if( !bClosingEverything ){
+		bClosingEverything = true;
+		for( int i = 0; i < n; ++i ){
+			if( pWndArr[i].m_nGroup != nGroup ){
+				bClosingEverything = false;	// 他のグループがまだ残る
+				break;
+			}
+		}
+	}
+	if( bClosingEverything && GetDllShareData().m_Common.m_sGeneral.m_bRestoreSession ){
+		std::vector<std::wstring> vSessionPaths;
+		if( n >= 2 ){
+			for( int i = 0; i < n; ++i ){
+				if( pWndArr[i].m_bIsGrep ) continue;	// Grep結果ウィンドウは対象外
+				::SendMessageAny( pWndArr[i].GetHwnd(), MYWM_GETFILEINFO, 0, 0 );
+				const EditInfo* pfi = (EditInfo*)&GetDllShareData().m_sWorkBuffer.m_EditInfo_MYWM_GETFILEINFO;
+				if( pfi->m_szPath[0] != _T('\0') ){	// 無題（未保存）バッファは対象外
+					vSessionPaths.push_back( pfi->m_szPath );
+				}
+			}
+		}
+		// n==1の場合はvSessionPathsが空のまま。SaveSessionFileList()は[Session]を
+		// 0件で上書きするので、古いセッションは明示的にクリアされる
+		CShareData_IO::SaveSessionFileList( vSessionPaths );
+
+		// これから閉じる各ウィンドウのWM_DESTROYへ「セッションは処理済み」を伝える。
+		// RequestCloseEditor()はSendMessage(同期)で1枚ずつ閉じ切るので、戻ってきた
+		// 時点で対象ウィンドウは全てWM_DESTROYを終えている＝ここでFALSEに戻してよい
+		GetDllShareData().m_sFlags.m_bSessionHandledByCloseAll = TRUE;
+	}
+#endif // NKMM_
+
 	/* 全編集ウィンドウへ終了要求を出す */
 	BOOL	bRes = CAppNodeGroupHandle(nGroup).RequestCloseEditor( pWndArr, n, bExit, bCheckConfirm, hWndFrom );	// 2007.02.13 ryoji bExitを引き継ぐ
 	delete []pWndArr;
+
+#ifdef NKMM_SESSION_RESTORE
+	GetDllShareData().m_sFlags.m_bSessionHandledByCloseAll = FALSE;
+#endif // NKMM_
+
 	return bRes;
 }
 
@@ -1932,8 +1986,26 @@ void CControlTray::OnDestroy()
 		::ShowWindow( hwndExitingDlg, SW_SHOW );
 	}
 
+#ifdef NKMM_SESSION_RESTORE
+	/* SaveShareData()はini全体をゼロから組み立てて書き直すため、[Session]セクション
+	   （CloseAllEditor()で直前に書き込み済み）の存在を知らずに消してしまう。
+	   消える前に読み出しておき、SaveShareData()の直後に書き戻す。
+	   LoadSessionFileList()の戻り値（0件ならfalse）はここでは使わない。0件（明示的な
+	   クリア）と「そもそも書かれていない」を区別せず両方バックアップ対象にしないと、
+	   1枚終了時の「空で上書き」がSaveShareData()に食われてセクションごと消えてしまう
+	   20260814 */
+	std::vector<std::wstring> vSessionPathsBackup;
+	CShareData_IO::LoadSessionFileList( vSessionPathsBackup );
+#endif // NKMM_
+
 	/* 共有データの保存 */
 	CShareData_IO::SaveShareData();
+
+#ifdef NKMM_SESSION_RESTORE
+	if( GetDllShareData().m_Common.m_sGeneral.m_bRestoreSession ){
+		CShareData_IO::SaveSessionFileList( vSessionPathsBackup );
+	}
+#endif // NKMM_
 
 	/* 終了ダイアログを表示する */
 	if( m_pShareData->m_Common.m_sGeneral.m_bDispExitingDialog ){

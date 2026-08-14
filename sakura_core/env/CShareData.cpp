@@ -235,6 +235,9 @@ bool CShareData::InitShareData()
 #if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 			sGeneral.m_bConfirmDeleteMissingHistory = TRUE;	// 20260813 起動時に存在しない履歴を確認して削除する
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE
+			sGeneral.m_bRestoreSession = FALSE;	// 20260814 終了時に開いていたファイルを次回起動時に自動復元する（既定OFF）
+#endif // NKMM_
 
 			sGeneral.m_nCaretType = 0;					/* カーソルのタイプ 0=win 1=dos */
 			sGeneral.m_bIsINSMode = true;				/* 挿入／上書きモード */

@@ -50,6 +50,12 @@ public:
 	// フォーカスを奪ってしまう問題が判明したため、元に戻した。
 	static void ConfirmAndDeleteMissingHistory();
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE
+	// 2026.08.14 終了時に開いていたファイルの一覧をsakura.iniの[Session]セクションへ保存/読込する。
+	// DLLSHAREDATA(共有メモリ)は経由せず、iniファイルへ直接読み書きする（詳細は実装側コメント参照）。
+	static void SaveSessionFileList( const std::vector<std::wstring>& paths );
+	static bool LoadSessionFileList( std::vector<std::wstring>& paths );
+#endif // NKMM_
 
 protected:
 	static bool ShareData_IO_2( bool );	/* 共有データの保存 */

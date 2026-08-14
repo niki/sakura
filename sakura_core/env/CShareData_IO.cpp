@@ -221,6 +221,88 @@ void CShareData_IO::ConfirmAndDeleteMissingHistory()
 }
 #endif // NKMM_
 
+#ifdef NKMM_SESSION_RESTORE
+/*!
+	現在開いているファイルパス一覧をsakuraLoadShareData.iniの[Session]セクションに保存する。
+
+	@note 他の設定項目と違い、アプリ完全終了時（最後の編集ウィンドウが閉じるとき）に
+		一度だけ呼ばれるスナップショットなので、DLLSHAREDATA(共有メモリ)には持たせず、
+		iniファイルへ直接読み書きする。ReadProfile()で既存のini内容を読み込んでから
+		[Session]セクションだけを上書きしてWriteProfile()するため、他のセクションの
+		内容はそのまま保たれる（ShareData_IO_2の書き込み側のように全設定を作り直す必要はない）。
+
+	@date 2026.08.14 新規作成
+*/
+void CShareData_IO::SaveSessionFileList( const std::vector<std::wstring>& paths )
+{
+	if( GetDllShareData().m_Common.m_sOthers.m_bIniReadOnly ){
+		return;
+	}
+
+	TCHAR szIniFileName[_MAX_PATH + 1];
+	std::tstring strProfileName = to_tchar(CCommandLine::getInstance()->GetProfileName());
+	CFileNameManager::getInstance()->GetIniFileName( szIniFileName, strProfileName.c_str(), TRUE );
+
+	CDataProfile cProfile;
+	cProfile.SetReadingMode();
+	cProfile.ReadProfile( szIniFileName );	// 既存の他セクションを保持するために読み込んでおく
+
+	cProfile.SetWritingMode();
+
+	const WCHAR* pszSecName = LTEXT("Session");
+	int nCount = (int)paths.size();
+	cProfile.IOProfileData( pszSecName, LTEXT("_Session_Counts"), nCount );
+
+	WCHAR szKeyName[64];
+	for( int i = 0; i < nCount; ++i ){
+		auto_sprintf( szKeyName, LTEXT("Session[%02d].szPath"), i );
+		std::wstring path = paths[i];
+		cProfile.IOProfileData( pszSecName, szKeyName, path );
+	}
+
+	cProfile.WriteProfile( szIniFileName, LTEXT(" sakura.ini テキストエディタ設定ファイル") );
+}
+
+/*!
+	sakura.iniの[Session]セクションから、前回終了時に開いていたファイルパス一覧を読み込む。
+
+	@retval true  1件以上のパスを読み込めた
+	@retval false iniが無い、またはセッションが保存されていない
+
+	@date 2026.08.14 新規作成
+*/
+bool CShareData_IO::LoadSessionFileList( std::vector<std::wstring>& paths )
+{
+	paths.clear();
+
+	TCHAR szIniFileName[_MAX_PATH + 1];
+	std::tstring strProfileName = to_tchar(CCommandLine::getInstance()->GetProfileName());
+	CFileNameManager::getInstance()->GetIniFileName( szIniFileName, strProfileName.c_str(), TRUE );
+
+	CDataProfile cProfile;
+	cProfile.SetReadingMode();
+	if( !cProfile.ReadProfile( szIniFileName ) ){
+		return false;
+	}
+
+	const WCHAR* pszSecName = LTEXT("Session");
+	int nCount = 0;
+	cProfile.IOProfileData( pszSecName, LTEXT("_Session_Counts"), nCount );
+	SetValueLimit( nCount, 500 );	// 壊れたini対策の安全上限
+
+	WCHAR szKeyName[64];
+	for( int i = 0; i < nCount; ++i ){
+		auto_sprintf( szKeyName, LTEXT("Session[%02d].szPath"), i );
+		std::wstring path;
+		if( cProfile.IOProfileData( pszSecName, szKeyName, path ) && !path.empty() ){
+			paths.push_back( path );
+		}
+	}
+
+	return !paths.empty();
+}
+#endif // NKMM_
+
 /* 共有データのロード */
 bool CShareData_IO::LoadShareData()
 {
@@ -2030,6 +2112,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	SetValueLimit( common.m_sGeneral.m_nOPENFOLDERArrNum_MAX, MAX_OPENFOLDER );
 #if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	cProfile.IOProfileData( pszSecName, LTEXT("bConfirmDeleteMissingHistory"), common.m_sGeneral.m_bConfirmDeleteMissingHistory );
+#endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE
+	cProfile.IOProfileData( pszSecName, LTEXT("bRestoreSession"), common.m_sGeneral.m_bRestoreSession );
 #endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispTOOLBAR")			, common.m_sWindow.m_bDispTOOLBAR );
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispSTATUSBAR")			, common.m_sWindow.m_bDispSTATUSBAR );

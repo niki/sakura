@@ -103,6 +103,14 @@ struct SShare_Flags{
 #if defined(NKMM_FIX_KEYWORDSET_UI)
 	BOOL				m_bKeywordSetLoadedFromCsv = FALSE;	/* sakura.keywordset.csvから強調キーワードを読み込んだ(共通設定「強調キーワード」タブを編集不可にする) 20260802 */
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE
+	/* CloseAllEditor()がセッション（開いていたファイルの自動復元）の保存/クリアを
+	   済ませたことを示す一時フラグ（iniには保存しない）。CloseAllEditor()が
+	   立て、対象ウィンドウのWM_DESTROYで消費してクリアする。個別クローズ
+	   （ファイル→閉じる、タブ×等）のWM_DESTROYではこのフラグが立っていない
+	   ので、自分が最後の1枚ならその場でセッションをクリアする 20260814 */
+	BOOL				m_bSessionHandledByCloseAll = FALSE;
+#endif // NKMM_
 };
 
 //! 共有ワークバッファ

@@ -52,6 +52,7 @@
 #include "dlg/CDlgAbout.h"
 #include "dlg/CDlgPrintSetting.h"
 #include "env/CShareData.h"
+#include "env/CShareData_IO.h"
 #include "env/CSakuraEnvironment.h"
 #include "print/CPrintPreview.h"	/// 2002/2/3 aroka
 #include "charset/CharPointer.h"
@@ -1821,6 +1822,22 @@ LRESULT CEditWnd::DispatchEvent(
 		/* ドロップされたファイルを受け入れるのを解除 */
 		::DragAcceptFiles( hwnd, FALSE );
 		m_pcDropTarget->Revoke_DropTarget();	// 右ボタンドロップ用	// 2008.06.20 ryoji
+
+#ifdef NKMM_SESSION_RESTORE
+		/* CloseAllEditor()を経由しない個別クローズ（ファイル→閉じる、タブ×等）で
+		   自分が最後の1枚になる場合、それは「一括終了」ではないのでセッション
+		   復元の対象外とする。以前の一括終了時に保存された古いセッションが
+		   残り続けないよう、ここで明示的にクリアする。CloseAllEditor()経由の
+		   場合はm_bSessionHandledByCloseAllが立っているので何もしない
+		   （既にそちらで正しく保存/クリア済み） 20260814 */
+		if( m_pShareData->m_Common.m_sGeneral.m_bRestoreSession
+			&& !m_pShareData->m_sFlags.m_bSessionHandledByCloseAll
+			&& m_pShareData->m_sNodes.m_nEditArrNum == 1 )
+		{
+			std::vector<std::wstring> vEmptyPaths;
+			CShareData_IO::SaveSessionFileList( vEmptyPaths );
+		}
+#endif // NKMM_
 
 		/* 編集ウィンドウリストからの削除 */
 		CAppNodeGroupHandle(GetHwnd()).DeleteEditWndList( GetHwnd() );

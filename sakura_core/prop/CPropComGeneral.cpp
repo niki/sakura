@@ -65,6 +65,9 @@ static const DWORD p_helpids[] = {	//10900
 #if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	IDC_CHECK_DELETE_MISSING_HISTORY, HIDC_CHECK_DELETE_MISSING_HISTORY,	//起動時に存在しない履歴を確認して削除する
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE
+	IDC_CHECK_RESTORE_SESSION,		HIDC_CHECK_RESTORE_SESSION,			//終了時に開いていたファイルを次回起動時に自動復元する
+#endif // NKMM_
 	IDC_RADIO_CARETTYPE0,			HIDC_RADIO_CARETTYPE0,				//カーソル形状（Windows風）
 	IDC_RADIO_CARETTYPE1,			HIDC_RADIO_CARETTYPE1,				//カーソル形状（MS-DOS風）
 	IDC_SPIN_REPEATEDSCROLLLINENUM,	HIDC_EDIT_REPEATEDSCROLLLINENUM,
@@ -422,6 +425,10 @@ void CPropGeneral::SetData( HWND hwndDlg )
 	// 20260813 起動時に存在しない履歴を確認して削除する
 	::CheckDlgButton( hwndDlg, IDC_CHECK_DELETE_MISSING_HISTORY, m_Common.m_sGeneral.m_bConfirmDeleteMissingHistory );
 #endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE
+	// 20260814 終了時に開いていたファイルを次回起動時に自動復元する
+	::CheckDlgButton( hwndDlg, IDC_CHECK_RESTORE_SESSION, m_Common.m_sGeneral.m_bRestoreSession );
+#endif // NKMM_
 
 	/* タスクトレイを使う */
 	::CheckDlgButton( hwndDlg, IDC_CHECK_USETRAYICON, m_Common.m_sGeneral.m_bUseTaskTray );
@@ -555,6 +562,10 @@ int CPropGeneral::GetData( HWND hwndDlg )
 #if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	// 20260813 起動時に存在しない履歴を確認して削除する
 	m_Common.m_sGeneral.m_bConfirmDeleteMissingHistory = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_DELETE_MISSING_HISTORY );
+#endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE
+	// 20260814 終了時に開いていたファイルを次回起動時に自動復元する
+	m_Common.m_sGeneral.m_bRestoreSession = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_RESTORE_SESSION );
 #endif // NKMM_
 
 	/* タスクトレイを使う */

@@ -35,6 +35,7 @@
 #include "plugin/CJackManager.h"
 #include "CAppMode.h"
 #include "env/CDocTypeManager.h"
+#include "env/CShareData_IO.h"
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //               コンストラクタ・デストラクタ                  //
@@ -82,6 +83,34 @@ bool CNormalProcess::InitializeProcess()
 	if ( !CProcess::InitializeProcess() ){
 		return false;
 	}
+
+#ifdef NKMM_SESSION_RESTORE
+	/* セッション（開いていたファイルの自動復元）
+	   コマンドラインでファイル指定が一切無く、かつ他にsakuraウィンドウが
+	   1つも起動していない（＝真のコールドスタート）場合にのみ、前回終了時に
+	   保存したファイル一覧を、通常のコマンドライン複数ファイル起動と同じ形
+	   （先頭をm_fi、残りをm_vFiles）に注入する。これにより以降の処理
+	   （グループ合流・OpenFiles()）を素通しでそのまま使い回せる。
+	   「新規ウィンドウを開く」操作まで復元が乗っ取らないよう、他ウィンドウが
+	   1つでも起動していれば復元は行わない 20260814 */
+	if( GetDllShareData().m_Common.m_sGeneral.m_bRestoreSession
+		&& !CCommandLine::getInstance()->IsNoWindow()
+		&& !CCommandLine::getInstance()->IsDebugMode()
+		&& !CCommandLine::getInstance()->IsGrepMode()
+		&& !CCommandLine::getInstance()->IsGrepDlg()
+		&& CCommandLine::getInstance()->GetFileNum() == 0
+		&& GetDllShareData().m_sNodes.m_nEditArrNum == 0 )
+	{
+		EditInfo fiCheck;
+		CCommandLine::getInstance()->GetEditInfo( &fiCheck );
+		if( fiCheck.m_szPath[0] == _T('\0') ){
+			std::vector<std::wstring> vSessionPaths;
+			if( CShareData_IO::LoadSessionFileList( vSessionPaths ) ){
+				CCommandLine::getInstance()->SetFilesForSessionRestore( vSessionPaths );
+			}
+		}
+	}
+#endif // NKMM_
 
 	/* 言語を選択する */
 	CSelectLang::ChangeLang( GetDllShareData().m_Common.m_sWindow.m_szLanguageDll );

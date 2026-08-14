@@ -100,6 +100,20 @@ public:
 	const TCHAR* GetFileName(int i) { return i < GetFileNum() ? m_vFiles[i].c_str() : NULL; }
 	void ClearFile(void) { m_vFiles.clear(); }
 	void ParseCommandLine( LPCTSTR pszCmdLineSrc, bool bResponse = true );
+#ifdef NKMM_SESSION_RESTORE
+	//! セッション復元用に、保存されていたファイルパス一覧をコマンドライン起動と同じ形（
+	//! 先頭ファイルはm_fi、残りはm_vFiles）に流し込む。既存の複数ファイル起動経路を
+	//! そのまま再利用するための注入用メソッド 20260814
+	void SetFilesForSessionRestore( const std::vector<std::wstring>& paths )
+	{
+		if( paths.empty() ) return;
+		_tcscpy( m_fi.m_szPath, paths[0].c_str() );
+		m_vFiles.clear();
+		for( size_t i = 1; i < paths.size(); ++i ){
+			m_vFiles.push_back( paths[i] );
+		}
+	}
+#endif // NKMM_
 
 // member valiables
 private:
