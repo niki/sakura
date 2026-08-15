@@ -65,6 +65,7 @@ Funccode_*.h
 *.inc
 
 sakura_core/config/build_version_generated.h
+sakura_core/config/build_version.h
 sakura_core/config/.build_version_state
 
 *.user
@@ -95,13 +96,13 @@ sakura/sakura/
 
 # Root
 .claude/
-#*.zip
+*.patch
+*.zip
 *.7z
 
 # Publish
-#Publish/*.zip
 Publish/old/
 Publish/*fix*.zip
+Publish/*.zip
 Publish/*.7z
 
-*.patch
