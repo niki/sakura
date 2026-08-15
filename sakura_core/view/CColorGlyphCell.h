@@ -50,6 +50,29 @@ struct SColorGlyphCell {
 	COLORREF			crBack;			//!< bEraseFirstがtrueのときにrcCellを塗り潰す背景色
 };
 
+/*!	ZWJ結合絵文字等の合字クラスタ化のため、TryQueueColorGlyphへの生の呼び出し引数を
+	1文字ぶん一時保持しておくための値型。
+
+	直前の文字がZWJだった場合や、自身がZWJ/VS15/VS16/肌色修飾子(Fitzpatrick)の場合は
+	「合字化できるかもしれない区間」として即座にキューへ積まず、このPOD配列に保留する。
+	区間が確定した時点でDirectWriteのシェーピングにかけ、単一グリフへ合字化できれば
+	1セルとしてまとめて描画し、できなければresolvedCellを使って従来通り1文字ずつ
+	個別に描画する(フォールバック)。
+*/
+struct SPendingGlyphCall {
+	HFONT				hFont;
+	wchar_t				data[2];		//!< 元のpData(1文字。サロゲートペアなら2ユニット)
+	int					nLength;
+	RECT				rcCell;
+	int					nBaselineTopOffset;
+	COLORREF			crFore;
+	COLORREF			crBack;
+	bool				bForceEmojiPresentation;
+
+	bool				bResolved;		//!< TryGetColorLayersがこの1文字単体でtrueを返したか
+	SColorGlyphCell		resolvedCell;	//!< bResolvedがtrueのときの、合字化しなかった場合のフォールバック用個別セル
+};
+
 #endif // NKMM_FIX_COLOR_FONT
 
 #endif /* SAKURA_CCOLORGLYPHCELL_3F9B9E9B_7B6B_4B7B_9C9E_1B7B9E9B7B9E_H_ */

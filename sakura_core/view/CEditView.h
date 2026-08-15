@@ -268,6 +268,10 @@ public:
 	void FlushColorGlyphQueue(CGraphics& gr);
 private:
 	std::vector<SColorGlyphCell> m_vPendingColorGlyphs;
+
+	//! ZWJ合字クラスタ化用の一時バッファ・確定処理。詳細はCEditView_ColorFont.cpp参照。
+	std::vector<SPendingGlyphCall> m_vPendingClusterCalls;
+	void FlushPendingCluster();
 #endif // NKMM_
 
 	//色分け

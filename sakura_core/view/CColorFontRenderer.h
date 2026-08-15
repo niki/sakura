@@ -135,6 +135,36 @@ public:
 	//! キューに溜まった分をまとめて描画する(1visual行につき1回の呼び出しを想定)。
 	void FlushQueue(HDC hdc, const RECT& rcUnion, const std::vector<SColorGlyphCell>& vCells);
 
+	/*!	複数コードポイントからなる書記素クラスタ(ZWJ結合絵文字等)全体をDirectWriteの
+		テキストシェーピングにかけ、単一グリフへ合字化できた場合にそのカラー(または
+		単色)レイヤーを取得する。
+
+		@param hFont       [in]  本文フォント(フェイス名/サイズの基準にする。実際に
+		                        シェーピングで使われるフォントとは限らない。
+		                        IDWriteTextLayoutの自動フォントフォールバックにより、
+		                        本文フォントに無いグリフはSegoe UI Emoji等へ自動的に
+		                        解決される)
+		@param pText       [in]  クラスタ全体のUTF-16文字列(ZWJ/VS等の結合用コード
+		                        ポイントを含む、結合前の生データをそのまま並べたもの)
+		@param nTextLength [in]  pTextの長さ(UTF-16コードユニット数)
+		@param fAdvanceX   [in]  GDIが実測した合計送り幅(px)。クラスタを構成する
+		                        各文字のセル幅の合計。
+		@param pOutCell    [out] 合字化に成功した場合、hFont/layers/nLayerCountを
+		                        書き込む(rcCell等その他のメンバは呼び出し側で
+		                        設定済みの前提)
+
+		@retval true  シェーピングの結果、単一グリフに合字化できた(pOutCellに書き込んだ)
+		@retval false 合字化できなかった(このフォントに当該組み合わせのGSUB合字が
+		              無い等)。呼び出し側は元の1文字ずつの描画にフォールバックすること。
+	*/
+	bool TryShapeCluster(
+		HFONT hFont,
+		const wchar_t* pText,
+		int nTextLength,
+		float fAdvanceX,
+		SColorGlyphCell* pOutCell
+	);
+
 private:
 	struct SFontFaceCacheEntry {
 		IDWriteFontFace2*	pFontFace2;

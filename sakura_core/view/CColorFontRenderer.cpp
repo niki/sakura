@@ -95,6 +95,82 @@ private:
 	UINT32			m_nLength;
 };
 
+/*!	IDWriteTextLayout::Draw()から呼ばれる最小限のIDWriteTextRenderer実装。
+
+	TryShapeCluster専用。1クラスタぶんの短いテキストしか渡さないため、
+	DrawGlyphRunが複数回呼ばれた(=フォールバックの途中でフォントが切り替わった等で
+	ランが分割された)場合や、1回のランのglyphCountが1でない(=このフォントには
+	当該コードポイント列に対応するGSUB合字が無く、複数グリフのままだった)場合は
+	「合字化失敗」として扱う。下線・取り消し線・インライン object は絵文字クラスタの
+	シェーピングには関係しないため無視する。
+*/
+class CGlyphRunCaptureRenderer : public IDWriteTextRenderer {
+public:
+	int					nRunCount;
+	UINT32				nGlyphCount;
+	UINT16				nGlyphIndex;
+	IDWriteFontFace*	pFontFace;	//!< AddRef済み。呼び出し側でRelease必須。
+
+	CGlyphRunCaptureRenderer() : nRunCount(0), nGlyphCount(0), nGlyphIndex(0), pFontFace(NULL) {}
+
+	//IUnknown
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
+	{
+		if( __uuidof(IUnknown) == riid || __uuidof(IDWriteTextRenderer) == riid || __uuidof(IDWritePixelSnapping) == riid ){
+			*ppvObject = this;
+			return S_OK;
+		}
+		*ppvObject = NULL;
+		return E_NOINTERFACE;
+	}
+	ULONG STDMETHODCALLTYPE AddRef() override { return 1; }
+	ULONG STDMETHODCALLTYPE Release() override { return 1; }
+
+	//IDWritePixelSnapping
+	HRESULT STDMETHODCALLTYPE IsPixelSnappingDisabled(void* /*clientDrawingContext*/, BOOL* isDisabled) override
+	{
+		*isDisabled = TRUE;
+		return S_OK;
+	}
+	HRESULT STDMETHODCALLTYPE GetCurrentTransform(void* /*clientDrawingContext*/, DWRITE_MATRIX* transform) override
+	{
+		static const DWRITE_MATRIX identity = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
+		*transform = identity;
+		return S_OK;
+	}
+	HRESULT STDMETHODCALLTYPE GetPixelsPerDip(void* /*clientDrawingContext*/, FLOAT* pixelsPerDip) override
+	{
+		*pixelsPerDip = 1.0f;
+		return S_OK;
+	}
+
+	//IDWriteTextRenderer
+	HRESULT STDMETHODCALLTYPE DrawGlyphRun(
+		void* /*clientDrawingContext*/,
+		FLOAT /*baselineOriginX*/,
+		FLOAT /*baselineOriginY*/,
+		DWRITE_MEASURING_MODE /*measuringMode*/,
+		DWRITE_GLYPH_RUN const* glyphRun,
+		DWRITE_GLYPH_RUN_DESCRIPTION const* /*glyphRunDescription*/,
+		IUnknown* /*clientDrawingEffect*/
+	) override
+	{
+		++nRunCount;
+		nGlyphCount = glyphRun->glyphCount;
+		if( 1 == glyphRun->glyphCount ){
+			nGlyphIndex = glyphRun->glyphIndices[0];
+		}
+		if( !pFontFace && glyphRun->fontFace ){
+			pFontFace = glyphRun->fontFace;
+			pFontFace->AddRef();
+		}
+		return S_OK;
+	}
+	HRESULT STDMETHODCALLTYPE DrawUnderline(void*, FLOAT, FLOAT, DWRITE_UNDERLINE const*, IUnknown*) override { return S_OK; }
+	HRESULT STDMETHODCALLTYPE DrawStrikethrough(void*, FLOAT, FLOAT, DWRITE_STRIKETHROUGH const*, IUnknown*) override { return S_OK; }
+	HRESULT STDMETHODCALLTYPE DrawInlineObject(void*, FLOAT, FLOAT, IDWriteInlineObject*, BOOL, BOOL, IUnknown*) override { return S_OK; }
+};
+
 } // namespace
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -436,6 +512,128 @@ bool CColorFontRenderer::FetchColorLayers(
 	}
 	pOutCell->nLayerCount = nLayerCount;
 	return true;
+}
+
+
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+//              合字クラスタ(ZWJ結合絵文字等)のシェーピング   //
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+
+bool CColorFontRenderer::TryShapeCluster(
+	HFONT hFont,
+	const wchar_t* pText,
+	int nTextLength,
+	float fAdvanceX,
+	SColorGlyphCell* pOutCell
+)
+{
+	if( !EnsureInit() ){
+		return false;
+	}
+
+	LOGFONT lfBase = {};
+	::GetObject(hFont, sizeof(LOGFONT), &lfBase);
+	float fEmSize = (float)abs(lfBase.lfHeight);
+	if( fEmSize <= 0.0f ){
+		return false;
+	}
+
+	DWRITE_FONT_WEIGHT weight = (DWRITE_FONT_WEIGHT)lfBase.lfWeight;
+	if( weight < DWRITE_FONT_WEIGHT_THIN ){
+		weight = DWRITE_FONT_WEIGHT_NORMAL;
+	}
+	DWRITE_FONT_STYLE style = lfBase.lfItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
+
+	IDWriteTextFormat* pFormat = NULL;
+	HRESULT hr = m_pDWriteFactory->CreateTextFormat(
+		lfBase.lfFaceName, NULL, weight, style, DWRITE_FONT_STRETCH_NORMAL, fEmSize, L"ja-jp", &pFormat);
+	if( FAILED(hr) || !pFormat ){
+		return false;
+	}
+
+	//折り返し・複数行を発生させない、十分に大きい仮想レイアウト領域を与える。
+	//実際の描画位置/幅は使わず、DrawGlyphRunで得られるグリフインデックスだけを見る。
+	IDWriteTextLayout* pLayout = NULL;
+	hr = m_pDWriteFactory->CreateTextLayout(pText, (UINT32)nTextLength, pFormat, 10000.0f, 1000.0f, &pLayout);
+	pFormat->Release();
+	if( FAILED(hr) || !pLayout ){
+		return false;
+	}
+
+	CGlyphRunCaptureRenderer renderer;
+	hr = pLayout->Draw(NULL, &renderer, 0.0f, 0.0f);
+	pLayout->Release();
+
+	if( FAILED(hr) || 1 != renderer.nRunCount || 1 != renderer.nGlyphCount || !renderer.pFontFace ){
+		//このフォントには当該コードポイント列に対応するGSUB合字が無く複数グリフの
+		//ままだった、またはフォントフォールバックの途中で切り替わり複数ランに
+		//分かれた。呼び出し側で1文字ずつの描画にフォールバックすること。
+		if( renderer.pFontFace ) renderer.pFontFace->Release();
+		return false;
+	}
+
+	//シェーピングが実際に使ったフォント(hFont自身とは限らない。IDWriteTextLayoutの
+	//自動フォントフォールバックにより、本文フォントに無いグリフはSegoe UI Emoji等へ
+	//自動的に解決される)をHFONT化し、既存のHFONTキー方式のキャッシュ/描画パイプライン
+	//(FlushQueueのGetOrCreateFontFaceEntry)にそのまま乗せる。ResolveFallbackHFONT()と
+	//同じ考え方: 同じ物理フォントファイルであれば、別々に取得したIDWriteFontFace
+	//インスタンス間でもグリフインデックスの意味は共通。
+	LOGFONT lfResolved = {};
+	hr = m_pGdiInterop->ConvertFontFaceToLOGFONT(renderer.pFontFace, &lfResolved);
+	if( FAILED(hr) || 0 == lfResolved.lfFaceName[0] ){
+		renderer.pFontFace->Release();
+		return false;
+	}
+	lfResolved.lfHeight      = lfBase.lfHeight;
+	lfResolved.lfWidth       = 0;
+	lfResolved.lfEscapement  = 0;
+	lfResolved.lfOrientation = 0;
+	lfResolved.lfUnderline   = FALSE;
+	lfResolved.lfStrikeOut   = FALSE;
+
+	wchar_t szKey[LF_FACESIZE + 48];
+	swprintf_s(szKey, L"%s|%d|%d|%d|%d", lfResolved.lfFaceName, lfResolved.lfHeight, lfResolved.lfWeight, lfResolved.lfItalic, (int)fAdvanceX);
+
+	HFONT hResolvedFont = NULL;
+	auto it = m_mapFallbackFontCache.find(szKey);
+	if( it != m_mapFallbackFontCache.end() ){
+		hResolvedFont = it->second;
+	}else{
+		hResolvedFont = ::CreateFontIndirect(&lfResolved);
+		if( hResolvedFont ){
+			m_mapFallbackFontCache.insert(std::make_pair(std::wstring(szKey), hResolvedFont));
+		}
+	}
+	if( !hResolvedFont ){
+		renderer.pFontFace->Release();
+		return false;
+	}
+
+	bool bSuccess = false;
+	IDWriteFontFace2* pFontFace2 = NULL;
+	if( SUCCEEDED(renderer.pFontFace->QueryInterface(__uuidof(IDWriteFontFace2), (void**)&pFontFace2)) && pFontFace2 ){
+		if( pFontFace2->IsColorFont() ){
+			bSuccess = FetchColorLayers(pFontFace2, renderer.nGlyphIndex, fEmSize, fAdvanceX, pOutCell);
+		}else{
+			//白黒(通常の輪郭のみ)の合字グリフ。パレット無しの1レイヤーとして
+			//テキスト前景色で描画する。
+			SColorGlyphLayer& layer = pOutCell->layers[0];
+			layer.nGlyphIndex = renderer.nGlyphIndex;
+			layer.fAdvanceX   = fAdvanceX;
+			layer.fOffsetX    = 0.0f;
+			layer.fOffsetY    = 0.0f;
+			layer.bUseForegroundColor = true;
+			pOutCell->nLayerCount = 1;
+			bSuccess = true;
+		}
+		pFontFace2->Release();
+	}
+	renderer.pFontFace->Release();
+
+	if( bSuccess ){
+		pOutCell->hFont = hResolvedFont;
+	}
+	return bSuccess;
 }
 
 
