@@ -1,5 +1,7 @@
 @echo off
 
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\tools\gen_build_version.ps1"
+
 start /w /MIN HeaderMake -in=..\sakura_core\Funccode_x.hsrc -out=..\sakura_core\Funccode_define.h -mode=define
 start /w /MIN HeaderMake -in=..\sakura_core\Funccode_x.hsrc -out=..\sakura_core\Funccode_enum.h -mode=enum -enum=EFunctionCode
 start /w /MIN MakefileMake -file=..\sakura_core\Makefile -dir=..\sakura_core

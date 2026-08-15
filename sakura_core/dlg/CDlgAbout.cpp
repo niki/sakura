@@ -23,6 +23,7 @@
 #include <winternl.h> // 20260814 RtlGetVersion(実行中OSの取得)用
 #include "dlg/CDlgAbout.h"
 #include "uiparts/HandCursor.h"
+#include "config/build_version.h"
 #include "util/file.h"
 #include "util/module.h"
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
@@ -318,11 +319,12 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef NKMM_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
+	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d%s (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
 		HIWORD( dwVersionLS ),
-		PR_LV//LOWORD( dwVersionLS )
+		PR_LV,//LOWORD( dwVersionLS )
+		_T(PR_LV_SUFFIX)
 	);
 #else
 	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d\r\n"),

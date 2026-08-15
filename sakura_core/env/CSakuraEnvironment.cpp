@@ -28,6 +28,7 @@
 #include "env/DLLSHAREDATA.h"
 #include "env/CFormatManager.h"
 #include "env/CFileNameManager.h"
+#include "config/build_version.h"
 #include "_main/CAppMode.h"
 #include "_main/CCommandLine.h"
 #include "doc/CEditDoc.h"
@@ -435,15 +436,16 @@ void CSakuraEnvironment::ExpandParameter(const wchar_t* pszSource, wchar_t* pszB
 		case L'V':	// Apr. 4, 2003 genta
 			// Version number
 			{
-				wchar_t buf[28]; // 6(符号含むWORDの最大長) * 4 + 4(固定部分)
+				wchar_t buf[32]; // 6(符号含むWORDの最大長) * 4 + 4(固定部分) + PR_LV_SUFFIX分の余裕
 				//	2004.05.13 Moca バージョン番号は、プロセスごとに取得する
 				DWORD dwVersionMS, dwVersionLS;
 				GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
-				int len = auto_sprintf( buf, L"%d.%d.%d.%d",
+				int len = auto_sprintf( buf, L"%d.%d.%d.%d%hs",
 					HIWORD( dwVersionMS ),
 					LOWORD( dwVersionMS ),
 					HIWORD( dwVersionLS ),
-					PR_LV//LOWORD( dwVersionLS )
+					PR_LV,//LOWORD( dwVersionLS )
+					PR_LV_SUFFIX
 				);
 				q = wcs_pushW( q, q_max - q, buf, len );
 				++p;

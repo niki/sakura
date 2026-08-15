@@ -64,6 +64,9 @@ generated/
 Funccode_*.h
 *.inc
 
+sakura_core/config/build_version_generated.h
+sakura_core/config/.build_version_state
+
 *.user
 tags
 

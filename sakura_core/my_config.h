@@ -83,10 +83,12 @@
 //    IDC_BUTTON_LICENSE, IDC_BUTTON_COPYの座標(UTF-16LEファイル)
 //------------------------------------------------------------------
 #define NKMM_FIX_VERDLG
-	#define PR_VER      2,3,2,PR_LV	// 2.4系に倣う
-	#define PR_VER_STR "2.3.2."##PR_LV
-	#define PR_VER_VAL	2320
-	#define PR_LV		260814
+	// PR_VER/PR_VER_STR/PR_VER_VAL(自動生成される日付ベースのビルド番号込み)は
+	// config/build_version.h で定義している。my_config.h は my.h 経由で全.cppに
+	// 強制インクルードされるため、毎ビルドで内容が変わるヘッダをここに置くと
+	// 全ファイル再コンパイルの原因になる。必要なファイル(sakura_rc.rc,
+	// CDlgAbout.cpp, CSakuraEnvironment.cpp)だけが config/build_version.h を
+	// 直接includeすること。
 //	#define BASE_REV    4205  // このSVNのリビジョンを最後に修正を加えています
 
 //-------------------------------------------------------------------------
