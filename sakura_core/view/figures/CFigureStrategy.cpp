@@ -98,7 +98,16 @@ bool CFigure_Text::DrawImp(SColorStrategyInfo* pInfo)
 #ifdef NKMM_LINE_MARGIN_TOP
 		nBaselineTopOffset += pInfo->m_pcView->GetLineMargin();
 #endif // NKMM_
-		pInfo->m_pcView->TryQueueColorGlyph(hFontUsed, &pInfo->m_pLineOfLogic[nIdx], nLength, rcColorCell, nBaselineTopOffset, crForeUsed, crBackUsed);
+		//直後にVS16(U+FE0F)が続くか覗き見る。続くなら、本文フォントがこの文字自身の
+		//モノクロ持ち駒を持っていてもそれを無視してカラー(絵文字)フォントへの解決を
+		//強制する(TryQueueColorGlyph参照)。行末を超えて読まないよう境界を確認する。
+		//20260816 VS16の桁ぶんまで絵文字を拡大して隙間を埋める案(横方向だけの
+		//D2D変形によるstretch)も試したが、見た目が不自然だったため撤回した。
+		//VS16の桁は①(IsInvisibleFormatChar)により背景色で塗り潰されるだけになる。
+		bool bNextIsVS16 =
+			(nIdx + nLength) < pInfo->GetDocLine()->GetLengthWithoutEOL() &&
+			0xFE0F == pInfo->m_pLineOfLogic[nIdx + nLength];
+		pInfo->m_pcView->TryQueueColorGlyph(hFontUsed, &pInfo->m_pLineOfLogic[nIdx], nLength, rcColorCell, nBaselineTopOffset, crForeUsed, crBackUsed, bNextIsVS16);
 	}
 #endif // NKMM_
 #ifdef NKMM_FIX_SELAREA

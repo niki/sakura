@@ -648,6 +648,7 @@
     <ClInclude Include="..\sakura_core\util\tchar_receive.h" />
     <ClInclude Include="..\sakura_core\util\tchar_template.h" />
     <ClInclude Include="..\sakura_core\util\window.h" />
+    <ClInclude Include="..\sakura_core\view\CAtlasPagePool.h" />
     <ClInclude Include="..\sakura_core\view\CCaret.h" />
     <ClInclude Include="..\sakura_core\view\CColorFontRenderer.h" />
     <ClInclude Include="..\sakura_core\view\CColorGlyphCell.h" />
@@ -1413,6 +1414,7 @@
     <ClCompile Include="..\sakura_core\view\CEditView_Paint_Bracket.cpp" />
     <ClCompile Include="..\sakura_core\view\CEditView_Scroll.cpp" />
     <ClCompile Include="..\sakura_core\view\CEditView_Search.cpp" />
+    <ClCompile Include="..\sakura_core\view\CAtlasPagePool.cpp" />
     <ClCompile Include="..\sakura_core\view\CColorFontRenderer.cpp" />
     <ClCompile Include="..\sakura_core\view\CGlyphAtlasCache.cpp" />
     <ClCompile Include="..\sakura_core\view\colors\CColorStrategy.cpp" />

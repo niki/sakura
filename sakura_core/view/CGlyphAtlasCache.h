@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <vector>
 #include "util/design_template.h"
+#include "CAtlasPagePool.h"
 
 //! グリフアトラスキャッシュのキー: (フォント,文字,前景色,背景色,セル幅,セル高さ)の組で一意
 //! セル幅・高さも含めるのは、同じ(フォント,文字,fg,bg)でも呼び出し元のDx配列(字送り)
@@ -74,15 +75,8 @@ struct SGlyphAtlasBlit {
 	int  nDestY = 0;
 };
 
-//! グリフアトラスの1ページ(複数グリフをシェルフパッキングで敷き詰めた1枚のビットマップ)
-struct SGlyphAtlasPage {
-	HBITMAP hBitmap = nullptr;
-	HDC     hdcPage = nullptr;		//!< CreateCompatibleDC + SelectObject(hBitmap) 済み
-	HBITMAP hbmpOld = nullptr;
-	int     nShelfX = 0;			//!< 現シェルフ内の次の書き込みX
-	int     nShelfY = 0;			//!< 現シェルフの開始Y
-	int     nShelfHeight = 0;		//!< 現シェルフの高さ(最大セル高さ)
-};
+// ページの確保・シェルフパッキングはCAtlasPagePool(CColorFontRendererのカラーグリフ
+// アトラスと共用)に委譲している。詳細はCAtlasPagePool.h参照。
 
 /*!	GDIによるグリフキャッシュ(グリフアトラス)のシングルトン。
 
@@ -203,8 +197,9 @@ public:
 
 private:
 	void ClearIfStale();
+
+	//! m_pagePool.AllocCell()の結果をSGlyphAtlasEntryへ詰め替えるだけの薄いラッパー
 	bool AllocCell(int w, int h, SGlyphAtlasEntry* pOut);
-	SGlyphAtlasPage* CreatePage();
 
 	/*!	半角ASCII印字可能文字(0x20〜0x7E)を(hFont,crFore,crBack)の組でまとめて
 		アトラスへ焼く。
@@ -225,13 +220,12 @@ private:
 #ifdef NKMM_DEBUG_GLYPH_ATLAS_DUMP
 	//! デバッグ用: 指定ページの実ピクセルをGetDIBits()で取得し、そのままbmpファイルへ書き出す
 	//! (System.Drawing/GDI+等を介さない、HDCの内容そのもの)。Clear()から自動的に呼ばれる。
-	void DumpPageToFile(const SGlyphAtlasPage& page, const wchar_t* pszPath) const;
+	void DumpPageToFile(int nPageIndex, const wchar_t* pszPath) const;
 #endif // NKMM_
 
 	bool  m_bEnabled;
 	ULONG m_nFontGeneration;
-	bool  m_bPageAllocFailed;	//!< 一度でもページ確保に失敗したら以後は試みない
-	std::vector<SGlyphAtlasPage> m_vPages;
+	CAtlasPagePool m_pagePool;
 	std::unordered_map<SGlyphAtlasKey, SGlyphAtlasEntry, SGlyphAtlasKeyHash> m_mapEntries;
 	std::vector<SGlyphAtlasBlit> m_vPendingBlits;	//!< FlushQueue()まで先送りしたBitBlt指示
 

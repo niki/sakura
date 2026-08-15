@@ -35,14 +35,8 @@
 CGlyphAtlasCache::CGlyphAtlasCache()
 	: m_bEnabled(false)
 	, m_nFontGeneration(CViewFont::GetFontGeneration())
-	, m_bPageAllocFailed(false)
+	, m_pagePool(PAGE_SIZE, MAX_PAGES)
 {
-	// m_vPagesはMAX_PAGES(8)個までしか増えないため事前にreserveしておく。
-	// これが無いと、WarmUpAscii()がページ内でSGlyphAtlasPage*を反復間で
-	// 保持している間にCreatePage()のpush_backでvectorが再確保され、
-	// その生ポインタがダングリングポインタになる不具合があった
-	// (実機で解像度変更直後の文字化け・黒塗り潰しとして再現・修正確認済み)。
-	m_vPages.reserve(MAX_PAGES);
 }
 
 CGlyphAtlasCache::~CGlyphAtlasCache()
@@ -70,37 +64,31 @@ void CGlyphAtlasCache::ClearIfStale()
 void CGlyphAtlasCache::Clear()
 {
 #ifdef NKMM_DEBUG_GLYPH_ATLAS_DUMP
-	if( !m_vPages.empty() ){
+	if( m_pagePool.GetPageCount() > 0 ){
 		wchar_t szExeDir[_MAX_PATH];
 		GetExedir(szExeDir);	// sakura.exe のあるディレクトリ(util/file.h)
 		wchar_t szDumpDir[MAX_PATH];
 		swprintf_s(szDumpDir, L"%s\\sakura_glyph_atlas_dump", szExeDir);
 		::CreateDirectoryW(szDumpDir, NULL);	// 既に存在していればエラーになるが無視してよい
 
-		for( size_t i = 0; i < m_vPages.size(); ++i ){
+		for( int i = 0; i < m_pagePool.GetPageCount(); ++i ){
 			wchar_t szPath[MAX_PATH];
-			swprintf_s(szPath, L"%s\\clear%03d_page%d.bmp", szDumpDir, m_nDumpCounter, (int)i);
-			DumpPageToFile(m_vPages[i], szPath);
+			swprintf_s(szPath, L"%s\\clear%03d_page%d.bmp", szDumpDir, m_nDumpCounter, i);
+			DumpPageToFile(i, szPath);
 		}
 		++m_nDumpCounter;
 	}
 #endif // NKMM_
 
-	for( auto& page : m_vPages ){
-		::SelectObject(page.hdcPage, page.hbmpOld);
-		::DeleteObject(page.hBitmap);
-		::DeleteDC(page.hdcPage);
-	}
-	m_vPages.clear();
+	m_pagePool.Clear();
 	m_mapEntries.clear();
 	m_vPendingBlits.clear();	// ページを解放するので、積み残しのBitBlt指示(ページ番号参照)も破棄する
-	m_bPageAllocFailed = false;
 }
 
 #ifdef NKMM_DEBUG_GLYPH_ATLAS_DUMP
 //! GetDIBits()でHBITMAPの生ピクセルを取得し、BITMAPFILEHEADER/BITMAPINFOHEADERを
 //! 自前で組み立てて実物のbmpファイルとして書き出す(GDI+等の再エンコードを介さない)。
-void CGlyphAtlasCache::DumpPageToFile(const SGlyphAtlasPage& page, const wchar_t* pszPath) const
+void CGlyphAtlasCache::DumpPageToFile(int nPageIndex, const wchar_t* pszPath) const
 {
 	BITMAPINFOHEADER bi = {};
 	bi.biSize = sizeof(BITMAPINFOHEADER);
@@ -114,7 +102,7 @@ void CGlyphAtlasCache::DumpPageToFile(const SGlyphAtlasPage& page, const wchar_t
 	const DWORD dwBufSize = dwStride * PAGE_SIZE;
 	std::vector<BYTE> vPixels(dwBufSize);
 
-	int nScanLines = ::GetDIBits(page.hdcPage, page.hBitmap, 0, PAGE_SIZE, vPixels.data(),
+	int nScanLines = ::GetDIBits(m_pagePool.GetPageDC(nPageIndex), m_pagePool.GetPageBitmap(nPageIndex), 0, PAGE_SIZE, vPixels.data(),
 		(BITMAPINFO*)&bi, DIB_RGB_COLORS);
 	if( nScanLines == 0 ) return;
 
@@ -134,76 +122,14 @@ void CGlyphAtlasCache::DumpPageToFile(const SGlyphAtlasPage& page, const wchar_t
 }
 #endif // NKMM_
 
-SGlyphAtlasPage* CGlyphAtlasCache::CreatePage()
-{
-	if( m_bPageAllocFailed ) return nullptr;
-	if( (int)m_vPages.size() >= MAX_PAGES ) return nullptr;
-
-	HDC hdcScreen = ::GetDC(NULL);
-	HBITMAP hBitmap = ::CreateCompatibleBitmap(hdcScreen, PAGE_SIZE, PAGE_SIZE);
-	HDC hdcPage = ::CreateCompatibleDC(hdcScreen);
-	::ReleaseDC(NULL, hdcScreen);
-
-	if( !hBitmap || !hdcPage ){
-		if( hBitmap ) ::DeleteObject(hBitmap);
-		if( hdcPage ) ::DeleteDC(hdcPage);
-		m_bPageAllocFailed = true;
-		return nullptr;
-	}
-
-	SGlyphAtlasPage page;
-	page.hBitmap = hBitmap;
-	page.hdcPage = hdcPage;
-	page.hbmpOld = (HBITMAP)::SelectObject(hdcPage, hBitmap);
-	::SetBkMode(hdcPage, OPAQUE);
-
-	m_vPages.push_back(page);
-	return &m_vPages.back();
-}
-
-//! シェルフパッキングでセルを確保する。既存ページのシェルフに入らなければ新しい棚、
-//! それも入らなければ新規ページを試みる。
+//! シェルフパッキングでのページ確保自体はCAtlasPagePool(CColorFontRendererの
+//! カラーグリフアトラスと共用)に委譲し、結果をSGlyphAtlasEntryへ詰め替えるだけ。
 bool CGlyphAtlasCache::AllocCell(int w, int h, SGlyphAtlasEntry* pOut)
 {
-	if( w <= 0 || h <= 0 || w > PAGE_SIZE || h > PAGE_SIZE ) return false;
-
-	for( int i = 0; i < (int)m_vPages.size(); ++i ){
-		SGlyphAtlasPage& page = m_vPages[i];
-		if( page.nShelfX + w <= PAGE_SIZE && h <= page.nShelfHeight ){
-			pOut->nPageIndex = i;
-			pOut->rcCell.left   = page.nShelfX;
-			pOut->rcCell.top    = page.nShelfY;
-			pOut->rcCell.right  = page.nShelfX + w;
-			pOut->rcCell.bottom = page.nShelfY + page.nShelfHeight;
-			page.nShelfX += w;
-			return true;
-		}
-		int nNextShelfY = page.nShelfY + page.nShelfHeight;
-		if( page.nShelfHeight > 0 && nNextShelfY + h <= PAGE_SIZE ){
-			// 新しい棚を開始
-			page.nShelfY = nNextShelfY;
-			page.nShelfHeight = h;
-			page.nShelfX = w;
-			pOut->nPageIndex = i;
-			pOut->rcCell.left   = 0;
-			pOut->rcCell.top    = page.nShelfY;
-			pOut->rcCell.right  = w;
-			pOut->rcCell.bottom = page.nShelfY + h;
-			return true;
-		}
-	}
-
-	// どのページにも入らない: 新規ページを確保して先頭棚に配置
-	SGlyphAtlasPage* pNew = CreatePage();
-	if( !pNew ) return false;
-	pNew->nShelfY = 0;
-	pNew->nShelfHeight = h;
-	pNew->nShelfX = w;
-	pOut->nPageIndex = (int)m_vPages.size() - 1;
-	pOut->rcCell.left   = 0;
-	pOut->rcCell.top    = 0;
-	pOut->rcCell.right  = w;
-	pOut->rcCell.bottom = h;
+	SAtlasCellRect rc;
+	if( !m_pagePool.AllocCell(w, h, &rc) ) return false;
+	pOut->nPageIndex = rc.nPageIndex;
+	pOut->rcCell = rc.rcCell;
 	return true;
 }
 
@@ -256,11 +182,11 @@ bool CGlyphAtlasCache::DrawOrCache(
 		// ページ上限到達 or 確保失敗。今回は呼び出し側に直接描画させる(既存ヒットは継続利用可能)
 		return false;
 	}
-	SGlyphAtlasPage& page = m_vPages[newEntry.nPageIndex];
+	HDC hdcPage = m_pagePool.GetPageDC(newEntry.nPageIndex);
 
-	::SetTextColor(page.hdcPage, crFore);
-	::SetBkColor(page.hdcPage, crBack);
-	HFONT hOldFont = (HFONT)::SelectObject(page.hdcPage, hFont);
+	::SetTextColor(hdcPage, crFore);
+	::SetBkColor(hdcPage, crBack);
+	HFONT hOldFont = (HFONT)::SelectObject(hdcPage, hFont);
 	RECT rcCellDest = newEntry.rcCell;
 	// 20260809 ETO_OPAQUEによる不透明フィルはセル全体(rcCellDest)を対象にしつつ、
 	// 実際にグリフを描く位置はセルの上端からnGlyphYOffsetだけ下にずらす。
@@ -269,9 +195,9 @@ bool CGlyphAtlasCache::DrawOrCache(
 	// ここでずらさずnDestY側だけをマージン込みにすると、マージン分だけ
 	// BitBlt先が本来のクリップ矩形からずれ、行の上端が塗り残されたまま
 	// 次の行のマージン部分にはみ出して描画されてしまう)
-	::ExtTextOutW_AnyBuild(page.hdcPage, rcCellDest.left, rcCellDest.top + nGlyphYOffset,
+	::ExtTextOutW_AnyBuild(hdcPage, rcCellDest.left, rcCellDest.top + nGlyphYOffset,
 		ETO_CLIPPED | ETO_OPAQUE, &rcCellDest, pData, nLength, pDx);
-	::SelectObject(page.hdcPage, hOldFont);
+	::SelectObject(hdcPage, hOldFont);
 
 	newEntry.nCellWidthPx  = nCellWidthPx;
 	newEntry.nCellHeightPx = nCellHeightPx;
@@ -292,7 +218,10 @@ bool CGlyphAtlasCache::DrawOrCache(
 void CGlyphAtlasCache::WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack, int nGlyphYOffset, int nCellWidthPx, int nCellHeightPx)
 {
 	int dx[1] = { nCellWidthPx };
-	SGlyphAtlasPage* pCurPage = nullptr;
+	// ページはCAtlasPagePool内部にあり生ポインタを持てないため、ページ番号(int)で
+	// 「フォント・色の選択をやり直すべきか」を判定する(-1は「まだ何も選択していない」)。
+	int nCurPageIndex = -1;
+	HDC hdcCurPage = nullptr;
 	HFONT hOldFont = nullptr;
 
 	for( wchar_t ch = 0x20; ch <= 0x7E; ++ch ){
@@ -301,21 +230,21 @@ void CGlyphAtlasCache::WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack
 
 		SGlyphAtlasEntry newEntry;
 		if( !AllocCell(nCellWidthPx, nCellHeightPx, &newEntry) ) break;	// ページ上限等。ここで打ち切る
-		SGlyphAtlasPage& page = m_vPages[newEntry.nPageIndex];
 
-		if( &page != pCurPage ){
+		if( newEntry.nPageIndex != nCurPageIndex ){
 			// ページが変わった(または初回)ので、フォント・色の選択をやり直す
-			if( pCurPage ){
-				::SelectObject(pCurPage->hdcPage, hOldFont);
+			if( nCurPageIndex >= 0 ){
+				::SelectObject(hdcCurPage, hOldFont);
 			}
-			pCurPage = &page;
-			::SetTextColor(page.hdcPage, crFore);
-			::SetBkColor(page.hdcPage, crBack);
-			hOldFont = (HFONT)::SelectObject(page.hdcPage, hFont);
+			nCurPageIndex = newEntry.nPageIndex;
+			hdcCurPage = m_pagePool.GetPageDC(nCurPageIndex);
+			::SetTextColor(hdcCurPage, crFore);
+			::SetBkColor(hdcCurPage, crBack);
+			hOldFont = (HFONT)::SelectObject(hdcCurPage, hFont);
 		}
 
 		RECT rcCellDest = newEntry.rcCell;
-		::ExtTextOutW_AnyBuild(page.hdcPage, rcCellDest.left, rcCellDest.top + nGlyphYOffset,
+		::ExtTextOutW_AnyBuild(hdcCurPage, rcCellDest.left, rcCellDest.top + nGlyphYOffset,
 			ETO_CLIPPED | ETO_OPAQUE, &rcCellDest, &ch, 1, dx);
 
 		newEntry.nCellWidthPx  = nCellWidthPx;
@@ -326,8 +255,8 @@ void CGlyphAtlasCache::WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack
 #endif // NKMM_
 	}
 
-	if( pCurPage ){
-		::SelectObject(pCurPage->hdcPage, hOldFont);
+	if( nCurPageIndex >= 0 ){
+		::SelectObject(hdcCurPage, hOldFont);
 	}
 }
 
@@ -335,7 +264,7 @@ void CGlyphAtlasCache::WarmUpAscii(HFONT hFont, COLORREF crFore, COLORREF crBack
 CGlyphAtlasCache::SStats CGlyphAtlasCache::GetStats() const
 {
 	SStats st;
-	st.nPageCount        = (int)m_vPages.size();
+	st.nPageCount        = m_pagePool.GetPageCount();
 	st.nEntryCount       = m_mapEntries.size();
 	st.nPendingBlitCount = m_vPendingBlits.size();
 	st.nHitCount         = m_nHitCount;
@@ -357,10 +286,9 @@ void CGlyphAtlasCache::FlushQueue(HDC hdc, size_t markBegin)
 
 	for( size_t i = markBegin; i < m_vPendingBlits.size(); ++i ){
 		const SGlyphAtlasBlit& blit = m_vPendingBlits[i];
-		const SGlyphAtlasPage& page = m_vPages[blit.nPageIndex];
 		::BitBlt(hdc, blit.nDestX, blit.nDestY,
 			blit.rcSrc.right - blit.rcSrc.left, blit.rcSrc.bottom - blit.rcSrc.top,
-			page.hdcPage, blit.rcSrc.left, blit.rcSrc.top, SRCCOPY);
+			m_pagePool.GetPageDC(blit.nPageIndex), blit.rcSrc.left, blit.rcSrc.top, SRCCOPY);
 	}
 	// 自分(このパス)が積んだ分だけを取り除く。外側のパス分(markBeginより前)は残す。
 	m_vPendingBlits.resize(markBegin);

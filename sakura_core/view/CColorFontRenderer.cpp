@@ -11,6 +11,24 @@
 
 namespace {
 
+/*!	不可視の書式文字(バリエーションセレクタ、ZWJ)かどうか。
+
+	VS15(U+FE0E)/VS16(U+FE0F)や ZWJ(U+200D) は本来グリフを持たない結合用の
+	制御文字だが、本文フォントにこのコードポイントが無い場合、GDIのSystemLinkが
+	「たまたまこの文字を持っている」フォントへ黙って代替描画してしまうことがあり、
+	意味の無い四角や記号として見えてしまう(合字対応前でも、この見た目の破綻だけは
+	レイアウト(桁の数え方)を一切変えずに直せる)。
+	TryGetColorLayers()はこれらのコードポイントを検出したら即座に
+	「背景色で塗り潰すだけ(レイヤー無し)」のセルを返し、GDIの信用できない代替描画を
+	上書きして消す。
+*/
+bool IsInvisibleFormatChar(wchar_t wch)
+{
+	return 0xFE0E == wch	// VS15 (テキストスタイル指定)
+		|| 0xFE0F == wch	// VS16 (絵文字スタイル指定)
+		|| 0x200D == wch;	// ZWJ (Zero Width Joiner)
+}
+
 /*!	IDWriteFontFallback::MapCharacters用の最小限のIDWriteTextAnalysisSource実装。
 
 	1文字(サロゲートペアなら2コードユニット)ぶんのテキストバッファをそのまま返すだけで、
@@ -296,6 +314,7 @@ void CColorFontRenderer::ClearFontFaceCacheIfStale()
 	}
 	m_mapFontFaceCache.clear();
 }
+
 
 CColorFontRenderer::SFontFaceCacheEntry* CColorFontRenderer::GetOrCreateFontFaceEntry(HFONT hFont)
 {
@@ -592,11 +611,21 @@ bool CColorFontRenderer::TryGetColorLayers(
 	const wchar_t* pData,
 	int nLength,
 	float fAdvanceX,
+	bool bForceEmojiPresentation,
 	SColorGlyphCell* pOutCell
 )
 {
 	if( !EnsureInit() ){
 		return false;
+	}
+
+	if( 1 == nLength && IsInvisibleFormatChar(pData[0]) ){
+		//VS15/VS16/ZWJ: GDIの信用できない代替描画を背景色で塗り潰して消すだけ
+		//(レイヤー無し)。詳細はIsInvisibleFormatChar()のコメント参照。
+		pOutCell->hFont = hFont;
+		pOutCell->bEraseFirst = true;
+		pOutCell->nLayerCount = 0;
+		return true;
 	}
 
 	SFontFaceCacheEntry* pEntry = GetOrCreateFontFaceEntry(hFont);
@@ -615,13 +644,9 @@ bool CColorFontRenderer::TryGetColorLayers(
 	UINT16 nGlyphIndex = 0;
 	pEntry->pFontFace2->GetGlyphIndices(&nCodePoint, 1, &nGlyphIndex);
 
-	if( 0 != nGlyphIndex ){
-		//本文フォント自身がこのグリフを持っている場合は、GDIの描画結果は信用できる。
-		//本文フォントがカラーフォントで、かつこのグリフにカラーレイヤーがあるときだけ
-		//上から重ね描きする(通常の等幅フォント等はここでfalseになり、以降は一切処理しない)。
-		if( !pEntry->bIsColorFont ){
-			return false;
-		}
+	if( 0 != nGlyphIndex && pEntry->bIsColorFont ){
+		//本文フォント自身がこのグリフを持っていて、かつそれがカラーフォントである場合は
+		//GDIの描画結果をそのまま信用してよい(VS16の有無に関わらずカラーで出るはず)。
 		if( !FetchColorLayers(pEntry->pFontFace2, nGlyphIndex, pEntry->fEmSize, fAdvanceX, pOutCell) ){
 			return false;
 		}
@@ -630,6 +655,19 @@ bool CColorFontRenderer::TryGetColorLayers(
 		return true;
 	}
 
+	if( 0 != nGlyphIndex && !bForceEmojiPresentation ){
+		//本文フォント自身がこのグリフを持っているが、モノクロフォントで、かつVS16による
+		//強制指定も無い → 通常のテキストとして描画されるのが正しいので、GDIの描画結果
+		//(モノクロ)をそのまま信用して何もしない。
+		return false;
+	}
+
+	//ここに来るのは (a) 本文フォントにこのグリフが無い、または
+	//(b) 本文フォントは持っているがモノクロで、直後のVS16が「カラーで出してくれ」と
+	//明示指定している(bForceEmojiPresentation)、のいずれか。
+	//どちらの場合もGDIが実際に描いたグリフ(本文フォントのモノクロ、またはSystemLink経由の
+	//代わりの何か)は信用できないため、IDWriteFontFallbackで代替フォントを自前で解決し、
+	//そのフォントで確実に描画し直す。
 	//本文フォントにこのグリフが無い → GDIはSystemLinkで何らかのフォントへ黙って
 	//代替描画しているはずだが、それが何のフォントかはここからは分からず信用できない
 	//(欠け・色付き絵文字なのに白黒でしか出ない等の原因)。

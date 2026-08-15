@@ -14,7 +14,7 @@
 #include "CColorFontRenderer.h"
 #include "uiparts/CGraphics.h"
 
-void CEditView::TryQueueColorGlyph(HFONT hFont, const wchar_t* pData, int nLength, const RECT& rcCell, int nBaselineTopOffset, COLORREF crFore, COLORREF crBack)
+void CEditView::TryQueueColorGlyph(HFONT hFont, const wchar_t* pData, int nLength, const RECT& rcCell, int nBaselineTopOffset, COLORREF crFore, COLORREF crBack, bool bForceEmojiPresentation)
 {
 	//GDIが実際に確保したピクセル幅をそのままグリフ送り幅として使う(桁ズレ防止)
 	float fAdvanceX = (float)(rcCell.right - rcCell.left);
@@ -28,7 +28,7 @@ void CEditView::TryQueueColorGlyph(HFONT hFont, const wchar_t* pData, int nLengt
 	cell.crFore = crFore;
 	cell.crBack = crBack;
 	cell.bEraseFirst = false;
-	if( CColorFontRenderer::getInstance()->TryGetColorLayers(hFont, pData, nLength, fAdvanceX, &cell) ){
+	if( CColorFontRenderer::getInstance()->TryGetColorLayers(hFont, pData, nLength, fAdvanceX, bForceEmojiPresentation, &cell) ){
 		m_vPendingColorGlyphs.push_back(cell);
 	}
 }

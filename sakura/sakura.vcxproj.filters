@@ -595,6 +595,9 @@
     <ClInclude Include="..\sakura_core\view\CCaret.h">
       <Filter>Cpp Source Files\view</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\view\CAtlasPagePool.h">
+      <Filter>Cpp Source Files\view</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\view\CColorFontRenderer.h">
       <Filter>Cpp Source Files\view</Filter>
     </ClInclude>
@@ -1965,6 +1968,9 @@
       <Filter>Cpp Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\view\CEditView_ColorFont.cpp">
+      <Filter>Cpp Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\view\CAtlasPagePool.cpp">
       <Filter>Cpp Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\view\CColorFontRenderer.cpp">

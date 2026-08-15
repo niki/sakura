@@ -365,6 +365,7 @@ util/tchar_printf.o \
 util/tchar_receive.o \
 util/tchar_template.o \
 util/window.o \
+view/CAtlasPagePool.o \
 view/CCaret.o \
 view/CColorFontRenderer.o \
 view/CEditView.o \

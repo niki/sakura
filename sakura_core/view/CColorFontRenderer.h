@@ -110,6 +110,13 @@ public:
 		@param pData      [in]  グリフに対応する文字データの先頭(サロゲートペア可)
 		@param nLength    [in]  pDataの長さ(1または2)
 		@param fAdvanceX  [in]  GDIが実測したグリフ送り幅(px)。DirectWrite側の送り幅ではなくこちらを採用する。
+		@param bForceEmojiPresentation
+		                  [in]  true: 直後にVS16(U+FE0F)が続く。本文フォント自身がこの
+		                        コードポイントのグリフを持っていて(GDIの描画結果が
+		                        「信用できる」)かつそれがモノクロだったとしても、VS16は
+		                        「カラーで出してくれ」という明示指定なので、本文フォントの
+		                        持ち駒を無視して代替(絵文字)フォントへの解決を強制する。
+		                        本文フォント自身が既にカラーフォントの場合は無関係(素通り)。
 		@param pOutCell   [out] layers/nLayerCount/bEraseFirstを書き込む(rcCell/hFont/crFore/crBackは
 		                        呼び出し側で設定済みの前提。代替フォントを使う場合はhFontを本メソッド内で書き換える)
 
@@ -121,10 +128,11 @@ public:
 		const wchar_t* pData,
 		int nLength,
 		float fAdvanceX,
+		bool bForceEmojiPresentation,
 		SColorGlyphCell* pOutCell
 	);
 
-	//! キューに溜まった分をまとめて描画する(1visual行につき1回の呼び出しを想定)
+	//! キューに溜まった分をまとめて描画する(1visual行につき1回の呼び出しを想定)。
 	void FlushQueue(HDC hdc, const RECT& rcUnion, const std::vector<SColorGlyphCell>& vCells);
 
 private:
@@ -135,6 +143,7 @@ private:
 		int					nAscentPx;	//!< ベースライン算出用
 	};
 
+	//! CViewFont::GetFontGeneration()の値が変化していたら、フォントフェイスキャッシュを破棄する。
 	void ClearFontFaceCacheIfStale();
 	SFontFaceCacheEntry* GetOrCreateFontFaceEntry(HFONT hFont);
 	ID2D1SolidColorBrush* GetOrCreateBrush(COLORREF cr);

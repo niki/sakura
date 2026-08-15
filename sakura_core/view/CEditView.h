@@ -259,7 +259,11 @@ protected:
 public:
 	//! GDIでの描画直後に、このグリフがカラーフォントのグリフなら描画待ちキューに積む。
 	//! 実際の描画はまだ行わない(GDIが描画したフォールバック用グリフはそのまま残る)。
-	void TryQueueColorGlyph(HFONT hFont, const wchar_t* pData, int nLength, const RECT& rcCell, int nBaselineTopOffset, COLORREF crFore, COLORREF crBack);
+	//! @param bForceEmojiPresentation
+	//!                     [in] このグリフの直後にVS16(U+FE0F)が続くか。trueなら、本文
+	//!                          フォント自身がモノクロの持ち駒を持っていてもそれを無視し、
+	//!                          カラー(絵文字)フォントへの解決を強制する。
+	void TryQueueColorGlyph(HFONT hFont, const wchar_t* pData, int nLength, const RECT& rcCell, int nBaselineTopOffset, COLORREF crFore, COLORREF crBack, bool bForceEmojiPresentation);
 	//! 1visual行分たまった描画待ちキューを、その行の全GDI描画が終わった後にまとめて描画する。
 	void FlushColorGlyphQueue(CGraphics& gr);
 private:
