@@ -580,6 +580,9 @@ bool CColorFontRenderer::TryShapeCluster(
 	//インスタンス間でもグリフインデックスの意味は共通。
 	LOGFONT lfResolved = {};
 	hr = m_pGdiInterop->ConvertFontFaceToLOGFONT(renderer.pFontFace, &lfResolved);
+	//lfFaceNameがLF_FACESIZE以内でnull終端されている保証はAPI契約上あるはずだが、
+	//念のため明示的に強制する(%sでの書式化時に配列境界を超えて読むことを防ぐ)。
+	lfResolved.lfFaceName[LF_FACESIZE - 1] = L'\0';
 	if( FAILED(hr) || 0 == lfResolved.lfFaceName[0] ){
 		renderer.pFontFace->Release();
 		return false;
@@ -688,6 +691,9 @@ HFONT CColorFontRenderer::ResolveFallbackHFONT(
 	LOGFONT lfFallback = {};
 	BOOL bIsSystemFont = FALSE;
 	m_pGdiInterop->ConvertFontToLOGFONT(pMappedFont, &lfFallback, &bIsSystemFont);
+	//lfFaceNameがLF_FACESIZE以内でnull終端されている保証はAPI契約上あるはずだが、
+	//念のため明示的に強制する(%sでの書式化時に配列境界を超えて読むことを防ぐ)。
+	lfFallback.lfFaceName[LF_FACESIZE - 1] = L'\0';
 
 	IDWriteFontFace* pFontFace = NULL;
 	hr = pMappedFont->CreateFontFace(&pFontFace);

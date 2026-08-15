@@ -23,6 +23,9 @@ bool IsZWJChar(wchar_t wch) { return 0x200D == wch; }
 bool IsVariationSelectorChar(wchar_t wch) { return 0xFE0E == wch || 0xFE0F == wch; }
 //! 肌色修飾子(Fitzpatrick modifier)。ZWJを介さず直前の絵文字へ直接結合する。
 bool IsFitzpatrickModifier(UINT32 nCodePoint) { return nCodePoint >= 0x1F3FBu && nCodePoint <= 0x1F3FFu; }
+//! 結合用囲み記号(U+20E3)。キーキャップ(数字/#/* + VS16 + これ)の最後の要素。
+//! ZWJを介さず直前(VS16)へ直接結合する。
+bool IsCombiningEnclosingKeycap(wchar_t wch) { return 0x20E3 == wch; }
 
 UINT32 DecodeCodePoint(const wchar_t* pData, int nLength)
 {
@@ -37,7 +40,7 @@ UINT32 DecodeCodePoint(const wchar_t* pData, int nLength)
 /*!	1文字ぶんの描画待ちをキューへ積む。
 
 	ZWJ結合絵文字(合字)対応のため、直前の文字がZWJだった場合や、自身がZWJ/VS15/
-	VS16/肌色修飾子の場合は、即座にはm_vPendingColorGlyphsへ積まず、まず
+	VS16/肌色修飾子/結合用囲み記号(キーキャップ)の場合は、即座にはm_vPendingColorGlyphsへ積まず、まず
 	m_vPendingClusterCallsへ保留する。「合字化できるかもしれない区間」が確定した
 	時点(区間が続かない文字が来た時、または行末)でFlushPendingCluster()が
 	DirectWriteのシェーピングを試み、単一グリフへ合字化できればまとめて1セルとして、
@@ -59,7 +62,7 @@ void CEditView::TryQueueColorGlyph(HFONT hFont, const wchar_t* pData, int nLengt
 		&& 1 == m_vPendingClusterCalls.back().nLength
 		&& IsZWJChar(m_vPendingClusterCalls.back().data[0]);
 	bool bContinuesCluster = !m_vPendingClusterCalls.empty()
-		&& ( IsZWJChar(pData[0]) || bLastWasZWJ || IsVariationSelectorChar(pData[0]) || IsFitzpatrickModifier(nCodePoint) );
+		&& ( IsZWJChar(pData[0]) || bLastWasZWJ || IsVariationSelectorChar(pData[0]) || IsFitzpatrickModifier(nCodePoint) || IsCombiningEnclosingKeycap(pData[0]) );
 	if( !bContinuesCluster ){
 		FlushPendingCluster();
 	}
@@ -72,11 +75,11 @@ void CEditView::TryQueueColorGlyph(HFONT hFont, const wchar_t* pData, int nLengt
 	cell.bEraseFirst = false;
 	bool bResolved = CColorFontRenderer::getInstance()->TryGetColorLayers(hFont, pData, nLength, fAdvanceX, bForceEmojiPresentation, &cell);
 
-	//ZWJ/VS15/VS16/肌色修飾子は、それ単体では通常のテキストとして解決される
-	//(TryGetColorLayersがfalseを返す)場合でも、合字クラスタの入口/継続候補としての
-	//意味を持つため保留バッファに積む。それ以外でTryGetColorLayersがfalseなら、
-	//今まで通り何もしない。
-	bool bClusterCandidate = IsZWJChar(pData[0]) || IsVariationSelectorChar(pData[0]) || IsFitzpatrickModifier(nCodePoint);
+	//ZWJ/VS15/VS16/肌色修飾子/結合用囲み記号は、それ単体では通常のテキストとして
+	//解決される(TryGetColorLayersがfalseを返す)場合でも、合字クラスタの入口/継続
+	//候補としての意味を持つため保留バッファに積む。それ以外でTryGetColorLayersが
+	//falseなら、今まで通り何もしない。
+	bool bClusterCandidate = IsZWJChar(pData[0]) || IsVariationSelectorChar(pData[0]) || IsFitzpatrickModifier(nCodePoint) || IsCombiningEnclosingKeycap(pData[0]);
 	if( !bResolved && !bClusterCandidate ){
 		return;
 	}
