@@ -36,6 +36,7 @@
 #include "CAppMode.h"
 #include "env/CDocTypeManager.h"
 #include "env/CShareData_IO.h"
+#include "debug/CCrashHandler.h"
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //               コンストラクタ・デストラクタ                  //
@@ -93,6 +94,7 @@ bool CNormalProcess::InitializeProcess()
 	   （グループ合流・OpenFiles()）を素通しでそのまま使い回せる。
 	   「新規ウィンドウを開く」操作まで復元が乗っ取らないよう、他ウィンドウが
 	   1つでも起動していれば復元は行わない 20260814 */
+	bool bSessionRestoreInjected = false;	// 20260815 下のクラッシュ復元確認との競合防止に使う
 	if( GetDllShareData().m_Common.m_sGeneral.m_bRestoreSession
 		&& !CCommandLine::getInstance()->IsNoWindow()
 		&& !CCommandLine::getInstance()->IsDebugMode()
@@ -120,7 +122,51 @@ bool CNormalProcess::InitializeProcess()
 				}
 				if( !vPaths.empty() ){
 					CCommandLine::getInstance()->SetFilesForSessionRestore( vPaths, vBufPaths );
+					bSessionRestoreInjected = true;
 				}
+			}
+		}
+	}
+#endif // NKMM_
+
+#ifdef NKMM_CRASH_HANDLER_BUFFER
+	/* クラッシュ時に退避された未保存バッファの復元確認 20260815
+	   上のセッション復元(ファイル一覧)が何も注入しなかった場合のみ確認する。
+	   コールドスタート限定の条件は上のセッション復元ブロックと同じ理由で必要
+	   （「セッションの復元」チェックボックスとは無関係に常時有効の安全機構） */
+#ifndef NKMM_SESSION_RESTORE
+	bool bSessionRestoreInjected = false;
+#endif // NKMM_
+	// 20260815 退避ファイル(.rbuf)の削除は、後述のNKMM_SESSION_RESTORE_BUFFER上書き処理が
+	// 消費し終わったあとに行う必要がある(SetFilesForSessionRestore()はパス文字列を記録する
+	// だけで、実際にファイルを読むのはOpenDocumentWhenStart()より後のため、ここで即削除すると
+	// 「復元する」を選んだ場合に肝心の内容が読めなくなる)
+	std::wstring strCrashRecoveryBufPathPendingDelete;
+	if( !bSessionRestoreInjected
+		&& !CCommandLine::getInstance()->IsNoWindow()
+		&& !CCommandLine::getInstance()->IsDebugMode()
+		&& !CCommandLine::getInstance()->IsGrepMode()
+		&& !CCommandLine::getInstance()->IsGrepDlg()
+		&& CCommandLine::getInstance()->GetFileNum() == 0
+		&& GetDllShareData().m_sNodes.m_nEditArrNum == 0 )
+	{
+		EditInfo fiCheck2;
+		CCommandLine::getInstance()->GetEditInfo( &fiCheck2 );
+		if( fiCheck2.m_szPath[0] == _T('\0') ){
+			std::wstring strOrigPath, strBufPath;
+			if( FindAndClaimCrashRecovery( strOrigPath, strBufPath ) ){
+				if( IDYES == ::MessageBox( NULL,
+					_T("前回、予期しない終了(クラッシュ)により保存されなかった編集内容が見つかりました。\n復元しますか？"),
+					_T("サクラエディタ"), MB_YESNO | MB_ICONQUESTION ) )
+				{
+					std::vector<std::wstring> vPaths, vBufPaths;
+					vPaths.push_back( strOrigPath );
+					vBufPaths.push_back( strBufPath );
+					CCommandLine::getInstance()->SetFilesForSessionRestore( vPaths, vBufPaths );
+				}
+				// 復元する/しないに関わらず退避ファイルは消費済み扱いとするが、実際の削除は
+				// NKMM_SESSION_RESTORE_BUFFERの上書き処理を通過したあとまで遅らせる
+				strCrashRecoveryBufPathPendingDelete = strBufPath;
 			}
 		}
 	}
@@ -203,6 +249,10 @@ bool CNormalProcess::InitializeProcess()
 		::CloseHandle( hMutex );
 		return false;	// 2009.06.23 ryoji CEditWnd::Create()失敗のため終了
 	}
+#ifdef NKMM_CRASH_HANDLER_BUFFER
+	// 20260815 これ以降のクラッシュはCEditWnd::getInstance()に安全に触れてよい
+	NotifyMainWindowReady();
+#endif // NKMM_
 
 	/* コマンドラインの解析 */	 // 2002/2/8 aroka ここに移動
 	bDebugMode = CCommandLine::getInstance()->IsDebugMode();
@@ -451,6 +501,14 @@ bool CNormalProcess::InitializeProcess()
 			// バックアップファイルはここでは削除しない。掃除はCloseAllEditor()側の
 			// 一括再構築のみで行う（復元は副作用のない読み取り専用操作とする）
 		}
+	}
+#endif // NKMM_
+
+#ifdef NKMM_CRASH_HANDLER_BUFFER
+	// 20260815 クラッシュ復元の退避ファイルは、上のNKMM_SESSION_RESTORE_BUFFER上書き処理が
+	// 消費し終わったこの時点で初めて削除してよい(復元を選ばなかった場合もここで削除される)
+	if( !strCrashRecoveryBufPathPendingDelete.empty() ){
+		DeleteCrashRecoveryFiles( strCrashRecoveryBufPathPendingDelete );
 	}
 #endif // NKMM_
 

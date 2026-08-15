@@ -249,6 +249,20 @@ bool CDocFileOperation::RestoreBufferOverlay( const WCHAR* backupFilePath )
 	SLoadInfo sLoadInfo;
 	sLoadInfo.cFilePath = backupFilePath;
 	sLoadInfo.eCharCode = CODE_UTF8;
+	// 20260815 nType未設定(デフォルトの-1)のままだとCReadManager::ReadFile_To_CDocLineMgr()内で
+	// CDocTypeManager::GetTypeConfigMini()がfalseを返してtypeが未初期化のまま参照され、
+	// 不正ポインタ参照でクラッシュすることが判明した。ドキュメントタイプは変更しない関数なので
+	// 現在のタイプをそのまま渡す
+	sLoadInfo.nType = m_pcDocRef->m_cDocType.GetDocumentType();
+
+	CEditWnd* pWnd = m_pcDocRef->m_pcEditWnd;
+	// 20260815 CDocLineMgrの再構築中(DeleteAllLine〜AddLineStrX〜レイアウト再計算)にWM_PAINTが
+	// 割り込むと、描画側が保持している古いDispPos/CLayout/CDocLineへの参照(解放済みメモリ)を
+	// そのまま使って描画してしまい、CRegexKeywordの正規表現マッチ中に無効ポインタを踏んで
+	// クラッシュすることが判明した。CEditWnd::UpdateTextWrap()等、同種の「開いたまま中身を
+	// 差し替える」処理で使われているSetDrawSwitchOfAllViews()と同じパターンで、
+	// 再構築が完了するまで描画を止める
+	const bool bDrawSwitchOld = pWnd->SetDrawSwitchOfAllViews( false );
 
 	CReadManager cReader;
 	EConvertResult eResult = cReader.ReadFile_To_CDocLineMgr(
@@ -256,7 +270,10 @@ bool CDocFileOperation::RestoreBufferOverlay( const WCHAR* backupFilePath )
 		sLoadInfo,
 		&m_pcDocRef->m_cDocFile.m_sFileInfo
 	);
-	if( eResult == RESULT_FAILURE ) return false;
+	if( eResult == RESULT_FAILURE ){
+		pWnd->SetDrawSwitchOfAllViews( bDrawSwitchOld );
+		return false;
+	}
 
 #ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
 	// 文書全体の文字数キャッシュを無効化する。ReadFile_To_CDocLineMgr()はCDocLineMgrを
@@ -276,11 +293,13 @@ bool CDocFileOperation::RestoreBufferOverlay( const WCHAR* backupFilePath )
 	// 未保存の変更を復元した、という状態を明示する
 	m_pcDocRef->m_cDocEditor.SetModified( true, true );
 
+	// ここまででCDocLineMgr/レイアウトの再構築が完了したので、描画を再開してよい
+	pWnd->SetDrawSwitchOfAllViews( bDrawSwitchOld );
+
 	// 画面の更新。通常のロードフロー（DoLoadFlow→NotifyFinalLoad→CLoadAgent::OnFinalLoad()）
 	// をバイパスしているため、ここで明示的に再描画・スクロールバー更新をしないと、
 	// 起動直後の初回描画は元の内容（未変更のディスク内容、または空の無題）のまま残ってしまい、
 	// 他のタブに切り替える等の再描画が起きるまで反映されない 20260814
-	CEditWnd* pWnd = m_pcDocRef->m_pcEditWnd;
 	pWnd->Views_RedrawAll();
 	::InvalidateRect( pWnd->GetHwnd(), NULL, TRUE );
 	CCaret& cCaret = pWnd->GetActiveView().GetCaret();
