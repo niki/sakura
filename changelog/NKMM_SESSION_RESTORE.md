@@ -67,9 +67,19 @@ v1スコープはユーザーとの相談で決定：タブグループ構成・
 
 このとき**空リストの扱いに注意**: `LoadSessionFileList()`は0件のとき`false`を返すため、戻り値で「退避が必要か」を判定すると、`n==1`終了時の「明示的な空クリア」が「退避不要」と誤判定され、書き戻されずセクションごと消えてしまう不具合が実機で発生した。`bRestoreSession`がONなら常に（空でも）無条件で書き戻すよう修正済み。
 
+## OS シャットダウン対応（WM_QUERYENDSESSION/WM_ENDSESSION）20260815
+
+各ウィンドウ（＝別プロセス）が独立してWM_QUERYENDSESSIONを受け取るため、`CloseAllEditor()`のような単一の集約点が無い。`CEditWnd::DispatchEvent()`のWM_QUERYENDSESSIONハンドラで、以下の方式により対応した：
+
+- 最初にWM_QUERYENDSESSIONを受け取ったウィンドウが、まだ誰も閉じ始めていない時点での全ウィンドウ一覧（`GetOpenedWindowArr(&p, TRUE)`、タブ表示順）からセッションを保存する。この保存処理は`CloseAllEditor()`と共通化し、`CControlTray::SaveSessionSnapshot(pWndArr, n)`として切り出した。
+- 「自分が最初か」の判定は、単純なif/代入ではなく`InterlockedCompareExchange()`で`m_bSessionHandledByCloseAll`をFALSE→TRUEへアトミックに遷移させることで行う。WM_QUERYENDSESSIONが複数プロセスへ本当に1つずつ順番に配送される保証はOS実装に依存しコード側で保証できないため、万一2つ以上のプロセスがほぼ同時にこの分岐に入っても、実際にスナップショットを取るのは1プロセスだけになるようにしている。
+- 拒否時（このウィンドウがシャットダウンを拒否した場合）は`m_bSessionHandledByCloseAll`をFALSEへ戻す。`WM_ENDSESSION`（`wParam==FALSE`＝シャットダウンがキャンセルされた）でも念のため同様に戻す（二重の安全策）。
+- 他のウィンドウが拒否してシャットダウン自体がキャンセルされた場合、既に閉じてしまったウィンドウは戻らない（サクラエディタ既存の挙動、対応範囲外）。
+
+**NKMM_SESSION_RESTORE_BUFFER統合時に発見・対処したレース条件**: 詳細は[NKMM_SESSION_RESTORE_BUFFER.md](NKMM_SESSION_RESTORE_BUFFER.md)の「OSシャットダウン対応との統合」を参照。`m_bSessionHandledByCloseAll`だけを見て「保存確認を抑制してよいか」を判断すると、他ウィンドウのダンプ完了前に自分のクローズ処理が先行するレースでデータを失いかねなかったため、ウィンドウごとのローカルな実績フラグ(`CEditDoc::m_bSessionBufferCaptured`)を追加で確認するよう修正した。
+
 ## 既知の制約
 
-- **OS シャットダウン（WM_QUERYENDSESSION/WM_ENDSESSION）**: 検討中、未実装。各ウィンドウ（＝別プロセス）が独立してWM_QUERYENDSESSIONを受け取るため、`CloseAllEditor()`のような単一の集約点が無い。案: 最初に受け取ったウィンドウが、まだ誰も閉じ始めていない時点で全ファイル一覧を保存し、`m_bSessionHandledByCloseAll`を立てて後続のWM_DESTROY個別クリアを抑制する。拒否時（このウィンドウがシャットダウンを拒否した場合）はフラグを戻し次回に備える。他のウィンドウが拒否してシャットダウン自体がキャンセルされた場合、既に閉じてしまったウィンドウは戻らない（サクラエディタ既存の挙動、対応範囲外）。
 - 強制終了（タスクキル等、WM_DESTROYを経由しない終了）では保存されない。
 
 ## 動作確認について

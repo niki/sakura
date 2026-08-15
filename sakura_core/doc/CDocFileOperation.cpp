@@ -279,7 +279,7 @@ bool CDocFileOperation::RestoreBufferOverlay( const WCHAR* backupFilePath )
 	// 画面の更新。通常のロードフロー（DoLoadFlow→NotifyFinalLoad→CLoadAgent::OnFinalLoad()）
 	// をバイパスしているため、ここで明示的に再描画・スクロールバー更新をしないと、
 	// 起動直後の初回描画は元の内容（未変更のディスク内容、または空の無題）のまま残ってしまい、
-	// 他のタブに切り替える等の再描画が起きるまで反映されない 20260814(2)
+	// 他のタブに切り替える等の再描画が起きるまで反映されない 20260814
 	CEditWnd* pWnd = m_pcDocRef->m_pcEditWnd;
 	pWnd->Views_RedrawAll();
 	::InvalidateRect( pWnd->GetHwnd(), NULL, TRUE );

@@ -33,6 +33,7 @@
 struct SLoadInfo;
 struct EditInfo;
 struct DLLSHAREDATA;
+struct EditNode;
 class CPropertyManager;
 
 //!	常駐部の管理
@@ -87,6 +88,14 @@ public:
 
 	static BOOL CloseAllEditor( BOOL bCheckConfirm, HWND hWndFrom, BOOL bExit, int nGroup );	/* すべてのウィンドウを閉じる */	//Oct. 7, 2000 jepro 「編集ウィンドウの全終了」という説明を左記のように変更	// 2006.12.25, 2007.02.13 ryoji 引数追加
 	static void TerminateApplication( HWND hWndFrom );	/* サクラエディタの全終了 */	// 2006.12.25 ryoji 引数追加
+
+#ifdef NKMM_SESSION_RESTORE
+	// 2026.08.15 OSシャットダウン(WM_QUERYENDSESSION)対応。CloseAllEditor()を経由せず
+	// 各ウィンドウ(=別プロセス)が個別にWM_QUERYENDSESSIONを受け取るため、CloseAllEditor()
+	// から閉じ始める前の完全なウィンドウ一覧(pWndArr, n件)からセッションを保存する処理を
+	// 共通処理として抜き出した。呼び出し側でbRestoreSessionのON/OFF判定を済ませてから呼ぶこと
+	static void SaveSessionSnapshot( EditNode* pWndArr, int n );
+#endif // NKMM_
 
 public:
 	HWND GetTrayHwnd() const{ return m_hWnd; }

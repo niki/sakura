@@ -108,7 +108,11 @@ struct SShare_Flags{
 	   済ませたことを示す一時フラグ（iniには保存しない）。CloseAllEditor()が
 	   立て、対象ウィンドウのWM_DESTROYで消費してクリアする。個別クローズ
 	   （ファイル→閉じる、タブ×等）のWM_DESTROYではこのフラグが立っていない
-	   ので、自分が最後の1枚ならその場でセッションをクリアする 20260814 */
+	   ので、自分が最後の1枚ならその場でセッションをクリアする 20260814
+	   20260815 OSシャットダウン(WM_QUERYENDSESSION)対応で、CEditWnd::DispatchEvent
+	   からも(InterlockedCompareExchange()経由で)立てるようになった。複数プロセスから
+	   触られ得るため、立てる際は必ずアトミック操作(InterlockedCompareExchange等)を
+	   使うこと。戻す(FALSEにする)だけの操作は単純代入で問題ない */
 	BOOL				m_bSessionHandledByCloseAll = FALSE;
 #endif // NKMM_
 };

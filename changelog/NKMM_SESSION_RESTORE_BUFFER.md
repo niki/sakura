@@ -30,7 +30,7 @@
 - 対象: 全終了時に「変更あり」（`CDocEditor::IsModified()`）だったウィンドウ ―― 保存済みファイルの未保存編集、および無題バッファに文字が入っている場合。
 - 対象外: 変更なしのファイル（ディスクの内容と一致するので、既存のパス復元だけで十分）、変更なしの空の無題ウィンドウ（従来通り対象外）。
 - タブグループ構成・ウィンドウ位置は`NKMM_SESSION_RESTORE`と同様スコープ外。
-- 名前付きファイルは`NKMM_SESSION_RESTORE`既存のルール通り、ウィンドウが1枚だけの終了（`n==1`）は対象外（通常の単一ファイル起動と同じ意味なので）。ただし**無題（パス無し）で変更ありのバッファはn==1でも対象**とする（20260814(2)）。名前付きファイルと違い、パスによる代替の復元手段が無く、保存しなければ内容そのものが失われるため。
+- 名前付きファイルは`NKMM_SESSION_RESTORE`既存のルール通り、ウィンドウが1枚だけの終了（`n==1`）は対象外（通常の単一ファイル起動と同じ意味なので）。ただし**無題（パス無し）で変更ありのバッファはn==1でも対象**とする。名前付きファイルと違い、パスによる代替の復元手段が無く、保存しなければ内容そのものが失われるため。
 
 ## アーキテクチャ上の制約と対応
 
@@ -70,7 +70,7 @@ ini追加キー: `Session[NN].bModified`、`Session[NN].szBuf`（ファイル名
 
 ### SessionBuffers\フォルダの管理（`ClearSessionBufferDir()`、唯一の掃除ポイント、非消費型）
 
-`SaveSessionFileList()`自体はiniの`[Session]`セクションの読み書きのみを行い、`SessionBuffers\`フォルダの中身には触れない。フォルダの掃除は`CShareData_IO::ClearSessionBufferDir()`が担い、呼び出し側（`CloseAllEditor()`、`CEditWnd`の個別クローズ時セッションクリア）が**新しいバックアップファイルをダンプする前**に呼んで、フォルダの中身を無条件で全消去する（20260814(3)）。
+`SaveSessionFileList()`自体はiniの`[Session]`セクションの読み書きのみを行い、`SessionBuffers\`フォルダの中身には触れない。フォルダの掃除は`CShareData_IO::ClearSessionBufferDir()`が担い、呼び出し側（`CloseAllEditor()`、`CEditWnd`の個別クローズ時セッションクリア）が**新しいバックアップファイルをダンプする前**に呼んで、フォルダの中身を無条件で全消去する。
 
 当初は「entriesが参照するファイルだけ残し、参照されなくなった古いファイルを削除する」reconcile方式だったが、`SaveSessionFileList()`が`m_bIniReadOnly`等の理由で早期returnした場合、直前にダンプしたファイルがreconcileされずに残骸として残る抜け道があったため、**保存の直前に無条件で全消去してから書き直す**方式に変更した。タイミングによりファイルが使用中でロックされている等の理由で削除に失敗する場合は無視する（次回の全消去時に再度試みる。「タイミングが悪いときは仕方ない」の割り切り）。
 
@@ -94,7 +94,7 @@ ini追加キー: `Session[NN].bModified`、`Session[NN].szBuf`（ファイル名
 
 `CloseAllEditor()`は元々`CAppNodeManager::GetOpenedWindowArr(&pWndArr, FALSE)`（`bSort=FALSE`）でウィンドウ一覧を取得していた。この`FALSE`は、タブの表示順（ドラッグ操作で並べ替えると更新される`EditNode::m_nIndex`、`CAppNodeManager::ReorderTab()`参照）ではなく、共有メモリ配列上のスロット順（生成順に近い、ソートしない生の順序）を返す。
 
-このため、タブをドラッグで並べ替えた状態で「すべて閉じる」を行うと、セッション保存の並び順（＝閉じる処理自体の順序も）が実際の表示順と食い違い、復元後にタブの並びが変わってしまっていた。`bSort=TRUE`に変更し、`m_nIndex`順（＝実際のタブ表示順）でウィンドウ一覧を取得するようにした（20260814(3)）。これにより閉じる処理自体もタブの端から順に行われるようになり、セッション保存時の並び順も表示順と一致する。
+このため、タブをドラッグで並べ替えた状態で「すべて閉じる」を行うと、セッション保存の並び順（＝閉じる処理自体の順序も）が実際の表示順と食い違い、復元後にタブの並びが変わってしまっていた。`bSort=TRUE`に変更し、`m_nIndex`順（＝実際のタブ表示順）でウィンドウ一覧を取得するようにした。これにより閉じる処理自体もタブの端から順に行われるようになり、セッション保存時の並び順も表示順と一致する。
 
 ### 復元直後の再描画（`CDocFileOperation::RestoreBufferOverlay()`）
 
@@ -102,12 +102,26 @@ ini追加キー: `Session[NN].bModified`、`Session[NN].szBuf`（ファイル名
 
 ### 閉じるときの保存確認の抑制（`CEditDoc::OnFileClose()`）
 
-`CloseAllEditor()`は「セッションの復元」機能とは独立して、閉じる前に各ウィンドウの`CEditDoc::OnFileClose()`（`sakura_core/doc/CEditDoc.cpp:869`）で「変更を保存しますか？」の確認ダイアログを出す（既存の仕組み）。バッファ内容の復元がONのとき、この確認は以下のように振る舞いを変える（20260814(4)）：
+`CloseAllEditor()`は「セッションの復元」機能とは独立して、閉じる前に各ウィンドウの`CEditDoc::OnFileClose()`（`sakura_core/doc/CEditDoc.cpp:869`）で「変更を保存しますか？」の確認ダイアログを出す（既存の仕組み）。バッファ内容の復元がONのとき、この確認は以下のように振る舞いを変える：
 
 - **名前付きファイル**（パス確定済み）: 変更があれば従来通り確認する。バッファへ退避されるからといって、ユーザーが実際にファイルへ保存したいかどうかは別問題のため。
 - **無題バッファ**（パス未確定）: 変更の有無に関わらず確認しない。閉じても内容はバッファとして自動的に退避され、次回起動時に復元されるため、確認する意味が無い。
 
-判定には`CloseAllEditor()`が全終了処理中に立てる既存の一時フラグ`DLLSHAREDATA::m_sFlags::m_bSessionHandledByCloseAll`を流用し、「本当にこのウィンドウの内容がバッファとして退避される場面かどうか」（`m_bRestoreSessionBuffer`ON かつ 全終了処理中）を確認してから抑制する。個別クローズやグループだけ閉じる操作、バッファ機能OFFの場合は、このフラグが立たない／条件を満たさないため、従来通り確認ダイアログが出る。
+判定条件は`!IsValidPath() && m_bSessionHandledByCloseAll && m_bSessionBufferCaptured`（詳細は次項「OSシャットダウン対応との統合」参照）。個別クローズやグループだけ閉じる操作、バッファ機能OFFの場合は、これらの条件が揃わないため、従来通り確認ダイアログが出る。
+
+### OSシャットダウン対応との統合（レース条件の発見と対処、20260815）
+
+`NKMM_SESSION_RESTORE`にOSシャットダウン（WM_QUERYENDSESSION/WM_ENDSESSION）対応が別途追加された後、本バッファ機能との組み合わせを精査したところ、**保存確認の抑制ロジックに理論上のデータロス系のレース条件**が見つかったため修正した。
+
+**問題**: 当初の抑制条件は`!IsValidPath() && m_bSessionHandledByCloseAll && m_bRestoreSessionBuffer`だった。`CloseAllEditor()`経由の場合、`CControlTray::SaveSessionSnapshot()`が全ウィンドウのダンプを完了させてから初めて各ウィンドウの`OnClose()`/`OnFileClose()`を呼ぶため（単一プロセス内の同期ループ）問題は起きない。しかしOSシャットダウン経由の場合、各ウィンドウ（＝別プロセス）が個別にWM_QUERYENDSESSIONを受け取り、OSがその配送順序をシリアライズする保証はない。そのため、最初にCASで勝ったウィンドウAが他ウィンドウBのバッファをダンプし終える**前**に、B自身のWM_QUERYENDSESSION（OSから直接）が先に処理され、Bの`OnFileClose()`が「`m_bSessionHandledByCloseAll`が立っている＝どうせ退避される」と判断して確認を抑制し、そのままウィンドウが閉じてしまう競合があり得た。この場合、Bの内容は実際にはまだダンプされておらず、確認も出ないため、未保存の変更がそのまま失われる。
+
+**対処**: 「誰かが保存処理を始めた」ことしか示さない共有（複数プロセス）フラグの`m_bSessionHandledByCloseAll`だけに頼るのをやめ、「自分の内容が実際にダンプされたか」を示すローカルな（プロセス内、`CEditDoc`の）フラグ`m_bSessionBufferCaptured`を新設した：
+
+- `MYWM_GETFILEINFO`ハンドラ（`SaveSessionSnapshot()`が各ウィンドウの情報を問い合わせる際、ループの先頭で必ず呼ばれる）で、まず`false`にリセットする。以前の（中断された等の理由で使われなかった）試みのダンプ実績が今回の試みに紛れ込むのを防ぐため。
+- `MYWM_DUMPBUFFER`ハンドラで、ダンプに実際に成功した時だけ`true`にする。
+- `CEditDoc::OnFileClose()`の抑制条件を`!IsValidPath() && m_bSessionHandledByCloseAll && m_bSessionBufferCaptured`に変更（`m_bRestoreSessionBuffer`の直接チェックは削除。`m_bSessionBufferCaptured`がtrueになる時点で当時ONだったことが保証されるため）。
+
+`m_bSessionBufferCaptured`単独ではなく`m_bSessionHandledByCloseAll`との組み合わせで見ている点が重要：`m_bSessionHandledByCloseAll`は全終了処理の開始/終了（成功・中断いずれも）で確実にFALSEへ戻る（`CloseAllEditor()`は`RequestCloseEditor()`の戻り値に関わらず必ず戻す。WM_QUERYENDSESSION側も拒否時・WM_ENDSESSION(wParam==FALSE)時に戻す）ため、無関係な後日の個別クローズで過去のダンプ実績が誤って抑制に使われることもない。
 
 ### 復元時のチェックボックス解釈（`CNormalProcess::InitializeProcess()`）
 
@@ -116,9 +130,41 @@ ini追加キー: `Session[NN].bModified`、`Session[NN].szBuf`（ファイル名
 - `m_bRestoreSessionBuffer`がONなら、`bModified`なエントリのバッファ復元パスを`CCommandLine`へ橋渡しし、パスが空（無題）のエントリもそのまま復元対象に含める。
 - OFFなら`bModified`/`bufFile`を無視し、パスが空（無題）のエントリは開く意味が無いので除外する。これにより、iniが以前バッファ機能ONで保存されたものであっても、チェックボックスをOFFに戻せば`NKMM_SESSION_RESTORE`単体と同じ「パス一覧のみ復元」の挙動に戻る。
 
+## 確定した処理フロー（20260815時点）
+
+ここまでの実装・修正を踏まえた、全終了時の保存確認〜バッファ退避〜（次回起動時の）復元までの一連の流れを、経路別にまとめる。前提として、以降で出てくる状態は全てこの2つ：
+
+- `DLLSHAREDATA::m_sFlags::m_bSessionHandledByCloseAll`（共有メモリ＝**全プロセスから見える**フラグ）：「（自分か他のウィンドウかを問わず）誰かが全終了のセッション保存処理を始めた」ことを示す。
+- `CEditDoc::m_bSessionBufferCaptured`（**そのプロセス＝そのウィンドウ内だけ**のローカル変数）：「このウィンドウ自身の内容が、実際にSessionBuffers\へダンプされ終わった」ことを示す。
+
+### A. `CloseAllEditor()`経由（「ファイル→サクラエディタの終了」「編集の全終了」など、アプリ自身の操作）
+
+1. `CAppNodeManager::GetOpenedWindowArr(&pWndArr, TRUE)`で、閉じ始める前に、**タブの実際の表示順**（`bSort=TRUE`。ドラッグ操作の並べ替えを反映した`EditNode::m_nIndex`順）で全ウィンドウの一覧を取得する。
+2. 「実質的に全終了か」（`bClosingEverything`）を判定する。
+3. 全終了かつ「セッションの復元」ONなら、`CControlTray::SaveSessionSnapshot(pWndArr, n)`を呼ぶ。この関数が保存処理の本体：
+   1. バッファ内容の復元がONなら、`CShareData_IO::ClearSessionBufferDir()`で`SessionBuffers\`フォルダの中身を無条件に全消去する（唯一の掃除ポイント）。
+   2. 一覧の各ウィンドウへ`MYWM_GETFILEINFO`を送ってパス・変更フラグ等を取得する。**この時点で、送信先ウィンドウ自身の`m_bSessionBufferCaptured`を`false`にリセットする**（過去の中断された試行の実績が紛れ込まないように）。
+   3. 変更ありのウィンドウには`MYWM_DUMPBUFFER`を送り、同期的にバッファ内容をSessionBuffers\へダンプさせる。**ダンプに成功したら、送信先ウィンドウ自身が`m_bSessionBufferCaptured`を`true`にする**。
+   4. 集めた情報を`CShareData_IO::SaveSessionFileList()`でini`[Session]`セクションへ書き込む。
+   5. `m_bSessionHandledByCloseAll`を`TRUE`にする。
+4. `CAppNodeGroupHandle::RequestCloseEditor(pWndArr, n, ...)`が、一覧の全ウィンドウへ**同期的に1枚ずつ順番に**`MYWM_CLOSE`を送る。この時点で、手順3のダンプは（同じスレッド内で完全に完了してから4に進むため）**全ウィンドウ分すでに終わっている**。
+5. 各ウィンドウの`MYWM_CLOSE`ハンドラ（`CEditWnd::OnClose()`）が`CEditDoc::OnFileClose()`を呼ぶ。無題（パス未確定）バッファの場合、`!IsValidPath() && m_bSessionHandledByCloseAll && m_bSessionBufferCaptured`が全て真なら「変更を保存しますか？」の確認ダイアログを出さずに閉じてよいと判断する。3.のダンプが必ず先に完了しているため、ここでレース（後述）は起きない。
+6. `RequestCloseEditor()`が戻ったら（ユーザーが全終了自体をキャンセルした場合も含め、成否に関わらず）`m_bSessionHandledByCloseAll`を`FALSE`に戻す。
+
+### B. `WM_QUERYENDSESSION`経由（Windowsのシャットダウン・ログオフ）
+
+「タブ＝別プロセス」構成のため、`CloseAllEditor()`のような単一の集約点が存在せず、**開いている各ウィンドウ（＝別プロセス）が、OSから個別に**`WM_QUERYENDSESSION`**を受け取る**。
+
+1. 各ウィンドウの`CEditWnd::DispatchEvent()`が`WM_QUERYENDSESSION`を受け取ったら、まず`::InterlockedCompareExchange()`で`m_bSessionHandledByCloseAll`をFALSE→TRUEへ**アトミックに**遷移させようとする。これに**最初に成功した1つのウィンドウ（＝プロセス）だけ**が「自分がこの終了処理の代表」と判定される（他のウィンドウが同じ判定を同時に試みても、勝てるのは1つだけ）。
+2. 代表になったウィンドウだけが、`GetOpenedWindowArr(&p, TRUE)`で改めて全ウィンドウ一覧を取得し、`SaveSessionSnapshot(p, n)`を呼ぶ。中身はA.の3と全く同じ（掃除→ダンプ→ini書き込み→フラグON）。
+3. **全ての**ウィンドウ（代表になったかどうかを問わない）が、自分自身の`WM_QUERYENDSESSION`ハンドラの中で`CEditWnd::OnClose()`→`CEditDoc::OnFileClose()`を呼ぶ。ここでA.5と同じ3条件をチェックする。
+4. `OnClose()`が「閉じてよい」を返せばそのウィンドウを`DestroyWindow`。「拒否する」を返した場合は、そのウィンドウが`m_bSessionHandledByCloseAll`を`FALSE`に戻す（次回の通常終了に備える）。
+5. `WM_ENDSESSION`を`wParam==FALSE`（シャットダウン/ログオフ自体がキャンセルされた）で受け取った場合も、念のため同様に`m_bSessionHandledByCloseAll`を`FALSE`に戻す（二重の安全策）。
+
+**なぜB.3にレースの危険があるか**：OSが`WM_QUERYENDSESSION`を全ウィンドウへ厳密に1つずつ順番通り配送する保証はない（各ウィンドウは別プロセスであり、応答が遅いウィンドウをOS側がタイムアウトさせて他へ問い合わせを進める、といった状況が実際にあり得る）。そのため、代表ウィンドウがB.2のダンプを**まだB自身に対して行っていない**うちに、ウィンドウB自身の`WM_QUERYENDSESSION`が先に処理されてしまう可能性がある。もしB.3の判定が`m_bSessionHandledByCloseAll`（＝「誰かが処理を始めた」）だけを見ていたら、「代表が処理中だからどうせ退避される」と誤判定して確認を抑制し、実際にはまだダンプされていないBの内容がそのまま失われる。**これを防ぐために、ローカルな`m_bSessionBufferCaptured`（「自分自身が実際にダンプされたか」）を追加で見ている**。ダンプがまだなら`false`のままなので、レースが起きても確認ダイアログは正しく表示される（安全側に倒れる）。
+
 ## 既知の制約
 
 - 復元は非消費型：バックアップファイルと`[Session]`メタデータは、次に「全終了（保存フックが走る）」するまでディスクに残り続ける。復元してから一度も完全終了せずに長期間使い続けた場合、その間ずっと未保存内容の平文バックアップが`SessionBuffers\`に残る。
 - 強制終了（タスクキル等、WM_DESTROYを経由しない終了）では保存されない（`NKMM_SESSION_RESTORE`既存の制約と同じ）。
 - 大きく変更したファイルの全終了は、その場でファイルサイズ分のダンプI/Oが発生する。サイズ上限は設けていない。
-- OSシャットダウン（WM_QUERYENDSESSION/WM_ENDSESSION）は`NKMM_SESSION_RESTORE`既存の制約（未対応、検討中）がそのまま引き継がれる。

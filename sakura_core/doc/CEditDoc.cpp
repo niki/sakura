@@ -894,14 +894,27 @@ BOOL CEditDoc::OnFileClose(bool bGrepNoConfirm)
 			return TRUE;
 		}
 #ifdef NKMM_SESSION_RESTORE_BUFFER
-		// 20260814(4) セッション：バッファ内容の復元がONで、かつCloseAllEditor()による
-		// 全終了処理中（＝この内容はバッファとして自動的に退避され、次回起動時に
-		// 復元される）であれば、無題（パス未確定）バッファは変更の有無に関わらず
-		// 保存確認を出さない。名前付きファイルは、バッファ退避があってもユーザーが
-		// きちんと保存したいかどうかは別問題なので、従来通り確認する
+		// 20260814 セッション：バッファ内容の復元がONで、かつ全終了処理中（＝この内容は
+		// バッファとして自動的に退避され、次回起動時に復元される）であれば、無題（パス未確定）
+		// バッファは変更の有無に関わらず保存確認を出さない。名前付きファイルは、バッファ退避が
+		// あってもユーザーがきちんと保存したいかどうかは別問題なので、従来通り確認する。
+		//
+		// 抑制条件は2つのフラグのANDで判定する：
+		//   - m_bSessionHandledByCloseAll（共有・複数プロセスから見える）:「誰かが全終了処理を
+		//     始めた」ことは示すが、「自分の内容が実際にダンプされたか」までは保証しない。
+		//     OSシャットダウン(WM_QUERYENDSESSION)は各ウィンドウ(=別プロセス)が個別に受け取り、
+		//     OSが配送順序をシリアライズする保証は無いため、自分のバッファダンプが完了する前に
+		//     自分のOnFileClose()が先に走るレースがあり得る(20260815)。
+		//   - m_bSessionBufferCaptured（ローカル・自プロセスのみ）: 「自分の内容が実際にダンプ
+		//     されたか」を示す。上記レースが起きても、ダンプ未完了ならこちらがfalseのままなので
+		//     安全側（確認ダイアログが出る）に倒れる。これがtrueな時点でm_bRestoreSessionBuffer
+		//     も当時ONだったことが保証されるため、そちらは重ねてチェックしない。
+		// m_bSessionHandledByCloseAllは全終了処理の開始/終了(成功・中断いずれも)で確実にFALSEへ
+		// 戻るため、過去の（中断された等の理由で使われなかった）ダンプ実績がm_bSessionBufferCaptured
+		// に残っていても、無関係な後日の個別クローズでは抑制が働かない
 		if( !m_cDocFile.GetFilePathClass().IsValidPath()
 			&& GetDllShareData().m_sFlags.m_bSessionHandledByCloseAll
-			&& GetDllShareData().m_Common.m_sGeneral.m_bRestoreSessionBuffer )
+			&& m_bSessionBufferCaptured )
 		{
 			return TRUE;
 		}

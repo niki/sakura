@@ -1799,13 +1799,59 @@ LRESULT CEditWnd::DispatchEvent(
 		OnDropFiles( (HDROP) wParam );
 		return 0L;
 	case WM_QUERYENDSESSION:	//OSの終了
+#ifdef NKMM_SESSION_RESTORE
+		/* 20260815 OSシャットダウン対応。「タブ＝別プロセス」構成のため、CloseAllEditor()の
+		   ような単一の集約点が無く、各ウィンドウ(＝別プロセス)が個別にWM_QUERYENDSESSIONを
+		   受け取る。WM_QUERYENDSESSIONは通常SendMessageでプロセスをまたいで1つずつ配送される
+		   (前のウィンドウの応答を待ってから次のウィンドウへ送られる。RequestCloseEditor()が
+		   複数プロセスへ順にSendMessageするのと同じ仕組み)が、これはOS側の実装に依存する
+		   前提であり、このコード側で保証できるものではない。そのため「自分が最初か」の判定は
+		   単純なif/代入(読んでから書く)ではなく、InterlockedCompareExchange()で
+		   アトミックに行う。これにより、万一2つ以上のプロセスがほぼ同時にこの分岐へ入っても
+		   実際にスナップショットを取るのは1プロセスだけになる(m_bSessionHandledByCloseAllの
+		   FALSE→TRUEへの遷移を最初に成功させたプロセスだけが「自分が最初」と判定される) */
+		if( m_pShareData->m_Common.m_sGeneral.m_bRestoreSession
+			&& 0 == ::InterlockedCompareExchange(
+				(LONG*)&m_pShareData->m_sFlags.m_bSessionHandledByCloseAll, TRUE, FALSE ) )
+		{
+			// 閉じ始める前の完全なウィンドウ一覧からセッションを保存する
+			// (SaveSessionSnapshot()自体もm_bSessionHandledByCloseAllへTRUEを代入するが、
+			// 既に上のCASでTRUEになっているので無害な再代入)
+			EditNode* pWndArrForSession;
+			int nForSession = CAppNodeManager::getInstance()->GetOpenedWindowArr( &pWndArrForSession, TRUE );
+			if( nForSession > 0 ){
+				CControlTray::SaveSessionSnapshot( pWndArrForSession, nForSession );
+			}
+			delete [] pWndArrForSession;
+		}
+#endif // NKMM_
 		if( OnClose( NULL, false ) ){
 			::DestroyWindow( hwnd );
 			return TRUE;
 		}
 		else{
+#ifdef NKMM_SESSION_RESTORE
+			/* このウィンドウがシャットダウンを拒否した(未保存確認でキャンセル等)。
+			   上でセッションを保存しフラグを立てていた場合に備え、次回の通常終了時に
+			   WM_DESTROY個別クリアが正しく機能するようフラグを戻しておく。
+			   このウィンドウの拒否によりOSのシャットダウン自体がキャンセルされても、
+			   既にTRUEを返して閉じてしまった他のウィンドウ(プロセス)は戻らない
+			   (サクラエディタ既存の挙動、対応範囲外) */
+			m_pShareData->m_sFlags.m_bSessionHandledByCloseAll = FALSE;
+#endif // NKMM_
 			return FALSE;
 		}
+	case WM_ENDSESSION:
+#ifdef NKMM_SESSION_RESTORE
+		/* wParam==FALSEはシステムのシャットダウン/ログオフがキャンセルされたことを示す。
+		   このウィンドウが生き残ってWM_ENDSESSIONを受け取れている＝上のWM_QUERYENDSESSIONの
+		   拒否時処理は既に済んでいるはずだが、念のための二重の安全策としてここでもフラグを
+		   戻しておく 20260815 */
+		if( !wParam ){
+			m_pShareData->m_sFlags.m_bSessionHandledByCloseAll = FALSE;
+		}
+#endif // NKMM_
+		return 0L;
 	case WM_CLOSE:
 		if( OnClose( NULL, false ) ){
 			::DestroyWindow( hwnd );
@@ -1838,7 +1884,7 @@ LRESULT CEditWnd::DispatchEvent(
 			&& m_pShareData->m_sNodes.m_nEditArrNum == 1 )
 		{
 #ifdef NKMM_SESSION_RESTORE_BUFFER
-			// 20260814(3) セッションを空クリアするのに合わせ、SessionBuffers\の
+			// 20260814 セッションを空クリアするのに合わせ、SessionBuffers\の
 			// 古いバックアップファイルも掃除する
 			CShareData_IO::ClearSessionBufferDir();
 #endif // NKMM_
@@ -1942,6 +1988,15 @@ LRESULT CEditWnd::DispatchEvent(
 
 		/* 編集ファイル情報を格納 */
 		GetDocument()->GetEditInfo( pfi );
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+		// 20260815 CControlTray::SaveSessionSnapshot()は各ウィンドウの一覧をこのメッセージで
+		// 問い合わせるところから始める（＝新しいセッション保存の試みが始まったタイミング）。
+		// ここで一旦falseに戻しておくことで、以前の（中断された等の理由で使われなかった）
+		// ダンプ実績が今回の試みに紛れ込むのを防ぐ。実際に今回ダンプされればMYWM_DUMPBUFFER
+		// ハンドラが直後にtrueへ戻す。他の目的でのMYWM_GETFILEINFO呼び出しでリセットされても、
+		// m_bSessionHandledByCloseAllとの組み合わせでしか参照されないため無害
+		GetDocument()->m_bSessionBufferCaptured = false;
+#endif // NKMM_
 		return 0L;
 #ifdef NKMM_SESSION_RESTORE_BUFFER
 	case MYWM_DUMPBUFFER:
@@ -1962,6 +2017,9 @@ LRESULT CEditWnd::DispatchEvent(
 			}catch(...){
 				return FALSE;
 			}
+			// 20260815 実際にダンプが成功したことをローカルに記録する。OnFileClose()の
+			// 保存確認抑制が、これを「自分の内容は本当に退避済みか」の根拠として使う
+			GetDocument()->m_bSessionBufferCaptured = true;
 		}
 		return TRUE;
 #endif // NKMM_

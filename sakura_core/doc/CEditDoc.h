@@ -183,6 +183,17 @@ public:
 	int				m_nBackImgWidth;
 	int				m_nBackImgHeight;
 
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	//! 20260815 このドキュメントの内容が、現在進行中のセッション保存
+	//! (CControlTray::SaveSessionSnapshot()、CloseAllEditor()/WM_QUERYENDSESSION両方から
+	//! 呼ばれる)によって、実際にSessionBuffers\へダンプされたかどうか。プロセス内ローカルな
+	//! 実績フラグで、共有(複数プロセス)フラグのm_bSessionHandledByCloseAllとは別物。
+	//! CEditWnd::DispatchEvent()のMYWM_GETFILEINFOハンドラでfalseにリセットされ、
+	//! MYWM_DUMPBUFFERハンドラがダンプに成功した時だけtrueにする。詳細は
+	//! CEditDoc::OnFileClose()の抑制条件のコメントを参照
+	bool			m_bSessionBufferCaptured = false;
+#endif // NKMM_
+
 #ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
 private:
 	int				m_nDocumentCharCountCache = 0;		//!< 文書全体の文字数キャッシュ 20260806

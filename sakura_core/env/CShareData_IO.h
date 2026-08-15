@@ -73,7 +73,7 @@ public:
 	static std::wstring GetSessionBufferDir();
 	// SessionBuffers\フォルダ配下の連番バックアップファイルの絶対パスを返す
 	static std::wstring GetSessionBufferFilePath( int index );
-	// 20260814(3) SessionBuffers\フォルダの中身を全て消す（無ければ作る）。
+	// 20260814 SessionBuffers\フォルダの中身を全て消す（無ければ作る）。
 	// 「参照されなくなったファイルだけ消す」方式だと、ini書き込みが（読み取り専用等の理由で）
 	// 早期returnした場合に直前のダンプが残骸として残る等の抜け道があったため、
 	// 保存の直前に無条件で全消去してから書き直す方式に変更した。タイミングによりファイルが

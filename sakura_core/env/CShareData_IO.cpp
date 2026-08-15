@@ -302,8 +302,8 @@ void CShareData_IO::ClearSessionBufferDir()
 	@date 2026.08.14 NKMM_SESSION_RESTORE_BUFFER: bModified/szBufキーを追加。SessionBuffers\
 		フォルダ自体の管理（全消去）はこの関数の責務ではなく、呼び出し側がこの関数を呼ぶ
 		「前」にClearSessionBufferDir()を呼び、その後で各バックアップファイルをダンプして
-		からこの関数でiniへの参照を書く、という順序を守ること（20260814(3)、過去の
-		「参照されなくなったファイルだけ消す」reconcile方式から変更）
+		からこの関数でiniへの参照を書く、という順序を守ること（過去は「参照されなくなった
+		ファイルだけ消す」reconcile方式だったが、ClearSessionBufferDir()を呼ぶ方式に変更した）
 */
 void CShareData_IO::SaveSessionFileList( const std::vector<SSessionEntry>& entries )
 {
