@@ -26,6 +26,7 @@
 #include "util/os.h"
 #include "util/module.h"
 #include "debug/CRunningTimer.h"
+#include "debug/CCrashHandler.h"
 
 #ifdef NKMM_USE_MIMALLOC
 // このcppだけがoperator new/deleteの定義を持つ(複数箇所でincludeすると多重定義エラーになる) 20260727
@@ -58,6 +59,11 @@ int WINAPI _tWinMain(
 )
 #endif
 {
+#ifdef NKMM_CRASH_HANDLER
+	// 20260815 他の初期化より前に登録し、初期化中のクラッシュもダンプ対象にする
+	InstallCrashHandler();
+#endif // NKMM_
+
 #ifdef USE_LEAK_CHECK_WITH_CRTDBG
 	// 2009.9.10 syat メモリリークチェックを追加
 	::_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF);

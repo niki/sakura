@@ -145,6 +145,7 @@ convert/CDecode_Base64Decode.o \
 convert/CDecode_UuDecode.o \
 convert/convert_util.o \
 convert/convert_util2.o \
+debug/CCrashHandler.o \
 debug/CRunningTimer.o \
 debug/Debug1.o \
 debug/Debug2.o \

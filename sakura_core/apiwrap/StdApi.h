@@ -24,7 +24,10 @@
 #ifndef SAKURA_STDAPI_85471C2C_6AEE_410D_BD09_A59056A5BA68_H_
 #define SAKURA_STDAPI_85471C2C_6AEE_410D_BD09_A59056A5BA68_H_
 
-#include <ImageHlp.h> //MakeSureDirectoryPathExists
+// 20260815 NKMM_CRASH_HANDLER: MiniDumpWriteDump()を使うためDbgHelp.hに変更。
+// DbgHelp.hはImageHlp.hの上位互換で、MakeSureDirectoryPathExists等も含む。
+// 両方をインクルードすると型の二重定義でコンパイルエラーになるため併用不可。
+#include <DbgHelp.h> //MakeSureDirectoryPathExists, MiniDumpWriteDump
 
 //デバッグ用。
 //VistaだとExtTextOutの結果が即反映されない。この関数を用いると即反映されるので、

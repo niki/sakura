@@ -958,6 +958,9 @@
     <ClInclude Include="..\sakura_core\docplus\CModifyManager.h">
       <Filter>Cpp Source Files\docplus</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\debug\CCrashHandler.h">
+      <Filter>Cpp Source Files\debug</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\debug\CRunningTimer.h">
       <Filter>Cpp Source Files\debug</Filter>
     </ClInclude>
@@ -2392,6 +2395,9 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\docplus\CModifyManager.cpp">
       <Filter>Cpp Source Files\docplus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\debug\CCrashHandler.cpp">
+      <Filter>Cpp Source Files\debug</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\debug\CRunningTimer.cpp">
       <Filter>Cpp Source Files\debug</Filter>

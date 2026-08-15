@@ -351,6 +351,7 @@
     <ClInclude Include="..\sakura_core\CSelectLang.h" />
     <ClInclude Include="..\sakura_core\CSortedTagJumpList.h" />
     <ClInclude Include="..\sakura_core\CWriteManager.h" />
+    <ClInclude Include="..\sakura_core\debug\CCrashHandler.h" />
     <ClInclude Include="..\sakura_core\debug\CRunningTimer.h" />
     <ClInclude Include="..\sakura_core\debug\Debug1.h" />
     <ClInclude Include="..\sakura_core\debug\Debug2.h" />
@@ -826,6 +827,7 @@
     <ClCompile Include="..\sakura_core\CSelectLang.cpp" />
     <ClCompile Include="..\sakura_core\CSortedTagJumpList.cpp" />
     <ClCompile Include="..\sakura_core\CWriteManager.cpp" />
+    <ClCompile Include="..\sakura_core\debug\CCrashHandler.cpp" />
     <ClCompile Include="..\sakura_core\debug\CRunningTimer.cpp" />
     <ClCompile Include="..\sakura_core\debug\Debug1.cpp" />
     <ClCompile Include="..\sakura_core\debug\Debug2.cpp" />
