@@ -52,6 +52,9 @@
 #include "recent/CMRUFolder.h"
 #include "_main/CCommandLine.h"
 #include "sakura_rc.h"
+#ifdef NKMM_UNIFIED_TABBAR
+#include "window/CUnifiedTabWnd.h"
+#endif // NKMM_
 
 #define IDT_EDITCHECK 2
 // 3秒
@@ -268,6 +271,9 @@ CControlTray::CControlTray()
 , m_bCreatedTrayIcon( FALSE )	//トレイにアイコンを作った
 , m_nCurSearchKeySequence(-1)
 , m_uCreateTaskBarMsg( ::RegisterWindowMessage( TEXT("TaskbarCreated") ) )
+#ifdef NKMM_UNIFIED_TABBAR
+, m_pcUnifiedTabWnd( NULL )
+#endif // NKMM_
 {
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
@@ -283,6 +289,13 @@ CControlTray::CControlTray()
 
 CControlTray::~CControlTray()
 {
+#ifdef NKMM_UNIFIED_TABBAR
+	if( m_pcUnifiedTabWnd ){
+		m_pcUnifiedTabWnd->Close();
+		delete m_pcUnifiedTabWnd;
+		m_pcUnifiedTabWnd = NULL;
+	}
+#endif // NKMM_
 	delete m_pcPropertyManager;
 	return;
 }
@@ -360,6 +373,12 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 	m_pcPropertyManager->Create( GetTrayHwnd(), &m_hIcons, &m_cMenuDrawer );
 
 	auto_strcpy(m_szLanguageDll, GetDllShareData().m_Common.m_sWindow.m_szLanguageDll);
+
+#ifdef NKMM_UNIFIED_TABBAR
+	// 20260815 共通タブバー(社内呼称:方式A) Step 0検証用。詳細はchangelog/NKMM_UNIFIED_TABBAR.md参照
+	m_pcUnifiedTabWnd = new CUnifiedTabWnd();
+	m_pcUnifiedTabWnd->Open( m_hInstance, GetTrayHwnd() );
+#endif // NKMM_
 
 	return GetTrayHwnd();
 }

@@ -940,6 +940,9 @@
     <ClInclude Include="..\sakura_core\window\CTabWnd.h">
       <Filter>Cpp Source Files\window</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\window\CUnifiedTabWnd.h">
+      <Filter>Cpp Source Files\window</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\window\CTipWnd.h">
       <Filter>Cpp Source Files\window</Filter>
     </ClInclude>
@@ -2373,6 +2376,9 @@
       <Filter>Cpp Source Files\window</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\window\CTabWnd.cpp">
+      <Filter>Cpp Source Files\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\window\CUnifiedTabWnd.cpp">
       <Filter>Cpp Source Files\window</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\window\CTipWnd.cpp">

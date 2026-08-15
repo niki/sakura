@@ -35,6 +35,9 @@ struct EditInfo;
 struct DLLSHAREDATA;
 struct EditNode;
 class CPropertyManager;
+#ifdef NKMM_UNIFIED_TABBAR
+class CUnifiedTabWnd;
+#endif // NKMM_
 
 //!	常駐部の管理
 /*!
@@ -138,6 +141,11 @@ private:
 	UINT			m_uCreateTaskBarMsg;	//!< RegisterMessageで得られるMessage IDの保管場所。Apr. 24, 2001 genta
 
 	TCHAR			m_szLanguageDll[MAX_PATH];
+
+#ifdef NKMM_UNIFIED_TABBAR
+	// 20260815 共通タブバー(社内呼称:方式A) Step 0検証用。詳細はchangelog/NKMM_UNIFIED_TABBAR.md参照
+	CUnifiedTabWnd*	m_pcUnifiedTabWnd;
+#endif // NKMM_
 };
 
 

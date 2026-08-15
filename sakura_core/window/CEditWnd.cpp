@@ -1020,6 +1020,11 @@ void CEditWnd::LayoutFuncKey( void )
 */
 void CEditWnd::LayoutTabBar( void )
 {
+#ifdef NKMM_UNIFIED_TABBAR
+	// 共通タブバー(社内呼称:方式A)有効時は、各プロセスの個別タブバーは常に非表示にする
+	m_cTabWnd.Close();
+	m_cTabWnd.SizeBox_ONOFF(false);
+#else
 	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabWnd ){	/* タブバーを表示する */
 		if( NULL == m_cTabWnd.GetHwnd() ){
 			m_cTabWnd.Open( G_AppInstance(), GetHwnd() );
@@ -1030,6 +1035,7 @@ void CEditWnd::LayoutTabBar( void )
 		m_cTabWnd.Close();
 		m_cTabWnd.SizeBox_ONOFF(false);
 	}
+#endif // NKMM_
 }
 
 /*! バーの配置終了処理

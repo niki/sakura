@@ -416,6 +416,7 @@ window/CSplitBoxWnd.o \
 window/CSplitterWnd.o \
 window/CTabWnd.o \
 window/CTipWnd.o \
+window/CUnifiedTabWnd.o \
 window/CWnd.o \
 _main/CAppMode.o \
 _main/CCommandLine.o \
