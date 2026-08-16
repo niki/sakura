@@ -238,6 +238,7 @@ macro/CKeyMacroMgr.o \
 macro/CMacro.o \
 macro/CMacroFactory.o \
 macro/CMacroManagerBase.o \
+macro/CPasMacroMgr.o \
 macro/CPPA.o \
 macro/CPPAMacroMgr.o \
 macro/CQuickJSIfObjBinder.o \

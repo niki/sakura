@@ -918,6 +918,20 @@
 #define NKMM_FIX_QUICKJS_MACRO
 
 //------------------------------------------------------------------
+// PPA.DLL(外部コンポーネント、ソース非公開)無しでPascal風マクロを使えるようにする 20260816
+//  - PPA.DLLは配布・保守が止まった外部DLLで、無い環境ではNKMM_USE_PPAの.ppaマクロは
+//    そもそも動かない。CPasToJsTranspilerでPascal風ソースをJavaScriptへ変換し、
+//    NKMM_FIX_QUICKJS_MACROのJS実行パス(CQuickJSMacroMgr)へそのまま流す形で、
+//    拡張子".pas"のマクロファイルを実行できるようにした。NKMM_FIX_QUICKJS_MACROが
+//    無効だとCQuickJSMacroMgrを継承しているCPasMacroMgrも使えないため、このフラグは
+//    NKMM_FIX_QUICKJS_MACROと合わせて定義すること
+//  - sakura_core\macro\CPasToJsTranspiler.h(新規、ヘッダオンリー)、
+//    sakura_core\macro\CPasMacroMgr.h,cpp(新規)
+//  - 詳細はchangelog/NKMM_FIX_PASCAL_MACRO.md参照
+//------------------------------------------------------------------
+#define NKMM_FIX_PASCAL_MACRO
+
+//------------------------------------------------------------------
 // 検索ダイアログ（フローティングパネル化）
 //  - タイトルバー・DS_MODALFRAMEを廃止し、枠なしのフローティングパネル風にする
 //  - Windows 11 の角丸(DWMWA_WINDOW_CORNER_PREFERENCE)を適用

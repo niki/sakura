@@ -556,6 +556,8 @@
     <ClInclude Include="..\sakura_core\macro\CMacroManagerBase.h" />
     <ClInclude Include="..\sakura_core\macro\CPPA.h" />
     <ClInclude Include="..\sakura_core\macro\CPPAMacroMgr.h" />
+    <ClInclude Include="..\sakura_core\macro\CPasMacroMgr.h" />
+    <ClInclude Include="..\sakura_core\macro\CPasToJsTranspiler.h" />
     <ClInclude Include="..\sakura_core\macro\CQuickJSIfObjBinder.h" />
     <ClInclude Include="..\sakura_core\macro\CQuickJSMacroMgr.h" />
     <ClInclude Include="..\sakura_core\macro\CSMacroMgr.h" />
@@ -1267,6 +1269,7 @@
     <ClCompile Include="..\sakura_core\macro\CMacroManagerBase.cpp" />
     <ClCompile Include="..\sakura_core\macro\CPPA.cpp" />
     <ClCompile Include="..\sakura_core\macro\CPPAMacroMgr.cpp" />
+    <ClCompile Include="..\sakura_core\macro\CPasMacroMgr.cpp" />
     <ClCompile Include="..\sakura_core\macro\CQuickJSIfObjBinder.cpp" />
     <ClCompile Include="..\sakura_core\macro\CQuickJSMacroMgr.cpp" />
     <ClCompile Include="..\sakura_core\macro\CSMacroMgr.cpp" />

@@ -30,6 +30,9 @@
 #ifdef NKMM_FIX_QUICKJS_MACRO
 #include "macro/CQuickJSMacroMgr.h"
 #endif // NKMM_
+#ifdef NKMM_FIX_PASCAL_MACRO
+#include "macro/CPasMacroMgr.h"
+#endif // NKMM_
 #include "macro/CMacroFactory.h"
 #include "env/CShareData.h"
 #include "view/CEditView.h"
@@ -504,6 +507,9 @@ CSMacroMgr::CSMacroMgr()
 	CWSHMacroManager::declare();
 #ifdef NKMM_FIX_QUICKJS_MACRO
 	CQuickJSMacroMgr::declare();
+#endif // NKMM_
+#ifdef NKMM_FIX_PASCAL_MACRO
+	CPasMacroMgr::declare();
 #endif // NKMM_
 	
 	int i;
