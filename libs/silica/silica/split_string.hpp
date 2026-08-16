@@ -105,7 +105,7 @@ public:
 
 		TCHAR *temp = new TCHAR[text.size() + 1];
 		TCHAR *del_temp = temp;
-		_tcscpy_s(temp, text.size() * sizeof(TCHAR), text.c_str());
+		_tcscpy_s(temp, text.length(), text.c_str());
 		temp[text.size()] = 0;
 
 		TCHAR *entry = temp;
