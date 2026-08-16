@@ -259,6 +259,7 @@ INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 				break;
 			case IDC_PLUGIN_URL:
 				{
+#ifndef NKMM_DISABLE_INTERNET_ACCESS
 					HWND hListView = ::GetDlgItem(hwndDlg, IDC_PLUGINLIST);
 					int sel = ListView_GetNextItem(hListView, -1, LVNI_SELECTED);
 					if (sel >= 0){
@@ -267,6 +268,7 @@ INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 							::ShellExecute(NULL, _T("Open"), to_tchar(plugin->m_sUrl.c_str()), NULL, NULL, SW_SHOW);
 						}
 					}
+#endif // NKMM_
 				}
 				break;
 			}

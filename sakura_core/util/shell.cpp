@@ -550,6 +550,18 @@ static LPCTSTR GetHelpFilePath()
 	return szHelpFile;
 }
 
+#ifdef NKMM_DISABLE_INTERNET_ACCESS
+/*!	ローカルのHTMLヘルプ(sakura.chm)が使用可能か 20260816
+	オンラインヘルプ(外部URL接続)を無効化した状態では、sakura.chmが無いと
+	ヘルプ機能自体が使えないため、[ヘルプ]-[目次]/[キーワード検索]メニュー項目を
+	動的に非活性化する判定に使う(func/Funccode.cpp: IsFuncEnable参照)
+*/
+bool HasLocalHtmlHelp()
+{
+	return IsFileExists( GetHelpFilePath(), true ) != FALSE;
+}
+#endif // NKMM_
+
 /*!	WinHelp のかわりに HtmlHelp を呼び出す
 
 	@author ryoji
@@ -650,6 +662,7 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 		if( uCommandOrg == HELP_CONTEXTMENU)
 			return FALSE;	// 右クリックでは何もしないでおく
 
+#ifndef NKMM_DISABLE_INTERNET_ACCESS
 		// オンラインヘルプを呼び出す
 		if( uCommandOrg != HELP_CONTEXT )
 			dwData = 1;	// 目次ページ
@@ -657,6 +670,7 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 		TCHAR buf[256];
 		_stprintf( buf, _T("http://sakura-editor.sourceforge.net/cgi-bin/hid2.cgi?%lld"), dwData );
 		ShellExecute( ::GetActiveWindow(), NULL, buf, NULL, NULL, SW_SHOWNORMAL );
+#endif // NKMM_
 	}
 
 	return TRUE;

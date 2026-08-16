@@ -1518,6 +1518,26 @@
 //------------------------------------------------------------------
 //#define NKMM_FIX_BRACKET_PAIR_INLINE // 20260814 既定は旧実装側に戻した。上のコメント参照
 
+//------------------------------------------------------------------
+// ネットワーク・外部接続が絡む機能を無効化する 20260816
+//  - 対象は「本体が能動的にインターネット接続を試みる箇所」のみ。以下4件:
+//    1. オンラインヘルプ(sakura.chm不在時、http://sakura-editor.sourceforge.net/
+//       ...をShellExecuteでブラウザ起動) sakura_core\util\shell.cpp: MyWinHelp()
+//    2. 編集本文中のURL/メールアドレスをダブルクリックでブラウザ/メーラー起動
+//       sakura_core\view\CEditView_Mouse.cpp: OnLBUTTONDBLCLK()
+//    3. バージョン情報ダイアログの「Project Sakura-Editor」リンククリック
+//       sakura_core\dlg\CDlgAbout.cpp: OnStnClicked()
+//    4. プラグイン一覧のホームページURLを開く
+//       sakura_core\prop\CPropComPlugin.cpp: IDC_PLUGIN_URL
+//  - 無効時はいずれも静かに何もしない(メッセージ等は出さない)。無効化しても
+//    機能自体(chmヘルプ表示、通常のダブルクリック選択、ダイアログ表示等)は
+//    従来通り動作し、外部接続を試みる分岐のみをスキップする
+//  - 対象外: HHCTRL.OCXによるローカルchm表示自体(通信を伴わない)、
+//    ブラウズコマンド(Command_BROWSE)、UNCネットワーク共有への接続
+//    (NetConnect、狭義のインターネットではなくLAN内SMB接続のため)は保留
+//------------------------------------------------------------------
+#define NKMM_DISABLE_INTERNET_ACCESS
+
 //
 //#define USE_SSE2
 

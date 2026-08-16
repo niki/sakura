@@ -1529,6 +1529,7 @@ void CEditView::OnLBUTTONDBLCLK( WPARAM fwKeys, int _xPos , int _yPos )
 
 	// 2007.10.06 nasukoji	クアドラプルクリック時はチェックしない
 	if(! m_dwTripleClickCheck){
+#ifndef NKMM_DISABLE_INTERNET_ACCESS
 		/* カーソル位置にURLが有る場合のその範囲を調べる */
 		if(
 			IsCurrentPositionURL(
@@ -1578,6 +1579,7 @@ void CEditView::OnLBUTTONDBLCLK( WPARAM fwKeys, int _xPos , int _yPos )
 			}
 			return;
 		}
+#endif // NKMM_
 
 		/* GREP出力モードまたはデバッグモード かつ マウス左ボタンダブルクリックでタグジャンプ の場合 */
 		//	2004.09.20 naoh 外部コマンドの出力からTagjumpできるように

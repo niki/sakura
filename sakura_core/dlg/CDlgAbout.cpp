@@ -482,9 +482,11 @@ BOOL CDlgAbout::OnStnClicked( int wID )
 //	case IDC_STATIC_URL_ORG:	del 2008/7/4 Uchi
 		//	Web Browserの起動
 		{
+#ifndef NKMM_DISABLE_INTERNET_ACCESS
 			TCHAR buf[512];
 			::GetWindowText( ::GetDlgItem( GetHwnd(), wID ), buf, _countof(buf) );
 			::ShellExecute( GetHwnd(), NULL, buf, NULL, NULL, SW_SHOWNORMAL );
+#endif // NKMM_
 			return TRUE;
 		}
 	}

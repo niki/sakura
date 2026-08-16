@@ -27,6 +27,9 @@
 #define SAKURA_SHELL_A129670C_6564_4E0D_AF52_E323B0C7CA099_H_
 
 BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData);	/* WinHelp のかわりに HtmlHelp を呼び出す */	// 2006.07.22 ryoji
+#ifdef NKMM_DISABLE_INTERNET_ACCESS
+bool HasLocalHtmlHelp(void);	/* ローカルのHTMLヘルプ(sakura.chm)が使用可能か */	// 20260816
+#endif // NKMM_
 
 /* Shell Interface系(?) */
 BOOL SelectDir(HWND, const TCHAR*, const TCHAR*, TCHAR* );	/* フォルダ選択ダイアログ */

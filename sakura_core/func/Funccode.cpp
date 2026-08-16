@@ -57,6 +57,7 @@
 #include "docplus/CDiffManager.h"
 #include "CMarkMgr.h"	// CAutoMarkMgr
 #include "sakura.hh"
+#include "util/shell.h"
 
 //using namespace nsFuncCode;
 
@@ -1260,6 +1261,14 @@ bool IsFuncEnable( const CEditDoc* pcEditDoc, const DLLSHAREDATA* pShareData, EF
 	case F_TAB_JOINTPREV:	// 2007.06.20 ryoji 追加
 	case F_FILENEW_NEWWINDOW:	// 2011.11.15 syat 追加
 		return ( pShareData->m_Common.m_sTabBar.m_bDispTabWnd && !pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin );
+
+#ifdef NKMM_DISABLE_INTERNET_ACCESS
+	case F_HELP_CONTENTS:	/* ヘルプ目次 */
+	case F_HELP_SEARCH:	/* ヘルプキーワード検索 */
+		// オンラインヘルプ(外部URL接続)を無効化しているため、ローカルの
+		// sakura.chmが無ければ機能が使えない。その場合はメニューを非活性にする
+		return HasLocalHtmlHelp();
+#endif // NKMM_
 	}
 	return true;
 }
