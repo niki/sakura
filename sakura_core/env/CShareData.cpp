@@ -330,7 +330,7 @@ bool CShareData::InitShareData()
 			// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)を既定で有効にする。
 			// 「絵文字フォントを使う」(フォント選択)とは独立の設定 — フォント選択を
 			// システム任せにしていても、合字化自体は行える。
-			sWindow.m_bUseEmojiLigature = TRUE;
+			sWindow.m_bUseEmojiLigature = FALSE;
 #endif // NKMM_
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
