@@ -318,6 +318,20 @@ bool CShareData::InitShareData()
 #ifdef NKMM_FIX_FONT_QUALITY
 			sWindow.m_nFontQuality = DRAFT_QUALITY;	// 20260810 描画品質。これまでの固定値(DRAFT_QUALITY)を既定にし、見た目を変えない
 #endif // NKMM_
+#ifdef NKMM_FIX_COLOR_FONT
+			// 20260816 絵文字解決フォントの固定指定。既定でON・NKMM_COLOR_FONT_EMOJI_FONT_NAME
+			// (Segoe UI Emoji)を初期値にすることで、これまでの(コード上に固定指定していた)
+			// 挙動をデフォルトのまま維持する。ユーザーはチェックを外せばOS自動フォール
+			// バックのみに戻せる(「システムに任せる」状態)。
+			sWindow.m_bUseEmojiFont = TRUE;
+			wcscpy_s( sWindow.m_lfEmoji.lfFaceName, NKMM_COLOR_FONT_EMOJI_FONT_NAME );
+			sWindow.m_nEmojiPointSize = 110;			// 11.0pt(見た目のプレビュー用初期値。実際の描画サイズは本文フォント基準で決まるため、この値自体は使わない)
+			sWindow.m_lfEmoji.lfHeight = -DpiPointsToPixels( 110, 10 );
+			// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)を既定で有効にする。
+			// 「絵文字フォントを使う」(フォント選択)とは独立の設定 — フォント選択を
+			// システム任せにしていても、合字化自体は行える。
+			sWindow.m_bUseEmojiLigature = TRUE;
+#endif // NKMM_
 
 			sWindow.m_bMenuIcon = TRUE;		/* メニューにアイコンを表示する */
 

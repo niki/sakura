@@ -578,6 +578,11 @@
 #ifdef NKMM_SESSION_RESTORE_BUFFER
 #define HIDC_CHECK_RESTORE_SESSION_BUFFER			10928 //未保存の変更内容もバッファから復元する 20260814
 #endif // NKMM_
+#ifdef NKMM_FIX_COLOR_FONT
+#define HIDC_CHECK_USEEMOJIFONT				10929 //絵文字フォントを固定指定する 20260816
+#define HIDC_BUTTON_EMOJIFONT					10930 //絵文字フォントの選択 20260816
+#define HIDC_CHECK_EMOJILIGATURE				10931 //絵文字の合字(ZWJ等)を有効にする 20260816
+#endif // NKMM_
 #define HIDC_HOTKEY_TRAYMENU					10940 //左クリックメニューのショートカットキー
 #define HIDC_EDIT_REPEATEDSCROLLLINENUM			10941 //スクロール行数
 #define HIDC_EDIT_MAX_MRU_FILE					10942 //ファイル履歴の最大数

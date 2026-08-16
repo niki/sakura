@@ -897,6 +897,18 @@
 #ifdef NKMM_FIX_FONT_QUALITY
 #define IDC_COMBO_FONTQUALITY           1744
 #endif // NKMM_
+#ifdef NKMM_FIX_COLOR_FONT
+// 20260816 1745-1748は他機能(IDC_LIST_FL_VIRTUAL等、886行目付近のKEYBINDLIST系
+// コントロール等)と衝突していたため、_APS_NEXT_CONTROL_VALUEを信用せず全体を
+// grepして未使用と確認できた1900番台に振り直した。この付近の番号を新規に
+// 割り当てる際は、_APS_NEXT_CONTROL_VALUEだけでなくファイル全体で当該番号が
+// 使われていないかも確認すること(このファイルは複数箇所で独立に採番されており、
+// このマクロの値が全体の最大値を正しく反映していない)。
+#define IDC_CHECK_USEEMOJIFONT          1900
+#define IDC_BUTTON_EMOJIFONT            1901
+#define IDC_STATIC_EMOJIFONT            1902
+#define IDC_CHECK_EMOJILIGATURE         1903
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -905,7 +917,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        250
 #define _APS_NEXT_COMMAND_VALUE         4057
-#define _APS_NEXT_CONTROL_VALUE         1752
+#define _APS_NEXT_CONTROL_VALUE         1749
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

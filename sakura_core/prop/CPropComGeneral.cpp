@@ -83,6 +83,11 @@ static const DWORD p_helpids[] = {	//10900
 #ifdef NKMM_FIX_FONT_QUALITY
 	IDC_COMBO_FONTQUALITY,			HIDC_COMBO_FONTQUALITY,				//描画品質
 #endif // NKMM_
+#ifdef NKMM_FIX_COLOR_FONT
+	IDC_CHECK_USEEMOJIFONT,			HIDC_CHECK_USEEMOJIFONT,			//絵文字フォントを固定指定する
+	IDC_BUTTON_EMOJIFONT,			HIDC_BUTTON_EMOJIFONT,				//絵文字フォントの選択
+	IDC_CHECK_EMOJILIGATURE,		HIDC_CHECK_EMOJILIGATURE,			//絵文字の合字を有効にする
+#endif // NKMM_
 	IDC_COMBO_WHEEL_PAGESCROLL,		HIDC_COMBO_WHEEL_PAGESCROLL,		// 組み合わせてホイール操作した時ページスクロールする		// 2009.01.17 nasukoji
 	IDC_COMBO_WHEEL_HSCROLL,		HIDC_COMBO_WHEEL_HSCROLL,			// 組み合わせてホイール操作した時横スクロールする			// 2009.01.17 nasukoji
 //	IDC_STATIC,						-1,
@@ -198,6 +203,34 @@ INT_PTR CPropGeneral::DispatchEvent(
 				InfoMessage( hwndDlg, LS(STR_PROPCOMGEN_DIR2) );
 				return TRUE;
 
+#ifdef NKMM_FIX_COLOR_FONT
+			case IDC_BUTTON_EMOJIFONT:	/* 絵文字フォントの選択 20260816 */
+				{
+					LOGFONT lf = m_Common.m_sWindow.m_lfEmoji;
+					INT nPointSize = m_Common.m_sWindow.m_nEmojiPointSize;
+					if( MySelectFont( &lf, &nPointSize, hwndDlg, false ) ){
+						m_Common.m_sWindow.m_lfEmoji = lf;
+						m_Common.m_sWindow.m_nEmojiPointSize = nPointSize;
+						//フォントを選んだら「使用する」扱いにする(タイプ別フォントと同じ挙動)
+						m_Common.m_sWindow.m_bUseEmojiFont = TRUE;
+						::CheckDlgButton( hwndDlg, IDC_CHECK_USEEMOJIFONT, TRUE );
+						HFONT hFont = UpdateEmojiFontLabel( hwndDlg );
+						if( m_hEmojiFont != NULL ){ ::DeleteObject( m_hEmojiFont ); }
+						m_hEmojiFont = hFont;
+					}
+				}
+				return TRUE;
+
+			case IDC_CHECK_USEEMOJIFONT:	/* 絵文字フォントを使う 20260816 */
+				{
+					m_Common.m_sWindow.m_bUseEmojiFont = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_USEEMOJIFONT );
+					HFONT hFont = UpdateEmojiFontLabel( hwndDlg );
+					if( m_hEmojiFont != NULL ){ ::DeleteObject( m_hEmojiFont ); }
+					m_hEmojiFont = hFont;
+				}
+				return TRUE;
+#endif // NKMM_
+
 			}
 			break;	/* BN_CLICKED */
 		// 2009.01.12 nasukoji	コンボボックスのリストの項目が選択された
@@ -311,6 +344,16 @@ INT_PTR CPropGeneral::DispatchEvent(
 //		MYTRACE( _T("pMNUD->iPos    =%d\n"), pMNUD->iPos );
 //		MYTRACE( _T("pMNUD->iDelta  =%d\n"), pMNUD->iDelta );
 		break;
+
+#ifdef NKMM_FIX_COLOR_FONT
+	case WM_DESTROY:
+		// 20260816 絵文字フォント ラベル用フォントハンドルの破棄
+		if( m_hEmojiFont != NULL ){
+			::DeleteObject( m_hEmojiFont );
+			m_hEmojiFont = NULL;
+		}
+		break;
+#endif // NKMM_
 
 //@@@ 2001.02.04 Start by MIK: Popup Help
 	case WM_HELP:
@@ -432,6 +475,14 @@ void CPropGeneral::SetData( HWND hwndDlg )
 	}
 #endif // NKMM_
 
+#ifdef NKMM_FIX_COLOR_FONT
+	// 20260816 絵文字フォントの固定指定
+	::CheckDlgButton( hwndDlg, IDC_CHECK_USEEMOJIFONT, m_Common.m_sWindow.m_bUseEmojiFont );
+	m_hEmojiFont = UpdateEmojiFontLabel( hwndDlg );
+	// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)を有効にするか
+	::CheckDlgButton( hwndDlg, IDC_CHECK_EMOJILIGATURE, m_Common.m_sWindow.m_bUseEmojiLigature );
+#endif // NKMM_
+
 	/* ファイルの履歴MAX */
 	::SetDlgItemInt( hwndDlg, IDC_EDIT_MAX_MRU_FILE, m_Common.m_sGeneral.m_nMRUArrNum_MAX, FALSE );
 
@@ -542,6 +593,14 @@ int CPropGeneral::GetData( HWND hwndDlg )
 	}
 #endif // NKMM_
 
+#ifdef NKMM_FIX_COLOR_FONT
+	// 20260816 絵文字フォントの固定指定(フォント自体はIDC_BUTTON_EMOJIFONTクリック時に
+	// 即時反映済み。ここではチェック状態のみ再同期する)
+	m_Common.m_sWindow.m_bUseEmojiFont = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_USEEMOJIFONT );
+	// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)を有効にするか
+	m_Common.m_sWindow.m_bUseEmojiLigature = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_EMOJILIGATURE );
+#endif // NKMM_
+
 	hwndCombo = ::GetDlgItem( hwndDlg, IDC_COMBO_WHEEL_PAGESCROLL );
 	nSelPos = Combo_GetCurSel( hwndCombo );
 	m_Common.m_sGeneral.m_nPageScrollByWheel = SpecialScrollModeArr[nSelPos].nMethod;		// ページスクロールとする組み合わせ操作
@@ -613,3 +672,26 @@ int CPropGeneral::GetData( HWND hwndDlg )
 
 	return TRUE;
 }
+
+#ifdef NKMM_FIX_COLOR_FONT
+/*!	絵文字フォントのラベル表示(IDC_STATIC_EMOJIFONT)を、現在の使用有無/選択フォントに
+	合わせて更新する。
+
+	「使用する」チェックが外れている場合、またはチェックはあるがフォントが一度も
+	選択されていない場合(lfFaceNameが空)は、「システムに任せる」ことが伝わるよう
+	ラベルを空にする(タイプ別フォントのSetFontLabelのbUse=false相当。ただしこちらの
+	チェックボックスはタイプ別フォントと異なり常時有効で、いつでも付け外しできる)。
+
+	@date 20260816
+*/
+HFONT CPropGeneral::UpdateEmojiFontLabel( HWND hwndDlg )
+{
+	bool bUse = ( FALSE != m_Common.m_sWindow.m_bUseEmojiFont )
+		&& ( 0 != m_Common.m_sWindow.m_lfEmoji.lfFaceName[0] );
+	if( !bUse ){
+		::DlgItem_SetText( hwndDlg, IDC_STATIC_EMOJIFONT, _T("(システムの自動選択)") );
+		return NULL;
+	}
+	return SetFontLabel( hwndDlg, IDC_STATIC_EMOJIFONT, m_Common.m_sWindow.m_lfEmoji, m_Common.m_sWindow.m_nEmojiPointSize );
+}
+#endif // NKMM_

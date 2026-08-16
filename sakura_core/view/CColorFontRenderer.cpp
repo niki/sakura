@@ -7,9 +7,26 @@
 
 #include "CColorFontRenderer.h"
 #include "CViewFont.h"
+#include "env/CShareData.h"
 #include <vector>
 
 namespace {
+
+/*!	絵文字解決に使うフォント名を固定指定している場合、そのフォント名を返す。
+	共通設定「全般」タブの「絵文字フォントを使う」チェックが外れている、または
+	フォントが一度も選択されていない場合はNULLを返す(=システムの自動フォール
+	バックのみに任せる、従来通りの挙動)。
+
+	@date 20260816
+*/
+const wchar_t* GetConfiguredEmojiFontName()
+{
+	const CommonSetting_Window& sWindow = GetDllShareData().m_Common.m_sWindow;
+	if( !sWindow.m_bUseEmojiFont || 0 == sWindow.m_lfEmoji.lfFaceName[0] ){
+		return NULL;
+	}
+	return sWindow.m_lfEmoji.lfFaceName;
+}
 
 /*!	不可視の書式文字(バリエーションセレクタ、ZWJ)かどうか。
 
@@ -524,6 +541,7 @@ bool CColorFontRenderer::TryShapeCluster(
 	const wchar_t* pText,
 	int nTextLength,
 	float fAdvanceX,
+	float fRowHeight,
 	SColorGlyphCell* pOutCell
 )
 {
@@ -544,9 +562,18 @@ bool CColorFontRenderer::TryShapeCluster(
 	}
 	DWRITE_FONT_STYLE style = lfBase.lfItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
 
+	//TryShapeClusterはZWJ/VS/肌色修飾子/キーキャップ等、絵文字クラスタにしか
+	//呼ばれない。絵文字フォントが固定指定されている場合は本文フォントではなく
+	//そちらを起点にシェーピングする(本文フォント起点のシステム自動フォール
+	//バックは環境依存で、フォントによってはラン分割されて合字化に失敗することが
+	//確認されている)。指定フォントに無いコードポイントはIDWriteTextLayoutの
+	//自動フォールバックが引き続き処理するため、未指定時と同様に動作は壊れない。
+	const wchar_t* pszConfiguredEmojiFontName = GetConfiguredEmojiFontName();
+	const wchar_t* pszShapingFontName = pszConfiguredEmojiFontName ? pszConfiguredEmojiFontName : lfBase.lfFaceName;
+
 	IDWriteTextFormat* pFormat = NULL;
 	HRESULT hr = m_pDWriteFactory->CreateTextFormat(
-		lfBase.lfFaceName, NULL, weight, style, DWRITE_FONT_STRETCH_NORMAL, fEmSize, L"ja-jp", &pFormat);
+		pszShapingFontName, NULL, weight, style, DWRITE_FONT_STRETCH_NORMAL, fEmSize, L"ja-jp", &pFormat);
 	if( FAILED(hr) || !pFormat ){
 		return false;
 	}
@@ -593,6 +620,49 @@ bool CColorFontRenderer::TryShapeCluster(
 	lfResolved.lfOrientation = 0;
 	lfResolved.lfUnderline   = FALSE;
 	lfResolved.lfStrikeOut   = FALSE;
+
+	//本文フォントと同じlfHeightのまま使うと、絵文字フォント側のアセント/
+	//ディセントが本文フォントより大きい場合に行からはみ出す(上に余白ができる
+	//一方、下端が欠けて見える)ことがある。ResolveFallbackHFONT(単体文字の代替
+	//フォント解決)には収まるよう縮小するロジックがあるが、こちらには無かった
+	//ため、行の高さに収まるよう同様に縮小する。
+	//なお、ここで決めたlfHeightはFlushQueue側で(GetOrCreateFontFaceEntry経由)
+	//実際の描画フォントサイズとしても再利用されるため、この縮小が最終的な
+	//グリフサイズ・ベースライン位置の両方に反映される。
+	if( fRowHeight > 0.0f && 0 != lfResolved.lfHeight ){
+		const bool bPositive = (lfResolved.lfHeight >= 0);
+		auto fnMeasureRowHeight = [&](LONG nHeight) -> LONG {
+			LOGFONT lfTest = lfResolved;
+			lfTest.lfHeight = nHeight;
+			HFONT hTest = ::CreateFontIndirect(&lfTest);
+			if( !hTest ){
+				return -1;
+			}
+			HFONT hOldTest = (HFONT)::SelectObject(m_hdcScratch, hTest);
+			TEXTMETRIC tmTest = {};
+			::GetTextMetrics(m_hdcScratch, &tmTest);
+			::SelectObject(m_hdcScratch, hOldTest);
+			::DeleteObject(hTest);
+			return tmTest.tmAscent + tmTest.tmDescent;
+		};
+
+		for( int nTry = 0; nTry < 8; ++nTry ){
+			LONG nHeight = fnMeasureRowHeight(lfResolved.lfHeight);
+			if( nHeight < 0 || nHeight <= (LONG)fRowHeight ){
+				break;
+			}
+			double fShrink = 0.98 * (double)fRowHeight / (double)nHeight;
+			LONG nNewHeight = (LONG)(lfResolved.lfHeight * fShrink);
+			if( nNewHeight == lfResolved.lfHeight ){
+				nNewHeight += bPositive ? -1 : 1;
+			}
+			lfResolved.lfHeight = nNewHeight;
+			if( 0 == lfResolved.lfHeight ){
+				lfResolved.lfHeight = bPositive ? 1 : -1;
+				break;
+			}
+		}
+	}
 
 	wchar_t szKey[LF_FACESIZE + 48];
 	swprintf_s(szKey, L"%s|%d|%d|%d|%d", lfResolved.lfFaceName, lfResolved.lfHeight, lfResolved.lfWeight, lfResolved.lfItalic, (int)fAdvanceX);
@@ -644,6 +714,47 @@ bool CColorFontRenderer::TryShapeCluster(
 //                代替フォント解決(GDIのSystemLinkを使わない)  //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
+IDWriteFont* CColorFontRenderer::FindSpecifiedEmojiFont(const wchar_t* pszFontName, UINT32 nCodePoint, DWRITE_FONT_WEIGHT weight, DWRITE_FONT_STYLE style)
+{
+	IDWriteFontCollection* pCollection = NULL;
+	if( FAILED(m_pDWriteFactory->GetSystemFontCollection(&pCollection, FALSE)) || !pCollection ){
+		return NULL;
+	}
+
+	UINT32 nIndex = 0;
+	BOOL bExists = FALSE;
+	HRESULT hr = pCollection->FindFamilyName(pszFontName, &nIndex, &bExists);
+	if( FAILED(hr) || !bExists ){
+		pCollection->Release();
+		return NULL;
+	}
+
+	IDWriteFontFamily* pFamily = NULL;
+	hr = pCollection->GetFontFamily(nIndex, &pFamily);
+	pCollection->Release();
+	if( FAILED(hr) || !pFamily ){
+		return NULL;
+	}
+
+	IDWriteFont* pFont = NULL;
+	hr = pFamily->GetFirstMatchingFont(weight, DWRITE_FONT_STRETCH_NORMAL, style, &pFont);
+	pFamily->Release();
+	if( FAILED(hr) || !pFont ){
+		return NULL;
+	}
+
+	//固定指定した絵文字フォントであっても、当該コードポイントのグリフを必ず
+	//持っているとは限らない(絵文字フォントも全絵文字を網羅しているわけではない)。
+	//持っていなければ呼び出し側で従来通りのシステムフォールバックへ戻すため、
+	//ここで確認しておく。
+	BOOL bHasChar = FALSE;
+	if( FAILED(pFont->HasCharacter(nCodePoint, &bHasChar)) || !bHasChar ){
+		pFont->Release();
+		return NULL;
+	}
+	return pFont;	//呼び出し側でRelease
+}
+
 HFONT CColorFontRenderer::ResolveFallbackHFONT(
 	const LOGFONT& lfBase,
 	const wchar_t* pData,
@@ -653,36 +764,49 @@ HFONT CColorFontRenderer::ResolveFallbackHFONT(
 	UINT16* pOutGlyphIndex
 )
 {
-	if( !m_pSystemFontFallback ){
-		return NULL;
-	}
-
-	CSingleRunTextAnalysisSource analysisSource(pData, (UINT32)nLength);
-
 	DWRITE_FONT_WEIGHT weight = (DWRITE_FONT_WEIGHT)lfBase.lfWeight;
 	if( weight < DWRITE_FONT_WEIGHT_THIN ){
 		weight = DWRITE_FONT_WEIGHT_NORMAL;
 	}
 	DWRITE_FONT_STYLE style = lfBase.lfItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
 
-	UINT32 nMappedLength = 0;
 	IDWriteFont* pMappedFont = NULL;
 	float fScale = 1.0f;
-	HRESULT hr = m_pSystemFontFallback->MapCharacters(
-		&analysisSource,
-		0,
-		(UINT32)nLength,
-		NULL,				//baseFontCollection(NULLでシステムフォントコレクション)
-		lfBase.lfFaceName,
-		weight,
-		style,
-		DWRITE_FONT_STRETCH_NORMAL,
-		&nMappedLength,
-		&pMappedFont,
-		&fScale
-	);
-	if( FAILED(hr) || !pMappedFont ){
-		return NULL;
+	HRESULT hr;
+
+	//絵文字フォントが固定指定されている場合は、システムの自動フォントフォール
+	//バック(本文フォント起点でOSが選ぶため環境依存)に任せず、まずこのフォントで
+	//直接解決を試みる。このフォントに当該グリフが無ければ下のMapCharactersに
+	//フォールバックする。
+	const wchar_t* pszConfiguredEmojiFontName = GetConfiguredEmojiFontName();
+	if( pszConfiguredEmojiFontName ){
+		pMappedFont = FindSpecifiedEmojiFont(pszConfiguredEmojiFontName, nCodePoint, weight, style);
+	}
+
+	if( !pMappedFont ){
+		if( !m_pSystemFontFallback ){
+			return NULL;
+		}
+
+		CSingleRunTextAnalysisSource analysisSource(pData, (UINT32)nLength);
+
+		UINT32 nMappedLength = 0;
+		hr = m_pSystemFontFallback->MapCharacters(
+			&analysisSource,
+			0,
+			(UINT32)nLength,
+			NULL,				//baseFontCollection(NULLでシステムフォントコレクション)
+			lfBase.lfFaceName,
+			weight,
+			style,
+			DWRITE_FONT_STRETCH_NORMAL,
+			&nMappedLength,
+			&pMappedFont,
+			&fScale
+		);
+		if( FAILED(hr) || !pMappedFont ){
+			return NULL;
+		}
 	}
 
 	//lfHeight/lfWidth等のサイズ系メンバはConvertFontToLOGFONTでは設定されないため、
@@ -900,21 +1024,19 @@ bool CColorFontRenderer::TryGetColorLayers(
 		return false;
 	}
 
+	//フォント全体はカラーフォントでも、このグリフ自体にCOLR/CPALレイヤーが
+	//無いことがある(例: 絵文字フォント内の普通の英数字グリフ。今回、数字+VS16+
+	//結合用囲み記号のキーキャップシーケンスで、数字だけが先にNKMM_COLOR_FONT_
+	//EMOJI_FONT_NAME指定によりSegoe UI Emoji側へ強制解決された際に発覚)。
+	//その場合はTranslateColorGlyphRunがDWRITE_E_NOCOLORを返しFetchColorLayers()が
+	//falseになるので、諦めずに白黒の輪郭グリフとして前景色で描画する。
+	bool bGotColorLayers = false;
 	if( pFallbackEntry->bIsColorFont ){
-		if( !FetchColorLayers(pFallbackEntry->pFontFace2, nFallbackGlyphIndex, pFallbackEntry->fEmSize, fAdvanceX, pOutCell) ){
-			wchar_t szLog[96];
-			swprintf_s(szLog, L"[ColorFont] U+%04X FetchColorLayers failed (no color layers)\n", nCodePoint);
-			::OutputDebugStringW(szLog);
-			return false;
-		}
-		{
-			wchar_t szLog[96];
-			swprintf_s(szLog, L"[ColorFont] U+%04X color layers=%d queued\n", nCodePoint, pOutCell->nLayerCount);
-			::OutputDebugStringW(szLog);
-		}
-	}else{
-		//白黒(通常の輪郭のみ)の代替フォント。パレット無しの1レイヤーとして
-		//テキスト前景色で描画する。
+		bGotColorLayers = FetchColorLayers(pFallbackEntry->pFontFace2, nFallbackGlyphIndex, pFallbackEntry->fEmSize, fAdvanceX, pOutCell);
+	}
+	if( !bGotColorLayers ){
+		//白黒(通常の輪郭のみ)の代替フォント、またはカラーフォントだが当該グリフに
+		//レイヤーが無い場合。パレット無しの1レイヤーとしてテキスト前景色で描画する。
 		SColorGlyphLayer& layer = pOutCell->layers[0];
 		layer.nGlyphIndex = nFallbackGlyphIndex;
 		layer.fAdvanceX   = fAdvanceX;

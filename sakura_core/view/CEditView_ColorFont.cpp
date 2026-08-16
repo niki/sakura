@@ -13,6 +13,7 @@
 
 #include "CColorFontRenderer.h"
 #include "uiparts/CGraphics.h"
+#include "env/CShareData.h"
 
 namespace {
 
@@ -127,7 +128,9 @@ void CEditView::FlushPendingCluster()
 			}
 		}
 
-		if( bUniform ){
+		//共通設定「全般」タブの「合字」チェックが外れている場合は、合字化を一切
+		//試みない(常に1文字ずつのフォールバック描画になる)。
+		if( bUniform && GetDllShareData().m_Common.m_sWindow.m_bUseEmojiLigature ){
 			wchar_t szText[64];
 			int nTextLen = 0;
 			RECT rcUnion = m_vPendingClusterCalls[0].rcCell;
@@ -146,6 +149,20 @@ void CEditView::FlushPendingCluster()
 				rcUnion.bottom = t_max(rcUnion.bottom, c.rcCell.bottom);
 			}
 
+			//合字化された絵文字グリフはフォントのem正方形サイズで描画されるため、
+			//見た目上ほぼ正方形になる。キーキャップ(数字+VS16+結合用囲み記号)の
+			//ように、構成文字が全てBMP内の細い桁ばかりのクラスタでは、各セル幅を
+			//単純に合算しただけでは正方形に足りず、右端が描画されずに(FlushQueueの
+			//最終BitBltがrcCell外を切り捨てるため)欠けて見える。black cat等、
+			//構成要素にサロゲートペア(全角2桁)を含むクラスタは合算幅に余裕がある
+			//ためこの問題が起きない。行の高さを下限に、左端を固定したまま右方向へ
+			//拡張して正方形を確保する(縦方向はTryShapeCluster側でフォントサイズ
+			//そのものを行の高さに収まるよう縮小するため、ここでは広げない)。
+			int nRowHeight = rcUnion.bottom - rcUnion.top;
+			if( rcUnion.right - rcUnion.left < nRowHeight ){
+				rcUnion.right = rcUnion.left + nRowHeight;
+			}
+
 			if( !bOverflow ){
 				SColorGlyphCell mergedCell;
 				mergedCell.rcCell = rcUnion;
@@ -155,7 +172,7 @@ void CEditView::FlushPendingCluster()
 				mergedCell.bEraseFirst = true;	//個別描画済みの下地をまとめて塗り潰してから描き直す
 				float fUnionAdvanceX = (float)(rcUnion.right - rcUnion.left);
 				if( CColorFontRenderer::getInstance()->TryShapeCluster(
-						m_vPendingClusterCalls[0].hFont, szText, nTextLen, fUnionAdvanceX, &mergedCell) )
+						m_vPendingClusterCalls[0].hFont, szText, nTextLen, fUnionAdvanceX, (float)nRowHeight, &mergedCell) )
 				{
 					m_vPendingColorGlyphs.push_back(mergedCell);
 					m_vPendingClusterCalls.clear();

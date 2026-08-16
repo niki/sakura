@@ -129,6 +129,12 @@ struct CommonSetting_Window
 #ifdef NKMM_FIX_FONT_QUALITY
 	int				m_nFontQuality;				//!< 描画品質(LOGFONT.lfQuality相当。DRAFT_QUALITY等) 20260810
 #endif // NKMM_
+#ifdef NKMM_FIX_COLOR_FONT
+	BOOL			m_bUseEmojiFont;			//!< 絵文字解決に使うフォントを固定指定する 20260816
+	LOGFONT			m_lfEmoji;					//!< 絵文字フォント(lfFaceNameのみ使用。他メンバは参照しない)
+	INT				m_nEmojiPointSize;			//!< 絵文字フォントサイズ(フォント選択ダイアログ表示用。1/10ポイント単位)
+	BOOL			m_bUseEmojiLigature;		//!< 絵文字の合字(ZWJ結合絵文字・キーキャップ等)を有効にする 20260816
+#endif // NKMM_
 
 	//位置と大きさの設定
 	EWinSizeMode	m_eSaveWindowSize;			//!< ウィンドウサイズ継承・固定 EWinSizeModeに順ずる 2004.05.13 Moca

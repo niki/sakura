@@ -147,6 +147,9 @@ public:
 	bool			m_bTrayProc;
 	HFONT			m_hKeywordHelpFont;		//!< キーワードヘルプ フォント ハンドル
 	HFONT			m_hTabFont;				//!< タブ フォント ハンドル
+#ifdef NKMM_FIX_COLOR_FONT
+	HFONT			m_hEmojiFont;			//!< 絵文字フォント フォント ハンドル 20260816
+#endif // NKMM_
 
 protected:
 	/*
@@ -232,6 +235,11 @@ protected:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );
 	void SetData( HWND );	//!< ダイアログデータの設定
 	int  GetData( HWND );	//!< ダイアログデータの取得
+#ifdef NKMM_FIX_COLOR_FONT
+private:
+	//! 絵文字フォントのラベル表示を、現在の使用有無/選択フォントに合わせて更新する 20260816
+	HFONT UpdateEmojiFontLabel( HWND hwndDlg );
+#endif // NKMM_
 };
 
 //==============================================================

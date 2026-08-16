@@ -818,8 +818,21 @@
 //    何もせず、従来通りのGDI描画のみになる
 //  - sakura_core\view\CColorFontRenderer.h/.cpp
 //  - 詳細はchangelog/NKMM_FIX_COLOR_FONT.md参照
+//  @date 20260816 絵文字解決に使うフォントを本文フォント起点のシステム自動
+//    フォールバック任せにせず、固定指定できるようにした(ResolveFallbackHFONT/
+//    TryShapeClusterの両方で使用)。指定フォントに該当グリフが無い場合は
+//    従来通りのシステムフォールバックへ自動的に戻る。
+//  @date 20260816 共通設定「全般」タブに「絵文字フォントを使う」チェック+
+//    フォント選択ボタンを追加し、実行時にON/OFF・フォント変更できるように
+//    した(CommonSetting_Window::m_bUseEmojiFont/m_lfEmoji)。
+//    NKMM_COLOR_FONT_EMOJI_FONT_NAMEは初回起動時の既定値(既定でON)としてのみ
+//    使われ、以後はユーザー設定(sakura.ini)が優先される。
 //------------------------------------------------------------------
 #define NKMM_FIX_COLOR_FONT
+
+//! 絵文字解決に使うフォント名の既定値(初回起動時、CommonSetting_Window::m_lfEmoji
+//! へ初期投入される)。ユーザーは共通設定「全般」タブでいつでも変更・無効化できる。
+#define NKMM_COLOR_FONT_EMOJI_FONT_NAME L"Segoe UI Emoji"
 
 //------------------------------------------------------------------
 // サロゲートペア文字(絵文字等)の桁幅をルーラーの固定グリッドに揃える 20260717

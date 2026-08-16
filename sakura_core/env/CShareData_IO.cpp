@@ -2297,6 +2297,13 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 #ifdef NKMM_FIX_FONT_QUALITY
 	cProfile.IOProfileData( pszSecName, LTEXT("nFontQuality")				, common.m_sWindow.m_nFontQuality ); // 20260810 描画品質
 #endif // NKMM_
+#ifdef NKMM_FIX_COLOR_FONT
+	// 20260816 絵文字解決フォントの固定指定
+	cProfile.IOProfileData( pszSecName, LTEXT("bUseEmojiFont")				, common.m_sWindow.m_bUseEmojiFont );
+	ShareData_IO_Sub_LogFont( cProfile, pszSecName, L"lfEmoji", L"nEmojiPointSize", L"lfEmojiFaceName",
+		common.m_sWindow.m_lfEmoji, common.m_sWindow.m_nEmojiPointSize );
+	cProfile.IOProfileData( pszSecName, LTEXT("bUseEmojiLigature")			, common.m_sWindow.m_bUseEmojiLigature );
+#endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("bCopyAndDisablSelection")	, common.m_sEdit.m_bCopyAndDisablSelection );/* コピーしたら選択解除 */
 	cProfile.IOProfileData( pszSecName, LTEXT("bEnableNoSelectCopy")		, common.m_sEdit.m_bEnableNoSelectCopy );/* 選択なしでコピーを可能にする */	// 2007.11.18 ryoji
 	cProfile.IOProfileData( pszSecName, LTEXT("bEnableLineModePaste")		, common.m_sEdit.m_bEnableLineModePaste );/* ラインモード貼り付けを可能にする */	// 2007.10.08 ryoji

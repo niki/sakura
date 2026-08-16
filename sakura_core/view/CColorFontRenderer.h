@@ -149,6 +149,11 @@ public:
 		@param nTextLength [in]  pTextの長さ(UTF-16コードユニット数)
 		@param fAdvanceX   [in]  GDIが実測した合計送り幅(px)。クラスタを構成する
 		                        各文字のセル幅の合計。
+		@param fRowHeight  [in]  行の高さ(px)。シェーピングに使うフォントは本文
+		                        フォントと同じlfHeightで作るが、絵文字フォント側の
+		                        アセント/ディセントが本文フォントより大きく、行から
+		                        はみ出す(上下が欠けて見える)ことがあるため、
+		                        収まるように縮小するための上限として使う。
 		@param pOutCell    [out] 合字化に成功した場合、hFont/layers/nLayerCountを
 		                        書き込む(rcCell等その他のメンバは呼び出し側で
 		                        設定済みの前提)
@@ -162,6 +167,7 @@ public:
 		const wchar_t* pText,
 		int nTextLength,
 		float fAdvanceX,
+		float fRowHeight,
 		SColorGlyphCell* pOutCell
 	);
 
@@ -209,6 +215,12 @@ private:
 	//! そのフォントに対応するHFONTを返す(既存のGetOrCreateFontFaceEntryキャッシュに載せられるようにするため)。
 	//! 代替フォントが見つからない・グリフが無い場合はNULLを返す。
 	HFONT ResolveFallbackHFONT(const LOGFONT& lfBase, const wchar_t* pData, int nLength, UINT32 nCodePoint, float fAdvanceX, UINT16* pOutGlyphIndex);
+
+	//! 指定されたフォント名(共通設定「全般」タブで固定指定された絵文字フォント)が、
+	//! 指定コードポイントのグリフを実際に持っている場合に限りそのIDWriteFontを返す
+	//! (呼び出し側でRelease必須)。フォントが見つからない・グリフを持っていない場合は
+	//! NULLを返し、呼び出し側は従来通りのシステムフォントフォールバックにフォールバックする。
+	IDWriteFont* FindSpecifiedEmojiFont(const wchar_t* pszFontName, UINT32 nCodePoint, DWRITE_FONT_WEIGHT weight, DWRITE_FONT_STYLE style);
 
 	CD2D1Dll			m_dllD2D1;
 	CDWriteDll			m_dllDWrite;
