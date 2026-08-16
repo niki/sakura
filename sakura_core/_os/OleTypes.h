@@ -83,10 +83,14 @@ struct Variant
 {
 	VARIANT Data;
 	Variant()                       { ::VariantInit(&Data); }
-	Variant(Variant &Source)        { ::VariantCopyInd(&Data, &Source.Data); }
-	Variant(VARIANT &Source)        { ::VariantCopyInd(&Data, &Source); }
+	Variant(Variant &Source) { (void)::VariantCopyInd(&Data, &Source.Data); }
+	Variant(VARIANT &Source) { (void)::VariantCopyInd(&Data, &Source); }
 	~Variant()                      { ::VariantClear(&Data); }
-	Variant& operator = (Variant& Source) { ::VariantCopyInd(&Data, &Source.Data); return *this; }
+	Variant &operator=(Variant &Source)
+	{
+		(void)::VariantCopyInd(&Data, &Source.Data);
+		return *this;
+	}
 	/*! SysStringをVariantにセットする
 	
 		セット後、SysStringの方は中身がNULLになる。

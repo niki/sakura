@@ -106,7 +106,7 @@ SILICA_INLINE bool PathCompactPath(TCHAR *dest, const std::tstring &path, int cc
 	si::text::SplitString split(dir, sepa);
 	
 	if (split.Size() < 2) {
-		_tcscpy_s(dest, path.size() * sizeof(TCHAR), path.c_str());
+		_tcscpy_s(dest, path.size() + 1, path.c_str());
 		return false;
 	}
 	
@@ -172,7 +172,7 @@ SILICA_INLINE bool PathCompactPath2(TCHAR *dest, const std::tstring &path, int c
 	si::text::SplitString split(dir, sepa);
 	
 	if (split.Size() < 2) {
-		_tcscpy_s(dest, path.size() * sizeof(TCHAR), path.c_str());
+		_tcscpy_s(dest, path.size() + 1, path.c_str());
 		return false;
 	}
 	

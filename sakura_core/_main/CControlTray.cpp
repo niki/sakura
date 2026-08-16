@@ -129,7 +129,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 			std::vector<std::tstring> values;
 			EnumRegKeyEntry(NKMM_REGKEY, entrys, &values);
 			int i = 0;
-			for (auto e : entrys) {
+			for (const auto& e : entrys) {
 				if (e[0] == _T('$')) {
 					cmWork2.Replace(e.c_str(), values[i].c_str());
 				}
@@ -438,7 +438,7 @@ BOOL CControlTray::TrayMessage( HWND hDlg, DWORD dwMessage, UINT uID, HICON hIco
 	tnd.uCallbackMessage	= MYWM_NOTIFYICON;
 	tnd.hIcon				= hIcon;
 	if( pszTip ){
-		lstrcpyn( tnd.szTip, pszTip, _countof( tnd.szTip ) );
+		(void)lstrcpyn( tnd.szTip, pszTip, _countof( tnd.szTip ) );
 	}else{
 		tnd.szTip[0] = _T('\0');
 	}

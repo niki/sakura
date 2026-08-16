@@ -137,7 +137,7 @@ protected:
 	void profile_to_value(const wstring& profile, ACHAR* value)
 	{
 		if(profile.length()>0){
-			ACHAR buf[2]={0};
+			ACHAR buf[5]{};
 			int ret=wctomb(buf,profile[0]);
 			assert_warning(ret==1);
 			(void)ret;
