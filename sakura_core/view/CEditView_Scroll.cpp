@@ -421,6 +421,24 @@ void CEditView::AdjustScrollBars()
 	SCROLLINFO	si;
 	bool		bEnable;
 
+#ifdef NKMM_EDITVIEW_HSCRBAR_AUTOHIDE
+	if( NULL != m_hwndHScrollBar ){
+		/* 水平スクロールバー: 内容が表示域に収まる場合は非表示にし、その分テキスト表示領域を広げる */
+		bEnable = ( GetTextArea().m_nViewColNum < GetRightEdgeForScrollBar() );
+		if( bEnable != (::IsWindowVisible( m_hwndHScrollBar ) != 0) ){
+			::ShowWindow( m_hwndHScrollBar, bEnable ? SW_SHOW : SW_HIDE );
+			::EnableWindow( m_hwndHScrollBar, bEnable ? TRUE : FALSE );
+
+			RECT rcClient;
+			::GetClientRect( GetHwnd(), &rcClient );
+			RepositionControlsForSize( rcClient.right, rcClient.bottom );	// 表示/非表示切替に伴いテキスト表示領域を再計算
+		}
+		if( !bEnable ){
+			ScrollAtH( CLayoutInt(0) );
+		}
+	}
+#endif // NKMM_
+
 	if( NULL != m_hwndVScrollBar ){
 		/* 垂直スクロールバー */
 		const CLayoutInt	nEofMargin = CLayoutInt(2); // EOFとその下のマージン
@@ -513,6 +531,7 @@ void CEditView::AdjustScrollBars()
 		::SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE );
 #endif // NKMM_
 
+#ifndef NKMM_EDITVIEW_HSCRBAR_AUTOHIDE
 		//	2006.1.28 aroka 判定条件誤り修正 (バーが消えてもスクロールしない)
 		bEnable = ( GetTextArea().m_nViewColNum < GetRightEdgeForScrollBar() );
 		if( bEnable != (::IsWindowEnabled( m_hwndHScrollBar ) != 0) ){
@@ -521,6 +540,7 @@ void CEditView::AdjustScrollBars()
 		if( !bEnable ){
 			ScrollAtH( CLayoutInt(0) );
 		}
+#endif // NKMM_
 	}
 }
 

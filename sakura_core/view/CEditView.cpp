@@ -1079,18 +1079,14 @@ void CEditView::OnMove( int x, int y, int nWidth, int nHeight )
 }
 
 
-/* ウィンドウサイズの変更処理 */
-void CEditView::OnSize( int cx, int cy )
-{
-	if( NULL == GetHwnd()
-		|| ( cx == 0 && cy == 0 ) ){
-		// From Here 2007.09.09 Moca 互換BMPによる画面バッファ
-		// ウィンドウ無効時にも互換BMPを破棄する
-		DeleteCompatibleBitmap();
-		// To Here 2007.09.09 Moca
-		return;
-	}
+/*! スクロールバー・分割ボックス・サイズボックスの位置とテキスト表示領域を再計算する
 
+	水平スクロールバーが非表示のときは、その分の高さをテキスト表示領域に還元する。
+
+	@date 2026.08.17 CEditView::OnSizeから分離（水平スクロールバー動的非表示対応）
+*/
+void CEditView::RepositionControlsForSize( int cx, int cy )
+{
 	int	nVSplitHeight = 0;	/* 垂直分割ボックスの高さ */
 	int	nHSplitWidth  = 0;	/* 水平分割ボックスの幅 */
 
@@ -1099,6 +1095,8 @@ void CEditView::OnSize( int cx, int cy )
 	int nCyHScroll = ::GetSystemMetrics( SM_CYHSCROLL );
 	int nCxVScroll = ::GetSystemMetrics( SM_CXVSCROLL );
 	int nCyVScroll = ::GetSystemMetrics( SM_CYVSCROLL );
+
+	bool bHScrollBarShown = ( NULL != m_hwndHScrollBar ) && ( ::IsWindowVisible( m_hwndHScrollBar ) != 0 );
 
 	/* 垂直分割ボックス */
 	if( NULL != m_pcsbwVSplitBox ){
@@ -1112,7 +1110,13 @@ void CEditView::OnSize( int cx, int cy )
 	}
 	/* 垂直スクロールバー */
 	if( NULL != m_hwndVScrollBar ){
-		::MoveWindow( m_hwndVScrollBar, cx - nCxVScroll , 0 + nVSplitHeight, nCxVScroll, cy - nCyVScroll - nVSplitHeight, TRUE );
+#ifdef NKMM_EDITVIEW_HSCRBAR_AUTOHIDE
+		// 水平スクロールバー(とサイズボックス)が無いときは、その分下まで伸ばしてテキスト表示領域と高さを揃える
+		int nVScrollBottomMargin = bHScrollBarShown ? nCyVScroll : 0;
+#else
+		int nVScrollBottomMargin = nCyVScroll;
+#endif // NKMM_
+		::MoveWindow( m_hwndVScrollBar, cx - nCxVScroll , 0 + nVSplitHeight, nCxVScroll, cy - nVScrollBottomMargin - nVSplitHeight, TRUE );
 	}
 	/* 水平スクロールバー */
 	if( NULL != m_hwndHScrollBar ){
@@ -1121,17 +1125,44 @@ void CEditView::OnSize( int cx, int cy )
 
 	/* サイズボックス */
 	if( NULL != m_hwndSizeBox ){
+#ifdef NKMM_EDITVIEW_HSCRBAR_AUTOHIDE
+		// 水平スクロールバーが無いときは、隅のサイズボックスも隠して縦スクロールバーが最下端まで届くようにする
+		if( bHScrollBarShown ){
+			::ShowWindow( m_hwndSizeBox, SW_SHOW );
+			::MoveWindow( m_hwndSizeBox, cx - nCxVScroll, cy - nCyHScroll, nCxHScroll, nCyVScroll, TRUE );
+		}else{
+			::ShowWindow( m_hwndSizeBox, SW_HIDE );
+		}
+#else
 		::MoveWindow( m_hwndSizeBox, cx - nCxVScroll, cy - nCyHScroll, nCxHScroll, nCyVScroll, TRUE );
+#endif // NKMM_
 	}
-	int nAreaWidthOld  = GetTextArea().GetAreaWidth();
-	int nAreaHeightOld = GetTextArea().GetAreaHeight();
 
 	// エリア情報更新
 	GetTextArea().TextArea_OnSize(
 		CMySize(cx,cy),
 		nCxVScroll,
-		m_hwndHScrollBar?nCyHScroll:0
+		bHScrollBarShown ? nCyHScroll : 0
 	);
+}
+
+
+/* ウィンドウサイズの変更処理 */
+void CEditView::OnSize( int cx, int cy )
+{
+	if( NULL == GetHwnd()
+		|| ( cx == 0 && cy == 0 ) ){
+		// From Here 2007.09.09 Moca 互換BMPによる画面バッファ
+		// ウィンドウ無効時にも互換BMPを破棄する
+		DeleteCompatibleBitmap();
+		// To Here 2007.09.09 Moca
+		return;
+	}
+
+	int nAreaWidthOld  = GetTextArea().GetAreaWidth();
+	int nAreaHeightOld = GetTextArea().GetAreaHeight();
+
+	RepositionControlsForSize( cx, cy );
 
 	/* 再描画用メモリＢＭＰ */
 	// From Here 2007.09.09 Moca 互換BMPによる画面バッファ

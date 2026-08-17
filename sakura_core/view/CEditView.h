@@ -315,6 +315,7 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 public:
 	void AdjustScrollBars();											/* スクロールバーの状態を更新する */
+	void RepositionControlsForSize( int cx, int cy );					/* スクロールバー等の位置とテキスト表示領域を再計算する */
 	BOOL CreateScrollBar();												/* スクロールバー作成 */	// 2006.12.19 ryoji
 	void DestroyScrollBar();											/* スクロールバー破棄 */	// 2006.12.19 ryoji
 	CLayoutInt GetWrapOverhang( void ) const;							/* 折り返し桁以後のぶら下げ余白計算 */	// 2008.06.08 ryoji
