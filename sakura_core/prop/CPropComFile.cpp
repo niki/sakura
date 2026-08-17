@@ -44,6 +44,12 @@ static const DWORD p_helpids[] = {	//01310
 	IDC_CHECK_ALERT_IF_LARGEFILE,			HIDC_CHECK_ALERT_IF_LARGEFILE,			//開こうとしたファイルが大きい場合に警告する
 	IDC_CHECK_NoFilterSaveNew,				HIDC_CHECK_NoFilterSaveNew,				// 新規から保存時は全ファイル表示	// 2006.11.16 ryoji
 	IDC_CHECK_NoFilterSaveFile,				HIDC_CHECK_NoFilterSaveFile,			// 新規以外から保存時は全ファイル表示	// 2006.11.16 ryoji
+#ifdef NKMM_SESSION_RESTORE
+	IDC_CHECK_RESTORE_SESSION,		HIDC_CHECK_RESTORE_SESSION,			//終了時に開いていたファイルを次回起動時に自動復元する
+#endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	IDC_CHECK_RESTORE_SESSION_BUFFER,	HIDC_CHECK_RESTORE_SESSION_BUFFER,	//未保存の変更内容もバッファから復元する
+#endif // NKMM_
 //	IDC_STATIC,								-1,
 	0, 0
 };
@@ -227,6 +233,19 @@ INT_PTR CPropFile::DispatchEvent(
 			case IDC_CHECK_ALERT_IF_LARGEFILE:
 				EnableFilePropInput(hwndDlg);
 				break;
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+			case IDC_CHECK_RESTORE_SESSION:	/* セッションの復元 */
+				// 20260814 「セッションの復元」がOFFなら「バッファ内容の復元」も意味が無いため連動して無効化
+				if( ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_RESTORE_SESSION ) ){
+					::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER ), TRUE );
+				}else{
+					::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER ), FALSE );
+				}
+				break;
+
+			case IDC_CHECK_RESTORE_SESSION_BUFFER:	/* バッファ内容の復元 */
+				break;
+#endif // NKMM_
 			}
 			break;
 		}
@@ -331,6 +350,16 @@ void CPropFile::SetData( HWND hwndDlg )
 	::CheckDlgButtonBool( hwndDlg, IDC_CHECK_NoFilterSaveNew, m_Common.m_sFile.m_bNoFilterSaveNew );	// 新規から保存時は全ファイル表示
 	::CheckDlgButtonBool( hwndDlg, IDC_CHECK_NoFilterSaveFile, m_Common.m_sFile.m_bNoFilterSaveFile );	// 新規以外から保存時は全ファイル表示
 
+#ifdef NKMM_SESSION_RESTORE
+	// 20260814 終了時に開いていたファイルを次回起動時に自動復元する
+	::CheckDlgButton( hwndDlg, IDC_CHECK_RESTORE_SESSION, m_Common.m_sGeneral.m_bRestoreSession );
+#endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	// 20260814 未保存の変更内容もバッファから復元する（「セッションの復元」がOFFなら無効化）
+	::CheckDlgButton( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER, m_Common.m_sGeneral.m_bRestoreSessionBuffer );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER ), m_Common.m_sGeneral.m_bRestoreSession );
+#endif // NKMM_
+
 	EnableFilePropInput(hwndDlg);
 	return;
 }
@@ -421,6 +450,15 @@ int CPropFile::GetData( HWND hwndDlg )
 	// ファイル保存ダイアログのフィルタ設定	// 2006.11.16 ryoji
 	m_Common.m_sFile.m_bNoFilterSaveNew = ::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_NoFilterSaveNew );	// 新規から保存時は全ファイル表示
 	m_Common.m_sFile.m_bNoFilterSaveFile = ::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_NoFilterSaveFile );	// 新規以外から保存時は全ファイル表示
+
+#ifdef NKMM_SESSION_RESTORE
+	// 20260814 終了時に開いていたファイルを次回起動時に自動復元する
+	m_Common.m_sGeneral.m_bRestoreSession = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_RESTORE_SESSION );
+#endif // NKMM_
+#ifdef NKMM_SESSION_RESTORE_BUFFER
+	// 20260814 未保存の変更内容もバッファから復元する
+	m_Common.m_sGeneral.m_bRestoreSessionBuffer = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_RESTORE_SESSION_BUFFER );
+#endif // NKMM_
 
 	return TRUE;
 }
