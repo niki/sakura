@@ -214,6 +214,7 @@ INT_PTR CPropGeneral::DispatchEvent(
 						//フォントを選んだら「使用する」扱いにする(タイプ別フォントと同じ挙動)
 						m_Common.m_sWindow.m_bUseEmojiFont = TRUE;
 						::CheckDlgButton( hwndDlg, IDC_CHECK_USEEMOJIFONT, TRUE );
+						::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_EMOJILIGATURE ), TRUE );
 						HFONT hFont = UpdateEmojiFontLabel( hwndDlg );
 						if( m_hEmojiFont != NULL ){ ::DeleteObject( m_hEmojiFont ); }
 						m_hEmojiFont = hFont;
@@ -224,6 +225,8 @@ INT_PTR CPropGeneral::DispatchEvent(
 			case IDC_CHECK_USEEMOJIFONT:	/* 絵文字フォントを使う 20260816 */
 				{
 					m_Common.m_sWindow.m_bUseEmojiFont = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_USEEMOJIFONT );
+					// 20260817 「絵文字フォント」がOFFなら「合字」も連動して無効化
+					::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_EMOJILIGATURE ), m_Common.m_sWindow.m_bUseEmojiFont );
 					HFONT hFont = UpdateEmojiFontLabel( hwndDlg );
 					if( m_hEmojiFont != NULL ){ ::DeleteObject( m_hEmojiFont ); }
 					m_hEmojiFont = hFont;
@@ -479,8 +482,9 @@ void CPropGeneral::SetData( HWND hwndDlg )
 	// 20260816 絵文字フォントの固定指定
 	::CheckDlgButton( hwndDlg, IDC_CHECK_USEEMOJIFONT, m_Common.m_sWindow.m_bUseEmojiFont );
 	m_hEmojiFont = UpdateEmojiFontLabel( hwndDlg );
-	// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)を有効にするか
+	// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)を有効にするか（「絵文字フォント」がOFFなら無効化）
 	::CheckDlgButton( hwndDlg, IDC_CHECK_EMOJILIGATURE, m_Common.m_sWindow.m_bUseEmojiLigature );
+	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_EMOJILIGATURE ), m_Common.m_sWindow.m_bUseEmojiFont );
 #endif // NKMM_
 
 	/* ファイルの履歴MAX */
