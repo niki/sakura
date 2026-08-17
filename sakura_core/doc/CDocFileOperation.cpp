@@ -290,6 +290,16 @@ bool CDocFileOperation::RestoreBufferOverlay( const WCHAR* backupFilePath )
 	m_pcDocRef->m_cLayoutMgr.SetLayoutInfo( true, true, ref, ref.m_nTabSpace, ref.m_nTsvMode, nMaxLineKetas, CLayoutXInt(-1), &m_pcDocRef->m_pcEditWnd->GetLogfont() );
 	m_pcDocRef->m_pcEditWnd->ClearViewCaretPosInfo();
 
+	// 20260818 CLoadAgent::OnAfterLoad()と同様、「折り返さない」時のテキスト最大幅キャッシュを
+	// 内容差し替え後の状態で再計算する。ここを怠るとCEditView::GetRightEdgeForScrollBar()が
+	// 差し替え前(多くの場合、空の無題バッファ)の古い幅を参照し続け、下のAdjustScrollBars()が
+	// 「内容は画面幅に収まっている」と誤判定してしまう(NKMM_EDITVIEW_HSCRBAR_AUTOHIDEでは
+	// 水平スクロールバーが表示されるべき場面で表示されなくなる形で顕在化する)
+	if( m_pcDocRef->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP )
+		m_pcDocRef->m_cLayoutMgr.CalculateTextWidth();
+	else
+		m_pcDocRef->m_cLayoutMgr.ClearLayoutLineWidth();
+
 	// 未保存の変更を復元した、という状態を明示する
 	m_pcDocRef->m_cDocEditor.SetModified( true, true );
 
