@@ -31,6 +31,9 @@
 #ifdef NKMM_FIX_SETMAINFONT
 #include "util/window.h"
 #endif // NKMM_
+#ifdef NKMM_DISABLE_INTERNET_ACCESS
+#include "sakura_rc.h"
+#endif // NKMM_
 
 /* ダイアログプロシージャ */
 INT_PTR CALLBACK MyDialogProc(
@@ -208,6 +211,28 @@ BOOL CDialog::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	SetData();
 
 	SetDialogPosSize();
+
+#ifdef NKMM_DISABLE_INTERNET_ACCESS
+	// 20260817 ローカルのsakura.chmが無いとヘルプボタンを押しても何も起きない
+	// (外部URL接続によるオンラインヘルプへのフォールバックを無効化しているため)。
+	// 押しても無反応なままにせず、chmの有無に応じて活性/非活性を切り替える
+	{
+		HWND hwndHelpBtn = ::GetDlgItem( m_hWnd, IDC_BUTTON_HELP );
+		if( NULL != hwndHelpBtn ){
+			::EnableWindow( hwndHelpBtn, HasLocalHtmlHelp() );
+		}
+	}
+	// 20260817 タイトルバー右側の「？」(コンテキストヘルプ)も、押して対象コントロールを
+	// クリックしても無反応になるだけなので、chmが無ければ表示自体をやめる
+	if( !HasLocalHtmlHelp() ){
+		LONG_PTR exStyle = ::GetWindowLongPtr( m_hWnd, GWL_EXSTYLE );
+		if( 0 != (exStyle & WS_EX_CONTEXTHELP) ){
+			::SetWindowLongPtr( m_hWnd, GWL_EXSTYLE, exStyle & ~WS_EX_CONTEXTHELP );
+			::SetWindowPos( m_hWnd, NULL, 0, 0, 0, 0,
+				SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED );
+		}
+	}
+#endif // NKMM_
 
 	m_bInited = TRUE;
 	return TRUE;

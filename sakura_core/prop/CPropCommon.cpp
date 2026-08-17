@@ -259,7 +259,18 @@ INT_PTR CPropCommon::DoPropertySheet( int nPageNum, bool bTrayProc )
 		PROPSHEETPAGE *p = &psp[nIdx];
 		memset_raw( p, 0, sizeof_raw( *p ) );
 		p->dwSize      = sizeof_raw( *p );
-		p->dwFlags     = PSP_USETITLE | PSP_HASHELP;
+		p->dwFlags     = PSP_USETITLE;
+#ifdef NKMM_DISABLE_INTERNET_ACCESS
+		// 20260817 ローカルのsakura.chmが無ければ[ヘルプ]ボタンを押しても
+		// 無反応になる(オンラインヘルプへのフォールバックを無効化しているため)。
+		// PSP_HASHELPが作る枠側のボタンは後から活性/非活性を切り替えられないため、
+		// chmが無いときはボタン自体を生成しない
+		if( HasLocalHtmlHelp() ){
+			p->dwFlags |= PSP_HASHELP;
+		}
+#else
+		p->dwFlags     |= PSP_HASHELP;
+#endif // NKMM_
 		p->hInstance   = CSelectLang::getLangRsrcInstance();
 		p->pszTemplate = MAKEINTRESOURCE( ComPropSheetInfoList[nIdx].resId );
 		p->pszIcon     = NULL;

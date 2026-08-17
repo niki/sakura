@@ -316,11 +316,26 @@ static int CALLBACK PropSheetProc( HWND hwndDlg, UINT uMsg, LPARAM lParam )
 {
 	// プロパティシートの初期化時にボタン追加、プロパティシートのサブクラス化を行う
 	if( uMsg == PSCB_INITIALIZED ){
-		s_pOldPropSheetWndProc = (WNDPROC)::SetWindowLongPtr( hwndDlg, GWLP_WNDPROC, (LONG_PTR)PropSheetWndProc );
-		HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle( NULL );
-		HWND hwndBtn = ::CreateWindowEx( 0, _T("BUTTON"), LS(STR_SHELL_INIFOLDER), BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 140, 20, hwndDlg, (HMENU)0x02000, hInstance, NULL );
-		::SendMessage( hwndBtn, WM_SETFONT, (WPARAM)::SendMessage( hwndDlg, WM_GETFONT, 0, 0 ), MAKELPARAM( FALSE, 0 ) );
-		::SetWindowPos( hwndBtn, ::GetDlgItem( hwndDlg, IDHELP), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
+#ifdef NKMM_DISABLE_INTERNET_ACCESS
+		// 20260817 タイトルバー右側の「？」(コンテキストヘルプ)は先頭ページの
+		// DS_CONTEXTHELPスタイルがシート枠にも反映されて出る。押しても無反応に
+		// なるだけなので、ローカルのsakura.chmが無ければ表示自体をやめる
+		if( !HasLocalHtmlHelp() ){
+			LONG_PTR exStyle = ::GetWindowLongPtr( hwndDlg, GWL_EXSTYLE );
+			if( 0 != (exStyle & WS_EX_CONTEXTHELP) ){
+				::SetWindowLongPtr( hwndDlg, GWL_EXSTYLE, exStyle & ~WS_EX_CONTEXTHELP );
+				::SetWindowPos( hwndDlg, NULL, 0, 0, 0, 0,
+					SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED );
+			}
+		}
+#endif // NKMM_
+		if( CShareData::getInstance()->IsPrivateSettings() ){
+			s_pOldPropSheetWndProc = (WNDPROC)::SetWindowLongPtr( hwndDlg, GWLP_WNDPROC, (LONG_PTR)PropSheetWndProc );
+			HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle( NULL );
+			HWND hwndBtn = ::CreateWindowEx( 0, _T("BUTTON"), LS(STR_SHELL_INIFOLDER), BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 140, 20, hwndDlg, (HMENU)0x02000, hInstance, NULL );
+			::SendMessage( hwndBtn, WM_SETFONT, (WPARAM)::SendMessage( hwndDlg, WM_GETFONT, 0, 0 ), MAKELPARAM( FALSE, 0 ) );
+			::SetWindowPos( hwndBtn, ::GetDlgItem( hwndDlg, IDHELP), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
+		}
 	}
 	return 0;
 }
@@ -333,7 +348,13 @@ static int CALLBACK PropSheetProc( HWND hwndDlg, UINT uMsg, LPARAM lParam )
 INT_PTR MyPropertySheet( LPPROPSHEETHEADER lppsph )
 {
 	// 個人設定フォルダを使用するときは「設定フォルダ」ボタンを追加する
-	if( CShareData::getInstance()->IsPrivateSettings() ){
+	bool bNeedCallback = CShareData::getInstance()->IsPrivateSettings();
+#ifdef NKMM_DISABLE_INTERNET_ACCESS
+	// 20260817 タイトルバーの「？」を消す処理(PropSheetProc内)のため、
+	// 個人設定フォルダ未使用時もコールバックを呼んでもらう必要がある
+	bNeedCallback = true;
+#endif // NKMM_
+	if( bNeedCallback ){
 		lppsph->dwFlags |= PSH_USECALLBACK;
 		lppsph->pfnCallback = PropSheetProc;
 	}
