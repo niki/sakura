@@ -429,6 +429,11 @@
 //  - 未保存内容が平文でプロファイルフォルダに残るため、既存の「セッションの
 //    復元」チェックボックスとは別の明示的なオプトインチェックボックスとする
 //  - 詳細はchangelog/NKMM_SESSION_RESTORE_BUFFER.md参照
+//  - RestoreBufferOverlay()が「折り返さない」時のテキスト最大幅キャッシュを再計算して
+//    いなかったため、復元直後は内容が画面幅を超えていてもCEditView::AdjustScrollBars()が
+//    古い(差し替え前の)幅を見て水平スクロールバーの表示要否を誤判定していた。
+//    CLoadAgent::OnAfterLoad()と同様にCalculateTextWidth()/ClearLayoutLineWidth()を
+//    呼ぶよう修正 20260818
 //------------------------------------------------------------------
 #define NKMM_SESSION_RESTORE_BUFFER
 
