@@ -592,6 +592,9 @@ BOOL CViewCommander::HandleCommand(
 	case F_TOPMOST:			Command_WINTOPMOST( lparam1 );break;	//常に手前に表示 Moca
 	case F_WINLIST:			Command_WINLIST( nCommandFrom );break;		/* ウィンドウ一覧ポップアップ表示処理 */	// 2006.03.23 fon // 2006.05.19 genta 引数追加
 	case F_DLGWINLIST:		Command_DLGWINLIST();break;		// ウィンドウ一覧表示
+#ifdef NKMM_COMMAND_PALETTE
+	case F_COMMAND_PALETTE:	Command_COMMAND_PALETTE();break;	// コマンドパレット表示 // NKMM_COMMAND_PALETTE 20260818
+#endif // NKMM_
 	case F_GROUPCLOSE:		Command_GROUPCLOSE();break;		/* グループを閉じる */		// 2007.06.20 ryoji 追加
 	case F_NEXTGROUP:		Command_NEXTGROUP();break;		/* 次のグループ */			// 2007.06.20 ryoji 追加
 	case F_PREVGROUP:		Command_PREVGROUP();break;		/* 前のグループ */			// 2007.06.20 ryoji 追加

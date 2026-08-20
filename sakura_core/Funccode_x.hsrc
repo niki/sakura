@@ -415,6 +415,7 @@ F_NEXTWINDOW		= 31340,	//次のウィンドウ							？
 F_PREVWINDOW		= 31341,	//前のウィンドウ							？
 F_WINLIST			= 31336,	//ウィンドウ一覧							なし
 F_DLGWINLIST		= 31337,	//ウィンドウ一覧ダイアログ					なし
+F_COMMAND_PALETTE	= 31338,	//コマンドパレット表示					なし		// NKMM_COMMAND_PALETTE 20260818
 F_MAXIMIZE_V		= 31350,	//縦方向に最大化							なし
 F_MINIMIZE_ALL		= 31351,	//すべて最小化								なし
 F_MAXIMIZE_H		= 31352,	//横方向に最大化							なし

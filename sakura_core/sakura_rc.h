@@ -909,6 +909,11 @@
 #define IDC_STATIC_EMOJIFONT            1902
 #define IDC_CHECK_EMOJILIGATURE         1903
 #endif // NKMM_
+#ifdef NKMM_COMMAND_PALETTE
+#define IDD_DLG_COMMANDPALETTE          248
+#define IDC_EDIT_COMMANDPALETTE_FILTER  1904
+#define IDC_LIST_COMMANDPALETTE         1905
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

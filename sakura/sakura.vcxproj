@@ -361,6 +361,7 @@
     <ClInclude Include="..\sakura_core\dlg\CDlgAbout.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgThirdPartyLicense.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgCancel.h" />
+    <ClInclude Include="..\sakura_core\dlg\CDlgCommandPalette.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgCompare.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgCtrlCode.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgDiff.h" />
@@ -629,6 +630,9 @@
     <ClInclude Include="..\sakura_core\uiparts\CVisualProgress.h" />
     <ClInclude Include="..\sakura_core\uiparts\CWaitCursor.h" />
     <ClInclude Include="..\sakura_core\uiparts\HandCursor.h" />
+    <ClInclude Include="..\sakura_core\util\CFuzzyMatchJp.h" />
+    <ClInclude Include="..\sakura_core\util\CKanjiReadingDict.h" />
+    <ClInclude Include="..\sakura_core\util\RomajiFuzzyMatch.hpp" />
     <ClInclude Include="..\sakura_core\util\container.h" />
     <ClInclude Include="..\sakura_core\util\design_template.h" />
     <ClInclude Include="..\sakura_core\util\file.h" />
@@ -840,6 +844,7 @@
     <ClCompile Include="..\sakura_core\dlg\CDlgAbout.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgThirdPartyLicense.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgCancel.cpp" />
+    <ClCompile Include="..\sakura_core\dlg\CDlgCommandPalette.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgCompare.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgCtrlCode.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgDiff.cpp" />
@@ -1385,6 +1390,8 @@
     <ClCompile Include="..\sakura_core\uiparts\CSoundSet.cpp" />
     <ClCompile Include="..\sakura_core\uiparts\CVisualProgress.cpp" />
     <ClCompile Include="..\sakura_core\uiparts\CWaitCursor.cpp" />
+    <ClCompile Include="..\sakura_core\util\CFuzzyMatchJp.cpp" />
+    <ClCompile Include="..\sakura_core\util\CKanjiReadingDict.cpp" />
     <ClCompile Include="..\sakura_core\util\file.cpp" />
     <ClCompile Include="..\sakura_core\util\format.cpp" />
     <ClCompile Include="..\sakura_core\util\input.cpp" />

@@ -28,6 +28,10 @@
 #include "util/os.h"
 #include "env/CSakuraEnvironment.h"
 #include "env/CShareData.h"
+#ifdef NKMM_COMMAND_PALETTE
+#include "dlg/CDlgCommandPalette.h"
+#include "util/window.h"
+#endif // NKMM_
 
 
 /* 上下に分割 */	//Sept. 17, 2000 jepro 説明の「縦」を「上下に」に変更
@@ -127,6 +131,20 @@ void CViewCommander::Command_DLGWINLIST( void )
 	::AllowSetForegroundWindow(dwPid);
 	::PostMessage(hwnd, MYWM_DLGWINLIST, 0, 0);
 }
+
+
+#ifdef NKMM_COMMAND_PALETTE
+/*! コマンドパレット表示。検索ダイアログと同じく、既に開いていればアクティブにするだけ
+	(CDlgFind::Command_SEARCH_DIALOGと同じ流儀) */	// NKMM_COMMAND_PALETTE 20260818
+void CViewCommander::Command_COMMAND_PALETTE( void )
+{
+	if( NULL == GetEditWindow()->m_cDlgCommandPalette.GetHwnd() ){
+		GetEditWindow()->m_cDlgCommandPalette.DoModeless( G_AppInstance(), GetMainWindow(), &GetDocument()->m_cFuncLookup );
+	}else{
+		ActivateFrameWindow( GetEditWindow()->m_cDlgCommandPalette.GetHwnd() );
+	}
+}
+#endif // NKMM_
 
 
 /*!	@brief 重ねて表示

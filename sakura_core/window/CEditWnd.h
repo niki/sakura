@@ -51,6 +51,9 @@
 #include "view/CEditView.h"
 #include "window/CSplitterWnd.h"
 #include "dlg/CDlgFind.h"
+#ifdef NKMM_COMMAND_PALETTE
+#include "dlg/CDlgCommandPalette.h"
+#endif // NKMM_
 #include "dlg/CDlgReplace.h"
 #include "dlg/CDlgJump.h"
 #include "dlg/CDlgGrep.h"
@@ -367,6 +370,9 @@ public:
 
 	//ダイアログ達
 	CDlgFind		m_cDlgFind;			// 「検索」ダイアログ
+#ifdef NKMM_COMMAND_PALETTE
+	CDlgCommandPalette	m_cDlgCommandPalette;	// 「コマンドパレット」ダイアログ // NKMM_COMMAND_PALETTE 20260818
+#endif // NKMM_
 	CDlgReplace		m_cDlgReplace;		// 「置換」ダイアログ
 	CDlgJump		m_cDlgJump;			// 「指定行へジャンプ」ダイアログ
 	CDlgGrep		m_cDlgGrep;			// Grepダイアログ

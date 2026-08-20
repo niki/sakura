@@ -790,7 +790,13 @@ static const KEYDATAINIT	KeyDataInit[] = {
 	{ 'M',		_T("M"),			{ F_0,				F_0,				F_SAVEKEYMACRO,			F_RECKEYMACRO,		F_MERGE,				F_0,				F_0,					F_0 }, },
 	{ 'N',		_T("N"),			{ F_0,				F_0,				F_FILENEW,				F_0,				F_JUMPHIST_NEXT,		F_0,				F_0,					F_0 }, },
 	{ 'O',		_T("O"),			{ F_0,				F_0,				F_FILEOPEN,				F_0,				F_0,					F_0,				F_0,					F_0 }, },
+#ifdef NKMM_COMMAND_PALETTE
+	// Shift+Ctrl+Pは元々F_PRINT_PREVIEW(印刷プレビュー)だったが、コマンドパレットへ
+	// 差し替えた(VSCode等に合わせた配置)。印刷プレビューは既定ショートカットなしになる 20260818
+	{ 'P',		_T("P"),			{ F_0,				F_0,				F_PRINT,				F_COMMAND_PALETTE,	F_JUMPHIST_PREV,		F_0,				F_PRINT_PAGESETUP,		F_0 }, },
+#else
 	{ 'P',		_T("P"),			{ F_0,				F_0,				F_PRINT,				F_PRINT_PREVIEW,	F_JUMPHIST_PREV,		F_0,				F_PRINT_PAGESETUP,		F_0 }, },
+#endif // NKMM_
 	{ 'Q',		_T("Q"),			{ F_0,				F_0,				F_CREATEKEYBINDLIST,	F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 'R',		_T("R"),			{ F_0,				F_0,				F_REPLACE_DIALOG,		F_0,				F_RTRIM,				F_0,				F_0,					F_0 }, },
 	{ 'S',		_T("S"),			{ F_0,				F_0,				F_FILESAVE,				F_FILESAVEAS_DIALOG,F_0,					F_0,				F_TMPWRAPSETTING,		F_0 }, },

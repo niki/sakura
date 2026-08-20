@@ -468,6 +468,9 @@ const EFunctionCode pnFuncList_Win[] = {	//Oct. 16, 2000 JEPRO 変数名変更(L
 	F_PREVWINDOW		,	//前のウィンドウ
  	F_WINLIST			,	//開いているウィンドウ一覧ポップアップ表示	// 2006.03.23 fon
 	F_DLGWINLIST		,	//ウィンドウ一覧表示
+#ifdef NKMM_COMMAND_PALETTE
+	F_COMMAND_PALETTE	,	//コマンドパレット表示	// NKMM_COMMAND_PALETTE 20260818
+#endif // NKMM_
 	F_CASCADE			,	//重ねて表示
 	F_TILE_V			,	//上下に並べて表示
 	F_TILE_H			,	//左右に並べて表示

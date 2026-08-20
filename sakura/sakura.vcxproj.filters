@@ -469,6 +469,15 @@
     <ClInclude Include="..\sakura_core\env\DLLSHAREDATA.h">
       <Filter>Cpp Source Files\env</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\util\CFuzzyMatchJp.h">
+      <Filter>Cpp Source Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\util\CKanjiReadingDict.h">
+      <Filter>Cpp Source Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\util\RomajiFuzzyMatch.hpp">
+      <Filter>Cpp Source Files\util</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\util\container.h">
       <Filter>Cpp Source Files\util</Filter>
     </ClInclude>
@@ -863,6 +872,9 @@
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\dlg\CDlgCancel.h">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\dlg\CDlgCommandPalette.h">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\dlg\CDlgCompare.h">
@@ -1760,6 +1772,12 @@
     <ClCompile Include="..\sakura_core\env\DLLSHAREDATA.cpp">
       <Filter>Cpp Source Files\env</Filter>
     </ClCompile>
+    <ClCompile Include="..\sakura_core\util\CFuzzyMatchJp.cpp">
+      <Filter>Cpp Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\util\CKanjiReadingDict.cpp">
+      <Filter>Cpp Source Files\util</Filter>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\util\file.cpp">
       <Filter>Cpp Source Files\util</Filter>
     </ClCompile>
@@ -2307,6 +2325,9 @@
       <Filter>Cpp Source Files\dlg</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\dlg\CDlgCancel.cpp">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\dlg\CDlgCommandPalette.cpp">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\dlg\CDlgCompare.cpp">

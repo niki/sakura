@@ -153,6 +153,7 @@ debug/Debug3.o \
 dlg/CDialog.o \
 dlg/CDlgAbout.o \
 dlg/CDlgCancel.o \
+dlg/CDlgCommandPalette.o \
 dlg/CDlgCompare.o \
 dlg/CDlgCtrlCode.o \
 dlg/CDlgDiff.o \
@@ -349,6 +350,8 @@ uiparts/CMenuDrawer.o \
 uiparts/CSoundSet.o \
 uiparts/CVisualProgress.o \
 uiparts/CWaitCursor.o \
+util/CFuzzyMatchJp.o \
+util/CKanjiReadingDict.o \
 util/file.o \
 util/format.o \
 util/input.o \

@@ -380,6 +380,9 @@ public:
 	void Command_WINTOPMOST( LPARAM );		// 常に手前に表示 2004.09.21 Moca
 	void Command_WINLIST( int nCommandFrom );		/* ウィンドウ一覧ポップアップ表示処理 */	// 2006.03.23 fon // 2006.05.19 genta 引数追加
 	void Command_DLGWINLIST( void );	// ウィンドウ一覧ダイアログ // 2015.03.07 Moca
+#ifdef NKMM_COMMAND_PALETTE
+	void Command_COMMAND_PALETTE( void );	// コマンドパレット表示 // NKMM_COMMAND_PALETTE 20260818
+#endif // NKMM_
 	void Command_GROUPCLOSE( void );	/* グループを閉じる */		// 2007.06.20 ryoji
 	void Command_NEXTGROUP( void );		/* 次のグループ */			// 2007.06.20 ryoji
 	void Command_PREVGROUP( void );		/* 前のグループ */			// 2007.06.20 ryoji

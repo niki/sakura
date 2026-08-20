@@ -1549,6 +1549,95 @@
 //------------------------------------------------------------------
 #define NKMM_DISABLE_INTERNET_ACCESS
 
+//------------------------------------------------------------------
+// コマンドパレット(VSCode風) 20260818
+//  - Shift+Ctrl+Pで開く。絞り込みEditと一覧(種別/名前/ID/キーまたはパス)の
+//    シンプルなモーダルダイアログ。対象は全コマンド(CFuncLookupで列挙、
+//    ショートカットはCKeyBind::GetKeyStrで取得)と、現在開いているファイル
+//    (CAppNodeManager::GetOpenedWindowArr、タブ=別プロセスをまたいで列挙)。
+//    Enterで選択項目を実行(コマンドはWM_COMMAND転送、ファイルは
+//    ActivateFrameWindow()でアクティブ化)、Escapeでキャンセル
+//  - 既定のShift+Ctrl+Pは印刷プレビュー(F_PRINT_PREVIEW)に割り当て済み
+//    だったため、このキーはコマンドパレットへ差し替え、印刷プレビュー側は
+//    既定ショートカットなしにした(func/CKeyBind.cpp)
+//  - sakura_core\dlg\CDlgCommandPalette.h/.cpp: ダイアログ本体
+//  - sakura_core\cmd\CViewCommander_Window.cpp: Command_COMMAND_PALETTE()
+//  - sakura_core\Funccode_x.hsrc: F_COMMAND_PALETTE(31338)
+//
+// [見た目] 20260819、VSCodeのクイックオープン/コマンドパレットに寄せて、
+// 複数列のレポート形式ListViewから単一列(ヘッダ非表示)のowner draw
+// (NM_CUSTOMDRAW、CDlgCommandPalette::OnListCustomDraw())へ作り直した。
+// コマンド行はアイコン無し+太字名+右寄せグレーのショートカットキー、
+// ウィンドウ/最近使ったファイル行はアイコン(GetShellIconIndex()、
+// SHGetFileInfoの共有システムアイコン一覧を拡張子ごとにキャッシュ)+
+// 太字ファイル名+グレーの格納フォルダ、最近使ったファイルのみ右に
+// 「最近使用」タグを出す。
+//  - ヘッダー非表示(LVS_NOCOLUMNHEADER)は、生成後にSetWindowLongPtr()で
+//    後から立てると comctl32 内でヘッダーが「表示状態のまま高さ0」に
+//    中途半端に壊れ、行のレイアウト計算まで破綻してクラッシュすることが
+//    あった。sakura_rc.rcのダイアログテンプレート側でIDC_LIST_COMMANDPALETTEの
+//    生成時スタイルとして直接指定している(実行時トグルは行わない)
+//  - LVS_REPORT表示でのCDDS_ITEMPREPAINT時点ではNMCUSTOMDRAW::rcが
+//    信頼できない(comctl32のバージョン依存の癖)ため、ListView_GetItemRect()
+//    で改めて矩形を取得している(ImageList_Draw()は座標指定のみで矩形に
+//    依存しないため気づきにくいが、DrawText()はこの壊れた矩形でクリップされ
+//    何も見えなくなる)
+//  - 同様にNMCUSTOMDRAW::uItemStateのCDIS_SELECTEDも実際の選択状態と
+//    無関係に立つことがあるため信用せず、ListView_GetItemState()で実際の
+//    選択状態を取得している。CDRF_SKIPDEFAULTで既定描画を止めている分、
+//    選択行の背景(COLOR_HIGHLIGHT)も自前でFillRect()する必要がある
+//------------------------------------------------------------------
+#define NKMM_COMMAND_PALETTE
+
+//------------------------------------------------------------------
+// コマンドパレットのローマ字入力対応 20260819
+// 20260820 絞り込みエンジンを正規化+スコアリング付き部分列マッチ方式へ全面書き換え
+//
+// [絞り込みエンジン本体] util/RomajiFuzzyMatch.hpp(sakura非依存の汎用ヘッダオンリー
+// 実装。ブラウザ拡張Gretel Barのsrc/fuzzy_match.jsを参考にC++へ移植)+
+// util/CFuzzyMatchJp.h/.cpp(sakuraとの結線。CDlgCommandPalette::UpdateList()から
+// 呼ぶFuzzyMatchJapanese())。クエリ・検索対象の両方を同じ規則で正規化してから
+// (VSCodeのクイックオープン等と同種の)スコアリング付き部分列マッチを行う方式。
+// 表示中の入力文字列自体は変換しない(※下記のライブかな変換は別経路)。
+//  - 正規化は「ひらがな→カタカナのoffset統合→ローマ字(ヘボン式)」の順で行い、
+//    拗音(きゃ/しゃ等)・外来語表記の拡張かな(ふぁ/うぃ等)・促音(っ)・長音(ー)・
+//    半角カナ+濁点/半濁点・全角英数記号もすべて同じ正規化結果に畳み込む
+//  - 命令式ローマ字(si/ti/tu/hu/zi/sya...)もヘボン式へのエイリアス表で吸収する
+//  - 一致した箇所には、連続一致・単語先頭一致ほど高くなるスコアを付け、
+//    CDlgCommandPalette::UpdateList()側でスコア降順に並べ替えて表示する
+//    (最もタイトに一致したものを上に出す)
+//  - 部分列マッチのため、末尾が入力途中の断片であっても自然に緩く一致する
+//    (以前のような専用ワイルドカード処理は不要になった)
+//
+// [漢字ヒューリスティック] NKMM_COMMAND_PALETTE_ROMAJI_KANJIで追加有効化。
+// util/CKanjiReadingDict.h/.cpp(元データはGretel Barのsrc/kanji_dict.js。
+// sakura_rc.rc全体から抽出した使用漢字と突き合わせて漏れを補完済み、以後も
+// 気づいたら追加していく方針)。上記の正規化エンジン自体は漢字の読みを知らず
+// 素通しするだけのため、CFuzzyMatchJp.cpp側でクエリ・検索対象の文字列中の
+// 漢字を先に「読みの先頭モーラが一致しそうなひらがな」へ事前展開してから
+// 正規化エンジンに渡す(厳密な読み検証ではないヒューリスティック)。
+//  - 「開く(ひらく)」のように1漢字が複数モーラ分の読みを持つ送り仮名付きの語は、
+//    CFuzzyMatchJp.cpp内の複数モーラ読みテーブル(g_aMultiMoraKanjiTable)で
+//    個別に対応(汎用の仕組み。気づいた語を随時追加していく)
+//  - ノイズが気になる場合はNKMM_COMMAND_PALETTE_ROMAJI_KANJIの行だけコメント
+//    アウトすれば(NKMM_COMMAND_PALETTE_ROMAJI本体は有効なまま)いつでも無効化できる
+//
+// [フィルタ欄のライブかな変換] dlg/CDlgCommandPalette.cpp
+// (PaletteFilterEditSubclassProc/ApplyLiveKanaConversion/IsImeComposing)。
+// Windows検索ボックス等と同様、確定したモーラ分をその場でかなへ変換して表示する。
+//  - WM_CHARで末尾へのASCII入力(a-z/A-Z/-)を横取りしてConvertRomajiToKana()で変換。
+//    ">"/"edt "(絞り込みモード切り替え記号)は保持し、それより後ろだけ変換する
+//  - 実際のIMEのON/OFF状態(ImmGetOpenStatus)に従う。IME OFF(半角英数直接入力)の
+//    ときは変換せず素通しし、ONのときだけ働く
+//  - WM_IME_COMPOSITIONを見て、変換確定前(未確定文字列)の間も一覧をライブ更新する
+//  - IME変換中はEscapeを横取りせず、まずIME標準の「未確定文字列を取り消す」動作に
+//    委ねる(IsImeComposing()で判定)。確定後・未入力時のEscapeだけパレットを閉じる
+//------------------------------------------------------------------
+#define NKMM_COMMAND_PALETTE_ROMAJI
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI
+#define NKMM_COMMAND_PALETTE_ROMAJI_KANJI
+#endif // NKMM_COMMAND_PALETTE_ROMAJI
+
 //
 //#define USE_SSE2
 

@@ -1110,6 +1110,9 @@ void CEditWnd::MessageLoop( void )
 		else if( MyIsDialogMessage( m_cDlgFuncList.GetHwnd(),							&msg ) ){}	//!<「アウトライン」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgReplace.GetHwnd(),							&msg ) ){}	//!<「置換」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgGrep.GetHwnd(),								&msg ) ){}	//!<「Grep」ダイアログ
+#ifdef NKMM_COMMAND_PALETTE
+		else if( MyIsDialogMessage( m_cDlgCommandPalette.GetHwnd(),					&msg ) ){}	//!<「コマンドパレット」ダイアログ
+#endif // NKMM_
 		else if( MyIsDialogMessage( m_cHokanMgr.GetHwnd(),								&msg ) ){}	//!<「入力補完」
 		else if( m_cToolbar.EatMessage(&msg ) ){ }													//!<ツールバー
 		//アクセラレータ
@@ -1377,6 +1380,11 @@ LRESULT CEditWnd::DispatchEvent(
 			if( NULL != m_cDlgFind.GetHwnd() ){
 				m_cDlgFind.FollowParentWindow();
 			}
+#ifdef NKMM_COMMAND_PALETTE
+			if( NULL != m_cDlgCommandPalette.GetHwnd() ){
+				m_cDlgCommandPalette.FollowParentWindow();
+			}
+#endif // NKMM_
 			return lResult;
 		}
 
@@ -1406,6 +1414,11 @@ LRESULT CEditWnd::DispatchEvent(
 		if( NULL != m_cDlgFind.GetHwnd() ){
 			m_cDlgFind.FollowParentWindow();
 		}
+#ifdef NKMM_COMMAND_PALETTE
+		if( NULL != m_cDlgCommandPalette.GetHwnd() ){
+			m_cDlgCommandPalette.FollowParentWindow();
+		}
+#endif // NKMM_
 		return DefWindowProc( hwnd, uMsg, wParam, lParam );
 	//To here 2003.05.31 MIK
 	case WM_SYSCOMMAND:
