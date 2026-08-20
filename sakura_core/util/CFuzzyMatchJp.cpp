@@ -79,20 +79,33 @@ namespace {
 		return sRet;
 	}
 
-	/*! 正規化後のコードポイントが、ヒット間の距離判定において「読み飛ばしても
-		ノーカウントでよい飾り文字」かどうか。
-
-		括弧・スペース・記号類は、メニュー名の飾り("開く（ドロップダウン）"の
-		「（」「）」等)として現れることが多く、クエリ側でそれを打たなくても
-		一致してほしい。英数字(正規化後のローマ字・数字の実体)や、読みが分からず
-		そのまま残っている漢字(非ASCII)は「中身」として扱い、後述のギャップ上限に
-		カウントする 20260820
-	*/
-	bool IsGapFillerCp( char32_t cp )
+	//! cがCJK統合漢字(基本範囲)かどうか
+	bool IsKanjiChar( wchar_t c )
 	{
-		if( cp > 0x7F ){ return false; }	// 非ASCII(未変換の漢字等)は中身とみなす
-		if( ( cp >= L'a' && cp <= L'z' ) || ( cp >= L'0' && cp <= L'9' ) ){ return false; }
-		return true;	// 半角スペース・括弧・記号類は自由に読み飛ばしてよい
+		return 0x4E00 <= c && c <= 0x9FFF;
+	}
+
+	/*! sQuery中の漢字1文字ごとに、sText中にその漢字自体が(1文字でも)含まれているかを
+		調べる。漢字が1つも含まれていなければ何もチェックせずtrueを返す(ローマ字のみの
+		クエリには影響しない)。
+
+		漢字ヒューリスティックは「読みの先頭モーラ」だけを見る粗い変換のため、これを
+		通さずに素の文字同士で比較すると、単独の漢字がその読みの短いローマ字表記
+		(例:「右」がう行の読みなら"u"の1文字)にまで縮んでしまい、その漢字を
+		含まない無関係な文字列("UTF-8"等、たまたま"u"を含むだけのもの)にまで
+		ヒットしてしまう。IME等で漢字そのものを直接入力した場合は、その漢字自体を
+		含む項目だけに絞り込めた方が期待通りになるため、読みによるあいまい一致とは
+		別に必須条件として課す 20260821
+	*/
+	bool ContainsAllQueryKanji( const std::wstring& sQuery, const std::wstring& sText )
+	{
+		for( size_t i = 0; i < sQuery.size(); ++i ){
+			wchar_t	c = sQuery[i];
+			if( IsKanjiChar( c ) && std::wstring::npos == sText.find( c ) ){
+				return false;
+			}
+		}
+		return true;
 	}
 
 #ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI
@@ -130,6 +143,12 @@ namespace {
 		{ L'直', L"なお" },	// 直す
 		{ L'検', L"けん" },	// 検索(単独モーラ辞書はけ行止まりで「けん」まで届かないため)
 		{ L'索', L"さく" },	// 検索(同上。「さく」まで)
+		{ L'右', L"みぎ" },	// 右移動・右クリックメニュー等(送り仮名の無い単独語)
+		{ L'左', L"ひだり" },	// 左移動・左クリックメニュー等(同上)
+		{ L'下', L"した" },	// 下移動・下検索等(同上)
+		{ L'前', L"まえ" },	// 前の検索・前へ等(同上。「前方」等の音読み「ぜん」は元々
+							// 単独モーラ辞書でも拾えていなかったため、この追加による
+							// 悪化はない 20260821)
 	};
 
 	const wchar_t* FindMultiMoraReadingByKanji( wchar_t cKanji )
@@ -365,6 +384,16 @@ bool FuzzyMatchJapanese( const std::wstring& sQuery, const std::wstring& sText, 
 		return true;
 	}
 
+	// クエリに漢字が含まれる場合、その漢字自体が検索対象に含まれていることを必須にする。
+	// 漢字ヒューリスティックは「読みの先頭モーラ」だけの粗い変換のため、素通しすると
+	// 例えば単独の「右」がその漢字を含まない無関係な文字列("UTF-8"等、たまたま
+	// 読みの短いローマ字表記と一致してしまうもの)にまでヒットしてしまう。
+	// IME等で漢字そのものを直接入力した場合は、素直にその漢字を含む項目だけに
+	// 絞り込めた方が期待通りの挙動になる 20260821
+	if( !ContainsAllQueryKanji( sQuery, sText ) ){
+		return false;
+	}
+
 	std::wstring	sQueryExpanded = NormalizeHyphenToChoonpu( sQuery );
 	std::wstring	sTextExpanded  = NormalizeHyphenToChoonpu( sText );
 #ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI
@@ -378,44 +407,35 @@ bool FuzzyMatchJapanese( const std::wstring& sQuery, const std::wstring& sText, 
 	fuzzy::NormalizedText	pattern = fuzzy::NormalizeForSearch( WStrToUtf8( sQueryExpanded ) );
 	fuzzy::NormalizedText	target  = fuzzy::NormalizeForSearch( WStrToUtf8( sTextExpanded ) );
 
-	int	nScore = 0;
-	std::vector<size_t>	vMatchedIdx;
-	bool	bFound = fuzzy::FuzzyMatchNormalized( pattern.codepoints, target, nScore, &vMatchedIdx );
-	if( !bFound ){ return false; }
-
-	/*	util/RomajiFuzzyMatch.hppの部分列マッチは、間の文字数に応じた減点はするものの
-		「離れていても一致は一致」として許してしまう。漢字ヒューリスティックで1漢字が
-		2〜4文字程度のローマ字に展開されることもあり、そのままだと無関係な離れた単語
-		同士の文字がたまたま順序通り並んでいるだけで一致してしまうことがある
-		(実例: ">kensaku"が「(矩形選択)単語の左端に移動」にヒットしてしまった。
-		「選」が複数モーラ読みテーブルで強制的に"えら"に展開され、そこから離れた
-		位置の文字とたまたま順序が合ってしまっていた)。
-		この用途はローマ字を先頭から連続的に入力していく想定のため、ヒット間の
-		「中身」の文字数(IsGapFillerCpで飾り文字と判定されるものは除く)が一定以上
-		離れている場合は不一致として扱う。括弧・スペース等の飾り文字はこのカウントに
-		含めないため、"doro"が「開く（ドロップダウン）」の「（」を挟んだ位置にも
-		問題なく一致する 20260820
+	/*	util/RomajiFuzzyMatch.hppのFuzzyMatchNormalized()(部分列マッチ+ギャップ減点)は
+		そのままだと「間が空いていても順序さえ合っていれば一致」を許してしまう。
+		漢字ヒューリスティックで1漢字が複数文字のローマ字に展開されることもあり、
+		無関係な別の漢字の読みへギャップ越しにまたがって一致してしまう実例が
+		繰り返し見つかった:
+		  - ">kensaku"が「(矩形選択)単語の左端に移動」にヒット(「選」が複数モーラ
+		    読みテーブルで強制的に"えら"に展開され、遠く離れた文字と繋がっていた)
+		  - ">shu"が「小文字」にヒット(小→"shi"の"sh"から、間の"i"を飛ばして
+		    隣の文字→"fu"の"u"へ食い込んでいた。1文字ずつなら別々の漢字の読み)
+		ギャップの許容量を数値で細かく調整しても同種の偶然一致が次々見つかるため、
+		方式そのものを変更した: パターンは正規化後の文字列(normalized)に対して
+		「連続した部分文字列」として現れることを必須にする(出現位置そのものは
+		文字列中のどこでもよい)。これなら異なる漢字の読み同士が偶然繋がって
+		一致することはなくなる。そのぶんVSCode風の離れた頭文字だけのマッチ
+		(例: "gc"→"GetChanges")はできなくなるが、このパレットで実際に必要に
+		なった例(kensaku/modosu/migi/hidari/shita/mae/doro/kopi-等)はすべて
+		「正規化後の文字列に連続して現れる」ケースだったため支障はない 20260821
 	*/
-	const size_t	nMaxLeadingGap = 12;
-	const size_t	nMaxGap        = 2;
-	const std::vector<char32_t>&	vTargetCp = target.codepoints;
-	if( !vMatchedIdx.empty() ){
-		size_t	nLeadingContentGap = 0;
-		for( size_t k = 0; k < vMatchedIdx[0]; ++k ){
-			if( !IsGapFillerCp( vTargetCp[k] ) ){ ++nLeadingContentGap; }
-		}
-		if( nLeadingContentGap > nMaxLeadingGap ){ return false; }
+	size_t	nPos = target.normalized.find( pattern.normalized );
+	if( std::string::npos == nPos ){ return false; }
 
-		for( size_t i = 1; i < vMatchedIdx.size(); ++i ){
-			size_t	nContentGap = 0;
-			for( size_t k = vMatchedIdx[i - 1] + 1; k < vMatchedIdx[i]; ++k ){
-				if( !IsGapFillerCp( vTargetCp[k] ) ){ ++nContentGap; }
-			}
-			if( nContentGap > nMaxGap ){ return false; }
-		}
+	if( NULL != pOutScore ){
+		// 出現位置が先頭に近いほど、対象文字列全体が短く無駄が少ないほど高スコア
+		int	nScore = 0;
+		nScore -= (int)nPos;
+		nScore -= (int)( target.normalized.size() - pattern.normalized.size() );
+		if( 0 == nPos ){ nScore += 50; }
+		*pOutScore = nScore;
 	}
-
-	if( NULL != pOutScore ){ *pOutScore = nScore; }
 	return true;
 }
 

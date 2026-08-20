@@ -296,6 +296,9 @@ inline const std::vector<AliasEntry>& RomajiAliases()
 		{"zya", "ja"},  {"zyu", "ju"},  {"zyo", "jo"},
 		// 単独音系(2文字)
 		{"si", "shi"}, {"ti", "chi"}, {"tu", "tsu"}, {"hu", "fu"}, {"zi", "ji"},
+		// 外来語拡張音(てぃ/でぃ)の別表記。"h"を挟んで小書きの母音であることを
+		// 明示するIME等の入力習慣(例: Google日本語入力の既定ローマ字テーブル)
+		{"thi", "ti"}, {"dhi", "di"},
 		// 撥音「ん」の二重n表記(IME等で「んば」のように次の文字との連結誤認識を
 		// 避けるための入力習慣)を単なる「ん」1つとして畳み込む(例: shinnbunn -> shinbun)。
 		{"nn", "n"},
