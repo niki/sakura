@@ -16,6 +16,7 @@
 
 #include "dlg/CDialog.h"
 #include "Funccode_enum.h"
+#include "extmodule/CUxTheme.h"
 
 #include <vector>
 #include <string>
@@ -70,6 +71,8 @@ private:
 
 	HFONT	m_hFontList;	//!< 一覧の文字表示用(既定フォントより大きめ、通常太さ)。既定フォントから生成しOnDestroyで破棄する
 	HFONT	m_hFontSub;		//!< 一覧のグレーのパス表示用(m_hFontListより小さい)。既定フォントから生成しOnDestroyで破棄する 20260821
+	HTHEME	m_hThemeListView;	//!< 一覧の選択行背景を反転色ではなくエクスプローラー風の半透明選択色で描くための"Explorer::ListView"テーマ。OnInitDialogでOpenThemeData、OnDestroyでCloseThemeData 20260821
+	std::wstring	m_sLastQuery;	//!< UpdateList()が直近に絞り込みへ使った実クエリ(先頭の">"等の接頭辞を除いたもの、小文字化済み)。OnListCustomDraw()が一致部分のハイライトに使う 20260821
 	std::map<std::wstring, int>	m_mapExtToIconIndex;	//!< 拡張子(小文字)→共有システムアイコン一覧の索引
 
 	//! 一覧1行の種別

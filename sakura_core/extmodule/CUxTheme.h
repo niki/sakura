@@ -83,6 +83,7 @@ protected:
 	BOOL (WINAPI* m_pfnIsThemeActive)( VOID );
 	HRESULT (WINAPI* m_pfnSetWindowTheme)( HWND hwnd, LPCWSTR pszSubAppName, LPCWSTR pszSubIdList );
 	HTHEME (WINAPI* m_pfnOpenThemeData)( HWND hwnd, LPCWSTR pszClassList );
+	HRESULT (WINAPI* m_pfnCloseThemeData)( HTHEME htheme );
 	HRESULT (WINAPI* m_pfnDrawThemeBackground)( HTHEME htheme, HDC hdc, int iPartId, int iStateId, RECT* prc, RECT* prcClip );
 	HRESULT (WINAPI* m_pfnDrawThemeParentBackground)( HWND hwnd, HDC hdc, RECT* prc );
 	BOOL (WINAPI* m_pfnIsThemeBackgroundPartiallyTransparent)( HTHEME htheme, int iPartId, int iStateId );
@@ -92,6 +93,7 @@ public:
 	BOOL IsThemeActive( VOID );
 	HRESULT SetWindowTheme( HWND hwnd, LPCWSTR pszSubAppName, LPCWSTR pszSubIdList );
 	HTHEME OpenThemeData( HWND hwnd, LPCWSTR pszClassList );
+	HRESULT CloseThemeData( HTHEME htheme );
 	HRESULT DrawThemeBackground( HTHEME htheme, HDC hdc, int iPartId, int iStateId, RECT* prc, RECT* prcClip );
 	HRESULT DrawThemeParentBackground( HWND hwnd, HDC hdc, RECT* prc );
 	BOOL IsThemeBackgroundPartiallyTransparent( HTHEME htheme, int iPartId, int iStateId );

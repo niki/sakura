@@ -253,6 +253,7 @@ CDlgCommandPalette::CDlgCommandPalette()
 	, m_bReactivateParentOnClose( false )
 	, m_hFontList( NULL )
 	, m_hFontSub( NULL )
+	, m_hThemeListView( NULL )
 {
 }
 
@@ -418,6 +419,16 @@ BOOL CDlgCommandPalette::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lPara
 	// 不具合があったため、生成時スタイルでの指定に変更した 20260819
 	ListView_SetExtendedListViewStyleEx( hListView,
 		LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT );
+
+	// 選択行の背景をVSCode風の単色反転(COLOR_HIGHLIGHT)ではなく、エクスプローラーの
+	// ファイル一覧と同じ半透明の選択色にするため、"Explorer::ListView"のテーマデータを
+	// 取得しておく。自前のNM_CUSTOMDRAWで全描画しているためSetWindowTheme()で見た目が
+	// 変わることはなく、DrawThemeBackground()に渡すHTHEMEを得る目的だけで開いている。
+	// テーマが無効(クラシックテーマ等)ならNULLのままになり、OnListCustomDraw側で
+	// 従来のCOLOR_HIGHLIGHT反転色へフォールバックする 20260821
+	if( CUxTheme::getInstance()->IsThemeActive() ){
+		m_hThemeListView = CUxTheme::getInstance()->OpenThemeData( hListView, L"Explorer::ListView" );
+	}
 
 	RECT	rc;
 	::GetClientRect( hListView, &rc );
@@ -609,8 +620,18 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 			// 変わる経路をすべて集約しているLivePreviewSelection()で自前追跡する
 			// m_nSelectedDispIndexとだけ比較する 20260819 20260821
 			bool	bSelected = ( (int)nDispIndex == m_nSelectedDispIndex );
-			COLORREF	crText = ::GetSysColor( bSelected ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT );
-			COLORREF	crSub  = bSelected ? crText : ::GetSysColor( COLOR_GRAYTEXT );
+
+			// 選択行は単色反転(COLOR_HIGHLIGHT)ではなく、エクスプローラーのファイル一覧と
+			// 同じ半透明の選択色(m_hThemeListView、OnInitDialogで取得した
+			// "Explorer::ListView"テーマ)で描く。反転(1色で完全に塗りつぶす)は選択行だけ
+			// 周囲から浮いて見えるとの指摘があり、半透明合成なら下地の色を活かしたまま
+			// 選択状態が分かる。半透明合成の上では白文字への反転も不要になる
+			// (エクスプローラーも選択行の文字色は変えない)ため、テーマが使えたときは
+			// 文字色を非選択時と同じにする。テーマ非対応環境(クラシックテーマ等)だけ
+			// 従来通りCOLOR_HIGHLIGHTの単色反転+白文字にフォールバックする 20260821
+			bool	bThemedSelection = ( bSelected && NULL != m_hThemeListView );
+			COLORREF	crText = ::GetSysColor( ( bSelected && !bThemedSelection ) ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT );
+			COLORREF	crSub  = ( bSelected && !bThemedSelection ) ? crText : ::GetSysColor( COLOR_GRAYTEXT );
 
 			// CDRF_SKIPDEFAULTで既定描画を止めているため、背景は選択・非選択どちらも
 			// 自前で塗る必要がある。以前は非選択行の背景塗りを省略し、既定の白色に
@@ -619,9 +640,23 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 			// 描画(選択色の青)が消されずそのまま残ってしまう不具合が出た。
 			// 選択行かどうかによらず必ず背景を塗りつぶすことで解消する 20260821
 			{
-				HBRUSH	hBrush = ::CreateSolidBrush( ::GetSysColor( bSelected ? COLOR_HIGHLIGHT : COLOR_WINDOW ) );
-				::FillRect( hdc, &rc, hBrush );
-				::DeleteObject( hBrush );
+				if( bThemedSelection ){
+					// DrawThemeBackground()のLISS_SELECTEDは下地に対する半透明合成描画のため、
+					// 単なるFillRect()と違って「同じ行を下地クリアせず繰り返し描くと塗るたびに
+					// 色が濃くなっていく」。上端/下端で矢印キーを押し続けたときのように
+					// 選択行が変わらないまま再描画だけが繰り返されるケースで、選択行の背景が
+					// どんどん濃く重なって見える不具合として実際に発生した。DrawThemeBackground()の
+					// 前に必ずCOLOR_WINDOWで一度下地をクリアしておくことで、何度描き直しても
+					// 常に同じ結果になるようにする 20260821
+					HBRUSH	hBrushBase = ::CreateSolidBrush( ::GetSysColor( COLOR_WINDOW ) );
+					::FillRect( hdc, &rc, hBrushBase );
+					::DeleteObject( hBrushBase );
+					CUxTheme::getInstance()->DrawThemeBackground( m_hThemeListView, hdc, LVP_LISTITEM, LISS_SELECTED, &rc, NULL );
+				}else{
+					HBRUSH	hBrush = ::CreateSolidBrush( ::GetSysColor( bSelected ? COLOR_HIGHLIGHT : COLOR_WINDOW ) );
+					::FillRect( hdc, &rc, hBrush );
+					::DeleteObject( hBrush );
+				}
 			}
 
 			::SetBkMode( hdc, TRANSPARENT );
@@ -699,8 +734,56 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 				}
 			}
 #else
-			::SetTextColor( hdc, crText );
-			::DrawText( hdc, row.sName.c_str(), -1, &rcName, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX | DT_END_ELLIPSIS );
+			{
+				// VSCodeのクイックオープン風に、絞り込み文字列に一致した部分だけ色を変えて
+				// 描く。m_sLastQueryはUpdateList()が絞り込みに使った実クエリ(先頭の">"等の
+				// 接頭辞を除き小文字化済み)。ここではローマ字/漢字読み変換を伴うあいまい
+				// 一致までは追わず、表示名に対する素直な部分文字列一致だけを探す
+				// (あいまい一致の場所を正規化前後で対応付けるのは割に合わない)。
+				// 見つからなければ従来通りハイライト無しで描く 20260821
+				std::wstring	sNameLower = row.sName;
+				for( size_t k = 0; k < sNameLower.size(); ++k ){ sNameLower[k] = (wchar_t)::towlower( sNameLower[k] ); }
+				size_t	nMatchPos = m_sLastQuery.empty() ? std::wstring::npos : sNameLower.find( m_sLastQuery );
+
+				if( std::wstring::npos == nMatchPos ){
+					::SetTextColor( hdc, crText );
+					::DrawText( hdc, row.sName.c_str(), -1, &rcName, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX | DT_END_ELLIPSIS );
+				}else{
+					// マッチ箇所を挟んだ3分割描画。DT_END_ELLIPSISは複数回のDrawText呼び出しを
+					// またいでは効かないため、この経路では末尾省略ができなくなるが、パレットの
+					// 表示名は元々短いものがほとんどで実害は小さい 20260821
+					// 選択行が反転フォールバック(bThemedSelection==false)のときは、濃い
+					// COLOR_HIGHLIGHT地に別の青を重ねると読みにくくなるため、ハイライト色を
+					// 使わず地の文字色(白反転)のまま揃える 20260821
+					COLORREF	crMatch = ( bSelected && !bThemedSelection ) ? crText : ::GetSysColor( COLOR_HOTLIGHT );
+					std::wstring	sPre   = row.sName.substr( 0, nMatchPos );
+					std::wstring	sMatch = row.sName.substr( nMatchPos, m_sLastQuery.size() );
+					std::wstring	sPost  = row.sName.substr( nMatchPos + m_sLastQuery.size() );
+
+					int	xCur = x;
+					if( !sPre.empty() && xCur < nNameRightEdge ){
+						SIZE	sz = { 0, 0 };
+						::GetTextExtentPoint32( hdc, sPre.c_str(), (int)sPre.size(), &sz );
+						RECT	rcPre = { xCur, rc.top, ( xCur + sz.cx < nNameRightEdge ) ? xCur + sz.cx : nNameRightEdge, rc.bottom };
+						::SetTextColor( hdc, crText );
+						::DrawText( hdc, sPre.c_str(), -1, &rcPre, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX );
+						xCur += sz.cx;
+					}
+					if( !sMatch.empty() && xCur < nNameRightEdge ){
+						SIZE	sz = { 0, 0 };
+						::GetTextExtentPoint32( hdc, sMatch.c_str(), (int)sMatch.size(), &sz );
+						RECT	rcMatch = { xCur, rc.top, ( xCur + sz.cx < nNameRightEdge ) ? xCur + sz.cx : nNameRightEdge, rc.bottom };
+						::SetTextColor( hdc, crMatch );
+						::DrawText( hdc, sMatch.c_str(), -1, &rcMatch, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX );
+						xCur += sz.cx;
+					}
+					if( !sPost.empty() && xCur < nNameRightEdge ){
+						RECT	rcPost = { xCur, rc.top, nNameRightEdge, rc.bottom };
+						::SetTextColor( hdc, crText );
+						::DrawText( hdc, sPost.c_str(), -1, &rcPost, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX );
+					}
+				}
+			}
 #endif // NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE
 
 			// グレーのサブ情報(ファイル系(ウィンドウ/最近使ったファイル)だけ格納フォルダを表示。
@@ -769,6 +852,10 @@ BOOL CDlgCommandPalette::OnDestroy()
 	if( NULL != m_hFontSub ){
 		::DeleteObject( m_hFontSub );
 		m_hFontSub = NULL;
+	}
+	if( NULL != m_hThemeListView ){
+		CUxTheme::getInstance()->CloseThemeData( m_hThemeListView );
+		m_hThemeListView = NULL;
 	}
 	return CDialog::OnDestroy();
 }
@@ -1054,6 +1141,12 @@ void CDlgCommandPalette::UpdateList()
 	// 記号の直後に残った先頭の空白は絞り込み対象から除く(「> save」のような入力を素直に扱うため)
 	size_t	nQueryBegin = sQuery.find_first_not_of( L' ' );
 	sQuery = ( std::wstring::npos == nQueryBegin ) ? L"" : sQuery.substr( nQueryBegin );
+
+	// OnListCustomDraw()が一致部分のハイライトに使う。あいまい検索(ローマ字/漢字の
+	// 読み展開)でヒットしていても、ここでは表示名に対する単純な部分文字列一致だけを
+	// ハイライトの対象にする(あいまい一致した箇所すべてを厳密に追うのは正規化前後の
+	// 位置対応が複雑になるため割に合わない。VSCode等でも同種の割り切りは一般的) 20260821
+	m_sLastQuery = sQuery;
 
 	// アウトライン解析・ブックマーク取得は他の一覧と違って現在の文書の走査を伴うため、
 	// 実際にそのモードへ切り替えたときだけ1回遅延実行する(BuildAllRows()では行わない) 20260821

@@ -74,6 +74,7 @@ bool CUxTheme::InitDllImp()
 		{ &m_pfnIsThemeActive,							"IsThemeActive" },
 		{ &m_pfnSetWindowTheme,							"SetWindowTheme" },
 		{ &m_pfnOpenThemeData,							"OpenThemeData" },
+		{ &m_pfnCloseThemeData,							"CloseThemeData" },
 		{ &m_pfnDrawThemeBackground,					"DrawThemeBackground" },
 		{ &m_pfnDrawThemeParentBackground,				"DrawThemeParentBackground" },
 		{ &m_pfnIsThemeBackgroundPartiallyTransparent,	"IsThemeBackgroundPartiallyTransparent" },
@@ -109,6 +110,14 @@ HTHEME CUxTheme::OpenThemeData( HWND hwnd, LPCWSTR pszClassList )
 	if( !InitThemeDll() )
 		return NULL;
 	return (HTHEME)m_pfnOpenThemeData( hwnd, pszClassList );
+}
+
+/*! CloseThemeData API Wrapper */
+HRESULT CUxTheme::CloseThemeData( HTHEME htheme )
+{
+	if( !InitThemeDll() )
+		return S_FALSE;
+	return m_pfnCloseThemeData( htheme );
 }
 
 /*! SetWindowTheme API Wrapper */
