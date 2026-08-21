@@ -63,6 +63,7 @@ generated/
 
 Funccode_*.h
 *.inc
+*.aps
 
 sakura_core/config/build_version_generated.h
 sakura_core/config/build_version.h
