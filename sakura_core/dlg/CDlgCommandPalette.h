@@ -22,21 +22,30 @@
 #include <map>
 
 class CFuncLookup;
+class CEditView;
 
 /*!
 	@brief コマンドパレット(Shift+Ctrl+P)
 
 	全コマンド(コマンドID・機能名・ショートカットキー)と、現在開いている
 	ファイルの一覧をひとつの絞り込みリストにまとめ、Enterで実行/切り替えする。
+	「@」接頭辞で、現在編集中の文書のアウトライン解析結果(関数名等)も
+	同じ絞り込みリストから選んでジャンプできる 20260821
+	「#」接頭辞で、現在編集中の文書のブックマーク一覧からも選んでジャンプできる 20260821
+	アウトライン/ブックマークの選択行は、Enterで確定するまでもなく選択を
+	動かすたびにライブでカーソル位置へ移動する(VSCodeのGo to Symbol風)。
+	Escapeでキャンセルした場合はパレットを開く前の位置に戻す 20260821
 */
 class CDlgCommandPalette : public CDialog
 {
 public:
 	CDlgCommandPalette();
 
-	HWND DoModeless( HINSTANCE hInstance, HWND hwndParent, CFuncLookup* pcFuncLookup );
+	HWND DoModeless( HINSTANCE hInstance, HWND hwndParent, CFuncLookup* pcFuncLookup, CEditView* pcView );
 
 	void FollowParentWindow();	//!< 親ウィンドウ(エディタ)の移動・サイズ変更に追従して表示位置を更新する
+	void LivePreviewSelection( int nItemIndex );	//!< 一覧の選択行がROWKIND_OUTLINE/BOOKMARKなら、確定前にライブでカーソルを移動する。フィルタ欄サブクラスプロシージャ側の矢印キー処理(MoveSelection)からも呼べるようpublic 20260821
+	int GetSelectedDispIndex() const { return m_nSelectedDispIndex; }	//!< 現在選択中の表示行索引(-1=選択なし)。MoveSelection()がLVS_OWNERDATA下でのListView_GetNextItem()の不確実性を避けてこれを頼るためpublic 20260822
 
 protected:
 	BOOL OnInitDialog( HWND, WPARAM, LPARAM );
@@ -60,6 +69,7 @@ private:
 	bool	m_bReactivateParentOnClose;	//!< CloseOnDeactivate()で親ウィンドウを前面に戻すかどうか
 
 	HFONT	m_hFontList;	//!< 一覧の文字表示用(既定フォントより大きめ、通常太さ)。既定フォントから生成しOnDestroyで破棄する
+	HFONT	m_hFontSub;		//!< 一覧のグレーのパス表示用(m_hFontListより小さい)。既定フォントから生成しOnDestroyで破棄する 20260821
 	std::map<std::wstring, int>	m_mapExtToIconIndex;	//!< 拡張子(小文字)→共有システムアイコン一覧の索引
 
 	//! 一覧1行の種別
@@ -67,26 +77,50 @@ private:
 		ROWKIND_COMMAND,	//!< コマンド(" > "で絞り込み)
 		ROWKIND_WINDOW,		//!< 開いているウィンドウ("edt "で絞り込み)
 		ROWKIND_RECENT,		//!< 最近使ったファイル(既定、絞り込み記号なし)
+		ROWKIND_OUTLINE,	//!< アウトライン解析結果("@"で絞り込み) 20260821
+		ROWKIND_BOOKMARK,	//!< ブックマーク一覧("#"で絞り込み) 20260821
 	};
 
 	//! 一覧1行分
 	struct PaletteRow {
 		EPaletteRowKind	kind;
-		int				nPostId;	//!< kind==ROWKIND_COMMAND/RECENTのとき、WM_COMMANDで送るID(機能番号 または IDM_SELMRU+i)
+		int				nPostId;	//!< kind==ROWKIND_COMMAND/RECENTのとき、WM_COMMANDで送るID(機能番号 または IDM_SELMRU+i)。kind==ROWKIND_OUTLINE/BOOKMARKのとき、ジャンプ先の行番号(1開始) 20260821
+		int				nOutlineCol;	//!< kind==ROWKIND_OUTLINE/BOOKMARKのとき、ジャンプ先の桁番号(1開始) 20260821
 		HWND			hwndFile;	//!< kind==ROWKIND_WINDOWのとき、切り替え先ウィンドウ
 		std::wstring	sName;		//!< 表示名(絞り込みの対象にもなる)
-		std::wstring	sType;		//!< 種別表示("コマンド"/"ウィンドウ"/"最近使ったファイル")
+		std::wstring	sType;		//!< 種別表示("コマンド"/"ウィンドウ"/"最近使ったファイル"/"アウトライン"/"ブックマーク")
 		std::wstring	sId;		//!< コマンドIDの表示文字列(コマンド行以外は空)
 		std::wstring	sSub;		//!< コマンドのショートカットキー、またはファイルのフルパス
 	};
 
 	void BuildAllRows();
+	void BuildOutlineRows();	//!< 「@」モード初回選択時にだけ現在の文書のアウトライン解析を行い、結果をm_vAllRowsへ追加する 20260821
+	void BuildBookmarkRows();	//!< 「#」モード初回選択時にだけ現在の文書のブックマーク一覧を取得し、結果をm_vAllRowsへ追加する 20260821
 	void UpdateList();
 	void ExecuteRow( const PaletteRow& row );
 	void ExecuteSelected();
+	void MoveCaretTo( int nLogicX, int nLogicY );	//!< 現在の文書内でカーソルを指定位置(0開始)へ移動する(選択状態は保持) 20260821
+	void JumpToRow( const PaletteRow& row );	//!< kind==ROWKIND_OUTLINE/BOOKMARKの行が指す位置へMoveCaretTo()する 20260821
 
 	CFuncLookup*				m_pcFuncLookup;
+	CEditView*					m_pcView;			//!< アウトライン解析・ブックマーク取得・ジャンプ先の対象ビュー 20260821
+	bool						m_bOutlineRowsBuilt;	//!< BuildOutlineRows()を実行済みか 20260821
+	bool						m_bBookmarkRowsBuilt;	//!< BuildBookmarkRows()を実行済みか 20260821
+	int							m_nOrigCaretX;		//!< パレットを開いた時点のカーソル位置(桁、0開始)。Escapeでのキャンセル時に戻す 20260821
+	int							m_nOrigCaretY;		//!< パレットを開いた時点のカーソル位置(行、0開始)。Escapeでのキャンセル時に戻す 20260821
 	std::vector<PaletteRow>	m_vAllRows;
+	//! 一覧(LVS_OWNERDATA)の表示行索引→m_vAllRows添字。UpdateList()が絞り込むたびに
+	//! 作り直し、以後選択行の解決(OnListCustomDraw/LivePreviewSelection/ExecuteSelected)は
+	//! すべてこれ経由で行う。LVS_OWNERDATAの一覧は行ごとにlParamを保持できない
+	//! (アプリ側がインデックスだけを頼りに毎回引き当てる)ため 20260821
+	std::vector<size_t>			m_vMatchedRowIndices;
+	//! 現在選択中の表示行索引(-1=選択なし)。LVS_OWNERDATA化後、OnListCustomDraw()の
+	//! 描画時にListView_GetItemState()で選択状態を問い合わせると常に「選択されている」
+	//! 扱いになってしまい全行が選択色で塗られる不具合が出たため(旧来のnmcd.uItemStateが
+	//! 全行で立ってしまう不具合と同種、LVS_OWNERDATAではGetItemStateの方も同様に信用でき
+	//! ない)、選択行はcomctl32に問い合わせず全経路(UpdateList/MoveSelection/
+	//! LVN_ITEMCHANGED)でLivePreviewSelection()を通じて自前追跡する 20260822
+	int							m_nSelectedDispIndex;
 };
 
 #endif // NKMM_COMMAND_PALETTE

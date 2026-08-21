@@ -139,7 +139,7 @@ void CViewCommander::Command_DLGWINLIST( void )
 void CViewCommander::Command_COMMAND_PALETTE( void )
 {
 	if( NULL == GetEditWindow()->m_cDlgCommandPalette.GetHwnd() ){
-		GetEditWindow()->m_cDlgCommandPalette.DoModeless( G_AppInstance(), GetMainWindow(), &GetDocument()->m_cFuncLookup );
+		GetEditWindow()->m_cDlgCommandPalette.DoModeless( G_AppInstance(), GetMainWindow(), &GetDocument()->m_cFuncLookup, m_pCommanderView );
 	}else{
 		ActivateFrameWindow( GetEditWindow()->m_cDlgCommandPalette.GetHwnd() );
 	}

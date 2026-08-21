@@ -25,6 +25,12 @@
 #include "_main/global.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
+#include "view/CEditView.h"
+#include "window/CEditWnd.h"
+#include "doc/CEditDoc.h"
+#include "outline/CFuncInfoArr.h"
+#include "outline/CFuncInfo.h"
+#include "types/CType.h"
 
 #include <algorithm>
 
@@ -56,7 +62,18 @@ namespace {
 	const wchar_t	szWindowPrefix[] = L"edt ";	//!< 開いているウィンドウへの絞り込みモードに切り替える接頭辞
 }
 
-//! フィルタ欄(Edit)の絞り込み中に一覧側の選択を上下に動かす
+//! フィルタ欄先頭の1文字が、絞り込みモードを切り替える記号("コマンド"の">"、"アウトライン"の"@"、"ブックマーク"の"#")かどうか
+static bool IsModeSymbolChar( wchar_t ch )
+{
+	return L'>' == ch || L'@' == ch || L'#' == ch;
+}
+
+//! フィルタ欄(Edit)の絞り込み中に一覧側の選択を上下に動かす。アウトライン/ブックマークの
+//! 行へ移った場合、ライブプレビュー移動も行う(OnNotify(LVN_ITEMCHANGED)頼みだと、
+//! ListView_SetItemState()の呼び方次第では通知が来ないことがあったため、ここで直接呼ぶ) 20260821
+//! 現在位置(nCur)もListView_GetNextItem()には問い合わせない。LVS_OWNERDATA化後は
+//! comctl32側の選択状態問い合わせ全般が信用できなくなった(OnListCustomDrawで発覚したのと
+//! 同じ問題)ため、CDlgCommandPalette::GetSelectedDispIndex()で自前追跡した値を使う 20260822
 static void MoveSelection( HWND hwndDlg, int nDelta )
 {
 	HWND	hListView = ::GetDlgItem( hwndDlg, IDC_LIST_COMMANDPALETTE );
@@ -64,7 +81,8 @@ static void MoveSelection( HWND hwndDlg, int nDelta )
 	if( 0 == nCount ){
 		return;
 	}
-	int	nCur = ListView_GetNextItem( hListView, -1, LVNI_SELECTED );
+	CDlgCommandPalette*	pDlg = (CDlgCommandPalette*)::GetWindowLongPtr( hwndDlg, DWLP_USER );
+	int	nCur = ( NULL != pDlg ) ? pDlg->GetSelectedDispIndex() : -1;
 	int	nNext = ( nCur < 0 ) ? 0 : nCur + nDelta;
 	if( nNext < 0 ){ nNext = 0; }
 	if( nNext >= nCount ){ nNext = nCount - 1; }
@@ -73,13 +91,18 @@ static void MoveSelection( HWND hwndDlg, int nDelta )
 	}
 	ListView_SetItemState( hListView, nNext, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
 	ListView_EnsureVisible( hListView, nNext, FALSE );
+
+	if( NULL != pDlg ){
+		pDlg->LivePreviewSelection( nNext );
+	}
 }
 
 #ifdef NKMM_COMMAND_PALETTE_ROMAJI
 /*! フィルタ欄の入力途中ローマ字文字列を、確定できたモーラ分だけかなへ変換する。
-	">"/"edt "接頭辞(絞り込みモード切り替え記号)はそのまま残し、それより後ろだけを
+	">"/"@"/"edt "接頭辞(絞り込みモード切り替え記号)はそのまま残し、それより後ろだけを
 	変換する。"edt "は確定するまで('e'→'ed'→'edt'の途中)変換を保留し、
 	接頭辞と誤認して変換されないようにする 20260819
+	"@"は">"と同じく1文字の記号のため、同じ扱いにする 20260821
 */
 static std::wstring ApplyLiveKanaConversion( const std::wstring& sText )
 {
@@ -90,7 +113,7 @@ static std::wstring ApplyLiveKanaConversion( const std::wstring& sText )
 	if( sText.size() >= nPrefixLen && 0 == wcsncmp( szWindowPrefix, sText.c_str(), nPrefixLen ) ){
 		return std::wstring( szWindowPrefix ) + ConvertRomajiToKana( sText.substr( nPrefixLen ) );
 	}
-	if( !sText.empty() && L'>' == sText[0] ){
+	if( !sText.empty() && IsModeSymbolChar( sText[0] ) ){
 		return sText.substr( 0, 1 ) + ConvertRomajiToKana( sText.substr( 1 ) );
 	}
 	return ConvertRomajiToKana( sText );
@@ -214,12 +237,19 @@ static LRESULT CALLBACK PaletteFilterEditSubclassProc(
 CDlgCommandPalette::CDlgCommandPalette()
 	: CDialog( false )
 	, m_pcFuncLookup( NULL )
+	, m_pcView( NULL )
+	, m_bOutlineRowsBuilt( false )
+	, m_bBookmarkRowsBuilt( false )
+	, m_nOrigCaretX( 0 )
+	, m_nOrigCaretY( 0 )
+	, m_nSelectedDispIndex( -1 )
 	, m_nSlideX( 0 )
 	, m_nSlideTargetY( 0 )
 	, m_nSlideStartY( 0 )
 	, m_dwSlideStartTick( 0 )
 	, m_bReactivateParentOnClose( false )
 	, m_hFontList( NULL )
+	, m_hFontSub( NULL )
 {
 }
 
@@ -228,9 +258,22 @@ CDlgCommandPalette::CDlgCommandPalette()
 	SW_HIDEで隠しておき、StartSlideAnimation()で最終位置より少し上から
 	スライドインさせながら表示する 20260818
 */
-HWND CDlgCommandPalette::DoModeless( HINSTANCE hInstance, HWND hwndParent, CFuncLookup* pcFuncLookup )
+HWND CDlgCommandPalette::DoModeless( HINSTANCE hInstance, HWND hwndParent, CFuncLookup* pcFuncLookup, CEditView* pcView )
 {
 	m_pcFuncLookup = pcFuncLookup;
+	m_pcView = pcView;
+	m_bOutlineRowsBuilt = false;
+	m_bBookmarkRowsBuilt = false;
+
+	// アウトライン/ブックマークのライブプレビュー移動をEscapeでキャンセルしたときに
+	// 戻る位置として、パレットを開いた時点のカーソル位置を覚えておく 20260821
+	m_nOrigCaretX = 0;
+	m_nOrigCaretY = 0;
+	if( NULL != m_pcView ){
+		CLogicPoint	poOrigCaret = m_pcView->GetCaret().GetCaretLogicPos();
+		m_nOrigCaretX = poOrigCaret.x;
+		m_nOrigCaretY = poOrigCaret.y;
+	}
 
 	// m_xPos/m_yPosはCDialogのメンバで、閉じても(このオブジェクト自体はCEditWndに
 	// 保持され続けるため)前回開いたときの値が残ったままになる。2回目以降、
@@ -386,15 +429,23 @@ BOOL CDlgCommandPalette::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lPara
 
 	// 一覧の文字表示用に、既定フォントより少し大きい通常太さのフォントを
 	// 用意しておく(OnDestroyで破棄)。太字は見にくいとの指摘があったため、
-	// 名前とパス/キーの差はフォントの太さではなく色(黒/グレー)だけで付ける 20260819
+	// 名前とキーの差はフォントの太さではなく色(黒/グレー)だけで付ける 20260819
+	// グレーのパス表示(格納フォルダ)は、色に加えてこれより小さいフォント
+	// (既定フォントそのままの大きさ)にし、ファイル名との違いを一目で
+	// わかるようにする 20260821
 	{
 		HFONT	hFontBase = (HFONT)::SendMessage( hListView, WM_GETFONT, 0, 0 );
 		LOGFONT	lf;
 		::ZeroMemory( &lf, sizeof_raw( lf ) );
 		if( NULL != hFontBase && 0 != ::GetObject( hFontBase, sizeof( lf ), &lf ) ){
-			lf.lfHeight = (LONG)( lf.lfHeight * 13 / 10 );
-			lf.lfWeight = FW_NORMAL;
-			m_hFontList = ::CreateFontIndirect( &lf );
+			LOGFONT	lfList = lf;
+			lfList.lfHeight = (LONG)( lfList.lfHeight * 13 / 10 );
+			lfList.lfWeight = FW_NORMAL;
+			m_hFontList = ::CreateFontIndirect( &lfList );
+
+			LOGFONT	lfSub = lf;
+			lfSub.lfWeight = FW_NORMAL;
+			m_hFontSub = ::CreateFontIndirect( &lfSub );
 		}
 	}
 
@@ -425,6 +476,10 @@ BOOL CDlgCommandPalette::OnBnClicked( int wID )
 		CloseDialog( 0 );
 		return TRUE;
 	case IDCANCEL:
+		// アウトライン/ブックマークの選択に追従してカーソルをライブ移動していた場合、
+		// キャンセル時はパレットを開く前の位置へ戻す。一度もそのモードへ入らずに
+		// キャンセルしたときは同じ位置へ戻すだけの無害な呼び出しになる 20260821
+		MoveCaretTo( m_nOrigCaretX, m_nOrigCaretY );
 		CloseDialog( 0 );
 		return TRUE;
 	}
@@ -453,6 +508,34 @@ BOOL CDlgCommandPalette::OnNotify( WPARAM wParam, LPARAM lParam )
 		CloseDialog( 0 );
 		return TRUE;
 	}
+	if( LVN_ITEMCHANGED == pNMHDR->code ){
+		// マウスクリックによる選択変更用(キーボードでの上下移動やフィルタ再構築時の
+		// 自動選択は、それぞれMoveSelection()/UpdateList()から直接LivePreviewSelection()を
+		// 呼んでいるため、ここでの二重呼び出しは無害だが基本的には素通りになる)。
+		// 選択状態が新たに立った行だけを対象にする 20260821
+		NMLISTVIEW*	pNMLV = (NMLISTVIEW*)lParam;
+		if( 0 != ( pNMLV->uNewState & LVIS_SELECTED ) && 0 == ( pNMLV->uOldState & LVIS_SELECTED ) ){
+			LivePreviewSelection( pNMLV->iItem );
+		}
+		return FALSE;
+	}
+	if( LVN_GETDISPINFO == pNMHDR->code ){
+		// LVS_OWNERDATA(仮想リスト)は行データを保持しないため、表示に必要な分だけ
+		// ここで都度供給する。実際の見た目はOnListCustomDraw()が総取り換えで描くが、
+		// スクリーンリーダー等のフォールバック・内部の文字列前方一致ジャンプ機能等の
+		// ためにLVIF_TEXTだけは渡しておく 20260821
+		NMLVDISPINFO*	pDispInfo = (NMLVDISPINFO*)lParam;
+		if( 0 != ( pDispInfo->item.mask & LVIF_TEXT ) ){
+			size_t	nDispIndex = (size_t)pDispInfo->item.iItem;
+			if( nDispIndex < m_vMatchedRowIndices.size() ){
+				size_t	nRowIndex = m_vMatchedRowIndices[nDispIndex];
+				if( nRowIndex < m_vAllRows.size() ){
+					pDispInfo->item.pszText = const_cast<wchar_t*>( m_vAllRows[nRowIndex].sName.c_str() );
+				}
+			}
+		}
+		return TRUE;
+	}
 	if( NM_CUSTOMDRAW == pNMHDR->code ){
 		// WM_NOTIFYはダイアログプロシージャの戻り値ではなくDWLP_MSGRESULTで
 		// 結果(CDRF_*)を伝える必要がある 20260819
@@ -479,7 +562,13 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 
 	case CDDS_ITEMPREPAINT:
 		{
-			size_t	nRowIndex = (size_t)pCD->nmcd.lItemlParam;
+			// LVS_OWNERDATA(仮想リスト)にはlParamが無いため、表示上の行番号
+			// (dwItemSpec)をm_vMatchedRowIndices経由でm_vAllRowsの添字に変換する 20260821
+			size_t	nDispIndex = (size_t)pCD->nmcd.dwItemSpec;
+			if( nDispIndex >= m_vMatchedRowIndices.size() ){
+				break;
+			}
+			size_t	nRowIndex = m_vMatchedRowIndices[nDispIndex];
 			if( nRowIndex >= m_vAllRows.size() ){
 				break;
 			}
@@ -497,18 +586,24 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 
 			// pCD->nmcd.uItemStateのCDIS_SELECTEDは実際の選択行に関わらず全行で
 			// 立ってしまう(デバッグ確認済み。原因不明のcomctl32側の癖)ため信用せず、
-			// ListView_GetItemState()で実際の選択状態を取得する。これを信じたまま
-			// だと全行が選択色(白文字)になり、選択されていない行の背景は白のままな
-			// ので白地に白文字となって何も見えなくなっていた 20260819
-			bool	bSelected = 0 != ( ListView_GetItemState( hListView, (int)pCD->nmcd.dwItemSpec, LVIS_SELECTED ) & LVIS_SELECTED );
+			// 一時はListView_GetItemState()で実際の選択状態を取得していたが、
+			// LVS_OWNERDATA(仮想リスト)化した後はこちらも同様に全行「選択中」を
+			// 返すようになってしまった(実機確認: 絞り込み結果の全行が選択色で
+			// 塗られる不具合が発生)。そのためcomctl32には一切問い合わせず、選択行が
+			// 変わる経路をすべて集約しているLivePreviewSelection()で自前追跡する
+			// m_nSelectedDispIndexとだけ比較する 20260819 20260822
+			bool	bSelected = ( (int)nDispIndex == m_nSelectedDispIndex );
 			COLORREF	crText = ::GetSysColor( bSelected ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT );
 			COLORREF	crSub  = bSelected ? crText : ::GetSysColor( COLOR_GRAYTEXT );
 
-			// CDRF_SKIPDEFAULTで既定描画を止めているため、選択行の背景も自前で塗る
-			// 必要がある。これが無いと選択行はCOLOR_HIGHLIGHTTEXT(白文字)のまま
-			// 背景が既定の白色のため、白地に白文字で何も見えなくなる 20260819
-			if( bSelected ){
-				HBRUSH	hBrush = ::CreateSolidBrush( ::GetSysColor( COLOR_HIGHLIGHT ) );
+			// CDRF_SKIPDEFAULTで既定描画を止めているため、背景は選択・非選択どちらも
+			// 自前で塗る必要がある。以前は非選択行の背景塗りを省略し、既定の白色に
+			// 既に消されている前提でいたが、LVS_OWNERDATA(仮想リスト)化した後は
+			// その前提が崩れ、スクロールや絞り込みで表示行が入れ替わったときに前の
+			// 描画(選択色の青)が消されずそのまま残ってしまう不具合が出た。
+			// 選択行かどうかによらず必ず背景を塗りつぶすことで解消する 20260822
+			{
+				HBRUSH	hBrush = ::CreateSolidBrush( ::GetSysColor( bSelected ? COLOR_HIGHLIGHT : COLOR_WINDOW ) );
 				::FillRect( hdc, &rc, hBrush );
 				::DeleteObject( hBrush );
 			}
@@ -527,8 +622,8 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 			int	nEdgePad = DpiScaleX( 10 );
 			int	x = rc.left + nEdgePad;
 
-			// アイコン(コマンドには付けない。ウィンドウ/最近使ったファイルは拡張子から) 20260819
-			if( ROWKIND_COMMAND != row.kind ){
+			// アイコン(ウィンドウ/最近使ったファイルは拡張子から。コマンド/アウトラインには付けない) 20260819 20260821
+			if( ROWKIND_WINDOW == row.kind || ROWKIND_RECENT == row.kind ){
 				HIMAGELIST	hIL = ListView_GetImageList( hListView, LVSIL_SMALL );
 				int	nIconIndex = GetShellIconIndex( row.sSub );
 				int	nIconSize = DpiScaleX( 16 );
@@ -538,12 +633,15 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 				x += nIconSize + nPad;
 			}
 
-			// 右寄せ(コマンドはショートカットキー、最近使ったファイルは「最近使用」タグ) 20260819
+			// 右寄せ(コマンドはショートカットキー、最近使ったファイルは「最近使用」タグ、
+			// アウトライン/ブックマークはジャンプ先の行番号) 20260819 20260821
 			std::wstring	sRight;
 			if( ROWKIND_COMMAND == row.kind ){
 				sRight = row.sSub;
 			}else if( ROWKIND_RECENT == row.kind ){
 				sRight = L"最近使用";
+			}else if( ROWKIND_OUTLINE == row.kind || ROWKIND_BOOKMARK == row.kind ){
+				sRight = std::to_wstring( row.nPostId ) + L" 行目";
 			}
 			int	nRightWidth = 0;
 			if( !sRight.empty() ){
@@ -565,15 +663,21 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 			RECT	rcName = { x, rc.top, nNameRightEdge, rc.bottom };
 			::DrawText( hdc, row.sName.c_str(), -1, &rcName, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX | DT_END_ELLIPSIS );
 
-			// グレーのサブ情報(コマンドには付けない。ファイル系は格納フォルダを表示) 20260819
-			if( ROWKIND_COMMAND != row.kind && !row.sSub.empty() ){
+			// グレーのサブ情報(ファイル系(ウィンドウ/最近使ったファイル)だけ格納フォルダを表示。
+			// コマンド/アウトラインには付けない)。名前より小さいフォント(m_hFontSub)にし、
+			// 色だけでなく大きさでもファイル名との違いを一目でわかるようにする 20260819 20260821
+			if( ( ROWKIND_WINDOW == row.kind || ROWKIND_RECENT == row.kind ) && !row.sSub.empty() ){
 				size_t	nSlash = row.sSub.find_last_of( L"\\/" );
 				std::wstring	sDir = ( std::wstring::npos == nSlash ) ? L"" : row.sSub.substr( 0, nSlash );
 				int	xSub = rcName.right + nPad;
 				if( !sDir.empty() && xSub < nNameRight ){
 					RECT	rcSub = { xSub, rc.top, nNameRight, rc.bottom };
 					::SetTextColor( hdc, crSub );
+					HFONT	hFontListSaved = ( NULL != m_hFontSub ) ? (HFONT)::SelectObject( hdc, m_hFontSub ) : NULL;
 					::DrawText( hdc, sDir.c_str(), -1, &rcSub, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX | DT_END_ELLIPSIS );
+					if( NULL != hFontListSaved ){
+						::SelectObject( hdc, hFontListSaved );
+					}
 				}
 			}
 
@@ -621,6 +725,10 @@ BOOL CDlgCommandPalette::OnDestroy()
 	if( NULL != m_hFontList ){
 		::DeleteObject( m_hFontList );
 		m_hFontList = NULL;
+	}
+	if( NULL != m_hFontSub ){
+		::DeleteObject( m_hFontSub );
+		m_hFontSub = NULL;
 	}
 	return CDialog::OnDestroy();
 }
@@ -725,11 +833,134 @@ void CDlgCommandPalette::BuildAllRows()
 }
 
 
+/*! 「@」モードへ実際に切り替えたときだけ、現在アクティブなビューの文書種別に
+	応じたアウトライン解析(CViewCommander::Command_FUNCLIST/Ctrl+F11の
+	アウトラインダイアログと同じCDocOutlineの解析ルーチン)を1回だけ実行し、
+	結果をm_vAllRowsへ追加する。コマンド/ウィンドウ/最近使ったファイルと違い
+	文書全体の走査を伴うため、BuildAllRows()(パレットを開くたび)には含めない。
+	プラグイン(WSH)によるアウトライン解析は、コマンドパレット側にその呼び出し
+	土台(CJackManager等)を持ち込む必要が生じるため対象外とし、通常のCtrl+F11
+	ダイアログと同じくプラグインが担当する種別・ルールファイル種別は、素の
+	テキスト・トピック解析(MakeTopicList_txt)にフォールバックする 20260821
+*/
+void CDlgCommandPalette::BuildOutlineRows()
+{
+	m_bOutlineRowsBuilt = true;
+
+	if( NULL == m_pcView || NULL == m_pcView->m_pTypeData || NULL == m_pcView->GetDocument() ){
+		return;
+	}
+	CEditDoc*	pcDoc = m_pcView->GetDocument();
+
+	EOutlineType	nOutlineType = m_pcView->m_pTypeData->m_eDefaultOutline;
+#ifdef NKMM_FIX_OUTLINE
+	// OUTLINE_C_CPP(「C/C++」自動判別)をファイル拡張子からOUTLINE_C/OUTLINE_CPPへ
+	// 解決しておく(CViewCommander::Command_FUNCLISTと同じ理由) 20260821
+	nOutlineType = CDocOutline::ResolveOutlineType_C_CPP( nOutlineType, pcDoc->m_cDocFile.GetFilePath() );
+#endif // NKMM_
+
+	CFuncInfoArr	cFuncInfoArr;
+	switch( nOutlineType ){
+	case OUTLINE_C:
+	case OUTLINE_C_CPP:
+	case OUTLINE_CPP:
+		pcDoc->m_cDocOutline.MakeFuncList_C( &cFuncInfoArr, nOutlineType, pcDoc->m_cDocFile.GetFilePath() );
+		break;
+	case OUTLINE_PLSQL:		pcDoc->m_cDocOutline.MakeFuncList_PLSQL( &cFuncInfoArr );			break;
+	case OUTLINE_JAVA:		pcDoc->m_cDocOutline.MakeFuncList_Java( &cFuncInfoArr );			break;
+	case OUTLINE_COBOL:		pcDoc->m_cDocOutline.MakeTopicList_cobol( &cFuncInfoArr );			break;
+	case OUTLINE_ASM:		pcDoc->m_cDocOutline.MakeTopicList_asm( &cFuncInfoArr );			break;
+	case OUTLINE_PERL:		pcDoc->m_cDocOutline.MakeFuncList_Perl( &cFuncInfoArr );			break;
+	case OUTLINE_VB:		pcDoc->m_cDocOutline.MakeFuncList_VisualBasic( &cFuncInfoArr );	break;
+	case OUTLINE_WZTXT:		pcDoc->m_cDocOutline.MakeTopicList_wztxt( &cFuncInfoArr );			break;
+	case OUTLINE_HTML:		pcDoc->m_cDocOutline.MakeTopicList_html( &cFuncInfoArr, false );	break;
+	case OUTLINE_TEX:		pcDoc->m_cDocOutline.MakeTopicList_tex( &cFuncInfoArr );			break;
+	case OUTLINE_PYTHON:	pcDoc->m_cDocOutline.MakeFuncList_python( &cFuncInfoArr );			break;
+	case OUTLINE_ERLANG:	pcDoc->m_cDocOutline.MakeFuncList_Erlang( &cFuncInfoArr );			break;
+	case OUTLINE_XML:		pcDoc->m_cDocOutline.MakeTopicList_html( &cFuncInfoArr, true );	break;
+	case OUTLINE_BOOKMARK:	pcDoc->m_cDocOutline.MakeFuncList_BookMark( &cFuncInfoArr );		break;
+	case OUTLINE_FILETREE:	/* ファイルツリーはジャンプ先の行を持たないため対象外 */			break;
+	default:
+		pcDoc->m_cDocOutline.MakeTopicList_txt( &cFuncInfoArr );
+		break;
+	}
+
+	int	nNum = cFuncInfoArr.GetNum();
+	for( int i = 0; i < nNum; ++i ){
+		CFuncInfo*	pcInfo = cFuncInfoArr.GetAt( i );
+		if( NULL == pcInfo || 0 == pcInfo->m_cmemFuncName.GetStringLength() ){
+			continue;
+		}
+		// 他ファイルを指す要素(ブックマーク等の一部)は、現在の文書内へのジャンプでは
+		// 扱えないため一覧から除く 20260821
+		if( 0 < pcInfo->m_cmemFileName.GetStringLength() ){
+			continue;
+		}
+
+		PaletteRow	row;
+		row.kind        = ROWKIND_OUTLINE;
+		row.nPostId     = (int)pcInfo->m_nFuncLineCRLF;
+		row.nOutlineCol = (int)pcInfo->m_nFuncColCRLF;
+		row.hwndFile    = NULL;
+		row.sName       = pcInfo->m_cmemFuncName.GetStringPtr();
+		row.sType       = L"アウトライン";
+
+		m_vAllRows.push_back( row );
+	}
+}
+
+
+/*! 「#」モードへ実際に切り替えたときだけ、現在アクティブなビューの文書の
+	ブックマーク一覧(CViewCommander::Command_FUNCLIST(OUTLINE_BOOKMARK)/
+	ブックマーク一覧ダイアログと同じCDocOutline::MakeFuncList_BookMark)を
+	1回だけ取得し、結果をm_vAllRowsへ追加する。アウトライン解析と違い
+	文書の構文種別に関係なく常に同じ関数を呼べるため、型の判定は不要 20260821
+*/
+void CDlgCommandPalette::BuildBookmarkRows()
+{
+	m_bBookmarkRowsBuilt = true;
+
+	if( NULL == m_pcView || NULL == m_pcView->GetDocument() ){
+		return;
+	}
+	CEditDoc*	pcDoc = m_pcView->GetDocument();
+
+	CFuncInfoArr	cFuncInfoArr;
+	pcDoc->m_cDocOutline.MakeFuncList_BookMark( &cFuncInfoArr );
+
+	int	nNum = cFuncInfoArr.GetNum();
+	for( int i = 0; i < nNum; ++i ){
+		CFuncInfo*	pcInfo = cFuncInfoArr.GetAt( i );
+		if( NULL == pcInfo ){
+			continue;
+		}
+		if( 0 < pcInfo->m_cmemFileName.GetStringLength() ){
+			continue;
+		}
+
+		PaletteRow	row;
+		row.kind        = ROWKIND_BOOKMARK;
+		row.nPostId     = (int)pcInfo->m_nFuncLineCRLF;
+		row.nOutlineCol = (int)pcInfo->m_nFuncColCRLF;
+		row.hwndFile    = NULL;
+		// 空行につけたブックマークは行の内容(前後空白を除いた文字列)が空になるため、
+		// アウトラインの「名前が空なら除外」とは違いここでは除外せず、それとわかる
+		// プレースホルダを出す(除外すると、その行だけジャンプできなくなってしまう) 20260821
+		row.sName       = ( 0 < pcInfo->m_cmemFuncName.GetStringLength() ) ? pcInfo->m_cmemFuncName.GetStringPtr() : L"(空行)";
+		row.sType       = L"ブックマーク";
+
+		m_vAllRows.push_back( row );
+	}
+}
+
+
 /*! 絞り込み欄の文字列で一覧を再構築する 20260818
 
 	先頭の記号で対象を切り替える(VSCode風)。
 	  「>」    : コマンドのみ
 	  「edt 」 : 開いているウィンドウのみ(edtの後に半角空白が必須)
+	  「@」    : 現在の文書のアウトライン解析結果のみ 20260821
+	  「#」    : 現在の文書のブックマーク一覧のみ 20260821
 	  それ以外(空欄を含む) : 最近使ったファイル(既定) 20260819
 	記号の後ろに続く文字列は、名前に対する部分一致(大文字小文字無視)の絞り込みに使う 20260818
 */
@@ -773,17 +1004,37 @@ void CDlgCommandPalette::UpdateList()
 	}else if( 0 == sFilter.compare( 0, wcslen( szWindowPrefix ), szWindowPrefix ) ){
 		eMode = ROWKIND_WINDOW;
 		sQuery = sFilter.substr( wcslen( szWindowPrefix ) );
+	}else if( !sFilter.empty() && L'@' == sFilter[0] ){
+		eMode = ROWKIND_OUTLINE;
+		sQuery = sFilter.substr( 1 );
+	}else if( !sFilter.empty() && L'#' == sFilter[0] ){
+		eMode = ROWKIND_BOOKMARK;
+		sQuery = sFilter.substr( 1 );
 	}
 	// 記号の直後に残った先頭の空白は絞り込み対象から除く(「> save」のような入力を素直に扱うため)
 	size_t	nQueryBegin = sQuery.find_first_not_of( L' ' );
 	sQuery = ( std::wstring::npos == nQueryBegin ) ? L"" : sQuery.substr( nQueryBegin );
 
-	ListView_DeleteAllItems( hListView );
+	// アウトライン解析・ブックマーク取得は他の一覧と違って現在の文書の走査を伴うため、
+	// 実際にそのモードへ切り替えたときだけ1回遅延実行する(BuildAllRows()では行わない) 20260821
+	if( ROWKIND_OUTLINE == eMode && !m_bOutlineRowsBuilt ){
+		BuildOutlineRows();
+	}else if( ROWKIND_BOOKMARK == eMode && !m_bBookmarkRowsBuilt ){
+		BuildBookmarkRows();
+	}
+
+	// 一覧はLVS_OWNERDATA(仮想リスト)。以前はListView_DeleteAllItems()+行ごとの
+	// ListView_InsertItem()で組み立てていたが、行数が数千〜数万になると1件ごとの
+	// LVN_INSERTITEM往復コストが支配的になり(実測: 1万件で約1.8秒)、キー入力のたびに
+	// 固まって見えていた。LVS_OWNERDATAでは実際の行データ(m_vAllRows)を渡さず、
+	// 該当する添字の一覧(m_vMatchedRowIndices)とItemCountだけを伝え、表示に必要な
+	// 分だけLVN_GETDISPINFO/NM_CUSTOMDRAWで都度引き当てる(可視行数分、数十件程度)。
+	// これによりファイルサイズによらず絞り込みが一定時間で終わるようになる 20260821
+	m_vMatchedRowIndices.clear();
 
 	// 絞り込み文字列がある間だけ、一致の良さ(スコア)で並べ替える。空欄時は
 	// BuildAllRows()が積んだ元の並び順(コマンドはカテゴリ順、最近使ったファイルは
 	// 履歴順)をそのまま使う 20260820
-	std::vector<size_t>	vMatchedRowIndices;
 #ifdef NKMM_COMMAND_PALETTE_ROMAJI
 	std::vector<std::pair<int, size_t> >	vScoredRowIndices;	// (スコア, m_vAllRows添字)
 #endif // NKMM_COMMAND_PALETTE_ROMAJI
@@ -794,7 +1045,7 @@ void CDlgCommandPalette::UpdateList()
 		if( row.kind != eMode ){ continue; }
 
 		if( sQuery.empty() ){
-			vMatchedRowIndices.push_back( i );
+			m_vMatchedRowIndices.push_back( i );
 			continue;
 		}
 
@@ -814,7 +1065,7 @@ void CDlgCommandPalette::UpdateList()
 		if( std::wstring::npos == sHay.find( sQuery ) ){
 			continue;
 		}
-		vMatchedRowIndices.push_back( i );
+		m_vMatchedRowIndices.push_back( i );
 #endif // NKMM_COMMAND_PALETTE_ROMAJI
 	}
 
@@ -822,30 +1073,21 @@ void CDlgCommandPalette::UpdateList()
 	if( !sQuery.empty() ){
 		std::stable_sort( vScoredRowIndices.begin(), vScoredRowIndices.end(),
 			[]( const std::pair<int, size_t>& a, const std::pair<int, size_t>& b ){ return a.first > b.first; } );
-		for( size_t k = 0; k < vScoredRowIndices.size(); ++k ){ vMatchedRowIndices.push_back( vScoredRowIndices[k].second ); }
+		for( size_t k = 0; k < vScoredRowIndices.size(); ++k ){ m_vMatchedRowIndices.push_back( vScoredRowIndices[k].second ); }
 	}
 #endif // NKMM_COMMAND_PALETTE_ROMAJI
 
-	int	nRow = 0;
-	for( size_t k = 0; k < vMatchedRowIndices.size(); ++k ){
-		const PaletteRow&	row = m_vAllRows[vMatchedRowIndices[k]];
+	// 新しい行数を伝える前に選択状態を全解除しておく(件数が減った場合に、もう
+	// 存在しない添字の選択状態が残ったまま次回に持ち越されるのを防ぐ) 20260821
+	ListView_SetItemState( hListView, -1, 0, LVIS_SELECTED | LVIS_FOCUSED );
+	ListView_SetItemCount( hListView, (int)m_vMatchedRowIndices.size() );
 
-		// 実際の描画はOnListCustomDraw()が行う(VSCode風の1行=アイコン+太字名+
-		// 右寄せキー/タグ)。ここでのテキストはスクリーンリーダー等のフォールバック用 20260819
-		LV_ITEM	item;
-		::ZeroMemory( &item, sizeof_raw( item ) );
-		item.mask     = LVIF_TEXT | LVIF_PARAM;
-		item.iItem    = nRow;
-		item.iSubItem = 0;
-		item.pszText  = const_cast<wchar_t*>( row.sName.c_str() );
-		item.lParam   = (LPARAM)vMatchedRowIndices[k];
-		ListView_InsertItem( hListView, &item );
-
-		++nRow;
-	}
-
-	if( 0 < nRow ){
+	if( !m_vMatchedRowIndices.empty() ){
 		ListView_SetItemState( hListView, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+		ListView_EnsureVisible( hListView, 0, FALSE );
+		// OnNotify(LVN_ITEMCHANGED)経由だと、一覧をまるごと作り直した直後の自動選択に対して
+		// 通知が来ないことがあったため、ここで直接呼ぶ 20260821
+		LivePreviewSelection( 0 );
 	}
 }
 
@@ -856,6 +1098,11 @@ void CDlgCommandPalette::UpdateList()
 	CEditWnd::OnCommand()のIDM_SELMRU処理)で実行させる(ダイアログを開いたまま
 	直接呼び出さない)。開いているウィンドウはActivateFrameWindow()で
 	(別プロセスでも)アクティブ化する 20260818
+	アウトライン/ブックマークは、同じ文書内の位置へキャレットを移すだけなので、
+	CDlgFuncList::OnJump()の「同じファイル内」の分岐と同じ方式
+	(m_sWorkBuffer.m_LogicPointを設定してMYWM_SETCARETPOSを送る)で移動させる。
+	選択状態を保つPM_SETCARETPOS_KEEPSELECTを付け、カーソル移動で選択範囲が
+	消えてしまわないようにする 20260821
 */
 void CDlgCommandPalette::ExecuteRow( const PaletteRow& row )
 {
@@ -871,27 +1118,88 @@ void CDlgCommandPalette::ExecuteRow( const PaletteRow& row )
 			::PostMessage( m_hwndParent, WM_COMMAND, MAKELONG( (WORD)row.nPostId, 0 ), 0 );
 		}
 		break;
+	case ROWKIND_OUTLINE:
+	case ROWKIND_BOOKMARK:
+		// Enterで確定した時点では、既にLivePreviewSelection()で同じ位置へ
+		// 移動済みのはずだが、経路の単純化のためここでも同じ処理を呼んでおく
+		// (同じ位置への再移動は無害) 20260821
+		JumpToRow( row );
+		break;
+	}
+}
+
+
+/*! kind==ROWKIND_OUTLINE/BOOKMARKの行が指す位置へ、現在の文書内でカーソルを移動する。
+	CDlgFuncList::OnJump()の「同じファイル内」の分岐と同じ方式
+	(m_sWorkBuffer.m_LogicPointを設定してMYWM_SETCARETPOSを送る)を使う 20260821
+*/
+void CDlgCommandPalette::JumpToRow( const PaletteRow& row )
+{
+	MoveCaretTo( row.nOutlineCol - 1, row.nPostId - 1 );
+}
+
+
+//! 現在の文書内でカーソルを指定位置(0開始)へ移動する。選択状態を保つ
+//! PM_SETCARETPOS_KEEPSELECTを付け、カーソル移動で選択範囲が消えてしまわないようにする 20260821
+void CDlgCommandPalette::MoveCaretTo( int nLogicX, int nLogicY )
+{
+	if( NULL == m_pcView || NULL == m_pcView->m_pcEditWnd ){
+		return;
+	}
+	CLogicPoint	poCaret;
+	poCaret.x = nLogicX;
+	poCaret.y = nLogicY;
+	GetDllShareData().m_sWorkBuffer.m_LogicPoint = poCaret;
+	::SendMessageAny( m_pcView->m_pcEditWnd->GetHwnd(), MYWM_SETCARETPOS, 0, PM_SETCARETPOS_KEEPSELECT );
+}
+
+
+/*! 一覧の選択行が変わるたびに呼ばれる(UpdateList()での絞り込みによる自動選択、
+	MoveSelection()での矢印キーによる移動、OnNotify(LVN_ITEMCHANGED)でのマウス
+	クリックによる選択、いずれの経路からも同じここへ集約する)。アウトライン/
+	ブックマークの行を選択している間は、Enterで確定するのを待たずにその位置へ
+	カーソルをライブ移動する(VSCodeのGo to Symbol風のプレビュー)。コマンド/ウィンドウ/
+	最近使ったファイルの行は、選択しただけでコマンド実行やウィンドウ切り替えが起きると
+	困るため対象外 20260821
+
+	選択行そのものの記録(m_nSelectedDispIndex)も、選択が変わる経路をすべて集約している
+	ここでまとめて行う。OnListCustomDraw()での選択色描画にこれを使う(comctl32の
+	ListView_GetItemState()に問い合わせない)理由は関数末尾のコメント参照 20260822
+*/
+void CDlgCommandPalette::LivePreviewSelection( int nItemIndex )
+{
+	m_nSelectedDispIndex = nItemIndex;
+
+	// LVS_OWNERDATA(仮想リスト)にはlParamが無いため、表示上の行番号(nItemIndex)を
+	// m_vMatchedRowIndices経由でm_vAllRowsの添字に変換する 20260821
+	if( nItemIndex < 0 || (size_t)nItemIndex >= m_vMatchedRowIndices.size() ){
+		return;
+	}
+	size_t	nRowIndex = m_vMatchedRowIndices[(size_t)nItemIndex];
+	if( nRowIndex >= m_vAllRows.size() ){
+		return;
+	}
+
+	const PaletteRow&	row = m_vAllRows[nRowIndex];
+	if( ROWKIND_OUTLINE == row.kind || ROWKIND_BOOKMARK == row.kind ){
+		JumpToRow( row );
 	}
 }
 
 
 void CDlgCommandPalette::ExecuteSelected()
 {
-	HWND	hListView = GetItemHwnd( IDC_LIST_COMMANDPALETTE );
-	int	nSel = ListView_GetNextItem( hListView, -1, LVNI_SELECTED );
-	if( nSel < 0 ){
+	// LVS_OWNERDATA化後はListView_GetNextItem(LVNI_SELECTED)も信用せず、
+	// LivePreviewSelection()で自前追跡しているm_nSelectedDispIndexを使う
+	// (OnListCustomDraw/MoveSelectionと同じ理由) 20260822
+	int	nSel = m_nSelectedDispIndex;
+	if( nSel < 0 || (size_t)nSel >= m_vMatchedRowIndices.size() ){
 		return;
 	}
 
-	LV_ITEM	item;
-	::ZeroMemory( &item, sizeof_raw( item ) );
-	item.mask   = LVIF_PARAM;
-	item.iItem  = nSel;
-	if( !ListView_GetItem( hListView, &item ) ){
-		return;
-	}
-
-	size_t	nRowIndex = (size_t)item.lParam;
+	// LVS_OWNERDATA(仮想リスト)にはlParamが無いため、表示上の行番号(nSel)を
+	// m_vMatchedRowIndices経由でm_vAllRowsの添字に変換する 20260821
+	size_t	nRowIndex = m_vMatchedRowIndices[(size_t)nSel];
 	if( nRowIndex >= m_vAllRows.size() ){
 		return;
 	}
