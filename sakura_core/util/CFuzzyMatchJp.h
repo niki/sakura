@@ -39,6 +39,14 @@ bool FuzzyMatchJapanese( const std::wstring& sQuery, const std::wstring& sText, 
 */
 std::wstring ConvertRomajiToKana( const std::wstring& sText );
 
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI
+/*!	@brief cKanjiがg_aMultiMoraKanjiTable(手動で実地検証済みの上書きテーブル)に
+	登録されているかどうかを返す。NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE専用
+	(パレットの行に、まだ検証していない漢字がどれか一目でわかるよう色分けする) 20260821
+*/
+bool IsKanjiInMultiMoraTable( wchar_t cKanji );
+#endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI
+
 #endif // NKMM_COMMAND_PALETTE_ROMAJI
 
 #endif /* SAKURA_CFUZZYMATCHJP_20260819_H_ */

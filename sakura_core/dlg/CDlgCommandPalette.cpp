@@ -73,7 +73,7 @@ static bool IsModeSymbolChar( wchar_t ch )
 //! ListView_SetItemState()の呼び方次第では通知が来ないことがあったため、ここで直接呼ぶ) 20260821
 //! 現在位置(nCur)もListView_GetNextItem()には問い合わせない。LVS_OWNERDATA化後は
 //! comctl32側の選択状態問い合わせ全般が信用できなくなった(OnListCustomDrawで発覚したのと
-//! 同じ問題)ため、CDlgCommandPalette::GetSelectedDispIndex()で自前追跡した値を使う 20260822
+//! 同じ問題)ため、CDlgCommandPalette::GetSelectedDispIndex()で自前追跡した値を使う 20260821
 static void MoveSelection( HWND hwndDlg, int nDelta )
 {
 	HWND	hListView = ::GetDlgItem( hwndDlg, IDC_LIST_COMMANDPALETTE );
@@ -243,6 +243,9 @@ CDlgCommandPalette::CDlgCommandPalette()
 	, m_nOrigCaretX( 0 )
 	, m_nOrigCaretY( 0 )
 	, m_nSelectedDispIndex( -1 )
+	, m_nMaxListHeight( 0 )
+	, m_nChromeHeight( 0 )
+	, m_nListRowHeight( 0 )
 	, m_nSlideX( 0 )
 	, m_nSlideTargetY( 0 )
 	, m_nSlideStartY( 0 )
@@ -391,6 +394,19 @@ BOOL CDlgCommandPalette::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lPara
 	}
 
 	HWND	hListView = GetItemHwnd( IDC_LIST_COMMANDPALETTE );
+
+	// AdjustListHeight()用に、sakura_rc.rcのダイアログテンプレート設計値
+	// (一覧の最大高さ、それを除いたダイアログ全体の高さ)を一度だけ控えておく。
+	// これらは以後リサイズしても変わらない固定値として扱う 20260821
+	{
+		RECT	rcListInit;
+		::GetWindowRect( hListView, &rcListInit );
+		m_nMaxListHeight = rcListInit.bottom - rcListInit.top;
+
+		RECT	rcWndInit;
+		::GetWindowRect( hwndDlg, &rcWndInit );
+		m_nChromeHeight = ( rcWndInit.bottom - rcWndInit.top ) - m_nMaxListHeight;
+	}
 
 	// VSCodeのクイックオープン/コマンドパレット風に、複数列の表形式ではなく
 	// アイコン+太字の名前+(ファイル系のみ)グレーのパス、右寄せでショートカット
@@ -591,7 +607,7 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 			// 返すようになってしまった(実機確認: 絞り込み結果の全行が選択色で
 			// 塗られる不具合が発生)。そのためcomctl32には一切問い合わせず、選択行が
 			// 変わる経路をすべて集約しているLivePreviewSelection()で自前追跡する
-			// m_nSelectedDispIndexとだけ比較する 20260819 20260822
+			// m_nSelectedDispIndexとだけ比較する 20260819 20260821
 			bool	bSelected = ( (int)nDispIndex == m_nSelectedDispIndex );
 			COLORREF	crText = ::GetSysColor( bSelected ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT );
 			COLORREF	crSub  = bSelected ? crText : ::GetSysColor( COLOR_GRAYTEXT );
@@ -601,7 +617,7 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 			// 既に消されている前提でいたが、LVS_OWNERDATA(仮想リスト)化した後は
 			// その前提が崩れ、スクロールや絞り込みで表示行が入れ替わったときに前の
 			// 描画(選択色の青)が消されずそのまま残ってしまう不具合が出た。
-			// 選択行かどうかによらず必ず背景を塗りつぶすことで解消する 20260822
+			// 選択行かどうかによらず必ず背景を塗りつぶすことで解消する 20260821
 			{
 				HBRUSH	hBrush = ::CreateSolidBrush( ::GetSysColor( bSelected ? COLOR_HIGHLIGHT : COLOR_WINDOW ) );
 				::FillRect( hdc, &rc, hBrush );
@@ -655,13 +671,37 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 
 			int	nNameRight = rc.right - nRightWidth - nEdgePad - nPad * 2;
 
-			// 名前(黒) 20260819
-			::SetTextColor( hdc, crText );
+			// 名前(黒)。NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE有効時は
+			// g_aMultiMoraKanjiTableに登録済みの漢字だけ色を変えて描く 20260819 20260821
 			SIZE	szName = { 0, 0 };
 			::GetTextExtentPoint32( hdc, row.sName.c_str(), (int)row.sName.size(), &szName );
 			int	nNameRightEdge = ( x + szName.cx + nPad < nNameRight ) ? ( x + szName.cx + nPad ) : nNameRight;
 			RECT	rcName = { x, rc.top, nNameRightEdge, rc.bottom };
+#ifdef NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE
+			// DT_END_ELLIPSISは複数回のDrawText呼び出しをまたいでは効かないため、
+			// この表示のときは末尾省略の精度は落ちる(デバッグ専用機能のため許容)
+			{
+				int		xCur = x;
+				size_t	i = 0;
+				const std::wstring&	sName = row.sName;
+				while( i < sName.size() && xCur < nNameRightEdge ){
+					bool	bCovered = IsKanjiInMultiMoraTable( sName[i] );
+					size_t	nRunStart = i;
+					while( i < sName.size() && IsKanjiInMultiMoraTable( sName[i] ) == bCovered ){ ++i; }
+					std::wstring	sRun = sName.substr( nRunStart, i - nRunStart );
+					SIZE	szRun = { 0, 0 };
+					::GetTextExtentPoint32( hdc, sRun.c_str(), (int)sRun.size(), &szRun );
+					::SetTextColor( hdc, bCovered ? RGB( 0, 150, 0 ) : crText );
+					int	xRunEnd = ( xCur + szRun.cx < nNameRightEdge ) ? ( xCur + szRun.cx ) : nNameRightEdge;
+					RECT	rcRun = { xCur, rc.top, xRunEnd, rc.bottom };
+					::DrawText( hdc, sRun.c_str(), -1, &rcRun, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX );
+					xCur += szRun.cx;
+				}
+			}
+#else
+			::SetTextColor( hdc, crText );
 			::DrawText( hdc, row.sName.c_str(), -1, &rcName, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX | DT_END_ELLIPSIS );
+#endif // NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE
 
 			// グレーのサブ情報(ファイル系(ウィンドウ/最近使ったファイル)だけ格納フォルダを表示。
 			// コマンド/アウトラインには付けない)。名前より小さいフォント(m_hFontSub)にし、
@@ -1089,6 +1129,58 @@ void CDlgCommandPalette::UpdateList()
 		// 通知が来ないことがあったため、ここで直接呼ぶ 20260821
 		LivePreviewSelection( 0 );
 	}
+
+	AdjustListHeight();
+}
+
+
+/*! 絞り込み結果の件数がスクロールを要しない(一覧の最大高さに収まる)ときは、
+	一覧とダイアログの高さをその件数ぶんまで狭める。結果が増えて収まらなくなれば、
+	sakura_rc.rcのダイアログテンプレート設計値(m_nMaxListHeight)まで戻す。
+	VSCodeのクイックオープン等と同じく、少数の結果しかないのに下に無駄な余白が
+	残るのを避けるため 20260821
+*/
+void CDlgCommandPalette::AdjustListHeight()
+{
+	if( 0 == m_nMaxListHeight ){
+		return;
+	}
+	HWND	hListView = GetItemHwnd( IDC_LIST_COMMANDPALETTE );
+
+	int	nCount = (int)m_vMatchedRowIndices.size();
+
+	// 一覧1行の実際の高さ(アイコンサイズ・m_hFontListから一覧生成時に確定し、
+	// 以後は変化しない)は、初めて1件以上表示された時点で一度だけ求めてキャッシュする 20260821
+	if( 0 == m_nListRowHeight && 0 < nCount ){
+		RECT	rcItem;
+		if( ListView_GetItemRect( hListView, 0, &rcItem, LVIR_BOUNDS ) ){
+			m_nListRowHeight = rcItem.bottom - rcItem.top;
+		}
+	}
+
+	int	nDesiredListHeight = m_nMaxListHeight;
+	if( 0 < m_nListRowHeight ){
+		int	nNaturalHeight = nCount * m_nListRowHeight;
+		if( nNaturalHeight < m_nMaxListHeight ){
+			nDesiredListHeight = nNaturalHeight;
+		}
+	}
+
+	RECT	rcListNow;
+	::GetWindowRect( hListView, &rcListNow );
+	if( ( rcListNow.bottom - rcListNow.top ) == nDesiredListHeight ){
+		return;	// 変化なし
+	}
+	int	nListWidth = rcListNow.right - rcListNow.left;
+	::SetWindowPos( hListView, NULL, 0, 0, nListWidth, nDesiredListHeight, SWP_NOMOVE | SWP_NOZORDER );
+
+	// ダイアログ本体も、一覧を除いた固定分(m_nChromeHeight)+新しい一覧の高さに
+	// 合わせて縮める。位置(左上)はSWP_NOMOVEで変えない(上端固定でスライドインした
+	// 位置からそのまま下端だけが動く) 20260821
+	RECT	rcWndNow;
+	::GetWindowRect( GetHwnd(), &rcWndNow );
+	int	nWndWidth = rcWndNow.right - rcWndNow.left;
+	::SetWindowPos( GetHwnd(), NULL, 0, 0, nWndWidth, m_nChromeHeight + nDesiredListHeight, SWP_NOMOVE | SWP_NOZORDER );
 }
 
 
@@ -1164,7 +1256,7 @@ void CDlgCommandPalette::MoveCaretTo( int nLogicX, int nLogicY )
 
 	選択行そのものの記録(m_nSelectedDispIndex)も、選択が変わる経路をすべて集約している
 	ここでまとめて行う。OnListCustomDraw()での選択色描画にこれを使う(comctl32の
-	ListView_GetItemState()に問い合わせない)理由は関数末尾のコメント参照 20260822
+	ListView_GetItemState()に問い合わせない)理由は関数末尾のコメント参照 20260821
 */
 void CDlgCommandPalette::LivePreviewSelection( int nItemIndex )
 {
@@ -1191,7 +1283,7 @@ void CDlgCommandPalette::ExecuteSelected()
 {
 	// LVS_OWNERDATA化後はListView_GetNextItem(LVNI_SELECTED)も信用せず、
 	// LivePreviewSelection()で自前追跡しているm_nSelectedDispIndexを使う
-	// (OnListCustomDraw/MoveSelectionと同じ理由) 20260822
+	// (OnListCustomDraw/MoveSelectionと同じ理由) 20260821
 	int	nSel = m_nSelectedDispIndex;
 	if( nSel < 0 || (size_t)nSel >= m_vMatchedRowIndices.size() ){
 		return;

@@ -1622,6 +1622,16 @@
 //  - ノイズが気になる場合はNKMM_COMMAND_PALETTE_ROMAJI_KANJIの行だけコメント
 //    アウトすれば(NKMM_COMMAND_PALETTE_ROMAJI本体は有効なまま)いつでも無効化できる
 //
+// [漢字読み全件テーブルによる自動フォールバック] 20260821
+// NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLEで追加有効化(既定は無効)。
+// util/CKanjiReadingTableJIS1.h(JIS第1水準漢字2965字の音訓読み全件テーブル)。
+//  - g_aMultiMoraKanjiTableに無い漢字だけの自動フォールバック(優先順位:
+//    g_aMultiMoraKanjiTable(手動) > このテーブル(自動) > CKanjiReadingDict)
+//  - 選び方は「最初の訓読みの活用語幹、無ければ最初の音読み」の機械的ルールの
+//    みのため、複数の読みを持つ漢字で実際の使われ方と違う読みを選んでしまう
+//    ことがある。既定で無効にしているのはそのため
+//  - 詳細はchangelog/NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE.md参照
+//
 // [フィルタ欄のライブかな変換] dlg/CDlgCommandPalette.cpp
 // (PaletteFilterEditSubclassProc/ApplyLiveKanaConversion/IsImeComposing)。
 // Windows検索ボックス等と同様、確定したモーラ分をその場でかなへ変換して表示する。
@@ -1637,6 +1647,21 @@
 #ifdef NKMM_COMMAND_PALETTE_ROMAJI
 #define NKMM_COMMAND_PALETTE_ROMAJI_KANJI
 #endif // NKMM_COMMAND_PALETTE_ROMAJI
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI
+//#define NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE
+#endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI
+
+//------------------------------------------------------------------
+// コマンドパレットの行の名前を描くとき、g_aMultiMoraKanjiTable(手動で実地
+// 検証済みの上書きテーブル)に登録されている漢字だけ色を変えて表示するデバッグ
+// 表示。まだ検証していない漢字(単独モーラ辞書やJIS1TABLEの自動フォールバック
+// 任せの箇所)が一覧を眺めるだけで一目でわかるようにする 20260821
+//  - NKMM_COMMAND_PALETTE_ROMAJI_KANJIとは独立にON/OFFする(既定は無効)
+//  - dlg/CDlgCommandPalette.cpp: OnListCustomDraw()
+//------------------------------------------------------------------
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI
+//#define NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE
+#endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI
 
 //
 //#define USE_SSE2

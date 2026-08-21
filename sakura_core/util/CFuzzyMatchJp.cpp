@@ -37,6 +37,10 @@
 #include "util/CKanjiReadingDict.h"
 #endif
 
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE
+#include "util/CKanjiReadingTableJIS1.h"
+#endif
+
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -125,9 +129,13 @@ namespace {
 	*/
 	struct MultiMoraKanjiEntry {
 		wchar_t			cKanji;
-		const wchar_t*	pszReading;	// ひらがな、2モーラ以上
+		const wchar_t*	pszReading;	// ひらがな。2モーラ以上の補完用の他、濁音を清音の行に
+									// まとめている単独モーラ辞書の誤清音化を正すための
+									// 1モーラ登録もある(例: 語->"ご") 20260821
 	};
 
+	// 各エントリの追加経緯・裏取り方法はchangelog/
+	// NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE.md参照 20260821
 	const MultiMoraKanjiEntry	g_aMultiMoraKanjiTable[] = {
 		{ L'開', L"ひら" },	// 開く
 		{ L'戻', L"もど" },	// 戻す・戻る
@@ -135,20 +143,103 @@ namespace {
 		{ L'隠', L"かく" },	// 隠す
 		{ L'異', L"こと" },	// 異なる
 		{ L'返', L"かえ" },	// 返す・返し
-		{ L'選', L"えら" },	// 選ぶ・選んで
+		{ L'選', L"せん" },	// 選択(旧"えら"は退行だったため修正 20260821)
 		{ L'合', L"あわ" },	// 合わせる
 		{ L'違', L"ちが" },	// 違う・違います
 		{ L'使', L"つか" },	// 使う・使えません
 		{ L'上', L"うわ" },	// 上書き
 		{ L'直', L"なお" },	// 直す
-		{ L'検', L"けん" },	// 検索(単独モーラ辞書はけ行止まりで「けん」まで届かないため)
-		{ L'索', L"さく" },	// 検索(同上。「さく」まで)
-		{ L'右', L"みぎ" },	// 右移動・右クリックメニュー等(送り仮名の無い単独語)
-		{ L'左', L"ひだり" },	// 左移動・左クリックメニュー等(同上)
-		{ L'下', L"した" },	// 下移動・下検索等(同上)
-		{ L'前', L"まえ" },	// 前の検索・前へ等(同上。「前方」等の音読み「ぜん」は元々
-							// 単独モーラ辞書でも拾えていなかったため、この追加による
-							// 悪化はない 20260821)
+		{ L'検', L"けん" },	// 検索
+		{ L'索', L"さく" },	// 検索
+		{ L'右', L"みぎ" },	// 右移動・右クリックメニュー等
+		{ L'左', L"ひだり" },	// 左移動・左クリックメニュー等
+		{ L'下', L"した" },	// 下移動・下検索等
+		{ L'前', L"まえ" },	// 前の検索・前へ等
+		{ L'新', L"しん" },	// 新規作成
+		{ L'作', L"さく" },	// 新規作成
+		{ L'単', L"たん" },	// 単語
+		{ L'語', L"ご" },	// 単語(濁音の清音化バケット対策)
+		{ L'端', L"たん" },	// 左端・右端等
+		{ L'切', L"き" },	// 切り取り・単語切り取り(訓読み語幹。送り仮名は本文別途のため1モーラ)
+		{ L'取', L"と" },	// 切り取り・取り消し(同上)
+		{ L'消', L"け" },	// 取り消し(同上)
+		{ L'折', L"お" },	// 折り返し(同上)
+		{ L'示', L"じ" },	// 表示・非表示(濁音の清音化バケット対策)
+		{ L'択', L"たく" },	// 選択・矩形選択・範囲選択
+		{ L'動', L"どう" },	// 移動
+		{ L'変', L"へん" },	// 変換・文字コード変換
+		{ L'換', L"かん" },	// 変換・文字コード変換
+		{ L'連', L"れん" },	// 連続した重複行の削除
+		{ L'続', L"ぞく" },	// 連続した重複行の削除(濁音の清音化バケット対策)
+		{ L'済', L"ず" },	// 登録済みマクロ(連濁。送り仮名は本文別途のため1モーラ)
+		{ L'表', L"ひょう" },	// 表示・非表示(拗音+長音)
+		{ L'元', L"もと" },	// 元に戻す
+		{ L'現', L"げん" },	// 現在位置(濁音の清音化バケット対策)
+		{ L'在', L"ざい" },	// 現在位置(同上)
+		{ L'外', L"がい" },	// 外部コマンド実行・〜以外(同上)
+		{ L'部', L"ぶ" },	// 外部コマンド実行(同上)
+		{ L'常', L"つね" },	// 常に手前に表示等
+		{ L'情', L"じょう" },	// バージョン情報(濁音の清音化バケット対策)
+		{ L'時', L"じ" },	// 時刻の挿入(同上)
+		{ L'空', L"くう" },	// 空白
+		{ L'逆', L"ぎゃく" },	// 逆TAB/SPACEインデント(濁音の清音化バケット対策)
+		{ L'重', L"じゅう" },	// 連続した重複行の削除(同上)
+		{ L'除', L"じょ" },	// 全解除・分割の解除等(同上)
+		{ L'別', L"べつ" },	// タイプ別設定(同上)
+		{ L'描', L"びょう" },	// 再描画(同上)
+		{ L'刻', L"こく" },	// 時刻の挿入(2モーラ目欠け対策)
+		{ L'解', L"かい" },	// 全解除等(同上)
+		{ L'複', L"ふく" },	// 連続した重複行の削除(同上)
+		{ L'登', L"とう" },	// 登録済みマクロ(同上)
+		{ L'録', L"ろく" },	// 登録済みマクロ(同上)
+		{ L'小', L"こ" },	// 小文字(訓読み。単独モーラ辞書は音読み「しょう」のバケットで無関係)
+		{ L'大', L"おお" },	// 大文字(訓読み。単独モーラ辞書は音読み「だい」の清音化バケットで無関係)
+		{ L'文', L"も" },	// 文字(「もじ」は文=も・字=じの特殊な読み。音訓読みからは
+							// 導けない熟字訓に近い例外のため個別登録)
+		{ L'字', L"じ" },	// 文字(同上。音読み濁音「じ」。単独モーラ辞書は清音化した「し」の行)
+		{ L'一', L"いち" },	// 一覧(2モーラ目欠け対策)
+		{ L'覧', L"らん" },	// 一覧(同上)
+		{ L'削', L"さく" },	// 削除(同上)
+		{ L'設', L"せっ" },	// 設定(音読み「せつ」だが、「設定」では後続の「定(てい)」の
+							// 影響で促音化し「せってい」と発音される。単独モーラ辞書の
+							// 「せ」だけでなく非促音の「せつ」でも"settei"には一致しない
+							// ため、促音そのもの(っ)を登録して正規化エンジンの促音処理
+							// (次のモーラの子音を重ねる)に委ねる)
+		{ L'定', L"てい" },	// 設定・指定(同上)
+		{ L'存', L"ぞん" },	// 保存(濁音の清音化バケット対策)
+		{ L'編', L"へん" },	// 編集(2モーラ目欠け対策)
+		{ L'集', L"しゅう" },	// 編集(同上)
+		{ L'改', L"かい" },	// 改行(同上)
+		{ L'行', L"ぎょう" },	// 改行・行頭・行末・重複行等(「行」を「線」の意味で使う箇所
+							// (単独モーラ辞書は無関係な「こ」)。「実行」等「こう」と読む
+							// 箇所もあるが、それらは「実」自体が既に別の理由で単独モーラ
+							// 辞書と一致しておらず今回の変更による新規の後退ではない)
+		{ L'範', L"はん" },	// 範囲(2モーラ目欠け対策)
+		{ L'歴', L"れき" },	// 履歴(同上)
+		{ L'先', L"せん" },	// 先頭(同上)
+		{ L'頭', L"とう" },	// 先頭(同上)
+		{ L'終', L"しゅう" },	// 終端(同上)
+		{ L'印', L"いん" },	// 印刷(2モーラ目欠け対策)
+		{ L'刷', L"さつ" },	// 印刷(同上)
+		{ L'昇', L"しょう" },	// 昇順(拗音欠け対策)
+		{ L'順', L"じゅん" },	// 昇順・降順(濁音の清音化バケット対策)
+		{ L'降', L"こう" },	// 降順(2モーラ目欠け対策)
+		{ L'段', L"だん" },	// 段落(濁音の清音化バケット対策)
+		{ L'落', L"らく" },	// 段落(2モーラ目欠け対策)
+		{ L'形', L"けい" },	// 矩形・整形(同上)
+		{ L'全', L"ぜん" },	// 全角・半角(濁音の清音化バケット対策)
+		{ L'角', L"かく" },	// 全角・半角(2モーラ目欠け対策)
+		{ L'半', L"はん" },	// 半角・半ページ(同上)
+		{ L'分', L"ぶん" },	// 差分・分割(濁音の清音化バケット対策)
+		{ L'割', L"かつ" },	// 分割(2モーラ目欠け対策。「キー割り当て」の訓読み「わり」とは
+							// 別の読みだが、単独モーラ辞書は元々「わり」とも一致しておらず
+							// 今回の変更による新規の後退ではない)
+		{ L'正', L"せい" },	// 正規表現(訓読み「まさ」のバケットで音読み「せい」とは無関係)
+		{ L'付', L"つ" },	// 貼り付け・引用符付き・名前を付けて等(訓読み語幹。単独モーラ
+							// 辞書は音読み「ふ」のバケットで無関係。送り仮名は本文別途の
+							// ため1モーラのみ。「日付」の連濁「づけ」とは別の読みだが、
+							// 単独モーラ辞書は元々「づけ」とも一致しておらず今回の変更に
+							// よる新規の後退ではない)
 	};
 
 	const wchar_t* FindMultiMoraReadingByKanji( wchar_t cKanji )
@@ -158,6 +249,43 @@ namespace {
 		}
 		return NULL;
 	}
+
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE
+	/*! g_aMultiMoraKanjiTableに無い漢字について、JIS第1水準全読みテーブル
+		(util/CKanjiReadingTableJIS1.h)から「最初の訓読みの活用語幹、無ければ
+		最初の音読み」を機械的に選んで返すフォールバック。詳細・既知の制限は
+		changelog/NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE.md参照 20260821
+	*/
+	std::wstring FindReadingFromJIS1Table( wchar_t cKanji )
+	{
+		for( size_t i = 0; i < _countof( kanji_jis1::g_aJIS1KanjiTable ); ++i ){
+			const kanji_jis1::JIS1KanjiEntry&	e = kanji_jis1::g_aJIS1KanjiTable[i];
+			if( e.cKanji != cKanji ){ continue; }
+
+			std::wstring	sKun( e.pszKunyomi );
+			if( !sKun.empty() ){
+				size_t	nSep = sKun.find( L'・' );	// "・"(複数読みの区切り)
+				std::wstring	sFirst = ( std::wstring::npos != nSep ) ? sKun.substr( 0, nSep ) : sKun;
+				size_t	nHyphen = sFirst.find( L'-' );
+				return ( std::wstring::npos != nHyphen ) ? sFirst.substr( 0, nHyphen ) : sFirst;
+			}
+
+			std::wstring	sOn( e.pszOnyomi );
+			if( !sOn.empty() ){
+				size_t	nSep = sOn.find( L'・' );
+				std::wstring	sFirst = ( std::wstring::npos != nSep ) ? sOn.substr( 0, nSep ) : sOn;
+				std::wstring	sHira;
+				for( size_t k = 0; k < sFirst.size(); ++k ){
+					wchar_t	ch = sFirst[k];
+					sHira += ( 0x30A1 <= ch && ch <= 0x30F6 ) ? (wchar_t)( ch - 0x60 ) : ch;
+				}
+				return sHira;
+			}
+			return std::wstring();
+		}
+		return std::wstring();
+	}
+#endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE
 
 	/*! 文字列中の漢字を、分かる範囲でひらがな読みへ事前展開する。
 
@@ -181,6 +309,14 @@ namespace {
 				sOut += pszMultiMora;
 				continue;
 			}
+
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE
+			std::wstring	sJis1Reading = FindReadingFromJIS1Table( c );
+			if( !sJis1Reading.empty() ){
+				sOut += sJis1Reading;
+				continue;
+			}
+#endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE
 
 			wchar_t	cHira = GetHiraByKanji( c );
 			if( L'\0' != cHira ){
@@ -438,6 +574,14 @@ bool FuzzyMatchJapanese( const std::wstring& sQuery, const std::wstring& sText, 
 	}
 	return true;
 }
+
+
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI
+bool IsKanjiInMultiMoraTable( wchar_t cKanji )
+{
+	return NULL != FindMultiMoraReadingByKanji( cKanji );
+}
+#endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI
 
 
 std::wstring ConvertRomajiToKana( const std::wstring& sText )

@@ -45,7 +45,7 @@ public:
 
 	void FollowParentWindow();	//!< 親ウィンドウ(エディタ)の移動・サイズ変更に追従して表示位置を更新する
 	void LivePreviewSelection( int nItemIndex );	//!< 一覧の選択行がROWKIND_OUTLINE/BOOKMARKなら、確定前にライブでカーソルを移動する。フィルタ欄サブクラスプロシージャ側の矢印キー処理(MoveSelection)からも呼べるようpublic 20260821
-	int GetSelectedDispIndex() const { return m_nSelectedDispIndex; }	//!< 現在選択中の表示行索引(-1=選択なし)。MoveSelection()がLVS_OWNERDATA下でのListView_GetNextItem()の不確実性を避けてこれを頼るためpublic 20260822
+	int GetSelectedDispIndex() const { return m_nSelectedDispIndex; }	//!< 現在選択中の表示行索引(-1=選択なし)。MoveSelection()がLVS_OWNERDATA下でのListView_GetNextItem()の不確実性を避けてこれを頼るためpublic 20260821
 
 protected:
 	BOOL OnInitDialog( HWND, WPARAM, LPARAM );
@@ -101,6 +101,7 @@ private:
 	void ExecuteSelected();
 	void MoveCaretTo( int nLogicX, int nLogicY );	//!< 現在の文書内でカーソルを指定位置(0開始)へ移動する(選択状態は保持) 20260821
 	void JumpToRow( const PaletteRow& row );	//!< kind==ROWKIND_OUTLINE/BOOKMARKの行が指す位置へMoveCaretTo()する 20260821
+	void AdjustListHeight();	//!< 絞り込み結果がスクロールを要しない件数のときは、一覧とダイアログの高さをその件数ぶんまで狭める(結果が増えれば元の最大高さまで戻る) 20260821
 
 	CFuncLookup*				m_pcFuncLookup;
 	CEditView*					m_pcView;			//!< アウトライン解析・ブックマーク取得・ジャンプ先の対象ビュー 20260821
@@ -119,8 +120,14 @@ private:
 	//! 扱いになってしまい全行が選択色で塗られる不具合が出たため(旧来のnmcd.uItemStateが
 	//! 全行で立ってしまう不具合と同種、LVS_OWNERDATAではGetItemStateの方も同様に信用でき
 	//! ない)、選択行はcomctl32に問い合わせず全経路(UpdateList/MoveSelection/
-	//! LVN_ITEMCHANGED)でLivePreviewSelection()を通じて自前追跡する 20260822
+	//! LVN_ITEMCHANGED)でLivePreviewSelection()を通じて自前追跡する 20260821
 	int							m_nSelectedDispIndex;
+
+	//! AdjustListHeight()用。いずれもOnInitDialog()でダイアログテンプレート設計値
+	//! (sakura_rc.rcのIDC_LIST_COMMANDPALETTEの高さ等)から一度だけ求めて以後固定 20260821
+	int							m_nMaxListHeight;	//!< 一覧の最大高さ(px、スクロール開始する高さ)
+	int							m_nChromeHeight;	//!< ダイアログ全体の高さのうち一覧を除いた分(px、フィルタ欄+余白)
+	int							m_nListRowHeight;	//!< 一覧1行の実高さ(px)。初めて1件以上表示された時点でキャッシュ(0=未確定)
 };
 
 #endif // NKMM_COMMAND_PALETTE
