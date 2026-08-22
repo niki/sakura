@@ -44,8 +44,8 @@ static const SKeybindPresetInfo	s_KeybindPresetTable[] = {
 	{ IDR_KEYBINDPRESET_VISUALSTUDIO,  L"Visual Studio" },
 	{ IDR_KEYBINDPRESET_VISUALSTUDIO6, L"Visual Studio 6 / Visual C++ 6" },
 	{ IDR_KEYBINDPRESET_VISUALBASIC6,  L"Visual Basic 6" },
-	{ IDR_KEYBINDPRESET_CSHARP2005,    L"Visual C# 2005(Visual Studio 2005)" },
 	{ IDR_KEYBINDPRESET_RESHARPER,     L"ReSharper(Visual Studio拡張)" },
+	{ IDR_KEYBINDPRESET_VISUALASSIST,  L"Visual Assist(Visual Studio拡張)" },
 };
 
 //! プリセット選択コンボの先頭項目(index 0)の表示文字列。現在のキー割り当てが

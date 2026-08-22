@@ -12,10 +12,8 @@
 | VisualStudio.key | Visual Studio（現行版の既定キーマップ） |
 | VisualStudio6.key | Visual Studio 6 / Visual C++ 6 |
 | VisualBasic6.key | Visual Basic 6 |
-| CSharp2005.key | Visual C# 2005（Visual Studio 2005） |
 | ReSharper.key | ReSharper（Visual Studio 拡張） |
 | VisualAssist.key | Visual Assist（Visual Studio 拡張） |
-| VisualCpp2.key | Visual C++ 2（1990年代前半の旧IDE） |
 
 ## 使い方
 
@@ -31,16 +29,22 @@
   ビルド/実行/デバッグ/リファクタリング系のショートカットは含めていません。
 - **ReSharper.key / VisualAssist.key** は、ReSharper・Visual Assistが素のVisual Studioから変更する
   ショートカットの大半が「コード解析・ナビゲーション・リファクタリング」関連(Go to Everything、Alt+Enterの
-  クイックフィックス等)で、いずれもサクラエディタには対応する機能がないため、内容は`VisualStudio.key`と
-  同じです(ファイル/編集/検索の基本操作はどちらの拡張機能も変更しないため)。
+  クイックフィックス等)で、いずれもサクラエディタには対応する機能がないため、基本的な内容は`VisualStudio.key`と
+  同じです(ファイル/編集/検索の基本操作はどちらの拡張機能も変更しないため)。ただし「ヘッダ/ソースファイルの
+  切り替え」(Alt+O)は両方とも実際に持っている機能([Visual Assistが発祥](https://www.codegenes.net/blog/how-do-i-toggle-header-cpp-file-via-keyboard-shortcut-in-visual-studio-code/)、
+  [ReSharper C++も同機能を実装](https://www.jetbrains.com/help/resharper/Navigation_in_CPP.html)、
+  ReSharperはCtrl+Shift+Gの代替キーも持つ)であることが確認できたため、サクラエディタの`F_OPEN_HfromtoC`
+  (同名のC/C++ヘッダ(ソース)を開く)をAlt+O(ReSharperはCtrl+Shift+Gも追加)に割り当て、`VisualStudio.key`
+  との差分にしています。
 - **VisualStudio6.key** は、VC++6/VS6世代で確実に安定していたと確認できる基本操作のみに絞っています
-  (Visual Studio 2005以降で追加された「すべて保存」「前后の場所へ移動」等は含めていません)。
-- **VisualCpp2.key** は1990年代前半の非常に古いIDEで、当時の資料が少なく確認精度が低いです。
-  当時のWindowsアプリで広く使われていたCUA準拠の代替キー(Shift+Delete=切り取り、Ctrl+Insert=コピー、
-  Shift+Insert=貼り付け)を含めていますが、実際のVisual C++ 2のデフォルト割り当てと完全に一致する保証は
-  ありません。参考程度にご利用ください。
+  (Visual Studio 2005以降で追加された「すべて保存」「前后の場所へ移動」等は含めていません)。この世代・
+  素のVisual Studioにはヘッダ/ソース切り替えの組み込み機能が無い(Visual Assist等の拡張機能が無いと
+  使えない)と判断し、Alt+Oの割り当ては行っていません。
 - 行コメントの切り替え(Ctrl+/ 等)、複数選択、行の移動(Alt+↑/↓)など、サクラエディタに対応する機能が
   存在しないショートカットは割り当てていません。
+- **CSharp2005.key / VisualCpp2.key は削除しました。** 前者は`VisualStudio.key`と内容が完全に重複して
+  おり独立したプリセットである意味がなかったため、後者はUIの選択肢に配線されておらず実質到達不能な上、
+  対象(1990年代前半のVisual C++ 2)の当時の資料が乏しく確認精度も低かったため削除しました。
 
 ## ファイル形式について
 

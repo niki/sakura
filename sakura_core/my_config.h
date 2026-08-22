@@ -4,7 +4,7 @@
 
 #pragma warning(disable : 4244) // 型変換による警告
 #pragma warning(disable : 4267) // 型変換による警告
-#pragma warning(disable : 26495) // 未初期化による警告
+//#pragma warning(disable : 26495) // 未初期化による警告
 
 // clang-format off
 
@@ -1423,9 +1423,15 @@
 // 「キー割り当て(実験機能)」タブに、組み込みキーマッププリセットの選択コンボを追加 20260812
 //  - NKMM_FIX_KEYBIND_LIST_TAB(IDD_PROP_KEYBIND_LIST)の子機能。有効時のみ意味を持つ
 //  - keybind_presets/*.key(VSCode/Visual Studio/Visual Studio 6/Visual Basic 6/
-//    C# 2005/ReSharper)をsakura_rc.rcにRCDATAとして埋め込み、実行時にFindResource+
+//    ReSharper/Visual Assist)をsakura_rc.rcにRCDATAとして埋め込み、実行時にFindResource+
 //    一時ファイル経由でCImpExpKeybind::Import()へ渡す(keybind_presetsフォルダは
 //    実行時に不要)
+//  - 20260823 CSharp2005.key(VisualStudio.keyと内容が完全重複)とVisualCpp2.key
+//    (UI未配線・対象が古すぎて確認精度が低い)を削除。代わりにVisualAssist.keyを
+//    IDR_KEYBINDPRESET_VISUALASSISTとして正式に配線した。ReSharper.key/
+//    VisualAssist.keyには、実際にAlt+O(ReSharperはCtrl+Shift+Gも)で「同名の
+//    C/C++ヘッダ(ソース)を開く」(F_OPEN_HfromtoC)を持つことをWeb検索で確認した上で
+//    追加し、VisualStudio.keyとの差分にした(詳細はkeybind_presets/README.md参照)
 //  - プリセット適用は必ず「CShareData::ResetKeyBindToDefault()で既定へ戻してから、
 //    選んだプリセットの差分をインポートする」方式。直前まで別プリセットが当たって
 //    いた場合の残留を防ぐ。先頭の「サクラエディタ」はnResId=0扱いで、差分インポート
