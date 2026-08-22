@@ -131,6 +131,7 @@ private:
 	int							m_nMaxListHeight;	//!< 一覧の最大高さ(px、スクロール開始する高さ)
 	int							m_nChromeHeight;	//!< ダイアログ全体の高さのうち一覧を除いた分(px、フィルタ欄+余白)
 	int							m_nListRowHeight;	//!< 一覧1行の実高さ(px)。初めて1件以上表示された時点でキャッシュ(0=未確定)
+	int							m_nListBorderHeight;	//!< 一覧のウィンドウ矩形とクライアント矩形の高さの差(px、WS_BORDER分)。AdjustListHeight()が行数から求めた高さをウィンドウ矩形の高さへ変換する補正に使う 20260822
 };
 
 #endif // NKMM_COMMAND_PALETTE

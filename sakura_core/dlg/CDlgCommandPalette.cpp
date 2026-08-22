@@ -33,6 +33,7 @@
 #include "types/CType.h"
 
 #include <algorithm>
+#include <set>
 
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
@@ -234,6 +235,36 @@ static LRESULT CALLBACK PaletteFilterEditSubclassProc(
 }
 
 
+/*! ダイアログ自体のサブクラスプロシージャ。WS_BORDERを外した分、クライアント領域の
+	一番外側に自前で1デバイスピクセル幅の縁取りを描く。WS_BORDER(非クライアント側の縁)は
+	GetSystemMetrics(SM_CXBORDER)依存で、環境のDPI拡大率によっては1論理pxを超える太さで
+	描かれることがあるため、常に1デバイスピクセルになるここでの直描きに切り替えた 20260822
+*/
+static LRESULT CALLBACK PaletteDlgSubclassProc(
+	HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData )
+{
+	if( WM_PAINT == uMsg ){
+		LRESULT	lRet = ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+		RECT	rc;
+		::GetClientRect( hwnd, &rc );
+		HDC		hdc = ::GetDC( hwnd );
+		HPEN	hPen = ::CreatePen( PS_SOLID, 1, ::GetSysColor( COLOR_WINDOWFRAME ) );
+		HPEN	hOldPen = (HPEN)::SelectObject( hdc, hPen );
+		HBRUSH	hOldBrush = (HBRUSH)::SelectObject( hdc, ::GetStockObject( NULL_BRUSH ) );
+		::Rectangle( hdc, rc.left, rc.top, rc.right, rc.bottom );
+		::SelectObject( hdc, hOldBrush );
+		::SelectObject( hdc, hOldPen );
+		::DeleteObject( hPen );
+		::ReleaseDC( hwnd, hdc );
+		return lRet;
+	}else if( WM_NCDESTROY == uMsg ){
+		::RemoveWindowSubclass( hwnd, PaletteDlgSubclassProc, uIdSubclass );
+	}
+	return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+}
+
+
 CDlgCommandPalette::CDlgCommandPalette()
 	: CDialog( false )
 	, m_pcFuncLookup( NULL )
@@ -246,6 +277,7 @@ CDlgCommandPalette::CDlgCommandPalette()
 	, m_nMaxListHeight( 0 )
 	, m_nChromeHeight( 0 )
 	, m_nListRowHeight( 0 )
+	, m_nListBorderHeight( 0 )
 	, m_nSlideX( 0 )
 	, m_nSlideTargetY( 0 )
 	, m_nSlideStartY( 0 )
@@ -380,7 +412,7 @@ BOOL CDlgCommandPalette::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lPara
 	CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 
 	// 枠なしフローティングパネル化(検索ダイアログと同じ方式)。DWMの非クライアント描画
-	// (影)を無効化し、その代わりにsakura_rc.rcのWS_BORDERで薄い縁取りを付けている 20260818
+	// (影)を無効化し、その代わりに自前で薄い縁取りを付けている 20260818
 	{
 		const int	ncRenderingPolicy = DWMNCRP_DISABLED;
 		::DwmSetWindowAttribute( hwndDlg, DWMWA_NCRENDERING_POLICY, &ncRenderingPolicy, sizeof( ncRenderingPolicy ) );
@@ -388,10 +420,15 @@ BOOL CDlgCommandPalette::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lPara
 		// DWMNCRP_DISABLEDだけだと、キャプション無しのポップアップだと判別が
 		// 付きにくいためかWindows 11がアクセントカラーの太い縁を自動で描き足して
 		// しまう(このウィンドウ自体は描いていない)。DWMWA_BORDER_COLORを
-		// DWMWA_COLOR_NONEにしてこのDWM側の縁取りを止め、sakura_rc.rcのWS_BORDER
-		// による地味な1pxの縁(エディタ本体のウィンドウ枠と同じ見え方)だけにする 20260820
+		// DWMWA_COLOR_NONEにしてこのDWM側の縁取りを止める 20260820
 		const COLORREF	crNoBorder = DWMWA_COLOR_NONE;
 		::DwmSetWindowAttribute( hwndDlg, DWMWA_BORDER_COLOR, &crNoBorder, sizeof( crNoBorder ) );
+
+		// 縁取り自体は、以前はsakura_rc.rcのWS_BORDER(非クライアント側)に任せていたが、
+		// その太さはGetSystemMetrics(SM_CXBORDER)依存でDPI拡大率次第では1論理pxを
+		// 超えて太く見えることがあった。sakura_rc.rc側のWS_BORDERは外し、常に
+		// 1デバイスピクセル幅になるPaletteDlgSubclassProc側の直描きに置き換えた 20260822
+		::SetWindowSubclass( hwndDlg, PaletteDlgSubclassProc, 0, 0 );
 	}
 
 	HWND	hListView = GetItemHwnd( IDC_LIST_COMMANDPALETTE );
@@ -403,6 +440,16 @@ BOOL CDlgCommandPalette::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lPara
 		RECT	rcListInit;
 		::GetWindowRect( hListView, &rcListInit );
 		m_nMaxListHeight = rcListInit.bottom - rcListInit.top;
+
+		// 一覧はWS_BORDER付きのため、ウィンドウ矩形の高さ(m_nMaxListHeight)は
+		// クライアント矩形(=行が実際に収まる領域)よりボーダー分だけ大きい。
+		// AdjustListHeight()が「行数×行高さ」から求めた高さをそのままウィンドウ
+		// 矩形の高さとして設定すると、このボーダー分だけクライアント領域が
+		// 狭くなり最終行がわずかに見切れてしまうため、差分を控えておいて
+		// 補正に使う 20260822
+		RECT	rcListClientInit;
+		::GetClientRect( hListView, &rcListClientInit );
+		m_nListBorderHeight = m_nMaxListHeight - ( rcListClientInit.bottom - rcListClientInit.top );
 
 		RECT	rcWndInit;
 		::GetWindowRect( hwndDlg, &rcWndInit );
@@ -880,6 +927,13 @@ void CDlgCommandPalette::BuildAllRows()
 
 	if( NULL != m_pcFuncLookup ){
 		CommonSetting_KeyBind&	sKeyBind = GetDllShareData().m_Common.m_sKeyBind;
+		// 同じコマンドが複数のメニューカテゴリに登録されていることがある(例:
+		// F_JUMP_DIALOG「指定行へジャンプ」は「カーソル移動系」と「検索系」の
+		// 両方に載っている)。通常のプルダウンメニューではカテゴリごとに別の
+		// メニューとして出るため問題にならないが、コマンドパレットは全カテゴリを
+		// 1つのフラットな一覧にまとめるため、そのままでは同じコマンドが複数回
+		// 表示されてしまう。この一覧内で1度出た機能番号は以後スキップする 20260822
+		std::set<EFunctionCode>	setSeenFuncCode;
 		int	nCategoryCount = m_pcFuncLookup->GetCategoryCount();
 		for( int nCategory = 0; nCategory < nCategoryCount; ++nCategory ){
 			int	nItemCount = m_pcFuncLookup->GetItemCount( nCategory );
@@ -887,6 +941,9 @@ void CDlgCommandPalette::BuildAllRows()
 				// bGetUnavailable=falseで、未登録の外部マクロ枠は一覧から除く
 				EFunctionCode	nFuncCode = m_pcFuncLookup->Pos2FuncCode( nCategory, nPos, false );
 				if( F_DISABLE == nFuncCode ){
+					continue;
+				}
+				if( !setSeenFuncCode.insert( nFuncCode ).second ){
 					continue;
 				}
 
@@ -1253,7 +1310,10 @@ void CDlgCommandPalette::AdjustListHeight()
 
 	int	nDesiredListHeight = m_nMaxListHeight;
 	if( 0 < m_nListRowHeight ){
-		int	nNaturalHeight = nCount * m_nListRowHeight;
+		// +m_nListBorderHeight: 一覧のWS_BORDER分をウィンドウ矩形の高さに
+		// 上乗せしないと、クライアント領域(実際に行が収まる領域)が行数ぶんの
+		// 高さに足りず最終行が見切れる 20260822
+		int	nNaturalHeight = nCount * m_nListRowHeight + m_nListBorderHeight;
 		if( nNaturalHeight < m_nMaxListHeight ){
 			nDesiredListHeight = nNaturalHeight;
 		}
