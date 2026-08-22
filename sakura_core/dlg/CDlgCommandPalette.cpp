@@ -228,6 +228,23 @@ static LRESULT CALLBACK PaletteFilterEditSubclassProc(
 			}
 		}
 #endif // NKMM_COMMAND_PALETTE_ROMAJI
+	}else if( WM_SETFOCUS == uMsg || WM_KILLFOCUS == uMsg ){
+		LRESULT	lRet = ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+		// フォーカスの有無で切り替わる枠の強調表示(PaletteDlgSubclassProc側で描画)を
+		// 再描画させる。強調枠はフィルタ欄自身の外側(親ダイアログのクライアント領域)に
+		// 描いているため、フィルタ欄自身の再描画だけでは現れたり消えたりしない 20260822
+		HWND	hwndDlg = ::GetParent( hwnd );
+		RECT	rc;
+		::GetWindowRect( hwnd, &rc );
+		::MapWindowPoints( HWND_DESKTOP, hwndDlg, (POINT*)&rc, 2 );
+		// 強調枠はこの矩形からDpiScaleX(2)/DpiScaleY(2)外側にDpiScaleX(1)幅で描かれるため、
+		// 無効化する範囲もそれを覆えるだけの余裕を持たせる。bEraseはTRUEにしないと
+		// 背景が消されないまま再描画されてしまい、フォーカスが外れて枠が消えるはずの
+		// ときに前回描画した強調枠のピクセルが上書きされず残ってしまう
+		// (特に下辺だけが「下線」のように取り残されて見える不具合になっていた) 20260822
+		::InflateRect( &rc, DpiScaleX( 6 ), DpiScaleY( 6 ) );
+		::InvalidateRect( hwndDlg, &rc, TRUE );
+		return lRet;
 	}else if( WM_NCDESTROY == uMsg ){
 		::RemoveWindowSubclass( hwnd, PaletteFilterEditSubclassProc, uIdSubclass );
 	}
@@ -253,6 +270,23 @@ static LRESULT CALLBACK PaletteDlgSubclassProc(
 		HPEN	hOldPen = (HPEN)::SelectObject( hdc, hPen );
 		HBRUSH	hOldBrush = (HBRUSH)::SelectObject( hdc, ::GetStockObject( NULL_BRUSH ) );
 		::Rectangle( hdc, rc.left, rc.top, rc.right, rc.bottom );
+
+		// フィルタ欄がフォーカスを持っている間は、枠を強調色で縁取りしてフォーカスの
+		// 所在を分かりやすくする。色は一覧の絞り込み一致箇所のハイライトと同じ
+		// COLOR_HOTLIGHTを流用し、見た目の統一感を持たせる 20260822
+		HWND	hEditFilter = ::GetDlgItem( hwnd, IDC_EDIT_COMMANDPALETTE_FILTER );
+		if( NULL != hEditFilter && ::GetFocus() == hEditFilter ){
+			RECT	rcEdit;
+			::GetWindowRect( hEditFilter, &rcEdit );
+			::MapWindowPoints( HWND_DESKTOP, hwnd, (POINT*)&rcEdit, 2 );
+			::InflateRect( &rcEdit, DpiScaleX( 2 ), DpiScaleY( 2 ) );
+			HPEN	hFocusPen = ::CreatePen( PS_SOLID, DpiScaleX( 1 ), ::GetSysColor( COLOR_HOTLIGHT ) );
+			::SelectObject( hdc, hFocusPen );
+			::Rectangle( hdc, rcEdit.left, rcEdit.top, rcEdit.right, rcEdit.bottom );
+			::SelectObject( hdc, hOldPen );
+			::DeleteObject( hFocusPen );
+		}
+
 		::SelectObject( hdc, hOldBrush );
 		::SelectObject( hdc, hOldPen );
 		::DeleteObject( hPen );
