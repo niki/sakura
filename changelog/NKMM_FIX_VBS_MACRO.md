@@ -2,12 +2,39 @@
 
 対象フラグ: `NKMM_FIX_VBS_MACRO`(新規、`NKMM_FIX_QUICKJS_MACRO`と合わせて定義する前提)
 
-> **登録順について**: 動作検証のため一時的に`CVbsMacroMgr::declare()`を
-> `CWSHMacroManager::declare()`より前に呼ぶ順序にしていたが、検証完了に伴い
-> 2026-08-23付けで本来の意図(下記「拡張子の奪い合いを避ける設計」)通り、
-> `CWSHMacroManager::declare()`の**後**に呼ぶ順序へ戻した。WSHが使える環境
-> では従来通りWSHが`.vbs`を処理し、WSHが使えない環境でのみ本トランスパイラ
-> (QuickJS実行)へフォールバックする。
+> **登録順について**: `CSMacroMgr.cpp`のコンストラクタでは常に
+> `CWSHMacroManager::declare()`の後に`CVbsMacroMgr::declare()`を呼ぶ、下記
+> 「拡張子の奪い合いを避ける設計」の順序を維持している(単なる登録順の
+> 入れ替えによる一時しのぎのテストは廃止した)。「WSHが無い場合」の動作を
+> 確認したいときは、下記の`NKMM_USE_WSH`フラグを使うこと。
+
+> **`NKMM_USE_WSH`フラグ(2026-08-23追加、`NKMM_USE_PPA`と同じ位置付け)**:
+> `my_config.h`に新設。既定で有効(`#define NKMM_USE_WSH`)。単に登録順を
+> 入れ替えるだけの以前のテスト方法(WSHは実際には残ったまま、優先順位だけ
+> 変える)と違い、このフラグをコメントアウトすると`NKMM_USE_PPA`と全く同じ
+> 要領で**コンパイル自体**から次のファイルが除外される(内容全体が
+> `#ifdef NKMM_USE_WSH`で囲まれ、フラグ無効時は空の翻訳単位になる)。
+> - `sakura_core/macro/CWSHManager.h` / `.cpp`(`CWSHMacroManager`本体)
+> - `sakura_core/plugin/CWSHPlugin.h` / `.cpp`(`CWSHPlugin`/`CWSHPlug`。
+>   `CWSHMacroManager`に直接依存するプラグイン側ラッパー)
+>
+> `sakura_core/plugin/CPluginManager.cpp`の`GetPlugin()`(プラグイン種別を
+> 判定してインスタンス化するif/elseの連なり)は、`wsh`分岐を
+> `#ifdef NKMM_USE_WSH`で囲んだ上で、どの組み合わせのフラグでも構文が
+> 崩れないよう`if( false ){ ... }else if(...)...`という「絶対に成立しない
+> if を先頭に置く」定石で書き換えた(`qjs`分岐の既存の`#ifdef NKMM_FIX_QUICKJS_MACRO`
+> と同じ形に揃えている)。
+>
+> **`CWSHIfObj`/`CWSH`(`sakura_core/macro/CWSHIfObj.h,cpp`・`CWSH.h,cpp`)は
+> 対象外**。名前に"WSH"を含むが、実体はプラグイン/マクロにエディタの機能を
+> 公開するための共有基盤クラスで、`CQuickJSIfObjBinder`・`CDllPlugin`・
+> `COutlineIfObj`・`CComplementIfObj`・`CSmartIndentIfObj`・`CEditorIfObj`他、
+> `CWSH`と無関係な多数のファイルから参照されている。ここまで
+> `NKMM_USE_WSH`でゲートすると他エンジン・他機能が軒並みビルドできなく
+> なるため、意図的に対象から外した。
+>
+> `NKMM_USE_WSH`を無効にした状態でも`NKMM_FIX_VBS_MACRO`が有効であれば
+> `.vbs`はそのまま`CVbsMacroMgr`が処理する。
 
 > **実機検証で見つけた不具合の修正(2026-08-23)**: `macro_bench/checkall.vbs`・
 > `macro_bench/calendar.pas`移植版(`calendar.vbs`)に続き、既存の実運用寄りの

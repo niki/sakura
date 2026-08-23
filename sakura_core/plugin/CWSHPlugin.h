@@ -25,6 +25,8 @@
 		3. This notice may not be removed or altered from any source
 		   distribution.
 */
+#ifdef NKMM_USE_WSH
+
 #ifndef SAKURA_CWSHPLUGIN_EBA87CBD_779A_4AD3_AB4D_4BFE8E7E339AD_H_
 #define SAKURA_CWSHPLUGIN_EBA87CBD_779A_4AD3_AB4D_4BFE8E7E339AD_H_
 
@@ -89,4 +91,6 @@ private:
 };
 
 #endif /* SAKURA_CWSHPLUGIN_EBA87CBD_779A_4AD3_AB4D_4BFE8E7E339AD_H_ */
+
+#endif // NKMM_USE_WSH
 /*[EOF]*/

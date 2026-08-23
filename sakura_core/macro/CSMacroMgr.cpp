@@ -507,7 +507,12 @@ CSMacroMgr::CSMacroMgr()
 	CPPAMacroMgr::declare();
 #endif // NKMM_
 	CKeyMacroMgr::declare();
+#ifdef NKMM_USE_WSH
+	//	既定で有効。NKMM_USE_WSHをmy_config.hでコメントアウトすると、この
+	//	呼び出し自体が無くなり、CWSHMacroManagerはCMacroFactoryに一切
+	//	登録されなくなる(WSHが将来無くなった場合の動作確認用)。
 	CWSHMacroManager::declare();
+#endif // NKMM_
 #ifdef NKMM_FIX_QUICKJS_MACRO
 	CQuickJSMacroMgr::declare();
 #endif // NKMM_
@@ -515,10 +520,11 @@ CSMacroMgr::CSMacroMgr()
 	CPasMacroMgr::declare();
 #endif // NKMM_
 #ifdef NKMM_FIX_VBS_MACRO
-	//	".vbs"はCWSHMacroManagerと拡張子を共有する。登録順により、WSHの
-	//	ScriptEngineがレジストリに登録されている環境では従来通りWSHが
-	//	使われ、登録が無い環境でのみこちら(トランスパイラ経由のQuickJS
-	//	実行)へフォールバックする([[changelog/NKMM_FIX_VBS_MACRO.md]]参照)
+	//	".vbs"はCWSHMacroManagerと拡張子を共有する。登録順により、NKMM_USE_WSHが
+	//	有効かつWSHのScriptEngineがレジストリに登録されている環境では従来通り
+	//	WSHが使われ、NKMM_USE_WSHが無効、またはレジストリに登録が無い環境でのみ
+	//	こちら(トランスパイラ経由のQuickJS実行)へフォールバックする
+	//	([[changelog/NKMM_FIX_VBS_MACRO.md]]参照)
 	CVbsMacroMgr::declare();
 #endif // NKMM_
 

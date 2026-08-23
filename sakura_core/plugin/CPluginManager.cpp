@@ -549,8 +549,15 @@ CPlugin* CPluginManager::LoadPlugin( const TCHAR* pszPluginDir, const TCHAR* psz
 	std::wstring sPlugType;
 	cProfDef.IOProfileData( PII_PLUGIN, PII_PLUGIN_PLUGTYPE, sPlugType );
 
-	if( wcsicmp( sPlugType.c_str(), L"wsh" ) == 0 ){
+	//	NKMM_USE_WSH/NKMM_FIX_QUICKJS_MACROがどちらも無効な組み合わせでも
+	//	if/else ifの連なりを崩さないよう、絶対に成立しないif(false)を先頭に
+	//	置き、以降の各分岐をすべて"}else if"の形へ揃えている
+	if( false ){
+		// never reached; see comment above
+#ifdef NKMM_USE_WSH
+	}else if( wcsicmp( sPlugType.c_str(), L"wsh" ) == 0 ){
 		plugin = new CWSHPlugin( tstring(pszBasePath) );
+#endif // NKMM_
 #ifdef NKMM_FIX_QUICKJS_MACRO
 	}else if( wcsicmp( sPlugType.c_str(), L"qjs" ) == 0 ){
 		plugin = new CQuickJSPlugin( tstring(pszBasePath) );

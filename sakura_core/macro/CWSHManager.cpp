@@ -32,6 +32,7 @@
 */
 
 #include "StdAfx.h"
+#ifdef NKMM_USE_WSH
 #include "macro/CWSHManager.h"
 #include "macro/CWSH.h"
 #include "macro/CEditorIfObj.h"
@@ -159,3 +160,4 @@ void CWSHMacroManager::ClearParam()
 {
 	m_Params.clear();
 }
+#endif // NKMM_USE_WSH

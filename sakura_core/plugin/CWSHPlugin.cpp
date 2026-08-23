@@ -26,6 +26,7 @@
 		   distribution.
 */
 #include "StdAfx.h"
+#ifdef NKMM_USE_WSH
 #include "plugin/CWSHPlugin.h"
 #include "plugin/CPluginIfObj.h"
 #include "macro/CWSHManager.h"
@@ -110,3 +111,4 @@ bool CWSHPlugin::InvokePlug( CEditView* view, CPlug& plug, CWSHIfObj::List& para
 
 	return true;
 }
+#endif // NKMM_USE_WSH

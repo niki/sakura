@@ -943,6 +943,21 @@
 #define NKMM_FIX_PASCAL_MACRO
 
 //------------------------------------------------------------------
+// WSH(Windows Script Host)ベースのマクロエンジンを使うかどうか 20260823
+//  - 既定で有効(WSHが従来通り使える環境向け)。WSHが将来のWindowsで廃止/
+//    無効化された場合の動作確認用に、このフラグをコメントアウトすると
+//    CWSHMacroManager::declare()自体を呼ばなくなり、レジストリの実際の
+//    状態に関わらず確実にWSH経路を無効化できる(単なる登録順の変更と
+//    異なり、CWSHMacroManager::CreatorがCMacroFactoryに一切登録されなく
+//    なるため、より確実な「WSHが無い」テストになる)。無効にすると拡張子
+//    ".vbs"はNKMM_FIX_VBS_MACRO側のCVbsMacroMgr(トランスパイラ経由の
+//    QuickJS実行)が処理する(NKMM_FIX_VBS_MACROも無効な場合、".vbs"を
+//    処理するCreatorが無くなる点に注意)。
+//  - sakura_core\macro\CSMacroMgr.cpp
+//------------------------------------------------------------------
+#define NKMM_USE_WSH
+
+//------------------------------------------------------------------
 // WSH(VBScript)が無い/使えない環境でもVBScript風マクロを使えるようにする 20260823
 //  - WSHはOS登録済みの外部COMコンポーネント依存で、無い/廃止された環境では
 //    ".vbs"マクロがそもそも動かない。CVbsToJsTranspilerでVBScript風ソースを

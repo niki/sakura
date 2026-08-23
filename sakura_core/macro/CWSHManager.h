@@ -19,6 +19,8 @@
 
 */
 
+#ifdef NKMM_USE_WSH
+
 #ifndef __CWSH_Manager_H__
 #define __CWSH_Manager_H__
 
@@ -57,3 +59,5 @@ protected:
 	//static void ReadyCommands(CIfObj *Object, MacroFuncInfo *Info, int flags);
 };
 #endif
+
+#endif // NKMM_USE_WSH
