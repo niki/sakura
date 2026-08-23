@@ -1452,6 +1452,10 @@
 //    VisualAssist.keyには、実際にAlt+O(ReSharperはCtrl+Shift+Gも)で「同名の
 //    C/C++ヘッダ(ソース)を開く」(F_OPEN_HfromtoC)を持つことをWeb検索で確認した上で
 //    追加し、VisualStudio.keyとの差分にした(詳細はkeybind_presets/README.md参照)
+//  - 20260823 VisualAssist.key/IDR_KEYBINDPRESET_VISUALASSISTを削除。ReSharper.key
+//    との差分がAlt+O(ヘッダ/ソース切り替え)1行のみで、かつVisual Assist自体の
+//    知名度がReSharperより低いため、独立したプリセットとして維持する価値が薄いと
+//    判断した(詳細はkeybind_presets/README.md参照)
 //  - プリセット適用は必ず「CShareData::ResetKeyBindToDefault()で既定へ戻してから、
 //    選んだプリセットの差分をインポートする」方式。直前まで別プリセットが当たって
 //    いた場合の残留を防ぐ。先頭の「サクラエディタ」はnResId=0扱いで、差分インポート

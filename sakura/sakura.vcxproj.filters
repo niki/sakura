@@ -1507,9 +1507,6 @@
     <None Include="..\keybind_presets\VisualBasic6.key">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\keybind_presets\VisualAssist.key">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\keybind_presets\ReSharper.key">
       <Filter>Resource Files</Filter>
     </None>
