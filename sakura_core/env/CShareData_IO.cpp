@@ -2717,6 +2717,18 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 	// OldVerの切り捨て
 	bOldVer = false;
 	sKeyBind.m_nKeyNameArrNum = KEYNAME_SIZE;
+	// @date 20260823 nKeyNameArrUsedはこの関数の先頭(このフォースより前、まだ
+	// ファイル自身のKEYBIND_COUNTが入っている状態)でキャプチャされているため、
+	// ここで合わせてフォースしないと、末尾の「sKeyBind.m_nKeyNameArrNum =
+	// nKeyNameArrUsed;」でKEYBIND_COUNT件数まで巻き戻ってしまう。
+	// 既存キーの上書き(下のelse節)はnKeyNameArrUsedをインクリメントしないため、
+	// 100件未満のKEYBIND_COUNTを持つ部分差分ファイル(プリセット等)をインポートすると、
+	// マージ側(CImpExpKeybind::Import)がKEYBIND_COUNT件目以降の上書きを
+	// 一切拾えなくなる(オブジェクト自体は正しい位置に書き込まれているが、件数が
+	// 足りないと後続のループ範囲から漏れる)。実害の例: たまたま既定テーブル上の
+	// 位置がKEYBIND_COUNT未満だったキー(例: F4)だけ反映され、それ以外(G/H/S/R等)は
+	// 反映されないという再現しにくいバグになっていた
+	nKeyNameArrUsed = KEYNAME_SIZE;
 #endif // NKMM_
 
 	for( i = 0; i < sKeyBind.m_nKeyNameArrNum; ++i ){

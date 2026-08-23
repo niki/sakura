@@ -1495,6 +1495,30 @@
     <None Include="..\resource\MainMenu.ini">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\keybind_presets\VSCode.key">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\keybind_presets\VisualStudio.key">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\keybind_presets\VisualStudio6.key">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\keybind_presets\VisualBasic6.key">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\keybind_presets\VisualAssist.key">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\keybind_presets\ReSharper.key">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\keybind_presets\SublimeText.key">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\keybind_presets\NotepadPlusPlus.key">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\sakura_core\sakura_rc.rc">

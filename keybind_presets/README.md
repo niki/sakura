@@ -14,6 +14,8 @@
 | VisualBasic6.key | Visual Basic 6 |
 | ReSharper.key | ReSharper（Visual Studio 拡張） |
 | VisualAssist.key | Visual Assist（Visual Studio 拡張） |
+| SublimeText.key | Sublime Text |
+| NotepadPlusPlus.key | Notepad++ |
 
 ## 使い方
 
@@ -45,13 +47,73 @@
 - **CSharp2005.key / VisualCpp2.key は削除しました。** 前者は`VisualStudio.key`と内容が完全に重複して
   おり独立したプリセットである意味がなかったため、後者はUIの選択肢に配線されておらず実質到達不能な上、
   対象(1990年代前半のVisual C++ 2)の当時の資料が乏しく確認精度も低かったため削除しました。
+- **Grep(Ctrl+Shift+F)/Grep置換(Ctrl+Shift+H)の不具合を修正しました(20260823)。** VSCode.key/
+  VisualStudio.key/ReSharper.key/VisualAssist.keyのCtrl+Shift+Fは、検索ダイアログを開く`F_SEARCH_DIALOG`
+  や置換ダイアログを開く`F_REPLACE_DIALOG`と対になるべきところ、誤って「ダイアログを開かず直前の設定で
+  即実行する」`F_GREP`(ダイアログ版は`F_GREP_DIALOG`)を割り当てていました。Ctrl+Shift+Hに至っては
+  何も割り当てられていませんでした。実際のVSCode/Visual Studioは共にCtrl+Shift+F=Find in Files、
+  Ctrl+Shift+H=Replace in Filesでダイアログ/パネルを開く動作のため、`F_GREP_DIALOG`(Ctrl+Shift+F)・
+  `F_GREP_REPLACE_DLG`(Ctrl+Shift+H)に修正しました。
+- **VSCode.key に、公式のデフォルトキーバインド一覧(https://code.visualstudio.com/docs/reference/default-keybindings )
+  と突き合わせて見つかった不足分を追加しました(20260823)。**
+  - Ctrl+Shift+S(Save As...) → `F_FILESAVEAS_DIALOG`。既定値にはあった割り当てが、Sキー行がプリセットに
+    含まれているせいで無言で消えていた(Ctrl+Shift+Sの不具合と同種)
+  - Ctrl+Shift+O(Go to Symbol) → `F_OUTLINE`(アウトライン解析)
+  - Ctrl+P(Quick Open) → `F_COMMAND_PALETTE`(最近使用したファイルも一覧に出るため代用可)
+  - Ctrl+L(Select current line) → `F_SELECTLINE`
+  - Ctrl+Shift+\(Jump to matching bracket) → `F_BRACKETPAIR`
+  - Alt+Z(Toggle Word Wrap) → `F_WRAPWINDOWWIDTH`(折り返しモードを巡回するトグル)
+  - 一方、Ctrl+D(複数選択)・Ctrl+/(行コメント切替)・Alt+↑↓(行の移動)・Ctrl+T(ワークスペース全体の
+    シンボル検索)・Ctrl+Shift+M(診断一覧)など対応機能が無いものは引き続き未割り当て。また`Ctrl+K Ctrl+S`
+    のような2打鍵チェイン系ショートカット(Save All等)は、サクラのキー割り当てが「1物理キー+モディファイア」
+    までしか表現できない構造のため、原理的に再現できません
+  - [日本語の紹介記事](https://qiita.com/12345/items/64f4372fbca041e949d0)とも突き合わせ、
+    Ctrl+,(Open Settings) → `F_OPTION`(共通設定を開く)を追加しました(20260823)。カンマキーは
+    元々全モディファイアが未割り当てだったため既存設定との衝突はありません。同記事の他の項目
+    (編集/カーソル移動/選択/検索置換/ビュー表示/マルチカーソル/ファイル操作/エディタレイアウト/
+    折りたたみ等)は、既にVSCode.keyに反映済みか、サクラに対応機能が無いか、2打鍵チェイン系で
+    再現不可能なもののいずれかでした
+- **SublimeText.key / NotepadPlusPlus.key を追加しました(20260823)。** IDEではなくテキストエディタを
+  参考にした方が、デバッグ・リファクタリング等の対応不可能な項目をふるい落とす必要がなく機能が素直に
+  対応するという判断から追加。
+  - **SublimeText.key**: 実際に配布されている`Default (Windows).sublime-keymap`(JSON、
+    [参照元](https://github.com/bradrobertson/sublime-packages/blob/master/Default/Default%20(Windows).sublime-keymap))
+    の生データを直接突き合わせたため確認精度は高いです。Ctrl+L(SelectLine)、Ctrl+R(goto_symbol→Outline)、
+    Ctrl+M(move_to brackets→BracketPair)、Ctrl+Shift+D(DuplicateLine)、Ctrl+Shift+K(DeleteLine)等。
+    追加で[日本語の紹介記事](https://qiita.com/seafield1979/items/56d4833dae818dcf85ae)とも
+    突き合わせ、Ctrl+P(Goto Anything→`F_COMMAND_PALETTE`)とCtrl+J(Join Lines→`F_MERGE`)を
+    追加しました(20260823)。同記事のCtrl+;/Ctrl+-によるフォントサイズ変更は、他の一次資料と
+    食い違い確証が持てなかったため採用していません(サクラの既定でもCtrl+マウスホイールで
+    同等の操作ができるため実害は小さいと判断)。
+  - **NotepadPlusPlus.key**: Notepad++はデフォルトキー割り当てが実行ファイルに埋め込み式で、Sublimeのような
+    生の設定ファイルが無いため、コミュニティのショートカット一覧投稿([参照元](https://community.notepad-plus-plus.org/topic/12576/list-of-all-assigned-keyboard-shortcuts))と、
+    Ctrl+L/Ctrl+Shift+Lの実際の内部コマンド名(SCILINECUT/SCILINEDELETE)が確認できた
+    [別スレッド](https://community.notepad-plus-plus.org/topic/13077/keyboard-shortcut-to-delete-current-line)
+    の2件で裏取りしています。SublimeText.keyより確認精度はやや低いため、収録項目は特に確度の高いものに
+    絞りました(Find in Files相当のCtrl+Shift+F等、確証を得られなかったものは割り当てていません)。
+- **TeraPad.key は追加していません。** Web検索で確認した限り、断片的なブログ記事はあるものの
+  ショートカット一覧を網羅した公式・準公式資料が見つからず、`VisualCpp2.key`と同様に確認精度が
+  低くなる懸念が強いため保留しています。付属の`Keys.txt`(TeraPad本体に同梱)等、一次資料が
+  手元にあれば作成できます。
 
 ## ファイル形式について
 
 サクラエディタの `.key` ファイル(`KEYBIND_VERSION=SakuraKeyBind_Ver4`)形式で手書きしています。
-実機でのインポート動作確認はできていません。文法上の詳細は
-`sakura_core/typeprop/CImpExpManager.cpp`(`CImpExpKeybind::Import`/`Export`)と
+文法上の詳細は`sakura_core/typeprop/CImpExpManager.cpp`(`CImpExpKeybind::Import`/`Export`)と
 `sakura_core/env/CShareData_IO.cpp`(`IO_KeyBind`)を参照してソースコードから起こしたものです。
+
+**`KEYBIND_COUNT`が100未満の「差分だけ」のファイル(このディレクトリの全プリセットが該当)は、
+20260823まで`sakura_core/env/CShareData_IO.cpp`の`IO_KeyBind()`側の不具合で正しく動いて
+いませんでした。** `Import()`は成功(true)を返すのに、既定テーブル上の位置が`KEYBIND_COUNT`
+件目以降にあるキー(G/H/S/R等ほとんど)は一切上書きされず、たまたま位置が先頭寄りだったキー
+(例: F4)だけ反映される、という気付きにくい壊れ方をしていました。原因は`IO_KeyBind()`終盤の
+「`sKeyBind.m_nKeyNameArrNum = nKeyNameArrUsed;`」で、`nKeyNameArrUsed`が関数先頭
+(既定値へのフォースより前、まだファイル自身の`KEYBIND_COUNT`が入っている状態)でキャプチャ
+されており、既存キーの上書きではインクリメントされないため、100件未満の`.key`ファイルを
+読み込むと必ず巻き戻っていたのが原因です。`IO_KeyBind()`側で修正済みのため、以後はこの
+ディレクトリのような差分形式のファイルも正しく動作します(`KEYBIND_COUNT=100`のフル
+エクスポート形式である`Default.key`はこの不具合の影響を受けていませんでした)。
+文字コード・改行コードはCRLF+UTF-8(BOM有無はどちらでも動作します)で統一しています。
 
 各`KeyBind[NNN]=`行の末尾(キー名の後ろ)にはTAB区切りで、8モディファイア分の割り当て機能名を
 参考情報として追記しています(未割り当てのスロット=`_`)。実際のキー割り当て(機能コード8個)には

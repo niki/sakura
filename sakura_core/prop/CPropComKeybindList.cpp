@@ -46,6 +46,8 @@ static const SKeybindPresetInfo	s_KeybindPresetTable[] = {
 	{ IDR_KEYBINDPRESET_VISUALBASIC6,  L"Visual Basic 6" },
 	{ IDR_KEYBINDPRESET_RESHARPER,     L"ReSharper(Visual Studio拡張)" },
 	{ IDR_KEYBINDPRESET_VISUALASSIST,  L"Visual Assist(Visual Studio拡張)" },
+	{ IDR_KEYBINDPRESET_SUBLIMETEXT,   L"Sublime Text" },
+	{ IDR_KEYBINDPRESET_NOTEPADPLUSPLUS, L"Notepad++" },
 };
 
 //! プリセット選択コンボの先頭項目(index 0)の表示文字列。現在のキー割り当てが
@@ -111,19 +113,46 @@ static bool ImportPresetKeyBindInto( HINSTANCE hInst, CommonSetting& targetCommo
 	有効データ数(m_nKeyNameArrNum)と、そのぶんのm_pKeyNameArrの内容だけを比較する。
 	m_VKeyToKeyNameArrはm_pKeyNameArrから機械的に導出される逆引き用のキャッシュに過ぎず、
 	比較対象に含めなくても機能的な一致判定としては十分なため対象外にしている。
+
+	@date 20260823 memcmpによる構造体丸ごとの比較をやめ、m_nKeyCode/m_nFuncCodeArrだけを
+		フィールド単位で比較するように修正。KEYDATA::m_szKeyName[30]は文字列終端より後ろが
+		未初期化のまま残ることがあり(CShareData_IO::IO_KeyBind内のローカル変数tmpKeydataが
+		ゼロ初期化されずstrcpy分しか書かれないため)、memcmpだとそのゴミバイトまで比較して
+		しまい、実際に適用した結果(ApplyPreset)と判定用に再現した結果(DetectCurrentPresetIndex)
+		とでスタック上のゴミが食い違って本来一致するはずの組み合わせが不一致になり、代わりに
+		別の(ゴミがたまたま噛み合った)プリセットが誤って一致判定されるバグがあった。
+		m_szKeyNameは表示用ラベルに過ぎず、キー割り当てとしての同一性には無関係なので
+		比較対象から外した。
 */
 static bool IsSameKeyBind( const CommonSetting_KeyBind& a, const CommonSetting_KeyBind& b )
 {
 	if( a.m_nKeyNameArrNum != b.m_nKeyNameArrNum ){
 		return false;
 	}
-	return 0 == memcmp( a.m_pKeyNameArr, b.m_pKeyNameArr, sizeof(KEYDATA) * a.m_nKeyNameArrNum );
+	for( int i = 0; i < a.m_nKeyNameArrNum; ++i ){
+		const KEYDATA&	ka = a.m_pKeyNameArr[i];
+		const KEYDATA&	kb = b.m_pKeyNameArr[i];
+		if( ka.m_nKeyCode != kb.m_nKeyCode ){
+			return false;
+		}
+		if( 0 != memcmp( ka.m_nFuncCodeArr, kb.m_nFuncCodeArr, sizeof(ka.m_nFuncCodeArr) ) ){
+			return false;
+		}
+	}
+	return true;
 }
 #endif // NKMM_FIX_KEYBIND_PRESET_COMBO
 
 //! 一覧の各行(nRow)が表す機能コード。ヘッダ行はF_DISABLEを積む。
 //! 「登録」ボタンで選択中の行に何を割り当てるか調べるために使う 20260803
 static std::vector<EFunctionCode>	s_vRowFuncCodes;
+
+#ifdef NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
+//! 一覧の各行(nRow)が既定値からキー変更されているか。s_vRowFuncCodesと対応する
+//! (区切り行はfalseを積む)。UpdateList()で一度だけ求めてキャッシュし、
+//! NM_CUSTOMDRAWでの描画のたびに毎回比較し直さずに済むようにする 20260823
+static std::vector<bool>	s_vRowIsModified;
+#endif // NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
 
 //! キーが既に何かに割り当て済みのときの警告色(セマンティックカラー:警告黄。
 //! クリーム背景+琥珀色文字の配色) 20260803
@@ -1297,6 +1326,59 @@ INT_PTR CPropKeybindList::DispatchEvent(
 							::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT );
 							return TRUE;
 						}
+#ifdef NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
+						// 通常行(区切り行・選択中の行を除く)で、既定値からキー変更されている行は
+						// 「キー」列(iSubItem==1)だけ文字色を変えて表示する。
+						// @date 20260823 当初はCDRF_NOTIFYSUBITEMDRAW+clrText+CDRF_NEWFONTで
+						// システムの既定描画に任せる方式にしていたが、実機でほとんどの行に
+						// 色が反映されない(区切り行・選択行の直後などごく一部でしか効かない)
+						// 不具合があったため、選択行(直前のbRowSelectedブロック)と同じ
+						// 「背景・文字を自前で描画してCDRF_SKIPDEFAULTを返す」方式に統一した
+						{
+							bool	bRowModified = ( 0 <= nItem ) && ( (size_t)nItem < s_vRowIsModified.size() ) && s_vRowIsModified[nItem];
+							if( bRowModified ){
+								HDC	hdc = plvcd->nmcd.hdc;
+								RECT	rcItem;
+								RECT	rcClient;
+								ListView_GetItemRect( hwndListDraw, nItem, &rcItem, LVIR_BOUNDS );
+								::GetClientRect( hwndListDraw, &rcClient );
+								rcItem.right = rcClient.right;
+								::InflateRect( &rcItem, 0, 1 );
+
+								HBRUSH	hbrBack = ::CreateSolidBrush( ::GetSysColor( COLOR_WINDOW ) );
+								::FillRect( hdc, &rcItem, hbrBack );
+								::DeleteObject( hbrBack );
+
+								::SetBkMode( hdc, TRANSPARENT );
+								::SetTextColor( hdc, ::GetSysColor( COLOR_WINDOWTEXT ) );
+
+								for( int nSubItem = 0; nSubItem < 2; ++nSubItem ){
+									RECT	rcSub;
+									if( 0 == nSubItem ){
+										ListView_GetItemRect( hwndListDraw, nItem, &rcSub, LVIR_LABEL );
+										rcSub.left += 2;
+									}else{
+										ListView_GetSubItemRect( hwndListDraw, nItem, nSubItem, LVIR_BOUNDS, &rcSub );
+										rcSub.left += 6;
+									}
+									// 「キー」列(iSubItem==1)だけ太字にする。種別見出しと同じ太字フォントを流用する 20260823
+									HFONT	hOldFont = NULL;
+									if( 1 == nSubItem && NULL != m_hKeybindListBoldFont ){
+										hOldFont = (HFONT)::SelectObject( hdc, m_hKeybindListBoldFont );
+									}
+									TCHAR	szText[256];
+									ListView_GetItemText( hwndListDraw, nItem, nSubItem, szText, _countof(szText) );
+									::DrawText( hdc, szText, -1, &rcSub, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX );
+									if( NULL != hOldFont ){
+										::SelectObject( hdc, hOldFont );
+									}
+								}
+
+								::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT );
+								return TRUE;
+							}
+						}
+#endif // NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
 					}
 					::SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_DODEFAULT );
 					return TRUE;
@@ -1363,6 +1445,13 @@ void CPropKeybindList::UpdateList( HWND hwndDlg )
 
 	ListView_DeleteAllItems( hListView );
 	s_vRowFuncCodes.clear();
+#ifdef NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
+	s_vRowIsModified.clear();
+	// 既定値からの変更有無を判定するための一時的な既定値スナップショット。
+	// 実際の割り当て(m_Common.m_sKeyBind)には一切触れない 20260823
+	CommonSetting_KeyBind	cDefaultKeyBind;
+	CShareData::ResetKeyBindToDefault( cDefaultKeyBind );
+#endif // NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
 
 	int	nRow = 0;
 	int	nCategoryCount = m_cLookup.GetCategoryCount();
@@ -1391,6 +1480,9 @@ void CPropKeybindList::UpdateList( HWND hwndDlg )
 			HeaderItem.lParam   = -1;	// カテゴリ区切り行の目印(NM_CUSTOMDRAWで判別)
 			ListView_InsertItem( hListView, &HeaderItem );
 			s_vRowFuncCodes.push_back( F_DISABLE );
+#ifdef NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
+			s_vRowIsModified.push_back( false );	// 区切り行は対象外
+#endif // NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
 			++nRow;
 		}
 
@@ -1455,6 +1547,31 @@ void CPropKeybindList::UpdateList( HWND hwndDlg )
 
 			LPARAM	nRowParam = ( -1 == nKeyIndex ) ? -2 : ( ( (LPARAM)nKeyIndex << 4 ) | (LPARAM)nModifier );
 			s_vRowFuncCodes.push_back( nFuncCode );
+#ifdef NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
+			// この機能の既定値でのショートカット文字列を求め、現在の表示(sKeys)と
+			// 文字列比較する(複数キー・並び順込みで比較するので、単純な集合比較より
+			// 厳密だが、順序違いだけの実質同一な場合を誤検知しうる。実際には
+			// GetKeyStrList()がキーコード表の並び順で返すため、通常は起きない) 20260823
+			CNativeT**	ppcDefaultKeyList = NULL;
+			int	nDefaultKeyNum = CKeyBind::GetKeyStrList(
+				G_AppInstance(),
+				cDefaultKeyBind.m_nKeyNameArrNum,
+				(KEYDATA*)cDefaultKeyBind.m_pKeyNameArr,
+				&ppcDefaultKeyList,
+				nFuncCode,
+				TRUE
+			);
+			std::wstring	sDefaultKeys;
+			for( int i = 0; i < nDefaultKeyNum; ++i ){
+				if( 0 < i ){
+					sDefaultKeys += L", ";
+				}
+				sDefaultKeys += ppcDefaultKeyList[i]->GetStringPtr();
+				delete ppcDefaultKeyList[i];
+			}
+			delete [] ppcDefaultKeyList;
+			s_vRowIsModified.push_back( sKeys != sDefaultKeys );
+#endif // NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
 
 			LV_ITEM	Item;
 			::ZeroMemory( &Item, sizeof_raw( Item ) );
@@ -1482,6 +1599,9 @@ void CPropKeybindList::UpdateList( HWND hwndDlg )
 		if( !sFilter.empty() && !bAnyChildAdded ){
 			ListView_DeleteItem( hListView, nHeaderRow );
 			s_vRowFuncCodes.erase( s_vRowFuncCodes.begin() + nHeaderRow );
+#ifdef NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
+			s_vRowIsModified.erase( s_vRowIsModified.begin() + nHeaderRow );
+#endif // NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
 			nRow = nHeaderRow;
 		}
 	}

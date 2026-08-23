@@ -1423,9 +1423,29 @@
 // 「キー割り当て(実験機能)」タブに、組み込みキーマッププリセットの選択コンボを追加 20260812
 //  - NKMM_FIX_KEYBIND_LIST_TAB(IDD_PROP_KEYBIND_LIST)の子機能。有効時のみ意味を持つ
 //  - keybind_presets/*.key(VSCode/Visual Studio/Visual Studio 6/Visual Basic 6/
-//    ReSharper/Visual Assist)をsakura_rc.rcにRCDATAとして埋め込み、実行時にFindResource+
-//    一時ファイル経由でCImpExpKeybind::Import()へ渡す(keybind_presetsフォルダは
-//    実行時に不要)
+//    ReSharper/Visual Assist/Sublime Text/Notepad++)をsakura_rc.rcにRCDATAとして
+//    埋め込み、実行時にFindResource+一時ファイル経由でCImpExpKeybind::Import()へ渡す
+//    (keybind_presetsフォルダは実行時に不要)
+//  - 20260823 SublimeText.key/NotepadPlusPlus.keyを追加(IDR_KEYBINDPRESET_
+//    SUBLIMETEXT=249/IDR_KEYBINDPRESET_NOTEPADPLUSPLUS=251)。IDEよりテキスト
+//    エディタの方が対応不能な項目(デバッグ/リファクタリング等)が少なく素直に
+//    対応するとの判断。TeraPadは公式のショートカット一覧資料が見つからず
+//    確認精度が低いため見送った(詳細はkeybind_presets/README.md参照)
+//  - 20260823 CImpExpKeybind::Import()がKEYBIND_COUNT<100の差分形式ファイル
+//    (このディレクトリの全プリセットが該当)で正しく動かない不具合を発見・修正。
+//    原因はsakura_core/env/CShareData_IO.cppのIO_KeyBind()終盤にある
+//    「sKeyBind.m_nKeyNameArrNum = nKeyNameArrUsed;」で、nKeyNameArrUsedが
+//    関数先頭(既定値へのフォースより前)でキャプチャされており、既存キーの
+//    上書きではインクリメントされないため、ファイル自身のKEYBIND_COUNT件数まで
+//    巻き戻ってしまっていた。結果、後続のCImpExpKeybind::Import()側マージ処理が
+//    KEYBIND_COUNT件目以降の変更(たまたま既定テーブル上の位置がそれより後ろの
+//    キー、G/H/S/R等ほとんど)を一切拾えず、位置が先頭寄りだったキー(例: F4)だけ
+//    反映されるという再現しにくい壊れ方をしていた(Import()自体は成功(true)を
+//    返すため気付きにくい)。IO_KeyBind()側でnKeyNameArrUsedも既定値フォースと
+//    同時に補正して解消(詳細はkeybind_presets/README.md参照)。
+//    keybind_presets/*.keyはsakura.vcxproj(と.filters)にも`<None>`+
+//    ResourceCompileのAdditionalDependenciesとして登録し、編集時にsakura_rc.rcを
+//    手動でtouchしなくても再ビルドで確実に反映されるようにした
 //  - 20260823 CSharp2005.key(VisualStudio.keyと内容が完全重複)とVisualCpp2.key
 //    (UI未配線・対象が古すぎて確認精度が低い)を削除。代わりにVisualAssist.keyを
 //    IDR_KEYBINDPRESET_VISUALASSISTとして正式に配線した。ReSharper.key/
@@ -1485,6 +1505,30 @@
 //  - sakura_core\prop\CPropComKeybindList.cpp
 //------------------------------------------------------------------
 #define NKMM_FIX_KEYBIND_CAPTURE_MOUSE
+
+//------------------------------------------------------------------
+// 「ショートカット一覧」の「キー」列を、既定値から変更されている行だけ
+// 太字にして一目で分かるようにする 20260823
+//  - NKMM_FIX_KEYBIND_LIST_TAB(IDD_PROP_KEYBIND_LIST)の子機能。有効時のみ意味を持つ。
+//    NKMM_FIX_KEYBIND_TOOLBAR_RESETが提供するCShareData::ResetKeyBindToDefault()
+//    (CommonSetting_KeyBind単体を既定値化できる版)に依存するため、そちらも合わせて
+//    定義すること
+//  - UpdateList()で一覧を作り直すたびに、ResetKeyBindToDefault()で作った一時的な
+//    既定値スナップショット1つに対して全行のCKeyBind::GetKeyStrList()結果を求め、
+//    現在の表示文字列と1回だけ比較する(NM_CUSTOMDRAWの描画のたびに毎回比較すると
+//    スクロールごとに全行分の比較が走ってしまうため、結果をs_vRowIsModifiedへ
+//    s_vRowFuncCodesと対応する形でキャッシュしておく)
+//  - 比較にはIsSameKeyBind()と同じ理由でCKeyBind::GetKeyStrList()が返す文字列同士の
+//    比較を使う(KEYDATA構造体をmemcmpすると、末尾の未初期化領域の影響を受けるため)
+//  - 「キー」列(iSubItem==1)だけを対象にしたいため、当初はNM_CUSTOMDRAWで通常行に対して
+//    CDRF_NOTIFYSUBITEMDRAWを返しCDDS_ITEMPREPAINT|CDDS_SUBITEMでclrTextを差し替える
+//    方式にしていたが、実機でほとんどの行に反映されない不具合があったため、選択中の行
+//    (bRowSelectedブロック)と同じ「背景・文字を自前で描画してCDRF_SKIPDEFAULTを返す」
+//    方式に統一した。文字色ではなく太字にしたのも同じ描画パス内で完結させるため
+//    (種別区切り行と同じm_hKeybindListBoldFontを「キー」列にだけ適用する)
+//  - sakura_core\prop\CPropComKeybindList.cpp
+//------------------------------------------------------------------
+#define NKMM_FIX_KEYBIND_LIST_MODIFIED_BOLD
 
 //------------------------------------------------------------------
 // 対括弧の強調表示を通常の行描画パスに統合する 20260814
