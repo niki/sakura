@@ -107,6 +107,34 @@
   - Ctrl+I(IncrementalSearch)・Ctrl+Shift+T(WordTranspose)・Ctrl+↑/↓(ScrollLine)等は
     対応する機能がサクラに無いため見送り。折りたたみ・複数キャレット・コード解析系
     (Ctrl+M系、Ctrl+K系のチェイン)は引き続き対象外
+- **「カーソル行を上/下に移動」(`F_MOVE_LINE_UP`/`F_MOVE_LINE_DOWN`)をネイティブ化したのに伴い(20260823)、
+  対応する各プリセットに割り当てを追加しました(20260824)。** サクラの既定値自体はUp/Downキーの
+  Shift+Altスロットに割り当て済み(20260823のコミットで設定)ですが、各プリセットは対象エディタの
+  実際のショートカットに合わせて別スロットへ明示的に割り当てています。
+  - **VSCode.key**: Alt+↑/↓(`editor.action.moveLinesUpAction`/`DownAction`)。
+    [公式デフォルトキーバインド一覧](https://code.visualstudio.com/docs/reference/default-keybindings)
+    で確認。`.key`ファイルの各スロットは値0が「サクラの既定にフォールバック」を意味する
+    (`CKeyBind::GetFuncCodeAt`、明示的な無効化ではない)ため、Up/DownどちらのAltスロットも、
+    このプリセットを適用するとサクラの既定でAlt+↑/↓に入っている「(矩形選択)カーソル上下移動」
+    (`F_UP_BOX`/`F_DOWN_BOX`)が上書きされます。矩形選択のカーソル移動はCtrl+Alt+↑/↓
+    (`F_UP2_BOX`/`F_DOWN2_BOX`、２行ごと)にも別途割り当てられており、このプリセットでは
+    上書きしていないため、矩形選択自体はキーボードだけでも引き続き操作できます。
+  - **SublimeText.key / NotepadPlusPlus.key**: Ctrl+Shift+↑/↓(`swap_line_up`/`swap_line_down`)。
+    SublimeTextは前述の[Default (Windows).sublime-keymap](https://github.com/bradrobertson/sublime-packages/blob/master/Default/Default%20(Windows).sublime-keymap)
+    で確認。Notepad++は「Move Up/Down Current Line」(Edit > Line Operations)がCtrl+Shift+↑/↓に
+    既定で割り当てられていることを、[コミュニティフォーラムのスレッド](https://community.notepad-plus-plus.org/topic/17831/alt-up-down-arrow-line-movement)
+    で確認(この機能はv7.5.9で追加されたもので、以前に参照した2015年頃のショートカット一覧記事には
+    載っていませんでした)。両プリセットとも、サクラの既定でCtrl+Shift+↑/↓に入っている
+    「(範囲選択)カーソル上下移動(２行ごと)」(`F_UP2_SEL`/`F_DOWN2_SEL`)がこのプリセットの範囲では
+    上書きされます。この機能はほかに代替キーを持たない一意の機能ですが、使用頻度の低いマイナーな
+    移動系機能のため、対象エディタに合わせたMoveLine割り当てを優先しました。
+  - **VisualStudio.key / ReSharper.key**: Alt+↑/↓(`Edit.MoveSelectedLinesUp`/`Down`、VS2013から)。
+    [Microsoft Learnのデフォルトキーボードショートカット一覧](https://learn.microsoft.com/ja-jp/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio?view=visualstudio)
+    で確認。VSCode.keyと同様、サクラの既定の「(矩形選択)カーソル上下移動」(Alt+↑/↓)を上書きしますが、
+    Ctrl+Alt+↑/↓側は残るため矩形選択自体は引き続きキーボードで操作できます。
+  - **VisualStudio6.key / VisualBasic6.key には追加していません。** この機能はVisual Studio 2013で
+    追加されたもので、VC++6/VS6・VB6(1990年代)の時点では存在しないため、既存の「post-2005機能は
+    含めない」方針(前述)と整合的に対象外としました。
 - **TeraPad.key は追加していません。** Web検索で確認した限り、断片的なブログ記事はあるものの
   ショートカット一覧を網羅した公式・準公式資料が見つからず、`VisualCpp2.key`と同様に確認精度が
   低くなる懸念が強いため保留しています。付属の`Keys.txt`(TeraPad本体に同梱)等、一次資料が
