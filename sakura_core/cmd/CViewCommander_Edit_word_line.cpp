@@ -478,3 +478,141 @@ void CViewCommander::Command_DUPLICATELINE( void )
 	}
 	return;
 }
+
+
+
+#ifdef NKMM_FIX_MOVE_LINE
+//カーソル行を上へ移動(改行単位)		// 20260823
+//	macro\MoveLineUp.qjsのネイティブ実装版。折り返しの影響を受けないよう
+//	CDocLineMgrで論理行を直接扱う。
+void CViewCommander::Command_MoveLineUp( void )
+{
+	if( m_pCommanderView->GetSelectionInfo().IsTextSelected() ){	/* テキストが選択されているか */
+		ErrorBeep();
+		return;
+	}
+
+	CLogicInt nLine = GetCaret().GetCaretLogicPos().GetY2();
+	if( nLine <= 0 ){	/* 既に先頭行 */
+		ErrorBeep();
+		return;
+	}
+
+	CDocLineMgr&	cDocLineMgr = GetDocument()->m_cDocLineMgr;
+	const CDocLine*	pLineCur  = cDocLineMgr.GetLine( nLine );
+	const CDocLine*	pLinePrev = cDocLineMgr.GetLine( nLine - 1 );
+
+	CLogicInt		nLenCur;
+	const wchar_t*	pCur  = pLineCur->GetDocLineStrWithEOL( &nLenCur );
+	CLogicInt		nLenPrev;
+	const wchar_t*	pPrev = pLinePrev->GetDocLineStrWithEOL( &nLenPrev );
+
+	CNativeW	cmemNew;
+	CLogicPoint	ptRangeTo;
+	if( EOL_NONE == pLineCur->GetEol() ){
+		//	カーソル行が改行の無い最終行 → 入れ替え後は上の行(prev)が新しい最終行になる。
+		//	prevが元々持っていた改行を、入れ替え後のcurとprevの間の改行として転用する
+		cmemNew.SetString( pCur, nLenCur );
+		cmemNew.AppendString( pLinePrev->GetEol().GetValue2(), pLinePrev->GetEol().GetLen() );
+		cmemNew.AppendString( pPrev, pLinePrev->GetLengthWithoutEOL() );
+		ptRangeTo = CLogicPoint( nLenCur, nLine );	//	現在行の末尾(=文書末)
+	}
+	else{
+		cmemNew.SetString( pCur, nLenCur );
+		cmemNew.AppendString( pPrev, nLenPrev );
+		ptRangeTo = CLogicPoint( CLogicInt(0), nLine + 1 );
+	}
+	CLogicRange sRange( CLogicPoint( CLogicInt(0), nLine - 1 ), ptRangeTo );
+
+	COpeBlk* pcOpeBlk = m_pCommanderView->m_bDoing_UndoRedo ? NULL : GetOpeBlk();
+	m_pCommanderView->ReplaceData_CEditView2(
+		sRange,
+		cmemNew.GetStringPtr(),
+		cmemNew.GetStringLength(),
+		true,
+		pcOpeBlk,
+		false
+	);
+
+	//	カーソル位置を、上へ移動した行(入れ替え後の上の行)の先頭へ
+	CLayoutPoint ptLayoutNew;
+	GetDocument()->m_cLayoutMgr.LogicToLayout( CLogicPoint( CLogicInt(0), nLine - 1 ), &ptLayoutNew );
+	GetCaret().MoveCursor( ptLayoutNew, true );
+
+	if( !m_pCommanderView->m_bDoing_UndoRedo ){	/* アンドゥ・リドゥの実行中か */
+		GetOpeBlk()->AppendOpe(
+			new CMoveCaretOpe(
+				GetCaret().GetCaretLogicPos()	// 操作前後のキャレット位置
+			)
+		);
+	}
+}
+
+
+
+//カーソル行を下へ移動(改行単位)		// 20260823
+//	macro\MoveLineDown.qjsのネイティブ実装版。折り返しの影響を受けないよう
+//	CDocLineMgrで論理行を直接扱う。
+void CViewCommander::Command_MoveLineDown( void )
+{
+	if( m_pCommanderView->GetSelectionInfo().IsTextSelected() ){	/* テキストが選択されているか */
+		ErrorBeep();
+		return;
+	}
+
+	CDocLineMgr& cDocLineMgr = GetDocument()->m_cDocLineMgr;
+	CLogicInt nLine = GetCaret().GetCaretLogicPos().GetY2();
+	if( nLine + 1 >= cDocLineMgr.GetLineCount() ){	/* 既に最終行 */
+		ErrorBeep();
+		return;
+	}
+
+	const CDocLine*	pLineCur  = cDocLineMgr.GetLine( nLine );
+	const CDocLine*	pLineNext = cDocLineMgr.GetLine( nLine + 1 );
+
+	CLogicInt		nLenCur;
+	const wchar_t*	pCur  = pLineCur->GetDocLineStrWithEOL( &nLenCur );
+	CLogicInt		nLenNext;
+	const wchar_t*	pNext = pLineNext->GetDocLineStrWithEOL( &nLenNext );
+
+	CNativeW	cmemNew;
+	CLogicPoint	ptRangeTo;
+	if( EOL_NONE == pLineNext->GetEol() ){
+		//	下の行が改行の無い最終行 → 入れ替え後はcur(現在行)が新しい最終行になる。
+		//	curが元々持っていた改行を、入れ替え後のnextとcurの間の改行として転用する
+		cmemNew.SetString( pNext, nLenNext );
+		cmemNew.AppendString( pLineCur->GetEol().GetValue2(), pLineCur->GetEol().GetLen() );
+		cmemNew.AppendString( pCur, pLineCur->GetLengthWithoutEOL() );
+		ptRangeTo = CLogicPoint( nLenNext, nLine + 1 );	//	下の行の末尾(=文書末)
+	}
+	else{
+		cmemNew.SetString( pNext, nLenNext );
+		cmemNew.AppendString( pCur, nLenCur );
+		ptRangeTo = CLogicPoint( CLogicInt(0), nLine + 2 );
+	}
+	CLogicRange sRange( CLogicPoint( CLogicInt(0), nLine ), ptRangeTo );
+
+	COpeBlk* pcOpeBlk = m_pCommanderView->m_bDoing_UndoRedo ? NULL : GetOpeBlk();
+	m_pCommanderView->ReplaceData_CEditView2(
+		sRange,
+		cmemNew.GetStringPtr(),
+		cmemNew.GetStringLength(),
+		true,
+		pcOpeBlk,
+		false
+	);
+
+	//	カーソル位置を、下へ移動した行(入れ替え後の下の行)の先頭へ
+	CLayoutPoint ptLayoutNew;
+	GetDocument()->m_cLayoutMgr.LogicToLayout( CLogicPoint( CLogicInt(0), nLine + 1 ), &ptLayoutNew );
+	GetCaret().MoveCursor( ptLayoutNew, true );
+
+	if( !m_pCommanderView->m_bDoing_UndoRedo ){	/* アンドゥ・リドゥの実行中か */
+		GetOpeBlk()->AppendOpe(
+			new CMoveCaretOpe(
+				GetCaret().GetCaretLogicPos()	// 操作前後のキャレット位置
+			)
+		);
+	}
+}
+#endif // NKMM_

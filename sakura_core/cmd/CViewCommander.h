@@ -139,6 +139,10 @@ public:
 	void Command_CUT_LINE( void );			/* 行切り取り(折り返し単位) */
 	void Command_DELETE_LINE( void );		/* 行削除(折り返し単位) */
 	void Command_DUPLICATELINE( void );		/* 行の二重化(折り返し単位) */
+#ifdef NKMM_FIX_MOVE_LINE
+	void Command_MoveLineUp( void );		//カーソル行を上へ移動(改行単位)		// 20260823
+	void Command_MoveLineDown( void );		//カーソル行を下へ移動(改行単位)		// 20260823
+#endif // NKMM_
 	void Command_INDENT( wchar_t cChar, EIndentType = INDENT_NONE ); /* インデント ver 1 */
 // From Here 2001.12.03 hor
 //	void Command_INDENT( const char*, int );/* インデント ver0 */

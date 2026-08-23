@@ -3184,6 +3184,8 @@ BEGIN
     F_CUT_LINE              "Cut entire line"
     F_DELETE_LINE           "Delete entire line"
     F_DUPLICATELINE         "Duplicate line"
+    F_MOVE_LINE_UP          "Move line up"
+    F_MOVE_LINE_DOWN        "Move line down"
 END
 
 STRINGTABLE DISCARDABLE 

@@ -39,7 +39,7 @@ struct SKeybindPresetInfo {
 		インポートする方式のような、ファイルが実際の既定値と食い違う心配が無くなる。
 */
 static const SKeybindPresetInfo	s_KeybindPresetTable[] = {
-	{ 0,                                L"サクラエディタ 2.3.2.0" },
+	{ 0,                                L"デフォルト" },
 	{ IDR_KEYBINDPRESET_VSCODE,        L"Visual Studio Code" },
 	{ IDR_KEYBINDPRESET_VISUALSTUDIO,  L"Visual Studio" },
 	{ IDR_KEYBINDPRESET_VISUALSTUDIO6, L"Visual Studio 6 / Visual C++ 6" },

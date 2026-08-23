@@ -1750,6 +1750,34 @@
 //#define NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE
 #endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI
 
+//------------------------------------------------------------------
+// カーソル行を上/下へ移動(入れ替え)するコマンドをネイティブ実装する 20260823
+//  - macro\MoveLineUp.qjs/MoveLineDown.qjsとして先に用意したマクロ版
+//    (改行単位でカーソル行と隣接行を入れ替える。emacsのtranspose-lines
+//    (C-x C-t)、VCのLineTranspose(Alt+Shift+T)相当)を、マクロエンジンを
+//    経由しないネイティブコマンドとして移植したもの。マクロ版はそのまま
+//    残しており、どちらも独立に使える
+//  - CDocLineMgr::GetLine()で改行単位の行(CDocLine)を直接扱うため、
+//    折り返し(ワードラップ)の影響を受けない。CEditView::
+//    ReplaceData_CEditView2()にCLogicRange(ロジック単位)で置換範囲を
+//    渡すことで、レイアウト再計算とUndo/Redo(CReplaceOpe)登録を任せて
+//    いる(このファイルの他のコマンドが使うCLayoutPoint/InsertData_
+//    CEditView+DeleteDataの組み合わせより単純)
+//  - ファイル最終行が改行無し(EOF行)のときに、その行を跨いで入れ替える
+//    場合は、改行の付け替え(無くす側/新たに持たせる側)が必要になる。
+//    どちらの方向でも「新たに持たせる側」の改行は、元々あった隣接行の
+//    改行をそのまま転用する(新規に生成しない)
+//  - 置換後のカーソル位置はReplaceData_CEditView3が自動記録する位置
+//    (置換範囲の先頭)とは異なる場合があるため、明示的にMoveCursor()で
+//    移動した上でCMoveCaretOpeを追記し、Redo時も同じ位置になるようにする
+//    (Command_DUPLICATELINE等、このファイルの既存コマンドと同じ手当て)
+//  - 選択範囲がある状態では使えない(F_CUT_LINE/F_DELETE_LINEと同じ扱い)
+//  - sakura_core\cmd\CViewCommander_Edit_word_line.cpp:
+//    Command_MoveLineUp()/Command_MoveLineDown()
+//  - 詳細はchangelog/NKMM_FIX_MOVE_LINE.md参照
+//------------------------------------------------------------------
+#define NKMM_FIX_MOVE_LINE
+
 //
 //#define USE_SSE2
 

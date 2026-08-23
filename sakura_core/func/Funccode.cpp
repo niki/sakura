@@ -143,6 +143,10 @@ const EFunctionCode pnFuncList_Edit[] = {	//Oct. 16, 2000 JEPRO 変数名変更(
 	F_CUT_LINE			,	//行切り取り(折り返し単位)
 	F_DELETE_LINE		,	//行削除(折り返し単位)
 	F_DUPLICATELINE		,	//行の二重化(折り返し単位)
+#ifdef NKMM_FIX_MOVE_LINE
+	F_MOVE_LINE_UP		,	//カーソル行を上へ移動(改行単位)		// 20260823
+	F_MOVE_LINE_DOWN	,	//カーソル行を下へ移動(改行単位)		// 20260823
+#endif // NKMM_
 	F_INDENT_TAB		,	//TABインデント
 	F_UNINDENT_TAB		,	//逆TABインデント
 	F_INDENT_SPACE		,	//SPACEインデント
@@ -648,6 +652,10 @@ int FuncID_To_HelpContextID( EFunctionCode nFuncID )
 	case F_CUT_LINE:					return HLP000174;	//行切り取り(折り返し単位)
 	case F_DELETE_LINE:					return HLP000137;	//行削除(折り返し単位)
 	case F_DUPLICATELINE:				return HLP000043;	//行の二重化(折り返し単位)
+#ifdef NKMM_FIX_MOVE_LINE
+	case F_MOVE_LINE_UP:				return HLP000043;	//カーソル行を上へ移動(改行単位)		// 20260823
+	case F_MOVE_LINE_DOWN:				return HLP000043;	//カーソル行を下へ移動(改行単位)		// 20260823
+#endif // NKMM_
 	case F_INDENT_TAB:					return HLP000113;	//TABインデント
 	case F_UNINDENT_TAB:				return HLP000113;	//逆TABインデント
 	case F_INDENT_SPACE:				return HLP000114;	//SPACEインデント
@@ -1196,6 +1204,10 @@ bool IsFuncEnable( const CEditDoc* pcEditDoc, const DLLSHAREDATA* pShareData, EF
 
 	case F_CUT_LINE:	//行切り取り(折り返し単位)
 	case F_DELETE_LINE:	//行削除(折り返し単位)
+#ifdef NKMM_FIX_MOVE_LINE
+	case F_MOVE_LINE_UP:	//カーソル行を上へ移動(改行単位)		// 20260823
+	case F_MOVE_LINE_DOWN:	//カーソル行を下へ移動(改行単位)		// 20260823
+#endif // NKMM_
 		// テキストが選択されていなければtrue
 		return !pcEditDoc->m_pcEditWnd->GetActiveView().GetSelectionInfo().IsTextSelected();
 

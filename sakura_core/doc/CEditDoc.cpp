@@ -99,6 +99,10 @@ static const EFunctionCode EIsModificationForbidden[] = {
 	F_CUT_LINE,
 	F_DELETE_LINE,
 	F_DUPLICATELINE,
+#ifdef NKMM_FIX_MOVE_LINE
+	F_MOVE_LINE_UP,		// 20260823
+	F_MOVE_LINE_DOWN,	// 20260823
+#endif // NKMM_
 	F_INDENT_TAB,
 	F_UNINDENT_TAB,
 	F_INDENT_SPACE,
