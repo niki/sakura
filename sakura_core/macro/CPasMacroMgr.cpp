@@ -66,6 +66,23 @@ const wchar_t* const PAS_RUNTIME_PRELUDE =
 	L"function MessageBox(msg, title, flags) { return Editor.MessageBox(msg, flags); }\n"
 	L"function Length(s) { return String(s).length; }\n"
 	L"function Pos(needle, haystack) { return String(haystack).indexOf(String(needle)) + 1; }\n"
+	L"function UpperCase(s) { return String(s).toUpperCase(); }\n"
+	L"function LowerCase(s) { return String(s).toLowerCase(); }\n"
+	L"function Trim(s) { return String(s).trim(); }\n"
+	L"function TrimLeft(s) { return String(s).replace(/^\\s+/, ''); }\n"
+	L"function TrimRight(s) { return String(s).replace(/\\s+$/, ''); }\n"
+	L"function StringReplace(s, oldStr, newStr) { return String(s).split(String(oldStr)).join(String(newStr)); }\n"
+	L"function CompareStr(a, b) { a = String(a); b = String(b); if (a < b) return -1; if (a > b) return 1; return 0; }\n"
+	L"function Round(x) { return Math.round(x); }\n"
+	// PascalのSqrは「2乗」、Sqrtが「平方根」(VBScriptのSqrとは意味が異なるので注意)
+	L"function Sqr(x) { return x * x; }\n"
+	L"function Sqrt(x) { return Math.sqrt(x); }\n"
+	L"function Odd(n) { return (Math.trunc(n) % 2) !== 0; }\n"
+	L"function Chr(n) { return String.fromCharCode(Math.trunc(n)); }\n"
+	L"function Ord(s) { return String(s).charCodeAt(0); }\n"
+	// Random(n)はnを渡すと[0,n)の整数、渡さないと[0,1)の実数(標準Pascalの挙動)
+	L"function Random(n) { if (n === undefined) return Math.random(); return Math.floor(Math.random() * Math.trunc(n)); }\n"
+	L"function Randomize() { }\n" // JSのMath.random()は再シード不可のため何もしない(構文の受理のみ)
 	//	Write/Writelnはコンソールを持たないGUI環境向けに、カーソル位置への
 	//	テキスト挿入(Editor.InsText)へ委譲する。Writelnは末尾に改行を足す
 	L"function Write(s) { Editor.InsText(String(s === undefined ? '' : s)); }\n"
