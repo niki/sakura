@@ -563,6 +563,8 @@
     <ClInclude Include="..\sakura_core\macro\CQuickJSIfObjBinder.h" />
     <ClInclude Include="..\sakura_core\macro\CQuickJSMacroMgr.h" />
     <ClInclude Include="..\sakura_core\macro\CSMacroMgr.h" />
+    <ClInclude Include="..\sakura_core\macro\CVbsMacroMgr.h" />
+    <ClInclude Include="..\sakura_core\macro\CVbsToJsTranspiler.h" />
     <ClInclude Include="..\sakura_core\macro\CWSH.h" />
     <ClInclude Include="..\sakura_core\macro\CWSHIfObj.h" />
     <ClInclude Include="..\sakura_core\macro\CWSHManager.h" />
@@ -1288,6 +1290,7 @@
     <ClCompile Include="..\sakura_core\macro\CQuickJSIfObjBinder.cpp" />
     <ClCompile Include="..\sakura_core\macro\CQuickJSMacroMgr.cpp" />
     <ClCompile Include="..\sakura_core\macro\CSMacroMgr.cpp" />
+    <ClCompile Include="..\sakura_core\macro\CVbsMacroMgr.cpp" />
     <ClCompile Include="..\sakura_core\macro\CWSH.cpp" />
     <ClCompile Include="..\sakura_core\macro\CWSHIfObj.cpp" />
     <ClCompile Include="..\sakura_core\macro\CWSHManager.cpp" />

@@ -199,3 +199,31 @@ JavaScriptへ変換した上でこのQuickJSエンジンにそのまま実行さ
     呼び出しの両方が動くこと(`CQuickJSIfObjBinder`の既存の二重登録の恩恵)
   - 構文エラーを含む`.pas`マクロを実行した際、`ReportQuickJSException`の
     ダイアログにトランスパイルエラーの内容が表示されること
+
+## 追記: 代表的なランタイム関数の追加(2026-08-23)
+
+[[NKMM_FIX_VBS_MACRO]](VBScript風マクロ)の実装・動作確認を通じて、姉妹
+エンジンであるPascal風マクロの`PAS_RUNTIME_PRELUDE`が`StrToInt`/`IntToStr`/
+`Copy`/`Trunc`/`Frac`/`FloatToStr`/`InputBox`/`MessageBox`/`Length`/`Pos`/
+`Write`/`Writeln`の12関数のみで、Pascal/Delphi標準ライブラリとして代表的な
+関数が不足していたため、以下を追加した(`CPasMacroMgr.cpp`)。
+
+- 文字列: `UpperCase`/`LowerCase`/`Trim`/`TrimLeft`/`TrimRight`/
+  `StringReplace`/`CompareStr`
+- 数値: `Round`/`Sqr`/`Sqrt`/`Odd`/`Chr`/`Ord`/`Random`/`Randomize`
+
+注意点:
+- **`Sqr`は「2乗」、`Sqrt`が「平方根」**(標準Pascalの意味どおり。
+  [[NKMM_FIX_VBS_MACRO]]側のVBScript`Sqr`(=平方根)とは意味が異なるので、
+  両エンジンを併用する場合は取り違えに注意)。
+- `Random(n)`は`n`を渡すと`[0, n)`の整数、渡さないと`[0, 1)`の実数を返す
+  (標準Pascalの挙動を再現)。`Randomize`はJSの`Math.random()`が再シード
+  不可のため、構文を受理するだけの空実装。
+- `StringReplace`はDelphi本来の`TReplaceFlags`(大文字小文字区別・全置換
+  指定)を持たず、常に全置換・大文字小文字区別ありの単純な置換のみ対応。
+
+動作確認・マニュアルを兼ねた`macro_bench/runtimeall.pas`を新規作成し、
+`PAS_RUNTIME_PRELUDE`の全関数(`InputBox`/`MessageBox`を除く)を一通り
+呼び出す構成にした。既存の`macro_bench/checkall.pas`と役割を分けており、
+`checkall.pas`は主要関数(`Write`/`Writeln`/`Length`/`Copy`/`Pos`)の
+確認、`runtimeall.pas`はランタイム関数の網羅的な確認・リファレンスを担う。

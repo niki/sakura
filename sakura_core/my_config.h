@@ -943,6 +943,24 @@
 #define NKMM_FIX_PASCAL_MACRO
 
 //------------------------------------------------------------------
+// WSH(VBScript)が無い/使えない環境でもVBScript風マクロを使えるようにする 20260823
+//  - WSHはOS登録済みの外部COMコンポーネント依存で、無い/廃止された環境では
+//    ".vbs"マクロがそもそも動かない。CVbsToJsTranspilerでVBScript風ソースを
+//    JavaScriptへ変換し、NKMM_FIX_QUICKJS_MACROのJS実行パス(CQuickJSMacroMgr)
+//    へそのまま流す形のフォールバックエンジンを追加した。拡張子".vbs"は
+//    CWSHMacroManagerと共有するが、Creatorの登録順(CWSHMacroManager::declare()
+//    の後にCVbsMacroMgr::declare()を呼ぶ)により、レジストリにVBScriptの
+//    ScriptEngineが登録されている環境では従来通りWSHが使われ、登録が無い
+//    環境でのみこちらにフォールバックする。NKMM_FIX_QUICKJS_MACROが無効だと
+//    CQuickJSMacroMgrを継承しているCVbsMacroMgrも使えないため、このフラグは
+//    NKMM_FIX_QUICKJS_MACROと合わせて定義すること
+//  - sakura_core\macro\CVbsToJsTranspiler.h(新規、ヘッダオンリー)、
+//    sakura_core\macro\CVbsMacroMgr.h,cpp(新規)
+//  - 詳細はchangelog/NKMM_FIX_VBS_MACRO.md参照
+//------------------------------------------------------------------
+#define NKMM_FIX_VBS_MACRO
+
+//------------------------------------------------------------------
 // 検索ダイアログ（フローティングパネル化）
 //  - タイトルバー・DS_MODALFRAMEを廃止し、枠なしのフローティングパネル風にする
 //  - Windows 11 の角丸(DWMWA_WINDOW_CORNER_PREFERENCE)を適用

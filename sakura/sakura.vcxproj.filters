@@ -844,6 +844,12 @@
     <ClInclude Include="..\sakura_core\macro\CPasToJsTranspiler.h">
       <Filter>Cpp Source Files\macro</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\macro\CVbsMacroMgr.h">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\macro\CVbsToJsTranspiler.h">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\macro\CQuickJSIfObjBinder.h">
       <Filter>Cpp Source Files\macro</Filter>
     </ClInclude>
@@ -2316,6 +2322,9 @@
       <Filter>Cpp Source Files\macro</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\macro\CPasMacroMgr.cpp">
+      <Filter>Cpp Source Files\macro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\macro\CVbsMacroMgr.cpp">
       <Filter>Cpp Source Files\macro</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\macro\CQuickJSIfObjBinder.cpp">

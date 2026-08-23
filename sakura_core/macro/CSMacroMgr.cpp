@@ -33,6 +33,9 @@
 #ifdef NKMM_FIX_PASCAL_MACRO
 #include "macro/CPasMacroMgr.h"
 #endif // NKMM_
+#ifdef NKMM_FIX_VBS_MACRO
+#include "macro/CVbsMacroMgr.h"
+#endif // NKMM_
 #include "macro/CMacroFactory.h"
 #include "env/CShareData.h"
 #include "view/CEditView.h"
@@ -511,7 +514,14 @@ CSMacroMgr::CSMacroMgr()
 #ifdef NKMM_FIX_PASCAL_MACRO
 	CPasMacroMgr::declare();
 #endif // NKMM_
-	
+#ifdef NKMM_FIX_VBS_MACRO
+	//	".vbs"はCWSHMacroManagerと拡張子を共有する。登録順により、WSHの
+	//	ScriptEngineがレジストリに登録されている環境では従来通りWSHが
+	//	使われ、登録が無い環境でのみこちら(トランスパイラ経由のQuickJS
+	//	実行)へフォールバックする([[changelog/NKMM_FIX_VBS_MACRO.md]]参照)
+	CVbsMacroMgr::declare();
+#endif // NKMM_
+
 	int i;
 	for ( i = 0 ; i < MAX_CUSTMACRO ; i++ ){
 		m_cSavedKeyMacro[i] = NULL;

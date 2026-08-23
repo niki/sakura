@@ -245,6 +245,7 @@ macro/CPPAMacroMgr.o \
 macro/CQuickJSIfObjBinder.o \
 macro/CQuickJSMacroMgr.o \
 macro/CSMacroMgr.o \
+macro/CVbsMacroMgr.o \
 macro/CWSH.o \
 macro/CWSHIfObj.o \
 macro/CWSHManager.o \
