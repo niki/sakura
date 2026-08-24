@@ -192,6 +192,46 @@ body.edit-mode .th-btns{display:flex;}
   color:var(--muted); font-size:10px; cursor:pointer;
 }
 .th-btn:hover{background:var(--hover); color:var(--fg);}
+
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.modal-box{
+  background:var(--bg); color:var(--fg); border:1px solid var(--border); border-radius:8px;
+  padding:14px 18px 16px; max-width:640px; width:100%; max-height:80vh; overflow-y:auto;
+  box-shadow:0 12px 32px rgba(0,0,0,.35);
+}
+.modal-header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px;}
+.modal-header span{font-weight:700; font-size:13.5px;}
+.modal-close{
+  width:22px; height:22px; border-radius:4px; border:1px solid var(--key-border);
+  background:var(--bg); color:var(--muted); cursor:pointer; font-size:13px; line-height:1; flex:none;
+}
+.modal-close:hover{background:var(--hover); color:var(--fg);}
+.modal-note{color:var(--muted); font-size:11px; margin:0 0 10px;}
+.free-key-legend{display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--muted); margin:0 0 12px; padding-bottom:10px; border-bottom:1px solid var(--border);}
+.free-key-legend .key{margin-right:6px;}
+.free-key-groups{display:flex; flex-direction:column; gap:6px;}
+.free-key-group{
+  display:flex; align-items:baseline; flex-wrap:wrap; gap:8px 10px;
+  border:1px solid var(--border); border-radius:6px; padding:6px 10px; background:var(--stripe);
+}
+.free-key-group-head{
+  font-weight:700; font-family:Consolas,"Cascadia Mono",monospace; font-size:13px;
+  min-width:2.4em; color:var(--fg);
+}
+.free-key-chips{display:flex; flex-wrap:wrap; gap:5px; flex:1 1 auto;}
+.key-free{
+  background:rgba(34,197,94,.16); border-style:dashed; border-color:rgba(22,163,74,.55);
+  color:var(--key-fg); font-weight:600; cursor:help;
+}
+:root:not([data-theme="light"]) .key-free{background:rgba(74,222,128,.18); border-color:rgba(74,222,128,.55);}
+:root[data-theme="dark"] .key-free{background:rgba(74,222,128,.18); border-color:rgba(74,222,128,.55);}
+.key-free-taken{
+  background:var(--key-bg); border-style:dashed; border-color:var(--key-border);
+  color:var(--muted); font-weight:400; opacity:.7; cursor:help;
+}
 </style>
 </head>
 <body>
@@ -201,16 +241,18 @@ body.edit-mode .th-btns{display:flex;}
 <div class="legend"><span class="legend-label" data-tip="色分けの意味(各項目にカーソルを合わせると詳細を表示)">色分け ⓘ</span><span data-tip="各プリセット(.key)に実際に割り当て済み"><span class="key key-blue">Ctrl+X</span> 割当済</span><span data-tip="そのアプリの本来のキー（サクラでは未割り当て/キー衝突などのため参考表示）"><span class="key key-yellow">Ctrl+X</span> 参考</span><span data-tip="プリセットで実際に割り当て済みだが、そのキーはサクラ既定では別の機能に割り当てられている(衝突)"><span class="key key-red">Ctrl+X</span> 衝突</span><span data-tip="プリセットは未上書きだが、サクラ既定のキーがそのまま使える"><span class="inherit">〇</span> 既定継承</span><span data-tip="サクラ既定にもキーが無い(このプリセットでは操作不可)"><span class="dash">—</span> 割当なし</span><span data-tip="サクラ既定がタブバー表示設定によって動的に変わる特殊なキー(タブバー非表示時の値を表示)"><span class="key key-dynamic">Ctrl+F4</span> 動的既定</span></div>
 <div class="controls"><input type="text" id="filterBox" placeholder="機能名・キーで絞り込み..."><label><input type="checkbox" id="presetOnly"> プリセットで使われている機能のみ表示</label><span class="sep"></span><button type="button" id="editToggle">✏ 編集モード</button><button type="button" id="addRowBtn">＋ 行を追加</button><button type="button" id="exportBtn" data-tip="編集内容を全てJSONでバックアップ(このツール専用形式)">全体バックアップ</button><button type="button" id="importBtn" data-tip="全体バックアップJSONを読み込む">バックアップ復元</button><input type="file" id="importFile" accept="application/json" style="display:none"><input type="file" id="perAppImportFile" accept=".key,text/plain" style="display:none"><button type="button" id="resetBtn">編集を全て破棄</button><span class="count" id="rowCount"></span></div>
 <p class="lead" id="editHint" style="display:none">編集モード中はキーのバッジをクリックすると実際にキーを押して割り当てられます(点滅する緑のバッジの間に押してください。修飾キー(Ctrl/Shift/Alt)は押している間だけ反映され、離すと外れます。A・F5・↑などの実キーを押した瞬間に確定します。クリック以外の場所を押すとキャンセルされ元の値に戻ります)。「＋」で同じセルに別のキーを追加、キーバッジ右上の×で削除、行左端の×で行ごと削除、「＋ 行を追加」で新しい機能行を追加できます。機能名は通常のテキスト編集です。この編集内容はブラウザのlocalStorageにこのファイルの場所ごとに保存され、再度このHTMLを開いたときも復元されます（他の人やサーバーには送信されません）。ファイルとして保存・共有したい場合は「エクスポート」でJSONを書き出し、別環境では「インポート」で読み込んでください。</p>
+<div class="modal-overlay" id="freeKeysModal"><div class="modal-box"><div class="modal-header"><span id="freeKeysTitle">未割り当てのキー</span><button type="button" class="modal-close" id="freeKeysClose" aria-label="閉じる">×</button></div><p class="modal-note">このツールが把握している物理キー（サクラ既定またはいずれかのプリセットで実際に使われているキー）について、指定した列での割り当て状況を修飾キーの組み合わせごとに一覧表示します。JIS/US配列で対応がずれるため一部の記号キーは照合対象外です。英数字・記号(;:,./\[]など)・Space・Enterキーの単独/Shiftのみの組み合わせは通常の文字入力に使われるため、常に使用中として扱います。<span id="freeKeysCount"></span></p><div id="freeKeysBody"></div></div></div>
 <div class="cmp-scroll"><table class="cmp-table" id="cmpTable">
 <thead><tr>
-<th class="func-col">機能</th><th data-col="default">サクラ既定</th>
-<th data-col="VSCode"><div class="th-toolbar"><span class="th-name">VSCode</span><span class="th-btns"><button type="button" class="th-btn th-export" data-app="VSCode" data-tip="VSCode用の.keyを書き出す">⬇</button><button type="button" class="th-btn th-import" data-app="VSCode" data-tip="VSCode用の.keyを読み込む(このアプリの列だけ差し替え)">⬆</button></span></div></th>
-<th data-col="Visual Studio"><div class="th-toolbar"><span class="th-name">Visual Studio</span><span class="th-btns"><button type="button" class="th-btn th-export" data-app="Visual Studio" data-tip="Visual Studio用の.keyを書き出す">⬇</button><button type="button" class="th-btn th-import" data-app="Visual Studio" data-tip="Visual Studio用の.keyを読み込む(このアプリの列だけ差し替え)">⬆</button></span></div></th>
-<th data-col="ReSharper"><div class="th-toolbar"><span class="th-name">ReSharper</span><span class="th-btns"><button type="button" class="th-btn th-export" data-app="ReSharper" data-tip="ReSharper用の.keyを書き出す">⬇</button><button type="button" class="th-btn th-import" data-app="ReSharper" data-tip="ReSharper用の.keyを読み込む(このアプリの列だけ差し替え)">⬆</button></span></div></th>
-<th data-col="Sublime Text"><div class="th-toolbar"><span class="th-name">Sublime Text</span><span class="th-btns"><button type="button" class="th-btn th-export" data-app="Sublime Text" data-tip="Sublime Text用の.keyを書き出す">⬇</button><button type="button" class="th-btn th-import" data-app="Sublime Text" data-tip="Sublime Text用の.keyを読み込む(このアプリの列だけ差し替え)">⬆</button></span></div></th>
-<th data-col="Notepad++"><div class="th-toolbar"><span class="th-name">Notepad++</span><span class="th-btns"><button type="button" class="th-btn th-export" data-app="Notepad++" data-tip="Notepad++用の.keyを書き出す">⬇</button><button type="button" class="th-btn th-import" data-app="Notepad++" data-tip="Notepad++用の.keyを読み込む(このアプリの列だけ差し替え)">⬆</button></span></div></th>
-<th data-col="VS6/VC++6"><div class="th-toolbar"><span class="th-name">VS6/VC++6</span><span class="th-btns"><button type="button" class="th-btn th-export" data-app="VS6/VC++6" data-tip="VS6/VC++6用の.keyを書き出す">⬇</button><button type="button" class="th-btn th-import" data-app="VS6/VC++6" data-tip="VS6/VC++6用の.keyを読み込む(このアプリの列だけ差し替え)">⬆</button></span></div></th>
-<th data-col="VB6"><div class="th-toolbar"><span class="th-name">VB6</span><span class="th-btns"><button type="button" class="th-btn th-export" data-app="VB6" data-tip="VB6用の.keyを書き出す">⬇</button><button type="button" class="th-btn th-import" data-app="VB6" data-tip="VB6用の.keyを読み込む(このアプリの列だけ差し替え)">⬆</button></span></div></th>
+<th class="func-col">機能</th>
+<th data-col="default"><div class="th-toolbar"><span class="th-name">サクラ既定</span><span class="th-btns"><button type="button" class="th-btn th-free" data-app="default" data-tip="サクラ既定で未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="default" data-tip="サクラ既定用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="default" data-tip="サクラ既定用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th>
+<th data-col="VSCode"><div class="th-toolbar"><span class="th-name">VSCode</span><span class="th-btns"><button type="button" class="th-btn th-free" data-app="VSCode" data-tip="VSCodeで未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="VSCode" data-tip="VSCode用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="VSCode" data-tip="VSCode用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th>
+<th data-col="Visual Studio"><div class="th-toolbar"><span class="th-name">Visual Studio</span><span class="th-btns"><button type="button" class="th-btn th-free" data-app="Visual Studio" data-tip="Visual Studioで未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="Visual Studio" data-tip="Visual Studio用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="Visual Studio" data-tip="Visual Studio用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th>
+<th data-col="ReSharper"><div class="th-toolbar"><span class="th-name">ReSharper</span><span class="th-btns"><button type="button" class="th-btn th-free" data-app="ReSharper" data-tip="ReSharperで未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="ReSharper" data-tip="ReSharper用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="ReSharper" data-tip="ReSharper用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th>
+<th data-col="Sublime Text"><div class="th-toolbar"><span class="th-name">Sublime Text</span><span class="th-btns"><button type="button" class="th-btn th-free" data-app="Sublime Text" data-tip="Sublime Textで未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="Sublime Text" data-tip="Sublime Text用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="Sublime Text" data-tip="Sublime Text用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th>
+<th data-col="Notepad++"><div class="th-toolbar"><span class="th-name">Notepad++</span><span class="th-btns"><button type="button" class="th-btn th-free" data-app="Notepad++" data-tip="Notepad++で未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="Notepad++" data-tip="Notepad++用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="Notepad++" data-tip="Notepad++用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th>
+<th data-col="VS6/VC++6"><div class="th-toolbar"><span class="th-name">VS6/VC++6</span><span class="th-btns"><button type="button" class="th-btn th-free" data-app="VS6/VC++6" data-tip="VS6/VC++6で未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="VS6/VC++6" data-tip="VS6/VC++6用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="VS6/VC++6" data-tip="VS6/VC++6用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th>
+<th data-col="VB6"><div class="th-toolbar"><span class="th-name">VB6</span><span class="th-btns"><button type="button" class="th-btn th-free" data-app="VB6" data-tip="VB6で未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="VB6" data-tip="VB6用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="VB6" data-tip="VB6用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th>
 </tr></thead><tbody>
 <tr class="in-preset" data-row-id="r0">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">新規作成</span><span class="fc">F_FILENEW</span></td>
@@ -3282,10 +3324,11 @@ body.edit-mode .th-btns{display:flex;}
   // 呼ぶことで、赤バッジの色を最新の状態に反映させる。data-hex/data-slotを持つ
   // バッジ(サクラ既定の全既存キー、プリセットの全既存キー、このツールで確定編集した
   // キー)だけが対象。参考表示(黄)はキー衝突の判定対象外のまま据え置く。
-  function recheckAllConflicts(){
-    var trs = Array.prototype.slice.call(tbody.querySelectorAll("tr"));
+  // 「サクラ既定」列の現在の表示内容から (hex_slot -> その行の機能) を作る。
+  // recheckAllConflicts(衝突判定)とcomputeFreeCombos(空きキー判定)の両方から使う。
+  function buildLiveDefaultMap(){
     var liveDefault = {};
-    trs.forEach(function(tr){
+    Array.prototype.slice.call(tbody.querySelectorAll("tr")).forEach(function(tr){
       var ownFunc = rowFuncOf(tr);
       var td = tr.querySelector('td[data-col="default"]');
       if (!td) return;
@@ -3293,6 +3336,11 @@ body.edit-mode .th-btns{display:flex;}
         liveDefault[k.dataset.hex + "_" + k.dataset.slot] = ownFunc;
       });
     });
+    return liveDefault;
+  }
+  function recheckAllConflicts(){
+    var trs = Array.prototype.slice.call(tbody.querySelectorAll("tr"));
+    var liveDefault = buildLiveDefaultMap();
     trs.forEach(function(tr){
       var ownFunc = rowFuncOf(tr);
       ALL_COLS.forEach(function(col){
@@ -3394,6 +3442,13 @@ body.edit-mode .th-btns{display:flex;}
   }
 
   // ---- アプリ単位での.keyファイル エクスポート/インポート(将来的な本格運用を見据えた試験実装) ----
+  // "default"列(サクラ既定)は表示名・ファイル名だけ特別扱いする(data-colとしては他の列と同じ扱い)。
+  function displayLabel(label){ return label === "default" ? "サクラ既定" : label; }
+  function fileNameForApp(label){
+    if (label === "default") return "sakura_default";
+    var safe = label.replace(/[^A-Za-z0-9+._-]+/g, "");
+    return safe || "keybind";
+  }
   function slotsToFuncArr(slotMap){
     var out = [0, 0, 0, 0, 0, 0, 0, 0];
     for (var i = 0; i < 8; i++){ if (slotMap[i]) out[i] = slotMap[i]; }
@@ -3423,7 +3478,7 @@ body.edit-mode .th-btns{display:flex;}
     });
     var hexes = Object.keys(byHex).map(Number).sort(function(a, b){ return a - b; });
     if (!hexes.length){
-      alert(label + "には現在エクスポートできる割り当てがありません(青バッジが1つもありません)。");
+      alert(displayLabel(label) + "には現在エクスポートできる割り当てがありません(バッジが1つもありません)。");
       return;
     }
     var lines = ["[Info]", "KEYBIND_VERSION=SakuraKeyBind_Ver4", "KEYBIND_COUNT=" + hexes.length, "", "[KeyBind]"];
@@ -3438,7 +3493,7 @@ body.edit-mode .th-btns{display:flex;}
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
     a.href = url;
-    a.download = label.replace(/[^A-Za-z0-9+._-]+/g, "") + ".key";
+    a.download = fileNameForApp(label) + ".key";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -3507,12 +3562,139 @@ body.edit-mode .th-btns{display:flex;}
     saveState(s);
     recheckAllConflicts();
     runFilter();
-    var msg = label + " に .key をインポートしました(" + entries.length + "個のキー)。";
+    var msg = displayLabel(label) + " に .key をインポートしました(" + entries.length + "個のキー)。";
     if (skipped > 0){
       msg += "\n" + skipped + "個の割り当てはこの一覧に無い機能番号だったため取り込めませんでした。";
     }
     alert(msg);
   }
+
+  // ---- 列ごとの「空きキー」一覧(モーダル表示。テーブル自体の占有領域は変えない) ----
+  // このツールが認識している物理キー(=表のどこかで一度でも使われているhex)の範囲でのみ
+  // 「空き」を判定する。全VKコードを対象にすると意味の薄い記号キー等まで大量に出てしまうため。
+  function collectHexNames(){
+    var names = {};
+    Array.prototype.forEach.call(tbody.querySelectorAll(".key[data-hex]"), function(k){
+      var hex = k.dataset.hex;
+      if (names[hex]) return;
+      var parsed = parseComboText(badgeText(k));
+      names[hex] = (parsed && parsed.mainName) ? parsed.mainName : badgeText(k);
+    });
+    return names;
+  }
+  function collectAssignedForApp(label){
+    var assigned = {};
+    Array.prototype.slice.call(tbody.querySelectorAll("tr")).forEach(function(tr){
+      var ownFunc = rowFuncOf(tr);
+      var td = tr.querySelector('td[data-col="' + label + '"]');
+      if (!td) return;
+      Array.prototype.forEach.call(td.querySelectorAll(".key[data-hex]"), function(k){
+        if (k.classList.contains("key-yellow")) return; // 参考表示は実際の割り当てではない
+        assigned[k.dataset.hex + "_" + k.dataset.slot] = ownFunc;
+      });
+    });
+    return assigned;
+  }
+  function modsLabel(slot){
+    var s = MODS_ARR[slot];
+    return s ? s.replace(/\+$/, "") : "単独";
+  }
+  // 文字/数字/記号/Space/Enterは、修飾キーなし・Shiftのみの場合は文字入力そのものに
+  // 使われる(KeyDataInit[]上はF_0でも実際には割り当て対象ではない)。0-9, A-Z,
+  // Space, Enter、および ; : , . / \ [ ] ' ` などのOEM記号キー(0xBA-0xE5)の
+  // 単独・Shift単独スロットは常に「使用中(文字入力)」として扱う。
+  function isCharProducingHex(hex){
+    return (hex >= 0x30 && hex <= 0x39) || (hex >= 0x41 && hex <= 0x5A)
+      || hex === 0x20 || hex === 0x0D
+      || (hex >= 0xBA && hex <= 0xE5);
+  }
+  // 主キーごとにグループ化して返す。キーによって表示される修飾パターンの数が
+  // ばらつかないよう、8スロット全てを必ず返し、それぞれに状態(state)を持たせる。
+  // free=空き(割り当て可能)/reserved=文字入力予約/own=このキーセット自身が使用中/
+  // default=サクラ既定を(このキーセットが上書きせず)そのまま使用中。
+  function computeFreeCombos(label){
+    var names = collectHexNames();
+    var hexes = Object.keys(names).map(Number).sort(function(a, b){ return a - b; });
+    var ownMap = (label === "default") ? buildLiveDefaultMap() : collectAssignedForApp(label);
+    var liveDefault = (label === "default") ? null : buildLiveDefaultMap();
+    var groups = [];
+    hexes.forEach(function(hex){
+      var chips = [];
+      for (var slot = 0; slot < 8; slot++){
+        var mapKey = hex + "_" + slot;
+        var reservedChar = (slot === 0 || slot === 1) && isCharProducingHex(hex);
+        var ownFunc = ownMap[mapKey];
+        var defFunc = liveDefault ? liveDefault[mapKey] : null;
+        var state, reasonText;
+        if (reservedChar){
+          state = "reserved";
+          reasonText = "文字入力に使用されるため割り当てできません";
+        }else if (ownFunc){
+          state = "own";
+          reasonText = (label === "default" ? "サクラ既定で「" : "このキーセットで「")
+            + (FUNC_JP[ownFunc] || ownFunc) + "」に割り当て済み";
+        }else if (defFunc){
+          state = "default";
+          reasonText = "サクラ既定で「" + (FUNC_JP[defFunc] || defFunc)
+            + "」に割り当て済み(このキーセットでは未上書きのため、実際にはこの機能で使われています)";
+        }else{
+          state = "free";
+          reasonText = null;
+        }
+        chips.push({
+          modsText: modsLabel(slot),
+          comboText: MODS_ARR[slot] + names[hex],
+          state: state,
+          reasonText: reasonText
+        });
+      }
+      groups.push({ name: names[hex], chips: chips });
+    });
+    return groups;
+  }
+  var freeKeysModal = document.getElementById("freeKeysModal");
+  var freeKeysTitle = document.getElementById("freeKeysTitle");
+  var freeKeysBody = document.getElementById("freeKeysBody");
+  var freeKeysCount = document.getElementById("freeKeysCount");
+  var freeKeysClose = document.getElementById("freeKeysClose");
+  function showFreeKeysModal(label){
+    var groups = computeFreeCombos(label);
+    var freeCount = 0, takenCount = 0;
+    groups.forEach(function(g){
+      g.chips.forEach(function(c){ if (c.state === "free") freeCount++; else takenCount++; });
+    });
+    freeKeysTitle.textContent = displayLabel(label) + " のキー割り当て状況";
+    freeKeysCount.textContent = "(空き " + freeCount + "件 ・ 使用中 " + takenCount + "件)";
+    if (!groups.length){
+      freeKeysBody.innerHTML = "<p>このツールが把握している物理キーがありません。</p>";
+      freeKeysModal.style.display = "flex";
+      return;
+    }
+    var legend = '<div class="free-key-legend">'
+      + '<span><span class="key key-free">単独</span>割り当て可能(空き)</span>'
+      + '<span><span class="key key-free-taken">単独</span>使用中(理由はホバーで表示)</span>'
+      + '</div>';
+    var body = groups.map(function(g){
+      var chips = g.chips.map(function(c){
+        var cls = c.state === "free" ? "key key-free" : "key key-free-taken";
+        var tip = c.state === "free" ? (c.comboText + "(空き)") : c.reasonText;
+        return '<span class="' + cls + '" data-tip="' + escapeHtml(tip) + '">'
+          + escapeHtml(c.modsText) + '</span>';
+      }).join("");
+      return '<div class="free-key-group"><div class="free-key-group-head">' + escapeHtml(g.name) + '</div>'
+        + '<div class="free-key-chips">' + chips + '</div></div>';
+    }).join("");
+    freeKeysBody.innerHTML = legend + '<div class="free-key-groups">' + body + '</div>';
+    freeKeysModal.style.display = "flex";
+  }
+  function closeFreeKeysModal(){ freeKeysModal.style.display = "none"; }
+  freeKeysClose.addEventListener("click", closeFreeKeysModal);
+  freeKeysModal.addEventListener("click", function(e){
+    if (e.target === freeKeysModal) closeFreeKeysModal();
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && freeKeysModal.style.display !== "none") closeFreeKeysModal();
+  });
 
   document.addEventListener("keydown", function(e){
     if (!capturingBadge) return;
@@ -3854,8 +4036,13 @@ body.edit-mode .th-btns{display:flex;}
     reader.readAsText(file);
   });
 
-  // アプリごとの.keyエクスポート/インポート(表ヘッダーのボタン、編集モード中のみ表示)
+  // アプリごとの.keyエクスポート/インポート・空きキー一覧(表ヘッダーのボタン、編集モード中のみ表示)
   table.addEventListener("click", function(e){
+    var freeBtn = e.target.closest(".th-free");
+    if (freeBtn){
+      showFreeKeysModal(freeBtn.getAttribute("data-app"));
+      return;
+    }
     var expBtn = e.target.closest(".th-export");
     if (expBtn){
       exportKeyForApp(expBtn.getAttribute("data-app"));
