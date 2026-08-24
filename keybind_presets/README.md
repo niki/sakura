@@ -59,7 +59,7 @@
   - Ctrl+Shift+S(Save As...) → `F_FILESAVEAS_DIALOG`。既定値にはあった割り当てが、Sキー行がプリセットに
     含まれているせいで無言で消えていた(Ctrl+Shift+Sの不具合と同種)
   - Ctrl+Shift+O(Go to Symbol) → `F_OUTLINE`(アウトライン解析)
-  - Ctrl+P(Quick Open) → `F_COMMAND_PALETTE`(最近使用したファイルも一覧に出るため代用可)
+  - Ctrl+Shift+P(Show Command Palette) → `F_COMMAND_PALETTE`
   - Ctrl+L(Select current line) → `F_SELECTLINE`
   - Ctrl+Shift+\(Jump to matching bracket) → `F_BRACKETPAIR`
   - Alt+Z(Toggle Word Wrap) → `F_WRAPWINDOWWIDTH`(折り返しモードを巡回するトグル)
@@ -81,16 +81,38 @@
     の生データを直接突き合わせたため確認精度は高いです。Ctrl+L(SelectLine)、Ctrl+R(goto_symbol→Outline)、
     Ctrl+M(move_to brackets→BracketPair)、Ctrl+Shift+D(DuplicateLine)、Ctrl+Shift+K(DeleteLine)等。
     追加で[日本語の紹介記事](https://qiita.com/seafield1979/items/56d4833dae818dcf85ae)とも
-    突き合わせ、Ctrl+P(Goto Anything→`F_COMMAND_PALETTE`)とCtrl+J(Join Lines→`F_MERGE`)を
-    追加しました(20260823)。同記事のCtrl+;/Ctrl+-によるフォントサイズ変更は、他の一次資料と
-    食い違い確証が持てなかったため採用していません(サクラの既定でもCtrl+マウスホイールで
-    同等の操作ができるため実害は小さいと判断)。
-  - **NotepadPlusPlus.key**: Notepad++はデフォルトキー割り当てが実行ファイルに埋め込み式で、Sublimeのような
-    生の設定ファイルが無いため、コミュニティのショートカット一覧投稿([参照元](https://community.notepad-plus-plus.org/topic/12576/list-of-all-assigned-keyboard-shortcuts))と、
-    Ctrl+L/Ctrl+Shift+Lの実際の内部コマンド名(SCILINECUT/SCILINEDELETE)が確認できた
-    [別スレッド](https://community.notepad-plus-plus.org/topic/13077/keyboard-shortcut-to-delete-current-line)
-    の2件で裏取りしています。SublimeText.keyより確認精度はやや低いため、収録項目は特に確度の高いものに
-    絞りました(Find in Files相当のCtrl+Shift+F等、確証を得られなかったものは割り当てていません)。
+    突き合わせ、Ctrl+Shift+P(Command Palette→`F_COMMAND_PALETTE`)を追加しました(20260823、
+    Ctrl+PのGoto Anything読み替えは20260824に撤回、後述)。同記事のCtrl+;/Ctrl+-による
+    フォントサイズ変更は、他の一次資料と食い違い確証が持てなかったため採用していません
+    (サクラの既定でもCtrl+マウスホイールで同等の操作ができるため実害は小さいと判断)。
+  - **Ctrl+J(Join Lines)の割り当てを削除しました(20260824)。** 当初Ctrl+Jを`F_MERGE`
+    (複数行を1行に結合する機能だと誤認)に割り当てていましたが、`F_MERGE`の実際の動作は
+    「連続した重複行の削除（uniq）」(`sakura_rc.rc`のメニュー文言で確認)で、Sublime Textの
+    Join Lines(複数行を1行に連結)とは全く別の機能でした。`Funccode.cpp`側のコード内コメント
+    「選択行のマージ」が古いまま更新されておらず、これに引きずられて誤認したのが原因です。
+    サクラには真の意味でのJoin Lines機能が存在しないため、紛らわしい割り当てのまま残すより
+    削除する方を選びました(`F_MERGE`自体はサクラの既定Alt+Mで引き続き使えます)。
+  - **NotepadPlusPlus.key**: 当初はNotepad++はデフォルトキー割り当てが実行ファイルに埋め込み式で
+    生の設定ファイルが無いと考え、コミュニティのショートカット一覧投稿([参照元](https://community.notepad-plus-plus.org/topic/12576/list-of-all-assigned-keyboard-shortcuts))
+    等で裏取りしていましたが、その後(20260824)公式ソース`PowerEditor/src/Parameters.cpp`の
+    `winKeyDefs[]`/`scintKeyDefs[]`配列(既定キー割り当てそのものの定義)を直接参照できることが
+    分かり、より確度の高い一次資料に切り替えました。
+    - **修正: Ctrl+Alt+SとShift+Alt+Sの割り当てを取り違えていました(20260824)。**
+      `IDM_FILE_SAVEAS`の実際の既定キーはCtrl+Alt+Sですが、Shift+Alt+Sに割り当てていました
+      (Shift+Alt+Sは実際には何も割り当てられていません)。修正済みです。
+    - **修正: Ctrl+Shift+Pを`F_COMMAND_PALETTE`ではなく`F_EXECKEYMACRO`に割り当て直しました(20260824)。**
+      実際のNotepad++でCtrl+Shift+Pは`IDM_MACRO_PLAYBACKRECORDEDMACRO`(記録したマクロの再生)で、
+      コマンドパレットとは無関係でした。Notepad++本体にはコマンドパレット相当の概念自体が無く
+      自然な読み替え先も無いため、本来の意味に合わせました(下記の方針転換も参照)。
+      このプリセットではCtrl+Shift+Pにコマンドパレットの割り当てはありません
+      (Ctrl+Shift+L=既定のExecKeyMacroキーと重複しますが、実際のキーを優先したため問題ありません)。
+- **方針転換: 「まずはキー操作可能な機能を把握したい」との要望を受け、対応する機能が
+  無いキーへの読み替え(代用)をやめ、そのアプリの実際のキーに空白でも素直に従う方針に
+  変更しました(20260824)。** 対応する機能が無ければ、そのキーには何も割り当てません。
+  - **VSCode.key / SublimeText.key**: Ctrl+P(VSCode: Quick Open、Sublime: Goto Anything)への
+    `F_COMMAND_PALETTE`割り当てを撤回し、未割り当てに戻しました。どちらのアプリも
+    Ctrl+PとCtrl+Shift+Pは別々の機能(前者はファイル切り替え、後者はコマンドパレット)のため、
+    Ctrl+Shift+P(Show Command Palette)側の`F_COMMAND_PALETTE`割り当てはそのまま残しています。
 - **VisualStudio.key / ReSharper.key に、公式のショートカット一覧
   ([Microsoft Learn](https://learn.microsoft.com/ja-jp/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio?view=visualstudio))
   と突き合わせて見つかった不足分を追加しました(20260823)。両ファイルとも基本部分は同一のため
