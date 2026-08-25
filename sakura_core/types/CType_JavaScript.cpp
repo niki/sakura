@@ -34,8 +34,8 @@ int g_nKeywordsIdx_JS2 = -1;
 void CType_JavaScript::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("JavaScript") );
-	_tcscpy( pType->m_szTypeExts, _T("js, json") );
+	auto_strcpy( pType->m_szTypeName, _T("JavaScript") );
+	auto_strcpy( pType->m_szTypeExts, _T("js, json") );
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );

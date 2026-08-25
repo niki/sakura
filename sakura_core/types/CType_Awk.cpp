@@ -32,8 +32,8 @@ int g_nKeywordsIdx_AWK = -1;
 void CType_Awk::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("AWK") );
-	_tcscpy( pType->m_szTypeExts, _T("awk") );
+	auto_strcpy( pType->m_szTypeName, _T("AWK") );
+	auto_strcpy( pType->m_szTypeExts, _T("awk") );
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"#", -1 );		/* 行コメントデリミタ */

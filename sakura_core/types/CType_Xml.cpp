@@ -31,8 +31,8 @@
 void CType_Xml::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("XML") );
-	_tcscpy( pType->m_szTypeExts, _T("xml,xsl,xslt") );
+	auto_strcpy( pType->m_szTypeName, _T("XML") );
+	auto_strcpy( pType->m_szTypeExts, _T("xml,xsl,xslt") );
 
 	//設定
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"<!--", L"-->" );

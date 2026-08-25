@@ -33,8 +33,8 @@ int g_nKeywordsIdx_CSS = -1;
 void CType_Css::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("CSS") );
-	_tcscpy( pType->m_szTypeExts, _T("css") );
+	auto_strcpy( pType->m_szTypeName, _T("CSS") );
+	auto_strcpy( pType->m_szTypeExts, _T("css") );
 
 	//設定
 	pType->m_cBlockComments[0].SetBlockCommentRule( L"/*", L"*/" );

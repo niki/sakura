@@ -42,8 +42,8 @@ int g_nKeywordsIdx_PYTHON = -1;
 void CType_Python::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("Python") );
-	_tcscpy( pType->m_szTypeExts, _T("py") );
+	auto_strcpy( pType->m_szTypeName, _T("Python") );
+	auto_strcpy( pType->m_szTypeExts, _T("py") );
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"#", -1 );
@@ -528,7 +528,7 @@ void CDocOutline::MakeFuncList_python( CFuncInfoArr* pcFuncInfoArr )
 				szWord[ len ] = L'\0';
 			}
 			else {
-				wcscpy( szWord, LSW(STR_OUTLINE_PYTHON_UNDEFINED) );
+				auto_strcpy( szWord, LSW(STR_OUTLINE_PYTHON_UNDEFINED) );
 				len = 8;
 			}
 			if( nItemFuncId == 4  ){
@@ -537,7 +537,7 @@ void CDocOutline::MakeFuncList_python( CFuncInfoArr* pcFuncInfoArr )
 					len = _countof( szWord ) - 8;
 				}
 				// class
-				wcscpy( szWord + len, LSW(STR_OUTLINE_PYTHON_CLASS) );
+				auto_strcpy_s( szWord + len, _countof( szWord ) - len, LSW(STR_OUTLINE_PYTHON_CLASS) );
 			}
 			
 			/*

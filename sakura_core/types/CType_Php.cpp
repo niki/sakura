@@ -34,8 +34,8 @@ int g_nKeywordsIdx_PHP2 = -1;
 void CType_Php::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("PHP") );
-	_tcscpy( pType->m_szTypeExts, _T("php") );
+	auto_strcpy( pType->m_szTypeName, _T("PHP") );
+	auto_strcpy( pType->m_szTypeExts, _T("php") );
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );

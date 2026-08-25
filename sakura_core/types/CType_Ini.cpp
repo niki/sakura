@@ -31,8 +31,8 @@
 void CType_Ini::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("設定ファイル") );
-	_tcscpy( pType->m_szTypeExts, _T("ini,inf,cnf,kwd,col") );
+	auto_strcpy( pType->m_szTypeName, _T("設定ファイル") );
+	auto_strcpy( pType->m_szTypeExts, _T("ini,inf,cnf,kwd,col") );
 	
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );				/* 行コメントデリミタ */

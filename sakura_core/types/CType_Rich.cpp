@@ -35,8 +35,8 @@ int g_nKeywordsIdx_RTF;
 void CType_Rich::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("リッチテキスト") );
-	_tcscpy( pType->m_szTypeExts, _T("rtf") );
+	auto_strcpy( pType->m_szTypeName, _T("リッチテキスト") );
+	auto_strcpy( pType->m_szTypeExts, _T("rtf") );
 
 	//設定
 	pType->m_eDefaultOutline = OUTLINE_TEXT;					/* アウトライン解析方法 */

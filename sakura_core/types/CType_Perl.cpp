@@ -40,8 +40,8 @@ int g_nKeywordsIdx_PERL2 = -1;
 void CType_Perl::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("Perl") );
-	_tcscpy( pType->m_szTypeExts, _T("cgi,pl,pm") );
+	auto_strcpy( pType->m_szTypeName, _T("Perl") );
+	auto_strcpy( pType->m_szTypeExts, _T("cgi,pl,pm") );
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"#", -1 );					/* 行コメントデリミタ */

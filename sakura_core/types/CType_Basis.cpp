@@ -30,8 +30,8 @@
 void CType_Basis::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("基本") );
-	_tcscpy( pType->m_szTypeExts, _T("") );
+	auto_strcpy( pType->m_szTypeName, _T("基本") );
+	auto_strcpy( pType->m_szTypeExts, _T("") );
 
 	//設定
 	pType->m_eDefaultOutline = OUTLINE_TEXT;					// アウトライン解析方法

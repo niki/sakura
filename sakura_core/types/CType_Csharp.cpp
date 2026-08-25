@@ -34,8 +34,8 @@ int g_nKeywordsIdx_CSHARP2 = -1;
 void CType_Csharp::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("C#") );
-	_tcscpy( pType->m_szTypeExts, _T("cs") );
+	auto_strcpy( pType->m_szTypeName, _T("C#") );
+	auto_strcpy( pType->m_szTypeExts, _T("cs") );
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );

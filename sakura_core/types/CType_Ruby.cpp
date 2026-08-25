@@ -36,8 +36,8 @@ int g_nKeywordsIdx_RUBY4 = -1;
 void CType_Ruby::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("Ruby") );
-	_tcscpy( pType->m_szTypeExts, _T("rb") );
+	auto_strcpy( pType->m_szTypeName, _T("Ruby") );
+	auto_strcpy( pType->m_szTypeExts, _T("rb") );
 
 	//設定
 	pType->m_nTabSpace = CKetaXInt(2);

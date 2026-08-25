@@ -34,8 +34,8 @@ int g_nKeywordsIdx_PASCAL = -1;
 void CType_Pascal::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("Pascal") );
-	_tcscpy( pType->m_szTypeExts, _T("dpr,pas") );
+	auto_strcpy( pType->m_szTypeName, _T("Pascal") );
+	auto_strcpy( pType->m_szTypeExts, _T("dpr,pas") );
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"//", -1 );					/* 行コメントデリミタ */		//Nov. 5, 2000 JEPRO 追加

@@ -32,8 +32,8 @@ int g_nKeywordsIdx_BAT = -1;
 void CType_Dos::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("MS-DOSバッチファイル") );
-	_tcscpy( pType->m_szTypeExts, _T("bat") );
+	auto_strcpy( pType->m_szTypeName, _T("MS-DOSバッチファイル") );
+	auto_strcpy( pType->m_szTypeExts, _T("bat") );
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"REM ", -1 );	/* 行コメントデリミタ */

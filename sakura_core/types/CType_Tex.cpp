@@ -40,8 +40,8 @@ int g_nKeywordsIdx_TEX2 = -1;
 void CType_Tex::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("TeX") );
-	_tcscpy( pType->m_szTypeExts, _T("tex,ltx,sty,bib,log,blg,aux,bbl,toc,lof,lot,idx,ind,glo") );
+	auto_strcpy( pType->m_szTypeName, _T("TeX") );
+	auto_strcpy( pType->m_szTypeExts, _T("tex,ltx,sty,bib,log,blg,aux,bbl,toc,lof,lot,idx,ind,glo") );
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"%", -1 );				/* 行コメントデリミタ */
@@ -170,11 +170,11 @@ void CDocOutline::MakeTopicList_tex(CFuncInfoArr* pcFuncInfoArr)
 				if(!bNoNumber){
 					for(k=0; k<=nDepth; k++){
 						auto_sprintf(secstr, L"%d.", stackSection[k]);
-						wcscat(tmpstr, secstr);
+						auto_strcat(tmpstr, secstr);
 					}
-					wcscat(tmpstr, L" ");
+					auto_strcat(tmpstr, L" ");
 				}
-				wcscat(tmpstr, szTitle);
+				auto_strcat(tmpstr, szTitle);
 				pcFuncInfoArr->AppendData(nLineCount+CLogicInt(1),ptPos.GetY2()+CLayoutInt(1), tmpstr, 0, nDepth);
 				if(!bNoNumber) lastSection = thisSection;
 			}

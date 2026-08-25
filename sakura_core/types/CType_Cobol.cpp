@@ -37,14 +37,14 @@ int g_nKeywordsIdx_COBOL = -1;
 void CType_Cobol::InitTypeConfigImp(STypeConfig* pType)
 {
 	//名前と拡張子
-	_tcscpy( pType->m_szTypeName, _T("COBOL") );
-	_tcscpy( pType->m_szTypeExts, _T("cbl,cpy,pco,cob") );	//Jun. 04, 2001 JEPRO KENCH氏の助言に従い追加
+	auto_strcpy( pType->m_szTypeName, _T("COBOL") );
+	auto_strcpy( pType->m_szTypeExts, _T("cbl,cpy,pco,cob") );	//Jun. 04, 2001 JEPRO KENCH氏の助言に従い追加
 
 	//設定
 	pType->m_cLineComment.CopyTo( 0, L"*", 6 );			//Jun. 02, 2001 JEPRO 修正
 	pType->m_cLineComment.CopyTo( 1, L"D", 6 );			//Jun. 04, 2001 JEPRO 追加
 	pType->m_nStringType = STRING_LITERAL_PLSQL;							/* 文字列区切り記号エスケープ方法  0=[\"][\'] 1=[""][''] */
-	wcscpy( pType->m_szIndentChars, L"*" );				/* その他のインデント対象文字 */
+	auto_strcpy( pType->m_szIndentChars, L"*" );				/* その他のインデント対象文字 */
 	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_COBOL;
 	pType->m_eDefaultOutline = OUTLINE_COBOL;			/* アウトライン解析方法 */
 	// 指定桁縦線	//2005.11.08 Moca
@@ -118,7 +118,7 @@ void CDocOutline::MakeTopicList_cobol( CFuncInfoArr* pcFuncInfoArr )
 			for( i = 0; i <= nLen ; ++i ){
 				if( 0 == auto_memicmp( &szLabel[i], pszKeyWord, nKeyWordLen ) ){
 					szLabel[i + nKeyWordLen] = L'\0';
-					wcscpy( szDivision, szLabel );
+					auto_strcpy( szDivision, szLabel );
 					bDivision = TRUE;
 					break;
 				}
