@@ -29,7 +29,7 @@ CRunningTimer::CRunningTimer( const char* pszText )
 {
 	Reset();
 	if( pszText != NULL )
-		strcpy( m_szText, pszText );
+		auto_strcpy( m_szText, pszText );
 	else
 		m_szText[0] = '\0';
 	m_nDeapth = m_nNestCount++;

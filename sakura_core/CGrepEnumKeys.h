@@ -67,7 +67,7 @@ public:
 		if( ! pWildCard ){
 			return -1;
 		}
-		_tcscpy( pWildCard, lpKeys );
+		auto_strcpy_s( pWildCard, nWildCardLen + 1, lpKeys );
 		ClearItems();
 		
 		int nPos = 0;
@@ -160,7 +160,7 @@ private:
 	void push_back_unique( VGrepEnumKeys& keys, LPCTSTR addKey ){
 		if( ! IsExist( keys, addKey) ){
 			TCHAR* newKey = new TCHAR[ _tcslen( addKey ) + 1 ];
-			_tcscpy( newKey, addKey );
+			auto_strcpy_s( newKey, _tcslen( addKey ) + 1, addKey );
 			keys.push_back( newKey );
 		}
 	}

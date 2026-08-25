@@ -34,7 +34,7 @@ void CBlockComment::SetBlockCommentRule(
 {
 	int nStrLen = wcslen( pszFrom );
 	if( 0 < nStrLen && nStrLen < BLOCKCOMMENT_BUFFERSIZE ){
-		wcscpy( m_szBlockCommentFrom, pszFrom );
+		auto_strcpy( m_szBlockCommentFrom, pszFrom );
 		m_nBlockFromLen = nStrLen;
 	}
 	else {
@@ -43,7 +43,7 @@ void CBlockComment::SetBlockCommentRule(
 	}
 	nStrLen = wcslen( pszTo );
 	if( 0 < nStrLen && nStrLen < BLOCKCOMMENT_BUFFERSIZE ){
-		wcscpy( m_szBlockCommentTo, pszTo );
+		auto_strcpy( m_szBlockCommentTo, pszTo );
 		m_nBlockToLen = nStrLen;
 	}
 	else {

@@ -149,7 +149,7 @@ public:
 					}
 					LPTSTR lpName = new TCHAR[ nKeyDirLen + _tcslen( w32fd.cFileName ) + 1 ];
 					_tcsncpy( lpName, vecKeys[ i ], nKeyDirLen );
-					_tcscpy( lpName + nKeyDirLen, w32fd.cFileName );
+					auto_strcpy_s( lpName + nKeyDirLen, _tcslen( w32fd.cFileName ) + 1, w32fd.cFileName );
 					const size_t nFullPathCount = baseLen + _tcslen(lpName) + 2;
 					LPTSTR lpFullPath = new TCHAR[ nFullPathCount ];
 					auto_strcpy_s( lpFullPath, nFullPathCount, lpBaseFolder );

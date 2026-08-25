@@ -355,12 +355,12 @@ bool CDocFileOperation::SaveFileDialog(
 			// 基本
 			if (szExt[0] == _T('\0')) { 
 				// ファイルパスが無いまたは拡張子なし
-				_tcscpy(szDefaultWildCard, _T("*.txt"));
+				auto_strcpy(szDefaultWildCard, _T("*.txt"));
 			}
 			else {
 				// 拡張子あり
-				_tcscpy(szDefaultWildCard, _T("*"));
-				_tcscat(szDefaultWildCard, szExt);
+				auto_strcpy(szDefaultWildCard, _T("*"));
+				auto_strcat(szDefaultWildCard, szExt);
 			}
 		}
 		else {
@@ -371,12 +371,12 @@ bool CDocFileOperation::SaveFileDialog(
 		if(!this->m_pcDocRef->m_cDocFile.GetFilePathClass().IsValidPath()){
 			//「新規から保存時は全ファイル表示」オプション	// 2008/6/15 バグフィックス Uchi
 			if( GetDllShareData().m_Common.m_sFile.m_bNoFilterSaveNew )
-				_tcscat(szDefaultWildCard, _T(";*.*"));	// 全ファイル表示
+				auto_strcat(szDefaultWildCard, _T(";*.*"));	// 全ファイル表示
 		}
 		else {
 			//「新規以外から保存時は全ファイル表示」オプション
 			if( GetDllShareData().m_Common.m_sFile.m_bNoFilterSaveFile )
-				_tcscat(szDefaultWildCard, _T(";*.*"));	// 全ファイル表示
+				auto_strcat(szDefaultWildCard, _T(";*.*"));	// 全ファイル表示
 		}
 	}
 	// 新規に、新規番号を付ける

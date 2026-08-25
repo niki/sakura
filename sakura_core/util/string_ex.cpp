@@ -255,21 +255,21 @@ errno_t strcat_s(char *dest, size_t num, const char *src)
 	size_t size1 = strnlen(dest, num);
 	if(size1 == num) return EINVAL; // destが未終了
 	if(num <= size1+strlen(src)) return ERANGE;
-	strcat(dest, src);
+	auto_strcat(dest, src);
 	return 0;
 }
 errno_t strcpy_s(char *dest, size_t num, const char *src)
 {
 	if(!dest || !src) return EINVAL;
 	if(num <= strlen(src)) return ERANGE;
-	strcpy(dest, src);
+	auto_strcpy(dest, src);
 	return 0;
 }
 errno_t wcscpy_s(wchar_t *dest, size_t num, const wchar_t *src)
 {
 	if(!dest || !src) return EINVAL;
 	if(num <= wcslen(src)) return ERANGE;
-	wcscpy(dest, src);
+	auto_strcpy(dest, src);
 	return 0;
 }
 errno_t strncpy_s(char *dest, size_t num, const char *src, size_t count)

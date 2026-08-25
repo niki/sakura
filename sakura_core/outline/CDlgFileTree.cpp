@@ -390,7 +390,7 @@ void CDlgFileTree::SetDataInit()
 		const int ctrlWidth = rc.right - rc.left;
 		int nMaxCch = ctrlWidth / xWidth;
 		CFileNameManager::getInstance()->GetTransformFileNameFast(pFile, szFilePath, _countof(szFilePath), calc.GetDC(), true, nMaxCch);
-		wsprintf(szMsg, LS(STR_FILETREE_FROM_FILE), szFilePath);
+		auto_sprintf(szMsg, LS(STR_FILETREE_FROM_FILE), szFilePath);
 		::SetWindowText(GetItemHwnd(IDC_STATIC_SETTFING_FROM), szMsg);
 		bEnableDefIni = FALSE;
 	}

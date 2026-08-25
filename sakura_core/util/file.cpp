@@ -321,8 +321,8 @@ void SplitPath_FolderAndFile( const TCHAR* pszFilePath, TCHAR* pszFolder, TCHAR*
 	int		nCharChars;
 	_tsplitpath( pszFilePath, szDrive, szDir, szFname, szExt );
 	if( NULL != pszFolder ){
-		_tcscpy( pszFolder, szDrive );
-		_tcscat( pszFolder, szDir );
+		auto_strcpy_s( pszFolder, _MAX_PATH, szDrive );	// 呼び出し元は TCHAR[_MAX_PATH] 以上のバッファを渡す規約
+		auto_strcat_s( pszFolder, _MAX_PATH, szDir );
 		/* フォルダの最後が半角かつ'\\'の場合は、取り除く */
 		nFolderLen = _tcslen( pszFolder );
 		if( 0 < nFolderLen ){
@@ -333,8 +333,8 @@ void SplitPath_FolderAndFile( const TCHAR* pszFilePath, TCHAR* pszFolder, TCHAR*
 		}
 	}
 	if( NULL != pszFile ){
-		_tcscpy( pszFile, szFname );
-		_tcscat( pszFile, szExt );
+		auto_strcpy_s( pszFile, _MAX_PATH, szFname );	// 呼び出し元は TCHAR[_MAX_PATH] 以上のバッファを渡す規約
+		auto_strcat_s( pszFile, _MAX_PATH, szExt );
 	}
 	return;
 }
@@ -393,7 +393,7 @@ BOOL GetLongFileName( const TCHAR* pszFilePathSrc, TCHAR* pszFilePathDes )
 	}
 	len = ::GetLongPathName( szBuf, pszFilePathDes, _MAX_PATH );
 	if( len <= 0 || _MAX_PATH < len ){
-		_tcscpy( pszFilePathDes, szBuf );
+		auto_strcpy_s( pszFilePathDes, _MAX_PATH, szBuf );
 	}
 	return TRUE;
 }
@@ -565,14 +565,14 @@ void GetInidirOrExedir(
 	// ファイル名の指定が空の場合はEXEファイルのフルパスを返す（オプション）
 	if( bRetExedirIfFileEmpty && (szFile == NULL || szFile[0] == _T('\0')) ){
 		GetExedir( szExedir, szFile );
-		::lstrcpy( pDir, szExedir );
+		::auto_strcpy_s( pDir, _MAX_PATH, szExedir );
 		return;
 	}
 
 	// INI基準のフルパスが実在すればそのパスを返す
 	GetInidir( szInidir, szFile );
 	if( fexist(szInidir) ){
-		::lstrcpy( pDir, szInidir );
+		::auto_strcpy_s( pDir, _MAX_PATH, szInidir );
 		return;
 	}
 
@@ -580,13 +580,13 @@ void GetInidirOrExedir(
 	if( CShareData::getInstance()->IsPrivateSettings() ){	// INIとEXEでパスが異なる場合
 		GetExedir( szExedir, szFile );
 		if( fexist(szExedir) ){
-			::lstrcpy( pDir, szExedir );
+			::auto_strcpy_s( pDir, _MAX_PATH, szExedir );
 			return;
 		}
 	}
 
 	// どちらにも実在しなければINI基準のフルパスを返す
-	::lstrcpy( pDir, szInidir );
+	::auto_strcpy_s( pDir, _MAX_PATH, szInidir );
 }
 
 /*!

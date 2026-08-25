@@ -238,7 +238,7 @@ bool CEditView::ExecCmd( const TCHAR* pszCmd, int nFlgOpt, const TCHAR* pszCurDi
 	// 固定長スタックバッファではなく実際の長さに合わせて確保する(CreateProcessの
 	// lpCommandLineは書き換え可能である必要があるためstd::tstringではなくvectorを使う)
 	std::vector<TCHAR> cmdline( _tcslen( pszCmd ) + 1 );
-	_tcscpy( &cmdline[0], pszCmd );
+	auto_strcpy_s( &cmdline[0], cmdline.size(), pszCmd );
 	if( CreateProcess( NULL, &cmdline[0], NULL, NULL, TRUE,
 				CREATE_NEW_CONSOLE, NULL, bCurDir ? pszCurDir : NULL, &sui, &pi ) == FALSE ) {
 		//実行に失敗した場合、コマンドラインベースのアプリケーションと判断して

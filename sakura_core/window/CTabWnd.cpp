@@ -1718,7 +1718,7 @@ LRESULT CTabWnd::OnMouseMove( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		if( m_bListBtnHilighted )	// ボタンに入ってきた?
 		{
 			pszTip = szText;
-			_tcscpy( szText, LS(STR_TABWND_LR_INFO) );
+			auto_strcpy( szText, LS(STR_TABWND_LR_INFO) );
 		}
 	}
 
@@ -1738,7 +1738,7 @@ LRESULT CTabWnd::OnMouseMove( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			{
 				if( !m_pShareData->m_Common.m_sTabBar.m_bTab_CloseOneWin )
 				{
-					_tcscpy( szText, LS(STR_TABWND_CLOSETAB) );
+					auto_strcpy( szText, LS(STR_TABWND_CLOSETAB) );
 				}
 				else
 				{
@@ -1941,7 +1941,7 @@ void CTabWnd::TabWindowNotify( WPARAM wParam, LPARAM lParam )
 			TCITEM	tcitem;
 			TCHAR	szName[1024];
 
-			_tcscpy( szName, LS(STR_NO_TITLE1) );
+			auto_strcpy( szName, LS(STR_NO_TITLE1) );
 
 			tcitem.mask    = TCIF_TEXT | TCIF_PARAM;
 			tcitem.pszText = szName;
@@ -2229,7 +2229,7 @@ void CTabWnd::Refresh( BOOL bEnsureVisible/* = TRUE*/, BOOL bRebuild/* = FALSE*/
 
 		// タブが無ければ１つ作成して選択状態にする（自ウィンドウのタブ用）
 		TCHAR		szName[2048];
-		_tcscpy( szName, _T("") );
+		auto_strcpy( szName, _T("") );
 		tcitem.mask    = TCIF_TEXT | TCIF_PARAM;
 		tcitem.pszText = szName;
 		tcitem.lParam  = (LPARAM)GetParentHwnd();

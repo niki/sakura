@@ -89,9 +89,9 @@ CFuncKeyWnd::CFuncKeyWnd()
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
 #ifdef NKMM_FIX_UI_FONT
-	_tcscpy( lf.lfFaceName, _T(NKMM_RES_FONT_NAME) );
+	auto_strcpy( lf.lfFaceName, _T(NKMM_RES_FONT_NAME) );
 #else
-	_tcscpy( lf.lfFaceName, _T("ＭＳ Ｐゴシック") );
+	auto_strcpy( lf.lfFaceName, _T("ＭＳ Ｐゴシック") );
 #endif // NKMM_
 	m_hFont = ::CreateFontIndirect( &lf );
 

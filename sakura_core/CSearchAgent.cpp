@@ -782,7 +782,7 @@ end_of_func:;
 	clockEnd = clock();
 	TCHAR buf[100];
 	memset(buf, 0x00, sizeof(buf));
-	wsprintf( buf, _T("%d"), clockEnd - clockStart);
+	auto_sprintf( buf, _T("%d"), clockEnd - clockStart);
 	::MessageBox( NULL, buf, GSTR_APPNAME, MB_OK );
 #endif
 

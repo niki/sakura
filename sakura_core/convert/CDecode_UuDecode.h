@@ -38,7 +38,7 @@ class CDecode_UuDecode : public CDecode{
 	TCHAR m_aFilename[_MAX_PATH];
 public:
 	bool DoDecode(const CNativeW& cData, CMemory* pDst);
-	void CopyFilename( TCHAR *pcDst ) const { _tcscpy( pcDst, m_aFilename ); }
+	void CopyFilename( TCHAR *pcDst ) const { auto_strcpy_s( pcDst, _MAX_PATH, m_aFilename ); }	// 呼び出し元は TCHAR[_MAX_PATH] を渡す規約
 };
 
 #endif /* SAKURA_CDECODE_UUDECODE_2082FDBF_E5F4_4173_87E3_A862FA4F694B_H_ */

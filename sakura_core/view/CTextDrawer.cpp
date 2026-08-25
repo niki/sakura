@@ -633,7 +633,7 @@ void CTextDrawer::DispLineNumber(
 			if( pTypes->m_bLineNumIsCRLF ){
 				/* 論理行番号表示モード */
 				if( NULL == pcLayout || 0 != pcLayout->GetLogicOffset() ){ //折り返しレイアウト行
-					wcscpy( szLineNum, L" " );
+					auto_strcpy( szLineNum, L" " );
 				}else{
 #ifdef NKMM_FIX_CUR_BACK_DRAW
 					//CLayoutRange sSelect = pView->GetSelectionInfo().m_sSelect;

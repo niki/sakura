@@ -556,9 +556,9 @@ TCHAR* CPrint::GetPaperName( int nPaperSize, TCHAR* pszPaperName )
 	// 2006.08.14 Moca 用紙情報の統合
 	const PAPER_INFO* paperInfo = FindPaperInfo( nPaperSize );
 	if( NULL != paperInfo ){
-		_tcscpy( pszPaperName, paperInfo->m_pszName );
+		auto_strcpy_s( pszPaperName, 256, paperInfo->m_pszName );	// 呼び出し元は最低256文字のバッファを渡す規約
 	}else{
-		_tcscpy( pszPaperName, LS(STR_ERR_CPRINT03) );
+		auto_strcpy_s( pszPaperName, 256, LS(STR_ERR_CPRINT03) );	// 呼び出し元は最低256文字のバッファを渡す規約
 	}
 	return pszPaperName;
 }
@@ -587,9 +587,9 @@ const PAPER_INFO* CPrint::FindPaperInfo( int id )
 */
 void CPrint::SettingInitialize( PRINTSETTING& pPrintSetting, const TCHAR* settingName )
 {
-	_tcscpy( pPrintSetting.m_szPrintSettingName, settingName );			/* 印刷設定の名前 */
-	_tcscpy( pPrintSetting.m_szPrintFontFaceHan, _T("ＭＳ 明朝") );		/* 印刷フォント */
-	_tcscpy( pPrintSetting.m_szPrintFontFaceZen, _T("ＭＳ 明朝") );		/* 印刷フォント */
+	auto_strcpy( pPrintSetting.m_szPrintSettingName, settingName );			/* 印刷設定の名前 */
+	auto_strcpy( pPrintSetting.m_szPrintFontFaceHan, _T("ＭＳ 明朝") );		/* 印刷フォント */
+	auto_strcpy( pPrintSetting.m_szPrintFontFaceZen, _T("ＭＳ 明朝") );		/* 印刷フォント */
 	pPrintSetting.m_bColorPrint = false;		// カラー印刷			// 2013/4/26 Uchi
 	pPrintSetting.m_nPrintFontWidth = 12;		// 印刷フォント幅(1/10mm単位)
 	pPrintSetting.m_nPrintFontHeight = pPrintSetting.m_nPrintFontWidth * 2;	/* 印刷フォント高さ(1/10mm単位単位) */
@@ -614,14 +614,14 @@ void CPrint::SettingInitialize( PRINTSETTING& pPrintSetting, const TCHAR* settin
 	pPrintSetting.m_bHeaderUse[0] = TRUE;
 	pPrintSetting.m_bHeaderUse[1] = FALSE;
 	pPrintSetting.m_bHeaderUse[2] = FALSE;
-	wcscpy( pPrintSetting.m_szHeaderForm[0], L"$f" );
+	auto_strcpy( pPrintSetting.m_szHeaderForm[0], L"$f" );
 	pPrintSetting.m_szHeaderForm[1][0] = L'\0';
 	pPrintSetting.m_szHeaderForm[2][0] = L'\0';
 	pPrintSetting.m_bFooterUse[0] = TRUE;
 	pPrintSetting.m_bFooterUse[1] = FALSE;
 	pPrintSetting.m_bFooterUse[2] = FALSE;
 	pPrintSetting.m_szFooterForm[0][0] = L'\0';
-	wcscpy( pPrintSetting.m_szFooterForm[1], L"- $p -" );
+	auto_strcpy( pPrintSetting.m_szFooterForm[1], L"- $p -" );
 	pPrintSetting.m_szFooterForm[2][0] = L'\0';
 }
 

@@ -486,7 +486,7 @@ TCHAR* CKeyBind::GetMenuLabel(
 		pszLabel[ LABEL_MAX - 1 ] = _T('\0');
 	}
 	if( _T('\0') == pszLabel[0] ){
-		_tcscpy( pszLabel, _T("-- undefined name --") );
+		auto_strcpy_s( pszLabel, LABEL_MAX, _T("-- undefined name --") );
 	}
 	// アクセスキーの追加	2010/5/17 Uchi
 	_tcsncpy_s( pszLabel, LABEL_MAX, MakeMenuLabel( pszLabel, pszKey ), _TRUNCATE );
@@ -500,8 +500,8 @@ TCHAR* CKeyBind::GetMenuLabel(
 		if( GetKeyStr( hInstance, nKeyNameArrNum, pKeyNameArr, cMemAccessKey, nFuncId, bGetDefFuncCode ) ){
 			// バッファが足りないときは入れない
 			if( _tcslen( pszLabel ) + (Int)cMemAccessKey.GetStringLength() + 1 < LABEL_MAX ){
-				_tcscat( pszLabel, _T("\t") );
-				_tcscat( pszLabel, cMemAccessKey.GetStringPtr() );
+				auto_strcat_s( pszLabel, LABEL_MAX, _T("\t") );
+				auto_strcat_s( pszLabel, LABEL_MAX, cMemAccessKey.GetStringPtr() );
 			}
 		}
 	}
@@ -929,7 +929,7 @@ bool CShareData::ResetKeyBindToDefault(CommonSetting_KeyBind& sKeyBind)
 	// ここで完結させておく
 	for( int i = 0; i < nKeyDataInitNum; ++i ){
 		if ( KeyDataInit[i].m_nKeyNameId <= 0xFFFF ) {
-			_tcscpy( sKeyBind.m_pKeyNameArr[i].m_szKeyName, LS( KeyDataInit[i].m_nKeyNameId ) );
+			auto_strcpy( sKeyBind.m_pKeyNameArr[i].m_szKeyName, LS( KeyDataInit[i].m_nKeyNameId ) );
 		}
 	}
 	return true;
@@ -945,7 +945,7 @@ void CShareData::RefreshKeyAssignString(DLLSHAREDATA* pShareData)
 		KEYDATA* pKeydata = &pShareData->m_Common.m_sKeyBind.m_pKeyNameArr[i];
 
 		if ( KeyDataInit[i].m_nKeyNameId <= 0xFFFF ) {
-			_tcscpy( pKeydata->m_szKeyName, LS( KeyDataInit[i].m_nKeyNameId ) );
+			auto_strcpy( pKeydata->m_szKeyName, LS( KeyDataInit[i].m_nKeyNameId ) );
 		}
 	}
 
@@ -968,7 +968,7 @@ static void SetKeyNameArrVal(
 
 	pKeydata->m_nKeyCode = pKeydataInit->m_nKeyCode;
 	if ( 0xFFFF < pKeydataInit->m_nKeyNameId ) {
-		_tcscpy( pKeydata->m_szKeyName, pKeydataInit->m_pszKeyName );
+		auto_strcpy( pKeydata->m_szKeyName, pKeydataInit->m_pszKeyName );
 	}
 	assert( sizeof(pKeydata->m_nFuncCodeArr) == sizeof(pKeydataInit->m_nFuncCodeArr) );
 	memcpy_raw( pKeydata->m_nFuncCodeArr, pKeydataInit->m_nFuncCodeArr, sizeof(pKeydataInit->m_nFuncCodeArr) );
@@ -986,7 +986,7 @@ static void SetKeyNameArrValRef(
 
 	pKeydata->m_nKeyCode = pKeydataInit->m_nKeyCode;
 	if ( 0xFFFF < pKeydataInit->m_nKeyNameId ) {
-		_tcscpy( pKeydata->m_szKeyName, pKeydataInit->m_pszKeyName );
+		auto_strcpy( pKeydata->m_szKeyName, pKeydataInit->m_pszKeyName );
 	}
 	assert( sizeof(pKeydata->m_nFuncCodeArr) == sizeof(pKeydataInit->m_nFuncCodeArr) );
 	memcpy_raw( pKeydata->m_nFuncCodeArr, pKeydataInit->m_nFuncCodeArr, sizeof(pKeydataInit->m_nFuncCodeArr) );

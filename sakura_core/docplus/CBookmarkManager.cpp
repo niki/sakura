@@ -147,7 +147,7 @@ LPCWSTR CBookmarkManager::GetBookMarks()
 	CLogicInt	nLinePosOld=CLogicInt(-1);
 	int			nTextLen = 2;
 	pCDocLine = m_pcDocLineMgr->GetLine( nLinePos );
-	wcscpy( szText, L":0" );
+	auto_strcpy( szText, L":0" );
 	while( pCDocLine ){
 		if(CBookmarkGetter(pCDocLine).IsBookmarked()){
 			CLogicInt nDiff = nLinePos - nLinePosOld - CLogicInt(1);
@@ -189,7 +189,7 @@ LPCWSTR CBookmarkManager::GetBookMarks()
 			}
 			int nBuff2Len = wcslen(szBuff2);
 			if( nBuff2Len + nTextLen > MAX_MARKLINES_LEN ) break;	//2002.01.17
-			wcscpy( szText + nTextLen, szBuff2 );
+			auto_strcpy_s( szText + nTextLen, MAX_MARKLINES_LEN + 1 - nTextLen, szBuff2 );
 			nTextLen += nBuff2Len;
 		}
 		nLinePos++;

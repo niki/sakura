@@ -165,13 +165,13 @@ ECallbackResult CCodeChecker::OnCheckSave(SSaveInfo* pSaveInfo)
 		TCHAR  szLineNum[60];  // 123桁
 		TCHAR  szCharCode[12]; // U+12ab or 1234abcd
 		CCodePage::GetNameNormal(szCpName, pSaveInfo->eCharCode);
-		_tcscpy( szCharCode, _T("") );
-		_tcscpy( szLineNum, _T("") );
+		auto_strcpy( szCharCode, _T("") );
+		auto_strcpy( szLineNum, _T("") );
 		if( point.x == -1 ){
 			cmemChar.SetString(LSW(STR_ERR_CSHAREDATA22));
 		}else{
 			auto_sprintf( szLineNum, _T("%d"), (int)((Int)point.x) + 1 );
-			_tcscat( szLineNum, LS(STR_DLGFNCLST_LIST_COL) );
+			auto_strcat( szLineNum, LS(STR_DLGFNCLST_LIST_COL) );
 			CUnicode().UnicodeToHex( cmemChar.GetStringPtr(), cmemChar.GetStringLength(),
 				szCharCode, std::size(szCharCode), &GetDllShareData().m_Common.m_sStatusbar );
 		}

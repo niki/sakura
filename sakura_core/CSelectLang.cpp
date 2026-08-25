@@ -126,7 +126,7 @@ HINSTANCE CSelectLang::InitializeLanguageEnvironment( void )
 		if( ! (w32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ){		//フォルダでない
 			// バッファに登録する。
 			psLangInfo = new SSelLangInfo();
-			_tcscpy( psLangInfo->szDllName, w32fd.cFileName );
+			auto_strcpy( psLangInfo->szDllName, w32fd.cFileName );
 			psLangInfo->hInstance = CSelectLang::LoadLangRsrcLibrary( *psLangInfo );
 
 			if( psLangInfo->hInstance ){

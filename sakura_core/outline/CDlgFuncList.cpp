@@ -1526,11 +1526,11 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 					{
 						if( pcFuncInfo->m_nInfo == FL_OBJ_NAMESPACE )
 						{
-							//_tcscat( pClassName, _T(" 名前空間") );
+							//auto_strcat( pClassName, _T(" 名前空間") );
 							strClassName += to_tchar(m_pcFuncInfoArr->GetAppendText(FL_OBJ_NAMESPACE).c_str());
 						}
 						else
-							//_tcscat( pClassName, _T(" クラス") );
+							//auto_strcat( pClassName, _T(" クラス") );
 							strClassName += to_tchar(m_pcFuncInfoArr->GetAppendText(FL_OBJ_CLASS).c_str());
 					}
 					tvis.hParent = htiParent;
@@ -1578,11 +1578,11 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, BOOL bAddClass )
 					{
 						if( pcFuncInfo->m_nInfo == FL_OBJ_NAMESPACE )
 						{
-							//_tcscat( pClassName, _T(" 名前空間") );
+							//auto_strcat( pClassName, _T(" 名前空間") );
 							strClassName += to_tchar(m_pcFuncInfoArr->GetAppendText(FL_OBJ_NAMESPACE).c_str());
 						}
 						else
-							//_tcscat( pClassName, _T(" クラス") );
+							//auto_strcat( pClassName, _T(" クラス") );
 							strClassName += to_tchar(m_pcFuncInfoArr->GetAppendText(FL_OBJ_CLASS).c_str());
 					}
 					tvis.hParent = htiParent;
@@ -1864,7 +1864,7 @@ void CDlgFuncList::SetListVB (void)
 		if( 1 == ((pcFuncInfo->m_nInfo >> 8) & 0x01) ){
 			// スタティック宣言(Static)
 			// 2006.12.12 Moca 末尾にスペース追加
-			_tcscpy(szOption, LS(STR_DLGFNCLST_VB_STATIC));
+			auto_strcpy(szOption, LS(STR_DLGFNCLST_VB_STATIC));
 		}
 		switch ((pcFuncInfo->m_nInfo >> 4) & 0x0f) {
 			case 2  :	// プライベート(Private)
@@ -1881,40 +1881,40 @@ void CDlgFuncList::SetListVB (void)
 		int nInfo = pcFuncInfo->m_nInfo;
 		switch (nInfo & 0x0f) {
 			case 1:		// 関数(Function)
-				_tcscpy(szType, LS(STR_DLGFNCLST_VB_FUNCTION));
+				auto_strcpy(szType, LS(STR_DLGFNCLST_VB_FUNCTION));
 				break;
 
 			// 2006.12.12 Moca ステータス→プロシージャに変更
 			case 2:		// プロシージャ(Sub)
-				_tcscpy(szType, LS(STR_DLGFNCLST_VB_PROC));
+				auto_strcpy(szType, LS(STR_DLGFNCLST_VB_PROC));
 				break;
 
 			case 3:		// プロパティ 取得(Property Get)
-				_tcscpy(szType, LS(STR_DLGFNCLST_VB_PROPGET));
+				auto_strcpy(szType, LS(STR_DLGFNCLST_VB_PROPGET));
 				break;
 
 			case 4:		// プロパティ 設定(Property Let)
-				_tcscpy(szType, LS(STR_DLGFNCLST_VB_PROPLET));
+				auto_strcpy(szType, LS(STR_DLGFNCLST_VB_PROPLET));
 				break;
 
 			case 5:		// プロパティ 参照(Property Set)
-				_tcscpy(szType, LS(STR_DLGFNCLST_VB_PROPSET));
+				auto_strcpy(szType, LS(STR_DLGFNCLST_VB_PROPSET));
 				break;
 
 			case 6:		// 定数(Const)
-				_tcscpy(szType, LS(STR_DLGFNCLST_VB_CONST));
+				auto_strcpy(szType, LS(STR_DLGFNCLST_VB_CONST));
 				break;
 
 			case 7:		// 列挙型(Enum)
-				_tcscpy(szType, LS(STR_DLGFNCLST_VB_ENUM));
+				auto_strcpy(szType, LS(STR_DLGFNCLST_VB_ENUM));
 				break;
 
 			case 8:		// ユーザ定義型(Type)
-				_tcscpy(szType, LS(STR_DLGFNCLST_VB_TYPE));
+				auto_strcpy(szType, LS(STR_DLGFNCLST_VB_TYPE));
 				break;
 
 			case 9:		// イベント(Event)
-				_tcscpy(szType, LS(STR_DLGFNCLST_VB_EVENT));
+				auto_strcpy(szType, LS(STR_DLGFNCLST_VB_EVENT));
 				break;
 
 			default:	// 未定義なのでクリア
@@ -4246,9 +4246,9 @@ INT_PTR CDlgFuncList::OnNcPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	memset( &lf, 0, sizeof(LOGFONT) );
 	lf.lfCharSet = DEFAULT_CHARSET;
 	lf.lfHeight = ncm.lfCaptionFont.lfHeight;
-	::lstrcpy( lf.lfFaceName, _T("Marlett") );
+	::auto_strcpy( lf.lfFaceName, _T("Marlett") );
 	HFONT hFont = ::CreateFontIndirect( &lf );
-	::lstrcpy( lf.lfFaceName, _T("Wingdings") );
+	::auto_strcpy( lf.lfFaceName, _T("Wingdings") );
 	HFONT hFont2 = ::CreateFontIndirect( &lf );
 	gr.SetTextBackTransparent( true );
 

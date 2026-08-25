@@ -1564,7 +1564,7 @@ void CEditView::OnLBUTTONDBLCLK( WPARAM fwKeys, int _xPos , int _yPos )
 				unsigned int nThreadId;
 				LPCTSTR szUrl = to_tchar(wstrOPEN.c_str());
 				LPTSTR szUrlDup = new TCHAR[_tcslen( szUrl ) + 1];
-				_tcscpy( szUrlDup, szUrl );
+				auto_strcpy( szUrlDup, szUrl );
 				HANDLE hThread = (HANDLE)_beginthreadex( NULL, 0, ShellExecuteProc, (LPVOID)szUrlDup, 0, &nThreadId );
 				if( hThread != INVALID_HANDLE_VALUE ){
 					// ユーザーのURL起動指示に反応した目印としてちょっとの時間だけ砂時計カーソルを表示しておく
@@ -2124,10 +2124,10 @@ void CEditView::OnMyDropFiles( HDROP hDrop )
 			if( !::GetLongFileName( szPath, szWork ) )
 				continue;
 			if( nId == 100 ){	// パス名
-				::lstrcpy( szPath, szWork );
+				::auto_strcpy( szPath, szWork );
 			}else if( nId == 101 ){	// ファイル名
 				_tsplitpath( szWork, NULL, NULL, szPath, szExt );
-				::lstrcat( szPath, szExt );
+				::auto_strcat( szPath, szExt );
 			}
 #ifdef _UNICODE
 			cmemBuf.AppendString( szPath );

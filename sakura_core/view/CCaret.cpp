@@ -1013,9 +1013,9 @@ void CCaret::ShowCaretPosInfo()
 
 		TCHAR	szText_6[16];
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
-			_tcscpy( szText_6, LS( STR_INS_MODE_INS ) );	// "挿入"
+			auto_strcpy( szText_6, LS( STR_INS_MODE_INS ) );	// "挿入"
 		}else{
-			_tcscpy( szText_6, LS( STR_INS_MODE_OVR ) );	// "上書"
+			auto_strcpy( szText_6, LS( STR_INS_MODE_OVR ) );	// "上書"
 		}
 		if (!m_pEditView->GetSelectionInfo().IsTextSelected()) {
 #if 0
@@ -1063,9 +1063,9 @@ void CCaret::ShowCaretPosInfo()
 
 		TCHAR	szText_6[16];
 		if( m_pEditView->IsInsMode() /* Oct. 2, 2005 genta */ ){
-			_tcscpy( szText_6, LS( STR_INS_MODE_INS ) );	// "挿入"
+			auto_strcpy( szText_6, LS( STR_INS_MODE_INS ) );	// "挿入"
 		}else{
-			_tcscpy( szText_6, LS( STR_INS_MODE_OVR ) );	// "上書"
+			auto_strcpy( szText_6, LS( STR_INS_MODE_OVR ) );	// "上書"
 		}
 		if( m_bClearStatus ){
 			::StatusBar_SetText( hwndStatusBar, 0 | SBT_NOBORDERS, _T("") );

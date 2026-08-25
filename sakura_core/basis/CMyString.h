@@ -103,8 +103,8 @@ public:
 		TCHAR	szDrive[_MAX_DRIVE];
 		TCHAR	szDir[_MAX_DIR];
 		_tsplitpath( this->c_str(), szDrive, szDir, NULL, NULL );
-		_tcscpy( szDirPath, szDrive);
-		_tcscat( szDirPath, szDir );
+		auto_strcpy( szDirPath, szDrive);
+		auto_strcat( szDirPath, szDir );
 		return szDirPath;
 	}
 	//拡張子を取得する

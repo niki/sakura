@@ -2477,7 +2477,7 @@ LRESULT CEditWnd::DispatchEvent(
 		if( m_pShareData->m_sFlags.m_bEditWndChanging ){
 			delete[] m_pszLastCaption;
 			m_pszLastCaption = new TCHAR[ ::_tcslen((LPCTSTR)lParam) + 1 ];
-			::_tcscpy( m_pszLastCaption, (LPCTSTR)lParam );	// 変更後のタイトルを記憶しておく
+			::auto_strcpy_s( m_pszLastCaption, ::_tcslen((LPCTSTR)lParam) + 1, (LPCTSTR)lParam );	// 変更後のタイトルを記憶しておく
 			::SetTimer( GetHwnd(), IDT_CAPTION, 50, NULL );
 			return 0L;
 		}
@@ -4324,7 +4324,7 @@ bool CEditWnd::GetRelatedIcon(const TCHAR* szFile, HICON* hIconBig, HICON* hIcon
 		_tsplitpath( szFile, NULL, NULL, NULL, szExt );
 
 		if( ReadRegistry(HKEY_CLASSES_ROOT, szExt, NULL, FileType, _countof(FileType) - 13)){
-			_tcscat( FileType, _T("\\DefaultIcon") );
+			auto_strcat( FileType, _T("\\DefaultIcon") );
 			if( ReadRegistry(HKEY_CLASSES_ROOT, FileType, NULL, NULL, 0)){
 				// 関連づけられたアイコンを取得する
 				SHFILEINFO shfi;
@@ -4372,9 +4372,9 @@ void CEditWnd::InitMenubarMessageFont(void)
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
 #ifdef NKMM_FIX_UI_FONT
-	_tcscpy( lf.lfFaceName, _T(NKMM_RES_FONT_NAME) );
+	auto_strcpy( lf.lfFaceName, _T(NKMM_RES_FONT_NAME) );
 #else
-	_tcscpy( lf.lfFaceName, _T("ＭＳ ゴシック") );
+	auto_strcpy( lf.lfFaceName, _T("ＭＳ ゴシック") );
 #endif // NKMM_
 	m_hFontCaretPosInfo = ::CreateFontIndirect( &lf );
 

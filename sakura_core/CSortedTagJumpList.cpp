@@ -176,23 +176,23 @@ BOOL CSortedTagJumpList::AddParamA( const ACHAR* keyword, const ACHAR* filename,
 */
 BOOL CSortedTagJumpList::GetParam( int index, TCHAR* keyword, TCHAR* filename, int* no, TCHAR* type, TCHAR* note, int* depth, TCHAR* baseDir )
 {
-	if( keyword  ) _tcscpy( keyword, _T("") );
-	if( filename ) _tcscpy( filename, _T("") );
+	if( keyword  ) auto_strcpy_s( keyword, 1024, _T("") );	// 呼び出し元は最低1024文字のバッファを渡す規約
+	if( filename ) auto_strcpy_s( filename, 1024, _T("") );	// 呼び出し元は最低1024文字のバッファを渡す規約
 	if( no       ) *no    = 0;
 	if( type     ) *type  = 0;
-	if( note     ) _tcscpy( note, _T("") );
+	if( note     ) auto_strcpy_s( note, 1024, _T("") );	// 呼び出し元は最低1024文字のバッファを渡す規約
 	if( depth    ) *depth = 0;
-	if( baseDir  ) _tcscpy( baseDir, _T("") );
+	if( baseDir  ) auto_strcpy_s( baseDir, 1024, _T("") );	// 呼び出し元は最低1024文字のバッファを渡す規約
 
 	CSortedTagJumpList::TagJumpInfo* p;
 	p = GetPtr( index );
 	if( NULL != p )
 	{
-		if( keyword  ) _tcscpy( keyword, p->keyword );
-		if( filename ) _tcscpy( filename, p->filename );
+		if( keyword  ) auto_strcpy_s( keyword, 1024, p->keyword );
+		if( filename ) auto_strcpy_s( filename, 1024, p->filename );
 		if( no       ) *no    = p->no;
 		if( type     ) *type  = p->type;
-		if( note     ) _tcscpy( note, p->note );
+		if( note     ) auto_strcpy_s( note, 1024, p->note );
 		if( depth    ) *depth = p->depth;
 		if( baseDir ){
 			if( 0 <= p->baseDirId && (size_t)p->baseDirId < m_baseDirArr.size() ){

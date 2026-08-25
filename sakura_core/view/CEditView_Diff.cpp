@@ -151,13 +151,13 @@ void CEditView::ViewDiffInfo(
 
 	//オプションを作成する
 	TCHAR	szOption[16];	// "-cwbBt"
-	_tcscpy( szOption, _T("-") );
-	if( nFlgOpt & 0x0001 ) _tcscat( szOption, _T("i") );	//-i ignore-case         大文字小文字同一視
-	if( nFlgOpt & 0x0002 ) _tcscat( szOption, _T("w") );	//-w ignore-all-space    空白無視
-	if( nFlgOpt & 0x0004 ) _tcscat( szOption, _T("b") );	//-b ignore-space-change 空白変更無視
-	if( nFlgOpt & 0x0008 ) _tcscat( szOption, _T("B") );	//-B ignore-blank-lines  空行無視
-	if( nFlgOpt & 0x0010 ) _tcscat( szOption, _T("t") );	//-t expand-tabs         TAB-SPACE変換
-	if( _tcscmp( szOption, _T("-") ) == 0 ) _tcscpy( szOption, _T("") );	//オプションなし
+	auto_strcpy( szOption, _T("-") );
+	if( nFlgOpt & 0x0001 ) auto_strcat( szOption, _T("i") );	//-i ignore-case         大文字小文字同一視
+	if( nFlgOpt & 0x0002 ) auto_strcat( szOption, _T("w") );	//-w ignore-all-space    空白無視
+	if( nFlgOpt & 0x0004 ) auto_strcat( szOption, _T("b") );	//-b ignore-space-change 空白変更無視
+	if( nFlgOpt & 0x0008 ) auto_strcat( szOption, _T("B") );	//-B ignore-blank-lines  空行無視
+	if( nFlgOpt & 0x0010 ) auto_strcat( szOption, _T("t") );	//-t expand-tabs         TAB-SPACE変換
+	if( _tcscmp( szOption, _T("-") ) == 0 ) auto_strcpy( szOption, _T("") );	//オプションなし
 	if( nFlgOpt & 0x0020 ) nFlgFile12 = 0;
 	else                   nFlgFile12 = 1;
 
@@ -475,7 +475,7 @@ BOOL CEditView::MakeDiffTmpFile( TCHAR* filename, HWND hWnd, ECodeType code, boo
 		return FALSE;
 	}
 
-	_tcscpy( filename, pszTmpName );
+	auto_strcpy_s( filename, _MAX_PATH * 2, pszTmpName );	// 呼び出し元は TCHAR[_MAX_PATH*2] を渡す規約
 	free( pszTmpName );
 
 	//自分か？
@@ -530,7 +530,7 @@ BOOL CEditView::MakeDiffTmpFile2( TCHAR* tmpName, const TCHAR* orgName, ECodeTyp
 		return FALSE;
 	}
 
-	_tcscpy( tmpName, pszTmpName );
+	auto_strcpy_s( tmpName, _MAX_PATH * 2, pszTmpName );	// 呼び出し元は TCHAR[_MAX_PATH*2] を渡す規約
 	free( pszTmpName );
 
 	bool bBom = false;
