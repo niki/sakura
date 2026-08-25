@@ -2,6 +2,10 @@
 #include "CMainStatusBar.h"
 #include "window/CEditWnd.h"
 #include "CEditApp.h"
+#ifdef NKMM_MODERN_STATUSBAR
+#include "util/os.h"
+#include "util/window.h"
+#endif // NKMM_
 
 CMainStatusBar::CMainStatusBar(CEditWnd* pOwner)
 : m_pOwner(pOwner)
@@ -40,6 +44,19 @@ void CMainStatusBar::CreateStatusBar()
 		CEditApp::getInstance()->GetAppInstance(),
 		0
 	);
+
+#ifdef NKMM_MODERN_STATUSBAR
+	// VS Code風フラットデザイン: ビジュアルスタイルを無効化してから背景色・高さを設定する
+	// (SB_SETBKCOLORはテーマ有効時は無視されるため、PreventVisualStyleが先)
+	PreventVisualStyle( m_hwndStatusBar );
+	StatusBar_SetBkColor( m_hwndStatusBar, MODERN_STATUSBAR_BKCOLOR );
+	StatusBar_SetMinHeight( m_hwndStatusBar, DpiScaleY(20) );
+	::SendMessage( m_hwndStatusBar, WM_SIZE, 0, 0 );	// SB_SETMINHEIGHT の反映には再レイアウトが必要
+
+	// プログレスバーもステータスバーの背景色に合わせてフラット化する
+	PreventVisualStyle( m_hwndProgressBar );
+	Progress_SetBkColor( m_hwndProgressBar, MODERN_STATUSBAR_BKCOLOR );
+#endif // NKMM_
 
 	if( NULL != m_pOwner->m_cFuncKeyWnd.GetHwnd() ){
 		m_pOwner->m_cFuncKeyWnd.SizeBox_ONOFF( FALSE );

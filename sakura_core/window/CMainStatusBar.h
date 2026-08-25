@@ -28,6 +28,11 @@
 
 class CEditWnd;
 
+#ifdef NKMM_MODERN_STATUSBAR
+// VS Code風フラットデザインの背景色。初回実装時の暫定値で、実機での見た目確認後に調整する想定
+constexpr COLORREF MODERN_STATUSBAR_BKCOLOR = RGB(0xF3, 0xF3, 0xF3);
+#endif // NKMM_
+
 class CMainStatusBar : public CDocListenerEx{
 public:
 	//作成・破棄

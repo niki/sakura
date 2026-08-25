@@ -141,7 +141,11 @@ void CMainToolBar::CreateToolBar( void )
 			REBARCLASSNAME, //レバーコントロール
 			NULL,
 			WS_CHILD/* | WS_VISIBLE*/ | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |	// 2007.03.08 ryoji WS_VISIBLE 除去
+#ifdef NKMM_MODERN_TOOLBAR
+			CCS_NODIVIDER,	// VS Code風フラットデザイン: バンドの彫り込み枠(RBS_BANDBORDERS)を外す
+#else
 			RBS_BANDBORDERS | CCS_NODIVIDER,
+#endif // NKMM_
 			0, 0, 0, 0,
 			m_pOwner->GetHwnd(),
 			NULL,
@@ -154,9 +158,14 @@ void CMainToolBar::CreateToolBar( void )
 			return;
 		}
 
+#ifdef NKMM_MODERN_TOOLBAR
+		// VS Code風フラットデザイン: ユーザー設定に関わらず常時フラット化する
+		PreventVisualStyle( m_hwndReBar );	// ビジュアルスタイル非適用のフラットな Rebar にする
+#else
 		if( GetDllShareData().m_Common.m_sToolBar.m_bToolBarIsFlat ){	/* フラットツールバーにする／しない */
 			PreventVisualStyle( m_hwndReBar );	// ビジュアルスタイル非適用のフラットな Rebar にする
 		}
+#endif // NKMM_
 
 		::ZeroMemory(&rbi, sizeof(rbi));
 		rbi.cbSize = sizeof(rbi);
@@ -199,6 +208,11 @@ void CMainToolBar::CreateToolBar( void )
 			(LONG_PTR)ToolBarWndProc
 		);
 
+#ifdef NKMM_MODERN_TOOLBAR
+		// VS Code風フラットデザイン: テーマのホットトラック描画を止め、ToolBarOwnerDraw()側の
+		// 自前ハイライト描画だけにする(二重描画を避けるため)
+		PreventVisualStyle( m_hwndToolBar );
+#endif // NKMM_
 		Toolbar_SetButtonSize( m_hwndToolBar, DpiScaleX(22), DpiScaleY(22) );	// 2009.10.01 ryoji 高DPI対応スケーリング
 		Toolbar_ButtonStructSize( m_hwndToolBar, sizeof(TBBUTTON) );
 		//	Oct. 12, 2000 genta
@@ -291,6 +305,10 @@ void CMainToolBar::CreateToolBar( void )
 						if( m_hwndSearchBox )
 						{
 							m_pOwner->SetCurrentFocus(0);
+#ifdef NKMM_MODERN_TOOLBAR
+							// VS Code風フラットデザイン: 検索ボックスもフラット化した周囲と枠を揃える
+							PreventVisualStyle( m_hwndSearchBox );
+#endif // NKMM_
 
 							lf = m_pOwner->GetLogfont();
 							//memset_raw( &lf, 0, sizeof(lf) );
@@ -341,12 +359,21 @@ void CMainToolBar::CreateToolBar( void )
 			}
 			//@@@ 2002.06.15 MIK end
 		}
+#ifdef NKMM_MODERN_TOOLBAR
+		// VS Code風フラットデザイン: ユーザー設定に関わらず常時フラット化する
+		{
+#else
 		if( GetDllShareData().m_Common.m_sToolBar.m_bToolBarIsFlat ){	/* フラットツールバーにする／しない */
+#endif // NKMM_
 			lToolType = ::GetWindowLongPtr(m_hwndToolBar, GWL_STYLE);
 			lToolType |= (TBSTYLE_FLAT);
 			::SetWindowLongPtr(m_hwndToolBar, GWL_STYLE, lToolType);
 			::InvalidateRect(m_hwndToolBar, NULL, TRUE);
 		}
+#ifdef NKMM_MODERN_TOOLBAR
+		// ボタン間の余白を少し広げてVS Code風の間隔にする
+		Toolbar_SetPadding( m_hwndToolBar, DpiScaleX(8), DpiScaleY(8) );
+#endif // NKMM_
 		delete []pTbbArr;// 2005/8/29 aroka
 	}
 
@@ -447,6 +474,20 @@ LPARAM CMainToolBar::ToolBarOwnerDraw( LPNMCUSTOMDRAW pnmh )
 		if( pnmh->dwItemSpec == F_SEARCH_BOX ){
 			return CDRF_SKIPDEFAULT;
 		}
+#ifdef NKMM_MODERN_TOOLBAR
+		// VS Code風フラットデザイン: ホバー/押下時に薄いハイライト矩形を描く
+		// (PreventVisualStyleでテーマのホットトラック描画を止めているため二重描画にはならない)
+		if( pnmh->uItemState & ( CDIS_SELECTED | CDIS_CHECKED ) ){
+			HBRUSH hbr = ::CreateSolidBrush( MODERN_TOOLBAR_PRESSED_COLOR );
+			::FillRect( pnmh->hdc, &pnmh->rc, hbr );
+			::DeleteObject( hbr );
+		}
+		else if( pnmh->uItemState & CDIS_HOT ){
+			HBRUSH hbr = ::CreateSolidBrush( MODERN_TOOLBAR_HOVER_COLOR );
+			::FillRect( pnmh->hdc, &pnmh->rc, hbr );
+			::DeleteObject( hbr );
+		}
+#endif // NKMM_
 		return CDRF_NOTIFYPOSTPAINT;
 	
 	case CDDS_ITEMPOSTPAINT:

@@ -61,6 +61,10 @@ namespace ApiWrap
 	}
 
 	inline int StatusBar_SetParts(HWND hwndCtl, int num, int* positions)		{ return (int)(DWORD)::SendMessage(hwndCtl, SB_SETPARTS, (WPARAM)num, (LPARAM)positions); }
+#ifdef NKMM_MODERN_STATUSBAR
+	inline COLORREF StatusBar_SetBkColor(HWND hwndCtl, COLORREF color)		{ return (COLORREF)::SendMessage(hwndCtl, SB_SETBKCOLOR, 0L, (LPARAM)color); }
+	inline BOOL StatusBar_SetMinHeight(HWND hwndCtl, int height)				{ return (BOOL)(DWORD)::SendMessage(hwndCtl, SB_SETMINHEIGHT, (WPARAM)height, 0L); }
+#endif // NKMM_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      HotKey コントロール                    //
@@ -74,6 +78,9 @@ namespace ApiWrap
 	inline int Progress_SetRange(HWND hwndCtl, int minimum, int maximum)	{ return (int)(DWORD)::SendMessage(hwndCtl, PBM_SETRANGE, 0L, MAKELPARAM(minimum, maximum)); }
 	inline int Progress_SetPos(HWND hwndCtl, int position)					{ return (int)(DWORD)::SendMessage(hwndCtl, PBM_SETPOS, (WPARAM)position, 0L); }
 	inline void Progress_SetMarquee(HWND hwndCtl, BOOL mode, int updateTime)	{ ::SendMessage(hwndCtl, PBM_SETMARQUEE, mode, updateTime); }
+#ifdef NKMM_MODERN_STATUSBAR
+	inline COLORREF Progress_SetBkColor(HWND hwndCtl, COLORREF color)		{ return (COLORREF)::SendMessage(hwndCtl, PBM_SETBKCOLOR, 0L, (LPARAM)color); }
+#endif // NKMM_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      Up-Down コントロール                   //
@@ -102,6 +109,9 @@ namespace ApiWrap
 	inline int Toolbar_SetButtonInfo(HWND hwndCtl, int index, TBBUTTONINFO* info)	{ return (int)(DWORD)::SendMessage(hwndCtl, TB_SETBUTTONINFO, (WPARAM)index, (LPARAM)info); }
 	inline BOOL Toolbar_SetButtonSize(HWND hwndCtl, int width, int height)			{ return (BOOL)(DWORD)::SendMessage(hwndCtl, TB_SETBUTTONSIZE, 0L, MAKELONG(width, height)); }
 	inline DWORD Toolbar_SetExtendedStyle(HWND hwndCtl, DWORD styles)				{ return (DWORD)::SendMessage(hwndCtl, TB_SETEXTENDEDSTYLE, 0L, (LPARAM)styles); }
+#ifdef NKMM_MODERN_TOOLBAR
+	inline DWORD Toolbar_SetPadding(HWND hwndCtl, int cx, int cy)					{ return (DWORD)::SendMessage(hwndCtl, TB_SETPADDING, 0L, MAKELPARAM(cx, cy)); }
+#endif // NKMM_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      Tooltip コントロール                   //

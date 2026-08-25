@@ -1007,6 +1007,12 @@ void CCaret::ShowCaretPosInfo()
 	}
 	// ステータスバーに状態を書き出す
 	else{
+#ifdef NKMM_MODERN_STATUSBAR
+		// VS Code風フラットデザイン: 彫り込み3D枠を除去する
+		constexpr int nSbFlag = SBT_NOBORDERS;
+#else
+		constexpr int nSbFlag = 0;
+#endif // NKMM_
 #ifdef NKMM_FIX_STATUSBAR
 		TCHAR	szText_1[64];
 		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), m_pEditView->GetDocumentWordNum(), ptCaret.y, ptCaret.x );	
@@ -1036,15 +1042,15 @@ void CCaret::ShowCaretPosInfo()
 				::PathCompactPath(hdc, path, aWidth[0]);  // パスを縮める
 				::ReleaseDC(hwndStatusBar, hdc);
 			}
-			::StatusBar_SetText( hwndStatusBar, 0 | 0,           path );
+			::StatusBar_SetText( hwndStatusBar, 0 | nSbFlag,           path );
 #endif
 		}
-		::StatusBar_SetText( hwndStatusBar, 1 | 0,             szText_1 );  //	桁位置→行番号ジャンプ
-		::StatusBar_SetText( hwndStatusBar, 2/*3*/ | 0,        szCaretChar );  //	文字コード→各種コード
-		::StatusBar_SetText( hwndStatusBar, 3/*4*/ | 0,        pszCodeName );  //	文字コードセット→文字コードセット指定
-		::StatusBar_SetText( hwndStatusBar, 4/*2*/ | 0,        szEolMode );
-		::StatusBar_SetText( hwndStatusBar, 8/*5*/ | SBT_OWNERDRAW, _T("") );  //	マクロの記録開始・終了
-		::StatusBar_SetText( hwndStatusBar, 5/*6*/ | 0,             szText_6 );  //	上書き/挿入
+		::StatusBar_SetText( hwndStatusBar, 1 | nSbFlag,             szText_1 );  //	桁位置→行番号ジャンプ
+		::StatusBar_SetText( hwndStatusBar, 2/*3*/ | nSbFlag,        szCaretChar );  //	文字コード→各種コード
+		::StatusBar_SetText( hwndStatusBar, 3/*4*/ | nSbFlag,        pszCodeName );  //	文字コードセット→文字コードセット指定
+		::StatusBar_SetText( hwndStatusBar, 4/*2*/ | nSbFlag,        szEolMode );
+		::StatusBar_SetText( hwndStatusBar, 8/*5*/ | SBT_OWNERDRAW | nSbFlag, _T("") );  //	マクロの記録開始・終了
+		::StatusBar_SetText( hwndStatusBar, 5/*6*/ | nSbFlag,             szText_6 );  //	上書き/挿入
 
 		TCHAR	szText_TabSize[16];
 		bool ins_space = m_pEditView->m_pcEditDoc->m_cDocType.GetDocumentAttribute().m_bInsSpace;
@@ -1055,8 +1061,8 @@ void CCaret::ShowCaretPosInfo()
 		else {
 			auto_sprintf( szText_TabSize, _T("Tab: %d"), tabNum );
 		}
-		::StatusBar_SetText( hwndStatusBar, 6/*7*/ | 0,             szText_TabSize );  //	タブサイズ
-		::StatusBar_SetText( hwndStatusBar, 7/*8*/ | 0,             m_pEditView->m_pTypeData->m_szTypeName );  //	タイプ
+		::StatusBar_SetText( hwndStatusBar, 6/*7*/ | nSbFlag,             szText_TabSize );  //	タブサイズ
+		::StatusBar_SetText( hwndStatusBar, 7/*8*/ | nSbFlag,             m_pEditView->m_pTypeData->m_szTypeName );  //	タイプ
 #else
 		TCHAR	szText_1[64];
 		auto_sprintf( szText_1, LS( STR_STATUS_ROW_COL ), ptCaret.y, ptCaret.x );	//Oct. 30, 2000 JEPRO 千万行も要らん
@@ -1070,16 +1076,16 @@ void CCaret::ShowCaretPosInfo()
 		if( m_bClearStatus ){
 			::StatusBar_SetText( hwndStatusBar, 0 | SBT_NOBORDERS, _T("") );
 		}
-		::StatusBar_SetText( hwndStatusBar, 1 | 0,             szText_1 );
+		::StatusBar_SetText( hwndStatusBar, 1 | nSbFlag,             szText_1 );
 		//	May 12, 2000 genta
 		//	改行コードの表示を追加．後ろの番号を1つずつずらす
 		//	From Here
-		::StatusBar_SetText( hwndStatusBar, 2 | 0,             szEolMode );
+		::StatusBar_SetText( hwndStatusBar, 2 | nSbFlag,             szEolMode );
 		//	To Here
-		::StatusBar_SetText( hwndStatusBar, 3 | 0,             szCaretChar );
-		::StatusBar_SetText( hwndStatusBar, 4 | 0,             pszCodeName );
-		::StatusBar_SetText( hwndStatusBar, 5 | SBT_OWNERDRAW, _T("") );
-		::StatusBar_SetText( hwndStatusBar, 6 | 0,             szText_6 );
+		::StatusBar_SetText( hwndStatusBar, 3 | nSbFlag,             szCaretChar );
+		::StatusBar_SetText( hwndStatusBar, 4 | nSbFlag,             pszCodeName );
+		::StatusBar_SetText( hwndStatusBar, 5 | SBT_OWNERDRAW | nSbFlag, _T("") );
+		::StatusBar_SetText( hwndStatusBar, 6 | nSbFlag,             szText_6 );
 #endif // NKMM_
 	}
 

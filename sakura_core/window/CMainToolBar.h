@@ -30,6 +30,12 @@
 class CEditWnd;
 class CImageListMgr;
 
+#ifdef NKMM_MODERN_TOOLBAR
+// VS Code風フラットデザインのボタンハイライト色。初回実装時の暫定値で、実機での見た目確認後に調整する想定
+constexpr COLORREF MODERN_TOOLBAR_HOVER_COLOR = RGB(0xE4, 0xE4, 0xE4);
+constexpr COLORREF MODERN_TOOLBAR_PRESSED_COLOR = RGB(0xD6, 0xD6, 0xD6);
+#endif // NKMM_
+
 class CMainToolBar{
 public:
 	CMainToolBar(CEditWnd* pOwner);
