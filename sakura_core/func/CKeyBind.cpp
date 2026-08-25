@@ -758,13 +758,13 @@ static const KEYDATAINIT	KeyDataInit[] = {
 	{ VK_INSERT,_T("Ins"),			{ F_CHGMOD_INS,		F_PASTE,			F_COPY,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ VK_DELETE,_T("Del"),			{ F_DELETE,			F_CUT,				F_WordDeleteToEnd,		F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ VK_HOME,	_T("Home"),			{ F_GOLINETOP,		F_GOLINETOP_SEL,	F_GOFILETOP,			F_GOFILETOP_SEL,	F_GOLINETOP_BOX,		F_0,				F_GOFILETOP_BOX,		F_0 }, },
-	{ VK_END,	_T("End(Help)"),	{ F_0,		F_0,	F_0,			F_0,	F_0,		F_0,				F_0,		F_0 }, },
+	{ VK_END,	_T("End(Help)"),	{ F_GOLINEEND,		F_GOLINEEND_SEL,	F_GOFILEEND,			F_GOFILEEND_SEL,	F_GOLINEEND_BOX,		F_0,				F_GOFILEEND_BOX,		F_0 }, },
 	{ VK_LEFT,	_T("←"),			{ F_LEFT,			F_LEFT_SEL,			F_WORDLEFT,				F_WORDLEFT_SEL,		F_LEFT_BOX,				F_0,				F_WORDLEFT_BOX,			F_0 }, },
 	{ VK_UP,	_T("↑"),			{ F_UP,				F_UP_SEL,			F_WndScrollDown,		F_MOVE_LINE_UP,			F_UP_BOX,				F_0,		F_UP2_BOX,				F_MAXIMIZE_V },},
 	{ VK_RIGHT,	_T("→"),			{ F_RIGHT,			F_RIGHT_SEL,		F_WORDRIGHT,			F_WORDRIGHT_SEL,	F_RIGHT_BOX,			F_0,				F_WORDRIGHT_BOX,		F_MAXIMIZE_H },}, 
 	{ VK_DOWN,	_T("↓"),			{ F_DOWN,			F_DOWN_SEL,			F_WndScrollUp,			F_MOVE_LINE_DOWN,		F_DOWN_BOX,				F_0,	F_DOWN2_BOX,			F_MINIMIZE_ALL },},
-	{ VK_NEXT,	_T("PgDn(RollUp)"),	{ F_0,		F_0,	F_0,			F_0,	F_0,		F_0,				F_0,		F_0 }, },
-	{ VK_PRIOR,	_T("PgUp(RollDn)"),	{ F_0,		F_0,		F_0,			F_0,	F_0,			F_0,				F_0,		F_0 }, },
+	{ VK_NEXT,	_T("PgDn(RollUp)"),	{ F_1PageDown,		F_1PageDown_Sel,	F_HalfPageDown,			F_HalfPageDown_Sel,	F_1PageDown_BOX,		F_0,				F_HalfPageDown_BOX,		F_0 }, },
+	{ VK_PRIOR,	_T("PgUp(RollDn)"),	{ F_1PageUp,		F_1PageUp_Sel,		F_HalfPageUp,			F_HalfPageUp_Sel,	F_1PageUp_BOX,			F_0,				F_HalfPageUp_BOX,		F_0 }, },
 	{ VK_SPACE,	_T("Space"),		{ F_INDENT_SPACE,	F_UNINDENT_SPACE,	F_HOKAN,				F_0,				F_0,					F_0,				F_0,					F_0 }, },
 
 	/* 数字 */
@@ -817,19 +817,19 @@ static const KEYDATAINIT	KeyDataInit[] = {
 
 	/* 記号 */
 	//keycode,	keyname,			なし,				Shitf+,				Ctrl+,					Shift+Ctrl+,		Alt+,					Shit+Alt+,			Ctrl+Alt+,				Shift+Ctrl+Alt+
-	{ 0x00bd,	_T("-"),			{ F_0,				F_0,				F_0,			F_0,			F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00de,	(LPCTSTR)STR_KEY_BIND_HAT_ENG_QT,		{ F_0,				F_0,				F_0,				F_0,				F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00dc,	_T("\\"),			{ F_0,				F_0,				F_0,				F_0,			F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00c0,	(LPCTSTR)STR_KEY_BIND_AT_ENG_BQ,		{ F_0,				F_0,				F_0,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00db,	_T("["),			{ F_0,				F_0,				F_0,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00bb,	_T(";"),			{ F_0,				F_0,				F_0,					F_0,			F_0,				F_0,				F_0,					F_0 }, },
-	{ 0x00ba,	_T(":"),			{ F_0,				F_0,				F_0,		F_0,				F_0,				F_0,				F_0,					F_0 }, },
-	{ 0x00dd,	_T("]"),			{ F_0,				F_0,				F_0,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00bc,	_T(","),			{ F_0,				F_0,				F_0,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00be,	_T("."),			{ F_0,				F_0,				F_0,	F_0,				F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00bf,	_T("/"),			{ F_0,				F_0,				F_0,				F_0,				F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00e2,	_T("_"),			{ F_0,				F_0,				F_0,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
-	{ 0x00df,	_T("_(PC-98)"),		{ F_0,				F_0,				F_0,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00bd,	_T("-"),			{ F_0,				F_0,				F_JUMPHIST_PREV,			F_JUMPHIST_NEXT,			F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00de,	(LPCTSTR)STR_KEY_BIND_HAT_ENG_QT,		{ F_0,				F_0,				F_COPYTAG,				F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00dc,	_T("\\"),			{ F_0,				F_0,				F_COPYPATH,				F_SPLIT_H,			F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00c0,	(LPCTSTR)STR_KEY_BIND_AT_ENG_BQ,		{ F_0,				F_0,				F_COPYLINES,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00db,	_T("["),			{ F_0,				F_0,				F_BRACKETPAIR,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00bb,	_T(";"),			{ F_0,				F_0,				F_INS_TIME,					F_SPLIT_VH,			F_0,				F_0,				F_0,					F_0 }, },
+	{ 0x00ba,	_T(":"),			{ F_0,				F_0,				F_INS_DATE,		F_0,				F_0,				F_0,				F_0,					F_0 }, },
+	{ 0x00dd,	_T("]"),			{ F_0,				F_0,				F_BRACKETPAIR,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00bc,	_T(","),			{ F_0,				F_0,				_COPYWITHLINENUM,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00be,	_T("."),			{ F_0,				F_0,				F_COPYLINESASPASSAGE,	F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00bf,	_T("/"),			{ F_0,				F_0,				F_HOKAN,				F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00e2,	_T("_"),			{ F_0,				F_0,				F_UNDO,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00df,	_T("_(PC-98)"),		{ F_0,				F_0,				F_UNDO,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ VK_APPS,	(LPCTSTR)STR_KEY_BIND_APLI,	{ F_MENU_RBUTTON,	F_0,		F_0,			F_0,		F_0,			F_0,		F_0,			F_0 }, }
 };
 
