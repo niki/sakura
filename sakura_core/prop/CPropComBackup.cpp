@@ -175,7 +175,7 @@ INT_PTR CPropBackup::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 					::DlgItem_GetText( hwndDlg, IDC_EDIT_BACKUPFOLDER, szFolder, _countof( szFolder ));
 
 					if( SelectDir( hwndDlg, LS(STR_PROPCOMBK_SEL_FOLDER), szFolder, szFolder ) ){
-						_tcscpy( m_Common.m_sBackup.m_szBackUpFolder, szFolder );
+						auto_strcpy_s( m_Common.m_sBackup.m_szBackUpFolder, _countof2(m_Common.m_sBackup.m_szBackUpFolder), szFolder );
 						::DlgItem_SetText( hwndDlg, IDC_EDIT_BACKUPFOLDER, m_Common.m_sBackup.m_szBackUpFolder );
 					}
 					UpdateBackupFile( hwndDlg );
@@ -529,41 +529,41 @@ void CPropBackup::UpdateBackupFile(HWND hwndDlg)	//	バックアップファイ�
 
 		switch( m_Common.m_sBackup.GetBackupType() ){
 		case 1: // .bak
-			wcscat( temp, LTEXT("$0.bak") );
+			auto_strcat( temp, LTEXT("$0.bak") );
 			break;
 		case 5: // .*.bak
-			wcscat( temp, LTEXT("$0.*.bak") );
+			auto_strcat( temp, LTEXT("$0.*.bak") );
 			break;
 		case 3: // .b??
-			wcscat( temp, LTEXT("$0.b??") );
+			auto_strcat( temp, LTEXT("$0.b??") );
 			break;
 		case 6: // .*.b??
-			wcscat( temp, LTEXT("$0.*.b??") );
+			auto_strcat( temp, LTEXT("$0.*.b??") );
 			break;
 		case 2:	//	日付，時刻
 		case 4:	//	日付，時刻
-			wcscat( temp, LTEXT("$0_") );
+			auto_strcat( temp, LTEXT("$0_") );
 
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_YEAR) ){	/* バックアップファイル名：日付の年 */
-				wcscat( temp, LTEXT("%Y") );
+				auto_strcat( temp, LTEXT("%Y") );
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_MONTH) ){	/* バックアップファイル名：日付の月 */
-				wcscat( temp, LTEXT("%m") );
+				auto_strcat( temp, LTEXT("%m") );
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_DAY) ){	/* バックアップファイル名：日付の日 */
-				wcscat( temp, LTEXT("%d") );
+				auto_strcat( temp, LTEXT("%d") );
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_HOUR) ){	/* バックアップファイル名：日付の時 */
-				wcscat( temp, LTEXT("%H") );
+				auto_strcat( temp, LTEXT("%H") );
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_MIN) ){	/* バックアップファイル名：日付の分 */
-				wcscat( temp, LTEXT("%M") );
+				auto_strcat( temp, LTEXT("%M") );
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_SEC) ){	/* バックアップファイル名：日付の秒 */
-				wcscat( temp, LTEXT("%S") );
+				auto_strcat( temp, LTEXT("%S") );
 			}
 
-			wcscat( temp, LTEXT(".*") );
+			auto_strcat( temp, LTEXT(".*") );
 			break;
 		default:
 			break;

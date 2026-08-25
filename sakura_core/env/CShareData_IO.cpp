@@ -189,7 +189,7 @@ void CShareData_IO::ConfirmAndDeleteMissingHistory()
 	fiInit.m_nViewLeftCol = CLayoutInt(0);
 	fiInit.m_nViewTopLine = CLayoutInt(0);
 	fiInit.m_ptCursor.Set(CLogicInt(0), CLogicInt(0));
-	_tcscpy( fiInit.m_szPath, _T("") );
+	auto_strcpy( fiInit.m_szPath, _T("") );
 	fiInit.m_szMarkLines[0] = L'\0';
 
 	int nNewMruCount = 0;
@@ -497,8 +497,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			|| (pShareData->m_sVersion.m_dwProductVersionMS == dwMS && pShareData->m_sVersion.m_dwProductVersionLS > dwLS) )
 		{
 			TCHAR szBkFileName[_countof(szIniFileName) + 4];
-			::lstrcpy(szBkFileName, szIniFileName);
-			::lstrcat(szBkFileName, _T(".bak"));
+			::auto_strcpy(szBkFileName, szIniFileName);
+			::auto_strcat(szBkFileName, _T(".bak"));
 			::CopyFile(szIniFileName, szBkFileName, FALSE);
 		}
 	}
@@ -790,7 +790,7 @@ static bool ShareData_IO_Mru_Block( CDataProfile& cProfileHistory )
 			fiInit.m_nViewLeftCol = CLayoutInt(0);
 			fiInit.m_nViewTopLine = CLayoutInt(0);
 			fiInit.m_ptCursor.Set(CLogicInt(0), CLogicInt(0));
-			_tcscpy( fiInit.m_szPath, _T("") );
+			auto_strcpy( fiInit.m_szPath, _T("") );
 			fiInit.m_szMarkLines[0] = L'\0';	// 2002.01.16 hor
 			for (int i2 = hist.m_nMRUArrNum; i2 < MAX_MRU; ++i2) {
 				hist.m_fiMRUArr[i2] = fiInit;
@@ -957,7 +957,7 @@ static void ShareData_IO_Mru_Legacy( CDataProfile& cProfile )
 		fiInit.m_nViewLeftCol = CLayoutInt(0);
 		fiInit.m_nViewTopLine = CLayoutInt(0);
 		fiInit.m_ptCursor.Set(CLogicInt(0), CLogicInt(0));
-		_tcscpy( fiInit.m_szPath, _T("") );
+		auto_strcpy( fiInit.m_szPath, _T("") );
 		fiInit.m_szMarkLines[0] = L'\0';	// 2002.01.16 hor
 		for( ; i < MAX_MRU; ++i){
 			pShare->m_sHistory.m_fiMRUArr[i] = fiInit;
@@ -972,7 +972,7 @@ static void ShareData_IO_Mru_Legacy( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("MRUFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_szOPENFOLDERArr[i] );
 		//お気に入り	//@@@ 2003.04.08 MIK
-		wcscat( szKeyName, LTEXT(".bFavorite") );
+		auto_strcat( szKeyName, LTEXT(".bFavorite") );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] );
 	}
 	//読み込み時は残りを初期化
@@ -1087,7 +1087,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		fiInit.m_nViewLeftCol = CLayoutInt(0);
 		fiInit.m_nViewTopLine = CLayoutInt(0);
 		fiInit.m_ptCursor.Set(CLogicInt(0), CLogicInt(0));
-		_tcscpy( fiInit.m_szPath, _T("") );
+		auto_strcpy( fiInit.m_szPath, _T("") );
 		fiInit.m_szMarkLines[0] = L'\0';	// 2002.01.16 hor
 		for (int i = hist.m_nMRUArrNum; i < MAX_MRU; ++i) {
 			hist.m_fiMRUArr[i] = fiInit;
@@ -1217,7 +1217,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		fiInit.m_nViewLeftCol = CLayoutInt(0);
 		fiInit.m_nViewTopLine = CLayoutInt(0);
 		fiInit.m_ptCursor.Set(CLogicInt(0), CLogicInt(0));
-		_tcscpy( fiInit.m_szPath, _T("") );
+		auto_strcpy( fiInit.m_szPath, _T("") );
 		fiInit.m_szMarkLines[0] = L'\0';	// 2002.01.16 hor
 		for( ; i < MAX_MRU; ++i){
 			pShare->m_sHistory.m_fiMRUArr[i] = fiInit;
@@ -1232,7 +1232,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		auto_sprintf( szKeyName, LTEXT("MRUFOLDER[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_szOPENFOLDERArr[i] );
 		//お気に入り	//@@@ 2003.04.08 MIK
-		wcscat( szKeyName, LTEXT(".bFavorite") );
+		auto_strcat( szKeyName, LTEXT(".bFavorite") );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_bOPENFOLDERArrFavorite[i] );
 	}
 	//読み込み時は残りを初期化
@@ -2170,7 +2170,7 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 			- CNativeT::GetCharPrev( common.m_sBackup.m_szBackUpFolder, nDummy, &common.m_sBackup.m_szBackUpFolder[nDummy] );
 		if( 1 == nCharChars && common.m_sBackup.m_szBackUpFolder[nDummy - 1] == '\\' ){
 		}else{
-			_tcscat( common.m_sBackup.m_szBackUpFolder, _T("\\") );
+			auto_strcat_s( common.m_sBackup.m_szBackUpFolder, _countof2(common.m_sBackup.m_szBackUpFolder), _T("\\") );
 		}
 	}
 	cProfile.IOProfileData( pszSecName, LTEXT("szBackUpFolder"), common.m_sBackup.m_szBackUpFolder );
@@ -2183,7 +2183,7 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 			- CNativeT::GetCharPrev( common.m_sBackup.m_szBackUpFolder, nDummy, &common.m_sBackup.m_szBackUpFolder[nDummy] );
 		if( 1 == nCharChars && common.m_sBackup.m_szBackUpFolder[nDummy - 1] == '\\' ){
 		}else{
-			_tcscat( common.m_sBackup.m_szBackUpFolder, _T("\\") );
+			auto_strcat_s( common.m_sBackup.m_szBackUpFolder, _countof2(common.m_sBackup.m_szBackUpFolder), _T("\\") );
 		}
 	}
 	
@@ -2792,7 +2792,7 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 						// 2013.10.23 syat マウスのキーコードを拡張仮想キーコードに変更。以下は互換性のため残す。
 						for( int im=0; im< jpVKEXNamesLen; im++ ){
 							if( _tcscmp( tmpKeydata.m_szKeyName, jpVKEXNames[im] ) == 0 ){
-								_tcscpy( tmpKeydata.m_szKeyName, sKeyBind.m_pKeyNameArr[im].m_szKeyName );
+								auto_strcpy( tmpKeydata.m_szKeyName, sKeyBind.m_pKeyNameArr[im].m_szKeyName );
 								sKeyBind.m_pKeyNameArr[im + 0x0100] = tmpKeydata;
 							}
 						}
@@ -2801,12 +2801,12 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 						// 割り当て済みキーコードは上書き
 						int idx = sKeyBind.m_VKeyToKeyNameArr[tmpKeydata.m_nKeyCode];
 						if( idx != KEYNAME_SIZE ){
-							_tcscpy( tmpKeydata.m_szKeyName, sKeyBind.m_pKeyNameArr[idx].m_szKeyName );
+							auto_strcpy( tmpKeydata.m_szKeyName, sKeyBind.m_pKeyNameArr[idx].m_szKeyName );
 							sKeyBind.m_pKeyNameArr[idx] = tmpKeydata;
 						}else{// 未割り当てキーコードは末尾に追加
 							if( nKeyNameArrUsed >= KEYNAME_SIZE ){}
 							else{
-								_tcscpy( tmpKeydata.m_szKeyName, sKeyBind.m_pKeyNameArr[nKeyNameArrUsed].m_szKeyName );
+								auto_strcpy( tmpKeydata.m_szKeyName, sKeyBind.m_pKeyNameArr[nKeyNameArrUsed].m_szKeyName );
 								sKeyBind.m_pKeyNameArr[nKeyNameArrUsed] = tmpKeydata;
 								sKeyBind.m_VKeyToKeyNameArr[tmpKeydata.m_nKeyCode] = (BYTE)nKeyNameArrUsed++;
 							}
@@ -2859,7 +2859,7 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 						auto_sprintf(szWork, L",%d", keydata.m_nFuncCodeArr[j]);
 					}
 				}
-				wcscat(szKeyData, szWork);
+				auto_strcat(szKeyData, szWork);
 			}
 
 			if( 0x0100 <= keydata.m_nKeyCode ){
@@ -2867,7 +2867,7 @@ void CShareData_IO::IO_KeyBind( CDataProfile& cProfile, CommonSetting_KeyBind& s
 			}else{
 				auto_sprintf(szWork, L",%ts", keydata.m_szKeyName);
 			}
-			wcscat(szKeyData, szWork);
+			auto_strcat(szKeyData, szWork);
 			cProfile.IOProfileData( szSecName, szKeyName, MakeStringBufferW(szKeyData) );
 //
 		}
@@ -3927,12 +3927,12 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 
 			// 読み出し
 			if( pData ){
-				wcscpy(szLine, data[dataNum++].c_str());
+				auto_strcpy(szLine, data[dataNum++].c_str());
 			}else{
 #ifdef NKMM_FIX_PROFILES
 				if (!cProfile.IOProfileData(pszSecName, szKeyName, MakeStringBufferW(szLine))) {
 					if ((int)default_data.size() > dataNum) {
-						wcscpy(szLine, default_data[dataNum].c_str());  // デフォルト設定
+						auto_strcpy(szLine, default_data[dataNum].c_str());  // デフォルト設定
 					}
 				}
 				dataNum++;

@@ -674,7 +674,7 @@ int CPropTypesScreen::GetData( HWND hwndDlg )
 		/* TAB表示文字列 */
 		WIN_CHAR szTab[8+1]; /* +1. happy */
 		::DlgItem_GetText( hwndDlg, IDC_EDIT_TABVIEWSTRING, szTab, _countof( szTab ) );
-		wcscpy( m_Types.m_szTabViewString, L"^       " );
+		auto_strcpy( m_Types.m_szTabViewString, L"^       " );
 		for( int i = 0; i < 8; i++ ){
 			if( !TCODE::IsTabAvailableCode(szTab[i]) )break;
 			m_Types.m_szTabViewString[i] = szTab[i];
@@ -787,7 +787,7 @@ void CPropTypesScreen::AddOutlineMethod(int nMethod, const WCHAR* szName)
 	method.nNameId = 0;
 	const TCHAR* tszName = to_tchar( szName );
 	TCHAR* pszName = new TCHAR[ _tcslen(tszName) + 1 ];
-	_tcscpy( pszName, tszName );
+	auto_strcpy_s( pszName, _tcslen(tszName) + 1, tszName );
 	method.pszName = pszName;
 	m_OlmArr.push_back(method);
 }
@@ -815,7 +815,7 @@ void CPropTypesScreen::AddSIndentMethod(int nMethod, const WCHAR* szName)
 	method.nNameId = 0;
 	const TCHAR* tszName = to_tchar( szName );
 	TCHAR* pszName = new TCHAR[ _tcslen(tszName) + 1 ];
-	_tcscpy( pszName, tszName );
+	auto_strcpy_s( pszName, _tcslen(tszName) + 1, tszName );
 	method.pszName = pszName;
 	m_SIndentArr.push_back(method);
 }

@@ -76,13 +76,13 @@ LPTSTR CFileNameManager::GetTransformFileNameFast( LPCTSTR pszSrc, LPTSTR pszDes
 			m_pShareData->m_Common.m_sFileName.m_szTransformFileNameTo[m_nTransformFileNameOrgId[0]]
 		);
 		for( i = 1; i < m_nTransformFileNameCount; i++ ){
-			_tcscpy( szBuf, pszDest );
+			auto_strcpy( szBuf, pszDest );
 			GetFilePathFormat( szBuf, pszDest, nDestLen,
 				m_szTransformFileNameFromExp[i],
 				m_pShareData->m_Common.m_sFileName.m_szTransformFileNameTo[m_nTransformFileNameOrgId[i]] );
 		}
 		if( nPxWidth != -1 ){
-			_tcscpy( szBuf, pszDest );
+			auto_strcpy( szBuf, pszDest );
 			GetShortViewPath( pszDest, nDestLen, szBuf, hDC, nPxWidth, bFitMode );
 		}
 	}else if( nPxWidth != -1 ){
@@ -286,7 +286,7 @@ bool CFileNameManager::ExpandMetaToFolder( LPCTSTR pszSrc, LPTSTR pszDes, int nD
 					; // 読み飛ばす
 				for( ; nMetaLen == pAlias->nLenth; pAlias++ ){
 					if( 0 == auto_stricmp( pAlias->szAlias, szMeta ) ){
-						_tcscpy( szMeta, pAlias->szOrig );
+						auto_strcpy( szMeta, pAlias->szOrig );
 						break;
 					}
 				}
@@ -307,7 +307,7 @@ bool CFileNameManager::ExpandMetaToFolder( LPCTSTR pszSrc, LPTSTR pszDes, int nD
 					if( NULL != pStr ){
 						nPathLen = _tcslen( pStr );
 						if( nPathLen < _MAX_PATH ){
-							_tcscpy( szPath, pStr );
+							auto_strcpy( szPath, pStr );
 						}else{
 							*pd = _T('\0');
 							return false;
@@ -580,9 +580,9 @@ bool CFileNameManager::GetMenuFullLabel(
 		}
 	}else{
 		if( nId == -1 ){
-			wsprintf( szFileName, LS( STR_NO_TITLE1 ));
+			auto_sprintf( szFileName, LS( STR_NO_TITLE1 ));
 		}else{
-			wsprintf( szFileName, _T("%s%d"), LS( STR_NO_TITLE1 ), nId);
+			auto_sprintf( szFileName, _T("%s%d"), LS( STR_NO_TITLE1 ), nId);
 		}
 		pszName = szFileName;
 	}
@@ -667,7 +667,7 @@ void CFileNameManager::GetIniFileNameDirect( LPTSTR pszPrivateIniFile, LPTSTR ps
 			}
 			::GetPrivateProfileString(_T("Settings"), _T("UserSubFolder"), _T("sakura"), szDir, _MAX_DIR, szPath );
 			if( szDir[0] == _T('\0') )
-				::lstrcpy( szDir, _T("sakura") );
+				::auto_strcpy( szDir, _T("sakura") );
 			if( GetSpecialFolderPath( nFolder, szPath ) ){
 				if( pszProfName[0] == '\0' ){
 					auto_snprintf_s( pszPrivateIniFile, _MAX_PATH - 1, _T("%ts\\%ts\\%ts%ts"), szPath, szDir, szFname, _T(".ini") );
@@ -727,6 +727,6 @@ void CFileNameManager::GetIniFileName( LPTSTR pszIniFileName, LPCTSTR pszProfNam
 	}
 
 	bool bPrivate = bRead? m_pShareData->m_sFileNameManagement.m_IniFolder.m_bReadPrivate: m_pShareData->m_sFileNameManagement.m_IniFolder.m_bWritePrivate;
-	::lstrcpy( pszIniFileName, bPrivate? m_pShareData->m_sFileNameManagement.m_IniFolder.m_szPrivateIniFile: m_pShareData->m_sFileNameManagement.m_IniFolder.m_szIniFile );
+	::auto_strcpy_s( pszIniFileName, _MAX_PATH + 1, bPrivate? m_pShareData->m_sFileNameManagement.m_IniFolder.m_szPrivateIniFile: m_pShareData->m_sFileNameManagement.m_IniFolder.m_szIniFile );	// 呼び出し元は TCHAR[_MAX_PATH+1] を渡す規約
 }
 

@@ -660,7 +660,7 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 					::EnableWindow( GetDlgItem( GetHwnd(), IDC_CHECK_EXT_RMENU ), TRUE );
 					if( !m_bRegistryChecked[ nIdx ] ){
 						TCHAR exts[_countof(type->m_szTypeExts)] = {0};
-						_tcscpy( exts, type->m_szTypeExts );
+						auto_strcpy( exts, type->m_szTypeExts );
 						TCHAR *ext = _tcstok( exts, CDocTypeManager::m_typeExtSeps );
 
 						m_bExtRMenu[ nIdx ] = true;
@@ -692,7 +692,7 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 				break;
 			}
 			TCHAR exts[_countof(type->m_szTypeExts)] = {0};
-			_tcscpy( exts, type->m_szTypeExts );
+			auto_strcpy( exts, type->m_szTypeExts );
 			TCHAR *ext = _tcstok( exts, CDocTypeManager::m_typeExtSeps );
 			int nRet;
 			while( NULL != ext ){
@@ -731,7 +731,7 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 				break;
 			}
 			TCHAR exts[_countof(type->m_szTypeExts)] = {0};
-			_tcscpy( exts, type->m_szTypeExts );
+			auto_strcpy( exts, type->m_szTypeExts );
 			TCHAR *ext = _tcstok( exts, CDocTypeManager::m_typeExtSeps );
 			int nRet;
 			while( NULL != ext ){
@@ -998,7 +998,7 @@ bool CDlgTypeList::InitializeType( void )
 				bUpdate = true;
 			}
 		}
-		_tcscpy( type->m_szTypeExts, _T("") );
+		auto_strcpy( type->m_szTypeExts, _T("") );
 		type->m_nIdx = iDocType;
 		type->m_id = (::GetTickCount() & 0x3fffffff) + iDocType * 0x10000;
 		type->m_nRegexKeyMagicNumber = CRegexKeyword::GetNewMagicNumber();

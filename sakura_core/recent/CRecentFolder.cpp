@@ -83,7 +83,7 @@ int CRecentFolder::CompareItem( const CPathString* p1, LPCTSTR p2 ) const
 
 void CRecentFolder::CopyItem( CPathString* dst, LPCTSTR src ) const
 {
-	_tcscpy(*dst,src);
+	auto_strcpy_s(*dst,_countof2((*dst)),src);
 }
 
 bool CRecentFolder::ValidateReceiveType( LPCTSTR p ) const

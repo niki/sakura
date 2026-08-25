@@ -238,11 +238,11 @@ void CPropMacro::SetData( HWND hwndDlg )
 		TCHAR szText[8];
 		szText[0] = _T('\0');
 		if( index == m_pShareData->m_Common.m_sMacro.m_nMacroOnOpened )
-			::lstrcat(szText, _T("O"));
+			::auto_strcat(szText, _T("O"));
 		if( index == m_pShareData->m_Common.m_sMacro.m_nMacroOnTypeChanged )
-			::lstrcat(szText, _T("T"));
+			::auto_strcat(szText, _T("T"));
 		if( index == m_pShareData->m_Common.m_sMacro.m_nMacroOnSave )
-			::lstrcat(szText, _T("S"));
+			::auto_strcat(szText, _T("S"));
 		memset_raw( &sItem, 0, sizeof( sItem ));
 		sItem.iItem = index;
 		sItem.mask = LVIF_TEXT;
@@ -526,11 +526,11 @@ void CPropMacro::SetMacro2List_Macro( HWND hwndDlg )
 	for( iItem = 0; iItem < MAX_CUSTMACRO; iItem++){
 		szText[0] = _T('\0');
 		if( iItem == nMacroOnOpened )
-			::lstrcat(szText, _T("O"));
+			::auto_strcat(szText, _T("O"));
 		if( iItem == nMacroOnTypeChanged )
-			::lstrcat(szText, _T("T"));
+			::auto_strcat(szText, _T("T"));
 		if( iItem == nMacroOnSave )
-			::lstrcat(szText, _T("S"));
+			::auto_strcat(szText, _T("S"));
 		memset_raw( &sItem, 0, sizeof( sItem ));
 		sItem.iItem = iItem;
 		sItem.mask = LVIF_TEXT;
@@ -556,7 +556,7 @@ void CPropMacro::SelectBaseDir_Macro( HWND hwndDlg )
 	// 2007.05.19 ryoji 相対パスは設定ファイルからのパスを優先
 	if( _IS_REL_PATH( szDir ) ){
 		TCHAR folder[_MAX_PATH];
-		_tcscpy( folder, szDir );
+		auto_strcpy( folder, szDir );
 		GetInidirOrExedir( szDir, folder );
 	}
 
@@ -586,10 +586,10 @@ void CPropMacro::OnFileDropdown_Macro( HWND hwndDlg )
 	// 2007.05.19 ryoji 相対パスは設定ファイルからのパスを優先
 	if( _IS_REL_PATH( path ) ){
 		TCHAR folder[_MAX_PATH * 2];
-		_tcscpy( folder, path );
+		auto_strcpy( folder, path );
 		GetInidirOrExedir( path, folder );
 	}
-	_tcscat( path, _T("*.*") );	//	2002/05/01 YAZAKI どんなファイルもどんと来い。
+	auto_strcat( path, _T("*.*") );	//	2002/05/01 YAZAKI どんなファイルもどんと来い。
 
 	//	候補の初期化
 	Combo_ResetContent( hCombo );

@@ -84,7 +84,7 @@ int CRecentGrepFile::CompareItem( const CGrepFileString* p1, LPCTSTR p2 ) const
 
 void CRecentGrepFile::CopyItem( CGrepFileString* dst, LPCTSTR src ) const
 {
-	_tcscpy(*dst,src);
+	auto_strcpy_s(*dst,_countof2((*dst)),src);
 }
 
 bool CRecentGrepFile::ValidateReceiveType( LPCTSTR p ) const

@@ -203,7 +203,7 @@ bool CShareData::InitShareData()
 		lf.lfClipPrecision		= 0x2;
 		lf.lfQuality			= 0x1;
 		lf.lfPitchAndFamily	= 0x31;
-		_tcscpy( lf.lfFaceName, _T("ＭＳ ゴシック") );
+		auto_strcpy( lf.lfFaceName, _T("ＭＳ ゴシック") );
 
 		// LoadShareDataでフォントが変わる可能性があるので、ここでは不要 // 2013.04.08 aroka
 		//InitCharWidthCacheCommon();								// 2008/5/17 Uchi
@@ -339,10 +339,10 @@ bool CShareData::InitShareData()
 			//	Aug. 16, 2003 genta $N(ファイル名省略表示)をデフォルトに変更
 			//	2026.08.13 NKMM_FIX_TAB_CAPTION_COLOR有効時専用だった書式が
 			//	この書式と重複していたため統合(タブ側のタブ名カラー機能自体には影響しない)
-			_tcscpy( sWindow.m_szWindowCaptionActive,
+			auto_strcpy( sWindow.m_szWindowCaptionActive,
 				_T("${w?$h$:アウトプット$:${I?$f$n$:$N$n$}$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
-			_tcscpy( sWindow.m_szWindowCaptionInactive,
+			auto_strcpy( sWindow.m_szWindowCaptionInactive,
 				_T("${w?$h$:アウトプット$:$f$n$}${U?(更新)$} -")
 				_T(" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>") );
 		}
@@ -353,7 +353,7 @@ bool CShareData::InitShareData()
 
 			sTabBar.m_bDispTabWnd = FALSE;			//タブウインドウ表示	//@@@ 2003.05.31 MIK
 			sTabBar.m_bDispTabWndMultiWin = FALSE;	//タブウインドウ表示	//@@@ 2003.05.31 MIK
-			wcscpy(	//@@@ 2003.06.13 MIK
+			auto_strcpy(	//@@@ 2003.06.13 MIK
 				sTabBar.m_szTabWndCaption,
 				//	2026.08.13 NKMM_FIX_TAB_CAPTION_COLOR有効時専用だった書式が
 				//	この書式と重複していたため統合(タブ側のタブ名カラー機能自体には影響しない)
@@ -462,18 +462,18 @@ bool CShareData::InitShareData()
 			CommonSetting_Format& sFormat = m_pShareData->m_Common.m_sFormat;
 
 			/* 見出し記号 */
-			wcscpy( sFormat.m_szMidashiKigou, L"１２３４５６７８９０（(［[「『【■□▲△▼▽◆◇○◎●§・※☆★第①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ一二三四五六七八九十壱弐参伍" );
+			auto_strcpy( sFormat.m_szMidashiKigou, L"１２３４５６７８９０（(［[「『【■□▲△▼▽◆◇○◎●§・※☆★第①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ一二三四五六七八九十壱弐参伍" );
 			/* 引用符 */
-			wcscpy( sFormat.m_szInyouKigou, L"> " );		/* 引用符 */
+			auto_strcpy( sFormat.m_szInyouKigou, L"> " );		/* 引用符 */
 
 			/*
 				書式指定子の意味はWindows SDKのGetDateFormat(), GetTimeFormat()を参照のこと
 			*/
 
 			sFormat.m_nDateFormatType = 0;	//日付書式のタイプ
-			_tcscpy( sFormat.m_szDateFormat, _T("yyyy\'年\'M\'月\'d\'日(\'dddd\')\'") );	//日付書式
+			auto_strcpy( sFormat.m_szDateFormat, _T("yyyy\'年\'M\'月\'d\'日(\'dddd\')\'") );	//日付書式
 			sFormat.m_nTimeFormatType = 0;	//時刻書式のタイプ
-			_tcscpy( sFormat.m_szTimeFormat, _T("tthh\'時\'mm\'分\'")  );			//時刻書式
+			auto_strcpy( sFormat.m_szTimeFormat, _T("tthh\'時\'mm\'分\'")  );			//時刻書式
 		}
 
 		// [検索]タブ
@@ -625,7 +625,7 @@ bool CShareData::InitShareData()
 			}
 			//	To Here Sep. 14, 2001 genta
 
-			_tcscpy( sMacro.m_szMACROFOLDER, szIniFolder );	/* マクロ用フォルダ */
+			auto_strcpy_s( sMacro.m_szMACROFOLDER, _countof2(sMacro.m_szMACROFOLDER), szIniFolder );	/* マクロ用フォルダ */
 
 			sMacro.m_nMacroOnOpened = -1;	/* オープン後自動実行マクロ番号 */	//@@@ 2006.09.01 ryoji
 			sMacro.m_nMacroOnTypeChanged = -1;	/* タイプ変更後自動実行マクロ番号 */	//@@@ 2006.09.01 ryoji
@@ -644,20 +644,20 @@ bool CShareData::InitShareData()
 				sFileName.m_szTransformFileNameFrom[i][0] = _T('\0');
 				sFileName.m_szTransformFileNameTo[i][0] = _T('\0');
 			}
-			_tcscpy( sFileName.m_szTransformFileNameFrom[0], _T("%DeskTop%\\") );
-			_tcscpy( sFileName.m_szTransformFileNameTo[0],   _T("デスクトップ\\") );
-			_tcscpy( sFileName.m_szTransformFileNameFrom[1], _T("%Personal%\\") );
-			_tcscpy( sFileName.m_szTransformFileNameTo[1],   _T("マイドキュメント\\") );
-//nkmm			_tcscpy( sFileName.m_szTransformFileNameFrom[2], _T("%Cache%\\Content.IE5\\") );
-//nkmm			_tcscpy( sFileName.m_szTransformFileNameTo[2],   _T("IEキャッシュ\\") );
-//nkmm			_tcscpy( sFileName.m_szTransformFileNameFrom[3], _T("%TEMP%\\") );
-//nkmm			_tcscpy( sFileName.m_szTransformFileNameTo[3],   _T("TEMP\\") );
-			_tcscpy( sFileName.m_szTransformFileNameFrom[4], _T("%Common DeskTop%\\") );
-			_tcscpy( sFileName.m_szTransformFileNameTo[4],   _T("共有デスクトップ\\") );
-			_tcscpy( sFileName.m_szTransformFileNameFrom[5], _T("%Common Documents%\\") );
-			_tcscpy( sFileName.m_szTransformFileNameTo[5],   _T("共有ドキュメント\\") );
-			_tcscpy( sFileName.m_szTransformFileNameFrom[6], _T("%AppData%\\") );	// 2007.05.19 ryoji 追加
-			_tcscpy( sFileName.m_szTransformFileNameTo[6],   _T("アプリデータ\\") );	// 2007.05.19 ryoji 追加
+			auto_strcpy( sFileName.m_szTransformFileNameFrom[0], _T("%DeskTop%\\") );
+			auto_strcpy( sFileName.m_szTransformFileNameTo[0],   _T("デスクトップ\\") );
+			auto_strcpy( sFileName.m_szTransformFileNameFrom[1], _T("%Personal%\\") );
+			auto_strcpy( sFileName.m_szTransformFileNameTo[1],   _T("マイドキュメント\\") );
+//nkmm			auto_strcpy( sFileName.m_szTransformFileNameFrom[2], _T("%Cache%\\Content.IE5\\") );
+//nkmm			auto_strcpy( sFileName.m_szTransformFileNameTo[2],   _T("IEキャッシュ\\") );
+//nkmm			auto_strcpy( sFileName.m_szTransformFileNameFrom[3], _T("%TEMP%\\") );
+//nkmm			auto_strcpy( sFileName.m_szTransformFileNameTo[3],   _T("TEMP\\") );
+			auto_strcpy( sFileName.m_szTransformFileNameFrom[4], _T("%Common DeskTop%\\") );
+			auto_strcpy( sFileName.m_szTransformFileNameTo[4],   _T("共有デスクトップ\\") );
+			auto_strcpy( sFileName.m_szTransformFileNameFrom[5], _T("%Common Documents%\\") );
+			auto_strcpy( sFileName.m_szTransformFileNameTo[5],   _T("共有ドキュメント\\") );
+			auto_strcpy( sFileName.m_szTransformFileNameFrom[6], _T("%AppData%\\") );	// 2007.05.19 ryoji 追加
+			auto_strcpy( sFileName.m_szTransformFileNameTo[6],   _T("アプリデータ\\") );	// 2007.05.19 ryoji 追加
 			sFileName.m_nTransformFileNameArrNum = 7;
 		}
 
@@ -763,7 +763,7 @@ bool CShareData::InitShareData()
 
 			m_pShareData->m_sHistory.m_aExceptMRU.clear();
 
-			_tcscpy( m_pShareData->m_sHistory.m_szIMPORTFOLDER, szIniFolder );	/* 設定インポート用フォルダ */
+			auto_strcpy_s( m_pShareData->m_sHistory.m_szIMPORTFOLDER, _countof2(m_pShareData->m_sHistory.m_szIMPORTFOLDER), szIniFolder );	/* 設定インポート用フォルダ */
 
 			m_pShareData->m_sHistory.m_aCommands.clear();
 			m_pShareData->m_sHistory.m_aCurDirs.clear();
@@ -1256,7 +1256,7 @@ int CShareData::GetMacroFilename( int idx, TCHAR *pszPath, int nBufLen )
 		if( pszPath == NULL || nBufLen <= nLen ){
 			return -nLen;
 		}
-		_tcscpy( pszPath, pszFile );
+		auto_strcpy_s( pszPath, nBufLen, pszFile );
 		return nLen;
 	}
 	else {	//	フォルダ指定あり
@@ -1281,12 +1281,12 @@ int CShareData::GetMacroFilename( int idx, TCHAR *pszPath, int nBufLen )
 			return -nAllLen;
 		}
 
-		_tcscpy( pszPath, pszDir );
+		auto_strcpy_s( pszPath, nBufLen, pszDir );
 		TCHAR *ptr = pszPath + nDirLen;
 		if( -1 == nFolderSep ){
 			*ptr++ = _T('\\');
 		}
-		_tcscpy( ptr, pszFile );
+		auto_strcpy_s( ptr, nBufLen - (ptr - pszPath), pszFile );
 		return nAllLen;
 	}
 

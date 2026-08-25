@@ -268,7 +268,7 @@ void CDocTypeManager::GetFirstExt(const TCHAR* pszTypeExts, TCHAR szFirstExt[], 
 
 	@date 2014.12.06 syat CFileExtから移動
 */
-bool CDocTypeManager::ConvertTypesExtToDlgExt( const TCHAR *pszSrcExt, const TCHAR* szExt, TCHAR *pszDstExt )
+bool CDocTypeManager::ConvertTypesExtToDlgExt( const TCHAR *pszSrcExt, const TCHAR* szExt, TCHAR *pszDstExt, size_t nDstCount )
 {
 	TCHAR	*token;
 	TCHAR	*p;
@@ -278,25 +278,25 @@ bool CDocTypeManager::ConvertTypesExtToDlgExt( const TCHAR *pszSrcExt, const TCH
 	if( NULL == pszDstExt ) return false;
 
 	p = _tcsdup( pszSrcExt );
-	_tcscpy( pszDstExt, _T("") );
+	auto_strcpy_s( pszDstExt, nDstCount, _T("") );
 
 	if (szExt != NULL && szExt[0] != _T('\0')) {
 		// ファイルパスがあり、拡張子ありの場合、トップに指定
-		_tcscpy(pszDstExt, _T("*"));
-		_tcscat(pszDstExt, szExt);
+		auto_strcpy_s(pszDstExt, nDstCount, _T("*"));
+		auto_strcat_s(pszDstExt, nDstCount, szExt);
 	}
 
 	token = _tcstok(p, m_typeExtSeps);
 	while( token )
 	{
 		if (szExt == NULL || szExt[0] == _T('\0') || auto_stricmp(token, szExt + 1) != 0) {
-			if( pszDstExt[0] != '\0' ) _tcscat( pszDstExt, _T(";") );
+			if( pszDstExt[0] != '\0' ) auto_strcat_s( pszDstExt, nDstCount, _T(";") );
 			// 拡張子指定なし、またはマッチした拡張子でない
 			if (_tcspbrk(token, m_typeExtWildcards) == NULL) {
-				if (_T('.') == *token) _tcscat(pszDstExt, _T("*"));
-				else                 _tcscat(pszDstExt, _T("*."));
+				if (_T('.') == *token) auto_strcat_s(pszDstExt, nDstCount, _T("*"));
+				else                 auto_strcat_s(pszDstExt, nDstCount, _T("*."));
 			}
-			_tcscat(pszDstExt, token);
+			auto_strcat_s(pszDstExt, nDstCount, token);
 		}
 
 		token = _tcstok( NULL, m_typeExtSeps );

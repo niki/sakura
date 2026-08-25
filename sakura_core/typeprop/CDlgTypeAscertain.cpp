@@ -138,7 +138,7 @@ void CDlgTypeAscertain::SetData( void )
 	TCHAR	sTrgCol[_MAX_PATH + 1];
 
 	::SplitPath_FolderAndFile( m_psi->sImportFile.c_str(), sTrgCol, NULL );
-	_tcscat( sTrgCol, _T("\\*.col") );
+	auto_strcat( sTrgCol, _T("\\*.col") );
 	for (bFind = ( ( hFind = FindFirstFile( sTrgCol, &wf ) ) != INVALID_HANDLE_VALUE );
 		bFind;
 		bFind = FindNextFile( hFind, &wf )) {

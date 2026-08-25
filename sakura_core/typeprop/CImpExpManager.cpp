@@ -325,8 +325,8 @@ bool CImpExpType::Import( const wstring& sFileName, wstring& sErrMsg )
 	m_nIdx = m_Types.m_nIdx;
 	if (m_nIdx == 0) {
 		// 基本の場合の名前と拡張子を初期化
-		_tcscpy( m_Types.m_szTypeName, LS(STR_TYPE_NAME_BASIS) );
-		_tcscpy( m_Types.m_szTypeExts, _T("") );
+		auto_strcpy( m_Types.m_szTypeName, LS(STR_TYPE_NAME_BASIS) );
+		auto_strcpy( m_Types.m_szTypeExts, _T("") );
 		m_Types.m_id = 0;
 	}else{
 		// 基本じゃなかった場合、id番号をランダムに仮採番(あとで振りなおす)
@@ -500,8 +500,8 @@ bool CImpExpType::Export( const wstring& sFileName, wstring& sErrMsg )
 		wcscpyn( szId, plugin.m_PluginTable[nPIdx].m_szId, _countof(szId) );
 		if( (nPlug = CPlug::GetPlugId( static_cast<EFunctionCode>( m_Types.m_eDefaultOutline ))) != 0 ){
 			wchar_t szPlug[8];
-			swprintf( szPlug, L"/%d", nPlug );
-			wcscat( szId, szPlug );
+			auto_sprintf( szPlug, L"/%d", nPlug );
+			auto_strcat( szId, szPlug );
 		}
 		cProfile.IOProfileData( szSecTypeEx, szKeyPluginOutlineId,   MakeStringBufferW(szId) );
 	}
@@ -511,8 +511,8 @@ bool CImpExpType::Export( const wstring& sFileName, wstring& sErrMsg )
 		wcscpyn( szId, plugin.m_PluginTable[nPIdx].m_szId, _countof(szId) );
 		if( (nPlug = CPlug::GetPlugId( static_cast<EFunctionCode>( m_Types.m_eSmartIndent ))) != 0 ){
 			wchar_t szPlug[8];
-			swprintf( szPlug, L"/%d", nPlug );
-			wcscat( szId, szPlug );
+			auto_sprintf( szPlug, L"/%d", nPlug );
+			auto_strcat( szId, szPlug );
 		}
 		cProfile.IOProfileData( szSecTypeEx, szKeyPluginSmartIndentId,   MakeStringBufferW(szId) );
 	}
@@ -1088,9 +1088,9 @@ bool CImpExpKeybind::Export( const wstring& sFileName, wstring& sErrMsg )
 					}
 				}
 				if( j != 0 ){
-					wcscat( szDescData, L"," );
+					auto_strcat( szDescData, L"," );
 				}
-				wcscat( szDescData, szName );
+				auto_strcat( szDescData, szName );
 			}
 
 			WCHAR szNewKeyData[1024+8*256];

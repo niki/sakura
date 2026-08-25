@@ -57,7 +57,7 @@ bool CFileExt::AppendExt( const TCHAR *pszName, const TCHAR *pszExt )
 {
 	TCHAR	szWork[_countof(m_puFileExtInfo[0].m_szExt) + 10];
 
-	if( !CDocTypeManager::ConvertTypesExtToDlgExt( pszExt, NULL, szWork ) ) return false;
+	if( !CDocTypeManager::ConvertTypesExtToDlgExt( pszExt, NULL, szWork, _countof(szWork) ) ) return false;
 	return AppendExtRaw( pszName, szWork );
 }
 

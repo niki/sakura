@@ -605,8 +605,8 @@ int CPropTypesKeyHelp::GetData( HWND hwndDlg )
 			ListView_GetItemText( hwndList, i, 1, szAbout, _countof(szAbout) );
 			ListView_GetItemText( hwndList, i, 2, szPath, _countof(szPath) );
 			m_Types.m_KeyHelpArr[i].m_bUse = bUse;
-			_tcscpy(m_Types.m_KeyHelpArr[i].m_szAbout, szAbout);
-			_tcscpy(m_Types.m_KeyHelpArr[i].m_szPath, szPath);
+			auto_strcpy(m_Types.m_KeyHelpArr[i].m_szAbout, szAbout);
+			auto_strcpy_s(m_Types.m_KeyHelpArr[i].m_szPath, _countof2(m_Types.m_KeyHelpArr[i].m_szPath), szPath);
 		}else{	/* 未登録部分はクリアする */
 			m_Types.m_KeyHelpArr[i].m_szPath[0] = _T('\0');
 		}
