@@ -861,13 +861,13 @@ TCHAR *CDlgTagJumpList::GetNameByType( const TCHAR type, const TCHAR *name )
 
 	for( i = 0; p_extentions[i]; i += 2 )
 	{
-		_tcscpy( tmp, p_extentions[i] );
+		auto_strcpy( tmp, p_extentions[i] );
 		token = _tcstok( tmp, _T(",") );
 		while( token )
 		{
 			if( _tcsicmp( p, token ) == 0 )
 			{
-				_tcscpy( tmp, p_extentions[i+1] );
+				auto_strcpy( tmp, p_extentions[i+1] );
 				token = _tcstok( tmp, _T(",") );
 				while( token )
 				{
@@ -984,7 +984,7 @@ int CDlgTagJumpList::SearchBestTag( void )
 			TCHAR szPath[_MAX_PATH];
 			GetFullPathAndLine( i, szPath, _countof(szPath), NULL, NULL );
 			if( FALSE == GetLongFileName( szPath, lpPathInfo->szFileNameDst ) ){
-				_tcscpy( lpPathInfo->szFileNameDst, szPath );
+				auto_strcpy( lpPathInfo->szFileNameDst, szPath );
 			}
 		}
 
@@ -1188,7 +1188,7 @@ int CDlgTagJumpList::find_key_core(
 		// 初回or使えないときはクリア
 		ClearPrevFindInfo();
 		// ファイル名をコピーしたあと、ディレクトリ(最後\)のみにする
-		_tcscpy( state.m_szCurPath, GetFilePath() );
+		auto_strcpy( state.m_szCurPath, GetFilePath() );
 		state.m_szCurPath[ GetFileName() - GetFilePath() ] = _T('\0');
 		state.m_nLoop = m_nLoop;
 	}
@@ -1404,7 +1404,7 @@ next_line:
 			state.m_nDepth = 0;
 			szNextPath[0] = 0;
 		}else{
-//			_tcscat( state.m_szCurPath, _T("..\\") );
+//			auto_strcat( state.m_szCurPath, _T("..\\") );
 			//カレントパスを1階層上へ。
 			DirUp( state.m_szCurPath );
 		}
@@ -1493,7 +1493,7 @@ TCHAR* CDlgTagJumpList::GetFullPathFromDepth( TCHAR* pszOutput, int count,
 		}
 	}else{
 		for( int i = 0; i < depth; i++ ){
-			//_tcscat( basePath, _T("..\\") );
+			//auto_strcat( basePath, _T("..\\") );
 			DirUp( basePath );
 		}
 		if( -1 == auto_snprintf_s( pszOutput, count, _T("%ts%ts"), basePath, p ) ){

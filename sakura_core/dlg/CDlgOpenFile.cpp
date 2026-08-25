@@ -438,7 +438,7 @@ UINT_PTR CALLBACK OFNHookProc(
 									szDefExt[0] = _T('\0');
 								break;
 							case 2:		// *.txt
-								::_tcscpy(szDefExt, _T(".txt"));
+								::auto_strcpy(szDefExt, _T(".txt"));
 								break;
 							case 3:		// *.*
 							default:	// 不明
@@ -446,7 +446,7 @@ UINT_PTR CALLBACK OFNHookProc(
 								break;
 							}
 							lstrcpyn(szBuf, pData->m_pOf->lpstrFile, _MAX_PATH + 1);
-							::_tcscat(szBuf, szDefExt);
+							::auto_strcat(szBuf, szDefExt);
 							lstrcpyn(pData->m_szPath, szBuf, _MAX_PATH);
 						}
 					}
@@ -455,7 +455,7 @@ UINT_PTR CALLBACK OFNHookProc(
 					if( IsFileExists(pData->m_szPath, true) ){
 						TCHAR szText[_MAX_PATH + 100];
 						lstrcpyn(szText, pData->m_szPath, _MAX_PATH);
-						::_tcscat(szText, LS(STR_DLGOPNFL2));
+						::auto_strcat(szText, LS(STR_DLGOPNFL2));
 						if( IDYES != ::MessageBox( pData->m_hwndOpenDlg, szText, LS(STR_DLGOPNFL3), MB_YESNO | MB_ICONEXCLAMATION) ){
 							::SetWindowLongPtr( hdlg, DWLP_MSGRESULT, TRUE );
 							return TRUE;
@@ -684,12 +684,12 @@ CDlgOpenFile::CDlgOpenFile()
 		szFile, _countof( szFile )
 	);
 	_tsplitpath( szFile, szDrive, szDir, NULL, NULL );
-	_tcscpy( m_mem->m_szInitialDir, szDrive );
-	_tcscat( m_mem->m_szInitialDir, szDir );
+	auto_strcpy_s( m_mem->m_szInitialDir, _countof2(m_mem->m_szInitialDir), szDrive );
+	auto_strcat_s( m_mem->m_szInitialDir, _countof2(m_mem->m_szInitialDir), szDir );
 
 
 
-	_tcscpy( m_mem->m_szDefaultWildCard, _T("*.*") );	/*「開く」での最初のワイルドカード（保存時の拡張子補完でも使用される） */
+	auto_strcpy_s( m_mem->m_szDefaultWildCard, _countof2(m_mem->m_szDefaultWildCard), _T("*.*") );	/*「開く」での最初のワイルドカード（保存時の拡張子補完でも使用される） */
 
 	return;
 }
@@ -721,7 +721,7 @@ void CDlgOpenFile::Create(
 
 	/* ユーザー定義ワイルドカード（保存時の拡張子補完でも使用される） */
 	if( NULL != pszUserWildCard ){
-		_tcscpy( m_mem->m_szDefaultWildCard, pszUserWildCard );
+		auto_strcpy_s( m_mem->m_szDefaultWildCard, _countof2(m_mem->m_szDefaultWildCard), pszUserWildCard );
 	}
 
 	/* 「開く」での初期フォルダ */
@@ -1249,7 +1249,7 @@ bool CDlgOpenFile::_GetOpenFileNameRecover( OPENFILENAMEZ* ofn )
 	BOOL bRet = ::GetOpenFileName( ofn );
 	if( !bRet  ){
 		if( FNERR_INVALIDFILENAME == ::CommDlgExtendedError() ){
-			_tcscpy( ofn->lpstrFile, _T("") );
+			auto_strcpy_s( ofn->lpstrFile, ofn->nMaxFile, _T("") );
 			ofn->lpstrInitialDir = _T("");
 			bRet = ::GetOpenFileName( ofn );
 		}
@@ -1266,7 +1266,7 @@ bool CDlgOpenFile::GetSaveFileNameRecover( OPENFILENAMEZ* ofn )
 	BOOL bRet = ::GetSaveFileName( ofn );
 	if( !bRet  ){
 		if( FNERR_INVALIDFILENAME == ::CommDlgExtendedError() ){
-			_tcscpy( ofn->lpstrFile, _T("") );
+			auto_strcpy_s( ofn->lpstrFile, ofn->nMaxFile, _T("") );
 			ofn->lpstrInitialDir = _T("");
 			bRet = ::GetSaveFileName( ofn );
 		}

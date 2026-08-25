@@ -162,7 +162,7 @@ void CDlgPluginOption::SetData( void )
 		}
 
 		if (cOpt->GetType() == OPTION_TYPE_BOOL) {
-			_tcscpy( buf, sValue == wstring( L"0") || sValue == wstring( L"") ? BOOL_DISP_FALSE : BOOL_DISP_TRUE );
+			auto_strcpy( buf, sValue == wstring( L"0") || sValue == wstring( L"") ? BOOL_DISP_FALSE : BOOL_DISP_TRUE );
 		}
 		else if (cOpt->GetType() == OPTION_TYPE_INT) {
 			// 数値へ正規化
@@ -175,7 +175,7 @@ void CDlgPluginOption::SetData( void )
 			std::vector<wstring>	selects;
 			selects = cOpt->GetSelects();
 
-			_tcscpy( buf, _T("") );
+			auto_strcpy( buf, _T("") );
 			for (std::vector<wstring>::iterator it = selects.begin(); it != selects.end(); it++) {
 				SepSelect(*it, &sView, &sTrg);
 				if (sValue == sTrg) {
@@ -247,10 +247,10 @@ int CDlgPluginOption::GetData( void )
 
 		if (cOpt->GetType() == OPTION_TYPE_BOOL) {
 			if (_tcscmp(buf,  BOOL_DISP_FALSE) == 0) {
-				_tcscpy (buf, _T("0"));
+				auto_strcpy(buf, _T("0"));
 			}
 			else {
-				_tcscpy (buf, _T("1"));
+				auto_strcpy(buf, _T("1"));
 			}
 		}
 		else if (cOpt->GetType() == OPTION_TYPE_SEL) {
@@ -666,10 +666,10 @@ void CDlgPluginOption::SetFromEdit( int iLine )
 		transform(sType.begin (), sType.end (), sType.begin (), my_towlower2);
 		if (sType == OPTION_TYPE_BOOL) {
 			if( ::IsDlgButtonChecked( GetHwnd(), IDC_CHECK_PLUGIN_OPTION ) ) {
-				_tcscpy( buf, BOOL_DISP_TRUE );
+				auto_strcpy( buf, BOOL_DISP_TRUE );
 			}
 			else {
-				_tcscpy( buf, BOOL_DISP_FALSE );
+				auto_strcpy( buf, BOOL_DISP_FALSE );
 			}
 			lvi.mask     = LVIF_TEXT;
 			lvi.iItem    = iLine;
@@ -727,7 +727,7 @@ void CDlgPluginOption::SelectDirectory( int iLine )
 
 	if (_IS_REL_PATH( szDir )) {
 		TCHAR	folder[_MAX_PATH];
-		_tcscpy( folder, szDir );
+		auto_strcpy( folder, szDir );
 		GetInidirOrExedir( szDir, folder );
 	}
 

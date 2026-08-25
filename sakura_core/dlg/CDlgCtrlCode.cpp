@@ -150,9 +150,9 @@ void CDlgCtrlCode::SetData( void )
 		if( p_ctrl_list[i].code <= 0x1f )
 			auto_sprintf( tmp, _T("^%tc"), _T('@') + p_ctrl_list[i].code );
 		else if( p_ctrl_list[i].code == 0x7f )
-			_tcscpy( tmp, _T("^?") );
+			auto_strcpy( tmp, _T("^?") );
 		else
-			_tcscpy( tmp, _T("･") );
+			auto_strcpy( tmp, _T("･") );
 		lvi.mask     = LVIF_TEXT;
 		lvi.iItem    = count;
 		lvi.iSubItem = 1;

@@ -117,7 +117,7 @@ CDlgFavorite::CDlgFavorite()
 	int	i;
 
 	m_nCurrentTab = 0;
-	_tcscpy( m_szMsg, _T("") );
+	auto_strcpy( m_szMsg, _T("") );
 
 	/* サイズ変更時に位置を制御するコントロール数 */
 	assert( _countof(anchorList) == _countof(m_rcItems) );
@@ -755,8 +755,8 @@ bool CDlgFavorite::RefreshList( void )
 	bool	ret_val = false;
 	TCHAR	msg[1024];
 
-	_tcscpy( msg, _T("") );
-	_tcscpy( m_szMsg, _T("") );
+	auto_strcpy( msg, _T("") );
+	auto_strcpy( m_szMsg, _T("") );
 
 	//全リストの現在選択中のアイテムを取得する。
 	for( nTab = 0; NULL != m_aFavoriteInfo[nTab].m_pRecent; nTab++ )
@@ -766,8 +766,8 @@ bool CDlgFavorite::RefreshList( void )
 		{
 			ret_val = true;
 		
-			if( msg[0] != _T('\0') ) _tcscat( msg, LS( STR_DLGFAV_DELIMITER ) );
-			_tcscat( msg, m_aFavoriteInfo[nTab].m_pszCaption );
+			if( msg[0] != _T('\0') ) auto_strcat( msg, LS( STR_DLGFAV_DELIMITER ) );
+			auto_strcat( msg, m_aFavoriteInfo[nTab].m_pszCaption );
 		}
 	}
 
@@ -949,7 +949,7 @@ void CDlgFavorite::AddItem()
 	size_t max_size = recent.GetTextMaxLength();
 	std::vector<TCHAR> vecAddText(max_size);
 	TCHAR* szAddText = &vecAddText[0];
-	_tcscpy( szAddText, _T("") );
+	auto_strcpy_s( szAddText, max_size, _T("") );
 
 	CDlgInput1	cDlgInput1;
 	std::tstring strTitle = LS( STR_DLGFAV_ADD );
@@ -1161,7 +1161,7 @@ void CDlgFavorite::ListViewSort(ListViewSortInfo& info, const CRecent* pRecent, 
 	col.cchTextMax = _countof(szHeader) - 4;
 	col.iSubItem = 0;
 	ListView_GetColumn( info.hListView, column, &col );
-	_tcscat(szHeader, info.bSortAscending ? _T("▼") : _T("▲"));
+	auto_strcat(szHeader, info.bSortAscending ? _T("▼") : _T("▲"));
 	col.mask = LVCF_TEXT;
 	col.pszText = szHeader;
 	col.iSubItem = 0;

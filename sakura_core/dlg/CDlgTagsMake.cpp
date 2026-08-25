@@ -52,8 +52,8 @@ const DWORD p_helpids[] = {	//13700
 
 CDlgTagsMake::CDlgTagsMake()
 {
-	_tcscpy( m_szPath, _T("") );
-	_tcscpy( m_szTagsCmdLine, _T("") );
+	auto_strcpy( m_szPath, _T("") );
+	auto_strcpy( m_szTagsCmdLine, _T("") );
 	m_nTagsOpt = 0;
 	return;
 }
@@ -91,9 +91,9 @@ int CDlgTagsMake::DoModal(
 		path = fnSearchTags(pszPath, _T("ctags.cnf"));
 	}
 
-	_tcscpy( m_szPath, path.c_str() );
+	auto_strcpy( m_szPath, path.c_str() );
 #else
-	_tcscpy( m_szPath, pszPath );
+	auto_strcpy( m_szPath, pszPath );
 #endif // NKMM_
 
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_TAG_MAKE, lParam );
@@ -181,7 +181,7 @@ void CDlgTagsMake::SetData( void )
 
 	//コマンドライン
 	Combo_LimitText( ::GetDlgItem( GetHwnd(), IDC_EDIT_TAG_MAKE_CMDLINE ), _countof( m_pShareData->m_szTagsCmdLine ) );
-	_tcscpy( m_szTagsCmdLine, m_pShareData->m_szTagsCmdLine );
+	auto_strcpy( m_szTagsCmdLine, m_pShareData->m_szTagsCmdLine );
 	::DlgItem_SetText( GetHwnd(), IDC_EDIT_TAG_MAKE_CMDLINE, m_pShareData->m_szTagsCmdLine );
 
 	return;
@@ -196,7 +196,7 @@ int CDlgTagsMake::GetData( void )
 	int length = _tcslen( m_szPath );
 	if( length > 0 )
 	{
-		if( m_szPath[ length - 1 ] != _T('\\') ) _tcscat( m_szPath, _T("\\") );
+		if( m_szPath[ length - 1 ] != _T('\\') ) auto_strcat( m_szPath, _T("\\") );
 	}
 
 	//CTAGSオプション
@@ -206,7 +206,7 @@ int CDlgTagsMake::GetData( void )
 
 	//コマンドライン
 	::DlgItem_GetText( GetHwnd(), IDC_EDIT_TAG_MAKE_CMDLINE, m_szTagsCmdLine, _countof( m_szTagsCmdLine ) );
-	_tcscpy( m_pShareData->m_szTagsCmdLine, m_szTagsCmdLine );
+	auto_strcpy( m_pShareData->m_szTagsCmdLine, m_szTagsCmdLine );
 
 	return TRUE;
 }

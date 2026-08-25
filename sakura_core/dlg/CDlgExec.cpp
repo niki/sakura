@@ -141,7 +141,7 @@ void CDlgExec::SetData( void )
 	/*****************************
 	*         データ設定         *
 	*****************************/
-	_tcscpy( m_szCommand, m_pShareData->m_sHistory.m_aCommands[0] );
+	auto_strcpy( m_szCommand, m_pShareData->m_sHistory.m_aCommands[0] );
 	hwndCombo = ::GetDlgItem( GetHwnd(), IDC_COMBO_m_szCommand );
 	Combo_ResetContent( hwndCombo );
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_TEXT, m_szCommand );
@@ -151,7 +151,7 @@ void CDlgExec::SetData( void )
 	}
 	Combo_SetCurSel( hwndCombo, 0 );
 
-	_tcscpy( m_szCurDir, m_pShareData->m_sHistory.m_aCurDirs[0] );
+	auto_strcpy_s( m_szCurDir, _countof2(m_szCurDir), m_pShareData->m_sHistory.m_aCurDirs[0] );
 	hwndCombo = GetItemHwnd( IDC_COMBO_CUR_DIR );
 	Combo_ResetContent( hwndCombo );
 	::DlgItem_SetText( GetHwnd(), IDC_COMBO_TEXT, m_szCurDir );
@@ -261,7 +261,7 @@ BOOL CDlgExec::OnBnClicked( int wID )
 				m_szCommand
 			);
 			if( cDlgOpenFile.DoModal_GetOpenFileName( szPath ) ){
-				_tcscpy( m_szCommand, szPath );
+				auto_strcpy( m_szCommand, szPath );
 				::DlgItem_SetText( GetHwnd(), IDC_COMBO_m_szCommand, m_szCommand );
 			}
 		}

@@ -146,28 +146,28 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const TCHAR* pszCur
 	// 2013.05.21 コンストラクタからDoModalに移動
 	// m_strText は呼び出し元で設定済み
 	if( m_szFile[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_aGrepFiles.size() ){
-		_tcscpy( m_szFile, m_pShareData->m_sSearchKeywords.m_aGrepFiles[0] );		/* 検索ファイル */
+		auto_strcpy_s( m_szFile, _countof2(m_szFile), m_pShareData->m_sSearchKeywords.m_aGrepFiles[0] );		/* 検索ファイル */
 	}
 	if( m_szFolder[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_aGrepFolders.size() ){
-		_tcscpy( m_szFolder, m_pShareData->m_sSearchKeywords.m_aGrepFolders[0] );	/* 検索フォルダ */
+		auto_strcpy_s( m_szFolder, _countof2(m_szFolder), m_pShareData->m_sSearchKeywords.m_aGrepFolders[0] );	/* 検索フォルダ */
 	}
 #ifdef NKMM_FIX_GREP
 	m_bFolder99 = m_pShareData->m_sSearchKeywords.m_bGrepFolders99;
 	m_bFolder2 = m_pShareData->m_sSearchKeywords.m_bGrepFolders2;
 	if( m_szFolder2[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepFolders2.At(0) != _T('\0')){
-		_tcscpy( m_szFolder2, m_pShareData->m_sSearchKeywords.m_szGrepFolders2.GetBufferPointer() );	/* 検索フォルダ */
+		auto_strcpy_s( m_szFolder2, _countof2(m_szFolder2), m_pShareData->m_sSearchKeywords.m_szGrepFolders2.GetBufferPointer() );	/* 検索フォルダ */
 	}
 	m_bFolder3 = m_pShareData->m_sSearchKeywords.m_bGrepFolders3;
 	if( m_szFolder3[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepFolders3.At(0) != _T('\0')){
-		_tcscpy( m_szFolder3, m_pShareData->m_sSearchKeywords.m_szGrepFolders3.GetBufferPointer() );	/* 検索フォルダ */
+		auto_strcpy_s( m_szFolder3, _countof2(m_szFolder3), m_pShareData->m_sSearchKeywords.m_szGrepFolders3.GetBufferPointer() );	/* 検索フォルダ */
 	}
 	if( m_szExcludeDirs[0] == _T('\0') && m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs.At(0) != _T('\0')){
-		_tcscpy( m_szExcludeDirs, m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs.GetBufferPointer() );	/* Exclude dirs */
+		auto_strcpy_s( m_szExcludeDirs, _countof2(m_szExcludeDirs), m_pShareData->m_sSearchKeywords.m_szGrepExcludeDirs.GetBufferPointer() );	/* Exclude dirs */
 	}
 #endif // NKMM_
 
 	if( pszCurrentFilePath ){	// 2010.01.10 ryoji
-		_tcscpy(m_szCurrentFilePath, pszCurrentFilePath);
+		auto_strcpy_s(m_szCurrentFilePath, _countof2(m_szCurrentFilePath), pszCurrentFilePath);
 	}
 
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_GREP, (LPARAM)NULL );
@@ -287,7 +287,7 @@ LRESULT CALLBACK OnFolderProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
 		if( IsFileExists( sPath, true )){	//	第2引数がtrueだとディレクトリは対象外
 			SFilePath szWork;
 			SplitPath_FolderAndFile( sPath, szWork, NULL );
-			_tcscpy( sPath, szWork );
+			auto_strcpy_s( sPath, _countof2(sPath), szWork );
 		}
 
 		SetGrepFolder(hwnd, sPath);
@@ -697,7 +697,7 @@ void CDlgGrep::SetDataFromThisText( bool bChecked )
 		// 2003.08.01 Moca ファイル名はスペースなどは区切り記号になるので、""で囲い、エスケープする
 		szWorkFile[0] = _T('"');
 		SplitPath_FolderAndFile( m_szCurrentFilePath, szWorkFolder, szWorkFile + 1 );
-		_tcscat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
+		auto_strcat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
 		::DlgItem_SetText( GetHwnd(), IDC_COMBO_FILE, szWorkFile );
 		
 		SetGrepFolder( GetItemHwnd(IDC_COMBO_FOLDER), szWorkFolder );
@@ -828,7 +828,7 @@ int CDlgGrep::GetData( void )
 		//	Jun. 16, 2003 Moca
 		//	検索パターンが指定されていない場合のメッセージ表示をやめ、
 		//	「*.*」が指定されたものと見なす．
-		_tcscpy( m_szFile, _T("*.*") );
+		auto_strcpy_s( m_szFile, _countof2(m_szFile), _T("*.*") );
 	}
 	if( m_szFolder[0] == _T('\0') ){
 		WarningMessage(	GetHwnd(), LS(STR_DLGGREP4) );

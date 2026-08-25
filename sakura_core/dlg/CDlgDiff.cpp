@@ -106,7 +106,7 @@ int CDlgDiff::DoModal(
 	const TCHAR*		pszPath		//自ファイル
 )
 {
-	_tcscpy(m_szFile1, pszPath);
+	auto_strcpy_s(m_szFile1, _countof2(m_szFile1), pszPath);
 
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_DIFF, lParam );
 }
@@ -124,7 +124,7 @@ BOOL CDlgDiff::OnBnClicked( int wID )
 		{
 			CDlgOpenFile	cDlgOpenFile;
 			TCHAR			szPath[_MAX_PATH];
-			_tcscpy( szPath, m_szFile2 );
+			auto_strcpy( szPath, m_szFile2 );
 			/* ファイルオープンダイアログの初期化 */
 			cDlgOpenFile.Create(
 				m_hInstance,
@@ -134,7 +134,7 @@ BOOL CDlgDiff::OnBnClicked( int wID )
 			);
 			if( cDlgOpenFile.DoModal_GetOpenFileName( szPath ) )
 			{
-				_tcscpy( m_szFile2, szPath );
+				auto_strcpy_s( m_szFile2, _countof2(m_szFile2), szPath );
 				::DlgItem_SetText( GetHwnd(), IDC_EDIT_DIFF_DST, m_szFile2 );
 				//外部ファイルを選択状態に
 				::CheckDlgButton( GetHwnd(), IDC_RADIO_DIFF_DST1, TRUE );
@@ -362,7 +362,7 @@ int CDlgDiff::GetData( void )
 	m_pShareData->m_nDiffFlgOpt = m_nDiffFlgOpt;
 
 	//相手ファイル名
-	_tcscpy( m_szFile2, _T("") );
+	auto_strcpy_s( m_szFile2, _countof2(m_szFile2), _T("") );
 	m_hWnd_Dst = NULL;
 	m_bIsModifiedDst = false;
 	if( ::IsDlgButtonChecked( GetHwnd(), IDC_RADIO_DIFF_DST1 ) == BST_CHECKED )
@@ -390,7 +390,7 @@ int CDlgDiff::GetData( void )
 			::SendMessageAny( m_hWnd_Dst, MYWM_GETFILEINFO, 0, 0 );
 			pFileInfo = (EditInfo*)&m_pShareData->m_sWorkBuffer.m_EditInfo_MYWM_GETFILEINFO;
 
-			_tcscpy( m_szFile2, pFileInfo->m_szPath );
+			auto_strcpy_s( m_szFile2, _countof2(m_szFile2), pFileInfo->m_szPath );
 			m_bIsModifiedDst = pFileInfo->m_bIsModified;
 			m_nCodeTypeDst = pFileInfo->m_nCharCode;
 			m_bBomDst = pFileInfo->m_bBom;
