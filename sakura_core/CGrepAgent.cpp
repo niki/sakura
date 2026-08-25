@@ -65,11 +65,11 @@ void CGrepAgent::CreateFolders( const TCHAR* pszPath, std::vector<std::tstring>&
 	const int nPathLen = auto_strlen( pszPath );
 	auto_array_ptr<TCHAR> szPath(new TCHAR[nPathLen + 1]);
 	auto_array_ptr<TCHAR> szTmp(new TCHAR[nPathLen + 1]);
-	auto_strcpy( &szPath[0], pszPath );
+	auto_strcpy_s( &szPath[0], nPathLen + 1, pszPath );
 	TCHAR* token;
 	int nPathPos = 0;
 	while( NULL != (token = my_strtok<TCHAR>( &szPath[0], nPathLen, &nPathPos, _T(";"))) ){
-		auto_strcpy( &szTmp[0], token );
+		auto_strcpy_s( &szTmp[0], nPathLen + 1, token );
 		TCHAR* p;
 		TCHAR* q;
 		p = q = &szTmp[0];
@@ -1141,7 +1141,8 @@ int CGrepAgent::DoGrepFile(
 			X / O  :                  (D)Folder(Abs) -> (G)RelPath(File)
 			X / X  : (H)FullPath
 */
-			auto_array_ptr<wchar_t> pszWork(new wchar_t[auto_strlen(pszFullPath) + auto_strlen(pszCodeName) + 10]);
+			const size_t nWorkCount = auto_strlen(pszFullPath) + auto_strlen(pszCodeName) + 10;
+			auto_array_ptr<wchar_t> pszWork(new wchar_t[nWorkCount]);
 			wchar_t* szWork0 = &pszWork[0];
 			if( sGrepOption.bGrepOutputBaseFolder || sGrepOption.bGrepSeparateFolder ){
 				if( !bOutputBaseFolder && sGrepOption.bGrepOutputBaseFolder ){
@@ -1151,26 +1152,26 @@ int CGrepAgent::DoGrepFile(
 					}else{
 						pszFormatBasePath = pszFormatBasePath2;	// (B)
 					}
-					auto_sprintf( szWork0, pszFormatBasePath, pszBaseFolder );
+					auto_sprintf_s( szWork0, nWorkCount, pszFormatBasePath, pszBaseFolder );
 					cmemMessage.AppendString( szWork0 );
 					bOutputBaseFolder = true;
 				}
 				if( !bOutputFolderName && sGrepOption.bGrepSeparateFolder ){
 					if( pszFolder[0] ){
-						auto_sprintf( szWork0, L"■\"%ts\"\r\n", pszFolder );	// (C), (D)
+						auto_sprintf_s( szWork0, nWorkCount, L"■\"%ts\"\r\n", pszFolder );	// (C), (D)
 					}else{
-						auto_strcpy( szWork0, L"■\r\n" );
+						auto_strcpy_s( szWork0, nWorkCount, L"■\r\n" );
 					}
 					cmemMessage.AppendString( szWork0 );
 					bOutputFolderName = true;
 				}
-				auto_sprintf( szWork0,
+				auto_sprintf_s( szWork0, nWorkCount,
 					(sGrepOption.bGrepSeparateFolder ? pszFormatFilePath // (E)
 						: pszFormatFilePath2),	// (F), (G)
 					pszDispFilePath, pszCodeName );
 				cmemMessage.AppendString( szWork0 );
 			}else{
-				auto_sprintf( szWork0, pszFormatFullPath, pszFullPath, pszCodeName );	// (H)
+				auto_sprintf_s( szWork0, nWorkCount, pszFormatFullPath, pszFullPath, pszCodeName );	// (H)
 				cmemMessage.AppendString( szWork0 );
 			}
 		}

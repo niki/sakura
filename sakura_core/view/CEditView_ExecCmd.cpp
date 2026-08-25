@@ -258,8 +258,8 @@ bool CEditView::ExecCmd( const TCHAR* pszCmd, int nFlgOpt, const TCHAR* pszCurDi
 		const TCHAR* pszModeOpt = ( bGetStdout ? _T("/C ") : _T("/K ") );
 		cmdline.resize( _tcslen( szCmdDir ) + _tcslen( pszShell ) + _tcslen( pszUnicodeOpt )
 			+ _tcslen( pszModeOpt ) + _tcslen( pszCmd ) + 8 /* 引用符・スペース・区切り分の余裕 */ );
-		auto_sprintf(
-			&cmdline[0],
+		auto_sprintf_s(
+			&cmdline[0], cmdline.size(),
 			_T("\"%ts\\%ts\" %ts%ts%ts"),
 			szCmdDir,
 			pszShell,

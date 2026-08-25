@@ -101,7 +101,7 @@ BOOL SelectDir( HWND hWnd, const TCHAR* pszTitle, const TCHAR* pszInitFolder, TC
 		hr = pFileOpenDialog->GetResult(&psi);
 		if (SUCCEEDED(hr)) {
 			psi->GetDisplayName(SIGDN_FILESYSPATH, &lpszPath);
-			auto_strcpy(strFolderName, lpszPath);
+			auto_strcpy_s(strFolderName, _MAX_PATH, lpszPath);	// 呼び出し元は TCHAR[_MAX_PATH] 以上のバッファを渡す規約
 			::CoTaskMemFree(lpszPath);
 			psi->Release();
 		}

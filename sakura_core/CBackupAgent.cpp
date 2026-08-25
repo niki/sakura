@@ -174,7 +174,7 @@ int CBackupAgent::MakeBackUp(
 		//	1. 該当ディレクトリ中のbackupファイルを1つずつ探す
 		for( i = 0; i <= 99; i++ ){	//	最大値に関わらず，99（2桁の最大値）まで探す
 			//	ファイル名をセット
-			auto_sprintf( pBase, _T("%02d"), i );
+			auto_sprintf_s( pBase, std::size(szPath) - (pBase - szPath), _T("%02d"), i );
 
 			hFind = ::FindFirstFile( szPath, &fData );
 			if( hFind == INVALID_HANDLE_VALUE ){
@@ -195,7 +195,7 @@ int CBackupAgent::MakeBackUp(
 
 		for( ; i >= boundary; --i ){
 			//	ファイル名をセット
-			auto_sprintf( pBase, _T("%02d"), i );
+			auto_sprintf_s( pBase, std::size(szPath) - (pBase - szPath), _T("%02d"), i );
 			if( ::DeleteFile( szPath ) == 0 ){
 				::MessageBox( CEditWnd::getInstance()->GetHwnd(), szPath, LS(STR_BACKUP_ERR_DELETE), MB_OK );
 				//	Jun.  5, 2005 genta 戻り値変更
@@ -217,8 +217,8 @@ int CBackupAgent::MakeBackUp(
 
 		for( ; i >= 0; --i ){
 			//	ファイル名をセット
-			auto_sprintf( pBase, _T("%02d"), i );
-			auto_sprintf( pNewNrBase, _T("%02d"), i + 1 );
+			auto_sprintf_s( pBase, std::size(szPath) - (pBase - szPath), _T("%02d"), i );
+			auto_sprintf_s( pNewNrBase, std::size(szNewPath) - (pNewNrBase - szNewPath), _T("%02d"), i + 1 );
 
 			//	ファイルの移動
 			if( ::MoveFile( szPath, szNewPath ) == 0 ){
@@ -334,7 +334,7 @@ bool CBackupAgent::FormatBackUpPath(
 		AddLastYenFromDirectoryPath( szNewPath );
 	}
 	else{
-		auto_sprintf( szNewPath, _T("%ts%ts"), szDrive, szDir );
+		auto_sprintf_s( szNewPath, newPathCount, _T("%ts%ts"), szDrive, szDir );
 	}
 
 	/* 相対フォルダを挿入 */

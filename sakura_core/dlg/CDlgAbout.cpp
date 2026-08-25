@@ -225,7 +225,7 @@ static void GetRunningOsLabel( TCHAR* pszBuf, size_t nBufLen )
 		: NULL;
 
 	if( pRtlGetVersion == NULL || pRtlGetVersion(&info) != 0 ){
-		auto_sprintf( pszBuf, _T("Windows (version unknown)") );
+		auto_sprintf_s( pszBuf, nBufLen, _T("Windows (version unknown)") );
 		return;
 	}
 
@@ -243,7 +243,7 @@ static void GetRunningOsLabel( TCHAR* pszBuf, size_t nBufLen )
 	}else{
 		pszName = _T("Windows");
 	}
-	auto_sprintf( pszBuf, _T("%s (build %d)"), pszName, info.dwBuildNumber );
+	auto_sprintf_s( pszBuf, nBufLen, _T("%s (build %d)"), pszName, info.dwBuildNumber );
 }
 #endif // NKMM_
 

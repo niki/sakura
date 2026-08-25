@@ -172,8 +172,8 @@ void CEditView::ViewDiffInfo(
 		+ _tcslen( pszPathNew ) + _tcslen( pszPathOld ) + 16 /* 引用符・区切り・NUL分の余裕 */ );
 	{
 		//コマンドライン文字列作成
-		auto_sprintf(
-			&cmdlineBuf[0],
+		auto_sprintf_s(
+			&cmdlineBuf[0], cmdlineBuf.size(),
 			_T("\"%ts\\%ts\" %ts \"%ts\" \"%ts\""),
 			szExeFolder,	//sakura.exeパス
 			pszDiffExe,		//diff.exe

@@ -24,6 +24,8 @@
 #ifndef SAKURA_STRING_EX_29EB1DD7_7259_4D6C_A651_B9174E5C3D3C9_H_
 #define SAKURA_STRING_EX_29EB1DD7_7259_4D6C_A651_B9174E5C3D3C9_H_
 
+#include <iterator>	// std::size
+
 // 2007.10.19 kobake
 // string.h で定義されている関数を拡張したようなモノ達
 
@@ -196,18 +198,22 @@ int my_strnicmp( const char *s1, const char *s2, size_t n );
 //転送系
 inline ACHAR* auto_memcpy(ACHAR* dest, const ACHAR* src, size_t count){        ::memcpy (dest,src,count); return dest; }
 inline WCHAR* auto_memcpy(WCHAR* dest, const WCHAR* src, size_t count){ return ::wmemcpy(dest,src,count);              }
-inline ACHAR* auto_strcpy(ACHAR* dst, const ACHAR* src){ return strcpy(dst,src); }
-inline WCHAR* auto_strcpy(WCHAR* dst, const WCHAR* src){ return wcscpy(dst,src); }
+// auto_strcpy/auto_strcat は書き込み先配列のサイズを自動判定して安全な _s 版に委譲する
+// （かつては境界チェック無しの strcpy/wcscpy 直呼びで、auto_sprintf と同種のバッファ
+// オーバーフロー要因だった）。配列以外（ポインタ）を渡すとコンパイルエラーになるので、
+// その場合は書き込み可能サイズを明示して auto_strcpy_s / auto_strcat_s を使うこと。
 inline errno_t auto_strcpy_s(ACHAR* dst, size_t nDstCount, const ACHAR* src){ return strcpy_s(dst,nDstCount,src); }
 inline errno_t auto_strcpy_s(WCHAR* dst, size_t nDstCount, const WCHAR* src){ return wcscpy_s(dst,nDstCount,src); }
+template <size_t N> inline ACHAR* auto_strcpy(ACHAR (&dst)[N], const ACHAR* src){ auto_strcpy_s(dst,N,src); return dst; }
+template <size_t N> inline WCHAR* auto_strcpy(WCHAR (&dst)[N], const WCHAR* src){ auto_strcpy_s(dst,N,src); return dst; }
 inline ACHAR* auto_strncpy(ACHAR* dst,const ACHAR* src,size_t count){ return strncpy(dst,src,count); }
 inline WCHAR* auto_strncpy(WCHAR* dst,const WCHAR* src,size_t count){ return wcsncpy(dst,src,count); }
 inline ACHAR* auto_memset(ACHAR* dest, ACHAR c, size_t count){        memset (dest,c,count); return dest; }
 inline WCHAR* auto_memset(WCHAR* dest, WCHAR c, size_t count){ return wmemset(dest,c,count);              }
-inline ACHAR* auto_strcat(ACHAR* dst, const ACHAR* src){ return strcat(dst,src); }
-inline WCHAR* auto_strcat(WCHAR* dst, const WCHAR* src){ return wcscat(dst,src); }
 inline errno_t auto_strcat_s(ACHAR* dst, size_t nDstCount, const ACHAR* src){ return strcat_s(dst,nDstCount,src); }
 inline errno_t auto_strcat_s(WCHAR* dst, size_t nDstCount, const WCHAR* src){ return wcscat_s(dst,nDstCount,src); }
+template <size_t N> inline ACHAR* auto_strcat(ACHAR (&dst)[N], const ACHAR* src){ auto_strcat_s(dst,N,src); return dst; }
+template <size_t N> inline WCHAR* auto_strcat(WCHAR (&dst)[N], const WCHAR* src){ auto_strcat_s(dst,N,src); return dst; }
 
 //比較系
 inline int auto_memcmp (const ACHAR* p1, const ACHAR* p2, size_t count){ return amemcmp(p1,p2,count); }
@@ -252,15 +258,20 @@ TCHAR* strtotcs( TCHAR* dest, const ACHAR* src, size_t count );
 TCHAR* strtotcs( TCHAR* dest, const WCHAR* src, size_t count );
 
 //印字系
+// auto_sprintf は書き込み先配列のサイズを自動判定してバッファオーバーフローを防ぐ
+// （かつては MAX_BUF=INT_MAX で実質無制限だったため、GHSA-jg35-7phr-86wq 等
+// スタックバッファオーバーフローの温床になっていた）。配列以外（ポインタ）を
+// 渡すとコンパイルエラーになるので、その場合は書き込み可能サイズを明示して
+// auto_sprintf_s を使うこと。
 #if defined(_MSC_VER) && _MSC_VER>=1400
 #define auto_snprintf_s(buf, count, format, ...) tchar_sprintf_s((buf), count, (format), __VA_ARGS__)
-#define auto_sprintf(buf, format, ...)           tchar_sprintf((buf), (format), __VA_ARGS__)
+#define auto_sprintf(buf, format, ...)           tchar_sprintf_s((buf), std::size(buf), (format), __VA_ARGS__)
 #define auto_sprintf_s(buf, nBufCount, format, ...) tchar_snprintf_s((buf), nBufCount, (format), __VA_ARGS__)
 #else
 inline int auto_snprintf_s(ACHAR* buf, size_t count, const ACHAR* format, ...)   { va_list v; va_start(v,format); int ret=tchar_vsnprintf_s(buf,count,format,v); va_end(v); return ret; }
 inline int auto_snprintf_s(WCHAR* buf, size_t count, const WCHAR* format, ...)   { va_list v; va_start(v,format); int ret=tchar_vsnprintf_s(buf,count,format,v); va_end(v); return ret; }
-inline int auto_sprintf(ACHAR* buf, const ACHAR* format, ...)                    { va_list v; va_start(v,format); int ret=tchar_vsprintf(buf,format,v); va_end(v); return ret; }
-inline int auto_sprintf(WCHAR* buf, const WCHAR* format, ...)                    { va_list v; va_start(v,format); int ret=tchar_vsprintf(buf,format,v); va_end(v); return ret; }
+template <size_t N> inline int auto_sprintf(ACHAR (&buf)[N], const ACHAR* format, ...){ va_list v; va_start(v,format); int ret=tchar_vsprintf_s(buf,N,format,v); va_end(v); return ret; }
+template <size_t N> inline int auto_sprintf(WCHAR (&buf)[N], const WCHAR* format, ...){ va_list v; va_start(v,format); int ret=tchar_vsprintf_s(buf,N,format,v); va_end(v); return ret; }
 inline int auto_sprintf_s(ACHAR* buf, size_t nBufCount, const ACHAR* format, ...){ va_list v; va_start(v,format); int ret=tchar_vsprintf_s(buf,nBufCount,format,v); va_end(v); return ret; }
 inline int auto_sprintf_s(WCHAR* buf, size_t nBufCount, const WCHAR* format, ...){ va_list v; va_start(v,format); int ret=tchar_vsprintf_s(buf,nBufCount,format,v); va_end(v); return ret; }
 #endif

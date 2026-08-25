@@ -2973,11 +2973,11 @@ BOOL CDlgFuncList::OnNotify( WPARAM wParam, LPARAM lParam )
 				}
 				switch( pdi->item.iSubItem ){
 				case FL_COL_ROW:
-					auto_sprintf( pdi->item.pszText, _T("%d"),
+					auto_sprintf_s( pdi->item.pszText, pdi->item.cchTextMax, _T("%d"),
 						m_bLineNumIsCRLF ? ToInt(pcFuncInfo->m_nFuncLineCRLF) : ToInt(pcFuncInfo->m_nFuncLineLAYOUT) );
 					break;
 				case FL_COL_COL:
-					auto_sprintf( pdi->item.pszText, _T("%d"),
+					auto_sprintf_s( pdi->item.pszText, pdi->item.cchTextMax, _T("%d"),
 						m_bLineNumIsCRLF ? ToInt(pcFuncInfo->m_nFuncColCRLF) : ToInt(pcFuncInfo->m_nFuncColLAYOUT) );
 					break;
 				case FL_COL_NAME:

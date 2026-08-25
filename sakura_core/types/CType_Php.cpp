@@ -52,11 +52,11 @@ void CType_Php::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_ColorInfoArr[COLORIDX_HEREDOC].m_bDisp = true;
 
 	pType->m_eDefaultOutline = OUTLINE_FILE;
-	auto_strcpy( pType->m_szOutlineRuleFilename, _T("Keyword\\php.rule") );
+	auto_strcpy_s( pType->m_szOutlineRuleFilename, _countof2(pType->m_szOutlineRuleFilename), _T("Keyword\\php.rule") );
 
 	pType->m_KeyHelpArr[0].m_bUse = true;
 	auto_strcpy( pType->m_KeyHelpArr[0].m_szAbout, _T("PHP keyhelp") );
-	auto_strcpy( pType->m_KeyHelpArr[0].m_szPath, _T("Keyword\\php.khp") );
+	auto_strcpy_s( pType->m_KeyHelpArr[0].m_szPath, _countof2(pType->m_KeyHelpArr[0].m_szPath), _T("Keyword\\php.khp") );
 	pType->m_bUseKeyWordHelp = true;
 	pType->m_nKeyHelpNum = 1;
 }

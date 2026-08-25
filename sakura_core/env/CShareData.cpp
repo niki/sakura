@@ -403,7 +403,7 @@ bool CShareData::InitShareData()
 
 			sEdit.m_bOverWriteBoxDelete = false;
 			sEdit.m_eOpenDialogDir = OPENDIALOGDIR_CUR;
-			auto_strcpy(sEdit.m_OpenDialogSelDir, _T("%Personal%\\"));
+			auto_strcpy_s(sEdit.m_OpenDialogSelDir, _countof2(sEdit.m_OpenDialogSelDir), _T("%Personal%\\"));
 			sEdit.m_bAutoColumnPaste = TRUE;			/* 矩形コピーのテキストは常に矩形貼り付け */
 			sEdit.m_nUndoBufMaxKB = 0;					// 元に戻す履歴のデータ量上限(KB)。既定0=無制限(従来通り) 20260802
 		}

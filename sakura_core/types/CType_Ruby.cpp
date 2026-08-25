@@ -62,7 +62,7 @@ void CType_Ruby::InitTypeConfigImp(STypeConfig* pType)
 	SetColorInfoBC(pType, COLORIDX_REGEX4, true, RGB(  0,128,255));
 
 	pType->m_eDefaultOutline = OUTLINE_FILE;
-	auto_strcpy( pType->m_szOutlineRuleFilename, _T("Keyword\\Ruby.rule") );
+	auto_strcpy_s( pType->m_szOutlineRuleFilename, _countof2(pType->m_szOutlineRuleFilename), _T("Keyword\\Ruby.rule") );
 
 	int keywordPos = 0;
 	int idx = 0;

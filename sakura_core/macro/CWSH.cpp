@@ -192,10 +192,11 @@ public:
 			}
 			if(pscripterror->GetSourcePosition(&Context, &Line, &Pos) == S_OK)
 			{
-				wchar_t *Message = new wchar_t[SysStringLen(Info.bstrDescription) + 128];
+				const size_t nMessageCount = SysStringLen(Info.bstrDescription) + 128;
+				wchar_t *Message = new wchar_t[nMessageCount];
 				//	Nov. 10, 2003 FILE Win9Xでは、[wsprintfW]が無効のため、[auto_sprintf]に修正
 				const wchar_t* szDesc=Info.bstrDescription;
-				auto_sprintf(Message, L"[Line %d] %ls", Line + 1, szDesc);
+				auto_sprintf_s(Message, nMessageCount, L"[Line %d] %ls", Line + 1, szDesc);
 				SysReAllocString(&Info.bstrDescription, Message);
 				delete[] Message;
 			}

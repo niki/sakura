@@ -268,7 +268,7 @@ EConvertResult CShiftJis::UnicodeToSJIS( const CNativeW& cSrc, CMemory* pDstMem 
 
 
 // 文字コード表示用	UNICODE → Hex 変換	2008/6/9 Uchi
-EConvertResult CShiftJis::UnicodeToHex(const wchar_t* cSrc, const int iSLen, TCHAR* pDst, const CommonSetting_Statusbar* psStatusbar)
+EConvertResult CShiftJis::UnicodeToHex(const wchar_t* cSrc, const int iSLen, TCHAR* pDst, size_t nDstCount, const CommonSetting_Statusbar* psStatusbar)
 {
 	CNativeW		cCharBuffer;
 	EConvertResult	res;
@@ -280,7 +280,7 @@ EConvertResult CShiftJis::UnicodeToHex(const wchar_t* cSrc, const int iSLen, TCH
 	// 2008/6/21 Uchi
 	if (psStatusbar->m_bDispUniInSjis) {
 		// Unicodeで表示
-		return CCodeBase::UnicodeToHex(cSrc, iSLen, pDst, psStatusbar);
+		return CCodeBase::UnicodeToHex(cSrc, iSLen, pDst, nDstCount, psStatusbar);
 	}
 
 	cCharBuffer.AppendString(cSrc, 1);
@@ -300,10 +300,10 @@ EConvertResult CShiftJis::UnicodeToHex(const wchar_t* cSrc, const int iSLen, TCH
 	pd = pDst;
 	if( bbinary == false ){
 		for (i = cCharBuffer._GetMemory()->GetRawLength(); i >0; i--, ps ++, pd += 2) {
-			auto_sprintf( pd, _T("%02X"), *ps);
+			auto_sprintf_s( pd, nDstCount - (pd - pDst), _T("%02X"), *ps);
 		}
 	}else{
-		auto_sprintf( pd, _T("?%02X"), *ps );
+		auto_sprintf_s( pd, nDstCount - (pd - pDst), _T("?%02X"), *ps );
 	}
 
 	return RESULT_COMPLETE;

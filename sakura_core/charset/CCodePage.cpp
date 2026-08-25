@@ -255,25 +255,25 @@ void CCodePage::GetBom(CMemory* pcmemBom)
 
 
 // 文字コード表示用	UNICODE → Hex 変換
-EConvertResult CCodePage::UnicodeToHex(const wchar_t* cSrc, const int iSLen, TCHAR* pDst, const CommonSetting_Statusbar* psStatusbar)
+EConvertResult CCodePage::UnicodeToHex(const wchar_t* cSrc, const int iSLen, TCHAR* pDst, size_t nDstCount, const CommonSetting_Statusbar* psStatusbar)
 {
 	// コードの特性がわからないので何もしない
-	return CCodeBase::UnicodeToHex(cSrc, iSLen, pDst, psStatusbar);
+	return CCodeBase::UnicodeToHex(cSrc, iSLen, pDst, nDstCount, psStatusbar);
 }
 
 int CCodePage::GetNameNormal(LPTSTR outName, int charcodeEx)
 {
 	if( IsValidCodeType(charcodeEx) ){
-		auto_strcpy(outName, CCodeTypeName(static_cast<ECodeType>(charcodeEx)).Normal());
+		auto_strcpy_s(outName, 100, CCodeTypeName(static_cast<ECodeType>(charcodeEx)).Normal());
 		return 1;
 	}
 	UINT codepage = CodePageExToMSCP(charcodeEx);
 	if( codepage == CP_ACP ){
-		auto_strcpy(outName, _T("CP_ACP"));
+		auto_strcpy_s(outName, 100, _T("CP_ACP"));
 	}else if( codepage == CP_OEMCP ){
-		auto_strcpy(outName, _T("CP_OEM"));
+		auto_strcpy_s(outName, 100, _T("CP_OEM"));
 	}else{
-		auto_sprintf(outName, _T("CP%d"), codepage);
+		auto_sprintf_s(outName, 100, _T("CP%d"), codepage);	// 呼び出し元は最低100文字のバッファを渡す規約
 	}
 	return 2;
 }
@@ -281,16 +281,16 @@ int CCodePage::GetNameNormal(LPTSTR outName, int charcodeEx)
 int CCodePage::GetNameShort(LPTSTR outName, int charcodeEx)
 {
 	if( IsValidCodeType(charcodeEx) ){
-		auto_strcpy(outName, CCodeTypeName(static_cast<ECodeType>(charcodeEx)).Short());
+		auto_strcpy_s(outName, 100, CCodeTypeName(static_cast<ECodeType>(charcodeEx)).Short());
 		return 1;
 	}
 	UINT codepage = CodePageExToMSCP(charcodeEx);
 	if( codepage == CP_ACP ){
-		auto_strcpy(outName, _T("cp_acp"));
+		auto_strcpy_s(outName, 100, _T("cp_acp"));
 	}else if( codepage == CP_OEMCP ){
-		auto_strcpy(outName, _T("cp_oem"));
+		auto_strcpy_s(outName, 100, _T("cp_oem"));
 	}else{
-		auto_sprintf(outName, _T("cp%d"), codepage);
+		auto_sprintf_s(outName, 100, _T("cp%d"), codepage);	// 呼び出し元は最低100文字のバッファを渡す規約
 	}
 	return 2;
 }
@@ -298,14 +298,14 @@ int CCodePage::GetNameShort(LPTSTR outName, int charcodeEx)
 int CCodePage::GetNameLong(LPTSTR outName, int charcodeEx)
 {
 	if( IsValidCodeType(charcodeEx) ){
-		auto_strcpy(outName, CCodeTypeName(static_cast<ECodeType>(charcodeEx)).Normal());
+		auto_strcpy_s(outName, 100, CCodeTypeName(static_cast<ECodeType>(charcodeEx)).Normal());
 		return 1;
 	}
 	UINT codepage = CodePageExToMSCP(charcodeEx);
 	if( codepage == CP_ACP ){
-		auto_strcpy(outName, _T("CP_ACP"));
+		auto_strcpy_s(outName, 100, _T("CP_ACP"));
 	}else if( codepage == CP_OEMCP ){
-		auto_strcpy(outName, _T("CP_OEMCP"));
+		auto_strcpy_s(outName, 100, _T("CP_OEMCP"));
 	}else{
 		HMODULE hDLLkernel = ::GetModuleHandleA( "kernel32" );
 		
@@ -318,9 +318,9 @@ int CCodePage::GetNameLong(LPTSTR outName, int charcodeEx)
 		CPINFOEX cpInfo;
 		cpInfo.CodePageName[0] = _T('\0');
 		if( pfn_GetCPInfoExT && pfn_GetCPInfoExT(codepage, 0, &cpInfo) ){
-			auto_strcpy(outName, cpInfo.CodePageName);
+			auto_strcpy_s(outName, 100, cpInfo.CodePageName);
 		}else{
-			auto_sprintf(outName, _T("CP%d"), codepage);
+			auto_sprintf_s(outName, 100, _T("CP%d"), codepage);	// 呼び出し元は最低100文字のバッファを渡す規約
 		}
 	}
 	return 2;
@@ -329,16 +329,16 @@ int CCodePage::GetNameLong(LPTSTR outName, int charcodeEx)
 int CCodePage::GetNameBracket(LPTSTR outName, int charcodeEx)
 {
 	if( IsValidCodeType(charcodeEx) ){
-		auto_strcpy(outName, CCodeTypeName(static_cast<ECodeType>(charcodeEx)).Bracket());
+		auto_strcpy_s(outName, 100, CCodeTypeName(static_cast<ECodeType>(charcodeEx)).Bracket());
 		return 1;
 	}
 	UINT codepage = CodePageExToMSCP(charcodeEx);
 	if( codepage == CP_ACP ){
-		auto_strcpy(outName, _T("  [CP_ACP]"));
+		auto_strcpy_s(outName, 100, _T("  [CP_ACP]"));
 	}else if( codepage == CP_OEMCP ){
-		auto_strcpy(outName, _T("  [CP_OEM]"));
+		auto_strcpy_s(outName, 100, _T("  [CP_OEM]"));
 	}else{
-		auto_sprintf(outName, _T("  [CP%d]"), charcodeEx);
+		auto_sprintf_s(outName, 100, _T("  [CP%d]"), charcodeEx);	// 呼び出し元は最低100文字のバッファを渡す規約
 	}
 	return 2;
 }

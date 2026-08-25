@@ -732,7 +732,7 @@ bool CViewCommander::Sub_PreProcTagJumpByTagsFile( TCHAR* szCurrentPath, int cou
 	
 	// 基準ファイル名の設定
 	if( GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() ){
-		auto_strcpy( szCurrentPath, GetDocument()->m_cDocFile.GetFilePath() );
+		auto_strcpy_s( szCurrentPath, count, GetDocument()->m_cDocFile.GetFilePath() );
 	}else{
 		if( 0 == ::GetCurrentDirectory( count - _countof(_T("\\dmy")) - MAX_TYPES_EXTS, szCurrentPath ) ){
 			return false;

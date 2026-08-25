@@ -306,8 +306,8 @@ HDC CPrint::CreateDC(
 		&hPrinter,					/* プリンタハンドルのポインタ */
 		NULL
 	) ){
-		auto_sprintf(
-			pszErrMsg,
+		auto_sprintf_s(
+			pszErrMsg, 1024,	// 呼び出し元(CPrintPreview)は szErrMsg[1024] を渡す規約
 			LS(STR_ERR_CPRINT01),
 			pMYDEVMODE->m_szPrinterDeviceName	/* プリンタデバイス名 */
 		);
@@ -504,8 +504,8 @@ BOOL CPrint::PrintOpen(
 	di.lpszDatatype = NULL;
 	di.fwType = 0;
 	if( 0 >= ::StartDoc( hdc, &di ) ){
-		auto_sprintf(
-			pszErrMsg,
+		auto_sprintf_s(
+			pszErrMsg, 1024,	// 呼び出し元(CPrintPreview)は szErrMsg[1024] を渡す規約
 			LS(STR_ERR_CPRINT02),
 			pMYDEVMODE->m_szPrinterDeviceName	/* プリンタデバイス名 */
 		);

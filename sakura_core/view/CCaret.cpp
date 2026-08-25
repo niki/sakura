@@ -929,20 +929,20 @@ void CCaret::ShowCaretPosInfo()
 				//任意の文字コードからUnicodeへ変換する		2008/6/9 Uchi
 				CCodeBase* pCode = CCodeFactory::CreateCodeBase(m_pEditDoc->GetDocumentEncoding(), false);
 				CommonSetting_Statusbar* psStatusbar = &GetDllShareData().m_Common.m_sStatusbar;
-				EConvertResult ret = pCode->UnicodeToHex(&pLine[nIdx], nLineLen - nIdx, szCaretChar, psStatusbar);
+				EConvertResult ret = pCode->UnicodeToHex(&pLine[nIdx], nLineLen - nIdx, szCaretChar, std::size(szCaretChar), psStatusbar);
 				delete pCode;
 				if (ret != RESULT_COMPLETE) {
 					// うまくコードが取れなかった(Unicodeで表示)
 					pCode = CCodeFactory::CreateCodeBase(CODE_UNICODE, false);
-					/* EConvertResult ret = */ pCode->UnicodeToHex(&pLine[nIdx], nLineLen - nIdx, szCaretChar, psStatusbar);
+					/* EConvertResult ret = */ pCode->UnicodeToHex(&pLine[nIdx], nLineLen - nIdx, szCaretChar, std::size(szCaretChar), psStatusbar);
 					delete pCode;
 				}
 			}
 			else{
 #ifdef NKMM_FIX_STATUSBAR
-				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName2());
+				_tcscpy_s(szCaretChar, std::size(szCaretChar), pcLayout->GetLayoutEol().GetName2());
 #else
-				_tcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName());
+				_tcscpy_s(szCaretChar, std::size(szCaretChar), pcLayout->GetLayoutEol().GetName());
 #endif // NKMM_
 			}
 		}

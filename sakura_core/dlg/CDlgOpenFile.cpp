@@ -735,7 +735,7 @@ void CDlgOpenFile::Create(
 		auto_sprintf( szRelPath, _T("%ts%ts"), szDrive, szDir );
 		const TCHAR* p = szRelPath;
 		if( ! ::GetLongFileName( p, m_mem->m_szInitialDir ) ){
-			auto_strcpy(m_mem->m_szInitialDir, p );
+			auto_strcpy_s(m_mem->m_szInitialDir, _countof2(m_mem->m_szInitialDir), p );
 		}
 	}
 	m_mem->m_vMRU = vMRU;
@@ -823,7 +823,7 @@ bool CDlgOpenFile::DoModal_GetOpenFileName( TCHAR* pszPath, EFilter eAddFiler )
 			auto_sprintf( szRelPath, _T("%ts%ts%ts%ts"), szDrive, szDir, szName, szExt );
 			const TCHAR* p = szRelPath;
 			if( ! ::GetLongFileName( p, pszPath ) ){
-				auto_strcpy( pszPath, p );
+				auto_strcpy_s( pszPath, _MAX_PATH, p );	// 呼び出し元は TCHAR szPath[_MAX_PATH] を渡す規約
 			}
 		}
 	}
@@ -873,7 +873,7 @@ bool CDlgOpenFile::DoModal_GetSaveFileName( TCHAR* pszPath )
 		const TCHAR* pOrg = pszPath;
 		if( ::GetLongFileName( pOrg, szFullPath ) ){
 			// 成功。書き戻す
-			auto_strcpy( pszPath , szFullPath );
+			auto_strcpy_s( pszPath, _MAX_PATH, szFullPath );	// 呼び出し元は TCHAR szPath[_MAX_PATH] を渡す規約
 		}
 	}
 
@@ -941,7 +941,7 @@ bool CDlgOpenFile::DoModalOpenDlg( SLoadInfo* pLoadInfo, std::vector<std::tstrin
 
 	//ファイルパス受け取りバッファ
 	TCHAR* pszPathBuf = new TCHAR[2000];
-	auto_strcpy(pszPathBuf, pLoadInfo->cFilePath); // 2013.05.27 デフォルトファイル名を設定する
+	auto_strcpy_s(pszPathBuf, 2000, pLoadInfo->cFilePath); // 2013.05.27 デフォルトファイル名を設定する
 
 	//OPENFILENAME構造体の初期化
 	InitOfn( &pData->m_ofn );		// 2005.10.29 ryoji

@@ -2473,7 +2473,7 @@ bool GetPlugCmdInfoByFuncCode(
 	if (nID < 0 || nNo < 0) {
 		return false;
 	}
-	auto_sprintf(pszFuncName, L"%ls/%02d", plugin.m_PluginTable[nID].m_szId, nNo);
+	auto_sprintf_s(pszFuncName, MAX_PLUGIN_ID+20, L"%ls/%02d", plugin.m_PluginTable[nID].m_szId, nNo);
 	return true;
 }
 

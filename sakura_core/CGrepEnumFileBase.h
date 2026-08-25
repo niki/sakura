@@ -110,11 +110,12 @@ public:
 
 		for( int i = 0; i < (int)vecKeys.size(); i++ ){
 			int baseLen = _tcslen( lpBaseFolder );
-			LPTSTR lpPath = new TCHAR[ baseLen + _tcslen( vecKeys[ i ] ) + 2 ];
+			const size_t nPathCount = baseLen + _tcslen( vecKeys[ i ] ) + 2;
+			LPTSTR lpPath = new TCHAR[ nPathCount ];
 			if( NULL == lpPath ) break;
-			auto_strcpy( lpPath, lpBaseFolder );
-			auto_strcpy( lpPath + baseLen, _T("\\") );
-			auto_strcpy( lpPath + baseLen + 1, vecKeys[ i ] );
+			auto_strcpy_s( lpPath, nPathCount, lpBaseFolder );
+			auto_strcpy_s( lpPath + baseLen, nPathCount - baseLen, _T("\\") );
+			auto_strcpy_s( lpPath + baseLen + 1, nPathCount - baseLen - 1, vecKeys[ i ] );
 			// vecKeys[ i ] ==> "subdir\*.h" 等の場合に後で(ファイル|フォルダ)名に "subdir\" を連結する
 			const TCHAR* keyDirYen = _tcsrchr( vecKeys[ i ], _T('\\') );
 			const TCHAR* keyDirSlash = _tcsrchr( vecKeys[ i ], _T('/') );
@@ -149,10 +150,11 @@ public:
 					LPTSTR lpName = new TCHAR[ nKeyDirLen + _tcslen( w32fd.cFileName ) + 1 ];
 					_tcsncpy( lpName, vecKeys[ i ], nKeyDirLen );
 					_tcscpy( lpName + nKeyDirLen, w32fd.cFileName );
-					LPTSTR lpFullPath = new TCHAR[ baseLen + _tcslen(lpName) + 2 ];
-					auto_strcpy( lpFullPath, lpBaseFolder );
-					auto_strcpy( lpFullPath + baseLen, _T("\\") );
-					auto_strcpy( lpFullPath + baseLen + 1, lpName );
+					const size_t nFullPathCount = baseLen + _tcslen(lpName) + 2;
+					LPTSTR lpFullPath = new TCHAR[ nFullPathCount ];
+					auto_strcpy_s( lpFullPath, nFullPathCount, lpBaseFolder );
+					auto_strcpy_s( lpFullPath + baseLen, nFullPathCount - baseLen, _T("\\") );
+					auto_strcpy_s( lpFullPath + baseLen + 1, nFullPathCount - baseLen - 1, lpName );
 					if( IsValid( w32fd, lpName ) ){
 						if( pExceptItems && pExceptItems->IsExist( lpFullPath ) ){
 						}else{

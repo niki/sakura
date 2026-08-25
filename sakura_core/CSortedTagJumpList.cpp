@@ -196,7 +196,7 @@ BOOL CSortedTagJumpList::GetParam( int index, TCHAR* keyword, TCHAR* filename, i
 		if( depth    ) *depth = p->depth;
 		if( baseDir ){
 			if( 0 <= p->baseDirId && (size_t)p->baseDirId < m_baseDirArr.size() ){
-				auto_strcpy( baseDir, m_baseDirArr[p->baseDirId].c_str() );
+				auto_strcpy_s( baseDir, 1024, m_baseDirArr[p->baseDirId].c_str() );	// 呼び出し元(CDlgTagJumpList)は dirFileName[1024] を渡す規約
 			}
 		}
 		return TRUE;

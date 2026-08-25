@@ -871,7 +871,7 @@ int CDlgGrep::GetData( void )
 			auto_strcat( szFolder, szFolderItem );
 			nFolderLen = auto_strlen( szFolder );
 		}
-		auto_strcpy( m_szFolder, szFolder );
+		auto_strcpy_s( m_szFolder, _countof2(m_szFolder), szFolder );
 	}
 
 //@@@ 2002.2.2 YAZAKI CShareData.AddToSearchKeyArr()追加に伴う変更
@@ -943,7 +943,7 @@ static void SetGrepFolder( HWND hwndCtrl, LPCTSTR folder )
 	if( auto_strchr( folder, _T(';')) ){
 		TCHAR szQuoteFolder[MAX_PATH];
 		szQuoteFolder[0] = _T('"');
-		auto_strcpy( szQuoteFolder + 1, folder );
+		auto_strcpy_s( szQuoteFolder + 1, MAX_PATH - 1, folder );
 		auto_strcat( szQuoteFolder, _T("\"") );
 		::SetWindowText( hwndCtrl, szQuoteFolder );
 	}else{

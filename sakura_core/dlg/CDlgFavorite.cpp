@@ -573,7 +573,7 @@ BOOL CDlgFavorite::OnBnClicked( int wID )
 						size_t nLen = auto_strlen(pRecent->GetItemText(i));
 						std::vector<TCHAR> vecPath(nLen + 2);
 						TCHAR* szPath = &vecPath[0];
-						auto_strcpy( szPath, pRecent->GetItemText(i) );
+						auto_strcpy_s( szPath, nLen + 2, pRecent->GetItemText(i) );
 						CutLastYenFromDirectoryPath(szPath);
 						if( false == IsFileExists(szPath, false ) ){
 							pRecent->DeleteItem(i);

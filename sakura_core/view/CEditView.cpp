@@ -2223,7 +2223,7 @@ bool CEditView::GetSelectedData(
 				cmemBuf->AppendString( pszQuote );
 			}
 			if( bWithLineNumber ){	/* 行番号を付与する */
-				auto_sprintf( pszLineNum, L" %d:" , nLineNum + 1 );
+				auto_sprintf_s( pszLineNum, nLineNumCols + 1, L" %d:" , nLineNum + 1 );
 				cmemBuf->AppendString( pszSpaces, nLineNumCols - wcslen( pszLineNum ) );
 				cmemBuf->AppendString( pszLineNum );
 			}

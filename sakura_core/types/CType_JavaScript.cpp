@@ -51,7 +51,7 @@ void CType_JavaScript::InitTypeConfigImp(STypeConfig* pType)
 
 	// ルールファイル
 	pType->m_eDefaultOutline = OUTLINE_FILE;
-	auto_strcpy( pType->m_szOutlineRuleFilename, _T("Keyword\\JavaScript.rule") );
+	auto_strcpy_s( pType->m_szOutlineRuleFilename, _countof2(pType->m_szOutlineRuleFilename), _T("Keyword\\JavaScript.rule") );
 
 	int keywordPos = 0;
 	int idx = 0;

@@ -847,7 +847,7 @@ WCHAR* CSMacroMgr::GetFuncInfoByID(
 	const MacroFuncInfo* MacroInfo = GetFuncInfoByID( nFuncID );
 	if( MacroInfo != NULL ){
 		if( pszFuncName != NULL ){
-			auto_strcpy( pszFuncName, MacroInfo->m_pszFuncName );
+			auto_strcpy_s( pszFuncName, 1024, MacroInfo->m_pszFuncName );	// 呼び出し元は最低1024文字のバッファを渡す規約
 			WCHAR *p = pszFuncName;
 			while (*p){
 				if (*p == LTEXT('(')){

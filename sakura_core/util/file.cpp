@@ -1141,9 +1141,9 @@ static void FileNameSepExt( const TCHAR *file, TCHAR* pszFile, TCHAR* pszExt )
 	if( p ){
 		auto_memcpy(pszFile, file, p - file);
 		pszFile[p - file] = _T('\0');
-		auto_strcpy(pszExt, p);
+		auto_strcpy_s(pszExt, _MAX_PATH, p);	// 呼び出し元は TCHAR[_MAX_PATH] を渡す規約
 	}else{
-		auto_strcpy(pszFile, file);
+		auto_strcpy_s(pszFile, _MAX_PATH, file);	// 呼び出し元は TCHAR[_MAX_PATH] を渡す規約
 		pszExt[0] = _T('\0');
 	}
 }

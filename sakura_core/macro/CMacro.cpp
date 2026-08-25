@@ -2367,7 +2367,7 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 				std::vector<wchar_t> vStrMenu;
 				int nLen = (int)auto_strlen(varCopy2.Data.bstrVal);
 				vStrMenu.assign( nLen + 1, L'\0' );
-				auto_strcpy(&vStrMenu[0], varCopy2.Data.bstrVal);
+				auto_strcpy_s(&vStrMenu[0], nLen + 1, varCopy2.Data.bstrVal);
 				HMENU hMenu = ::CreatePopupMenu();
 				std::vector<HMENU> vHmenu;
 				vHmenu.push_back( hMenu );

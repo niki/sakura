@@ -40,11 +40,11 @@ void CType_Dos::InitTypeConfigImp(STypeConfig* pType)
 	pType->m_nKeyWordSetIdx[0] = g_nKeywordsIdx_BAT;
 
 	pType->m_eDefaultOutline = OUTLINE_FILE;		/* アウトライン解析方法 */
-	auto_strcpy( pType->m_szOutlineRuleFilename, _T("Keyword\\bat.rl") );
+	auto_strcpy_s( pType->m_szOutlineRuleFilename, _countof2(pType->m_szOutlineRuleFilename), _T("Keyword\\bat.rl") );
 
 	pType->m_KeyHelpArr[0].m_bUse = true;
 	auto_strcpy( pType->m_KeyHelpArr[0].m_szAbout, _T(";バッチファイルのキーワードヘルプ定義") );
-	auto_strcpy( pType->m_KeyHelpArr[0].m_szPath, _T("Keyword\\bat_win2k.khp") );
+	auto_strcpy_s( pType->m_KeyHelpArr[0].m_szPath, _countof2(pType->m_KeyHelpArr[0].m_szPath), _T("Keyword\\bat_win2k.khp") );
 	pType->m_bUseKeyWordHelp = true;		// 辞書選択機能の使用可否
 	pType->m_nKeyHelpNum = 1;				// 登録辞書数
 }

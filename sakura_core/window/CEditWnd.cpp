@@ -160,7 +160,7 @@ static void ShowCodeBox( HWND hWnd, CEditDoc* pcEditDoc )
 						//auto_sprintf( szCaretChar, _T("%04x"), );
 						//任意の文字コードからUnicodeへ変換する		2008/6/9 Uchi
 						CCodeBase* pCode = CCodeFactory::CreateCodeBase((ECodeType)i, false);
-						EConvertResult ret = pCode->UnicodeToHex(&pLine[nIdx], nLineLen - nIdx, szCode[i], &sStatusbar);
+						EConvertResult ret = pCode->UnicodeToHex(&pLine[nIdx], nLineLen - nIdx, szCode[i], std::size(szCode[i]), &sStatusbar);
 						delete pCode;
 						if (ret != RESULT_COMPLETE) {
 							// うまくコードが取れなかった
@@ -172,7 +172,7 @@ static void ShowCodeBox( HWND hWnd, CEditDoc* pcEditDoc )
 				TCHAR szCodeCP[32];
 				sStatusbar.m_bDispSPCodepoint = true;
 				CCodeBase* pCode = CCodeFactory::CreateCodeBase(CODE_UNICODE, false);
-				EConvertResult ret = pCode->UnicodeToHex(&pLine[nIdx], nLineLen - nIdx, szCodeCP, &sStatusbar);
+				EConvertResult ret = pCode->UnicodeToHex(&pLine[nIdx], nLineLen - nIdx, szCodeCP, std::size(szCodeCP), &sStatusbar);
 				delete pCode;
 				if (ret != RESULT_COMPLETE) {
 					// うまくコードが取れなかった

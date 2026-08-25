@@ -570,7 +570,7 @@ void CPropBackup::UpdateBackupFile(HWND hwndDlg)	//	バックアップファイ�
 		}
 	}
 	if( !m_Common.m_sBackup.m_bBackUpPathAdvanced ){	// 詳細設定モードでないときだけ自動更新する
-		auto_sprintf( m_Common.m_sBackup.m_szBackUpPathAdvanced, _T("%ls"), temp );
+		auto_sprintf_s( m_Common.m_sBackup.m_szBackUpPathAdvanced, _countof2(m_Common.m_sBackup.m_szBackUpPathAdvanced), _T("%ls"), temp );
 		::DlgItem_SetText( hwndDlg, IDC_EDIT_BACKUPFILE, m_Common.m_sBackup.m_szBackUpPathAdvanced );
 	}
 	return;

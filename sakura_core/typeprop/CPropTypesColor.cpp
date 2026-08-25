@@ -760,7 +760,7 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 					szVertLine[offset+1] = '\0';
 					offset += 1;
 				}
-				offset += auto_sprintf( &szVertLine[offset], L"%d(%d,%d)", nXColAdd, nXCol, nXColEnd );
+				offset += auto_sprintf_s( &szVertLine[offset], MAX_VERTLINES * 15 - offset, L"%d(%d,%d)", nXColAdd, nXCol, nXColEnd );
 			}
 		}
 		else{
@@ -769,7 +769,7 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 				szVertLine[offset+1] = '\0';
 				offset += 1;
 			}
-			offset += auto_sprintf( &szVertLine[offset], L"%d", nXCol );
+			offset += auto_sprintf_s( &szVertLine[offset], MAX_VERTLINES * 15 - offset, L"%d", nXCol );
 		}
 	}
 	EditCtl_LimitText( ::GetDlgItem( hwndDlg, IDC_EDIT_VERTLINE ), MAX_VERTLINES * 15 );
