@@ -155,6 +155,11 @@ void CDocOutline::MakeTopicList_html(CFuncInfoArr* pcFuncInfoArr, bool bXml)
 					break;
 				}
 				int nCharSize = CNativeW::GetSizeOfChar(pLine, nLineLen-i, j);
+				if( j + nCharSize >= (int)_countof(szTitle) ){
+					// サロゲートペアの後半がszTitleの終端(NUL用の1文字)を超えて
+					// はみ出すのを防ぐ
+					break;
+				}
 				memcpy(szTitle + j, pLine + j, nCharSize * sizeof(wchar_t));
 				j += nCharSize;
 			}

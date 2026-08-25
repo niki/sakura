@@ -133,7 +133,7 @@ void CDocOutline::MakeFuncList_VisualBasic( CFuncInfoArr* pcFuncInfoArr )
 					) )
 				 || 2 == nCharChars
 				){
-					if( nWordIdx >= nMaxWordLeng ){
+					if( nWordIdx + nCharChars >= nMaxWordLeng ){
 						nMode = 999;
 						i += (nCharChars - 1);
 						continue;
@@ -318,7 +318,7 @@ void CDocOutline::MakeFuncList_VisualBasic( CFuncInfoArr* pcFuncInfoArr )
 					// テキストの中は無視します。
 					nMode	= 3;
 				}else{
-					if( nWordIdx >= nMaxWordLeng ){
+					if( nWordIdx + nCharChars >= nMaxWordLeng ){
 						nMode = 999;
 						continue;
 					}else{
