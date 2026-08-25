@@ -1124,21 +1124,21 @@ bool CMacro::HandleCommand(
 
 			//GOPTオプション
 			pOpt[0] = '\0';
-			if( lFlag & 0x01 )_tcscat( pOpt, _T("S") );	/* サブフォルダからも検索する */
-			if( lFlag & 0x04 )_tcscat( pOpt, _T("L") );	/* 英大文字と英小文字を区別する */
-			if( lFlag & 0x08 )_tcscat( pOpt, _T("R") );	/* 正規表現 */
-			if(          0x20 == (lFlag & 0x400020) )_tcscat( pOpt, _T("P") );	// 行を出力する
-			else if( 0x400000 == (lFlag & 0x400020) )_tcscat( pOpt, _T("N") );	// 否ヒット行を出力する
-			if(      0x40 == (lFlag & 0xC0) )_tcscat( pOpt, _T("2") );	/* Grep: 出力形式 */
-			else if( 0x80 == (lFlag & 0xC0) )_tcscat( pOpt, _T("3") );
-			else _tcscat( pOpt, _T("1") );
-			if( lFlag & 0x10000 )_tcscat( pOpt, _T("W") );
-			if( lFlag & 0x20000 )_tcscat( pOpt, _T("F") );
-			if( lFlag & 0x40000 )_tcscat( pOpt, _T("B") );
-			if( lFlag & 0x80000 )_tcscat( pOpt, _T("D") );
+			if( lFlag & 0x01 )auto_strcat( pOpt, _T("S") );	/* サブフォルダからも検索する */
+			if( lFlag & 0x04 )auto_strcat( pOpt, _T("L") );	/* 英大文字と英小文字を区別する */
+			if( lFlag & 0x08 )auto_strcat( pOpt, _T("R") );	/* 正規表現 */
+			if(          0x20 == (lFlag & 0x400020) )auto_strcat( pOpt, _T("P") );	// 行を出力する
+			else if( 0x400000 == (lFlag & 0x400020) )auto_strcat( pOpt, _T("N") );	// 否ヒット行を出力する
+			if(      0x40 == (lFlag & 0xC0) )auto_strcat( pOpt, _T("2") );	/* Grep: 出力形式 */
+			else if( 0x80 == (lFlag & 0xC0) )auto_strcat( pOpt, _T("3") );
+			else auto_strcat( pOpt, _T("1") );
+			if( lFlag & 0x10000 )auto_strcat( pOpt, _T("W") );
+			if( lFlag & 0x20000 )auto_strcat( pOpt, _T("F") );
+			if( lFlag & 0x40000 )auto_strcat( pOpt, _T("B") );
+			if( lFlag & 0x80000 )auto_strcat( pOpt, _T("D") );
 			if( bGrepReplace ){
-				if( lFlag & 0x100000 )_tcscat( pOpt, _T("C") );
-				if( lFlag & 0x200000 )_tcscat( pOpt, _T("O") );
+				if( lFlag & 0x100000 )auto_strcat( pOpt, _T("C") );
+				if( lFlag & 0x200000 )auto_strcat( pOpt, _T("O") );
 			}
 			if( pOpt[0] != _T('\0') ){
 				auto_sprintf( szTemp, _T(" -GOPT=%ts"), pOpt );
@@ -1903,7 +1903,7 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, const VARIANT *Ar
 			auto_memcpy( szPath, sDefault.c_str(), nCopyLen );
 			szPath[nCopyLen] = _T('\0');
 #else
-			_tcscpy( szPath, sDefault.c_str() );
+			auto_strcpy( szPath, sDefault.c_str() );
 #endif // NKMM_
 			if( LOWORD(ID) == F_FILEOPENDIALOG ){
 				bRet = cDlgOpenFile.DoModal_GetOpenFileName( szPath );

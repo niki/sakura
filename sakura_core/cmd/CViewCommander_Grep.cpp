@@ -133,7 +133,7 @@ void CViewCommander::Command_GREP( void )
 		// 2003.08.01 Moca ファイル名はスペースなどは区切り記号になるので、""で囲い、エスケープする
 		szWorkFile[0] = _T('"');
 		SplitPath_FolderAndFile( GetEditWindow()->m_cDlgGrep.m_szCurrentFilePath, szWorkFolder, szWorkFile + 1 );
-		_tcscat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
+		auto_strcat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
 		cmWork2.SetString( szWorkFile );
 		cmWork3.SetString( szWorkFolder );
 	}
@@ -319,20 +319,20 @@ void CViewCommander::Command_GREP_REPLACE( void )
 		//GOPTオプション
 		TCHAR	pOpt[64];
 		pOpt[0] = _T('\0');
-		if( cDlgGrepRep.m_bSubFolder				)_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
-		if( cDlgGrepRep.m_sSearchOption.bWordOnly	)_tcscat( pOpt, _T("W") );	// 単語単位で探す
-		if( cDlgGrepRep.m_sSearchOption.bLoHiCase	)_tcscat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
-		if( cDlgGrepRep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// 正規表現
-		if( cDlgGrepRep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// 行を出力する
-		// if( cDlgGrepRep.m_nGrepOutputLineType == 2     )_tcscat( pOpt, _T("N") );	// 否ヒット行を出力する 2014.09.23
-		if( 1 == cDlgGrepRep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("1") );	// Grep: 出力形式
-		if( 2 == cDlgGrepRep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("2") );	// Grep: 出力形式
-		if( 3 == cDlgGrepRep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("3") );
-		if( cDlgGrepRep.m_bGrepOutputFileOnly		)_tcscat( pOpt, _T("F") );
-		if( cDlgGrepRep.m_bGrepOutputBaseFolder		)_tcscat( pOpt, _T("B") );
-		if( cDlgGrepRep.m_bGrepSeparateFolder		)_tcscat( pOpt, _T("D") );
-		if( cDlgGrepRep.m_bPaste					)_tcscat( pOpt, _T("C") );	// クリップボードから貼り付け
-		if( cDlgGrepRep.m_bBackup					)_tcscat( pOpt, _T("O") );	// バックアップ作成
+		if( cDlgGrepRep.m_bSubFolder				)auto_strcat( pOpt, _T("S") );	// サブフォルダからも検索する
+		if( cDlgGrepRep.m_sSearchOption.bWordOnly	)auto_strcat( pOpt, _T("W") );	// 単語単位で探す
+		if( cDlgGrepRep.m_sSearchOption.bLoHiCase	)auto_strcat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
+		if( cDlgGrepRep.m_sSearchOption.bRegularExp	)auto_strcat( pOpt, _T("R") );	// 正規表現
+		if( cDlgGrepRep.m_nGrepOutputLineType == 1     )auto_strcat( pOpt, _T("P") );	// 行を出力する
+		// if( cDlgGrepRep.m_nGrepOutputLineType == 2     )auto_strcat( pOpt, _T("N") );	// 否ヒット行を出力する 2014.09.23
+		if( 1 == cDlgGrepRep.m_nGrepOutputStyle		)auto_strcat( pOpt, _T("1") );	// Grep: 出力形式
+		if( 2 == cDlgGrepRep.m_nGrepOutputStyle		)auto_strcat( pOpt, _T("2") );	// Grep: 出力形式
+		if( 3 == cDlgGrepRep.m_nGrepOutputStyle		)auto_strcat( pOpt, _T("3") );
+		if( cDlgGrepRep.m_bGrepOutputFileOnly		)auto_strcat( pOpt, _T("F") );
+		if( cDlgGrepRep.m_bGrepOutputBaseFolder		)auto_strcat( pOpt, _T("B") );
+		if( cDlgGrepRep.m_bGrepSeparateFolder		)auto_strcat( pOpt, _T("D") );
+		if( cDlgGrepRep.m_bPaste					)auto_strcat( pOpt, _T("C") );	// クリップボードから貼り付け
+		if( cDlgGrepRep.m_bBackup					)auto_strcat( pOpt, _T("O") );	// バックアップ作成
 		if( 0 < _tcslen( pOpt ) ){
 			cCmdLine.AppendString( _T(" -GOPT=") );
 			cCmdLine.AppendString( pOpt );

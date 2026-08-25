@@ -314,10 +314,10 @@ void CViewCommander::Command_EXTHTMLHELP( const WCHAR* _helpfile, const WCHAR* k
 		if( _IS_REL_PATH( filename ) ){
 			GetInidirOrExedir( pWork, filename );
 		}else{
-			_tcscpy( pWork, filename ); //	Jul. 5, 2002 genta
+			auto_strcpy_s( pWork, GetDllShareData().m_sWorkBuffer.GetWorkBufferCount<TCHAR>(), filename ); //	Jul. 5, 2002 genta
 		}
 		nLen = _tcslen( pWork );
-		_tcscpy( &pWork[nLen + 1], cmemCurText.GetStringT() );
+		auto_strcpy_s( &pWork[nLen + 1], GetDllShareData().m_sWorkBuffer.GetWorkBufferCount<TCHAR>() - (nLen + 1), cmemCurText.GetStringT() );
 		hwndHtmlHelp = (HWND)::SendMessageAny(
 			GetDllShareData().m_sHandles.m_hwndTray,
 			MYWM_HTMLHELP,

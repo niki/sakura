@@ -121,12 +121,12 @@ CMacroManagerBase* CWSHMacroManager::Creator(const TCHAR* FileExt)
 {
 	TCHAR FileExtWithDot[1024], FileType[1024], EngineName[1024]; //1024を超えたら後は知りません
 	
-	_tcscpy( FileExtWithDot, _T(".") );
-	_tcscat( FileExtWithDot, FileExt );
+	auto_strcpy( FileExtWithDot, _T(".") );
+	auto_strcat( FileExtWithDot, FileExt );
 
 	if(ReadRegistry(HKEY_CLASSES_ROOT, FileExtWithDot, NULL, FileType, 1024))
 	{
-		lstrcat(FileType, _T("\\ScriptEngine"));
+		auto_strcat(FileType, _T("\\ScriptEngine"));
 		if(ReadRegistry(HKEY_CLASSES_ROOT, FileType, NULL, EngineName, 1024))
 		{
 			wchar_t EngineNameW[1024];
