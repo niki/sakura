@@ -23,6 +23,9 @@
 #include "util/window.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+#include "types/CTypeSupport.h"
+#endif // NKMM_
 
 //置換 CDlgReplace.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//11900
@@ -63,6 +66,14 @@ CDlgReplace::CDlgReplace()
 	m_nPaste = FALSE;			// 貼り付ける？	// 2001.12.03 hor
 	m_nReplaceCnt = 0;			//すべて置換の実行結果		// 2002.02.08 hor
 	m_bCanceled = false;		//すべて置換を中断したか	// 2002.02.08 hor
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+	m_crSampleText = RGB(0,0,0);
+	m_crSampleBack = RGB(255,255,255);
+	m_hbrSampleBack = NULL;
+	m_hFontSample = NULL;
+	m_nSampleAfterHighlightPos = -1;
+	m_nSampleAfterHighlightLen = 0;
+#endif // NKMM_
 	return;
 }
 
@@ -387,8 +398,28 @@ BOOL CDlgReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT2 ) );
 	m_cFontText2.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT2 ) );
 
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+	// サンプル欄をエディタの配色・設定フォント(通常テキスト)で表示する 20260826
+	{
+		CEditView* pcEditViewForColor = (CEditView*)m_lParam;
+		CTypeSupport cTextType( pcEditViewForColor, COLORIDX_TEXT );
+		m_crSampleText = cTextType.GetTextColor();
+		m_crSampleBack = cTextType.GetBackColor();
+		m_hbrSampleBack = ::CreateSolidBrush( m_crSampleBack );
+		m_hFontSample = cTextType.GetTypeFont().m_hFont;
+		if( NULL != m_hFontSample ){
+			::SendMessageAny( GetItemHwnd(IDC_STATIC_REPLACESAMPLE_BEFORE), WM_SETFONT, (WPARAM)m_hFontSample, TRUE );
+			::SendMessageAny( GetItemHwnd(IDC_STATIC_REPLACESAMPLE_AFTER), WM_SETFONT, (WPARAM)m_hFontSample, TRUE );
+		}
+	}
+#endif // NKMM_
+
 	/* 基底クラスメンバ */
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	BOOL bRet = CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+	UpdateSamplePreview();	// 20260826 初期状態のサンプル表示
+#endif // NKMM_
+	return bRet;
 
 }
 
@@ -399,8 +430,96 @@ BOOL CDlgReplace::OnDestroy()
 {
 	m_cFontText.ReleaseOnDestroy();
 	m_cFontText2.ReleaseOnDestroy();
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+	if( NULL != m_hbrSampleBack ){
+		::DeleteObject( m_hbrSampleBack );
+		m_hbrSampleBack = NULL;
+	}
+#endif // NKMM_
 	return CDialog::OnDestroy();
 }
+
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+/*!
+	置換前サンプル欄(IDC_STATIC_REPLACESAMPLE_BEFORE)をエディタの配色
+	(通常テキストの文字色・背景色)で描画するため、WM_CTLCOLORSTATICを
+	横取りする。置換後サンプル欄(IDC_STATIC_REPLACESAMPLE_AFTER)は
+	一致語句の強調表示のためオーナードロー化しており、WM_CTLCOLORSTATIC
+	は発生しない(OnDrawItem参照)。
+
+	@date 2026.08.26 新規作成
+*/
+INT_PTR CDlgReplace::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
+{
+	if( WM_CTLCOLORSTATIC == wMsg ){
+		HWND hwndCtl = (HWND)lParam;
+		if( hwndCtl == GetItemHwnd( IDC_STATIC_REPLACESAMPLE_BEFORE ) ){
+			HDC hdc = (HDC)wParam;
+			::SetTextColor( hdc, m_crSampleText );
+			::SetBkColor( hdc, m_crSampleBack );
+			return (INT_PTR)m_hbrSampleBack;
+		}
+	}
+	return CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
+}
+
+/*!
+	置換後サンプル欄(IDC_STATIC_REPLACESAMPLE_AFTER、オーナードロー)の
+	描画。一致語句の置換結果(m_nSampleAfterHighlightPos/Len)だけ青字で
+	強調表示する。
+
+	@date 2026.08.26 新規作成
+*/
+BOOL CDlgReplace::OnDrawItem( WPARAM wParam, LPARAM lParam )
+{
+	LPDRAWITEMSTRUCT pdis = (LPDRAWITEMSTRUCT)lParam;
+	if( (int)pdis->CtlID == IDC_STATIC_REPLACESAMPLE_AFTER ){
+		HDC hdc = pdis->hDC;
+		RECT rc = pdis->rcItem;
+
+		::FillRect( hdc, &rc, m_hbrSampleBack );
+
+		HFONT hFont = ( NULL != m_hFontSample ) ? m_hFontSample : (HFONT)::SendMessageAny( pdis->hwndItem, WM_GETFONT, 0, 0 );
+		HFONT hFontOld = (HFONT)::SelectObject( hdc, hFont );
+		int nOldBkMode = ::SetBkMode( hdc, TRANSPARENT );
+
+		const std::wstring& str = m_strSampleAfter;
+		int nPos = m_nSampleAfterHighlightPos;
+		int nLen = m_nSampleAfterHighlightLen;
+		bool bHighlight = ( 0 <= nPos && 0 < nLen && (size_t)(nPos + nLen) <= str.size() );
+
+		int x = rc.left;
+		SIZE sz;
+		if( bHighlight ){
+			if( 0 < nPos ){
+				::SetTextColor( hdc, m_crSampleText );
+				::GetTextExtentPoint32W( hdc, str.c_str(), nPos, &sz );
+				::ExtTextOutW( hdc, x, rc.top, ETO_CLIPPED, &rc, str.c_str(), nPos, NULL );
+				x += sz.cx;
+			}
+			::SetTextColor( hdc, RGB(0,0,255) );
+			::GetTextExtentPoint32W( hdc, str.c_str() + nPos, nLen, &sz );
+			::ExtTextOutW( hdc, x, rc.top, ETO_CLIPPED, &rc, str.c_str() + nPos, nLen, NULL );
+			x += sz.cx;
+
+			int nTailPos = nPos + nLen;
+			int nTailLen = (int)str.size() - nTailPos;
+			if( 0 < nTailLen ){
+				::SetTextColor( hdc, m_crSampleText );
+				::ExtTextOutW( hdc, x, rc.top, ETO_CLIPPED, &rc, str.c_str() + nTailPos, nTailLen, NULL );
+			}
+		}else if( !str.empty() ){
+			::SetTextColor( hdc, m_crSampleText );
+			::ExtTextOutW( hdc, x, rc.top, ETO_CLIPPED, &rc, str.c_str(), (int)str.size(), NULL );
+		}
+
+		::SetBkMode( hdc, nOldBkMode );
+		::SelectObject( hdc, hFontOld );
+		return TRUE;
+	}
+	return CDialog::OnDrawItem( wParam, lParam );
+}
+#endif // NKMM_
 
 
 
@@ -418,6 +537,9 @@ BOOL CDlgReplace::OnBnClicked( int wID )
 			::CheckDlgButton( GetHwnd(), IDC_CHK_PASTE, FALSE );
 		}
 		::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_COMBO_TEXT2 ), !(::IsDlgButtonChecked( GetHwnd(), IDC_CHK_PASTE)) );
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+		UpdateSamplePreview();
+#endif // NKMM_
 		return TRUE;
 		// 置換対象
 	case IDC_RADIO_REPLACE:
@@ -431,6 +553,9 @@ BOOL CDlgReplace::OnBnClicked( int wID )
 			::EnableWindow( GetItemHwnd( IDC_COMBO_TEXT2 ), TRUE );
 			::EnableWindow( GetItemHwnd( IDC_CHK_PASTE ), TRUE );
 		}
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+		UpdateSamplePreview();
+#endif // NKMM_
 		return TRUE;
 	case IDC_RADIO_SELECTEDAREA:
 		/* 範囲範囲 */
@@ -462,12 +587,12 @@ BOOL CDlgReplace::OnBnClicked( int wID )
 		//Stonee, 2001/03/12 第四引数を、機能番号からヘルプトピック番号を調べるようにした
 		MyWinHelp( GetHwnd(), HELP_CONTEXT, ::FuncID_To_HelpContextID(F_REPLACE_DIALOG) );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
-//	case IDC_CHK_LOHICASE:	/* 大文字と小文字を区別する */
-//		MYTRACE( _T("IDC_CHK_LOHICASE\n") );
-//		return TRUE;
-//	case IDC_CHK_WORDONLY:	/* 一致する単語のみ検索 */
-//		MYTRACE( _T("IDC_CHK_WORDONLY\n") );
-//		break;
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+	case IDC_CHK_LOHICASE:	/* 大文字と小文字を区別する */
+	case IDC_CHK_WORD:		/* 単語単位で探す */
+		UpdateSamplePreview();
+		return TRUE;
+#endif // NKMM_
 	case IDC_CHK_REGULAREXP:	/* 正規表現 */
 //		MYTRACE( _T("IDC_CHK_REGULAREXP ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_REGULAREXP ) = %d\n"), ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_REGULAREXP ) );
 		if( ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_REGULAREXP ) ){
@@ -505,6 +630,9 @@ BOOL CDlgReplace::OnBnClicked( int wID )
 			/*「すべて置換」は置換の繰返し */
 			::EnableWindow( ::GetDlgItem( GetHwnd(), IDC_CHECK_CONSECUTIVEALL ), FALSE );	// 2007.01.16 ryoji
 		}
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+		UpdateSamplePreview();
+#endif // NKMM_
 		return TRUE;
 //	case IDOK:			/* 下検索 */
 //		/* ダイアログデータの取得 */
@@ -645,5 +773,224 @@ LPVOID CDlgReplace::GetHelpIdTable(void)
 	return (LPVOID)p_helpids;
 }
 //@@@ 2002.01.18 add end
+
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+namespace {
+	//! サンプル欄に収まる程度の長さに切り詰める(位置情報が無い場合の保険)
+	std::wstring ClipSampleText( const std::wstring& str )
+	{
+		const size_t nMaxLen = 200;
+		if( str.size() <= nMaxLen ){
+			return str;
+		}
+		return str.substr( 0, nMaxLen ) + L"...";
+	}
+
+	//! 一致箇所を中心に前後だけを切り出す(長い行でも一致部分が見切れないように)。
+	//! 前後を省いた場合は"..."を付ける。切り出した文字列中の一致箇所の
+	//! 位置をoutHighlightPosに返す(強調表示用。"..."の分だけ位置がずれる)。
+	std::wstring MakeContextWindow( const std::wstring& str, int nMatchPos, int nMatchLen, int* outHighlightPos )
+	{
+		if( nMatchPos < 0 || nMatchLen < 0 || (size_t)(nMatchPos + nMatchLen) > str.size() ){
+			*outHighlightPos = -1;
+			return ClipSampleText( str );	// 位置情報が無効なら従来通りの単純な切り詰め
+		}
+
+		// 一致箇所の前後に残す文字数の目安。欄が1行で収まる程度に抑え、
+		// 折り返しで変化箇所が分かりにくくならないようにする(欄自体は
+		// 折り返さず、溢れた分は見切れさせる)。
+		const int nRadius = 5;
+		int nStart = nMatchPos - nRadius;
+		if( nStart < 0 ){
+			nStart = 0;
+		}
+		int nEnd = nMatchPos + nMatchLen + nRadius;
+		if( (size_t)nEnd > str.size() ){
+			nEnd = (int)str.size();
+		}
+
+		std::wstring strResult;
+		if( 0 < nStart ){
+			strResult += L"...";
+		}
+		*outHighlightPos = (int)strResult.size() + (nMatchPos - nStart);
+		strResult += str.substr( nStart, nEnd - nStart );
+		if( (size_t)nEnd < str.size() ){
+			strResult += L"...";
+		}
+		return strResult;
+	}
+
+	//! 改行文字(\r\n・\r・\n)を目に見える記号(↵)に変換する。検索文字列/
+	//! 置換後文字列のどちらから来た改行でもサンプル欄で見えるようにする
+	//! (例: 検索側が"\r\n"にマッチする場合、置換側が"\r\n"を挿入する場合の
+	//! 両方)。pPos1/pPos2に非負の位置(strの文字インデックス)を渡すと、
+	//! 変換後の文字列での対応位置に書き換えて返す(強調表示範囲の追従用)。
+	std::wstring VisualizeEol( const std::wstring& str, int* pPos1 = NULL, int* pPos2 = NULL )
+	{
+		std::wstring strResult;
+		strResult.reserve( str.size() );
+		size_t i = 0;
+		while( i < str.size() ){
+			if( pPos1 && 0 <= *pPos1 && (size_t)*pPos1 == i ){ *pPos1 = (int)strResult.size(); }
+			if( pPos2 && 0 <= *pPos2 && (size_t)*pPos2 == i ){ *pPos2 = (int)strResult.size(); }
+			if( str[i] == L'\r' && i + 1 < str.size() && str[i+1] == L'\n' ){
+				strResult += L'↵';	// ↵
+				i += 2;
+			}else if( str[i] == L'\r' || str[i] == L'\n' ){
+				strResult += L'↵';
+				i += 1;
+			}else{
+				strResult += str[i];
+				i += 1;
+			}
+		}
+		if( pPos1 && 0 <= *pPos1 && (size_t)*pPos1 == str.size() ){ *pPos1 = (int)strResult.size(); }
+		if( pPos2 && 0 <= *pPos2 && (size_t)*pPos2 == str.size() ){ *pPos2 = (int)strResult.size(); }
+		return strResult;
+	}
+}
+
+/*!
+	コンボボックスの編集中テキストが変化したときに呼ばれる。
+	置換前/置換後のテキストボックス入力に応じてサンプル欄をライブ更新する。
+
+	@date 2026.08.26 新規作成
+*/
+BOOL CDlgReplace::OnCbnEditChange( HWND hwndCtl, int wID )
+{
+	switch( wID ){
+	case IDC_COMBO_TEXT:
+	case IDC_COMBO_TEXT2:
+		UpdateSamplePreview();
+		break;
+	}
+	return CDialog::OnCbnEditChange( hwndCtl, wID );
+}
+
+/*!
+	置換サンプル欄(IDC_STATIC_REPLACESAMPLE_BEFORE/AFTER)を更新する。
+
+	カーソルに近い一致箇所を1件だけ計算し、置換前欄には「一致した語句その
+	もの」だけを表示する(何が一致したかの確認用。文脈は不要で、探さずに
+	すぐ見えるようにする)。置換後欄には周辺の文脈込みで置換結果を表示する
+	(何が起きるかの確認用。長い場合は一致箇所を中心に前後だけを切り出し、
+	省いた部分は"..."で示す)。正規表現の$1/$&等も解決済みの実際の文字列で
+	表示される。
+	あわせて、CDlgFindのライブ入力プレビューと同じ手法でエディタの
+	m_strCurSearchKey/m_sCurSearchOptionを更新し、一致箇所をスクロール
+	バーにもマークする(検索文字列があれば全件、無ければマーク解除)。
+	このコードベースではm_strCurSearchKey等は「最後に検索/プレビューした
+	文字列」として扱われ上書き前提のため、副作用として問題ない。
+	キー入力のたびに呼ばれるため、検索履歴への追加(CSearchKeywordManager)
+	やダイアログの入力欄の書き換えはしない(GetData()は履歴登録等の副作用
+	があるため使わない)。メッセージボックスも出さない。
+
+	@date 2026.08.26 新規作成
+*/
+/*!
+	置換後サンプル(オーナードロー)欄の内容を差し替え、再描画させる。
+	ウィンドウテキストは読み上げ・コピー用にそのまま設定しておく
+	(描画自体はOnDrawItemがm_strSampleAfter等のメンバを見て行う)。
+
+	@date 2026.08.26 新規作成
+*/
+void CDlgReplace::SetSampleAfterText( const std::wstring& str, int nHighlightPos, int nHighlightLen )
+{
+	m_strSampleAfter = str;
+	m_nSampleAfterHighlightPos = nHighlightPos;
+	m_nSampleAfterHighlightLen = nHighlightLen;
+	::DlgItem_SetText( GetHwnd(), IDC_STATIC_REPLACESAMPLE_AFTER, str.c_str() );
+	::InvalidateRect( GetItemHwnd( IDC_STATIC_REPLACESAMPLE_AFTER ), NULL, TRUE );
+}
+
+void CDlgReplace::UpdateSamplePreview( void )
+{
+	CEditView* pcEditView = (CEditView*)m_lParam;
+	if( NULL == pcEditView ){
+		return;
+	}
+
+	/* 検索文字列(コントロールから直接読む。履歴登録等はしない) */
+	int nBufferSize = ::GetWindowTextLength( GetItemHwnd(IDC_COMBO_TEXT) ) + 1;
+	std::vector<TCHAR> vText(nBufferSize);
+	::DlgItem_GetText( GetHwnd(), IDC_COMBO_TEXT, &vText[0], nBufferSize );
+	std::wstring strKey = to_wchar(&vText[0]);
+
+	SSearchOption sOpt;
+	sOpt.Reset();
+	sOpt.bLoHiCase = (0 != ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_LOHICASE ));
+	sOpt.bWordOnly = (0 != ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_WORD ));
+	sOpt.bRegularExp = (0 != ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_REGULAREXP ));
+
+	// スクロールバーに一致箇所をマークする(置換対象の設定に関わらず、検索
+	// 文字列があれば常に反映する)。CDlgFind::SetData()の「最後に検索した
+	// 文字列をマークする」処理と同じ手法(m_strCurSearchKey等はこの
+	// コードベースでは「最後に検索/プレビューした文字列」として扱われ、
+	// 常に上書きしてよいことになっている。検索ダイアログのライブ入力
+	// プレビューも同様にこれを上書きする)。
+	if( strKey.empty() ){
+		pcEditView->m_bCurSrchKeyMark = false;
+	}else{
+		pcEditView->m_strCurSearchKey = strKey;
+		pcEditView->m_sCurSearchOption = sOpt;
+		pcEditView->m_bCurSearchUpdate = true;
+		pcEditView->m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;
+		pcEditView->ChangeCurRegexp( false );
+	}
+	pcEditView->Redraw();
+#ifdef NKMM_FIX_EDITVIEW_SCRBAR
+	pcEditView->SB_Marker_Clear( 1710 );
+#endif // NKMM_
+
+	if( strKey.empty() ){
+		::DlgItem_SetText( GetHwnd(), IDC_STATIC_REPLACESAMPLE_BEFORE, L"" );
+		SetSampleAfterText( L"", -1, 0 );
+		return;
+	}
+
+	/* 挿入/追加/行削除/クリップボード貼り付けは、位置依存・外部データ依存で
+	   サンプルの事前計算が破綻しやすいため対象外とする。 */
+	if( !::IsDlgButtonChecked( GetHwnd(), IDC_RADIO_REPLACE ) || ::IsDlgButtonChecked( GetHwnd(), IDC_CHK_PASTE ) ){
+		::DlgItem_SetText( GetHwnd(), IDC_STATIC_REPLACESAMPLE_BEFORE, L"（この設定はサンプル表示に対応していません）" );
+		SetSampleAfterText( L"", -1, 0 );
+		return;
+	}
+
+	/* 置換後文字列 */
+	nBufferSize = ::GetWindowTextLength( GetItemHwnd(IDC_COMBO_TEXT2) ) + 1;
+	vText.resize(nBufferSize);
+	::DlgItem_GetText( GetHwnd(), IDC_COMBO_TEXT2, &vText[0], nBufferSize );
+	std::wstring strRep = to_wchar(&vText[0]);
+
+	// カーソルに近い一致を優先して表示する(常に文書の先頭からだと、離れた
+	// 場所の一致が表示されて分かりにくいため)。
+	int nStartLine = (int)pcEditView->GetCaret().GetCaretLogicPos().y;
+
+	std::wstring strBefore, strAfter;
+	int nMatchPos, nMatchLenBefore, nMatchLenAfter;
+	if( pcEditView->GetCommander().ComputeReplaceSample( strKey, strRep, sOpt, nStartLine, strBefore, strAfter, nMatchPos, nMatchLenBefore, nMatchLenAfter ) ){
+		// 置換前は「何が一致したか」の確認なので、一致した語句そのものだけを
+		// 1行目にそのまま表示する(文脈は不要。探さなくてもすぐ見えるように)。
+		// 一致範囲が改行そのものにかかる場合(例:正規表現"\r\n")に備えて
+		// 改行を可視化する。
+		std::wstring strMatched = VisualizeEol( strBefore.substr( nMatchPos, nMatchLenBefore ) );
+		::DlgItem_SetText( GetHwnd(), IDC_STATIC_REPLACESAMPLE_BEFORE, ClipSampleText(strMatched).c_str() );
+		// 置換後は「結果がどうなるか」の確認なので、周辺の文脈込みで表示し、
+		// 置換された語句の部分だけ青字で強調する。置換後文字列自体が改行を
+		// 挿入する場合(例:置換後"あ\r\n")に備えて改行を可視化し、強調範囲の
+		// 位置もずれないように追従させる。
+		int nHighlightPos = -1;
+		std::wstring strAfterWindow = MakeContextWindow( strAfter, nMatchPos, nMatchLenAfter, &nHighlightPos );
+		int nHighlightEnd = ( 0 <= nHighlightPos ) ? nHighlightPos + nMatchLenAfter : -1;
+		strAfterWindow = VisualizeEol( strAfterWindow, &nHighlightPos, &nHighlightEnd );
+		int nHighlightLen = ( 0 <= nHighlightPos && 0 <= nHighlightEnd ) ? ( nHighlightEnd - nHighlightPos ) : 0;
+		SetSampleAfterText( strAfterWindow, nHighlightPos, nHighlightLen );
+	}else{
+		::DlgItem_SetText( GetHwnd(), IDC_STATIC_REPLACESAMPLE_BEFORE, L"（一致なし）" );
+		SetSampleAfterText( L"", -1, 0 );
+	}
+}
+#endif // NKMM_
 
 

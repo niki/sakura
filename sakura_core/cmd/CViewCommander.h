@@ -280,6 +280,9 @@ public:
 	void Command_REPLACE_DIALOG( void );				/* 置換(置換ダイアログ) */
 	void Command_REPLACE( HWND hwndParent );			/* 置換(実行) 2002/04/08 YAZAKI 親ウィンドウを指定するように変更 */
 	void Command_REPLACE_ALL();							/* すべて置換(実行) */
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+	bool ComputeReplaceSample( const std::wstring& strKey, const std::wstring& strRep, const SSearchOption& sOpt, int nStartLine, std::wstring& outBefore, std::wstring& outAfter, int& outMatchPos, int& outMatchLenBefore, int& outMatchLenAfter );	/* 置換サンプルの計算(ライブプレビュー用)。nStartLineから末尾まで探し、見つからなければ先頭からnStartLineまでを探す(カーソルに近い一致を優先)。outBefore/outAfterは行全体、outMatchPos/Len*は一致箇所(呼び出し側で前後の文脈を程よく切り詰めるため) */
+#endif // NKMM_
 	void Command_SEARCH_CLEARMARK( void );				/* 検索マークのクリア */
 	void Command_JUMP_SRCHSTARTPOS( void );				/* 検索開始位置へ戻る */	// 02/06/26 ai
 

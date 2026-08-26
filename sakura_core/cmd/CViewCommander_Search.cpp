@@ -1725,6 +1725,167 @@ void CViewCommander::Command_REPLACE_ALL()
 
 
 
+/*! 置換サンプルの計算（置換ダイアログのライブプレビュー用）
+
+	置換ダイアログに入力中の内容から、文書内で最初に見つかる一致箇所を
+	1件だけ探し、その行の「置換前の行全体」と「置換後の行全体」を
+	outBefore/outAfterに返す(前後の文脈込みで、そのまま2つの文として
+	見比べられるようにする)。正規表現の場合、outAfter中の一致部分は
+	$1や$&等の後方参照を解決した実際の文字列になる(CBregexp::Replaceを
+	一致部分文字列だけに対して行い、その結果を行の前後につなぎ合わせる)。
+	読み取り専用で、文書は一切変更しない。キー入力のたびに呼ばれる想定
+	のため、検索履歴や共有の検索状態(m_strCurSearchKey等)、ダイアログの
+	入力欄は一切変更しない副作用フリーな実装にしてある(メッセージボックス
+	も出さない。呼び出し側でエラー表示等を行うこと)。
+	outMatchPos/outMatchLenBefore/outMatchLenAfterは、行が長い場合に
+	呼び出し側が一致箇所を中心に前後だけを切り出して表示できるように
+	一致箇所の位置・長さを返す(outBefore/outAfter中の位置。前置文字列
+	部分は共通なので開始位置は同じ)。
+
+	@retval true  マッチが見つかり、outBefore/outAfterに結果を設定した
+	@retval false マッチなし、またはキー未指定・正規表現コンパイル失敗等
+
+	@date 2026.08.26 新規作成
+*/
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+bool CViewCommander::ComputeReplaceSample(
+	const std::wstring&	strKey,
+	const std::wstring&	strRep,
+	const SSearchOption&	sOpt,
+	int						nStartLine,
+	std::wstring&			outBefore,
+	std::wstring&			outAfter,
+	int&					outMatchPos,
+	int&					outMatchLenBefore,
+	int&					outMatchLenAfter
+)
+{
+	outBefore.clear();
+	outAfter.clear();
+	outMatchPos = -1;
+	outMatchLenBefore = 0;
+	outMatchLenAfter = 0;
+
+	if( strKey.empty() ){
+		return false;
+	}
+
+	CBregexp cRegexp;
+	int nFlag = sOpt.bLoHiCase ? CBregexp::optCaseSensitive : CBregexp::optNothing;
+	if( sOpt.bRegularExp ){
+		if( !InitRegexp( NULL, cRegexp, false ) ){
+			return false;
+		}
+		// 全域(/g)は付けない。1件だけ置換した結果から一致部分に対応する
+		// 区間を取り出したいので、1回の呼び出しで1件だけ置換すれば十分。
+		if( !cRegexp.Compile( strKey.c_str(), strRep.c_str(), nFlag ) ){
+			return false;
+		}
+	}
+
+	std::vector<std::pair<const wchar_t*, CLogicInt> > searchWords;
+	CSearchStringPattern pattern;
+	if( !sOpt.bRegularExp ){
+		if( sOpt.bWordOnly ){
+			CSearchAgent::CreateWordList( searchWords, strKey.c_str(), (int)strKey.size() );
+		}else{
+			pattern.SetPattern( NULL, strKey.c_str(), (int)strKey.size(), sOpt, NULL );
+		}
+	}
+
+	const int nKeyLen = (int)strKey.size();
+	CDocLineMgr& rDocLineMgr = GetDocument()->m_cDocLineMgr;
+	int nLineCount = (Int)rDocLineMgr.GetLineCount();
+
+	if( nLineCount <= 0 ){
+		return false;
+	}
+	if( nStartLine < 0 || nLineCount <= nStartLine ){
+		nStartLine = 0;
+	}
+
+	// カーソルに近い一致を優先するため、カーソル行から末尾まで探し、
+	// 見つからなければ先頭からカーソル行までを探す(通常の「次を検索」と
+	// 同じく折り返して探す)。
+	for( int nStep = 0; nStep < nLineCount; ++nStep ){
+		int i = nStartLine + nStep;
+		if( nLineCount <= i ){
+			i -= nLineCount;
+		}
+		const CDocLine* pDocLine = rDocLineMgr.GetLine( CLogicInt(i) );
+		if( NULL == pDocLine ){
+			break;
+		}
+		const wchar_t* pLine = pDocLine->GetPtr();
+		// 改行文字自体にマッチするパターン(例: 正規表現の"\r\n")も
+		// プレビューできるように、改行込みの範囲を検索対象にする。
+		// 実際の単発置換(Command_REPLACE)もGetLengthWithEOL()を使っており、
+		// それに合わせている。
+		int nLineLen = (Int)pDocLine->GetLengthWithEOL();
+		if( nLineLen <= 0 ){
+			continue;
+		}
+
+		if( sOpt.bRegularExp ){
+			if( cRegexp.Match( pLine, nLineLen, 0 ) ){
+				int nPos = (int)cRegexp.GetIndex();
+				int nMatchLen = (int)cRegexp.GetMatchLen();
+				std::wstring strResolvedRep;
+				// 一致した部分文字列だけを対象にもう一度置換をかけ、$1/$&等の
+				// 後方参照が解決された結果を直接取得する。行全体を対象に
+				// 置換して末尾の未変更部分を自前で切り詰める方式は、対象が
+				// 長い場合の境界計算を誤りやすかったため、この方式にしている。
+				if( cRegexp.Replace( pLine + nPos, nMatchLen, 0 ) ){
+					strResolvedRep.assign( cRegexp.GetString(), (int)cRegexp.GetStringLen() );
+				}else{
+					// 先読み等、一致部分だけでは単独で再現できない極端なケースの保険
+					strResolvedRep = strRep;
+				}
+				outBefore.assign( pLine, nLineLen );
+				outAfter.assign( pLine, nPos );
+				outAfter += strResolvedRep;
+				outAfter.append( pLine + nPos + nMatchLen, nLineLen - nPos - nMatchLen );
+				outMatchPos = nPos;
+				outMatchLenBefore = nMatchLen;
+				outMatchLenAfter = (int)strResolvedRep.size();
+				return true;
+			}
+		}else if( sOpt.bWordOnly ){
+			int nMatchLen;
+			const wchar_t* pszRes = CSearchAgent::SearchStringWord( pLine, nLineLen, 0, searchWords, sOpt.bLoHiCase, &nMatchLen );
+			if( NULL != pszRes ){
+				int nPos = (int)(pszRes - pLine);
+				outBefore.assign( pLine, nLineLen );
+				outAfter.assign( pLine, nPos );
+				outAfter += strRep;
+				outAfter.append( pLine + nPos + nMatchLen, nLineLen - nPos - nMatchLen );
+				outMatchPos = nPos;
+				outMatchLenBefore = nMatchLen;
+				outMatchLenAfter = (int)strRep.size();
+				return true;
+			}
+		}else{
+			const wchar_t* pszRes = CSearchAgent::SearchString( pLine, nLineLen, 0, pattern );
+			if( NULL != pszRes ){
+				int nPos = (int)(pszRes - pLine);
+				outBefore.assign( pLine, nLineLen );
+				outAfter.assign( pLine, nPos );
+				outAfter += strRep;
+				outAfter.append( pLine + nPos + nKeyLen, nLineLen - nPos - nKeyLen );
+				outMatchPos = nPos;
+				outMatchLenBefore = nKeyLen;
+				outMatchLenAfter = (int)strRep.size();
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+#endif // NKMM_
+
+
+
 //検索マークの切替え	// 2001.12.03 hor クリア を 切替え に変更
 void CViewCommander::Command_SEARCH_CLEARMARK( void )
 {

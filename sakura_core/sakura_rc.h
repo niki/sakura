@@ -915,6 +915,12 @@
 #define IDC_EDIT_COMMANDPALETTE_FILTER  1904
 #define IDC_LIST_COMMANDPALETTE         1905
 #endif // NKMM_
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+// 20260826 1906-1907は1900番台の空き番号(902行目付近のコメント参照)。
+// 追加時はファイル全体をgrepして未使用であることを確認してから採番すること。
+#define IDC_STATIC_REPLACESAMPLE_BEFORE 1906
+#define IDC_STATIC_REPLACESAMPLE_AFTER  1907
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

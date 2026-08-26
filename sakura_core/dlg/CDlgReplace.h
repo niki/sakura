@@ -73,10 +73,28 @@ protected:
 	BOOL OnBnClicked( int );
 	BOOL OnActivate( WPARAM wParam, LPARAM lParam );	// 2009.11.29 ryoji
 	LPVOID GetHelpIdTable(void);	//@@@ 2002.01.18 add
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+	BOOL OnCbnEditChange( HWND hwndCtl, int wID );	// 20260826 サンプル欄のライブ更新用
+	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam );	// 20260826 サンプル欄の配色用(WM_CTLCOLORSTATIC)
+	BOOL OnDrawItem( WPARAM wParam, LPARAM lParam );	// 20260826 置換後サンプルの一致語句を青字で強調表示(オーナードロー)
+#endif // NKMM_
 
 	void SetData( void );		/* ダイアログデータの設定 */
 	void SetCombosList( void );	/* 検索文字列/置換後文字列リストの設定 */
 	int GetData( void );		/* ダイアログデータの取得 */
+#ifdef NKMM_FIX_REPLACE_PREVIEW
+	void UpdateSamplePreview( void );	/* 置換サンプル欄の更新(ライブプレビュー) 20260826 */
+	void SetSampleAfterText( const std::wstring& str, int nHighlightPos, int nHighlightLen );	/* 置換後サンプル(オーナードロー)欄の内容差し替え+再描画 */
+
+	COLORREF	m_crSampleText;		//!< サンプル欄の文字色(エディタの配色を反映) 20260826
+	COLORREF	m_crSampleBack;		//!< サンプル欄の背景色(エディタの配色を反映) 20260826
+	HBRUSH		m_hbrSampleBack;	//!< 上記背景色のブラシ(OnDestroyで解放)
+	HFONT		m_hFontSample;		//!< サンプル欄のフォント(エディタの設定フォントを反映。CViewFont管理のためここでは解放しない) 20260826
+
+	std::wstring	m_strSampleAfter;			//!< 置換後サンプルの表示文字列(オーナードローで使う) 20260826
+	int				m_nSampleAfterHighlightPos;	//!< m_strSampleAfter中の強調表示開始位置(-1なら強調なし)
+	int				m_nSampleAfterHighlightLen;	//!< m_strSampleAfter中の強調表示の長さ
+#endif // NKMM_
 };
 
 
