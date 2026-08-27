@@ -577,7 +577,7 @@ BOOL CHokanMgr::DoHokan( int nVKey )
 		return FALSE;
 	}
 	int nLabelLen = List_GetTextLen( hwndList, nItem );
-	auto_array_ptr<WCHAR> wszLabel( new WCHAR [nLabelLen + 1] );
+	std::unique_ptr<WCHAR[]> wszLabel( new WCHAR [nLabelLen + 1] );
 	List_GetText( hwndList, nItem, &wszLabel[0] );
 
  	/* テキストを貼り付け */
@@ -688,7 +688,7 @@ void CHokanMgr::ShowTip()
 	if( LB_ERR == nItem )	return ;
 
 	int nLabelLen = List_GetTextLen( hwndCtrl, nItem );
-	auto_array_ptr<WCHAR> szLabel( new WCHAR [nLabelLen + 1] );
+	std::unique_ptr<WCHAR[]> szLabel( new WCHAR [nLabelLen + 1] );
 	List_GetText( hwndCtrl, nItem, &szLabel[0] );	// 選択中の単語を取得
 
 	pcEditView = reinterpret_cast<CEditView*>(m_lParam);

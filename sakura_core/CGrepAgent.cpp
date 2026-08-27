@@ -63,8 +63,8 @@ void CGrepAgent::OnAfterSave(const SSaveInfo& sSaveInfo)
 void CGrepAgent::CreateFolders( const TCHAR* pszPath, std::vector<std::tstring>& vPaths )
 {
 	const int nPathLen = auto_strlen( pszPath );
-	auto_array_ptr<TCHAR> szPath(new TCHAR[nPathLen + 1]);
-	auto_array_ptr<TCHAR> szTmp(new TCHAR[nPathLen + 1]);
+	std::unique_ptr<TCHAR[]> szPath(new TCHAR[nPathLen + 1]);
+	std::unique_ptr<TCHAR[]> szTmp(new TCHAR[nPathLen + 1]);
 	auto_strcpy_s( &szPath[0], nPathLen + 1, pszPath );
 	TCHAR* token;
 	int nPathPos = 0;
@@ -1142,7 +1142,7 @@ int CGrepAgent::DoGrepFile(
 			X / X  : (H)FullPath
 */
 			const size_t nWorkCount = auto_strlen(pszFullPath) + auto_strlen(pszCodeName) + 10;
-			auto_array_ptr<wchar_t> pszWork(new wchar_t[nWorkCount]);
+			std::unique_ptr<wchar_t[]> pszWork(new wchar_t[nWorkCount]);
 			wchar_t* szWork0 = &pszWork[0];
 			if( sGrepOption.bGrepOutputBaseFolder || sGrepOption.bGrepSeparateFolder ){
 				if( !bOutputBaseFolder && sGrepOption.bGrepOutputBaseFolder ){

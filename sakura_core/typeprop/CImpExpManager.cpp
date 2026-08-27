@@ -620,7 +620,7 @@ bool CImpExpRegex::Import( const wstring& sFileName, wstring& sErrMsg )
 	}
 
 	RegexKeywordInfo	regexKeyArr[MAX_REGEX_KEYWORD];
-	auto_array_ptr<wchar_t> szKeyWordList(new wchar_t [ MAX_REGEX_KEYWORDLISTLEN ]);
+	std::unique_ptr<wchar_t[]> szKeyWordList(new wchar_t [ MAX_REGEX_KEYWORDLISTLEN ]);
 	wchar_t*	pKeyword = &szKeyWordList[0];
 	int	keywordPos = 0;
 	TCHAR				buff[MAX_REGEX_KEYWORDLEN + 20];
