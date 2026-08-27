@@ -77,9 +77,11 @@ static const SAnchorList anchorList[] = {
 
 //タグファイルのフォーマット	//	@@ 2005.03.31 MIK 定数化
 //	@@ 2005.04.03 MIK キーワードに空白が含まれる場合の考慮
-#define TAG_FORMAT_2_A       "%[^\t\r\n]\t%[^\t\r\n]\t%d;\"\t%s\t%s"
-#define TAG_FORMAT_1_A       "%[^\t\r\n]\t%[^\t\r\n]\t%d"
-#define TAG_FILE_INFO_A      "%[^\t\r\n]\t%[^\t\r\n]\t%[^\t\r\n]"
+// 2026.08.27 s[4][1024]への書き込みが暗黙にszLineData[1024]のサイズに依存していたため、
+// 明示的な幅指定(1023 = s[]の要素サイズ-1)を付けて境界を明確にした。
+#define TAG_FORMAT_2_A       "%1023[^\t\r\n]\t%1023[^\t\r\n]\t%d;\"\t%1023s\t%1023s"
+#define TAG_FORMAT_1_A       "%1023[^\t\r\n]\t%1023[^\t\r\n]\t%d"
+#define TAG_FILE_INFO_A      "%1023[^\t\r\n]\t%1023[^\t\r\n]\t%1023[^\t\r\n]"
 // #define TAG_FORMAT_E_FILE_A  "%[^\t\r\n,],%d"
 // #define TAG_FORMAT_E_NAME_A  "%[^\x7f\r\n]\x7f%[^\x7ff\r\n\x01]\x01%d,%d"
 
