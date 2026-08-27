@@ -307,12 +307,27 @@ bool CClipboard::GetText(CNativeW* cmemBuf, bool* pbColumnSelect, bool* pbLineSe
 		&& ::IsClipboardFormatAvailable( uFormatSakuraClip ) ){
 		HGLOBAL hSakura = ::GetClipboardData( uFormatSakuraClip );
 		if (hSakura != NULL) {
+			// 20260827 "SAKURAClipW"はRegisterClipboardFormatで登録された
+			// グローバルな形式名であり、Sakura以外の任意のプロセスが同名で
+			// データを置ける。先頭4バイトの長さをGlobalSizeで検証せずに
+			// 使うと、実際の確保サイズを超えて読み出すバッファオーバーリード
+			// になるため、ヘッダ+本体がGlobalSize内に収まる場合のみ使う。
+			SIZE_T nGlobalSize = ::GlobalSize(hSakura);
 			BYTE* pData = (BYTE*)::GlobalLock(hSakura);
-			size_t nLength        = *((int*)pData);
-			const wchar_t* szData = (const wchar_t*)(pData + sizeof(int));
-			cmemBuf->SetString( szData, nLength );
-			::GlobalUnlock(hSakura);
-			return true;
+			if( pData != NULL && nGlobalSize >= sizeof(int) ){
+				int nRawLength = *((int*)pData);
+				size_t nMaxChars = (nGlobalSize - sizeof(int)) / sizeof(wchar_t);
+				if( 0 <= nRawLength && (size_t)nRawLength <= nMaxChars ){
+					const wchar_t* szData = (const wchar_t*)(pData + sizeof(int));
+					cmemBuf->SetString( szData, nRawLength );
+					::GlobalUnlock(hSakura);
+					return true;
+				}
+			}
+			if( pData != NULL ){
+				::GlobalUnlock(hSakura);
+			}
+			// 不正な内容だったので、他の形式(UNICODE等)にフォールバックする
 		}
 	}
 
@@ -323,9 +338,19 @@ bool CClipboard::GetText(CNativeW* cmemBuf, bool* pbColumnSelect, bool* pbLineSe
 		hUnicode = ::GetClipboardData( CF_UNICODETEXT );
 	}
 	if( hUnicode != NULL ){
-		//DWORD nLen = GlobalSize(hUnicode);
 		wchar_t* szData = GlobalLockWChar(hUnicode);
-		cmemBuf->SetString( szData );
+		if( szData != NULL ){
+			// 20260827 CF_UNICODETEXTのデータはクリップボードを設定した側
+			// (他プロセスかもしれない)が用意するため、NUL終端されている保証は
+			// 無い。SetString(szData)(内部でwcslen)は終端が無いとGlobalSizeの
+			// 確保範囲を超えて読み続けるバッファオーバーリードになるため、
+			// GlobalSizeで求めた文字数を超えて走査しないwcsnlenで長さを求める。
+			size_t nMaxChars = ::GlobalSize(hUnicode) / sizeof(wchar_t);
+			size_t nLen = wcsnlen( szData, nMaxChars );
+			cmemBuf->SetString( szData, (int)nLen );
+		}else{
+			cmemBuf->SetString( L"" );
+		}
 		::GlobalUnlock(hUnicode);
 		return true;
 	}
@@ -551,7 +576,7 @@ static int GetLengthByMode(HGLOBAL hClipData, const BYTE* pData, int nMode, int 
 		const wchar32_t* pData32 = (const wchar32_t*)pData;
 		const size_t len = nMemLength / 4;
 		nLength = 0;
-		while( pData32[nLength] != 0 && nLength < len ){
+		while( nLength < len && pData32[nLength] != 0 ){
 			nLength++;
 		}
 		nLength *= 4;

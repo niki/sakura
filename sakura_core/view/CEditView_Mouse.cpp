@@ -1823,7 +1823,11 @@ STDMETHODIMP CEditView::Drop( LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL
 	if( cf == CClipboard::GetSakuraFormat() ){
 		if( nSize > sizeof(int) ){
 			wchar_t* pszData = (wchar_t*)((BYTE*)pData + sizeof(int));
-			cmemBuf.SetString( pszData, t_min( (SIZE_T)*(int*)pData, nSize / sizeof(wchar_t) ) );	// 途中のNUL文字も含める
+			// 20260827 nSizeはヘッダ(4バイト)込みの確保サイズ全体。pszDataはヘッダ分を除いた
+			// 位置を指すため、クランプ先もヘッダ分を差し引いた文字数にする必要がある
+			// (CClipboard.cpp::GetText()の同種修正と同じ理由)。
+			const SIZE_T nMaxChars = (nSize - sizeof(int)) / sizeof(wchar_t);
+			cmemBuf.SetString( pszData, t_min( (SIZE_T)*(int*)pData, nMaxChars ) );	// 途中のNUL文字も含める
 		}
 	}else if( cf == CF_UNICODETEXT ){
 		cmemBuf.SetString( (wchar_t*)pData, wcsnlen( (wchar_t*)pData, nSize / sizeof(wchar_t) ) );
