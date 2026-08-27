@@ -689,7 +689,7 @@ BOOL MyWinHelp(HWND hwndCaller, UINT uCommand, DWORD_PTR dwData)
 			dwData = 1;	// 目次ページ
 
 		TCHAR buf[256];
-		_stprintf( buf, _T("http://sakura-editor.sourceforge.net/cgi-bin/hid2.cgi?%lld"), dwData );
+		auto_sprintf( buf, _T("http://sakura-editor.sourceforge.net/cgi-bin/hid2.cgi?%lld"), dwData );
 		ShellExecute( ::GetActiveWindow(), NULL, buf, NULL, NULL, SW_SHOWNORMAL );
 #endif // NKMM_
 	}

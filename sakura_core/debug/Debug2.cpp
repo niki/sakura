@@ -29,7 +29,7 @@ void debug_exit()
 void debug_exit2(const char* file, int line, const char* exp)
 {
 	char szBuffer[1024];
-	wsprintfA(szBuffer, "assert\n%s(%d):\n%s", file, line, exp);
+	auto_sprintf(szBuffer, "assert\n%s(%d):\n%s", file, line, exp);
 	MessageBoxA(NULL, szBuffer , "sakura", MB_OK);
 	exit(1);
 }

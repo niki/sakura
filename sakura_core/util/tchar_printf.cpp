@@ -26,8 +26,6 @@
 #include "tchar_printf.h"
 #include "util/tchar_template.h"
 
-#define MAX_BUF 0x7FFFFFFF
-
 //テンプレートで TEXT<T> 使えれば、こんな汚いコピペしなくて済むのに…
 template <class T>
 inline bool is_field_begin(T c)
@@ -99,17 +97,6 @@ static inline int local_vsprintf_s(char* buf, size_t nBufCount, const char* form
 static inline int local_vsprintf_s(wchar_t* buf, size_t nBufCount, const wchar_t* format, va_list& v)
 {
 	return vswprintf_s(buf,nBufCount,format,v);
-}
-
-//vsprintf API
-static inline int local_vsprintf(char* buf, const char* format, va_list& v)
-{
-	return vsprintf(buf,format,v);
-}
-
-static inline int local_vsprintf(wchar_t* buf, const wchar_t* format, va_list& v)
-{
-	return vswprintf(buf,format,v);
 }
 
 //vsnprintf_s API
@@ -249,7 +236,7 @@ int tchar_vsprintf_s_imp(T* buf, size_t nBufCount, const T* format, va_list& v, 
 	T* dst=buf;          //変換先ワーク変数
 	const T* src=format; //変換元ワーク変数
 	while(*src){
-		if(nBufCount!=MAX_BUF && dst>=buf_end-1)break;
+		if(dst>=buf_end-1)break;
 		//書式指定フィールドを取得
 		if(is_field_begin(*src)){
 			const T* field_begin=src;
@@ -283,11 +270,8 @@ int tchar_vsprintf_s_imp(T* buf, size_t nBufCount, const T* format, va_list& v, 
 						return -1;
 					}
 				}
-				else if(nBufCount!=MAX_BUF){
-					ret=local_vsprintf_s(dst,buf_end-dst,field,tmp_v);
-				}
 				else{
-					ret=local_vsprintf(dst,field,tmp_v);
+					ret=local_vsprintf_s(dst,buf_end-dst,field,tmp_v);
 				}
 
 				//vを進める。自信なっしんぐ
@@ -332,19 +316,6 @@ int tchar_vsprintf_s(WCHAR* buf, size_t nBufCount, const WCHAR* format, va_list&
 
 
 
-// vsprintfラップ
-// ※bufに十分な容量があることに自信があるときだけ、使ってください。
-//
-int tchar_vsprintf(ACHAR* buf, const ACHAR* format, va_list& v)
-{
-	return tchar_vsprintf_s(buf,MAX_BUF,format,v);
-}
-int tchar_vsprintf(WCHAR* buf, const WCHAR* format, va_list& v)
-{
-	return tchar_vsprintf_s(buf,MAX_BUF,format,v);
-}
-
-
 // vsnprintf_sラップ
 // バッファが出力文字列より小さい場合は可能な限り出力して末尾に\0を付け、戻り値-1で返ります。
 //
@@ -383,33 +354,6 @@ int tchar_sprintf_s(WCHAR* buf, size_t nBufCount, const WCHAR* format, ...)
 	return ret;
 }
 
-
-// sprintfラップ
-// ※bufに十分な容量があることに自信があるときだけ、使ってください。
-//
-// (実装について)
-//     内容が同じなので、templateでも良かったのですが、
-//     そうすると、ACHAR, WCHAR 以外の型からの暗黙で安全なキャストが
-//     効かなくなり、コーディングが不便になるため、
-//     あえて、ACHAR, WCHAR で関数をひとつずつ定義しています。
-//
-int tchar_sprintf(ACHAR* buf, const ACHAR* format, ...)
-{
-	va_list v;
-	va_start(v,format);
-	int ret=tchar_vsprintf_s(buf,MAX_BUF,format,v);
-	va_end(v);
-	return ret;
-}
-
-int tchar_sprintf(WCHAR* buf, const WCHAR* format, ...)
-{
-	va_list v;
-	va_start(v,format);
-	int ret=tchar_vsprintf_s(buf,MAX_BUF,format,v);
-	va_end(v);
-	return ret;
-}
 
 // snprintf_sラップ
 // バッファが出力文字列より小さい場合は可能な限り出力して末尾に\0を付け、戻り値-1で返ります。

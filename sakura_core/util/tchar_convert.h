@@ -45,8 +45,5 @@ const ACHAR* to_achar(const WCHAR* pSrc, int nSrcLength);
 	#define to_not_tchar to_wchar
 #endif
 
-//その他
-const WCHAR* easy_format(const WCHAR* format, ...);
-
 #endif /* SAKURA_TCHAR_CONVERT_12EEF467_2644_4401_92A6_A0EA26FC78F39_H_ */
 /*[EOF]*/
