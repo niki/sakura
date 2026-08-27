@@ -394,13 +394,13 @@ HINSTANCE CSelectLang::ChangeLang( UINT nIndex )
 	// SetThreadUILanguageの呼び出しを試みる
 	bool isSuccess = false;
 	if( COsVersionInfo()._IsWinVista_or_later() ) {
-		HMODULE hDll = LoadLibrary( _T("kernel32") );
+		// kernel32.dllは常時ロード済みのため、LoadLibraryで探索し直す必要はない
+		HMODULE hDll = GetModuleHandle( _T("kernel32") );
 		if ( hDll ) {
 			typedef short (CALLBACK* SetThreadUILanguageType)(LANGID);
 			SetThreadUILanguageType _SetThreadUILanguage = (SetThreadUILanguageType)
 					GetProcAddress(hDll, "SetThreadUILanguage");
 			isSuccess = _SetThreadUILanguage && _SetThreadUILanguage( m_psLangInfo->wLangId );
-			FreeLibrary( hDll );
 		}
 	}
 	if ( !isSuccess ) {
