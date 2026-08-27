@@ -390,11 +390,19 @@ bool CShareData_IO::LoadSessionFileList( std::vector<SSessionEntry>& entries )
 			auto_sprintf( szKeyName, LTEXT("Session[%02d].szBuf"), i );
 			std::wstring strBufName;
 			cProfile.IOProfileData( pszSecName, szKeyName, strBufName );
-			std::wstring strBufPath = strBufName.empty() ? std::wstring() : GetSessionBufferDir() + strBufName;
+			// 20260827 iniは信頼できない入力(他プロセス/手編集/-PROF=で指定された
+			// プロジェクトローカルini等)であり得るため、保存時の前提(ファイル名のみ、
+			// パス区切りなし)を読み込み側でも検証する。区切り文字が含まれる値は
+			// ".."等によるSessionBuffers\外へのパストラバーサル(任意ファイル読み込み
+			// →ユーザーの保存操作による任意ファイル上書き)を許してしまうため拒否する。
+			bool bBufNameSafe = !strBufName.empty()
+				&& strBufName.find_first_of(L"\\/:") == std::wstring::npos
+				&& strBufName != L"." && strBufName != L"..";
+			std::wstring strBufPath = bBufNameSafe ? GetSessionBufferDir() + strBufName : std::wstring();
 			if( !strBufPath.empty() && IsFileExists( strBufPath.c_str(), true ) ){
 				entry.bufFile = strBufPath;
 			}else{
-				entry.bModified = false;	// 消費済み/存在しない→通常のパスオープンにフォールバック
+				entry.bModified = false;	// 消費済み/存在しない/不正な値→通常のパスオープンにフォールバック
 			}
 		}
 #endif // NKMM_
