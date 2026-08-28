@@ -360,11 +360,7 @@ BOOL CDlgGrep::OnBnClicked( int wID )
 						auto_strncpy( szFolderItem, vPaths[i].c_str(), nMaxPath );
 						szFolderItem[nMaxPath-1] = _T('\0');
 						if( auto_strchr( szFolderItem, _T(';') ) ){
-							szFolderItem[0] = _T('"');
-							auto_strncpy( szFolderItem + 1, vPaths[i].c_str(), nMaxPath - 1 );
-							szFolderItem[nMaxPath-1] = _T('\0');
-							auto_strcat( szFolderItem, _T("\"") );
-							szFolderItem[nMaxPath-1] = _T('\0');
+							QuotePath( szFolderItem, nMaxPath, vPaths[i].c_str() );
 						}
 						if( i ){
 							auto_strcat( szFolder, _T(";") );
@@ -694,12 +690,10 @@ void CDlgGrep::SetDataFromThisText( bool bChecked )
 	if( 0 != m_szCurrentFilePath[0] && bChecked ){
 		TCHAR	szWorkFolder[MAX_PATH];
 		TCHAR	szFileName[MAX_PATH];
-		TCHAR	szWorkFile[MAX_PATH + 2];	// 20260828 前後の '"' 分の余白を確保（旧実装はszWorkFile+1をMAX_PATH長バッファとしてSplitPath_FolderAndFileに渡しており、境界違反だった）
+		TCHAR	szWorkFile[MAX_PATH + 2];	// 前後の '"' 分の余白を確保
 		// 2003.08.01 Moca ファイル名はスペースなどは区切り記号になるので、""で囲い、エスケープする
 		SplitPath_FolderAndFile( m_szCurrentFilePath, szWorkFolder, szFileName );
-		auto_strcpy( szWorkFile, _T("\"") );
-		auto_strcat( szWorkFile, szFileName );
-		auto_strcat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
+		QuotePath( szWorkFile, std::size(szWorkFile), szFileName ); // 2003.08.01 Moca
 		::DlgItem_SetText( GetHwnd(), IDC_COMBO_FILE, szWorkFile );
 		
 		SetGrepFolder( GetItemHwnd(IDC_COMBO_FOLDER), szWorkFolder );
@@ -858,9 +852,9 @@ int CDlgGrep::GetData( void )
 			::GetCurrentDirectory( nMaxPath, szFolderItem );
 			// ;がフォルダ名に含まれていたら""で囲う
 			if( auto_strchr( szFolderItem, _T(';') ) ){
-				szFolderItem[0] = _T('"');
-				::GetCurrentDirectory( nMaxPath, szFolderItem + 1 );
-				auto_strcat(szFolderItem, _T("\""));
+				TCHAR szCurDir[nMaxPath];
+				auto_strcpy_s( szCurDir, nMaxPath, szFolderItem );
+				QuotePath( szFolderItem, nMaxPath, szCurDir );
 			}
 			int nFolderItemLen = auto_strlen( szFolderItem );
 			if( nMaxPath < nFolderLen + nFolderItemLen + 1 ){
@@ -943,10 +937,8 @@ LPVOID CDlgGrep::GetHelpIdTable(void)
 static void SetGrepFolder( HWND hwndCtrl, LPCTSTR folder )
 {
 	if( auto_strchr( folder, _T(';')) ){
-		TCHAR szQuoteFolder[MAX_PATH];
-		szQuoteFolder[0] = _T('"');
-		auto_strcpy_s( szQuoteFolder + 1, MAX_PATH - 1, folder );
-		auto_strcat( szQuoteFolder, _T("\"") );
+		TCHAR szQuoteFolder[MAX_PATH + 2];	// 前後の '"' 分の余白を確保
+		QuotePath( szQuoteFolder, std::size(szQuoteFolder), folder );
 		::SetWindowText( hwndCtrl, szQuoteFolder );
 	}else{
 		::SetWindowText( hwndCtrl, folder );

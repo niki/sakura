@@ -339,6 +339,32 @@ void SplitPath_FolderAndFile( const TCHAR* pszFilePath, TCHAR* pszFolder, TCHAR*
 	return;
 }
 
+/*!
+	@brief パスやフォルダ名などの文字列を、前後を'"'で囲んでdestへ格納する
+
+	Windowsのファイル/フォルダパスには'"'を含められないため、単純に前後へ付加するだけでよい。
+	destのサイズ(nSize)が足りない場合は、両端の'"'を保ったまま内容を安全に切り詰める
+	（呼び出し元の固定長バッファに対し、開き引用符ぶんのオフセットを考慮せずSplitPath_FolderAndFile等へ
+	そのまま渡してしまい境界を超える、という同型の不具合が複数箇所で見つかったため、共通化した 20260828）
+
+	@param[out]	dest	格納先バッファ
+	@param[in]	nSize	destのTCHAR単位のサイズ
+	@param[in]	src		囲む対象の文字列
+*/
+void QuotePath( TCHAR* dest, int nSize, const TCHAR* src )
+{
+	if( nSize < 3 ){	// '"' '"' '\0' の最低3文字分すら無ければ何もできない
+		if( 0 < nSize ) dest[0] = _T('\0');
+		return;
+	}
+	dest[0] = _T('"');
+	int nContentMax = nSize - 3;	// 前後の'"'と終端の'\0'ぶんを除いた最大文字数
+	_tcsncpy_s( dest + 1, nSize - 1, src, nContentMax );
+	size_t len = _tcslen( dest );
+	dest[len] = _T('"');
+	dest[len + 1] = _T('\0');
+}
+
 /* フォルダ、ファイル名から、結合したパスを作成
  * [c:\work\test] + [aaa.txt] → [c:\work\test\aaa.txt]
  * フォルダ末尾に円記号があってもなくても良い。

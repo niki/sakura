@@ -48,6 +48,7 @@ void AddLastYenFromDirectoryPath(  CHAR* );						/* フォルダの最後が半�
 void AddLastYenFromDirectoryPath( WCHAR* );						/* フォルダの最後が半角かつ'\\'でない場合は、付加する */
 void SplitPath_FolderAndFile( const TCHAR*, TCHAR*, TCHAR* );	/* ファイルのフルパスを、フォルダとファイル名に分割 */
 void Concat_FolderAndFile( const TCHAR*, const TCHAR*, TCHAR* );/* フォルダ、ファイル名から、結合したパスを作成 */
+void QuotePath( TCHAR* dest, int nSize, const TCHAR* src );	/* 20260828 パスやフォルダ名を前後'"'で囲んでdestへ格納する。destが足りなければ安全に切り詰める */
 BOOL GetLongFileName( const TCHAR*, TCHAR* );					/* ロングファイル名を取得する */
 BOOL CheckEXT( const TCHAR*, const TCHAR* );					/* 拡張子を調べる */
 const TCHAR* GetFileTitlePointer(const TCHAR* tszPath);							//!< ファイルフルパス内のファイル名を指すポインタを取得。2007.09.20 kobake 作成
