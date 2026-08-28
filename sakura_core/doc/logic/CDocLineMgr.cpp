@@ -132,6 +132,7 @@ void CDocLineMgr::DeleteLine( CDocLine* pcDocLineDel )
 	if( m_pCodePrevRefer == pcDocLineDel ){
 		m_pCodePrevRefer = pcDocLineDel->GetNextLine();
 	}
+	_InvalidateExtraReferCache();
 
 	//データ削除
 	delete pcDocLineDel;
@@ -157,8 +158,6 @@ void CDocLineMgr::DeleteLine( CDocLine* pcDocLineDel )
 */
 const CDocLine* CDocLineMgr::GetLine( CLogicInt nLine ) const
 {
-	CLogicInt nCounter;
-	CDocLine* pDocLine;
 	if( CLogicInt(0) == m_nLines ){
 		return NULL;
 	}
@@ -166,82 +165,70 @@ const CDocLine* CDocLineMgr::GetLine( CLogicInt nLine ) const
 	if( CLogicInt(0) > nLine || nLine >= m_nLines ){
 		return NULL;
 	}
-	// 2004.03.28 Moca m_pCodePrevReferより、Top,Botのほうが近い場合は、そちらを利用する
-	CLogicInt nPrevToLineNumDiff = t_abs( m_nPrevReferLine - nLine );
-	if( m_pCodePrevRefer == NULL
-	  || nLine < nPrevToLineNumDiff
-	  || m_nLines - nLine < nPrevToLineNumDiff
-	){
-		if( m_pCodePrevRefer == NULL ){
-			MY_RUNNINGTIMER( cRunningTimer, "CDocLineMgr::GetLine() 	m_pCodePrevRefer == NULL" );
-		}
 
-		if( nLine < (m_nLines / 2) ){
-			nCounter = CLogicInt(0);
-			pDocLine = m_pDocLineTop;
-			while( pDocLine ){
-				if( nLine == nCounter ){
-					m_nPrevReferLine = nLine;
-					m_pCodePrevRefer = pDocLine;
-					m_pDocLineCurrent = pDocLine->GetNextLine();
-					return pDocLine;
-				}
-				pDocLine = pDocLine->GetNextLine();
-				nCounter++;
-			}
-		}
-		else{
-			nCounter = m_nLines - CLogicInt(1);
-			pDocLine = m_pDocLineBot;
-			while( NULL != pDocLine ){
-				if( nLine == nCounter ){
-					m_nPrevReferLine = nLine;
-					m_pCodePrevRefer = pDocLine;
-					m_pDocLineCurrent = pDocLine->GetNextLine();
-					return pDocLine;
-				}
-				pDocLine = pDocLine->GetPrevLine();
-				nCounter--;
-			}
-		}
+	if( m_pCodePrevRefer == NULL ){
+		MY_RUNNINGTIMER( cRunningTimer, "CDocLineMgr::GetLine() 	m_pCodePrevRefer == NULL" );
+	}
 
+	// 20260828 Top/Bot/m_pCodePrevRefer(従来の直近1点キャッシュ)に加え、
+	// 補助キャッシュ(m_aExtraReferCache、最大NUM_EXTRA_REFER_CACHE件の直近参照済み行)
+	// の中から、要求行に最も近いものを起点として選ぶ。飛び飛びの行アクセス
+	// (検索結果の巡回・マクロからの読み取り等)がO(1)に近づく
+	CLogicInt nBestLine = CLogicInt(0);
+	CDocLine* pBestLine = m_pDocLineTop;
+	CLogicInt nBestDiff = nLine;	// Topからの距離 = |0 - nLine| = nLine (nLine>=0は検証済み)
+
+	CLogicInt nBotLine = m_nLines - CLogicInt(1);
+	CLogicInt nBotDiff = t_abs( nBotLine - nLine );
+	if( nBotDiff < nBestDiff ){
+		nBestLine = nBotLine; pBestLine = m_pDocLineBot; nBestDiff = nBotDiff;
+	}
+
+	if( m_pCodePrevRefer != NULL ){
+		CLogicInt nDiff = t_abs( m_nPrevReferLine - nLine );
+		if( nDiff < nBestDiff ){
+			nBestLine = m_nPrevReferLine; pBestLine = m_pCodePrevRefer; nBestDiff = nDiff;
+		}
+	}
+
+	for( int i = 0; i < NUM_EXTRA_REFER_CACHE; ++i ){
+		if( m_aExtraReferCache[i].pLine == NULL ) continue;
+		CLogicInt nDiff = t_abs( m_aExtraReferCache[i].nLine - nLine );
+		if( nDiff < nBestDiff ){
+			nBestLine = m_aExtraReferCache[i].nLine;
+			pBestLine = m_aExtraReferCache[i].pLine;
+			nBestDiff = nDiff;
+		}
+	}
+
+	//選んだ起点から目的の行まで歩く
+	CDocLine* pDocLine = pBestLine;
+	CLogicInt nCounter = nBestLine;
+	if( nLine >= nCounter ){
+		while( pDocLine && nCounter < nLine ){
+			pDocLine = pDocLine->GetNextLine();
+			++nCounter;
+		}
 	}
 	else{
-		if( nLine == m_nPrevReferLine ){
-			m_nPrevReferLine = nLine;
-			m_pDocLineCurrent = m_pCodePrevRefer->GetNextLine();
-			return m_pCodePrevRefer;
-		}
-		else if( nLine > m_nPrevReferLine ){
-			nCounter = m_nPrevReferLine + CLogicInt(1);
-			pDocLine = m_pCodePrevRefer->GetNextLine();
-			while( NULL != pDocLine ){
-				if( nLine == nCounter ){
-					m_nPrevReferLine = nLine;
-					m_pCodePrevRefer = pDocLine;
-					m_pDocLineCurrent = pDocLine->GetNextLine();
-					return pDocLine;
-				}
-				pDocLine = pDocLine->GetNextLine();
-				++nCounter;
-			}
-		}
-		else{
-			nCounter = m_nPrevReferLine - CLogicInt(1);
-			pDocLine = m_pCodePrevRefer->GetPrevLine();
-			while( NULL != pDocLine ){
-				if( nLine == nCounter ){
-					m_nPrevReferLine = nLine;
-					m_pCodePrevRefer = pDocLine;
-					m_pDocLineCurrent = pDocLine->GetNextLine();
-					return pDocLine;
-				}
-				pDocLine = pDocLine->GetPrevLine();
-				nCounter--;
-			}
+		while( pDocLine && nCounter > nLine ){
+			pDocLine = pDocLine->GetPrevLine();
+			--nCounter;
 		}
 	}
-	return NULL;
+	if( pDocLine == NULL || nCounter != nLine ){
+		return NULL;	// 理論上到達しないはずだが、念のため
+	}
+
+	m_nPrevReferLine = nLine;
+	m_pCodePrevRefer = pDocLine;
+	m_pDocLineCurrent = pDocLine->GetNextLine();
+
+	m_aExtraReferCache[m_nExtraReferCacheNext].nLine = nLine;
+	m_aExtraReferCache[m_nExtraReferCacheNext].pLine = pDocLine;
+	m_nExtraReferCacheNext = (m_nExtraReferCacheNext + 1) % NUM_EXTRA_REFER_CACHE;
+
+	return pDocLine;
 }
 
 
@@ -263,7 +250,18 @@ void CDocLineMgr::_Init()
 	m_nPrevReferLine = CLogicInt(0);
 	m_pCodePrevRefer = NULL;
 	m_pDocLineCurrent = NULL;
+	m_nExtraReferCacheNext = 0;
+	_InvalidateExtraReferCache();
 	CDiffManager::getInstance()->SetDiffUse(false);	/* DIFF使用中 */	//@@@ 2002.05.25 MIK     //##後でCDocListener::OnClear (OnAfterClose) を作成し、そこに移動
+}
+
+//! 20260828 GetLine()の補助キャッシュを丸ごと無効化する。挿入・削除いずれでも
+//! 呼ぶだけでよく、CSearchAgent側の細かい行番号追従は一切不要
+void CDocLineMgr::_InvalidateExtraReferCache()
+{
+	for( int i = 0; i < NUM_EXTRA_REFER_CACHE; ++i ){
+		m_aExtraReferCache[i].pLine = NULL;
+	}
 }
 
 // -- -- チェーン関数 -- -- // 2007.10.11 kobake 作成
@@ -282,6 +280,7 @@ void CDocLineMgr::_PushBottom(CDocLine* pDocLineNew)
 	pDocLineNew->m_pNext = NULL;
 
 	++m_nLines;
+	_InvalidateExtraReferCache();
 }
 
 //!pPosの直前に挿入。pPosにNULLを指定した場合は、最下部に追加。
@@ -310,6 +309,7 @@ void CDocLineMgr::_InsertBeforePos(CDocLine* pDocLineNew, CDocLine* pPos)
 
 	//行数を加算
 	++m_nLines;
+	_InvalidateExtraReferCache();
 }
 
 //! pPosの直後に挿入。pPosにNULLを指定した場合は、先頭に追加。
@@ -338,6 +338,7 @@ void CDocLineMgr::_InsertAfterPos(CDocLine* pDocLineNew, CDocLine* pPos)
 
 	//行数を加算
 	m_nLines++;
+	_InvalidateExtraReferCache();
 }
 
 

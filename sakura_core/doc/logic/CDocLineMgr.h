@@ -101,6 +101,17 @@ public:
 	mutable CDocLine*	m_pCodePrevRefer;
 
 private:
+	//! 20260828 GetLine()の補助キャッシュ(直近1点だけでなく、複数の参照済み行を
+	//! 覚えておくことで、飛び飛びの行アクセス(検索結果の巡回・マクロ等)を高速化する)。
+	//! m_pCodePrevRefer/m_nPrevReferLineとは異なり、CSearchAgent::ReplaceData()の
+	//! 削除中の細かい追従は行わない。構造変更(挿入・削除)があれば単純に丸ごと
+	//! 無効化するだけにして、既存の繊細な同期ロジックには一切手を入れない方針
+	static const int NUM_EXTRA_REFER_CACHE = 8;
+	struct SExtraReferCache{ CLogicInt nLine; CDocLine* pLine; };
+	mutable SExtraReferCache	m_aExtraReferCache[NUM_EXTRA_REFER_CACHE];
+	mutable int					m_nExtraReferCacheNext;	//!< 次に上書きするスロット(ラウンドロビン)
+	void _InvalidateExtraReferCache();	//!< 構造変更時に補助キャッシュを丸ごと無効化する
+
 	DISALLOW_COPY_AND_ASSIGN(CDocLineMgr);
 };
 
