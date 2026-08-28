@@ -557,7 +557,9 @@ void GetInidir(
 		return;
 	
 	std::tstring strProfileName = to_tchar(CCommandLine::getInstance()->GetProfileName());
-	TCHAR	szPath[_MAX_PATH];
+	// 20260829 GetIniFileName()は「呼び出し元はTCHAR[_MAX_PATH+1]を渡す規約」でauto_strcpy_sを
+	// 呼ぶため、_MAX_PATHぶんしか無いとスタックバッファオーバーフローする(実際にクラッシュを確認した実バグ)
+	TCHAR	szPath[_MAX_PATH + 1];
 
 	// sakura.ini のパスを取得
 	CFileNameManager::getInstance()->GetIniFileName( szPath, strProfileName.c_str() );

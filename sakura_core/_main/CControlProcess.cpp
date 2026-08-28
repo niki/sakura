@@ -90,7 +90,10 @@ bool CControlProcess::InitializeProcess()
 
 	/* 共有データのロード */
 	// 2007.05.19 ryoji 「設定を保存して終了する」オプション処理（sakuext連携用）を追加
-	TCHAR szIniFile[_MAX_PATH];
+	// 20260829 GetIniFileName()は「呼び出し元はTCHAR[_MAX_PATH+1]を渡す規約」でauto_strcpy_sを
+	// 呼ぶため、_MAX_PATHぶんしか無いとスタックバッファオーバーフローする(起動直後に到達する
+	// パスで実際にクラッシュを確認した実バグ)
+	TCHAR szIniFile[_MAX_PATH + 1];
 	CShareData_IO::LoadShareData();
 #if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 	// 初期化完了イベント(SetEvent)より前に呼ぶこと。削除対象があるときだけ確認
