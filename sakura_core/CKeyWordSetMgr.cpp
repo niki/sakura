@@ -357,7 +357,20 @@ int CKeyWordSetMgr::DelKeyWord( int nIdx, int nIdx2 )
 	@param nIdx [in] キーワードセット番号
 
 */
-typedef int (__cdecl *qsort_callback)(const void *, const void *);
+// 20260828 以前はqsort()にwcscmp/wcsicmpを、qsort_callback((const void*,const void*))とは
+// 非互換な関数ポインタ型へキャストして渡していた(呼び出し規約上たまたま動くが、規格上は
+// 未定義動作)。std::sortはMAX_KEYWORDLEN+1のC配列を要素として扱えない(配列はムーブ代入
+// 不可のためstd::sortの要件を満たさない)ため置き換えられないが、正しいシグネチャの
+// 比較関数を用意してキャストを排除する
+static int __cdecl CompareKeyWord( const void* p1, const void* p2 )
+{
+	return wcscmp( static_cast<const wchar_t*>(p1), static_cast<const wchar_t*>(p2) );
+}
+static int __cdecl CompareKeyWordNoCase( const void* p1, const void* p2 )
+{
+	return wcsicmp( static_cast<const wchar_t*>(p1), static_cast<const wchar_t*>(p2) );
+}
+
 void CKeyWordSetMgr::SortKeyWord( int nIdx )
 {
 	//nIdxのセットをソートする。
@@ -366,7 +379,7 @@ void CKeyWordSetMgr::SortKeyWord( int nIdx )
 			m_szKeyWordArr[m_nStartIdx[nIdx]],
 			m_nKeyWordNumArr[nIdx],
 			sizeof(m_szKeyWordArr[0]),
-			(qsort_callback)wcscmp
+			CompareKeyWord
 		);
 	}
 	else {
@@ -374,7 +387,7 @@ void CKeyWordSetMgr::SortKeyWord( int nIdx )
 			m_szKeyWordArr[m_nStartIdx[nIdx]],
 			m_nKeyWordNumArr[nIdx],
 			sizeof(m_szKeyWordArr[0]),
-			(qsort_callback)wcsicmp
+			CompareKeyWordNoCase
 		);
 	}
 	KeywordMaxLen(nIdx);
