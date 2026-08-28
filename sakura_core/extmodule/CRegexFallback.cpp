@@ -202,6 +202,24 @@ bool CompilePattern(const ParsedPattern& pp, pcre2_code_16*& outCode, std::wstri
 	return true;
 }
 
+//! 20260828 破局的バックトラッキング(ReDoS)対策。mcontext=nullptr(PCRE2既定値)の
+//! ままだと、パターンによってはマッチ処理が指数的な時間を要し、検索/構文強調/
+//! マクロ由来など外部から与えられ得るパターンで長時間ハングしかねない。
+//! 上限を明示し、異常なパターンは短時間でエラー終了させる(通常用途では
+//! 十分に大きい値なので、正常な検索・置換・構文強調の結果は変わらない)。
+pcre2_match_context_16* GetSharedMatchContext()
+{
+	static pcre2_match_context_16* mctx = []() -> pcre2_match_context_16* {
+		pcre2_match_context_16* ctx = pcre2_match_context_create_16(nullptr);
+		if (ctx) {
+			pcre2_set_match_limit_16(ctx, 1000000);
+			pcre2_set_depth_limit_16(ctx, 10000);
+		}
+		return ctx;	// 作成に失敗してもnullptrならpcre2_match/substituteはPCRE2既定値にフォールバックする
+	}();
+	return mctx;
+}
+
 //! Match: startp/endp/nparens を fb に書き込む(既存インスタンスを使い回せる)
 int DoMatch(BREGEXP_W_Fallback* fb, const wchar_t* targetbeg, const wchar_t* target, const wchar_t* targetendp, wchar_t* msg)
 {
@@ -217,7 +235,7 @@ int DoMatch(BREGEXP_W_Fallback* fb, const wchar_t* targetbeg, const wchar_t* tar
 
 	// targetbeg基準のオフセットとして検索開始位置を渡せるため、
 	// ルックビハインドや\bがtargetbeg基準で正しく効く。
-	int rc = pcre2_match_16(fb->code, subject, subjectLen, startOffset, 0, md, nullptr);
+	int rc = pcre2_match_16(fb->code, subject, subjectLen, startOffset, 0, md, GetSharedMatchContext());
 
 	if (rc == PCRE2_ERROR_NOMATCH) {
 		pcre2_match_data_free_16(md);
@@ -272,7 +290,7 @@ BREGEXP_W_Fallback* DoSubst(pcre2_code_16* code, bool bGlobal, const std::wstrin
 		SetMsg(msg, L"regex substitute: out of memory");
 		return nullptr;
 	}
-	int mrc = pcre2_match_16(code, subject, subjectLen, startOffset, 0, md, nullptr);
+	int mrc = pcre2_match_16(code, subject, subjectLen, startOffset, 0, md, GetSharedMatchContext());
 	if (mrc == PCRE2_ERROR_NOMATCH) {
 		pcre2_match_data_free_16(md);
 		return new BREGEXP_W_Fallback();	// マッチ無し。置換0件、outp=NULL(エラーではない)
@@ -308,12 +326,12 @@ BREGEXP_W_Fallback* DoSubst(pcre2_code_16* code, bool bGlobal, const std::wstrin
 	// 不足すればPCRE2_ERROR_NOMEMORYと共に教えられた正確なサイズで再試行する。
 	PCRE2_SIZE outLen = subjectLen + replLen + 64;
 	std::unique_ptr<wchar_t[]> buf(new wchar_t[outLen]);
-	int rc = pcre2_substitute_16(code, subject, subjectLen, startOffset, options, md, nullptr,
+	int rc = pcre2_substitute_16(code, subject, subjectLen, startOffset, options, md, GetSharedMatchContext(),
 		repl, replLen, reinterpret_cast<PCRE2_UCHAR16*>(buf.get()), &outLen);
 	if (rc == PCRE2_ERROR_NOMEMORY) {
 		// outLenに必要な文字数(終端\0含む)が入っている
 		buf.reset(new wchar_t[outLen]);
-		rc = pcre2_substitute_16(code, subject, subjectLen, startOffset, options, md, nullptr,
+		rc = pcre2_substitute_16(code, subject, subjectLen, startOffset, options, md, GetSharedMatchContext(),
 			repl, replLen, reinterpret_cast<PCRE2_UCHAR16*>(buf.get()), &outLen);
 	}
 	pcre2_match_data_free_16(md);
