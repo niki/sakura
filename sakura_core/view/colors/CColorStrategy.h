@@ -28,6 +28,7 @@
 // #include "view/CEditView.h"
 #include "EColorIndexType.h"
 #include "uiparts/CGraphics.h"
+#include "util/design_template.h"
 
 class	CEditView;
 
@@ -136,6 +137,9 @@ struct SColorStrategyInfo{
 
 class CColorStrategy{
 public:
+	// 20260828 DISALLOW_COPY_AND_ASSIGNがコピーコンストラクタを宣言するため、
+	// 元は暗黙だった既定コンストラクタも明示しないと派生クラス側が構築できなくなる(挙動は従来と同一)
+	CColorStrategy(){}
 	virtual ~CColorStrategy(){}
 	//! 色定義
 	virtual EColorIndexType GetStrategyColor() const = 0;
@@ -169,9 +173,14 @@ public:
 
 protected:
 	const STypeConfig* m_pTypeData;
+
+private:
+	// 20260828 派生クラスがヒープ確保したCLayoutColorInfo*を含む可能性があり(GetStrategyColorInfo)、
+	// CColorStrategyPool::m_vStrategiesが要素を手動deleteするため、意図しないコピーによる
+	// 二重解放を防ぐ
+	DISALLOW_COPY_AND_ASSIGN(CColorStrategy);
 };
 
-#include "util/design_template.h"
 #include <vector>
 class CColor_LineComment;
 class CColor_BlockComment;

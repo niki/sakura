@@ -29,6 +29,7 @@
 #include "uiparts/CMenuDrawer.h"
 #include "uiparts/CImageListMgr.h" // 2002/2/10 aroka
 #include "dlg/CDlgGrep.h" // 2002/2/10 aroka
+#include "util/design_template.h"
 
 struct SLoadInfo;
 struct EditInfo;
@@ -138,6 +139,10 @@ private:
 	UINT			m_uCreateTaskBarMsg;	//!< RegisterMessageで得られるMessage IDの保管場所。Apr. 24, 2001 genta
 
 	TCHAR			m_szLanguageDll[MAX_PATH];
+
+	// 20260828 m_pcPropertyManagerを~CControlTray()で手動deleteするため、
+	// 意図しないコピーによる二重解放を防ぐ
+	DISALLOW_COPY_AND_ASSIGN(CControlTray);
 };
 
 

@@ -18,6 +18,7 @@ class CDlgTypeList;
 #define _CDLGTYPELIST_H_
 
 #include "dlg/CDialog.h"
+#include "util/design_template.h"
 #ifdef NKMM_FIX_TYPELIST_ADD_ANY_TYPE
 #include "uiparts/CMenuDrawer.h"
 #endif // NKMM_
@@ -44,6 +45,9 @@ public:
 
 public:
 	// インターフェース
+	// 20260828 DISALLOW_COPY_AND_ASSIGNがコピーコンストラクタを宣言するため、
+	// 元は暗黙だった既定コンストラクタも明示しないと消えてしまう(挙動は従来と同一)
+	CDlgTypeList(){}
 	int DoModal( HINSTANCE, HWND, SResult* );	/* モーダルダイアログの表示 */
 
 protected:
@@ -106,6 +110,10 @@ private:
 	STypeConfig*		m_pColorSnapshot[ MAX_TYPES ];	//!< キャンセル時に戻すための編集前の値(NULL=未取得)
 	bool				m_bColorPanelFinalized;		//!< Commit/Restoreのどちらかを実行済みか
 #endif // NKMM_
+
+	// 20260828 m_pColorSnapshot/m_pcPropTypesをOnDestroyで手動deleteするため、
+	// 意図しないコピーによる二重解放を防ぐ
+	DISALLOW_COPY_AND_ASSIGN(CDlgTypeList);
 };
 
 

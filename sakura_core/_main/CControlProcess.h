@@ -17,6 +17,7 @@
 
 #include "global.h"
 #include "CProcess.h"
+#include "util/design_template.h"
 
 class CControlTray;
 
@@ -53,6 +54,10 @@ private:
 	HANDLE			m_hMutexCP;				//!< コントロールプロセスミューテックス
 	HANDLE			m_hEventCPInitialized;	//!< コントロールプロセス初期化完了イベント 2006.04.10 ryoji
 	CControlTray*	m_pcTray;
+
+	// 20260828 m_pcTrayを~CControlProcess()で手動deleteするため、意図しないコピーによる
+	// 二重解放を防ぐ(基底のCProcess/TSingleInstanceにはコピー禁止が無い)
+	DISALLOW_COPY_AND_ASSIGN(CControlProcess);
 };
 
 
