@@ -129,10 +129,12 @@ void CViewCommander::Command_GREP( void )
 	}
 	else {
 		TCHAR	szWorkFolder[MAX_PATH];
-		TCHAR	szWorkFile[MAX_PATH];
+		TCHAR	szFileName[MAX_PATH];
+		TCHAR	szWorkFile[MAX_PATH + 2];	// 20260828 前後の '"' 分の余白を確保（旧実装はszWorkFile+1をMAX_PATH長バッファとしてSplitPath_FolderAndFileに渡しており、境界違反だった）
 		// 2003.08.01 Moca ファイル名はスペースなどは区切り記号になるので、""で囲い、エスケープする
-		szWorkFile[0] = _T('"');
-		SplitPath_FolderAndFile( GetEditWindow()->m_cDlgGrep.m_szCurrentFilePath, szWorkFolder, szWorkFile + 1 );
+		SplitPath_FolderAndFile( GetEditWindow()->m_cDlgGrep.m_szCurrentFilePath, szWorkFolder, szFileName );
+		auto_strcpy( szWorkFile, _T("\"") );
+		auto_strcat( szWorkFile, szFileName );
 		auto_strcat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
 		cmWork2.SetString( szWorkFile );
 		cmWork3.SetString( szWorkFolder );

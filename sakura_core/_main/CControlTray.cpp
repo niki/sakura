@@ -165,11 +165,13 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	}
 	else {
 		TCHAR	szWorkFolder[MAX_PATH];
-		TCHAR	szWorkFile[MAX_PATH];
+		TCHAR	szFileName[MAX_PATH];
+		TCHAR	szWorkFile[MAX_PATH + 2];	// 20260828 前後の '"' 分の余白を確保（旧実装はszWorkFile+1をMAX_PATH長バッファとしてSplitPath_FolderAndFileに渡しており、境界違反だった）
 		// 2003.08.01 Moca ファイル名はスペースなどは区切り記号になるので、""で囲い、エスケープする
-		szWorkFile[0] = _T('"');
-		SplitPath_FolderAndFile( cDlgGrep.m_szCurrentFilePath, szWorkFolder, szWorkFile + 1 );
-		_tcscat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
+		SplitPath_FolderAndFile( cDlgGrep.m_szCurrentFilePath, szWorkFolder, szFileName );
+		auto_strcpy( szWorkFile, _T("\"") );
+		auto_strcat( szWorkFile, szFileName );
+		auto_strcat( szWorkFile, _T("\"") ); // 2003.08.01 Moca
 		cmWork2.SetString( szWorkFile );
 		cmWork3.SetString( szWorkFolder );
 	}
@@ -197,21 +199,21 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	//GOPTオプション
 	TCHAR pOpt[64] = _T("");
 #ifdef NKMM_FIX_GREP
-	if( (count > 0) && cDlgGrep.m_bSubFolder )_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
+	if( (count > 0) && cDlgGrep.m_bSubFolder )auto_strcat( pOpt, _T("S") );	// サブフォルダからも検索する
 #else
-	if( cDlgGrep.m_bSubFolder					)_tcscat( pOpt, _T("S") );	// サブフォルダからも検索する
+	if( cDlgGrep.m_bSubFolder					)auto_strcat( pOpt, _T("S") );	// サブフォルダからも検索する
 #endif // NKMM_
-	if( cDlgGrep.m_sSearchOption.bLoHiCase		)_tcscat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
-	if( cDlgGrep.m_sSearchOption.bRegularExp	)_tcscat( pOpt, _T("R") );	// 正規表現
-	if( cDlgGrep.m_nGrepOutputLineType == 1     )_tcscat( pOpt, _T("P") );	// 行を出力する
-	if( cDlgGrep.m_nGrepOutputLineType == 2     )_tcscat( pOpt, _T("N") );	// 否ヒット行を出力する 2014.09.23
-	if( cDlgGrep.m_sSearchOption.bWordOnly		)_tcscat( pOpt, _T("W") );	// 単語単位で探す
-	if( 1 == cDlgGrep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("1") );	// Grep: 出力形式
-	if( 2 == cDlgGrep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("2") );	// Grep: 出力形式
-	if( 3 == cDlgGrep.m_nGrepOutputStyle		)_tcscat( pOpt, _T("3") );
-	if( cDlgGrep.m_bGrepOutputFileOnly		)_tcscat( pOpt, _T("F") );
-	if( cDlgGrep.m_bGrepOutputBaseFolder		)_tcscat( pOpt, _T("B") );
-	if( cDlgGrep.m_bGrepSeparateFolder		)_tcscat( pOpt, _T("D") );
+	if( cDlgGrep.m_sSearchOption.bLoHiCase		)auto_strcat( pOpt, _T("L") );	// 英大文字と英小文字を区別する
+	if( cDlgGrep.m_sSearchOption.bRegularExp	)auto_strcat( pOpt, _T("R") );	// 正規表現
+	if( cDlgGrep.m_nGrepOutputLineType == 1     )auto_strcat( pOpt, _T("P") );	// 行を出力する
+	if( cDlgGrep.m_nGrepOutputLineType == 2     )auto_strcat( pOpt, _T("N") );	// 否ヒット行を出力する 2014.09.23
+	if( cDlgGrep.m_sSearchOption.bWordOnly		)auto_strcat( pOpt, _T("W") );	// 単語単位で探す
+	if( 1 == cDlgGrep.m_nGrepOutputStyle		)auto_strcat( pOpt, _T("1") );	// Grep: 出力形式
+	if( 2 == cDlgGrep.m_nGrepOutputStyle		)auto_strcat( pOpt, _T("2") );	// Grep: 出力形式
+	if( 3 == cDlgGrep.m_nGrepOutputStyle		)auto_strcat( pOpt, _T("3") );
+	if( cDlgGrep.m_bGrepOutputFileOnly		)auto_strcat( pOpt, _T("F") );
+	if( cDlgGrep.m_bGrepOutputBaseFolder		)auto_strcat( pOpt, _T("B") );
+	if( cDlgGrep.m_bGrepSeparateFolder		)auto_strcat( pOpt, _T("D") );
 	if( pOpt[0] != _T('\0') ){
 		cCmdLine.AppendString( _T(" -GOPT=") );
 		cCmdLine.AppendString( pOpt );
@@ -572,7 +574,8 @@ LRESULT CControlTray::DispatchEvent(
 
 			//szHtmlFile取得
 			TCHAR	szHtmlHelpFile[1024];
-			_tcscpy( szHtmlHelpFile, pWork );
+			// 20260828 pWorkは設定ファイルのHelpFile=等に上限なく由来し得るため切り詰める
+			_tcsncpy_s( szHtmlHelpFile, _countof(szHtmlHelpFile), pWork, _TRUNCATE );
 			int		nLen = _tcslen( szHtmlHelpFile );
 
 			//	Jul. 6, 2001 genta HtmlHelpの呼び出し方法変更
@@ -1763,7 +1766,10 @@ void CControlTray::SaveSessionSnapshot( EditNode* pWndArr, int n )
 				entry.bufFile = CShareData_IO::GetSessionBufferFilePath( (int)vSessionEntries.size() );
 				// ダンプ先パスをワークバッファ経由で渡し、対象ウィンドウ自身に
 				// 現在のバッファ内容を書き出させる（同期メッセージ）
-				_tcscpy( GetDllShareData().m_sWorkBuffer.m_szDumpBufferTargetPath_MYWM_DUMPBUFFER, entry.bufFile.c_str() );
+				// 20260828 GetSessionBufferDir()（ini設置ディレクトリ由来）が長い場合
+				// _MAX_PATHを超え得るため、共有メモリの固定長バッファへコピーする前に
+				// 切り詰める（終了処理中のオーバーフローでの他フィールド破壊を防止）
+				_tcsncpy_s( GetDllShareData().m_sWorkBuffer.m_szDumpBufferTargetPath_MYWM_DUMPBUFFER, _MAX_PATH, entry.bufFile.c_str(), _TRUNCATE );
 				// !!! TEMPORARY TEST CODE - レース条件再現テスト用。検証が終わったら必ず削除すること !!!
 				// tools/race_test.ps1でこのウィンドウ以外(未保存の無題バッファ)へ
 				// WM_QUERYENDSESSIONを直接送り込み、m_bSessionHandledByCloseAllはTRUEだが

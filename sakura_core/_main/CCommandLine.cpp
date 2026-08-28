@@ -252,7 +252,7 @@ void CCommandLine::ParseCommandLine( LPCTSTR pszCmdLineSrc, bool bResponse )
 	}
 	if( bFind ){
 		CSakuraEnvironment::ResolvePath(szPath);
-		_tcscpy( m_fi.m_szPath, szPath );	/* ファイル名 */
+		auto_strcpy( m_fi.m_szPath, szPath );	/* ファイル名 */
 		nPos = i + 1;
 	}else{
 		m_fi.m_szPath[0] = _T('\0');
@@ -261,7 +261,7 @@ void CCommandLine::ParseCommandLine( LPCTSTR pszCmdLineSrc, bool bResponse )
 
 	CNativeT cmResponseFile = _T("");
 	LPTSTR pszCmdLineWork = new TCHAR[lstrlen( pszCmdLineSrc ) + 1];
-	_tcscpy( pszCmdLineWork, pszCmdLineSrc );
+	auto_strcpy_s( pszCmdLineWork, lstrlen( pszCmdLineSrc ) + 1, pszCmdLineSrc );
 	int nCmdLineWorkLen = lstrlen( pszCmdLineWork );
 	LPTSTR pszToken = my_strtok<TCHAR>( pszCmdLineWork, nCmdLineWorkLen, &nPos, _T(" ") );
 	while( pszToken != NULL )
@@ -301,7 +301,7 @@ void CCommandLine::ParseCommandLine( LPCTSTR pszCmdLineSrc, bool bResponse )
 			// 不正なファイル名のままだとファイル保存時ダイアログが出なくなるので
 			// 簡単なファイルチェックを行うように修正
 			if (_tcsncmp_literal(szPath, _T("file:///"))==0) {
-				_tcscpy(szPath, &(szPath[8]));
+				auto_strcpy(szPath, &(szPath[8]));
 			}
 			int len = _tcslen(szPath);
 			for (int i = 0; i < len ; ) {
@@ -323,7 +323,7 @@ void CCommandLine::ParseCommandLine( LPCTSTR pszCmdLineSrc, bool bResponse )
 			if (szPath[0] != _T('\0')) {
 				CSakuraEnvironment::ResolvePath(szPath);
 				if (m_fi.m_szPath[0] == _T('\0')) {
-					_tcscpy(m_fi.m_szPath, szPath );
+					auto_strcpy(m_fi.m_szPath, szPath );
 				}
 				else {
 					m_vFiles.push_back( szPath );

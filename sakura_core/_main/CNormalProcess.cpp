@@ -665,14 +665,16 @@ void CNormalProcess::OpenFiles( HWND hwnd )
 		int i;
 		for( i = 0; i < fileNum; i++ ){
 			// ファイル名差し替え
-			_tcscpy( fi.m_szPath, CCommandLine::getInstance()->GetFileName(i) );
+			// 20260828 セッション復元時はini由来でサイズ上限が無い文字列が来得るため、
+			// _MAX_PATHの固定長バッファへコピーする前に切り詰める
+			_tcsncpy_s( fi.m_szPath, _MAX_PATH, CCommandLine::getInstance()->GetFileName(i), _TRUNCATE );
 #ifdef NKMM_SESSION_RESTORE_BUFFER
 			// 20260814 セッション：バッファ内容の復元。i番目の追加ファイルに対応する
 			// 復元元パスがあれば引き継ぐ（fiはループ間で使い回すので無い場合は明示的にクリア）
 			{
 				const wchar_t* pszBufRestore = CCommandLine::getInstance()->GetBufRestorePathForFile( i );
 				if( pszBufRestore ){
-					_tcscpy( fi.m_szBufRestorePath, pszBufRestore );
+					_tcsncpy_s( fi.m_szBufRestorePath, _MAX_PATH, pszBufRestore, _TRUNCATE );
 				}else{
 					fi.m_szBufRestorePath[0] = _T('\0');
 				}

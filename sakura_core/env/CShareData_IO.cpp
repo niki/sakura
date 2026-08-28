@@ -4141,7 +4141,10 @@ void CShareData_IO::IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecNam
 				//int scan_num = scan_ints( szKeyData, pszForm, buf);
 				WCHAR text[32] = {};
 				WCHAR back[32] = {};
-				int scan_num = ::swscanf(szKeyData, L"%d,%d,%[^,],%[^,],%d", &buf[0], &buf[1], text, back, &buf[4]);
+				// 20260828 szKeyDataはsakura.ini由来でサイズ上限が無いため、幅指定の無い%[^,]は
+				// text/backの32文字固定バッファへスタックオーバーフローする(ini手編集で到達可能)。
+				// バッファサイズ-1(終端分)の幅を明示して安全化する。
+				int scan_num = ::swscanf(szKeyData, L"%d,%d,%31[^,],%31[^,],%d", &buf[0], &buf[1], text, back, &buf[4]);
 				if (!bColorOnly) info->m_bDisp = (buf[0]!=0);
 				if (scan_num > 1) {
 					auto fnNameToColor = [pColorInfoArr](TCHAR *name) -> uint32_t {

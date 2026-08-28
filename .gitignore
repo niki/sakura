@@ -82,7 +82,8 @@ vcpkg_installed/
 
 # test output & cache
 _dbg/
-_*/
+_bench*/
+#macro_bench*/
 Testing/
 .cache/
 HeaderMake/Release/

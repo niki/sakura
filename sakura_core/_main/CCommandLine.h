@@ -114,7 +114,10 @@ public:
 	)
 	{
 		if( paths.empty() ) return;
-		_tcscpy( m_fi.m_szPath, paths[0].c_str() );
+		// 20260828 pathsはini(sakura.ini)由来でサイズ上限が無いため、_MAX_PATHの
+		// 固定長バッファへコピーする前に切り詰める（手編集/他プロセスによる
+		// 不正な長大値からのバッファオーバーフロー対策）
+		_tcsncpy_s( m_fi.m_szPath, _MAX_PATH, paths[0].c_str(), _TRUNCATE );
 		m_vFiles.clear();
 #ifdef NKMM_SESSION_RESTORE_BUFFER
 		if( !bufPaths.empty() && !bufPaths[0].empty() ){
