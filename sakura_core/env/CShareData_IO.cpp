@@ -119,6 +119,28 @@ void SetValueLimit(T& target, int maxval)
 	SetValueLimit( target, 0, maxval );
 }
 
+//! 20260828 「iniの件数を読み込み、直後にStaticVectorの容量へクランプする」という
+//! 定型処理をまとめる。読み込み先とクランプ対象が別々の行に分かれていると、
+//! コピペ時に対象を取り違えて片方だけ違う配列を指してしまう事故が起き得る
+//! (実際にShareData_IO_Otherのm_aTagJumpKeywordsで発生し修正した実績がある)。
+//! 1回の呼び出しにまとめることで、読み込み先とクランプ先が構造的に一致することを保証する。
+template <class ELEMENT_TYPE, int MAX_SIZE, class SET_TYPE>
+void IOProfileArraySize( CDataProfile& cProfile, const WCHAR* pszSecName, const WCHAR* pszKeyName,
+	StaticVector<ELEMENT_TYPE, MAX_SIZE, SET_TYPE>& arr )
+{
+	cProfile.IOProfileData( pszSecName, pszKeyName, arr._GetSizeRef() );
+	arr.SetSizeLimit();
+}
+
+//! 上記のストリーム読み込み版。EachIStreamLinesFound等で数え上げた件数nを
+//! そのままarrへクランプ付きで設定する(件数の代入先とクランプ対象の取り違え防止)
+template <class ELEMENT_TYPE, int MAX_SIZE, class SET_TYPE>
+void ClampArraySize( StaticVector<ELEMENT_TYPE, MAX_SIZE, SET_TYPE>& arr, int nCount )
+{
+	arr._GetSizeRef() = nCount;
+	arr.SetSizeLimit();
+}
+
 #if defined(NKMM_FIX_PROFILES) && NKMM_DELETE_HISTORY_NOT_EXIST_AT_STARTUP
 /*!
 	起動時、読み込んだ履歴(最近使ったファイル/フォルダ)のうち実在しないパスを一覧表示し、
@@ -570,8 +592,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 				DLLSHAREDATA* pShare = &GetDllShareData();
 				pShare->m_sHistory.m_nMRUArrNum = 0;
 				pShare->m_sHistory.m_nOPENFOLDERArrNum = 0;
-				pShare->m_sHistory.m_aExceptMRU._GetSizeRef() = 0;
-				pShare->m_sHistory.m_aExceptMRU.SetSizeLimit();
+				pShare->m_sHistory.m_aExceptMRU.clear();
 				break;
 			}
 			
@@ -893,8 +914,7 @@ static bool ShareData_IO_Mru_Block( CDataProfile& cProfileHistory )
 
 		bFoundAll &= bFound;
 		if (bFound) {
-			hist.m_aExceptMRU._GetSizeRef() = i;
-			hist.m_aExceptMRU.SetSizeLimit();
+			ClampArraySize( hist.m_aExceptMRU, i );
 		}
 	}
 	else {
@@ -992,8 +1012,7 @@ static void ShareData_IO_Mru_Legacy( CDataProfile& cProfile )
 		}
 	}
 
-	cProfile.IOProfileData( pszSecName, LTEXT("_ExceptMRU_Counts"), pShare->m_sHistory.m_aExceptMRU._GetSizeRef() );
-	pShare->m_sHistory.m_aExceptMRU.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_ExceptMRU_Counts"), pShare->m_sHistory.m_aExceptMRU );
 	nSize = pShare->m_sHistory.m_aExceptMRU.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("ExceptMRU[%02d]"), i );
@@ -1160,8 +1179,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 			}
 		);
 
-		hist.m_aExceptMRU._GetSizeRef() = i;
-		hist.m_aExceptMRU.SetSizeLimit();
+		ClampArraySize( hist.m_aExceptMRU, i );
 	}
 	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
@@ -1252,8 +1270,7 @@ void CShareData_IO::ShareData_IO_Mru( CDataProfile& cProfile )
 		}
 	}
 	
-	cProfile.IOProfileData( pszSecName, LTEXT("_ExceptMRU_Counts"), pShare->m_sHistory.m_aExceptMRU._GetSizeRef() );
-	pShare->m_sHistory.m_aExceptMRU.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_ExceptMRU_Counts"), pShare->m_sHistory.m_aExceptMRU );
 	nSize = pShare->m_sHistory.m_aExceptMRU.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("ExceptMRU[%02d]"), i );
@@ -1288,8 +1305,7 @@ static bool ShareData_IO_Keys_Block( CDataProfile& cProfileHistory )
 
 		bFoundAll &= bFound;
 		if (bFound) {
-			skwd.m_aSearchKeys._GetSizeRef() = i;
-			skwd.m_aSearchKeys.SetSizeLimit();
+			ClampArraySize( skwd.m_aSearchKeys, i );
 		}
 	}
 	else {
@@ -1322,8 +1338,7 @@ static bool ShareData_IO_Keys_Block( CDataProfile& cProfileHistory )
 
 		bFoundAll &= bFound;
 		if (bFound) {
-			skwd.m_aReplaceKeys._GetSizeRef() = i;
-			skwd.m_aReplaceKeys.SetSizeLimit();
+			ClampArraySize( skwd.m_aReplaceKeys, i );
 		}
 	}
 	else {
@@ -1352,16 +1367,14 @@ static void ShareData_IO_Keys_Legacy( CDataProfile& cProfile )
 	int		nSize;
 	WCHAR	szKeyName[64];
 
-	cProfile.IOProfileData( pszSecName, LTEXT("_SEARCHKEY_Counts"), pShare->m_sSearchKeywords.m_aSearchKeys._GetSizeRef() );
-	pShare->m_sSearchKeywords.m_aSearchKeys.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_SEARCHKEY_Counts"), pShare->m_sSearchKeywords.m_aSearchKeys );
 	nSize = pShare->m_sSearchKeywords.m_aSearchKeys.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("SEARCHKEY[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aSearchKeys[i] );
 	}
 
-	cProfile.IOProfileData( pszSecName, LTEXT("_REPLACEKEY_Counts"), pShare->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef() );
-	pShare->m_sSearchKeywords.m_aReplaceKeys.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_REPLACEKEY_Counts"), pShare->m_sSearchKeywords.m_aReplaceKeys );
 	nSize = pShare->m_sSearchKeywords.m_aReplaceKeys.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("REPLACEKEY[%02d]"), i );
@@ -1414,8 +1427,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 			}
 		);
 		
-		skwd.m_aSearchKeys._GetSizeRef() = i;
-		skwd.m_aSearchKeys.SetSizeLimit();
+		ClampArraySize( skwd.m_aSearchKeys, i );
 	}
 	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
@@ -1443,8 +1455,7 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 			}
 		);
 
-		skwd.m_aReplaceKeys._GetSizeRef() = i;
-		skwd.m_aReplaceKeys.SetSizeLimit();
+		ClampArraySize( skwd.m_aReplaceKeys, i );
 	}
 	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
@@ -1466,16 +1477,14 @@ void CShareData_IO::ShareData_IO_Keys( CDataProfile& cProfile )
 	int		nSize;
 	WCHAR	szKeyName[64];
 
-	cProfile.IOProfileData( pszSecName, LTEXT("_SEARCHKEY_Counts"), pShare->m_sSearchKeywords.m_aSearchKeys._GetSizeRef() );
-	pShare->m_sSearchKeywords.m_aSearchKeys.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_SEARCHKEY_Counts"), pShare->m_sSearchKeywords.m_aSearchKeys );
 	nSize = pShare->m_sSearchKeywords.m_aSearchKeys.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("SEARCHKEY[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aSearchKeys[i] );
 	}
 
-	cProfile.IOProfileData( pszSecName, LTEXT("_REPLACEKEY_Counts"), pShare->m_sSearchKeywords.m_aReplaceKeys._GetSizeRef() );
-	pShare->m_sSearchKeywords.m_aReplaceKeys.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_REPLACEKEY_Counts"), pShare->m_sSearchKeywords.m_aReplaceKeys );
 	nSize = pShare->m_sSearchKeywords.m_aReplaceKeys.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("REPLACEKEY[%02d]"), i );
@@ -1510,8 +1519,7 @@ static bool ShareData_IO_Grep_Block( CDataProfile& cProfileHistory )
 
 		bFoundAll &= bFound;
 		if (bFound) {
-			skwd.m_aGrepFiles._GetSizeRef() = i;
-			skwd.m_aGrepFiles.SetSizeLimit();
+			ClampArraySize( skwd.m_aGrepFiles, i );
 		}
 	}
 	else {
@@ -1570,8 +1578,7 @@ static bool ShareData_IO_Grep_Block( CDataProfile& cProfileHistory )
 
 		bFoundAll &= bFound;
 		if (bFound) {
-			skwd.m_aGrepFolders._GetSizeRef() = i;
-			skwd.m_aGrepFolders.SetSizeLimit();
+			ClampArraySize( skwd.m_aGrepFolders, i );
 		}
 	}
 	else {
@@ -1611,16 +1618,14 @@ static void ShareData_IO_Grep_Legacy( CDataProfile& cProfile )
 	int		nSize;
 	WCHAR	szKeyName[64];
 
-	cProfile.IOProfileData( pszSecName, LTEXT("_GREPFILE_Counts"), pShare->m_sSearchKeywords.m_aGrepFiles._GetSizeRef() );
-	pShare->m_sSearchKeywords.m_aGrepFiles.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_GREPFILE_Counts"), pShare->m_sSearchKeywords.m_aGrepFiles );
 	nSize = pShare->m_sSearchKeywords.m_aGrepFiles.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("GREPFILE[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFiles[i] );
 	}
 
-	cProfile.IOProfileData( pszSecName, LTEXT("_GREPFOLDER_Counts"), pShare->m_sSearchKeywords.m_aGrepFolders._GetSizeRef() );
-	pShare->m_sSearchKeywords.m_aGrepFolders.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_GREPFOLDER_Counts"), pShare->m_sSearchKeywords.m_aGrepFolders );
 	nSize = pShare->m_sSearchKeywords.m_aGrepFolders.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("GREPFOLDER[%02d]"), i );
@@ -1681,8 +1686,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 			}
 		);
 
-		skwd.m_aGrepFiles._GetSizeRef() = i;
-		skwd.m_aGrepFiles.SetSizeLimit();
+		ClampArraySize( skwd.m_aGrepFiles, i );
 	}
 	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
@@ -1736,8 +1740,7 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 			}
 		);
 
-		skwd.m_aGrepFolders._GetSizeRef() = i;
-		skwd.m_aGrepFolders.SetSizeLimit();
+		ClampArraySize( skwd.m_aGrepFolders, i );
 	}
 	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
@@ -1770,16 +1773,14 @@ void CShareData_IO::ShareData_IO_Grep( CDataProfile& cProfile )
 	int		nSize;
 	WCHAR	szKeyName[64];
 
-	cProfile.IOProfileData( pszSecName, LTEXT("_GREPFILE_Counts"), pShare->m_sSearchKeywords.m_aGrepFiles._GetSizeRef() );
-	pShare->m_sSearchKeywords.m_aGrepFiles.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_GREPFILE_Counts"), pShare->m_sSearchKeywords.m_aGrepFiles );
 	nSize = pShare->m_sSearchKeywords.m_aGrepFiles.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("GREPFILE[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sSearchKeywords.m_aGrepFiles[i] );
 	}
 
-	cProfile.IOProfileData( pszSecName, LTEXT("_GREPFOLDER_Counts"), pShare->m_sSearchKeywords.m_aGrepFolders._GetSizeRef() );
-	pShare->m_sSearchKeywords.m_aGrepFolders.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_GREPFOLDER_Counts"), pShare->m_sSearchKeywords.m_aGrepFolders );
 	nSize = pShare->m_sSearchKeywords.m_aGrepFolders.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("GREPFOLDER[%02d]"), i );
@@ -1839,8 +1840,7 @@ static bool ShareData_IO_Cmd_Block( CDataProfile& cProfileHistory )
 
 		bFoundAll &= bFound;
 		if (bFound) {
-			hist.m_aCommands._GetSizeRef() = i;
-			hist.m_aCommands.SetSizeLimit();
+			ClampArraySize( hist.m_aCommands, i );
 		}
 	}
 	else {
@@ -1873,8 +1873,7 @@ static bool ShareData_IO_Cmd_Block( CDataProfile& cProfileHistory )
 
 		bFoundAll &= bFound;
 		if (bFound) {
-			hist.m_aCurDirs._GetSizeRef() = i;
-			hist.m_aCurDirs.SetSizeLimit();
+			ClampArraySize( hist.m_aCurDirs, i );
 		}
 	}
 	else {
@@ -1902,16 +1901,14 @@ static void ShareData_IO_Cmd_Legacy( CDataProfile& cProfile )
 	int		i;
 	WCHAR	szKeyName[64];
 
-	cProfile.IOProfileData( pszSecName, LTEXT("nCmdArrNum"), pShare->m_sHistory.m_aCommands._GetSizeRef() );
-	pShare->m_sHistory.m_aCommands.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("nCmdArrNum"), pShare->m_sHistory.m_aCommands );
 	int nSize = pShare->m_sHistory.m_aCommands.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("szCmdArr[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aCommands[i] );
 	}
 
-	cProfile.IOProfileData( pszSecName, LTEXT("nCurDirArrNum"), pShare->m_sHistory.m_aCurDirs._GetSizeRef() );
-	pShare->m_sHistory.m_aCurDirs.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("nCurDirArrNum"), pShare->m_sHistory.m_aCurDirs );
 	nSize = pShare->m_sHistory.m_aCurDirs.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("szCurDirArr[%02d]"), i );
@@ -1964,8 +1961,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 			}
 		);
 
-		hist.m_aCommands._GetSizeRef() = i;
-		hist.m_aCommands.SetSizeLimit();
+		ClampArraySize( hist.m_aCommands, i );
 	}
 	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
@@ -1993,8 +1989,7 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 			}
 		);
 
-		hist.m_aCurDirs._GetSizeRef() = i;
-		hist.m_aCurDirs.SetSizeLimit();
+		ClampArraySize( hist.m_aCurDirs, i );
 	}
 	else {
 		std::ofstream &ofs = *(std::ofstream *)(cProfile.tag_);
@@ -2015,16 +2010,14 @@ void CShareData_IO::ShareData_IO_Cmd( CDataProfile& cProfile )
 	int		i;
 	WCHAR	szKeyName[64];
 
-	cProfile.IOProfileData( pszSecName, LTEXT("nCmdArrNum"), pShare->m_sHistory.m_aCommands._GetSizeRef() );
-	pShare->m_sHistory.m_aCommands.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("nCmdArrNum"), pShare->m_sHistory.m_aCommands );
 	int nSize = pShare->m_sHistory.m_aCommands.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("szCmdArr[%02d]"), i );
 		cProfile.IOProfileData( pszSecName, szKeyName, pShare->m_sHistory.m_aCommands[i] );
 	}
 
-	cProfile.IOProfileData( pszSecName, LTEXT("nCurDirArrNum"), pShare->m_sHistory.m_aCurDirs._GetSizeRef() );
-	pShare->m_sHistory.m_aCurDirs.SetSizeLimit();
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("nCurDirArrNum"), pShare->m_sHistory.m_aCurDirs );
 	nSize = pShare->m_sHistory.m_aCurDirs.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("szCurDirArr[%02d]"), i );
@@ -4079,11 +4072,12 @@ void CShareData_IO::ShareData_IO_Other( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("szTagsCmdLine")	, MakeStringBufferT(pShare->m_szTagsCmdLine) );
 	
 	//From Here 2005.04.03 MIK キーワード指定タグジャンプ
-	cProfile.IOProfileData( pszSecName, LTEXT("_TagJumpKeyword_Counts"), pShare->m_sTagJump.m_aTagJumpKeywords._GetSizeRef() );
-	// 20260828 コピペミスで無関係なm_aCommandsをクランプしていたため、m_aTagJumpKeywords自体の
-	// 件数(ini由来で上限無し)がMAX_TAGJUMP_KEYWORDを超えたまま使われ、下のループで固定長配列
-	// m_aTagJumpKeywordsの範囲外へ書き込むバグがあった(operator[]のassertはReleaseビルドで無効)
-	pShare->m_sTagJump.m_aTagJumpKeywords.SetSizeLimit();
+	// 20260828 以前はIOProfileData()とSetSizeLimit()が別々の行に分かれており、コピペミスで
+	// 無関係なm_aCommandsをクランプしていたため、m_aTagJumpKeywords自体の件数(ini由来で
+	// 上限無し)がMAX_TAGJUMP_KEYWORDを超えたまま使われ、下のループで固定長配列の範囲外へ
+	// 書き込むバグがあった(operator[]のassertはReleaseビルドで無効)。IOProfileArraySize()に
+	// まとめ、読み込み先とクランプ先の取り違えが構造的に起きないようにした
+	IOProfileArraySize( cProfile, pszSecName, LTEXT("_TagJumpKeyword_Counts"), pShare->m_sTagJump.m_aTagJumpKeywords );
 	int nSize = pShare->m_sTagJump.m_aTagJumpKeywords.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("TagJumpKeyword[%02d]"), i );
