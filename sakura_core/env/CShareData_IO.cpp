@@ -4080,7 +4080,10 @@ void CShareData_IO::ShareData_IO_Other( CDataProfile& cProfile )
 	
 	//From Here 2005.04.03 MIK キーワード指定タグジャンプ
 	cProfile.IOProfileData( pszSecName, LTEXT("_TagJumpKeyword_Counts"), pShare->m_sTagJump.m_aTagJumpKeywords._GetSizeRef() );
-	pShare->m_sHistory.m_aCommands.SetSizeLimit();
+	// 20260828 コピペミスで無関係なm_aCommandsをクランプしていたため、m_aTagJumpKeywords自体の
+	// 件数(ini由来で上限無し)がMAX_TAGJUMP_KEYWORDを超えたまま使われ、下のループで固定長配列
+	// m_aTagJumpKeywordsの範囲外へ書き込むバグがあった(operator[]のassertはReleaseビルドで無効)
+	pShare->m_sTagJump.m_aTagJumpKeywords.SetSizeLimit();
 	int nSize = pShare->m_sTagJump.m_aTagJumpKeywords.size();
 	for( i = 0; i < nSize; ++i ){
 		auto_sprintf( szKeyName, LTEXT("TagJumpKeyword[%02d]"), i );
