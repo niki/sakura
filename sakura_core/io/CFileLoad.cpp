@@ -53,8 +53,12 @@
 */
 
 /*! ロード用バッファサイズの初期値 */
+#ifdef NKMM_FIX_LOAD_BIGGER_READBUF
+const int CFileLoad::gm_nBufSizeDef = 1024 * 1024; // 20260829 32KB→1MB。ReadFile呼び出し回数を削減
+#else
 const int CFileLoad::gm_nBufSizeDef = 32768;
 //(最適値がマシンによって違うのでとりあえず32KB確保する)
+#endif // NKMM_
 
 // /*! ロード用バッファサイズの設定可能な最低値 */
 // const int gm_nBufSizeMin = 1024;
