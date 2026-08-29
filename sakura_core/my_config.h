@@ -1464,10 +1464,12 @@
 //------------------------------------------------------------------
 // 「キー割り当て(実験機能)」タブに、組み込みキーマッププリセットの選択コンボを追加 20260812
 //  - NKMM_FIX_KEYBIND_LIST_TAB(IDD_PROP_KEYBIND_LIST)の子機能。有効時のみ意味を持つ
-//  - keybind_presets/*.key(VSCode/Visual Studio/Visual Studio 6/Visual Basic 6/
-//    ReSharper/Visual Assist/Sublime Text/Notepad++)をsakura_rc.rcにRCDATAとして
-//    埋め込み、実行時にFindResource+一時ファイル経由でCImpExpKeybind::Import()へ渡す
-//    (keybind_presetsフォルダは実行時に不要)
+//  - keybind_presets/*.key(VSCode/Visual Studio/ReSharper/Sublime Text/Notepad++)を
+//    sakura_rc.rcにRCDATAとして埋め込み、実行時にFindResource+一時ファイル経由で
+//    CImpExpKeybind::Import()へ渡す(keybind_presetsフォルダは実行時に不要)
+//  - 20260829 Visual Studio 6/Visual Basic 6を削除。Visual Studio.keyとの差分が
+//    あまりにも乏しく、独立したプリセットとして維持する価値が薄いと判断した
+//    (詳細はkeybind_presets/README.md参照)
 //  - 20260823 SublimeText.key/NotepadPlusPlus.keyを追加(IDR_KEYBINDPRESET_
 //    SUBLIMETEXT=249/IDR_KEYBINDPRESET_NOTEPADPLUSPLUS=251)。IDEよりテキスト
 //    エディタの方が対応不能な項目(デバッグ/リファクタリング等)が少なく素直に

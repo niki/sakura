@@ -10,8 +10,6 @@
 |---|---|
 | VSCode.key | Visual Studio Code |
 | VisualStudio.key | Visual Studio（現行版の既定キーマップ） |
-| VisualStudio6.key | Visual Studio 6 / Visual C++ 6 |
-| VisualBasic6.key | Visual Basic 6 |
 | ReSharper.key | ReSharper（Visual Studio 拡張） |
 | SublimeText.key | Sublime Text |
 | NotepadPlusPlus.key | Notepad++ |
@@ -38,10 +36,11 @@
   **VisualAssist.key は削除しました(20260823)。** 同様の趣旨(Alt+Oのみ)で追加していましたが、
   ReSharperと比べて知名度が低く、`VisualStudio.key`との差分もAlt+O 1行のみで独立したプリセットとして
   維持する価値が薄いと判断したため削除しました。
-- **VisualStudio6.key** は、VC++6/VS6世代で確実に安定していたと確認できる基本操作のみに絞っています
-  (Visual Studio 2005以降で追加された「すべて保存」「前后の場所へ移動」等は含めていません)。この世代・
-  素のVisual Studioにはヘッダ/ソース切り替えの組み込み機能が無い(Visual Assist等の拡張機能が無いと
-  使えない)と判断し、Alt+Oの割り当ては行っていません。
+- **VisualStudio6.key / VisualBasic6.key は削除しました(20260829)。** VC++6/VS6・VB6世代で確実に
+  安定していたと確認できる基本操作(ファイル操作・保存・閉じるなど)のみに絞って作成していましたが、
+  その結果`VisualStudio.key`との差分がほとんど無く(この世代にはヘッダ/ソース切り替え等の対象機能自体が
+  無いため、Alt+O等の差分も付けられない)、独立したプリセットとして維持する価値が薄いと判断したため
+  `VisualAssist.key`/`CSharp2005.key`/`VisualCpp2.key`と同様の理由で削除しました。
 - 行コメントの切り替え(Ctrl+/ 等)、複数選択、行の移動(Alt+↑/↓)など、サクラエディタに対応する機能が
   存在しないショートカットは割り当てていません。
 - **CSharp2005.key / VisualCpp2.key は削除しました。** 前者は`VisualStudio.key`と内容が完全に重複して
@@ -154,9 +153,6 @@
     [Microsoft Learnのデフォルトキーボードショートカット一覧](https://learn.microsoft.com/ja-jp/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio?view=visualstudio)
     で確認。VSCode.keyと同様、サクラの既定の「(矩形選択)カーソル上下移動」(Alt+↑/↓)を上書きしますが、
     Ctrl+Alt+↑/↓側は残るため矩形選択自体は引き続きキーボードで操作できます。
-  - **VisualStudio6.key / VisualBasic6.key には追加していません。** この機能はVisual Studio 2013で
-    追加されたもので、VC++6/VS6・VB6(1990年代)の時点では存在しないため、既存の「post-2005機能は
-    含めない」方針(前述)と整合的に対象外としました。
 - **TeraPad.key は追加していません。** Web検索で確認した限り、断片的なブログ記事はあるものの
   ショートカット一覧を網羅した公式・準公式資料が見つからず、`VisualCpp2.key`と同様に確認精度が
   低くなる懸念が強いため保留しています。付属の`Keys.txt`(TeraPad本体に同梱)等、一次資料が

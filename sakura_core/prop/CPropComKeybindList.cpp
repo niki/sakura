@@ -38,13 +38,15 @@ struct SKeybindPresetInfo {
 		廃止しプリセットコンボに一本化したため)。ビルド時点の既定値を常にそのまま使う
 		形になり、Default.key(既定のスナップショットをエクスポートしたもの)を
 		インポートする方式のような、ファイルが実際の既定値と食い違う心配が無くなる。
+	@date 20260829 Visual Studio 6 / Visual C++ 6・Visual Basic 6を削除。対象世代には
+		そもそも本機能(ヘッダ/ソース切り替え等)が無く、Visual Studio.keyとの差分が
+		あまりにも乏しく(基本操作がほぼ同一)、独立したプリセットとして維持する価値が
+		薄いと判断した(keybind_presets/README.md参照)。
 */
 static const SKeybindPresetInfo	s_KeybindPresetTable[] = {
 	{ 0,                                L"デフォルト" },
 	{ IDR_KEYBINDPRESET_VSCODE,        L"Visual Studio Code" },
 	{ IDR_KEYBINDPRESET_VISUALSTUDIO,  L"Visual Studio" },
-	{ IDR_KEYBINDPRESET_VISUALSTUDIO6, L"Visual Studio 6 / Visual C++ 6" },
-	{ IDR_KEYBINDPRESET_VISUALBASIC6,  L"Visual Basic 6" },
 	{ IDR_KEYBINDPRESET_RESHARPER,     L"ReSharper(Visual Studio拡張)" },
 	{ IDR_KEYBINDPRESET_SUBLIMETEXT,   L"Sublime Text" },
 	{ IDR_KEYBINDPRESET_NOTEPADPLUSPLUS, L"Notepad++" },
