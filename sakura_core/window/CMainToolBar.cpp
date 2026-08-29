@@ -478,14 +478,10 @@ LPARAM CMainToolBar::ToolBarOwnerDraw( LPNMCUSTOMDRAW pnmh )
 		// VS Code風フラットデザイン: ホバー/押下時に薄いハイライト矩形を描く
 		// (PreventVisualStyleでテーマのホットトラック描画を止めているため二重描画にはならない)
 		if( pnmh->uItemState & ( CDIS_SELECTED | CDIS_CHECKED ) ){
-			HBRUSH hbr = ::CreateSolidBrush( MODERN_TOOLBAR_PRESSED_COLOR );
-			::FillRect( pnmh->hdc, &pnmh->rc, hbr );
-			::DeleteObject( hbr );
+			FillRectWithColor( pnmh->hdc, &pnmh->rc, MODERN_TOOLBAR_PRESSED_COLOR );
 		}
 		else if( pnmh->uItemState & CDIS_HOT ){
-			HBRUSH hbr = ::CreateSolidBrush( MODERN_TOOLBAR_HOVER_COLOR );
-			::FillRect( pnmh->hdc, &pnmh->rc, hbr );
-			::DeleteObject( hbr );
+			FillRectWithColor( pnmh->hdc, &pnmh->rc, MODERN_TOOLBAR_HOVER_COLOR );
 		}
 #endif // NKMM_
 		return CDRF_NOTIFYPOSTPAINT;

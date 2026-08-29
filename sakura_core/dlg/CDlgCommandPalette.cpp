@@ -284,9 +284,7 @@ static LRESULT CALLBACK PaletteFilterEditSubclassProc(
 		// 再描画させる。強調枠はフィルタ欄自身の外側(親ダイアログのクライアント領域)に
 		// 描いているため、フィルタ欄自身の再描画だけでは現れたり消えたりしない 20260822
 		HWND	hwndDlg = ::GetParent( hwnd );
-		RECT	rc;
-		::GetWindowRect( hwnd, &rc );
-		::MapWindowPoints( HWND_DESKTOP, hwndDlg, (POINT*)&rc, 2 );
+		RECT	rc = GetChildRectInParent( hwnd, hwndDlg );
 		// 強調枠はこの矩形からDpiScaleX(2)/DpiScaleY(2)外側にDpiScaleX(1)幅で描かれるため、
 		// 無効化する範囲もそれを覆えるだけの余裕を持たせる。bEraseはTRUEにしないと
 		// 背景が消されないまま再描画されてしまい、フォーカスが外れて枠が消えるはずの
@@ -334,9 +332,7 @@ static LRESULT CALLBACK PaletteDlgSubclassProc(
 		// COLOR_HOTLIGHTを流用し、見た目の統一感を持たせる 20260822
 		HWND	hEditFilter = ::GetDlgItem( hwnd, IDC_EDIT_COMMANDPALETTE_FILTER );
 		if( NULL != hEditFilter && ::GetFocus() == hEditFilter ){
-			RECT	rcEdit;
-			::GetWindowRect( hEditFilter, &rcEdit );
-			::MapWindowPoints( HWND_DESKTOP, hwnd, (POINT*)&rcEdit, 2 );
+			RECT	rcEdit = GetChildRectInParent( hEditFilter, hwnd );
 			::InflateRect( &rcEdit, DpiScaleX( 2 ), DpiScaleY( 2 ) );
 			HPEN	hFocusPen = ::CreatePen( PS_SOLID, DpiScaleX( 1 ), ::GetSysColor( COLOR_HOTLIGHT ) );
 			::SelectObject( hdc, hFocusPen );
@@ -352,9 +348,7 @@ static LRESULT CALLBACK PaletteDlgSubclassProc(
 		CDlgCommandPalette*	pDlg = (CDlgCommandPalette*)::GetWindowLongPtr( hwnd, DWLP_USER );
 		HWND	hListView = ::GetDlgItem( hwnd, IDC_LIST_COMMANDPALETTE );
 		if( NULL != pDlg && NULL != hListView ){
-			RECT	rcList;
-			::GetWindowRect( hListView, &rcList );
-			::MapWindowPoints( HWND_DESKTOP, hwnd, (POINT*)&rcList, 2 );
+			RECT	rcList = GetChildRectInParent( hListView, hwnd );
 			RECT	rcFooter = { rc.left, rcList.bottom, rc.right - DpiScaleX( 8 ), rc.bottom - DpiScaleY( 1 ) };
 			wchar_t	szCount[32];
 			::wsprintf( szCount, L"%d 件", pDlg->GetMatchedRowCount() );
@@ -409,10 +403,6 @@ CDlgCommandPalette::CDlgCommandPalette()
 	, m_nChromeHeight( 0 )
 	, m_nListRowHeight( 0 )
 	, m_nListBorderHeight( 0 )
-	, m_nSlideX( 0 )
-	, m_nSlideTargetY( 0 )
-	, m_nSlideStartY( 0 )
-	, m_dwSlideStartTick( 0 )
 	, m_bReactivateParentOnClose( false )
 	, m_hFontList( NULL )
 	, m_hFontSub( NULL )
@@ -465,19 +455,10 @@ HWND CDlgCommandPalette::DoModeless( HINSTANCE hInstance, HWND hwndParent, CFunc
 }
 
 
-/*! 上からのスライドインアニメーションを開始する(CDlgFind::StartSlideAnimationと同じ方式) 20260818 */
+/*! 上からのスライドインアニメーションを開始する(位置計算はCSlideInAnimator、CDlgFindと共通) 20260818 20260829 */
 void CDlgCommandPalette::StartSlideAnimation()
 {
-	RECT	rc;
-	::GetWindowRect( GetHwnd(), &rc );
-
-	m_nSlideX          = rc.left;
-	m_nSlideTargetY    = rc.top;
-	m_nSlideStartY     = rc.top - DpiScaleY( SLIDE_DISTANCE_DIP );
-	m_dwSlideStartTick = ::GetTickCount();
-
-	::SetWindowPos( GetHwnd(), NULL, m_nSlideX, m_nSlideStartY, 0, 0,
-		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+	m_cSlideAnimator.Start( GetHwnd(), SLIDE_DURATION_MS, SLIDE_DISTANCE_DIP );
 	::ShowWindow( GetHwnd(), SW_SHOW );	// 表示とアクティブ化(絞り込み欄へフォーカス)
 	// ShowWindow直後は背景(灰色)だけ先に見えて、一覧などの子コントロールの描画が
 	// 1フレーム遅れて追いつく形になり一瞬ちらつくため、ここで子コントロールも含めて
@@ -506,22 +487,9 @@ BOOL CDlgCommandPalette::OnTimer( WPARAM wParam )
 		return CDialog::OnTimer( wParam );
 	}
 
-	DWORD	dwElapsed = ::GetTickCount() - m_dwSlideStartTick;
-	if( dwElapsed >= (DWORD)SLIDE_DURATION_MS ){
-		::SetWindowPos( GetHwnd(), NULL, m_nSlideX, m_nSlideTargetY, 0, 0,
-			SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+	if( !m_cSlideAnimator.OnTimer( GetHwnd() ) ){
 		::KillTimer( GetHwnd(), ID_TIMER_PALETTE_SLIDEIN );
-		return TRUE;
 	}
-
-	// ease-out (3次): 1 - (1-t)^3
-	double	t = (double)dwElapsed / SLIDE_DURATION_MS;
-	double	u = 1.0 - t;
-	double	eased = 1.0 - u * u * u;
-	int	y = m_nSlideStartY + (int)( ( m_nSlideTargetY - m_nSlideStartY ) * eased );
-
-	::SetWindowPos( GetHwnd(), NULL, m_nSlideX, y, 0, 0,
-		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
 	return TRUE;
 }
 
@@ -645,19 +613,13 @@ BOOL CDlgCommandPalette::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lPara
 	// (既定フォントそのままの大きさ)にし、ファイル名との違いを一目で
 	// わかるようにする 20260821
 	{
-		HFONT	hFontBase = (HFONT)::SendMessage( hListView, WM_GETFONT, 0, 0 );
-		LOGFONT	lf;
-		::ZeroMemory( &lf, sizeof_raw( lf ) );
-		if( NULL != hFontBase && 0 != ::GetObject( hFontBase, sizeof( lf ), &lf ) ){
-			LOGFONT	lfList = lf;
-			lfList.lfHeight = (LONG)( lfList.lfHeight * 13 / 10 );
-			lfList.lfWeight = FW_NORMAL;
-			m_hFontList = ::CreateFontIndirect( &lfList );
-
-			LOGFONT	lfSub = lf;
-			lfSub.lfWeight = FW_NORMAL;
-			m_hFontSub = ::CreateFontIndirect( &lfSub );
-		}
+		m_hFontList = CreateFontVariant( hListView, []( LOGFONT& lf ){
+			lf.lfHeight = (LONG)( lf.lfHeight * 13 / 10 );
+			lf.lfWeight = FW_NORMAL;
+		} );
+		m_hFontSub = CreateFontVariant( hListView, []( LOGFONT& lf ){
+			lf.lfWeight = FW_NORMAL;
+		} );
 	}
 
 	::SetWindowSubclass( GetItemHwnd( IDC_EDIT_COMMANDPALETTE_FILTER ), PaletteFilterEditSubclassProc, 0, 0 );
@@ -835,14 +797,10 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 					// どんどん濃く重なって見える不具合として実際に発生した。DrawThemeBackground()の
 					// 前に必ずCOLOR_WINDOWで一度下地をクリアしておくことで、何度描き直しても
 					// 常に同じ結果になるようにする 20260821
-					HBRUSH	hBrushBase = ::CreateSolidBrush( ::GetSysColor( COLOR_WINDOW ) );
-					::FillRect( hdc, &rc, hBrushBase );
-					::DeleteObject( hBrushBase );
+					FillRectWithColor( hdc, &rc, ::GetSysColor( COLOR_WINDOW ) );
 					CUxTheme::getInstance()->DrawThemeBackground( m_hThemeListView, hdc, LVP_LISTITEM, LISS_SELECTED, &rc, NULL );
 				}else{
-					HBRUSH	hBrush = ::CreateSolidBrush( ::GetSysColor( bSelected ? COLOR_HIGHLIGHT : COLOR_WINDOW ) );
-					::FillRect( hdc, &rc, hBrush );
-					::DeleteObject( hBrush );
+					FillRectWithColor( hdc, &rc, ::GetSysColor( bSelected ? COLOR_HIGHLIGHT : COLOR_WINDOW ) );
 				}
 			}
 

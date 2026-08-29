@@ -1660,9 +1660,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		if( bSelected ){
 			RECT rcCurLine = rcFullItem;
 			rcCurLine.top = rcCurLine.bottom - DpiScaleY(3);
-			HBRUSH hbrCurLine = ::CreateSolidBrush( m_crAccentColor );
-			::FillRect( gr, &rcCurLine, hbrCurLine );
-			::DeleteObject( hbrCurLine );
+			FillRectWithColor( gr, &rcCurLine, m_crAccentColor );
 		}
 #endif // NKMM_
 

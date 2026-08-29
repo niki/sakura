@@ -17,6 +17,7 @@
 #include "dlg/CDialog.h"
 #include "Funccode_enum.h"
 #include "extmodule/CUxTheme.h"
+#include "util/CSlideInAnimator.h"
 
 #include <vector>
 #include <string>
@@ -63,10 +64,7 @@ private:
 	LRESULT OnListCustomDraw( LPARAM lParam );	//!< 一覧(VSCode風の1行=アイコン+名前+右寄せ)の描画
 	int GetShellIconIndex( const std::wstring& sPath );	//!< パスの拡張子から共有システムアイコン一覧の索引を得る(拡張子ごとにキャッシュ)
 
-	int		m_nSlideX;			//!< スライドインアニメーション中のX座標(固定)
-	int		m_nSlideTargetY;	//!< スライドインアニメーションの最終Y座標
-	int		m_nSlideStartY;		//!< スライドインアニメーションの開始Y座標
-	DWORD	m_dwSlideStartTick;	//!< スライドインアニメーション開始時刻(GetTickCount)
+	CSlideInAnimator	m_cSlideAnimator;	//!< 上からのスライドインアニメーション(CDlgFindと共通) 20260829
 
 	bool	m_bReactivateParentOnClose;	//!< CloseOnDeactivate()で親ウィンドウを前面に戻すかどうか
 

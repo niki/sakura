@@ -172,6 +172,80 @@ private:
 	HWND  m_hwnd;
 };
 
+// 以下4つは、複数のNKMM_機能で重複していた定型コードを共通化したヘルパー(20260829)。
+// 単一の機能フラグに属さないため、実際に使っている機能フラグのORでガードする
+// (新しい呼び出し元を追加する際は、このORにもその機能フラグを足すこと)
+
+#if defined(NKMM_COMMAND_PALETTE) || defined(NKMM_FIX_KEYBIND_LIST_TAB) || defined(NKMM_MODERN_TOOLBAR) || defined(NKMM_FIX_TABWND)
+//! 単色ブラシでrcを塗りつぶす(CreateSolidBrush+FillRect+DeleteObjectの定型コード置き換え用)
+inline void FillRectWithColor(HDC hdc, const RECT* prc, COLORREF cr)
+{
+	HBRUSH	hbr = ::CreateSolidBrush(cr);
+	::FillRect(hdc, prc, hbr);
+	::DeleteObject(hbr);
+}
+#endif // NKMM_COMMAND_PALETTE || NKMM_FIX_KEYBIND_LIST_TAB || NKMM_MODERN_TOOLBAR || NKMM_FIX_TABWND
+
+#if defined(NKMM_COMMAND_PALETTE) || defined(NKMM_FIX_OUTLINE) || defined(NKMM_FIX_TYPELIST_EMBED_ALLTABS)
+//! hwndChildのウィンドウ矩形(スクリーン座標)を、hwndParentのクライアント座標に変換して返す
+inline RECT GetChildRectInParent(HWND hwndChild, HWND hwndParent)
+{
+	RECT	rc;
+	::GetWindowRect(hwndChild, &rc);
+	::MapWindowPoints(HWND_DESKTOP, hwndParent, (POINT*)&rc, 2);
+	return rc;
+}
+#endif // NKMM_COMMAND_PALETTE || NKMM_FIX_OUTLINE || NKMM_FIX_TYPELIST_EMBED_ALLTABS
+
+#if defined(NKMM_FIX_OUTLINE_FILTER) || defined(NKMM_FIX_KEYBIND_LIST_TAB)
+//! Editコントロール(hwnd)が空かつ非フォーカス時に、ヒント文字列(pszHint)を薄い色(crHintText)で
+//! 自前描画する。EM_SETCUEBANNERは文字色を指定できずシステム既定の濃さになってしまうための
+//! 代替。呼び出し元のWM_PAINTハンドラから呼び、描画した(=trueが返った)場合は0を返すこと
+inline bool PaintEditPlaceholderHintIfEmpty(HWND hwnd, LPCTSTR pszHint, COLORREF crHintText)
+{
+	TCHAR	szText[8];
+	::GetWindowText(hwnd, szText, _countof(szText));
+	if (_T('\0') != szText[0] || ::GetFocus() == hwnd) {
+		return false;
+	}
+	PAINTSTRUCT	ps;
+	HDC	hdc = ::BeginPaint(hwnd, &ps);
+	RECT	rc;
+	::GetClientRect(hwnd, &rc);
+	::FillRect(hdc, &rc, (HBRUSH)(COLOR_WINDOW + 1));
+	::SetBkMode(hdc, TRANSPARENT);
+	::SetTextColor(hdc, crHintText);
+	HFONT	hFont = (HFONT)::SendMessage(hwnd, WM_GETFONT, 0, 0);
+	HFONT	hOldFont = (NULL != hFont) ? (HFONT)::SelectObject(hdc, hFont) : NULL;
+	RECT	rcLabel = rc;
+	rcLabel.left += 2;
+	::DrawText(hdc, pszHint, -1, &rcLabel, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+	if (NULL != hOldFont) {
+		::SelectObject(hdc, hOldFont);
+	}
+	::EndPaint(hwnd, &ps);
+	return true;
+}
+#endif // NKMM_FIX_OUTLINE_FILTER || NKMM_FIX_KEYBIND_LIST_TAB
+
+#if defined(NKMM_COMMAND_PALETTE) || defined(NKMM_FIX_KEYBIND_LIST_TAB)
+//! hwndBaseの現在のフォント(WM_GETFONT)のLOGFONTを取得し、fnModifyで加工した内容から
+//! 新しいフォントを作って返す(呼び出し側で破棄すること)。取得元フォントが無い、または
+//! LOGFONTの取得に失敗した場合はfnModifyを呼ばずNULLを返す
+template<typename ModifyFunc>
+inline HFONT CreateFontVariant(HWND hwndBase, ModifyFunc fnModify)
+{
+	HFONT	hFontBase = (HFONT)::SendMessage(hwndBase, WM_GETFONT, 0, 0);
+	LOGFONT	lf;
+	::ZeroMemory(&lf, sizeof(lf));
+	if (NULL == hFontBase || 0 == ::GetObject(hFontBase, sizeof(lf), &lf)) {
+		return NULL;
+	}
+	fnModify(lf);
+	return ::CreateFontIndirect(&lf);
+}
+#endif // NKMM_COMMAND_PALETTE || NKMM_FIX_KEYBIND_LIST_TAB
+
 class CDCFont
 {
 public:

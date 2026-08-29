@@ -278,11 +278,8 @@ void CDlgTypeList::CreateEmbeddedColorPanel()
 
 	HWND hwndList   = GetDlgItem( GetHwnd(), IDC_LIST_TYPES );
 	HWND hwndRefBtn = GetDlgItem( GetHwnd(), IDOK );	// 「設定変更(S)」ボタン(右端の目安)
-	RECT rcList, rcBtn;
-	::GetWindowRect( hwndList, &rcList );
-	::GetWindowRect( hwndRefBtn, &rcBtn );
-	::MapWindowPoints( NULL, GetHwnd(), (LPPOINT)&rcList, 2 );
-	::MapWindowPoints( NULL, GetHwnd(), (LPPOINT)&rcBtn, 2 );
+	RECT rcList = GetChildRectInParent( hwndList, GetHwnd() );
+	RECT rcBtn  = GetChildRectInParent( hwndRefBtn, GetHwnd() );
 
 	// 一覧側とタブ側の間にセパレータ(縦の区切り線)を入れるための余白(ダイアログ単位)
 	RECT rcSep = { 0, 0, 14, 0 };
@@ -391,9 +388,7 @@ void CDlgTypeList::CreateEmbeddedColorPanel()
 	// 表示範囲に合わせてダイアログ全体を詰める
 	{
 		HWND hwndHelpBtn = GetDlgItem( GetHwnd(), IDC_BUTTON_HELP );
-		RECT rcHelp;
-		::GetWindowRect( hwndHelpBtn, &rcHelp );
-		::MapWindowPoints( NULL, GetHwnd(), (LPPOINT)&rcHelp, 2 );
+		RECT rcHelp = GetChildRectInParent( hwndHelpBtn, GetHwnd() );
 
 		RECT rcSmallMargin = { 0, 0, 7, 7 };
 		::MapDialogRect( GetHwnd(), &rcSmallMargin );

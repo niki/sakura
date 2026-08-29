@@ -15,6 +15,9 @@
 #include "dlg/CDialog.h"
 #include "recent/CRecentSearch.h"
 #include "util/window.h"
+#ifdef NKMM_FIX_FIND_DIALOG_FLAT
+#include "util/CSlideInAnimator.h"
+#endif // NKMM_
 #ifndef SAKURA_CDLGFIND_H_
 #define SAKURA_CDLGFIND_H_
 
@@ -64,10 +67,7 @@ public:
 #endif // NKMM_
 
 #ifdef NKMM_FIX_FIND_DIALOG_FLAT
-	int		m_nSlideX;				// スライドインアニメーション中のX座標(固定)
-	int		m_nSlideTargetY;		// スライドインアニメーションの最終Y座標
-	int		m_nSlideStartY;			// スライドインアニメーションの開始Y座標
-	DWORD	m_dwSlideStartTick;		// スライドインアニメーション開始時刻(GetTickCount)
+	CSlideInAnimator		m_cSlideAnimator;	// 20260829 上からのスライドインアニメーション(CDlgCommandPaletteと共通)
 	CFontAutoDeleter		m_cFontToggleButtons;	// 20260801 単語単位/大文字小文字/正規表現トグルボタンのボールド体フォント
 #endif // NKMM_
 

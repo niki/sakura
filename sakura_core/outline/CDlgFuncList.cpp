@@ -131,26 +131,7 @@ static LRESULT CALLBACK OutlineFilterEditSubclassProc(
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData )
 {
 	if( WM_PAINT == uMsg ){
-		TCHAR szText[8];
-		::GetWindowText( hwnd, szText, _countof(szText) );
-		if( _T('\0') == szText[0] && ::GetFocus() != hwnd ){
-			PAINTSTRUCT ps;
-			HDC hdc = ::BeginPaint( hwnd, &ps );
-			RECT rc;
-			::GetClientRect( hwnd, &rc );
-			::FillRect( hdc, &rc, (HBRUSH)( COLOR_WINDOW + 1 ) );
-			::SetBkMode( hdc, TRANSPARENT );
-			::SetTextColor( hdc, NKMM_OUTLINE_FILTER_PLACEHOLDER_COLOR );
-			HFONT hFont = (HFONT)::SendMessage( hwnd, WM_GETFONT, 0, 0 );
-			HFONT hOldFont = ( NULL != hFont ) ? (HFONT)::SelectObject( hdc, hFont ) : NULL;
-			RECT rcLabel = rc;
-			rcLabel.left += 2;
-			::DrawText( hdc, LS(STR_DLGFNCLST_FILTER_HINT), -1, &rcLabel,
-				DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX );
-			if( NULL != hOldFont ){
-				::SelectObject( hdc, hOldFont );
-			}
-			::EndPaint( hwnd, &ps );
+		if( PaintEditPlaceholderHintIfEmpty( hwnd, LS(STR_DLGFNCLST_FILTER_HINT), NKMM_OUTLINE_FILTER_PLACEHOLDER_COLOR ) ){
 			return 0;
 		}
 	}else if( WM_SETFOCUS == uMsg || WM_KILLFOCUS == uMsg ){
@@ -553,9 +534,7 @@ void CDlgFuncList::SetData()
 	// 受けなくなる。ツリー表示(折りたたみ/展開)はそのまま維持できる。
 	const int TREE_RECREATE_THRESHOLD = 500;
 	if( m_nTreeItemCount > TREE_RECREATE_THRESHOLD ){
-		RECT rcOldTree;
-		::GetWindowRect( hwndTree, &rcOldTree );
-		::MapWindowPoints( NULL, GetHwnd(), (LPPOINT)&rcOldTree, 2 );
+		RECT rcOldTree = GetChildRectInParent( hwndTree, GetHwnd() );
 		LONG_PTR nOldStyle = ::GetWindowLongPtr( hwndTree, GWL_STYLE );
 		LONG_PTR nOldExStyle = ::GetWindowLongPtr( hwndTree, GWL_EXSTYLE );
 		HFONT hOldTreeFont = (HFONT)::SendMessage( hwndTree, WM_GETFONT, 0, 0 );

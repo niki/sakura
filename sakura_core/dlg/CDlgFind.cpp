@@ -417,21 +417,13 @@ namespace {
 	OnInitDialog で決定済みの最終表示位置(現在のウィンドウ位置)より
 	少し上にウィンドウを動かしてから表示し、WM_TIMER で実際に
 	ウィンドウ位置を最終位置まで動かすことでアニメーションさせる。
+	実際の位置計算はCSlideInAnimator(CDlgCommandPaletteと共通)に任せる 20260829
 
 	@date 2026.07.27 追加
 */
 void CDlgFind::StartSlideAnimation()
 {
-	RECT rc;
-	::GetWindowRect( GetHwnd(), &rc );
-
-	m_nSlideX         = rc.left;
-	m_nSlideTargetY   = rc.top;
-	m_nSlideStartY    = rc.top - DpiScaleY(SLIDE_DISTANCE_DIP);
-	m_dwSlideStartTick = ::GetTickCount();
-
-	::SetWindowPos( GetHwnd(), NULL, m_nSlideX, m_nSlideStartY, 0, 0,
-		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+	m_cSlideAnimator.Start( GetHwnd(), SLIDE_DURATION_MS, SLIDE_DISTANCE_DIP );
 	::ShowWindow( GetHwnd(), SW_SHOW );	// 表示とアクティブ化(検索文字列欄へフォーカス)
 
 	::SetTimer( GetHwnd(), ID_TIMER_FIND_SLIDEIN, SLIDE_INTERVAL_MS, NULL );
@@ -443,22 +435,9 @@ BOOL CDlgFind::OnTimer( WPARAM wParam )
 		return CDialog::OnTimer( wParam );
 	}
 
-	DWORD dwElapsed = ::GetTickCount() - m_dwSlideStartTick;
-	if( dwElapsed >= (DWORD)SLIDE_DURATION_MS ){
-		::SetWindowPos( GetHwnd(), NULL, m_nSlideX, m_nSlideTargetY, 0, 0,
-			SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+	if( !m_cSlideAnimator.OnTimer( GetHwnd() ) ){
 		::KillTimer( GetHwnd(), ID_TIMER_FIND_SLIDEIN );
-		return TRUE;
 	}
-
-	// ease-out (3次): 1 - (1-t)^3
-	double t = (double)dwElapsed / SLIDE_DURATION_MS;
-	double u = 1.0 - t;
-	double eased = 1.0 - u * u * u;
-	int y = m_nSlideStartY + (int)((m_nSlideTargetY - m_nSlideStartY) * eased);
-
-	::SetWindowPos( GetHwnd(), NULL, m_nSlideX, y, 0, 0,
-		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
 	return TRUE;
 }
 #endif // NKMM_

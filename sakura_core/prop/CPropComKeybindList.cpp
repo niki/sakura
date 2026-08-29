@@ -12,6 +12,7 @@
 #include "env/CShareData.h"	// CShareData::ResetKeyBindToDefault (初期化ボタン用)
 #include "typeprop/CImpExpManager.h"	// CImpExpKeybind (インポート/エクスポートボタン用)
 #include "util/os.h"	// PreventVisualStyle (カテゴリ区切り行・キー警告色の背景色プレビュー用)
+#include "util/window.h"	// FillRectWithColor/PaintEditPlaceholderHintIfEmpty/CreateFontVariant
 #include "sakura_rc.h"
 #include "sakura.hh"
 
@@ -210,26 +211,7 @@ static LRESULT CALLBACK FilterEditSubclassProc(
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData )
 {
 	if( WM_PAINT == uMsg ){
-		TCHAR	szText[8];
-		::GetWindowText( hwnd, szText, _countof(szText) );
-		if( L'\0' == szText[0] && ::GetFocus() != hwnd ){
-			PAINTSTRUCT	ps;
-			HDC	hdc = ::BeginPaint( hwnd, &ps );
-			RECT	rc;
-			::GetClientRect( hwnd, &rc );
-			::FillRect( hdc, &rc, (HBRUSH)( COLOR_WINDOW + 1 ) );
-			::SetBkMode( hdc, TRANSPARENT );
-			::SetTextColor( hdc, NKMM_KEYBINDLIST_PLACEHOLDER_COLOR );
-			HFONT	hFont = (HFONT)::SendMessage( hwnd, WM_GETFONT, 0, 0 );
-			HFONT	hOldFont = ( NULL != hFont ) ? (HFONT)::SelectObject( hdc, hFont ) : NULL;
-			RECT	rcLabel = rc;
-			rcLabel.left += 2;
-			::DrawText( hdc, LS(STR_ERR_DLGKEYBINDLIST_FILTERHINT), -1, &rcLabel,
-				DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX );
-			if( NULL != hOldFont ){
-				::SelectObject( hdc, hOldFont );
-			}
-			::EndPaint( hwnd, &ps );
+		if( PaintEditPlaceholderHintIfEmpty( hwnd, LS(STR_ERR_DLGKEYBINDLIST_FILTERHINT), NKMM_KEYBINDLIST_PLACEHOLDER_COLOR ) ){
 			return 0;
 		}
 	}else if( WM_SETFOCUS == uMsg || WM_KILLFOCUS == uMsg ){
@@ -500,26 +482,7 @@ static LRESULT CALLBACK CaptureEditSubclassProc(
 	}else if( WM_PAINT == uMsg ){
 		// 未入力かつ非フォーカス時は、絞り込み欄(FilterEditSubclassProc)と同じ要領で
 		// ヒント文字を薄い色で自前描画する 20260810
-		TCHAR	szText[8];
-		::GetWindowText( hwnd, szText, _countof(szText) );
-		if( L'\0' == szText[0] && ::GetFocus() != hwnd ){
-			PAINTSTRUCT	ps;
-			HDC	hdc = ::BeginPaint( hwnd, &ps );
-			RECT	rc;
-			::GetClientRect( hwnd, &rc );
-			::FillRect( hdc, &rc, (HBRUSH)( COLOR_WINDOW + 1 ) );
-			::SetBkMode( hdc, TRANSPARENT );
-			::SetTextColor( hdc, NKMM_KEYBINDLIST_PLACEHOLDER_COLOR );
-			HFONT	hFont = (HFONT)::SendMessage( hwnd, WM_GETFONT, 0, 0 );
-			HFONT	hOldFont = ( NULL != hFont ) ? (HFONT)::SelectObject( hdc, hFont ) : NULL;
-			RECT	rcLabel = rc;
-			rcLabel.left += 2;
-			::DrawText( hdc, LS(STR_ERR_DLGKEYBINDLIST_CAPTUREHINT), -1, &rcLabel,
-				DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX );
-			if( NULL != hOldFont ){
-				::SelectObject( hdc, hOldFont );
-			}
-			::EndPaint( hwnd, &ps );
+		if( PaintEditPlaceholderHintIfEmpty( hwnd, LS(STR_ERR_DLGKEYBINDLIST_CAPTUREHINT), NKMM_KEYBINDLIST_PLACEHOLDER_COLOR ) ){
 			return 0;
 		}
 	}else if( WM_SETFOCUS == uMsg || WM_KILLFOCUS == uMsg ){
@@ -673,13 +636,9 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			// 種別(カテゴリ)見出し行を[]で囲む代わりに太字で強調するためのフォントを
 			// リストの現在のフォントから作る(WM_DESTROYで破棄する) 20260803
 			{
-				HFONT	hListFont = (HFONT)::SendMessage( hListView, WM_GETFONT, 0, 0 );
-				LOGFONT	lf;
-				::ZeroMemory( &lf, sizeof_raw( lf ) );
-				if( NULL != hListFont && ::GetObject( hListFont, sizeof_raw( lf ), &lf ) ){
+				m_hKeybindListBoldFont = CreateFontVariant( hListView, []( LOGFONT& lf ){
 					lf.lfWeight = FW_BOLD;
-					m_hKeybindListBoldFont = ::CreateFontIndirect( &lf );
-				}
+				} );
 			}
 
 #ifdef NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
@@ -688,15 +647,11 @@ INT_PTR CPropKeybindList::DispatchEvent(
 			// 少し大きいフォント(11pt相当)を専用に作って設定する(WM_DESTROYで破棄する) 20260814
 			{
 				HWND	hCapture = ::GetDlgItem( hwndDlg, IDC_EDIT_KEYBINDLIST_CAPTURE );
-				HFONT	hCaptureBaseFont = (HFONT)::SendMessage( hCapture, WM_GETFONT, 0, 0 );
-				LOGFONT	lfCapture;
-				::ZeroMemory( &lfCapture, sizeof_raw( lfCapture ) );
-				if( NULL != hCaptureBaseFont && ::GetObject( hCaptureBaseFont, sizeof_raw( lfCapture ), &lfCapture ) ){
-					lfCapture.lfHeight = ::MulDiv( lfCapture.lfHeight, 11, 9 );	// 9pt -> 11pt相当
-					m_hKeybindListCaptureFont = ::CreateFontIndirect( &lfCapture );
-					if( NULL != m_hKeybindListCaptureFont ){
-						::SendMessage( hCapture, WM_SETFONT, (WPARAM)m_hKeybindListCaptureFont, TRUE );
-					}
+				m_hKeybindListCaptureFont = CreateFontVariant( hCapture, []( LOGFONT& lf ){
+					lf.lfHeight = ::MulDiv( lf.lfHeight, 11, 9 );	// 9pt -> 11pt相当
+				} );
+				if( NULL != m_hKeybindListCaptureFont ){
+					::SendMessage( hCapture, WM_SETFONT, (WPARAM)m_hKeybindListCaptureFont, TRUE );
 				}
 			}
 #endif // NKMM_FIX_KEYBIND_CAPTURE_LIVEPREVIEW
@@ -899,9 +854,7 @@ INT_PTR CPropKeybindList::DispatchEvent(
 					crText = ::GetSysColor( COLOR_WINDOWTEXT );
 				}
 
-				HBRUSH	hbrBack = ::CreateSolidBrush( crBack );
-				::FillRect( pdis->hDC, &pdis->rcItem, hbrBack );
-				::DeleteObject( hbrBack );
+				FillRectWithColor( pdis->hDC, &pdis->rcItem, crBack );
 
 				if( (int)pdis->itemID >= 0 ){
 					TCHAR	szText[64];
@@ -933,9 +886,7 @@ INT_PTR CPropKeybindList::DispatchEvent(
 				bool	bConflict = bChecked && ( 0 <= FindMatchingRow( hwndDlg ) );
 
 				COLORREF	crBack = bConflict ? NKMM_KEYBINDLIST_WARN_COLOR : ::GetSysColor( COLOR_3DFACE );
-				HBRUSH	hbrBack = ::CreateSolidBrush( crBack );
-				::FillRect( pdis->hDC, &pdis->rcItem, hbrBack );
-				::DeleteObject( hbrBack );
+				FillRectWithColor( pdis->hDC, &pdis->rcItem, crBack );
 
 				RECT	rcCheck = pdis->rcItem;
 				rcCheck.right = rcCheck.left + 12;
@@ -1245,9 +1196,7 @@ INT_PTR CPropKeybindList::DispatchEvent(
 
 							// 種別固定表示オーバーレイ(WM_CTLCOLORSTATIC)と必ず同じ色になるよう、
 							// 固定値のNKMM_KEYBINDLIST_HEADER_COLORを使う 20260805
-							HBRUSH	hbrBack = ::CreateSolidBrush( NKMM_KEYBINDLIST_HEADER_COLOR );
-							::FillRect( hdc, &rcItem, hbrBack );
-							::DeleteObject( hbrBack );
+							FillRectWithColor( hdc, &rcItem, NKMM_KEYBINDLIST_HEADER_COLOR );
 
 							::SetBkMode( hdc, TRANSPARENT );
 							::SetTextColor( hdc, ::GetSysColor( COLOR_BTNTEXT ) );
@@ -1290,9 +1239,7 @@ INT_PTR CPropKeybindList::DispatchEvent(
 							rcItem.right = rcClient.right;	// 複数列ぶんまとめて全幅塗るため
 							::InflateRect( &rcItem, 0, 1 );	// 行間に隙間が見えないように上下に広げる
 
-							HBRUSH	hbrBack = ::CreateSolidBrush( NKMM_KEYBINDLIST_SELECTED_COLOR );
-							::FillRect( hdc, &rcItem, hbrBack );
-							::DeleteObject( hbrBack );
+							FillRectWithColor( hdc, &rcItem, NKMM_KEYBINDLIST_SELECTED_COLOR );
 
 							::SetBkMode( hdc, TRANSPARENT );
 							::SetTextColor( hdc, NKMM_KEYBINDLIST_SELECTED_TEXT_COLOR );
@@ -1344,9 +1291,7 @@ INT_PTR CPropKeybindList::DispatchEvent(
 								rcItem.right = rcClient.right;
 								::InflateRect( &rcItem, 0, 1 );
 
-								HBRUSH	hbrBack = ::CreateSolidBrush( ::GetSysColor( COLOR_WINDOW ) );
-								::FillRect( hdc, &rcItem, hbrBack );
-								::DeleteObject( hbrBack );
+								FillRectWithColor( hdc, &rcItem, ::GetSysColor( COLOR_WINDOW ) );
 
 								::SetBkMode( hdc, TRANSPARENT );
 								::SetTextColor( hdc, ::GetSysColor( COLOR_WINDOWTEXT ) );
