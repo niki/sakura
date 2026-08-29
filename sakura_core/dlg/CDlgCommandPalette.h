@@ -47,6 +47,7 @@ public:
 	void FollowParentWindow();	//!< 親ウィンドウ(エディタ)の移動・サイズ変更に追従して表示位置を更新する
 	void LivePreviewSelection( int nItemIndex );	//!< 一覧の選択行がROWKIND_OUTLINE/BOOKMARKなら、確定前にライブでカーソルを移動する。フィルタ欄サブクラスプロシージャ側の矢印キー処理(MoveSelection)からも呼べるようpublic 20260821
 	int GetSelectedDispIndex() const { return m_nSelectedDispIndex; }	//!< 現在選択中の表示行索引(-1=選択なし)。MoveSelection()がLVS_OWNERDATA下でのListView_GetNextItem()の不確実性を避けてこれを頼るためpublic 20260821
+	int GetMatchedRowCount() const { return (int)m_vMatchedRowIndices.size(); }	//!< 絞り込み後の件数。右下の件数表示用にPaletteDlgSubclassProc(WM_PAINT)から呼べるようpublic 20260829
 
 protected:
 	BOOL OnInitDialog( HWND, WPARAM, LPARAM );
@@ -94,6 +95,13 @@ private:
 		std::wstring	sType;		//!< 種別表示("コマンド"/"ウィンドウ"/"最近使ったファイル"/"アウトライン"/"ブックマーク")
 		std::wstring	sId;		//!< コマンドIDの表示文字列(コマンド行以外は空)
 		std::wstring	sSub;		//!< コマンドのショートカットキー、またはファイルのフルパス
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI
+		std::string	sFuzzyTarget;	//!< PrecomputeFuzzyMatchTarget(sName)の結果。行を積んだ時点(BuildAllRows/
+									//!< BuildOutlineRows/BuildBookmarkRows)で1回だけ計算しておき、UpdateList()の
+									//!< 絞り込みループから毎回FuzzyMatchJapaneseCached()へ渡す。sNameの正規化・
+									//!< 漢字読み展開はクエリに依存せず行の内容だけで決まるため、キー入力のたびに
+									//!< 全行分再計算すると数万行規模で数秒かかっていた不具合の対策 20260829
+#endif // NKMM_COMMAND_PALETTE_ROMAJI
 	};
 
 	void BuildAllRows();

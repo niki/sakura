@@ -30,6 +30,26 @@
 */
 bool FuzzyMatchJapanese( const std::wstring& sQuery, const std::wstring& sText, int* pOutScore = NULL );
 
+/*!	@brief FuzzyMatchJapanese()がsText側で行う正規化・漢字読み展開の事前計算結果を返す
+
+	この計算はsTextの内容だけで決まり、クエリには依存しない。コマンドパレットの
+	ように同じsText(行の表示名)に対して1文字入力のたびに何度もマッチングを
+	行う場合、呼び出し側が行ごとに1回だけこれを計算してキャッシュしておき、
+	FuzzyMatchJapaneseCached()に渡すことで、キー入力のたびに全行分再計算する
+	無駄をなくせる(実測: 5万行超の一覧で1キー入力ごとに数秒かかっていたのが、
+	この事前計算1回だけで済むようになる) 20260829
+*/
+std::string PrecomputeFuzzyMatchTarget( const std::wstring& sText );
+
+/*!	@brief FuzzyMatchJapanese()のsPrecomputedTarget版
+
+	sPrecomputedTargetにはPrecomputeFuzzyMatchTarget(sText)の結果を渡す。sTextは
+	漢字包含チェック(ContainsAllQueryKanji相当、展開前の原文が必要)に使うため、
+	展開前のまま両方とも渡すこと 20260829
+*/
+bool FuzzyMatchJapaneseCached( const std::wstring& sQuery, const std::wstring& sText,
+	const std::string& sPrecomputedTarget, int* pOutScore = NULL );
+
 /*!	@brief 入力途中のローマ字文字列を、確定できたモーラ分だけかなへ変換した表示用文字列にする
 
 	Windows検索ボックス等と同じ体験(入力欄自体にリアルタイムでかなを表示する簡易IME)を

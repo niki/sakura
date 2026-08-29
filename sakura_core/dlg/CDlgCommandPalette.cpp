@@ -60,7 +60,46 @@ namespace {
 	// OS側の遷移が完了した後に実行されるようにする 20260819
 	const UINT_PTR	ID_TIMER_PALETTE_DEFERRED_CLOSE = 2;
 
+	// フィルタ欄の1文字ごとにUpdateList()(全行に対する絞り込み+あいまい一致スコア計算+
+	// 再ソート)を同期実行すると、行数が多い(「@」モードで数千行の関数一覧、等)ときに
+	// キー入力のたびもたつく。連続入力中は最後の1回だけ実行すればよいため、EN_CHANGEの
+	// たびにこのタイマーを再セットし直し(SetTimerは同じIDなら自動的に再スケジュールされる)、
+	// 入力が一旦止まってから実際にUpdateList()を呼ぶ 20260829
+	const UINT_PTR	ID_TIMER_PALETTE_FILTER_DEBOUNCE = 3;
+	const UINT		FILTER_DEBOUNCE_MS = 80;
+
 	const wchar_t	szWindowPrefix[] = L"edt ";	//!< 開いているウィンドウへの絞り込みモードに切り替える接頭辞
+
+	//! フィルタ欄が全角入力モードの警告表示に使う配色(セマンティックカラー:エラー赤。
+	//! CPropComKeybindList.cppのNKMM_KEYBINDLIST_SELECTED_COLOR/_TEXT_COLORと
+	//! 同じ薄紅背景+濃い赤文字の配色に揃える) 20260829
+	const COLORREF	PALETTE_FILTER_IME_WARN_BACK_COLOR = RGB( 253, 231, 233 );
+	const COLORREF	PALETTE_FILTER_IME_WARN_TEXT_COLOR = RGB( 164, 38, 44 );
+}
+
+//! 全角入力モードの警告背景ブラシ。WM_CTLCOLOREDITで返した後もシステム側が使い続ける
+//! ため、FillRect用の使い捨てブラシと違い即座には破棄できない。ダイアログのWM_NCDESTROYで
+//! 破棄する(CPropComKeybindList.cppのs_hbrStickyHeaderBackと同じ理由・同じ方式) 20260829
+static HBRUSH	s_hbrPaletteFilterImeWarnBack = NULL;
+
+//! フィルタ欄(hwndEdit)のIMEが現在「全角入力」モードかどうか。コマンドパレットの入力は
+//! ">"/"@"/"#"や英数字ローマ字での半角入力がほとんどのため、IMEがオンのまま気づかず
+//! 全角で打ってしまう入力ミス("@"のつもりで全角"＠"等)に、欄の背景色で気づけるようにする。
+//! IMEがOFF(半角英数直接入力)のときは対象外(false) 20260829
+static bool IsImeFullWidthMode( HWND hwndEdit )
+{
+	bool	bFullWidth = false;
+	HIMC	hImc = ::ImmGetContext( hwndEdit );
+	if( NULL != hImc ){
+		if( FALSE != ::ImmGetOpenStatus( hImc ) ){
+			DWORD	dwConversion = 0, dwSentence = 0;
+			if( ::ImmGetConversionStatus( hImc, &dwConversion, &dwSentence ) ){
+				bFullWidth = ( 0 != ( dwConversion & IME_CMODE_FULLSHAPE ) );
+			}
+		}
+		::ImmReleaseContext( hwndEdit, hImc );
+	}
+	return bFullWidth;
 }
 
 //! フィルタ欄先頭の1文字が、絞り込みモードを切り替える記号("コマンド"の">"、"アウトライン"の"@"、"ブックマーク"の"#")かどうか
@@ -193,11 +232,15 @@ static LRESULT CALLBACK PaletteFilterEditSubclassProc(
 		// 未確定の変換中文字列が変わるたびに、確定を待たず一覧をライブ更新する。
 		// 通常のWM_CHAR/EN_CHANGEは変換確定時にしか飛んでこないため、ここで明示的に
 		// EN_CHANGE相当を親へ送ってUpdateList()を動かす 20260819
+		// 以前はlParamにGCS_COMPSTRビットが立っているときだけ中継していたが、
+		// 変換中文字列を1文字だけ確定/BackSpaceで1文字減らす等の一部の変化では
+		// このビットが立たないIME実装があり、一覧・件数表示が更新されないまま
+		// 固まる不具合があった。中継先のUpdateList()自体はデバウンスタイマー
+		// (ID_TIMER_PALETTE_FILTER_DEBOUNCE)を経由するため、ビットで絞り込まず
+		// WM_IME_COMPOSITIONのたびに毎回中継しても実害(頻度)は小さい 20260829
 		LRESULT	lRet = ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
-		if( 0 != ( lParam & GCS_COMPSTR ) ){
-			HWND	hwndDlg = ::GetParent( hwnd );
-			::SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_EDIT_COMMANDPALETTE_FILTER, EN_CHANGE ), (LPARAM)hwnd );
-		}
+		HWND	hwndDlg = ::GetParent( hwnd );
+		::SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_EDIT_COMMANDPALETTE_FILTER, EN_CHANGE ), (LPARAM)hwnd );
 		return lRet;
 	}else if( WM_CHAR == uMsg ){
 		wchar_t	ch = (wchar_t)wParam;
@@ -224,6 +267,13 @@ static LRESULT CALLBACK PaletteFilterEditSubclassProc(
 				std::wstring	sConverted = ApplyLiveKanaConversion( std::wstring( szBuf ) + ch );
 				::SetWindowText( hwnd, sConverted.c_str() );
 				::SendMessage( hwnd, EM_SETSEL, (WPARAM)sConverted.size(), (LPARAM)sConverted.size() );
+				// SetWindowText()はEN_CHANGEを送らない(Win32の既知の仕様)ため、ここで
+				// 明示的に中継する。これが無いと、ローマ字入力のライブかな変換で1文字
+				// 追加するたびに一覧の絞り込みが更新されない不具合になっていた
+				// (BackSpaceでの削除は素のEditコントロールの既定処理(DefSubclassProc)を
+				// 素通しするため、こちらは元から正常にEN_CHANGEが発生していた) 20260829
+				::SendMessage( ::GetParent( hwnd ), WM_COMMAND,
+					MAKEWPARAM( IDC_EDIT_COMMANDPALETTE_FILTER, EN_CHANGE ), (LPARAM)hwnd );
 				return 0;
 			}
 		}
@@ -244,6 +294,14 @@ static LRESULT CALLBACK PaletteFilterEditSubclassProc(
 		// (特に下辺だけが「下線」のように取り残されて見える不具合になっていた) 20260822
 		::InflateRect( &rc, DpiScaleX( 6 ), DpiScaleY( 6 ) );
 		::InvalidateRect( hwndDlg, &rc, TRUE );
+		return lRet;
+	}else if( WM_IME_NOTIFY == uMsg ){
+		// 全角/半角キーやIMEのオン/オフで変換モードが変わった瞬間に、次のキャレット点滅等を
+		// 待たずすぐ欄の警告背景(WM_CTLCOLOREDIT)を更新する 20260829
+		LRESULT	lRet = ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+		if( IMN_SETCONVERSIONMODE == wParam || IMN_SETOPENSTATUS == wParam ){
+			::InvalidateRect( hwnd, NULL, TRUE );
+		}
 		return lRet;
 	}else if( WM_NCDESTROY == uMsg ){
 		::RemoveWindowSubclass( hwnd, PaletteFilterEditSubclassProc, uIdSubclass );
@@ -287,12 +345,51 @@ static LRESULT CALLBACK PaletteDlgSubclassProc(
 			::DeleteObject( hFocusPen );
 		}
 
+		// 絞り込み結果の件数を、一覧の下・枠内の右下に小さく表示する。一覧自体は
+		// 子ウィンドウで自前のNM_CUSTOMDRAWを持つためここでは触れず、その下に
+		// sakura_rc.rc側で確保した余白(IDD_DLG_COMMANDPALETTEのcyを一覧の下端より
+		// 大きくしてある分)にだけ描く 20260829
+		CDlgCommandPalette*	pDlg = (CDlgCommandPalette*)::GetWindowLongPtr( hwnd, DWLP_USER );
+		HWND	hListView = ::GetDlgItem( hwnd, IDC_LIST_COMMANDPALETTE );
+		if( NULL != pDlg && NULL != hListView ){
+			RECT	rcList;
+			::GetWindowRect( hListView, &rcList );
+			::MapWindowPoints( HWND_DESKTOP, hwnd, (POINT*)&rcList, 2 );
+			RECT	rcFooter = { rc.left, rcList.bottom, rc.right - DpiScaleX( 8 ), rc.bottom - DpiScaleY( 1 ) };
+			wchar_t	szCount[32];
+			::wsprintf( szCount, L"%d 件", pDlg->GetMatchedRowCount() );
+			int	nOldMode = ::SetBkMode( hdc, TRANSPARENT );
+			COLORREF	crOld = ::SetTextColor( hdc, ::GetSysColor( COLOR_GRAYTEXT ) );
+			HFONT	hOldFont = (HFONT)::SelectObject( hdc, (HFONT)::SendMessage( hEditFilter, WM_GETFONT, 0, 0 ) );
+			::DrawText( hdc, szCount, -1, &rcFooter, DT_SINGLELINE | DT_VCENTER | DT_RIGHT | DT_NOPREFIX );
+			::SelectObject( hdc, hOldFont );
+			::SetTextColor( hdc, crOld );
+			::SetBkMode( hdc, nOldMode );
+		}
+
 		::SelectObject( hdc, hOldBrush );
 		::SelectObject( hdc, hOldPen );
 		::DeleteObject( hPen );
 		::ReleaseDC( hwnd, hdc );
 		return lRet;
+	}else if( WM_CTLCOLOREDIT == uMsg ){
+		// フィルタ欄が全角入力モードのときは、欄自体をセマンティックカラー(エラー赤)の
+		// 背景で塗って気づきやすくする。入力済み文字列の中身ではなく、IMEの現在の変換
+		// モードそのものを見るため、まだ何も入力していない(空欄の)時点でも気付ける 20260829
+		if( (HWND)lParam == ::GetDlgItem( hwnd, IDC_EDIT_COMMANDPALETTE_FILTER ) && IsImeFullWidthMode( (HWND)lParam ) ){
+			::SetTextColor( (HDC)wParam, PALETTE_FILTER_IME_WARN_TEXT_COLOR );
+			::SetBkColor( (HDC)wParam, PALETTE_FILTER_IME_WARN_BACK_COLOR );
+			if( NULL == s_hbrPaletteFilterImeWarnBack ){
+				s_hbrPaletteFilterImeWarnBack = ::CreateSolidBrush( PALETTE_FILTER_IME_WARN_BACK_COLOR );
+			}
+			return (LRESULT)s_hbrPaletteFilterImeWarnBack;
+		}
+		return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
 	}else if( WM_NCDESTROY == uMsg ){
+		if( NULL != s_hbrPaletteFilterImeWarnBack ){
+			::DeleteObject( s_hbrPaletteFilterImeWarnBack );
+			s_hbrPaletteFilterImeWarnBack = NULL;
+		}
 		::RemoveWindowSubclass( hwnd, PaletteDlgSubclassProc, uIdSubclass );
 	}
 	return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
@@ -396,6 +493,12 @@ BOOL CDlgCommandPalette::OnTimer( WPARAM wParam )
 	if( wParam == ID_TIMER_PALETTE_DEFERRED_CLOSE ){
 		::KillTimer( GetHwnd(), ID_TIMER_PALETTE_DEFERRED_CLOSE );
 		CloseOnDeactivate();
+		return TRUE;
+	}
+
+	if( wParam == ID_TIMER_PALETTE_FILTER_DEBOUNCE ){
+		::KillTimer( GetHwnd(), ID_TIMER_PALETTE_FILTER_DEBOUNCE );
+		UpdateList();
 		return TRUE;
 	}
 
@@ -598,7 +701,10 @@ BOOL CDlgCommandPalette::OnBnClicked( int wID )
 BOOL CDlgCommandPalette::OnEnChange( HWND hwndCtl, int wID )
 {
 	if( IDC_EDIT_COMMANDPALETTE_FILTER == wID ){
-		UpdateList();
+		// 実際の絞り込み(UpdateList())はデバウンスタイマー経由で遅延実行する
+		// (行数が多いときの入力もたつき対策、ID_TIMER_PALETTE_FILTER_DEBOUNCEの
+		// コメント参照) 20260829
+		::SetTimer( GetHwnd(), ID_TIMER_PALETTE_FILTER_DEBOUNCE, FILTER_DEBOUNCE_MS, NULL );
 		return TRUE;
 	}
 	return FALSE;
@@ -1001,6 +1107,9 @@ void CDlgCommandPalette::BuildAllRows()
 				if( 0 != CKeyBind::GetKeyStr( G_AppInstance(), sKeyBind.m_nKeyNameArrNum, (KEYDATA*)sKeyBind.m_pKeyNameArr, cKeyStr, (int)nFuncCode ) ){
 					row.sSub = cKeyStr.GetStringPtr();
 				}
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI
+				row.sFuzzyTarget = PrecomputeFuzzyMatchTarget( row.sName );
+#endif // NKMM_COMMAND_PALETTE_ROMAJI
 
 				m_vAllRows.push_back( row );
 			}
@@ -1019,6 +1128,9 @@ void CDlgCommandPalette::BuildAllRows()
 		if( L'\0' != pEditNodeArr[i].m_szFilePath[0] ){
 			row.sSub = pEditNodeArr[i].m_szFilePath.c_str();
 		}
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI
+		row.sFuzzyTarget = PrecomputeFuzzyMatchTarget( row.sName );
+#endif // NKMM_COMMAND_PALETTE_ROMAJI
 		m_vAllRows.push_back( row );
 	}
 	if( 0 < nRowNum ){
@@ -1044,6 +1156,9 @@ void CDlgCommandPalette::BuildAllRows()
 			row.sSub      = fi.m_szPath;
 			row.sName     = ExtractFileName( row.sSub );
 			row.sType     = L"最近使ったファイル";
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI
+			row.sFuzzyTarget = PrecomputeFuzzyMatchTarget( row.sName );
+#endif // NKMM_COMMAND_PALETTE_ROMAJI
 
 			m_vAllRows.push_back( row );
 		}
@@ -1122,6 +1237,9 @@ void CDlgCommandPalette::BuildOutlineRows()
 		row.hwndFile    = NULL;
 		row.sName       = pcInfo->m_cmemFuncName.GetStringPtr();
 		row.sType       = L"アウトライン";
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI
+		row.sFuzzyTarget = PrecomputeFuzzyMatchTarget( row.sName );
+#endif // NKMM_COMMAND_PALETTE_ROMAJI
 
 		m_vAllRows.push_back( row );
 	}
@@ -1166,6 +1284,9 @@ void CDlgCommandPalette::BuildBookmarkRows()
 		// プレースホルダを出す(除外すると、その行だけジャンプできなくなってしまう) 20260821
 		row.sName       = ( 0 < pcInfo->m_cmemFuncName.GetStringLength() ) ? pcInfo->m_cmemFuncName.GetStringPtr() : L"(空行)";
 		row.sType       = L"ブックマーク";
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI
+		row.sFuzzyTarget = PrecomputeFuzzyMatchTarget( row.sName );
+#endif // NKMM_COMMAND_PALETTE_ROMAJI
 
 		m_vAllRows.push_back( row );
 	}
@@ -1279,7 +1400,16 @@ void CDlgCommandPalette::UpdateList()
 		// 連続一致・単語先頭一致ほど高くなるスコアも受け取り、後でスコア降順に
 		// 並べ替える(最もタイトに一致したものを上に出す) 20260819 20260820
 		int	nScore = 0;
-		if( !FuzzyMatchJapanese( sQuery, row.sName, &nScore ) ){
+		if( !FuzzyMatchJapaneseCached( sQuery, row.sName, row.sFuzzyTarget, &nScore ) ){
+			continue;
+		}
+		// アウトラインだけはスコア順ソートの対象から外す。コマンド検索と違い、
+		// アウトラインはファイル内の位置関係を見ながらジャンプする用途のため、
+		// 絞り込むたびに行の並びが入れ替わると混乱を招く(m_vAllRowsはBuildOutlineRows()が
+		// ファイルの行順のまま積んでいるため、m_vMatchedRowIndicesへ直接積むだけで
+		// 行順が保たれる) 20260829
+		if( ROWKIND_OUTLINE == eMode ){
+			m_vMatchedRowIndices.push_back( i );
 			continue;
 		}
 		vScoredRowIndices.push_back( std::make_pair( nScore, i ) );
@@ -1315,6 +1445,15 @@ void CDlgCommandPalette::UpdateList()
 	}
 
 	AdjustListHeight();
+
+	// 右下の件数表示(PaletteDlgSubclassProcのWM_PAINT)を更新する。AdjustListHeight()が
+	// ダイアログをリサイズした場合はそれ自体がWM_PAINTを誘発するが、件数が変わっても
+	// 表示行数の帯(スクロール要)に収まったまま高さが変化しない場合は誘発されないため、
+	// ここで明示的に無効化しておく。bEraseはTRUEにしないと、フォーカス枠と同じ理由
+	// (WM_SETFOCUS/WM_KILLFOCUSのコメント参照)で前回描画した件数の文字が消されずに
+	// 新しい件数と重なって表示されてしまう(例:「12件」の上に「3件」が重なり読めなく
+	// なる)ため、件数が変わったように見えない不具合になっていた 20260829
+	::InvalidateRect( GetHwnd(), NULL, TRUE );
 }
 
 

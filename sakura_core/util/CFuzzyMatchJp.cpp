@@ -521,7 +521,18 @@ namespace {
 }  // namespace
 
 
-bool FuzzyMatchJapanese( const std::wstring& sQuery, const std::wstring& sText, int* pOutScore )
+std::string PrecomputeFuzzyMatchTarget( const std::wstring& sText )
+{
+	std::wstring	sTextExpanded = NormalizeHyphenToChoonpu( sText );
+#ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI
+	sTextExpanded = ExpandKanjiReadings( sTextExpanded );
+#endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI
+	return fuzzy::NormalizeForSearch( WStrToUtf8( sTextExpanded ) ).normalized;
+}
+
+
+bool FuzzyMatchJapaneseCached( const std::wstring& sQuery, const std::wstring& sText,
+	const std::string& sPrecomputedTarget, int* pOutScore )
 {
 	if( sQuery.empty() ){
 		if( NULL != pOutScore ){ *pOutScore = 0; }
@@ -539,17 +550,14 @@ bool FuzzyMatchJapanese( const std::wstring& sQuery, const std::wstring& sText, 
 	}
 
 	std::wstring	sQueryExpanded = NormalizeHyphenToChoonpu( sQuery );
-	std::wstring	sTextExpanded  = NormalizeHyphenToChoonpu( sText );
 #ifdef NKMM_COMMAND_PALETTE_ROMAJI_KANJI
 	// 漢字ヒューリスティック: 分かる範囲で漢字をひらがな読みへ展開してから正規化する。
 	// クエリ側にも同じ展開をかけるのは、IME等で漢字そのものを直接入力された場合でも
 	// (展開後の表記が一致するので)引き続き一致できるようにするため 20260820
 	sQueryExpanded = ExpandKanjiReadings( sQueryExpanded );
-	sTextExpanded  = ExpandKanjiReadings( sTextExpanded );
 #endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI
 
 	fuzzy::NormalizedText	pattern = fuzzy::NormalizeForSearch( WStrToUtf8( sQueryExpanded ) );
-	fuzzy::NormalizedText	target  = fuzzy::NormalizeForSearch( WStrToUtf8( sTextExpanded ) );
 
 	/*	util/RomajiFuzzyMatch.hppのFuzzyMatchNormalized()(部分列マッチ+ギャップ減点)は
 		そのままだと「間が空いていても順序さえ合っていれば一致」を許してしまう。
@@ -569,18 +577,27 @@ bool FuzzyMatchJapanese( const std::wstring& sQuery, const std::wstring& sText, 
 		なった例(kensaku/modosu/migi/hidari/shita/mae/doro/kopi-等)はすべて
 		「正規化後の文字列に連続して現れる」ケースだったため支障はない 20260821
 	*/
-	size_t	nPos = target.normalized.find( pattern.normalized );
+	size_t	nPos = sPrecomputedTarget.find( pattern.normalized );
 	if( std::string::npos == nPos ){ return false; }
 
 	if( NULL != pOutScore ){
 		// 出現位置が先頭に近いほど、対象文字列全体が短く無駄が少ないほど高スコア
 		int	nScore = 0;
 		nScore -= (int)nPos;
-		nScore -= (int)( target.normalized.size() - pattern.normalized.size() );
+		nScore -= (int)( sPrecomputedTarget.size() - pattern.normalized.size() );
 		if( 0 == nPos ){ nScore += 50; }
 		*pOutScore = nScore;
 	}
 	return true;
+}
+
+
+bool FuzzyMatchJapanese( const std::wstring& sQuery, const std::wstring& sText, int* pOutScore )
+{
+	// 単発呼び出し用の互換ラッパー。行ごとに何度も呼ぶ場合(コマンドパレットの
+	// 絞り込み等)はPrecomputeFuzzyMatchTarget()を1回だけ呼んでFuzzyMatchJapaneseCached()を
+	// 使うこと(sText側の正規化・漢字読み展開を毎回やり直さずに済む) 20260829
+	return FuzzyMatchJapaneseCached( sQuery, sText, PrecomputeFuzzyMatchTarget( sText ), pOutScore );
 }
 
 
