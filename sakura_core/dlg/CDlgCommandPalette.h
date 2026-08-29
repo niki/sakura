@@ -49,6 +49,7 @@ public:
 	void LivePreviewSelection( int nItemIndex );	//!< 一覧の選択行がROWKIND_OUTLINE/BOOKMARKなら、確定前にライブでカーソルを移動する。フィルタ欄サブクラスプロシージャ側の矢印キー処理(MoveSelection)からも呼べるようpublic 20260821
 	int GetSelectedDispIndex() const { return m_nSelectedDispIndex; }	//!< 現在選択中の表示行索引(-1=選択なし)。MoveSelection()がLVS_OWNERDATA下でのListView_GetNextItem()の不確実性を避けてこれを頼るためpublic 20260821
 	int GetMatchedRowCount() const { return (int)m_vMatchedRowIndices.size(); }	//!< 絞り込み後の件数。右下の件数表示用にPaletteDlgSubclassProc(WM_PAINT)から呼べるようpublic 20260829
+	void ExecuteQuickIndex( int nDispIndex );	//!< 絞り込み結果の表示上N番目(0開始)の行をEnterと同じ経路で実行して閉じる。Ctrl+1〜9でのクイック選択用にフィルタ欄サブクラスプロシージャから呼べるようpublic 20260830
 
 protected:
 	BOOL OnInitDialog( HWND, WPARAM, LPARAM );
@@ -111,6 +112,7 @@ private:
 	void MoveCaretTo( int nLogicX, int nLogicY );	//!< 現在の文書内でカーソルを指定位置(0開始)へ移動する(選択状態は保持) 20260821
 	void JumpToRow( const PaletteRow& row );	//!< kind==ROWKIND_OUTLINE/BOOKMARKの行が指す位置へMoveCaretTo()する 20260821
 	void AdjustListHeight();	//!< 絞り込み結果がスクロールを要しない件数のときは、一覧とダイアログの高さをその件数ぶんまで狭める(結果が増えれば元の最大高さまで戻る) 20260821
+	void ApplyListHeight( int nHeight );	//!< 一覧/ダイアログ本体の高さへnHeightを実際に反映する(汎用部のCSlideInAnimatorからApplyFuncとして呼ばれる描画部) 20260830
 
 	CFuncLookup*				m_pcFuncLookup;
 	CEditView*					m_pcView;			//!< アウトライン解析・ブックマーク取得・ジャンプ先の対象ビュー 20260821
@@ -138,6 +140,12 @@ private:
 	int							m_nChromeHeight;	//!< ダイアログ全体の高さのうち一覧を除いた分(px、フィルタ欄+余白)
 	int							m_nListRowHeight;	//!< 一覧1行の実高さ(px)。初めて1件以上表示された時点でキャッシュ(0=未確定)
 	int							m_nListBorderHeight;	//!< 一覧のウィンドウ矩形とクライアント矩形の高さの差(px、WS_BORDER分)。AdjustListHeight()が行数から求めた高さをウィンドウ矩形の高さへ変換する補正に使う 20260822
+
+	//! AdjustListHeight()の高さ変更をease-outで滑らかにアニメーションさせるための状態。
+	//! m_cSlideAnimatorとは別のインスタンス(スライドインの位置アニメーションと、こちらの
+	//! 高さアニメーションは独立)だが、同じCSlideInAnimatorのStart(int,int,int)/
+	//! GetCurrentValue()/IsDone()(汎用値アニメーション)を使い回す 20260830
+	CSlideInAnimator			m_cListHeightAnimator;
 };
 
 #endif // NKMM_COMMAND_PALETTE

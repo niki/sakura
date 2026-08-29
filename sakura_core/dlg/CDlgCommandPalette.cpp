@@ -68,6 +68,14 @@ namespace {
 	const UINT_PTR	ID_TIMER_PALETTE_FILTER_DEBOUNCE = 3;
 	const UINT		FILTER_DEBOUNCE_MS = 80;
 
+	// AdjustListHeight()が決めた一覧/ダイアログの高さへ、カクッと切り替えるのではなく
+	// StartSlideAnimation()と同じ3次ease-outで滑らかにアニメーションさせるためのタイマー。
+	// 絞り込むたびに毎回起きるアニメーションなので、スライドインより短めの時間にして
+	// 「サクサク感」を損なわないようにする 20260830
+	const UINT_PTR	ID_TIMER_PALETTE_LIST_RESIZE = 4;
+	const int		LIST_RESIZE_ANIM_MS = 120;
+	const int		LIST_RESIZE_ANIM_INTERVAL_MS = 10;
+
 	const wchar_t	szWindowPrefix[] = L"edt ";	//!< 開いているウィンドウへの絞り込みモードに切り替える接頭辞
 
 	//! フィルタ欄が全角入力モードの警告表示に使う配色(セマンティックカラー:エラー赤。
@@ -225,6 +233,16 @@ static LRESULT CALLBACK PaletteFilterEditSubclassProc(
 			return 0;
 		}else if( VK_UP == wParam || VK_DOWN == wParam ){
 			MoveSelection( hwndDlg, ( VK_UP == wParam ) ? -1 : 1 );
+			return 0;
+		}else if( L'1' <= wParam && wParam <= L'9' && 0 != ( ::GetKeyState( VK_CONTROL ) & 0x8000 ) ){
+			// Ctrl+1〜Ctrl+9で、絞り込み結果の表示上N番目の行をEnterと同じように即実行する
+			// (Alfred/Raycast風のクイック選択、OnListCustomDraw()が行の左端に描く番号と対応)。
+			// 数字1文字だけを横取りすると、ファイル名やコマンド名に含まれる数字を普通に
+			// 入力できなくなるため、Ctrl併用時に限定する 20260830
+			CDlgCommandPalette*	pDlg = (CDlgCommandPalette*)::GetWindowLongPtr( hwndDlg, DWLP_USER );
+			if( NULL != pDlg ){
+				pDlg->ExecuteQuickIndex( (int)( wParam - L'1' ) );
+			}
 			return 0;
 		}
 #ifdef NKMM_COMMAND_PALETTE_ROMAJI
@@ -458,14 +476,30 @@ HWND CDlgCommandPalette::DoModeless( HINSTANCE hInstance, HWND hwndParent, CFunc
 /*! 上からのスライドインアニメーションを開始する(位置計算はCSlideInAnimator、CDlgFindと共通) 20260818 20260829 */
 void CDlgCommandPalette::StartSlideAnimation()
 {
-	m_cSlideAnimator.Start( GetHwnd(), SLIDE_DURATION_MS, SLIDE_DISTANCE_DIP );
-	::ShowWindow( GetHwnd(), SW_SHOW );	// 表示とアクティブ化(絞り込み欄へフォーカス)
-	// ShowWindow直後は背景(灰色)だけ先に見えて、一覧などの子コントロールの描画が
-	// 1フレーム遅れて追いつく形になり一瞬ちらつくため、ここで子コントロールも含めて
-	// 同期的に描画を完了させてから返す 20260819
-	::RedrawWindow( GetHwnd(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW );
-
-	::SetTimer( GetHwnd(), ID_TIMER_PALETTE_SLIDEIN, SLIDE_INTERVAL_MS, NULL );
+	// 値の反映(位置へのSetWindowPos)・開始時の初期化(表示+子コントロールの即時描画)は
+	// CSlideInAnimator側ではなくここでInitFunc/ApplyFuncとして登録する。X座標はスライド中
+	// ずっと固定なのでラムダにそのまま持たせる。引数順はfnInit,fnApplyだが、実際には
+	// fnApplyの初回呼び出し(開始位置へジャンプ)の方がfnInitより先に実行される(Start()参照)
+	// ため、隠れた状態で位置決めしてから見せる、という順序は保たれる 20260830
+	RECT	rc;
+	::GetWindowRect( GetHwnd(), &rc );
+	int	nX = rc.left;
+	HWND	hwnd = GetHwnd();
+	m_cSlideAnimator.Start( rc.top - DpiScaleY( SLIDE_DISTANCE_DIP ), rc.top, SLIDE_DURATION_MS,
+		[hwnd](){
+			::ShowWindow( hwnd, SW_SHOW );	// 表示とアクティブ化(絞り込み欄へフォーカス)
+			// ShowWindow直後は背景(灰色)だけ先に見えて、一覧などの子コントロールの描画が
+			// 1フレーム遅れて追いつく形になり一瞬ちらつくため、ここで子コントロールも含めて
+			// 同期的に描画を完了させてから返す 20260819
+			::RedrawWindow( hwnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW );
+			::SetTimer( hwnd, ID_TIMER_PALETTE_SLIDEIN, SLIDE_INTERVAL_MS, NULL );
+		},
+		[hwnd, nX]( int nY ){
+			::SetWindowPos( hwnd, NULL, nX, nY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+		},
+		[hwnd](){
+			::KillTimer( hwnd, ID_TIMER_PALETTE_SLIDEIN );
+		} );
 }
 
 
@@ -483,13 +517,16 @@ BOOL CDlgCommandPalette::OnTimer( WPARAM wParam )
 		return TRUE;
 	}
 
+	if( wParam == ID_TIMER_PALETTE_LIST_RESIZE ){
+		m_cListHeightAnimator.OnTimer();
+		return TRUE;
+	}
+
 	if( wParam != ID_TIMER_PALETTE_SLIDEIN ){
 		return CDialog::OnTimer( wParam );
 	}
 
-	if( !m_cSlideAnimator.OnTimer( GetHwnd() ) ){
-		::KillTimer( GetHwnd(), ID_TIMER_PALETTE_SLIDEIN );
-	}
+	m_cSlideAnimator.OnTimer();
 	return TRUE;
 }
 
@@ -817,6 +854,22 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 			int	nPad = DpiScaleX( 4 );
 			int	nEdgePad = DpiScaleX( 10 );
 			int	x = rc.left + nEdgePad;
+
+			// Ctrl+1〜9でのクイック選択(ExecuteQuickIndex()参照)に対応する行番号を、
+			// 行の左端に小さく薄く表示する。全行で同じ幅の枠を確保しておき(1〜9行目だけ
+			// 数字を描く)、アイコンや名前の開始位置が行によってずれないようにする 20260830
+			int	nQuickKeyWidth = DpiScaleX( 14 );
+			if( nDispIndex < 9 ){
+				wchar_t	szQuickKey[2] = { (wchar_t)( L'1' + nDispIndex ), L'\0' };
+				RECT	rcQuickKey = { x, rc.top, x + nQuickKeyWidth, rc.bottom };
+				HFONT	hFontSubSaved = ( NULL != m_hFontSub ) ? (HFONT)::SelectObject( hdc, m_hFontSub ) : NULL;
+				::SetTextColor( hdc, crSub );
+				::DrawText( hdc, szQuickKey, -1, &rcQuickKey, DT_SINGLELINE | DT_VCENTER | DT_CENTER | DT_NOPREFIX );
+				if( NULL != hFontSubSaved ){
+					::SelectObject( hdc, m_hFontList );
+				}
+			}
+			x += nQuickKeyWidth + nPad;
 
 			// アイコン(ウィンドウ/最近使ったファイルは拡張子から。コマンド/アウトラインには付けない) 20260819 20260821
 			if( ROWKIND_WINDOW == row.kind || ROWKIND_RECENT == row.kind ){
@@ -1452,11 +1505,39 @@ void CDlgCommandPalette::AdjustListHeight()
 
 	RECT	rcListNow;
 	::GetWindowRect( hListView, &rcListNow );
-	if( ( rcListNow.bottom - rcListNow.top ) == nDesiredListHeight ){
+	int	nCurrentListHeight = rcListNow.bottom - rcListNow.top;
+	if( nCurrentListHeight == nDesiredListHeight ){
 		return;	// 変化なし
 	}
+
+	// カクッと切り替えず、CSlideInAnimatorの汎用値アニメーションで3次ease-outで滑らかに
+	// 近づける。値の反映(一覧・ダイアログ2つのウィンドウへのSetWindowPos、件数表示の
+	// 再描画)はApplyListHeight()にまとめ、ApplyFuncとして登録する(Start()自身が最初の
+	// 1回もすぐ反映してくれる)。SetTimer/KillTimerもStart()呼び出しの外に取り残さず、
+	// InitFunc/FinalizeFuncとしてここにまとめて登録する。現在高さ(アニメーション途中で
+	// 連続して呼ばれた場合は、その時点の実際の高さ)を開始点にするため、アニメーション
+	// 同士が競合しても違和感のある飛びが起きない 20260830
+	HWND	hwndDlg = GetHwnd();
+	m_cListHeightAnimator.Start( nCurrentListHeight, nDesiredListHeight, LIST_RESIZE_ANIM_MS,
+		[hwndDlg](){ ::SetTimer( hwndDlg, ID_TIMER_PALETTE_LIST_RESIZE, LIST_RESIZE_ANIM_INTERVAL_MS, NULL ); },
+		[this]( int nHeight ){ ApplyListHeight( nHeight ); },
+		[hwndDlg](){ ::KillTimer( hwndDlg, ID_TIMER_PALETTE_LIST_RESIZE ); } );
+}
+
+
+/*! 一覧・ダイアログ本体の高さへnHeightを実際に反映する(汎用部のCSlideInAnimatorから
+	ApplyFuncとして呼ばれる描画部)。一覧そのものの高さと、ダイアログ全体の高さ
+	(m_nChromeHeight+nHeight)の2つのウィンドウへSetWindowPosし、件数表示の再描画も
+	ここでまとめて行う 20260830
+*/
+void CDlgCommandPalette::ApplyListHeight( int nHeight )
+{
+	HWND	hListView = GetItemHwnd( IDC_LIST_COMMANDPALETTE );
+
+	RECT	rcListNow;
+	::GetWindowRect( hListView, &rcListNow );
 	int	nListWidth = rcListNow.right - rcListNow.left;
-	::SetWindowPos( hListView, NULL, 0, 0, nListWidth, nDesiredListHeight, SWP_NOMOVE | SWP_NOZORDER );
+	::SetWindowPos( hListView, NULL, 0, 0, nListWidth, nHeight, SWP_NOMOVE | SWP_NOZORDER );
 
 	// ダイアログ本体も、一覧を除いた固定分(m_nChromeHeight)+新しい一覧の高さに
 	// 合わせて縮める。位置(左上)はSWP_NOMOVEで変えない(上端固定でスライドインした
@@ -1464,7 +1545,14 @@ void CDlgCommandPalette::AdjustListHeight()
 	RECT	rcWndNow;
 	::GetWindowRect( GetHwnd(), &rcWndNow );
 	int	nWndWidth = rcWndNow.right - rcWndNow.left;
-	::SetWindowPos( GetHwnd(), NULL, 0, 0, nWndWidth, m_nChromeHeight + nDesiredListHeight, SWP_NOMOVE | SWP_NOZORDER );
+	::SetWindowPos( GetHwnd(), NULL, 0, 0, nWndWidth, m_nChromeHeight + nHeight, SWP_NOMOVE | SWP_NOZORDER );
+
+	// 件数表示(PaletteDlgSubclassProcのWM_PAINT)を明示的に無効化する。SetWindowPos単体の
+	// 既定の再描画誘発だけに任せると、アニメーション中は一覧の下端(=件数表示の位置)が
+	// tickごとに動くため、直前のtickで描いた古い位置の文字が消されずに残ってしまう
+	// (UpdateList()末尾の件数表示更新・WM_SETFOCUS/KILLFOCUSの強調枠再描画と同じ理由。
+	// bEraseはTRUEでないと背景が消されないまま重ね描きされる) 20260830
+	::InvalidateRect( GetHwnd(), NULL, TRUE );
 }
 
 
@@ -1581,6 +1669,25 @@ void CDlgCommandPalette::ExecuteSelected()
 	}
 	ExecuteRow( m_vAllRows[nRowIndex] );
 }
+
+
+/*! 絞り込み結果の表示上nDispIndex番目(0開始)の行を、Enterで確定したときと同じ経路
+	(ExecuteRow()→ダイアログを閉じる)で実行する。Ctrl+1〜Ctrl+9でのクイック選択用
+	(Alfred/Raycast風)。フィルタ欄サブクラスプロシージャから呼べるようpublic 20260830
+*/
+void CDlgCommandPalette::ExecuteQuickIndex( int nDispIndex )
+{
+	if( nDispIndex < 0 || (size_t)nDispIndex >= m_vMatchedRowIndices.size() ){
+		return;
+	}
+	size_t	nRowIndex = m_vMatchedRowIndices[(size_t)nDispIndex];
+	if( nRowIndex >= m_vAllRows.size() ){
+		return;
+	}
+	ExecuteRow( m_vAllRows[nRowIndex] );
+	CloseDialog( 0 );
+}
+
 
 /*! 非アクティブ化されたときに親ウィンドウをアクティブに戻してから自滅する(ESC相当) 20260819
 

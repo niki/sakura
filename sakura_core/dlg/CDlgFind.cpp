@@ -423,10 +423,26 @@ namespace {
 */
 void CDlgFind::StartSlideAnimation()
 {
-	m_cSlideAnimator.Start( GetHwnd(), SLIDE_DURATION_MS, SLIDE_DISTANCE_DIP );
-	::ShowWindow( GetHwnd(), SW_SHOW );	// 表示とアクティブ化(検索文字列欄へフォーカス)
-
-	::SetTimer( GetHwnd(), ID_TIMER_FIND_SLIDEIN, SLIDE_INTERVAL_MS, NULL );
+	// 値の反映(位置へのSetWindowPos)・開始時の初期化(ShowWindow)はCSlideInAnimator側では
+	// なくここでInitFunc/ApplyFuncとして登録する。X座標はスライド中ずっと固定なので
+	// ラムダにそのまま持たせる。引数順はfnInit,fnApplyだが、実際にはfnApplyの初回呼び出し
+	// (開始位置へジャンプ)の方がfnInitより先に実行される(Start()参照)ため、隠れた状態で
+	// 位置決めしてから見せる、という順序は保たれる 20260830
+	RECT	rc;
+	::GetWindowRect( GetHwnd(), &rc );
+	int	nX = rc.left;
+	HWND	hwnd = GetHwnd();
+	m_cSlideAnimator.Start( rc.top - DpiScaleY( SLIDE_DISTANCE_DIP ), rc.top, SLIDE_DURATION_MS,
+		[hwnd](){
+			::ShowWindow( hwnd, SW_SHOW );	// 表示とアクティブ化(検索文字列欄へフォーカス)
+			::SetTimer( hwnd, ID_TIMER_FIND_SLIDEIN, SLIDE_INTERVAL_MS, NULL );
+		},
+		[hwnd, nX]( int nY ){
+			::SetWindowPos( hwnd, NULL, nX, nY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+		},
+		[hwnd](){
+			::KillTimer( hwnd, ID_TIMER_FIND_SLIDEIN );
+		} );
 }
 
 BOOL CDlgFind::OnTimer( WPARAM wParam )
@@ -435,9 +451,7 @@ BOOL CDlgFind::OnTimer( WPARAM wParam )
 		return CDialog::OnTimer( wParam );
 	}
 
-	if( !m_cSlideAnimator.OnTimer( GetHwnd() ) ){
-		::KillTimer( GetHwnd(), ID_TIMER_FIND_SLIDEIN );
-	}
+	m_cSlideAnimator.OnTimer();
 	return TRUE;
 }
 #endif // NKMM_
