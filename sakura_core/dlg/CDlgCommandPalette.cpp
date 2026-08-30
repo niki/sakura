@@ -83,6 +83,10 @@ namespace {
 	//! 同じ薄紅背景+濃い赤文字の配色に揃える) 20260829
 	const COLORREF	PALETTE_FILTER_IME_WARN_BACK_COLOR = RGB( 253, 231, 233 );
 	const COLORREF	PALETTE_FILTER_IME_WARN_TEXT_COLOR = RGB( 164, 38, 44 );
+
+	//! リスト行の背景色。Visual Studio 2026のソリューションエクスプローラー/
+	//! ツリービュー・リストビューと同じ配色(スポイトで実測: #F7FAFC) 20260830
+	const COLORREF	PALETTE_LIST_BACK_COLOR = RGB( 247, 250, 252 );
 }
 
 //! 全角入力モードの警告背景ブラシ。WM_CTLCOLOREDITで返した後もシステム側が使い続ける
@@ -832,12 +836,13 @@ LRESULT CDlgCommandPalette::OnListCustomDraw( LPARAM lParam )
 					// 色が濃くなっていく」。上端/下端で矢印キーを押し続けたときのように
 					// 選択行が変わらないまま再描画だけが繰り返されるケースで、選択行の背景が
 					// どんどん濃く重なって見える不具合として実際に発生した。DrawThemeBackground()の
-					// 前に必ずCOLOR_WINDOWで一度下地をクリアしておくことで、何度描き直しても
+					// 前に必ず非選択時と同じ下地色で一度クリアしておくことで、何度描き直しても
 					// 常に同じ結果になるようにする 20260821
-					FillRectWithColor( hdc, &rc, ::GetSysColor( COLOR_WINDOW ) );
+					// 20260830 白(COLOR_WINDOW)は浮いて見えるとの指摘でPALETTE_LIST_BACK_COLORに変更
+					FillRectWithColor( hdc, &rc, PALETTE_LIST_BACK_COLOR );
 					CUxTheme::getInstance()->DrawThemeBackground( m_hThemeListView, hdc, LVP_LISTITEM, LISS_SELECTED, &rc, NULL );
 				}else{
-					FillRectWithColor( hdc, &rc, ::GetSysColor( bSelected ? COLOR_HIGHLIGHT : COLOR_WINDOW ) );
+					FillRectWithColor( hdc, &rc, bSelected ? ::GetSysColor( COLOR_HIGHLIGHT ) : PALETTE_LIST_BACK_COLOR );
 				}
 			}
 
