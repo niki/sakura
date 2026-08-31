@@ -2,7 +2,8 @@
 //
 #define SAKURA_LANG_RESOURCE
 
-#include "my_config.h" // NK_
+#include "my_config.h" // NKMM_
+#include "config/build_version.h" // PR_VER/PR_VER_STR (auto-generated build number)
 #ifndef SAKURA_LANG_RESOURCE
 	#include "sakura_rc.h"
 	#include "Funccode_define.h"
@@ -35,10 +36,10 @@ LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
 #endif //_WIN32
 
 #define	S_COPYRIGHT	"Copyright (C) 2011-2018  by Lucien & Collaborators"
-#ifndef NK_FIX_VERDLG
-#define PR_VER		2,3,2,0
-#define PR_VER_STR	"2.3.2.0"
-#endif  // NK_
+#ifndef NKMM_FIX_VERDLG
+#define PR_VER		2,3,0,0
+#define PR_VER_STR	"2.3.0.0"
+#endif  // NKMM_
 #define FL_VER		PR_VER
 #define FL_VER_STR	PR_VER_STR
 

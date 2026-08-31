@@ -436,15 +436,17 @@ void CSakuraEnvironment::ExpandParameter(const wchar_t* pszSource, wchar_t* pszB
 		case L'V':	// Apr. 4, 2003 genta
 			// Version number
 			{
-				wchar_t buf[32]; // 6(符号含むWORDの最大長) * 4 + 4(固定部分) + PR_LV_SUFFIX分の余裕
+				wchar_t buf[32]; // "2.3.yy.mddx"形式(yy=2桁,mdd=3〜4桁)+符号2桁分*2+枝番分の余裕
 				//	2004.05.13 Moca バージョン番号は、プロセスごとに取得する
 				DWORD dwVersionMS, dwVersionLS;
 				GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
-				int len = auto_sprintf( buf, L"%d.%d.%d.%d%hs",
+				// yy/mddはコンパイル済みバイナリのVERSIONINFO(dwVersionLS)経由ではなく
+				// PR_LV_YY_STR/PR_LV_MDD_STRを直接使う(CDlgAbout.cppと同じ理由)
+				int len = auto_sprintf( buf, L"%d.%d.%hs.%hs%hs",
 					HIWORD( dwVersionMS ),
 					LOWORD( dwVersionMS ),
-					HIWORD( dwVersionLS ),
-					PR_LV,//LOWORD( dwVersionLS )
+					PR_LV_YY_STR,
+					PR_LV_MDD_STR,
 					PR_LV_SUFFIX
 				);
 				q = wcs_pushW( q, q_max - q, buf, len );

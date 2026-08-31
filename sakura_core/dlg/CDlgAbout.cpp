@@ -319,11 +319,14 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DWORD dwVersionMS, dwVersionLS;
 	GetAppVersionInfo( NULL, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS );
 #ifdef NKMM_FIX_VERDLG
-	auto_sprintf( szMsg, _T("Ver. %d.%d.%d.%d%s (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
+	// バージョン表記は "2.3.yy.mddx" 形式。yy/mddはコンパイル済みバイナリの
+	// VERSIONINFO(dwVersionLS)経由ではなく、PR_LV_YY_STR/PR_LV_MDD_STRを直接
+	// 使う(枝番xは英字のためVERSIONINFOのWORDには元々収まらない)
+	auto_sprintf( szMsg, _T("Ver. %d.%d.%s.%s%s (" TARGET_M_SUFFIX2 ") by " NKMM_AUTHOR "\r\n"),
 		HIWORD( dwVersionMS ),
 		LOWORD( dwVersionMS ),
-		HIWORD( dwVersionLS ),
-		PR_LV,//LOWORD( dwVersionLS )
+		_T(PR_LV_YY_STR),
+		_T(PR_LV_MDD_STR),
 		_T(PR_LV_SUFFIX)
 	);
 #else

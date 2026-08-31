@@ -66,7 +66,6 @@ Funccode_*.h
 *.aps
 
 sakura_core/config/build_version_generated.h
-sakura_core/config/build_version.h
 sakura_core/config/.build_version_state
 
 *.user
