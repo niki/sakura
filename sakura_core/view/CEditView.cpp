@@ -89,6 +89,85 @@ VOID CALLBACK EditViewTimerProc( HWND, UINT, UINT_PTR, DWORD );
 VOID CALLBACK ScrBarMarkerDebounceTimerProc( HWND, UINT, UINT_PTR, DWORD );
 #endif // NKMM_
 
+#ifdef NKMM_MULTI_CURSOR
+//! マルチカーソル: 基準点(ptBase/nBaseColumn)からnRelLine/nRelColumnだけオフセットした
+//! 実位置を算出する共通ヘルパー。ResolveExtraCursor(基準=プライマリの現在位置)と
+//! ResolveExtraCursorAnchor(基準=プライマリの選択アンカー)の両方から使う 20260902
+bool CEditView::ResolveExtraCursorFromBase( const CLayoutPoint& ptBase, int nBaseColumn, int nRelLine, int nRelColumn, CLayoutPoint* pOut ) const
+{
+	CLayoutInt nDocLineCount = m_pcEditDoc->m_cLayoutMgr.GetLineCount();
+	int nTargetLine = ToInt(ptBase.GetY2()) + nRelLine;
+	if( nTargetLine < 0 || nDocLineCount <= nTargetLine ){
+		return false;
+	}
+	const CLayout* pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY( CLayoutInt(nTargetLine) );
+	CLayoutInt nLineWidth = pcLayout ? pcLayout->CalcLayoutWidth( m_pcEditDoc->m_cLayoutMgr ) : CLayoutInt(0);
+	int nTargetColumn = nBaseColumn + nRelColumn;
+	CLayoutInt nCol = t_max( CLayoutInt(0), t_min( CLayoutInt(nTargetColumn), nLineWidth ) );
+	// 全角文字の1文字分の桁幅は2のため、上の桁クランプだけでは全角文字の直後(2桁分)の
+	// ちょうど中間に着地することがある。LineColumnToIndex/LineIndexToColumnを
+	// 往復させることで、その行で実際に存在する文字境界の桁へスナップする 20260831
+	if( pcLayout ){
+		CLogicInt nIdx = LineColumnToIndex( pcLayout, nCol );
+		nCol = LineIndexToColumn( pcLayout, nIdx );
+	}
+	pOut->Set( nCol, CLayoutInt(nTargetLine) );
+	return true;
+}
+
+//! マルチカーソル: 追加カーソル1個分の実位置を算出する	20260830
+//! プライマリの現在行(レイアウト単位)+ extra.nRelLineがドキュメント範囲外ならfalse(非アクティブ)。
+//! 桁の基準はプライマリの「表示上クランプされている現在桁」ではなく、プライマリが本来保持している桁
+//! (GetCaret().m_nCaretPosX_Prev)を使う。これにより、プライマリ自身が短い行で左にクランプされていても
+//! 追加カーソルはつられずに正しい相対桁を維持できる 20260831
+bool CEditView::ResolveExtraCursor( const SExtraCursor& extra, CLayoutPoint* pOut ) const
+{
+	return ResolveExtraCursorFromBase(
+		GetCaret().GetCaretLayoutPos(), ToInt(GetCaret().m_nCaretPosX_Prev),
+		extra.nRelLine, extra.nRelColumn, pOut );
+}
+
+//! マルチカーソル: 追加カーソル1個分の選択起点(アンカー)の実位置を算出する	20260902
+//! 基準点はプライマリの選択アンカー(GetSelectionInfo().m_sSelectBgn)。ResolveExtraCursorと
+//! 全く同じ考え方(基準+固定オフセット、行の長さでクランプ)をアンカーにも適用する。
+//! bHasSelection==falseなら(このカーソルはまだ選択を持っていない)常にfalseを返す
+bool CEditView::ResolveExtraCursorAnchor( const SExtraCursor& extra, CLayoutPoint* pOut ) const
+{
+	if( !extra.bHasSelection ){
+		return false;
+	}
+	CLayoutPoint ptAnchor = GetSelectionInfo().m_sSelectBgn.GetFrom();
+	return ResolveExtraCursorFromBase( ptAnchor, ToInt(ptAnchor.GetX2()), extra.nAnchorRelLine, extra.nAnchorRelColumn, pOut );
+}
+
+//! マルチカーソル: 追加カーソル1個分の選択範囲(nLineNum行分)を算出する	20260901, 20260902改
+//! アンカー(ResolveExtraCursorAnchor)〜現在位置(ResolveExtraCursor)を、このカーソル自身の
+//! 選択範囲として独立に解決し、プライマリの選択範囲と全く同じGetSelectAreaLineFromRangeの
+//! ロジックでnLineNum行分を切り出す。プライマリの範囲をそのまま平行移動する旧方式とは異なり、
+//! 行の長さがカーソルごとに違っていても(短い行の末尾で選択が止まらず次の行へ回り込む等)
+//! このカーソル自身の行として正しく扱われる。選択中でない、またはアンカー/現在位置の行が
+//! ドキュメント範囲外なら無効な範囲を返す。
+CLayoutRange CEditView::ResolveExtraCursorSelectAreaLine( const SExtraCursor& extra, CLayoutInt nLineNum ) const
+{
+	CLayoutRange ret;
+	ret.Clear(-1);
+	CLayoutPoint ptAnchor, ptCurrent;
+	if( !ResolveExtraCursorAnchor( extra, &ptAnchor ) ) return ret;
+	if( !ResolveExtraCursor( extra, &ptCurrent ) ) return ret;
+	if( ptAnchor == ptCurrent ) return ret;	// 選択なし(0幅)
+
+	CLayoutPoint ptFrom = ptAnchor;
+	CLayoutPoint ptTo = ptCurrent;
+	if( PointCompare( ptTo, ptFrom ) < 0 ){
+		std::swap( ptFrom, ptTo );
+	}
+	CLayoutRange sRange( ptFrom, ptTo );
+	const CLayout* pcLayout = m_pcEditDoc->m_cLayoutMgr.SearchLineByLayoutY( nLineNum );
+	GetSelectionInfo().GetSelectAreaLineFromRange( ret, nLineNum, pcLayout, sRange );
+	return ret;
+}
+#endif // NKMM_
+
 
 
 /*
@@ -661,6 +740,14 @@ LRESULT CEditView::DispatchEvent(
 	case WM_IME_NOTIFY:	// Nov. 26, 2006 genta
 		if( wParam == IMN_SETCONVERSIONMODE || wParam == IMN_SETOPENSTATUS){
 			GetCaret().ShowEditCaret();
+#ifdef NKMM_MULTI_CURSOR
+			// プライマリのネイティブキャレットはShowEditCaret()で即座に色が更新されるが、
+			// 追加カーソルはWM_PAINT経由の自前描画のため、ここで明示的に再描画しないと
+			// IMEのON/OFF切り替え直後は古い色のまま残ってしまう 20260901
+			if( !m_vExtraCursors.empty() ){
+				Redraw();
+			}
+#endif // NKMM_
 		}
 		return DefWindowProc( hwnd, uMsg, wParam, lParam );
 
@@ -1266,6 +1353,17 @@ void CEditView::OnSetFocus( void )
 /* 入力フォーカスを失ったときの処理 */
 void CEditView::OnKillFocus( void )
 {
+#ifdef NKMM_MULTI_CURSOR
+	// このビューがフォーカスを失った(検索/置換ダイアログ、他のペイン、他アプリ等へ切替)。
+	// Esc・通常クリック・検索/置換ダイアログに続く、標準的なマルチカーソル解除操作の1つ。
+	// 個別のダイアログ表示コマンド(Command_SEARCH_DIALOG等)側でも同様のクリアを入れているが、
+	// ここで一括して行っておけば個々の呼び出し元でクリアし忘れる心配がない 20260902
+	if( !m_vExtraCursors.empty() ){
+		m_vExtraCursors.clear();
+		Redraw();
+	}
+#endif // NKMM_
+
 	// 03/02/18 対括弧の強調表示(消去) ai
 	DrawBracketPair( false );
 	m_bDrawBracketPairFlag = FALSE;

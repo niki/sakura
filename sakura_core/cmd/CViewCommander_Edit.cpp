@@ -26,6 +26,9 @@
 #include "plugin/CJackManager.h"
 #include "plugin/CSmartIndentIfObj.h"
 #include "debug/CRunningTimer.h"
+#ifdef NKMM_MULTI_CURSOR
+#include <algorithm>
+#endif // NKMM_
 
 
 /* wchar_t1個分の文字を入力 */
@@ -986,6 +989,417 @@ void CViewCommander::Command_DELETE_BACK( void )
 	}
 	m_pCommanderView->PostprocessCommand_hokan();	//	Jan. 10, 2005 genta 関数化
 }
+
+
+
+#ifdef NKMM_MULTI_CURSOR
+//! マルチカーソル: 現在の最上段カーソルの1行上(同じ桁)に新しいカーソルを追加する	20260830
+void CViewCommander::Command_AddCursorUp( void )
+{
+	// マルチカーソルと矩形選択は排他。矩形選択中であれば解除してから追加する
+	if( m_pCommanderView->GetSelectionInfo().IsBoxSelecting() ){
+		m_pCommanderView->GetSelectionInfo().DisableSelectArea( true );
+	}
+
+	if( (int)m_pCommanderView->m_vExtraCursors.size() >= NKMM_MULTICURSOR_MAX ){
+		ErrorBeep();
+		return;
+	}
+
+	// プライマリ(相対0)+追加カーソルの中から最上段(nRelLineが最小)を探す。
+	// 新カーソルの相対桁は「最上段カーソルと同じ相対桁」を引き継ぐ(プライマリなら0)
+	int nTopmostRel = 0;
+	int nTopmostRelColumn = 0;
+	for( const auto& extra : m_pCommanderView->m_vExtraCursors ){
+		if( extra.nRelLine < nTopmostRel ){
+			nTopmostRel = extra.nRelLine;
+			nTopmostRelColumn = extra.nRelColumn;
+		}
+	}
+
+	int nNewRel = nTopmostRel - 1;
+	CLayoutInt nPrimaryLine = GetCaret().GetCaretLayoutPos().GetY2();
+	if( ToInt(nPrimaryLine) + nNewRel < 0 ){
+		// 文書先頭を超えるので追加しない(この第一弾ではカーソル追加時点での
+		// 境界超過は非対応。既存カーソルの上下移動での「非アクティブ」機構とは別)
+		return;
+	}
+
+	m_pCommanderView->m_vExtraCursors.push_back( { nNewRel, nTopmostRelColumn } );
+	m_pCommanderView->Redraw();
+}
+
+//! マルチカーソル: 現在の最下段カーソルの1行下(同じ桁)に新しいカーソルを追加する	20260830
+void CViewCommander::Command_AddCursorDown( void )
+{
+	// マルチカーソルと矩形選択は排他。矩形選択中であれば解除してから追加する
+	if( m_pCommanderView->GetSelectionInfo().IsBoxSelecting() ){
+		m_pCommanderView->GetSelectionInfo().DisableSelectArea( true );
+	}
+
+	if( (int)m_pCommanderView->m_vExtraCursors.size() >= NKMM_MULTICURSOR_MAX ){
+		ErrorBeep();
+		return;
+	}
+
+	// プライマリ(相対0)+追加カーソルの中から最下段(nRelLineが最大)を探す
+	int nBottommostRel = 0;
+	int nBottommostRelColumn = 0;
+	for( const auto& extra : m_pCommanderView->m_vExtraCursors ){
+		if( extra.nRelLine > nBottommostRel ){
+			nBottommostRel = extra.nRelLine;
+			nBottommostRelColumn = extra.nRelColumn;
+		}
+	}
+
+	int nNewRel = nBottommostRel + 1;
+	CLayoutInt nPrimaryLine = GetCaret().GetCaretLayoutPos().GetY2();
+	CLayoutInt nDocLineCount = GetDocument()->m_cLayoutMgr.GetLineCount();
+	if( ToInt(nDocLineCount) <= ToInt(nPrimaryLine) + nNewRel ){
+		// 文書末尾を超えるので追加しない
+		return;
+	}
+
+	m_pCommanderView->m_vExtraCursors.push_back( { nNewRel, nBottommostRelColumn } );
+	m_pCommanderView->Redraw();
+}
+
+//! マルチカーソル: 直近に追加したカーソルを1個取り消す(VS CodeのCtrl+U相当)	20260830
+//! テキスト編集のUndo(Ctrl+Z)とは無関係の別系統。m_vExtraCursorsは追加順のLIFOに
+//! なっているため、末尾を1個popするだけでよい。
+void CViewCommander::Command_MULTICURSOR_UNDO( void )
+{
+	if( !m_pCommanderView->m_vExtraCursors.empty() ){
+		m_pCommanderView->m_vExtraCursors.pop_back();
+		m_pCommanderView->Redraw();
+	}
+}
+
+//! マルチカーソル: プライマリ+追加カーソルの各位置に対して1回ずつfnEditOnceを実行する	20260830
+//!
+//! ドキュメント降順(末尾側から)で処理する。ある位置への編集は、その位置より手前
+//! (まだ処理していない)カーソルの位置には影響しないため、編集のたびに他カーソルの
+//! 位置を補正し直す必要がない。fnEditOnceにはCommand_WCHAR等、現在のGetCaret()位置に
+//! 作用する既存コマンドをそのまま渡す想定(挙動を完全に共有できる)。
+//!
+//! Undo/Redoは、この呼び出し元(HandleCommand)が既に開いている単一のCOpeBlkに
+//! 全カーソル分のCOpeがそのまま積まれるため、追加の実装なしに1回のUndo/Redoとしてまとまる
+//! (CDocVisitor::SetAllEolと同じ考え方)。
+void CViewCommander::ApplyToAllCursors( const std::function<void()>& fnEditOnce )
+{
+	struct SSlot{ CLayoutPoint ptCaret; bool bPrimary; size_t nExtraIdx; };
+	std::vector<SSlot> vAll;
+	vAll.reserve( m_pCommanderView->m_vExtraCursors.size() + 1 );
+	vAll.push_back( { GetCaret().GetCaretLayoutPos(), true, 0 } );
+	for( size_t i = 0; i < m_pCommanderView->m_vExtraCursors.size(); ++i ){
+		// 非アクティブ(実位置がドキュメント範囲外)のカーソルは編集にも参加させない。
+		// プライマリが動いて範囲内に戻るまで待つ
+		CLayoutPoint ptResolved;
+		if( !m_pCommanderView->ResolveExtraCursor( m_pCommanderView->m_vExtraCursors[i], &ptResolved ) ) continue;
+		vAll.push_back( { ptResolved, false, i } );
+	}
+
+	std::sort( vAll.begin(), vAll.end(), []( const SSlot& a, const SSlot& b ){
+		if( a.ptCaret.GetY2() != b.ptCaret.GetY2() ) return a.ptCaret.GetY2() > b.ptCaret.GetY2();
+		return a.ptCaret.GetX2() > b.ptCaret.GetX2();
+	} );
+
+	// 各extraの選択起点(アンカー)の実位置は、ループでプライマリのm_sSelectBgnが書き換わって
+	// しまう前に確定させておく(ResolveExtraCursorAnchorはプライマリの現在のm_sSelectBgnを
+	// 参照するため)。この関数はfnEditOnceとして編集系(タイピング・削除)と選択系移動の両方を
+	// 受け取れる。各カーソルは「自分自身のアンカー〜自分自身の現在位置」という、プライマリの
+	// 結果を平行移動するのではない独立した選択状態を持つ(SExtraCursor参照) 20260902
+	// プライマリ自身の選択状態(ループ開始前の本来の状態)も、extraと同じくここで確定させて
+	// おく。ループ中は他カーソルの処理でGetSelectionInfo()のm_sSelectBgn/m_sSelectが
+	// 都度上書きされるため、「プライマリはそのまま触らない」という前提は、プライマリより先に
+	// 処理されるextraが1つでもあると成立しない(降順ソートのため、プライマリより後ろの行に
+	// extraがあると必ずそうなる)。プライマリの番が来るたびに明示的に復元する必要がある 20260902
+	CLayoutRange sPrimarySelectBgnOrig = m_pCommanderView->GetSelectionInfo().m_sSelectBgn;
+	CLayoutRange sPrimarySelectOrig = m_pCommanderView->GetSelectionInfo().m_sSelect;
+
+	std::vector<CLayoutPoint> vExtraAnchor( vAll.size() );
+	std::vector<bool> vHadSelection( vAll.size(), false );
+	for( size_t j = 0; j < vAll.size(); ++j ){
+		if( vAll[j].bPrimary ){
+			vHadSelection[j] = m_pCommanderView->GetSelectionInfo().IsTextSelected();
+			continue;
+		}
+		const auto& extra = m_pCommanderView->m_vExtraCursors[vAll[j].nExtraIdx];
+		if( extra.bHasSelection && m_pCommanderView->ResolveExtraCursorAnchor( extra, &vExtraAnchor[j] ) ){
+			vHadSelection[j] = true;
+		}
+	}
+
+	CLayoutPoint ptPrimaryNew;
+	CLayoutRange sPrimarySelectBgnNew, sPrimarySelectNew;
+	for( size_t j = 0; j < vAll.size(); ++j ){
+		auto& slot = vAll[j];
+		GetCaret().MoveCursor( slot.ptCaret, false );
+
+		if( slot.bPrimary ){
+			// プライマリの選択状態を、ループ開始前の本来の状態に明示的に復元してから使う
+			// (単一カーソル時と全く同じ挙動になる)
+			m_pCommanderView->GetSelectionInfo().m_sSelectBgn = sPrimarySelectBgnOrig;
+			m_pCommanderView->GetSelectionInfo().m_sSelect = sPrimarySelectOrig;
+		}
+		else if( vHadSelection[j] ){
+			CLayoutPoint ptFrom = vExtraAnchor[j];
+			CLayoutPoint ptTo = slot.ptCaret;
+			m_pCommanderView->GetSelectionInfo().m_sSelectBgn.Set( ptFrom );
+			if( PointCompare( ptTo, ptFrom ) < 0 ) std::swap( ptFrom, ptTo );
+			m_pCommanderView->GetSelectionInfo().m_sSelect = CLayoutRange( ptFrom, ptTo );
+		}
+		else{
+			m_pCommanderView->GetSelectionInfo().DisableSelectArea( false );
+		}
+
+		fnEditOnce();
+
+		CLayoutPoint ptNew = GetCaret().GetCaretLayoutPos();
+		bool bNowSelected = m_pCommanderView->GetSelectionInfo().IsTextSelected();
+		CLayoutPoint ptAnchorNew = m_pCommanderView->GetSelectionInfo().m_sSelectBgn.GetFrom();
+
+		if( slot.bPrimary ){
+			ptPrimaryNew = ptNew;
+			sPrimarySelectBgnNew = m_pCommanderView->GetSelectionInfo().m_sSelectBgn;
+			sPrimarySelectNew = m_pCommanderView->GetSelectionInfo().m_sSelect;
+		}else{
+			// 結果を基に、新しいプライマリ位置が確定してから相対値を再計算する必要があるため、
+			// いったん絶対位置のまま覚えておく(下で相対化する)
+			auto& extra = m_pCommanderView->m_vExtraCursors[slot.nExtraIdx];
+			extra.nRelLine = ToInt(ptNew.GetY2());
+			extra.nRelColumn = ToInt(ptNew.GetX2());
+			extra.bHasSelection = bNowSelected;
+			if( bNowSelected ){
+				extra.nAnchorRelLine = ToInt(ptAnchorNew.GetY2());
+				extra.nAnchorRelColumn = ToInt(ptAnchorNew.GetX2());
+			}
+		}
+	}
+
+	// 降順ループの都合上、最後に処理したのがプライマリとは限らないため、
+	// プライマリカーソルと選択状態を新しい位置へ明示的に戻し、ビューへ反映する
+	GetCaret().MoveCursor( ptPrimaryNew, true );
+	m_pCommanderView->GetSelectionInfo().m_sSelectBgn = sPrimarySelectBgnNew;
+	m_pCommanderView->GetSelectionInfo().m_sSelect = sPrimarySelectNew;
+
+	// 上のループで一時的に絶対位置を入れていた処理済みextraを、プライマリの確定位置基準の
+	// 相対値に変換し直す(未処理=非アクティブだったextraは元の相対値のままなので触らない)
+	for( auto& slot : vAll ){
+		if( slot.bPrimary ) continue;
+		auto& extra = m_pCommanderView->m_vExtraCursors[slot.nExtraIdx];
+		extra.nRelLine = extra.nRelLine - ToInt(ptPrimaryNew.GetY2());
+		extra.nRelColumn = extra.nRelColumn - ToInt(ptPrimaryNew.GetX2());
+		if( extra.bHasSelection ){
+			extra.nAnchorRelLine = extra.nAnchorRelLine - ToInt(sPrimarySelectBgnNew.GetFrom().GetY2());
+			extra.nAnchorRelColumn = extra.nAnchorRelColumn - ToInt(sPrimarySelectBgnNew.GetFrom().GetX2());
+		}
+	}
+
+	MergeOverlappingCursorsIfNeeded();
+
+	m_pCommanderView->Redraw();
+}
+
+//! マルチカーソル: 重なった(接した)カーソル同士を1個に統合する	20260831
+//! VS Codeのeditor.multiCursorMergeOverlapping(既定オン)と同じ考え方。設定
+//! (m_Common.m_sEdit.m_bMultiCursorMergeOverlapping)がオフなら何もしない。
+//!
+//! プライマリ+各extraを「アンカー〜現在位置」の範囲(選択なしは幅0)として集め、開始位置
+//! 昇順に並べて隣接ペアを走査する。VS Codeのnormalize()と同じ判定式(片方が幅0の選択なら
+//! 接しているだけでも統合、両方に幅があれば真に重なっている場合のみ統合)。統合後の範囲は
+//! 両者を包含する形にし、方向(アンカー側)は「後から追加された側」を優先して引き継ぐ
+//! (m_vExtraCursorsは追加順のLIFOなので、vector内indexが大きいほど後から追加=優先)。
+//! プライマリは常にnOrder最大として扱い、プライマリが関わる統合では必ずプライマリの
+//! 識別が生き残る(プライマリという実体は消せないため)。
+//!
+//! この関数はApplyToAllCursorsの末尾、全カーソルの位置が確定した直後に呼ばれる想定。
+void CViewCommander::MergeOverlappingCursorsIfNeeded( void )
+{
+	if( !GetDllShareData().m_Common.m_sEdit.m_bMultiCursorMergeOverlapping ) return;
+	if( m_pCommanderView->m_vExtraCursors.empty() ) return;
+
+	struct SMergeEntry{
+		bool		bPrimary;
+		size_t		nExtraIdx;		// bPrimary==falseのときのみ有効(統合前の元index)
+		int			nOrder;			// 大きいほど後から追加=優先。プライマリは常に最大
+		CLayoutPoint ptLow, ptHigh;	// 選択なしならLow==High==カーソル位置
+		bool		bAnchorHigh;	// アンカーがptHigh側にあるか(選択なしなら無意味)
+		bool		bHasSelection;
+	};
+	std::vector<SMergeEntry> vEntries;
+	vEntries.reserve( m_pCommanderView->m_vExtraCursors.size() + 1 );
+
+	{
+		SMergeEntry e;
+		e.bPrimary = true;
+		e.nExtraIdx = 0;
+		e.nOrder = (int)m_pCommanderView->m_vExtraCursors.size();	// 常にどのextraのindexよりも大きい
+		e.bHasSelection = m_pCommanderView->GetSelectionInfo().IsTextSelected();
+		if( e.bHasSelection ){
+			e.ptLow  = m_pCommanderView->GetSelectionInfo().m_sSelect.GetFrom();
+			e.ptHigh = m_pCommanderView->GetSelectionInfo().m_sSelect.GetTo();
+			e.bAnchorHigh = ( m_pCommanderView->GetSelectionInfo().m_sSelectBgn.GetFrom() == e.ptHigh );
+		}else{
+			e.ptLow = e.ptHigh = GetCaret().GetCaretLayoutPos();
+			e.bAnchorHigh = false;
+		}
+		vEntries.push_back( e );
+	}
+	for( size_t i = 0; i < m_pCommanderView->m_vExtraCursors.size(); ++i ){
+		const auto& extra = m_pCommanderView->m_vExtraCursors[i];
+		CLayoutPoint ptCur;
+		if( !m_pCommanderView->ResolveExtraCursor( extra, &ptCur ) ) continue;	// 非アクティブは統合対象外
+
+		SMergeEntry e;
+		e.bPrimary = false;
+		e.nExtraIdx = i;
+		e.nOrder = (int)i;
+		e.bHasSelection = false;
+		e.ptLow = e.ptHigh = ptCur;
+		e.bAnchorHigh = false;
+		if( extra.bHasSelection ){
+			CLayoutPoint ptAnchor;
+			if( m_pCommanderView->ResolveExtraCursorAnchor( extra, &ptAnchor ) && ptAnchor != ptCur ){
+				e.bHasSelection = true;
+				if( PointCompare( ptAnchor, ptCur ) <= 0 ){ e.ptLow = ptAnchor; e.ptHigh = ptCur;    e.bAnchorHigh = false; }
+				else                                      { e.ptLow = ptCur;    e.ptHigh = ptAnchor; e.bAnchorHigh = true;  }
+			}
+		}
+		vEntries.push_back( e );
+	}
+
+	if( vEntries.size() < 2 ) return;
+
+	std::sort( vEntries.begin(), vEntries.end(), []( const SMergeEntry& a, const SMergeEntry& b ){
+		int nCmp = PointCompare( a.ptLow, b.ptLow );
+		if( nCmp != 0 ) return nCmp < 0;
+		return PointCompare( a.ptHigh, b.ptHigh ) < 0;
+	} );
+
+	std::vector<SMergeEntry> vMerged;
+	vMerged.reserve( vEntries.size() );
+	vMerged.push_back( vEntries[0] );
+	for( size_t i = 1; i < vEntries.size(); ++i ){
+		SMergeEntry& cur = vMerged.back();
+		const SMergeEntry& next = vEntries[i];
+
+		bool bEitherEmpty = !cur.bHasSelection || !next.bHasSelection;
+		bool bShouldMerge = bEitherEmpty
+			? PointCompare( next.ptLow, cur.ptHigh ) <= 0
+			: PointCompare( next.ptLow, cur.ptHigh ) < 0;
+		if( !bShouldMerge ){
+			vMerged.push_back( next );
+			continue;
+		}
+
+		bool bNextWins = next.nOrder > cur.nOrder;
+		const SMergeEntry& winner = bNextWins ? next : cur;
+		CLayoutPoint ptLow  = PointCompare( cur.ptLow,  next.ptLow  ) <= 0 ? cur.ptLow  : next.ptLow;
+		CLayoutPoint ptHigh = PointCompare( cur.ptHigh, next.ptHigh ) >= 0 ? cur.ptHigh : next.ptHigh;
+
+		SMergeEntry merged;
+		merged.bPrimary = winner.bPrimary;
+		merged.nExtraIdx = winner.nExtraIdx;
+		merged.nOrder = ( cur.nOrder > next.nOrder ) ? cur.nOrder : next.nOrder;
+		merged.ptLow = ptLow;
+		merged.ptHigh = ptHigh;
+		merged.bHasSelection = ( ptLow != ptHigh );
+		if( !winner.bHasSelection ){
+			// 無選択カーソルが吸収された側: 自分の位置がLow側でなければHigh側とみなす
+			merged.bAnchorHigh = ( winner.ptLow != ptLow );
+		}else{
+			merged.bAnchorHigh = winner.bAnchorHigh;
+		}
+		cur = merged;
+	}
+
+	if( vMerged.size() == vEntries.size() ) return;	// 統合対象なし
+
+	// プライマリの統合結果を確定して反映する(プライマリという実体は必ず1個生き残る)
+	const SMergeEntry* pPrimaryMerged = nullptr;
+	for( const auto& e : vMerged ){
+		if( e.bPrimary ){ pPrimaryMerged = &e; break; }
+	}
+
+	CLayoutPoint ptPrimaryAnchor = pPrimaryMerged->bAnchorHigh ? pPrimaryMerged->ptHigh : pPrimaryMerged->ptLow;
+	CLayoutPoint ptPrimaryCaret  = pPrimaryMerged->bAnchorHigh ? pPrimaryMerged->ptLow  : pPrimaryMerged->ptHigh;
+
+	GetCaret().MoveCursor( ptPrimaryCaret, true );
+	m_pCommanderView->GetSelectionInfo().m_sSelectBgn.Set( ptPrimaryAnchor );
+	if( pPrimaryMerged->bHasSelection ){
+		m_pCommanderView->GetSelectionInfo().m_sSelect = CLayoutRange( pPrimaryMerged->ptLow, pPrimaryMerged->ptHigh );
+	}else{
+		m_pCommanderView->GetSelectionInfo().DisableSelectArea( false );
+	}
+
+	// 生き残ったextra(統合されなかったもの・統合の勝者になったもの)を、新しいプライマリ
+	// 位置基準の相対値として作り直す。統合で消えたextra(敗者)はここで自然に脱落する。
+	std::vector<CEditView::SExtraCursor> vNewExtras;
+	vNewExtras.reserve( vMerged.size() );
+	for( const auto& e : vMerged ){
+		if( e.bPrimary ) continue;
+		CLayoutPoint ptAnchor = e.bAnchorHigh ? e.ptHigh : e.ptLow;
+		CLayoutPoint ptCaret  = e.bAnchorHigh ? e.ptLow  : e.ptHigh;
+
+		CEditView::SExtraCursor ne;
+		ne.nRelLine = ToInt(ptCaret.GetY2()) - ToInt(ptPrimaryCaret.GetY2());
+		ne.nRelColumn = ToInt(ptCaret.GetX2()) - ToInt(ptPrimaryCaret.GetX2());
+		ne.bHasSelection = e.bHasSelection;
+		if( e.bHasSelection ){
+			ne.nAnchorRelLine = ToInt(ptAnchor.GetY2()) - ToInt(ptPrimaryAnchor.GetY2());
+			ne.nAnchorRelColumn = ToInt(ptAnchor.GetX2()) - ToInt(ptPrimaryAnchor.GetX2());
+		}
+		vNewExtras.push_back( ne );
+	}
+	m_pCommanderView->m_vExtraCursors = std::move( vNewExtras );
+}
+
+//! 移動系コマンド(F_UP/DOWN/LEFT/RIGHT/GOLINETOP/GOLINEEND等、および対応する
+//! _SEL系コマンド)をマルチカーソル対応にするための分岐	20260830, 選択対応 20260901
+//!
+//! 追加カーソルの位置・選択範囲は「プライマリの現在位置/選択範囲 + nRelLine/nRelColumn
+//! (作成時に固定)」としてその都度算出する方式(SExtraCursor、ResolveExtraCursor参照)の
+//! ため、選択を伴わない移動系コマンドではプライマリを通常通り動かすだけでよい(各カーソルを
+//! 個別に動かす必要が無い)。バッファ端・短い行でのクランプも含め、プライマリは既存の単一
+//! カーソルと全く同じ挙動のまま。追加カーソルは何もしなくても自動的に追従し、算出結果が
+//! ドキュメント範囲外になる間だけ自動的に非表示・編集対象外になり、プライマリが戻れば
+//! 自動的に元の相対位置へ復活する(nRelLine/nRelColumnを一切変更しないため、境界を挟んでも
+//! 相対位置が厳密に保たれ、他カーソルと衝突することもない)。
+//!
+//! 選択(bSelect==true)を伴う場合は事情が異なる: 各カーソルの選択を「プライマリの結果を
+//! 平行移動」しただけで済ませると、行の長さがカーソルごとに違う場合(短い行の末尾で選択が
+//! 止まってしまい、次の行へ回り込まない)に正しく折り返せない。ユーザー要望により、選択操作は
+//! ApplyToAllCursors経由で各カーソルの実位置において実際にコマンドを再実行する方式に変更した
+//! (編集系コマンドと全く同じ扱い。実際、typing/delete用に作った仕組みがそのまま転用できた)。
+//! 選択を伴わない移動はこれまで通り「動かさず自動追従」のまま(短い行ではクランプして止まる、
+//! という以前からの仕様を意図的に維持) 20260902
+//!
+//! ただし「選択が既にある状態でbSelect==falseの移動(Shiftなし矢印)」だけは例外的に
+//! ApplyToAllCursorsを使う。これは実際には「動く」のではなく「選択を選択端へ収束させる」
+//! (Command_CANCEL_MODE)操作であり、各extra自身の選択(アンカー〜現在位置)を正しい側の
+//! 端へ収束させるには、そのextra自身の実位置・実選択状態で実際にCommand_LEFT/RIGHT(false,...)
+//! を再実行する必要がある。プライマリの結果を平行移動するだけでは、extraの選択がプライマリと
+//! 異なる行に跨って回り込んでいた場合(短い行で折り返した後)にextraの位置・選択状態が
+//! 更新されず、折り返したままの位置に取り残されてしまう不具合があった 20260902 二回目 */
+void CViewCommander::DispatchMoveMultiCursor( bool bSelect, const std::function<void()>& fnMoveOnce )
+{
+	bool bAnyHasSelection = m_pCommanderView->GetSelectionInfo().IsTextSelected();
+	if( !bAnyHasSelection ){
+		for( const auto& extra : m_pCommanderView->m_vExtraCursors ){
+			if( extra.bHasSelection ){ bAnyHasSelection = true; break; }
+		}
+	}
+	if( ( bSelect || bAnyHasSelection ) && !m_pCommanderView->m_vExtraCursors.empty() ){
+		ApplyToAllCursors( fnMoveOnce );
+		return;
+	}
+	fnMoveOnce();
+	if( !m_pCommanderView->m_vExtraCursors.empty() ){
+		m_pCommanderView->Redraw();
+	}
+}
+#endif // NKMM_
 
 
 

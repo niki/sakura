@@ -303,6 +303,15 @@ normal_action:;
 			}
 		}
 		else{
+#ifdef NKMM_MULTI_CURSOR
+			// マルチカーソル中に、修飾キー無しの通常クリックをした場合は単一カーソルに戻す
+			// (Esc以外でマルチカーソルが解除される標準的な操作の1つ。Alt+クリックは矩形選択、
+			// Shift+クリックは選択範囲拡張のためここには来ない=対象外) 20260902
+			if( !m_vExtraCursors.empty() ){
+				m_vExtraCursors.clear();
+				Redraw();
+			}
+#endif // NKMM_
 			if( GetSelectionInfo().IsTextSelected() ){	/* テキストが選択されているか */
 				/* 現在の選択範囲を非選択状態に戻す */
 				GetSelectionInfo().DisableSelectArea( true );

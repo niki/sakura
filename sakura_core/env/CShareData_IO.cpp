@@ -2333,6 +2333,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 		common.m_sEdit.m_nUndoBufMaxKB = 0;
 	}
 #endif // NKMM_
+#ifdef NKMM_MULTI_CURSOR
+	cProfile.IOProfileData( pszSecName, LTEXT("bMultiCursorMergeOverlapping")	, common.m_sEdit.m_bMultiCursorMergeOverlapping );/* マルチカーソル: 重なったら統合する */ // 20260831
+#endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("NoCaretMoveByActivation")	, common.m_sGeneral.m_bNoCaretMoveByActivation );/* マウスクリックにてアクティベートされた時はカーソル位置を移動しない 2007.10.02 nasukoji (add by genta) */
 	cProfile.IOProfileData( pszSecName, LTEXT("bScrollBarHorz")				, common.m_sWindow.m_bScrollBarHorz );/* 水平スクロールバーを使う */
 

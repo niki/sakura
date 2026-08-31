@@ -672,6 +672,68 @@ public:
 	CTextMetrics	m_cTextMetrics;
 	CViewSelect		m_cViewSelect;
 
+#ifdef NKMM_MULTI_CURSOR
+	//! マルチカーソル編集: プライマリ(m_pcCaret)以外の追加カーソル1個分の状態。
+	//!
+	//! 行・桁ともプライマリからの相対値(nRelLine/nRelColumn、レイアウト単位)として持ち、
+	//! 実位置は「プライマリの現在位置 + 相対値」を毎回その場で算出する(絶対位置を保持して
+	//! 逐次動かす方式ではない)。この方式だと、移動でバッファ端や短い行に達したカーソルが
+	//! いても他のカーソルとの相対位置関係が絶対に崩れず、衝突もしない(整数オフセットが
+	//! 常に一定のため)。移動系コマンド(F_UP/DOWN/LEFT/RIGHT等)はプライマリを動かすだけで
+	//! 追加カーソルは全て自動追従する。編集系コマンド(タイピング・削除等、DispatchMoveMultiCursor
+	//! ではなくApplyToAllCursorsを使うもの)は各カーソルの実際の編集結果を反映する必要があるため、
+	//! 編集後に限りnRelLine/nRelColumnを再計算する(このときだけ相対値が更新されうる) 20260830
+	//!
+	//! - 行が算出結果でドキュメント範囲外になる間は「非アクティブ」(表示・編集の対象外)。
+	//!   プライマリが動いて範囲内に戻れば自動的に復活する
+	//! - 桁の基準はプライマリの「表示上クランプされている現在桁」ではなく、プライマリが
+	//!   本来保持している桁(GetCaret().m_nCaretPosX_Prev)を使う。そうしないとプライマリ自身が
+	//!   短い行で左にクランプされたとき、追加カーソルまでつられて左にずれてしまう 20260831
+	//! - 桁は行の長さで随時クランプして表示・編集する(m_nCaretPosX_Prevと同じ考え方。
+	//!   全角/半角混在で見た目がずれることはあるが、これは意図的な許容範囲。
+	//!   nRelColumn自体は変更しないので、長さが足りる行に戻れば元の相対桁に復元される)
+	//! - レイアウト単位で持つため、折り返し表示中でもプライマリ自身の上下移動(表示行基準)と
+	//!   挙動が一致する(ロジック単位だった旧版では折り返し中にずれる既知の制約があった)
+	//!
+	//! 選択(bHasSelection/nAnchorRelLine/nAnchorRelColumn)は20260902に追加。当初は選択も
+	//! 「プライマリのm_sSelectを平行移動するだけ」だったが、行の長さがカーソルごとに違う場合
+	//! (短い行の末尾で選択が止まってしまい、次の行へ回り込まない)に正しく折り返せなかった。
+	//! そこで選択の起点(アンカー)も、キャレット位置と全く同じ「プライマリ+固定オフセット」の
+	//! 考え方で独立に持つように変更: 選択開始時のプライマリのアンカー位置+固定オフセットとして
+	//! 記録し、以後は「アンカー(独立解決)〜現在位置(独立解決、nRelLine/nRelColumn)」を
+	//! このカーソル自身の選択範囲として扱う。これにより選択移動コマンドをこのカーソルの実位置で
+	//! 実際に再実行(ApplyToAllCursors経由)したときの折り返し等の結果が、次回の表示にもそのまま
+	//! 正しく反映される(プライマリの結果を平行移動するのではなく、各カーソルが本当に独立して
+	//! 動いた結果を毎回改めて解決するだけになるため)
+	struct SExtraCursor {
+		int			nRelLine;			//!< プライマリからの相対行数(レイアウト単位、作成時に固定)
+		int			nRelColumn;			//!< プライマリからの相対桁数(レイアウト単位、作成時に固定)
+		bool		bHasSelection = false;		//!< このカーソル自身が選択中か
+		int			nAnchorRelLine = 0;			//!< 選択起点(アンカー)のプライマリのアンカーからの相対行(選択開始時に固定)
+		int			nAnchorRelColumn = 0;		//!< 選択起点(アンカー)のプライマリのアンカーからの相対桁(選択開始時に固定)
+	};
+	//! 基準点からnRelLine/nRelColumnだけオフセットした実位置を算出する共通ヘルパー。
+	//! ResolveExtraCursor/ResolveExtraCursorAnchorの両方が使う
+	bool ResolveExtraCursorFromBase( const CLayoutPoint& ptBase, int nBaseColumn, int nRelLine, int nRelColumn, CLayoutPoint* pOut ) const;
+	//! extraの実位置を算出する。プライマリの現在行+nRelLineがドキュメント範囲外なら
+	//! false(非アクティブ。表示・編集の対象外)を返す
+	bool ResolveExtraCursor( const SExtraCursor& extra, CLayoutPoint* pOut ) const;
+	//! extraの選択起点(アンカー)の実位置を算出する。bHasSelection==falseなら常にfalse
+	bool ResolveExtraCursorAnchor( const SExtraCursor& extra, CLayoutPoint* pOut ) const;
+	//! extraの選択範囲(nLineNum行分)を算出する。アンカー(ResolveExtraCursorAnchor)〜
+	//! 現在位置(ResolveExtraCursor)を、このカーソル自身の選択範囲として独立に解決し、
+	//! プライマリの選択範囲と全く同じGetSelectAreaLineFromRangeロジックでnLineNum行分を
+	//! 切り出す(プライマリの範囲を平行移動するのではない。短い行での折り返し等、行ごとに
+	//! 実際の文字数が違ってもこのカーソル自身の行として正しく扱われる) 20260902
+	//! 選択中でない、またはアンカー/現在位置の行がドキュメント範囲外なら無効な範囲
+	//! (IsValid()==false相当、Clear(-1))を返す
+	CLayoutRange ResolveExtraCursorSelectAreaLine( const SExtraCursor& extra, CLayoutInt nLineNum ) const;
+	//! プライマリ(m_pcCaret)以外の追加カーソル。
+	//! 末尾 = 最後に追加したカーソルでもある(Ctrl+Shift+Uでの取り消しはpop_backのみでよい)。
+	//! 空 = 従来通りの単一カーソル動作(既存コードパスは無変更) 20260830
+	std::vector<SExtraCursor>	m_vExtraCursors;
+#endif // NKMM_
+
 	//主要オブジェクト
 	CViewFont*		m_pcViewFont;
 

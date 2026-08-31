@@ -860,6 +860,42 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 
 	cTextType.RewindGraphicsState(gr);
 
+#ifdef NKMM_MULTI_CURSOR
+	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+	//        マルチカーソル: 追加カーソルのキャレット線を描画        //
+	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+	// プライマリはWin32ネイティブキャレット(CCaret::ShowEditCaret)のまま。
+	// Win32のキャレットは1ウィンドウにつき1個までのため、追加カーソル分は
+	// ここで自前描画する。プライマリと同じ太さ(挿入/上書きモードに応じた
+	// GetCaretSize())の塗りつぶし矩形にする。プライマリの点滅(OSのキャレット
+	// 点滅タイマーは再描画を伴わない)には追従できないため、常時表示にする
+	// (点滅に同期させようとすると、たまたまOFF位相で再描画されたまま
+	// 次の再描画イベントまで消えっぱなしになりうるため、常時表示の方が安全) 20260830
+	// 色もプライマリと同じにする。CCaret::ShowEditCaret()と同じ参照先
+	// (タイプ別設定のCOLORIDX_CARET/COLORIDX_CARET_IME)から取得する 20260831
+	if( !m_vExtraCursors.empty() ){
+		CMySize sizeCaret = GetCaret().GetCaretSize();
+		if( 0 < sizeCaret.cx && 0 < sizeCaret.cy ){
+			int nCaretColorIdx = ( m_pTypeData->m_ColorInfoArr[COLORIDX_CARET_IME].m_bDisp && IsImeON() ) ? COLORIDX_CARET_IME : COLORIDX_CARET;
+			COLORREF crCaret = m_pTypeData->m_ColorInfoArr[nCaretColorIdx].m_sColorAttr.m_cTEXT;
+			HBRUSH hBrushCaret = ::CreateSolidBrush( crCaret );
+			for( const auto& extra : m_vExtraCursors ){
+				CLayoutPoint ptLayout;
+				if( !ResolveExtraCursor( extra, &ptLayout ) )
+					continue;	// 非アクティブ(プライマリの現在行+相対行がドキュメント範囲外)は非表示
+				if( ptLayout.GetY2() < GetTextArea().GetViewTopLine() || nLayoutLineTo < ptLayout.GetY2() )
+					continue;	// 画面外の行
+				POINT pt = GetCaret().CalcCaretDrawPos( ptLayout );
+				if( pt.y < GetTextArea().GetAreaTop() || GetTextArea().GetAreaBottom() < pt.y )
+					continue;	// 画面外(念のため)
+				RECT rcCaret = { pt.x, pt.y, pt.x + sizeCaret.cx, pt.y + sizeCaret.cy };
+				::FillRect( gr, &rcCaret, hBrushCaret );
+			}
+			::DeleteObject( hBrushCaret );
+		}
+	}
+#endif // NKMM_
+
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                       ルーラー描画                          //

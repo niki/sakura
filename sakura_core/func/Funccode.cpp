@@ -170,6 +170,10 @@ const EFunctionCode pnFuncList_Move[] = {	//Oct. 16, 2000 JEPRO 変数名変更(
 	F_RIGHT				,	//カーソル右移動
 	F_UP2				,	//カーソル上移動(２行ごと)
 	F_DOWN2				,	//カーソル下移動(２行ごと)
+#ifdef NKMM_MULTI_CURSOR
+	F_ADD_CURSOR_UP		,	//マルチカーソル: カーソルを上に追加	// NKMM_MULTI_CURSOR 20260830
+	F_ADD_CURSOR_DOWN	,	//マルチカーソル: カーソルを下に追加	// NKMM_MULTI_CURSOR 20260830
+#endif // NKMM_
 	F_WORDLEFT			,	//単語の左端に移動
 	F_WORDRIGHT			,	//単語の右端に移動
 	F_GOLINETOP			,	//行頭に移動(折り返し単位)
@@ -506,6 +510,9 @@ const int nFincList_Win_Num = _countof( pnFuncList_Win );	//Oct. 16, 2000 JEPRO 
 const EFunctionCode pnFuncList_Support[] = {	//Oct. 16, 2000 JEPRO 変数名変更(List11→List_Support)
 	F_HOKAN						,	/* 入力補完 */
 	F_TOGGLE_KEY_SEARCH			,	/* キャレット位置の単語を辞書検索する機能ON/OFF */	// 2006.03.24 fon
+#ifdef NKMM_MULTI_CURSOR
+	F_MULTICURSOR_UNDO				,	/* マルチカーソル: 直近のカーソル追加操作を取り消す */	// NKMM_MULTI_CURSOR 20260830
+#endif // NKMM_
 //Sept. 15, 2000→Nov. 25, 2000 JEPRO //ショートカットキーがうまく働かないので殺してあった下の2行を修正・復活
 	F_HELP_CONTENTS				,	/* ヘルプ目次 */			//Nov. 25, 2000 JEPRO 追加
 	F_HELP_SEARCH				,	/* ヘルプキーワード検索 */	//Nov. 25, 2000 JEPRO 追加

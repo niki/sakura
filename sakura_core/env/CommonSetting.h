@@ -259,6 +259,11 @@ struct CommonSetting_Edit
 	BOOL	m_bAutoColumnPaste;			//!< 矩形コピーのテキストは常に矩形貼り付け
 
 	int		m_nUndoBufMaxKB;			//!< 元に戻す(Undo)履歴が保持するデータの合計上限(KB単位、0=無制限) 20260802
+
+#ifdef NKMM_MULTI_CURSOR
+	// (ダイアログ項目無し)
+	bool	m_bMultiCursorMergeOverlapping;	//!< マルチカーソル: 重なった(接した)カーソル同士を1個に統合する(VS CodeのeditorMultiCursorMergeOverlapping相当) 20260831
+#endif // NKMM_
 };
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

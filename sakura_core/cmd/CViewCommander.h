@@ -35,6 +35,9 @@ class CColorStrategy;
 class CColorStrategyPool;
 class CSMacroMgr;
 #include "CEol.h"
+#ifdef NKMM_MULTI_CURSOR
+#include <functional>
+#endif // NKMM_
 
 class CViewCommander{
 public:
@@ -128,6 +131,20 @@ public:
 	void Command_REDO( void );				/* やり直し(Redo) */
 	void Command_DELETE( void );			/* カーソル位置または選択エリアを削除 */
 	void Command_DELETE_BACK( void );		/* カーソル前を削除 */
+#ifdef NKMM_MULTI_CURSOR
+	void Command_AddCursorUp( void );		/* マルチカーソル: 最上段のカーソルの1行上(同じ桁)に追加 */
+	void Command_AddCursorDown( void );	/* マルチカーソル: 最下段のカーソルの1行下(同じ桁)に追加 */
+	void Command_MULTICURSOR_UNDO( void );	/* マルチカーソル: 直近に追加したカーソルを1個取り消す */
+	//! プライマリ+追加カーソルの各位置に対して1回ずつfnEditOnceを実行する(ドキュメント降順)。
+	//! fnEditOnceはCommand_WCHAR等、現在のGetCaret()位置に作用する既存コマンドをそのまま渡す想定。
+	void ApplyToAllCursors( const std::function<void()>& fnEditOnce );
+	//! 移動系コマンド用の分岐。追加カーソルは「プライマリ+固定相対値」でその都度算出されるため、
+	//! ここではプライマリのfnMoveOnceを1回呼ぶだけでよい(詳細は実装側のコメント参照)。
+	void DispatchMoveMultiCursor( bool bSelect, const std::function<void()>& fnMoveOnce );
+	//! 重なった(接した)カーソル同士を1個に統合する(設定でオン/オフ可能、既定オン)。
+	//! ApplyToAllCursorsの末尾で呼ぶ。VS CodeのeditorMultiCursorMergeOverlapping相当
+	void MergeOverlappingCursorsIfNeeded( void );
+#endif // NKMM_
 	void Command_WordDeleteToStart( void );	/* 単語の左端まで削除 */
 	void Command_WordDeleteToEnd( void );	/* 単語の右端まで削除 */
 	void Command_WordCut( void );			/* 単語切り取り */

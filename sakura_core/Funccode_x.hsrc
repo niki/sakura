@@ -435,6 +435,9 @@ F_TAB_CLOSEOTHER	= 31388,	// このタブ以外を閉じる						なし
 F_TAB_CLOSELEFT		= 31389,	// 左をすべて閉じる							なし
 F_TAB_CLOSERIGHT	= 31390,	// 右をすべて閉じる							なし
 F_TAB_DUPLICATE	= 31391,	// Duplicate window (open same file in new window) 20260801	none
+F_ADD_CURSOR_UP	= 31392,	// 最上段カーソルの1行上(同じ桁)にカーソルを追加		なし		// NKMM_MULTI_CURSOR 20260830
+F_ADD_CURSOR_DOWN	= 31393,	// 最下段カーソルの1行下(同じ桁)にカーソルを追加		なし		// NKMM_MULTI_CURSOR 20260830
+F_MULTICURSOR_UNDO	= 31394,	// 直近のカーソル追加操作を1つ取り消す		なし		// NKMM_MULTI_CURSOR 20260830
 
 
 // 支援

@@ -177,6 +177,13 @@ void CViewCommander::Command_BEGIN_BOXSELECT( bool bSelectingLock )
 		return;
 	}
 
+#ifdef NKMM_MULTI_CURSOR
+	// マルチカーソルと矩形選択は排他。矩形選択を開始する側が優先し、追加カーソルは解除する 20260830
+	if( !m_pCommanderView->m_vExtraCursors.empty() ){
+		m_pCommanderView->m_vExtraCursors.clear();
+	}
+#endif // NKMM_
+
 //@@@ 2002.01.03 YAZAKI 範囲選択中にShift+F6を実行すると選択範囲がクリアされない問題に対処
 	if( m_pCommanderView->GetSelectionInfo().IsTextSelected() ){	/* テキストが選択されているか */
 		/* 現在の選択範囲を非選択状態に戻す */

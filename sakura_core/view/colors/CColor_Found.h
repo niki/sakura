@@ -25,6 +25,10 @@
 #define SAKURA_CCOLOR_FOUND_60044D4E_3082_4A9D_98C5_2FE626D3DA1E_H_
 
 #include "view/colors/CColorStrategy.h"
+#include "my_config.h"
+#ifdef NKMM_MULTI_CURSOR
+#include <vector>
+#endif // NKMM_
 
 class CColor_Select : public CColorStrategy{
 public:
@@ -44,6 +48,15 @@ private:
 	CLayoutInt		m_nSelectLine;
 	CLogicInt		m_nSelectStart;
 	CLogicInt		m_nSelectEnd;
+#ifdef NKMM_MULTI_CURSOR
+	//! マルチカーソル: m_nSelectLine行における各追加カーソルの選択範囲(ロジック単位)。
+	//! プライマリのm_nSelectStart/Endと同じく、行頭で1回だけ算出してキャッシュする 20260901
+	struct SExtraSelectRange{
+		CLogicInt	nStart;
+		CLogicInt	nEnd;
+	};
+	std::vector<SExtraSelectRange>	m_vExtraSelectCache;
+#endif // NKMM_
 };
 
 class CColor_Found : public CColorStrategy{

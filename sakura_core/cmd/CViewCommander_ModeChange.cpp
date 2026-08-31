@@ -108,6 +108,18 @@ void CViewCommander::Command_CHG_CHARSET(
 */
 void CViewCommander::Command_CANCEL_MODE( int whereCursorIs, bool bAllowCloseDialog )
 {
+#ifdef NKMM_MULTI_CURSOR
+	// マルチカーソル中のESCは追加カーソルを一括解除するだけで、選択解除等の
+	// 後続処理は行わない(1個ずつ戻すCtrl+Shift+U(Command_MULTICURSOR_UNDO)とは役割が違う)。
+	// bAllowCloseDialogがtrueのとき(=ユーザーの明示的なESC/F_CANCEL_MODE)のみ反応する。
+	// Command_UNDO等が内部的に呼ぶCommand_CANCEL_MODE()(bAllowCloseDialog=false)では
+	// マルチカーソル状態を意図せず失わないようにするため 20260830
+	if( bAllowCloseDialog && !m_pCommanderView->m_vExtraCursors.empty() ){
+		m_pCommanderView->m_vExtraCursors.clear();
+		m_pCommanderView->Redraw();
+		return;
+	}
+#endif // NKMM_
 	bool bBoxSelect = false;
 	if( m_pCommanderView->GetSelectionInfo().IsTextSelected() ) {
 		// 選択解除後のカーソル位置を決める。

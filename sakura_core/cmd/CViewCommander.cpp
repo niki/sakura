@@ -175,7 +175,15 @@ BOOL CViewCommander::HandleCommand(
 	switch( nCommand ){
 	case F_WCHAR:	/* 文字入力 */
 		{
-			Command_WCHAR( (wchar_t)lparam1 );
+#ifdef NKMM_MULTI_CURSOR
+			if( !m_pCommanderView->m_vExtraCursors.empty() ){
+				wchar_t wcChar = (wchar_t)lparam1;
+				ApplyToAllCursors( [this, wcChar](){ Command_WCHAR( wcChar ); } );
+			}else
+#endif // NKMM_
+			{
+				Command_WCHAR( (wchar_t)lparam1 );
+			}
 		}
 		break;
 
@@ -242,8 +250,25 @@ BOOL CViewCommander::HandleCommand(
 	/* 編集系 */
 	case F_UNDO:				Command_UNDO();break;				/* 元に戻す(Undo) */
 	case F_REDO:				Command_REDO();break;				/* やり直し(Redo) */
+#ifdef NKMM_MULTI_CURSOR
+	case F_DELETE:
+		if( !m_pCommanderView->m_vExtraCursors.empty() ){
+			ApplyToAllCursors( [this](){ Command_DELETE(); } );
+		}else{
+			Command_DELETE();
+		}
+		break;											//削除
+	case F_DELETE_BACK:
+		if( !m_pCommanderView->m_vExtraCursors.empty() ){
+			ApplyToAllCursors( [this](){ Command_DELETE_BACK(); } );
+		}else{
+			Command_DELETE_BACK();
+		}
+		break;											//カーソル前を削除
+#else
 	case F_DELETE:				Command_DELETE(); break;			//削除
 	case F_DELETE_BACK:			Command_DELETE_BACK(); break;		//カーソル前を削除
+#endif // NKMM_
 	case F_WordDeleteToStart:	Command_WordDeleteToStart(); break;	//単語の左端まで削除
 	case F_WordDeleteToEnd:		Command_WordDeleteToEnd(); break;	//単語の右端まで削除
 	case F_WordDelete:			Command_WordDelete(); break;		//単語削除
@@ -275,6 +300,29 @@ BOOL CViewCommander::HandleCommand(
 	case F_IME_CHAR:		Command_IME_CHAR( (WORD)lparam1 ); break;					//全角文字入力
 	case F_MOVECURSOR:			Command_MOVECURSOR(CLogicPoint(CLogicInt((int)lparam2), CLogicInt((int)lparam1)), (int)lparam3); break;
 	case F_MOVECURSORLAYOUT:	Command_MOVECURSORLAYOUT(CLayoutPoint(CLayoutInt((int)lparam2), CLayoutInt((int)lparam1)), (int)lparam3); break;
+#ifdef NKMM_MULTI_CURSOR
+	// 20260830 マルチカーソル中、選択操作を伴わない(bSelect==false)通常の移動系コマンドは
+	// 追加カーソルにも同じ移動を適用し、プライマリと一緒に動くようにする(DispatchMoveMultiCursor参照)。
+	// bSelect==trueのとき(選択ロック中)は従来通りプライマリのみ動かす(カーソルごとの選択範囲は未対応のため)
+	case F_UP:				{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,bRepeat](){ Command_UP( bSelect, bRepeat ); } ); } break;				//カーソル上移動
+	case F_DOWN:			{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,bRepeat](){ Command_DOWN( bSelect, bRepeat ); } ); } break;			//カーソル下移動
+	case F_LEFT:			{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,bRepeat](){ Command_LEFT( bSelect, bRepeat ); } ); } break;			//カーソル左移動
+	case F_RIGHT:			{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,bRepeat](){ Command_RIGHT( bSelect, false, bRepeat ); } ); } break;	//カーソル右移動
+	case F_UP2:				{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect](){ Command_UP2( bSelect ); } ); } break;						//カーソル上移動(２行づつ)
+	case F_DOWN2:			{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect](){ Command_DOWN2( bSelect ); } ); } break;					//カーソル下移動(２行づつ)
+	case F_WORDLEFT:		{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect](){ Command_WORDLEFT( bSelect ); } ); } break;				/* 単語の左端に移動 */
+	case F_WORDRIGHT:		{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect](){ Command_WORDRIGHT( bSelect ); } ); } break;				/* 単語の右端に移動 */
+	case F_GOLINETOP:		{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,lparam1](){ Command_GOLINETOP( bSelect, lparam1 ); } ); } break;		//行頭に移動(折り返し単位/改行単位)
+	case F_GOLINEEND:		{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,lparam1](){ Command_GOLINEEND( bSelect, 0, lparam1 ); } ); } break;		//行末に移動(折り返し単位)
+	case F_HalfPageUp:		{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,lparam1](){ Command_HalfPageUp( bSelect, CLayoutYInt(lparam1) ); } ); } break;				//半ページアップ	//Oct. 6, 2000 JEPRO 名称をPC-AT互換機系に変更(ROLL→PAGE) //Oct. 10, 2000 JEPRO 名称変更
+	case F_HalfPageDown:	{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,lparam1](){ Command_HalfPageDown( bSelect, CLayoutYInt(lparam1) ); } ); } break;			//半ページダウン	//Oct. 6, 2000 JEPRO 名称をPC-AT互換機系に変更(ROLL→PAGE) //Oct. 10, 2000 JEPRO 名称変更
+	case F_1PageUp:			{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,lparam1](){ Command_1PageUp( bSelect, CLayoutYInt(lparam1) ); } ); } break;					//１ページアップ	//Oct. 10, 2000 JEPRO 従来のページアップを半ページアップと名称変更し１ページアップを追加
+	case F_1PageDown:		{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect,lparam1](){ Command_1PageDown( bSelect, CLayoutYInt(lparam1) ); } ); } break;				//１ページダウン	//Oct. 10, 2000 JEPRO 従来のページダウンを半ページダウンと名称変更し１ページダウンを追加
+	case F_GOFILETOP:		{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect](){ Command_GOFILETOP( bSelect ); } ); } break;				//ファイルの先頭に移動
+	case F_GOFILEEND:		{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect](){ Command_GOFILEEND( bSelect ); } ); } break;				//ファイルの最後に移動
+	case F_GONEXTPARAGRAPH:	{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect](){ Command_GONEXTPARAGRAPH( bSelect ); } ); } break;			//次の段落へ進む
+	case F_GOPREVPARAGRAPH:	{ bool bSelect = m_pCommanderView->GetSelectionInfo().m_bSelectingLock; DispatchMoveMultiCursor( bSelect, [this,bSelect](){ Command_GOPREVPARAGRAPH( bSelect ); } ); } break;			//前の段落へ戻る
+#else
 	case F_UP:				Command_UP( m_pCommanderView->GetSelectionInfo().m_bSelectingLock, bRepeat ); break;				//カーソル上移動
 	case F_DOWN:			Command_DOWN( m_pCommanderView->GetSelectionInfo().m_bSelectingLock, bRepeat ); break;			//カーソル下移動
 	case F_LEFT:			Command_LEFT( m_pCommanderView->GetSelectionInfo().m_bSelectingLock, bRepeat ); break;			//カーソル左移動
@@ -294,14 +342,15 @@ BOOL CViewCommander::HandleCommand(
 	case F_1PageDown:		Command_1PageDown( m_pCommanderView->GetSelectionInfo().m_bSelectingLock, CLayoutYInt(lparam1) ); break;				//１ページダウン	//Oct. 10, 2000 JEPRO 従来のページダウンを半ページダウンと名称変更し１ページダウンを追加
 	case F_GOFILETOP:		Command_GOFILETOP( m_pCommanderView->GetSelectionInfo().m_bSelectingLock ); break;				//ファイルの先頭に移動
 	case F_GOFILEEND:		Command_GOFILEEND( m_pCommanderView->GetSelectionInfo().m_bSelectingLock ); break;				//ファイルの最後に移動
+	case F_GONEXTPARAGRAPH:	Command_GONEXTPARAGRAPH( m_pCommanderView->GetSelectionInfo().m_bSelectingLock ); break;			//次の段落へ進む
+	case F_GOPREVPARAGRAPH:	Command_GOPREVPARAGRAPH( m_pCommanderView->GetSelectionInfo().m_bSelectingLock ); break;			//前の段落へ戻る
+#endif // NKMM_
 	case F_CURLINECENTER:	Command_CURLINECENTER(); break;								/* カーソル行をウィンドウ中央へ */
 	case F_JUMPHIST_PREV:	Command_JUMPHIST_PREV(); break;								//移動履歴: 前へ
 	case F_JUMPHIST_NEXT:	Command_JUMPHIST_NEXT(); break;								//移動履歴: 次へ
 	case F_JUMPHIST_SET:	Command_JUMPHIST_SET(); break;								//現在位置を移動履歴に登録
 	case F_WndScrollDown:	Command_WndScrollDown(); break;								//テキストを１行下へスクロール	// 2001/06/20 asa-o
 	case F_WndScrollUp:		Command_WndScrollUp(); break;								//テキストを１行上へスクロール	// 2001/06/20 asa-o
-	case F_GONEXTPARAGRAPH:	Command_GONEXTPARAGRAPH( m_pCommanderView->GetSelectionInfo().m_bSelectingLock ); break;			//次の段落へ進む
-	case F_GOPREVPARAGRAPH:	Command_GOPREVPARAGRAPH( m_pCommanderView->GetSelectionInfo().m_bSelectingLock ); break;			//前の段落へ戻る
 	case F_AUTOSCROLL:	Command_AUTOSCROLL(); break;	//オートスクロール
 	case F_WHEELUP:			Command_WHEELUP(lparam1); break;
 	case F_WHEELDOWN:		Command_WHEELDOWN(lparam1); break;
@@ -319,6 +368,31 @@ BOOL CViewCommander::HandleCommand(
 	case F_SELECTALL:		Command_SELECTALL();break;						//すべて選択
 	case F_SELECTLINE:		Command_SELECTLINE( lparam1 );break;			//1行選択	// 2007.10.13 nasukoji
 	case F_BEGIN_SEL:		Command_BEGIN_SELECT();break;					/* 範囲選択開始 */
+#ifdef NKMM_MULTI_CURSOR
+	// 20260901 実際のShift+方向キーはF_XXXではなくこちらのF_XXX_SEL系にディスパッチされる
+	// (F_XXXのbSelectはF_BEGIN_SELによる選択ロック時のみ)。追加カーソルの選択範囲も
+	// プライマリに追従して伸縮させる必要があるため、こちらもDispatchMoveMultiCursorを通す
+	case F_UP_SEL:			{ DispatchMoveMultiCursor( true, [this,bRepeat,lparam1](){ Command_UP( true, bRepeat, lparam1 ); } ); } break;	//(範囲選択)カーソル上移動
+	case F_DOWN_SEL:		{ DispatchMoveMultiCursor( true, [this,bRepeat](){ Command_DOWN( true, bRepeat ); } ); } break;			//(範囲選択)カーソル下移動
+	case F_LEFT_SEL:		{ DispatchMoveMultiCursor( true, [this,bRepeat](){ Command_LEFT( true, bRepeat ); } ); } break;			//(範囲選択)カーソル左移動
+	case F_RIGHT_SEL:		{ DispatchMoveMultiCursor( true, [this,bRepeat](){ Command_RIGHT( true, false, bRepeat ); } ); } break;	//(範囲選択)カーソル右移動
+	case F_UP2_SEL:			{ DispatchMoveMultiCursor( true, [this](){ Command_UP2( true ); } ); } break;						//(範囲選択)カーソル上移動(２行ごと)
+	case F_DOWN2_SEL:		{ DispatchMoveMultiCursor( true, [this](){ Command_DOWN2( true ); } ); } break;					//(範囲選択)カーソル下移動(２行ごと)
+	case F_WORDLEFT_SEL:	{ DispatchMoveMultiCursor( true, [this](){ Command_WORDLEFT( true ); } ); } break;					//(範囲選択)単語の左端に移動
+	case F_WORDRIGHT_SEL:	{ DispatchMoveMultiCursor( true, [this](){ Command_WORDRIGHT( true ); } ); } break;				//(範囲選択)単語の右端に移動
+	case F_GOLINETOP_SEL:	{ DispatchMoveMultiCursor( true, [this,lparam1](){ Command_GOLINETOP( true, lparam1 ); } ); } break;		//(範囲選択)行頭に移動(折り返し単位/改行単位)
+	case F_GOLINEEND_SEL:	{ DispatchMoveMultiCursor( true, [this,lparam1](){ Command_GOLINEEND( true, 0, lparam1 ); } ); } break;	//(範囲選択)行末に移動(折り返し単位)
+//	case F_ROLLDOWN_SEL:	Command_ROLLDOWN( TRUE ); break;				//(範囲選択)スクロールダウン
+//	case F_ROLLUP_SEL:		Command_ROLLUP( TRUE ); break;					//(範囲選択)スクロールアップ
+	case F_HalfPageUp_Sel:	{ DispatchMoveMultiCursor( true, [this,lparam1](){ Command_HalfPageUp( true, CLayoutYInt(lparam1) ); } ); } break;				//(範囲選択)半ページアップ
+	case F_HalfPageDown_Sel:{ DispatchMoveMultiCursor( true, [this,lparam1](){ Command_HalfPageDown( true, CLayoutYInt(lparam1) ); } ); } break;			//(範囲選択)半ページダウン
+	case F_1PageUp_Sel:		{ DispatchMoveMultiCursor( true, [this,lparam1](){ Command_1PageUp( true, CLayoutYInt(lparam1) ); } ); } break;					//(範囲選択)１ページアップ
+	case F_1PageDown_Sel:	{ DispatchMoveMultiCursor( true, [this,lparam1](){ Command_1PageDown( true, CLayoutYInt(lparam1) ); } ); } break;				//(範囲選択)１ページダウン
+	case F_GOFILETOP_SEL:	{ DispatchMoveMultiCursor( true, [this](){ Command_GOFILETOP( true ); } ); } break;				//(範囲選択)ファイルの先頭に移動
+	case F_GOFILEEND_SEL:	{ DispatchMoveMultiCursor( true, [this](){ Command_GOFILEEND( true ); } ); } break;				//(範囲選択)ファイルの最後に移動
+	case F_GONEXTPARAGRAPH_SEL:	{ DispatchMoveMultiCursor( true, [this](){ Command_GONEXTPARAGRAPH( true ); } ); } break;			//次の段落へ進む
+	case F_GOPREVPARAGRAPH_SEL:	{ DispatchMoveMultiCursor( true, [this](){ Command_GOPREVPARAGRAPH( true ); } ); } break;			//前の段落へ戻る
+#else
 	case F_UP_SEL:			Command_UP( true, bRepeat, lparam1 ); break;	//(範囲選択)カーソル上移動
 	case F_DOWN_SEL:		Command_DOWN( true, bRepeat ); break;			//(範囲選択)カーソル下移動
 	case F_LEFT_SEL:		Command_LEFT( true, bRepeat ); break;			//(範囲選択)カーソル左移動
@@ -339,6 +413,7 @@ BOOL CViewCommander::HandleCommand(
 	case F_GOFILEEND_SEL:	Command_GOFILEEND( true );break;				//(範囲選択)ファイルの最後に移動
 	case F_GONEXTPARAGRAPH_SEL:	Command_GONEXTPARAGRAPH( true ); break;			//次の段落へ進む
 	case F_GOPREVPARAGRAPH_SEL:	Command_GOPREVPARAGRAPH( true ); break;			//前の段落へ戻る
+#endif // NKMM_
 	case F_MODIFYLINE_NEXT_SEL:	Command_MODIFYLINE_NEXT( true ); break;			//(範囲選択)次の変更行へ
 	case F_MODIFYLINE_PREV_SEL:	Command_MODIFYLINE_PREV( true ); break;			//(範囲選択)前の変更行へ
 
@@ -351,6 +426,15 @@ BOOL CViewCommander::HandleCommand(
 	case F_RIGHT_BOX:		Sub_BoxSelectLock(lparam1); this->Command_RIGHT( true, false, bRepeat ); break;	//(矩形選択)カーソル右移動
 	case F_UP2_BOX:			Sub_BoxSelectLock(lparam1); this->Command_UP2( true ); break;				//(矩形選択)カーソル上移動(２行ごと)
 	case F_DOWN2_BOX:		Sub_BoxSelectLock(lparam1); this->Command_DOWN2( true );break;				//(矩形選択)カーソル下移動(２行ごと)
+#ifdef NKMM_MULTI_CURSOR
+	// 20260830 独立したコマンドとして追加(F_UP2_BOX/F_DOWN2_BOXへ文脈依存で相乗りさせると、
+	// キー割り当て設定画面から見たときに「このキーで何が起きるか」が分からなくなるため)。
+	// 既定ではCtrl+Alt+↑/↓をこちらに割り当て、F_UP2_BOX/F_DOWN2_BOXは既定キー無しになる
+	// (CKeyBind.cpp参照。手動での再割り当ては引き続き可能)
+	case F_ADD_CURSOR_UP:		this->Command_AddCursorUp(); break;			// マルチカーソル: 上にカーソルを追加
+	case F_ADD_CURSOR_DOWN:		this->Command_AddCursorDown(); break;			// マルチカーソル: 下にカーソルを追加
+	case F_MULTICURSOR_UNDO:	this->Command_MULTICURSOR_UNDO(); break;		// マルチカーソル: 直近のカーソル追加操作を1つ取り消す
+#endif // NKMM_
 	case F_WORDLEFT_BOX:	Sub_BoxSelectLock(lparam1); this->Command_WORDLEFT( true );break;			//(矩形選択)単語の左端に移動
 	case F_WORDRIGHT_BOX:	Sub_BoxSelectLock(lparam1); this->Command_WORDRIGHT( true );break;			//(矩形選択)単語の右端に移動
 	case F_GOLOGICALLINETOP_BOX:Sub_BoxSelectLock(lparam2); this->Command_GOLINETOP( true, 8 | lparam1 );break;	//(矩形選択)行頭に移動(改行単位)
@@ -372,7 +456,22 @@ BOOL CViewCommander::HandleCommand(
 	case F_PASTE:					Command_PASTE( (int)lparam1 );break;				//貼り付け(クリップボードから貼り付け)
 	case F_PASTEBOX:				Command_PASTEBOX( (int)lparam1 );break;				//矩形貼り付け(クリップボードから矩形貼り付け)
 	case F_INSBOXTEXT:				Command_INSBOXTEXT((const wchar_t*)lparam1, (int)lparam2 );break;				//矩形テキスト挿入
+#ifdef NKMM_MULTI_CURSOR
+	case F_INSTEXT_W:
+		if( !m_pCommanderView->m_vExtraCursors.empty() ){
+			// IME確定文字列の挿入等。以降で書き換わるため事前にコピーしてラムダに渡す
+			std::wstring wstrIns( (const wchar_t*)lparam1, (size_t)(CLogicInt)lparam2 );
+			bool bNoWaitCursor = (lparam3 != FALSE);
+			ApplyToAllCursors( [this, bRedraw, wstrIns, bNoWaitCursor](){
+				Command_INSTEXT( bRedraw, wstrIns.c_str(), (CLogicInt)wstrIns.length(), bNoWaitCursor );
+			} );
+		}else{
+			Command_INSTEXT( bRedraw, (const wchar_t*)lparam1, (CLogicInt)lparam2, lparam3!=FALSE );
+		}
+		break;	/* テキストを貼り付け */ // 2004.05.14 Moca 長さを示す引数追加
+#else
 	case F_INSTEXT_W:				Command_INSTEXT( bRedraw, (const wchar_t*)lparam1, (CLogicInt)lparam2, lparam3!=FALSE );break;/* テキストを貼り付け */ // 2004.05.14 Moca 長さを示す引数追加
+#endif // NKMM_
 	case F_ADDTAIL_W:				Command_ADDTAIL( (const wchar_t*)lparam1, (int)lparam2 );break;	/* 最後にテキストを追加 */
 	case F_COPYFNAME:				Command_COPYFILENAME();break;			//このファイル名をクリップボードにコピー / /2002/2/3 aroka
 	case F_COPYPATH:				Command_COPYPATH();break;				//このファイルのパス名をクリップボードにコピー

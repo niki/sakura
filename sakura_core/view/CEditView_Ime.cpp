@@ -134,6 +134,13 @@ LRESULT CEditView::SetReconvertStruct(PRECONVERTSTRING pReconv, bool bUnicode, b
 	if( GetSelectionInfo().IsBoxSelecting() )
 		return 0;
 
+#ifdef NKMM_MULTI_CURSOR
+	//マルチカーソル中は再変換非対応(矩形選択と同じ扱い)。確定文字の挿入自体はF_INSTEXT_W経由で
+	//全カーソルに反映されるため、ここで無効化するのは再変換UIの見た目(候補ウィンドウ位置)のみ 20260830
+	if( !m_vExtraCursors.empty() )
+		return 0;
+#endif // NKMM_
+
 	// 2010.04.06 ビューモードでは何もしない
 	if( CAppMode::getInstance()->IsViewMode() ){
 		return 0;
