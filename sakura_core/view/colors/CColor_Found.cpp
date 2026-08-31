@@ -50,7 +50,7 @@ bool CColor_Select::BeginColorEx(const CStringRef& cStr, int nPos, CLayoutInt nL
 		// マルチカーソル: 追加カーソルの選択範囲も、行頭で1回だけプライマリと同じ考え方で
 		// 算出してキャッシュする。各extraはプライマリの選択範囲(m_sSelect)をnRelLine/
 		// nRelColumnだけ平行移動しただけなので、キャレット追従(ResolveExtraCursor)と
-		// 同じ理屈でShift+方向キー等のプライマリの選択操作にそのまま追従する 20260901
+		// 同じ理屈でShift+方向キー等のプライマリの選択操作にそのまま追従する 20260831
 		m_vExtraSelectCache.clear();
 		m_vExtraSelectCache.reserve(view.m_vExtraCursors.size());
 		for( const auto& extra : view.m_vExtraCursors ){

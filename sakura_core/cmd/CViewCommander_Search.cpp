@@ -83,7 +83,7 @@ void CViewCommander::Command_SEARCH_DIALOG( void )
 #ifdef NKMM_MULTI_CURSOR
 	// 検索ダイアログを開くとフォーカスがダイアログへ移り、以降のタイプ/移動系操作は
 	// マルチカーソルに関知しないダイアログ側の処理になるため、ここで単一カーソルに戻す
-	// (Esc・通常クリックに続く、標準的なマルチカーソル解除操作の1つ) 20260902
+	// (Esc・通常クリックに続く、標準的なマルチカーソル解除操作の1つ) 20260831
 	if( !m_pCommanderView->m_vExtraCursors.empty() ){
 		m_pCommanderView->m_vExtraCursors.clear();
 		m_pCommanderView->Redraw();
@@ -683,7 +683,7 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 	BOOL		bSelected = FALSE;
 
 #ifdef NKMM_MULTI_CURSOR
-	// 検索ダイアログと同じ理由でマルチカーソルを解除する 20260902
+	// 検索ダイアログと同じ理由でマルチカーソルを解除する 20260831
 	if( !m_pCommanderView->m_vExtraCursors.empty() ){
 		m_pCommanderView->m_vExtraCursors.clear();
 		m_pCommanderView->Redraw();

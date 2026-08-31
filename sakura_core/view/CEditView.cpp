@@ -92,7 +92,7 @@ VOID CALLBACK ScrBarMarkerDebounceTimerProc( HWND, UINT, UINT_PTR, DWORD );
 #ifdef NKMM_MULTI_CURSOR
 //! マルチカーソル: 基準点(ptBase/nBaseColumn)からnRelLine/nRelColumnだけオフセットした
 //! 実位置を算出する共通ヘルパー。ResolveExtraCursor(基準=プライマリの現在位置)と
-//! ResolveExtraCursorAnchor(基準=プライマリの選択アンカー)の両方から使う 20260902
+//! ResolveExtraCursorAnchor(基準=プライマリの選択アンカー)の両方から使う 20260831
 bool CEditView::ResolveExtraCursorFromBase( const CLayoutPoint& ptBase, int nBaseColumn, int nRelLine, int nRelColumn, CLayoutPoint* pOut ) const
 {
 	CLayoutInt nDocLineCount = m_pcEditDoc->m_cLayoutMgr.GetLineCount();
@@ -127,7 +127,7 @@ bool CEditView::ResolveExtraCursor( const SExtraCursor& extra, CLayoutPoint* pOu
 		extra.nRelLine, extra.nRelColumn, pOut );
 }
 
-//! マルチカーソル: 追加カーソル1個分の選択起点(アンカー)の実位置を算出する	20260902
+//! マルチカーソル: 追加カーソル1個分の選択起点(アンカー)の実位置を算出する	20260831
 //! 基準点はプライマリの選択アンカー(GetSelectionInfo().m_sSelectBgn)。ResolveExtraCursorと
 //! 全く同じ考え方(基準+固定オフセット、行の長さでクランプ)をアンカーにも適用する。
 //! bHasSelection==falseなら(このカーソルはまだ選択を持っていない)常にfalseを返す
@@ -140,7 +140,7 @@ bool CEditView::ResolveExtraCursorAnchor( const SExtraCursor& extra, CLayoutPoin
 	return ResolveExtraCursorFromBase( ptAnchor, ToInt(ptAnchor.GetX2()), extra.nAnchorRelLine, extra.nAnchorRelColumn, pOut );
 }
 
-//! マルチカーソル: 追加カーソル1個分の選択範囲(nLineNum行分)を算出する	20260901, 20260902改
+//! マルチカーソル: 追加カーソル1個分の選択範囲(nLineNum行分)を算出する	20260831
 //! アンカー(ResolveExtraCursorAnchor)〜現在位置(ResolveExtraCursor)を、このカーソル自身の
 //! 選択範囲として独立に解決し、プライマリの選択範囲と全く同じGetSelectAreaLineFromRangeの
 //! ロジックでnLineNum行分を切り出す。プライマリの範囲をそのまま平行移動する旧方式とは異なり、
@@ -743,7 +743,7 @@ LRESULT CEditView::DispatchEvent(
 #ifdef NKMM_MULTI_CURSOR
 			// プライマリのネイティブキャレットはShowEditCaret()で即座に色が更新されるが、
 			// 追加カーソルはWM_PAINT経由の自前描画のため、ここで明示的に再描画しないと
-			// IMEのON/OFF切り替え直後は古い色のまま残ってしまう 20260901
+			// IMEのON/OFF切り替え直後は古い色のまま残ってしまう 20260831
 			if( !m_vExtraCursors.empty() ){
 				Redraw();
 			}
@@ -1357,7 +1357,7 @@ void CEditView::OnKillFocus( void )
 	// このビューがフォーカスを失った(検索/置換ダイアログ、他のペイン、他アプリ等へ切替)。
 	// Esc・通常クリック・検索/置換ダイアログに続く、標準的なマルチカーソル解除操作の1つ。
 	// 個別のダイアログ表示コマンド(Command_SEARCH_DIALOG等)側でも同様のクリアを入れているが、
-	// ここで一括して行っておけば個々の呼び出し元でクリアし忘れる心配がない 20260902
+	// ここで一括して行っておけば個々の呼び出し元でクリアし忘れる心配がない 20260831
 	if( !m_vExtraCursors.empty() ){
 		m_vExtraCursors.clear();
 		Redraw();

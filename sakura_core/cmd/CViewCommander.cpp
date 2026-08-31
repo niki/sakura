@@ -369,7 +369,7 @@ BOOL CViewCommander::HandleCommand(
 	case F_SELECTLINE:		Command_SELECTLINE( lparam1 );break;			//1行選択	// 2007.10.13 nasukoji
 	case F_BEGIN_SEL:		Command_BEGIN_SELECT();break;					/* 範囲選択開始 */
 #ifdef NKMM_MULTI_CURSOR
-	// 20260901 実際のShift+方向キーはF_XXXではなくこちらのF_XXX_SEL系にディスパッチされる
+	// 20260831 実際のShift+方向キーはF_XXXではなくこちらのF_XXX_SEL系にディスパッチされる
 	// (F_XXXのbSelectはF_BEGIN_SELによる選択ロック時のみ)。追加カーソルの選択範囲も
 	// プライマリに追従して伸縮させる必要があるため、こちらもDispatchMoveMultiCursorを通す
 	case F_UP_SEL:			{ DispatchMoveMultiCursor( true, [this,bRepeat,lparam1](){ Command_UP( true, bRepeat, lparam1 ); } ); } break;	//(範囲選択)カーソル上移動

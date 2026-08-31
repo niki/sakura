@@ -306,7 +306,7 @@ normal_action:;
 #ifdef NKMM_MULTI_CURSOR
 			// マルチカーソル中に、修飾キー無しの通常クリックをした場合は単一カーソルに戻す
 			// (Esc以外でマルチカーソルが解除される標準的な操作の1つ。Alt+クリックは矩形選択、
-			// Shift+クリックは選択範囲拡張のためここには来ない=対象外) 20260902
+			// Shift+クリックは選択範囲拡張のためここには来ない=対象外) 20260831
 			if( !m_vExtraCursors.empty() ){
 				m_vExtraCursors.clear();
 				Redraw();

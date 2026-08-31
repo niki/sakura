@@ -50,7 +50,7 @@ private:
 	CLogicInt		m_nSelectEnd;
 #ifdef NKMM_MULTI_CURSOR
 	//! マルチカーソル: m_nSelectLine行における各追加カーソルの選択範囲(ロジック単位)。
-	//! プライマリのm_nSelectStart/Endと同じく、行頭で1回だけ算出してキャッシュする 20260901
+	//! プライマリのm_nSelectStart/Endと同じく、行頭で1回だけ算出してキャッシュする 20260831
 	struct SExtraSelectRange{
 		CLogicInt	nStart;
 		CLogicInt	nEnd;
