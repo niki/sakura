@@ -177,6 +177,11 @@
 エクスポート形式である`Default.key`はこの不具合の影響を受けていませんでした)。
 文字コード・改行コードはCRLF+UTF-8(BOM有無はどちらでも動作します)で統一しています。
 
+このディレクトリの`*.key`は`sakura_rc.rc`にRCDATAとして埋め込んでビルドに含めています。
+`sakura.vcxproj`/`.vcxproj.filters`にも`<None>`項目とResourceCompileの
+`AdditionalDependencies`として登録済みのため、ファイルを編集すれば`sakura_rc.rc`を
+手動でtouchしなくても再ビルド時に`.res`へ確実に反映されます(20260823)。
+
 各`KeyBind[NNN]=`行の末尾(キー名の後ろ)にはTAB区切りで、8モディファイア分の割り当て機能名を
 参考情報として追記しています(未割り当てのスロット=`_`)。実際のキー割り当て(機能コード8個)には
 一切影響しません。この注釈はNKMM_FIX_KEYBIND_EXPORT_FUNCNAME機能でインポート時に読み飛ばされ、

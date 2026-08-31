@@ -182,41 +182,17 @@
 	#define NKMM_TABWND_DRAG_THRESHOLD (1)  // タブクリックがドラッグ移動としきい値なしで誤認識され、切替えただけでタブの並びが入れ替わる問題を修正 20260718
 	#define NKMM_BUGFIX_TAB_EDGE    (1)  // 間に選択タブがあると右側のエッヂがないバグを修正 (となりのタブが上書き描画していた) 20170429
 	#define NKMM_TABWND_SYNC_HIDE   (1)  // タブ切替時、旧ウィンドウを隠す処理がTWNT_ORDER通知の非同期往復待ちになっており、新旧ウィンドウが重なって見えるちらつきの原因だったため、ウィンドウ表示直後に同期的に隠すよう修正 20260729
-	#define NKMM_TAB_CURRENT_LINE   (1)  // カレントタブの下部に線を引いて選択中のタブを分かりやすくする (#1a73e8) 20260807
-	                                      // → 20260807 固定色(#1a73e8)ではなくWindowsのアクセントカラーを
-	                                      //    使うよう変更。DwmGetColorizationColor()（dwmapi.h、Vista以降の
-	                                      //    素のWin32 API）で取得する。Windows 7/8/8.1/10/11いずれでも
-	                                      //    動作し、Win10/11の「設定→個人用設定→色」のアクセントカラー
-	                                      //    （背景から自動的に選択する設定時も含む）とも連動する。
-	                                      //    WinRTのUISettings.GetColorValue(Accent)を使う手もあるが、
-	                                      //    Windows 8以降専用でCOM初期化も要るため、互換性・実装コストの
-	                                      //    両面でDwmGetColorizationColor()を採用。Windows 7の
-	                                      //    ClassicテーマなどDWM合成が無効な環境ではAPIが失敗しうるため、
-	                                      //    GetSysColor(COLOR_HIGHLIGHT)にフォールバックする。
-	                                      //    WM_DWMCOLORIZATIONCOLORCHANGED受信時に再取得・再描画する。
+	#define NKMM_TAB_CURRENT_LINE   (1)  // カレントタブの下部にWindowsのアクセントカラー(DwmGetColorizationColor、
+	                                      // DWM合成が無効な環境ではCOLOR_HIGHLIGHTへフォールバック)の線を引く 20260807
 
 //------------------------------------------------------------------
-// エディット画面 スクロールバー
-//  - 検索結果を表示 20170609
-//  - ブックマークを表示 20170609
-//  - カーソル行を表示 20170611
-//  - スクロールバーの再描画をマーカー描画のタイミングに合わせて更新する 20170721
-//  ? バーにカーソルを乗せた時, フェードアウトして消えてしまう:(
-//  - 水平スクロールバーのSetScrollInfoスキップ判定の更新漏れを修正。詳細は
-//    changelog/NKMM_FIX_EDITVIEW_SCRBAR_HWIDTH_SKIP.md参照 20260806
-//  - SB_Marker_BuildThreadとChangeCurRegexp()の競合クラッシュ修正、
-//    WM_APP_SCRBAR_PAINTのブロッキング待ち解消、通常編集との競合防止・
-//    ビルドの並列化(OpenMP)、DrawThreadの重複描画スキップ 20260809
-//  - キャッシュ作成/描画をスレッドプール(PTP_WORK)化。詳細はchangelog/
-//    NKMM_FIX_EDITVIEW_SCRBAR_THREADPOOL.md参照(bRebuildPending_/
-//    bRestartRequestDrawThread_のTOCTOUレース修正(mutex導入)も同ファイルに追記) 20260810
-//  - スクロールバー上のマーククリックでジャンプ、ホバー中の再描画、
-//    半透明合成(AlphaBlend)への変更、ホバー中のCPU使用率対策(2段階) 20260810
-//  - 上記2件の詳細はchangelog/NKMM_FIX_SCRBAR_MARKER_INTERACTION.md参照
-//  - 水平スクロールバーがONの設定でも、各行の文字数がウィンドウ幅に収まっている間は
-//    バー自体を非表示にし、その分テキスト表示領域を広げるようにした(内容が
-//    ウィンドウ幅を超えたら自動的に再表示する)。従来は常にバーの領域を確保した上で
-//    不要なときはグレーアウトするだけだった 20260817
+// エディット画面 スクロールバー 20170609〜
+//  - 検索結果・ブックマーク・カーソル行をマーク表示、マーククリックで該当行へ
+//    ジャンプ、Explorer風の細いスクロールバー、キャッシュ作成/描画のスレッド
+//    プール化、水平スクロールバーの内容依存自動非表示など
+//  - 設計・全体像はdocs/scrollbar_marker_design.html、個別の修正詳細は
+//    changelog/NKMM_FIX_EDITVIEW_SCRBAR_HWIDTH_SKIP.md、_THREADPOOL.md、
+//    NKMM_FIX_SCRBAR_MARKER_INTERACTION.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_EDITVIEW_SCRBAR
 	#define WM_APP_SCRBAR_PAINT    (WM_APP + 2501)  // スクロールバー描画メッセージ
@@ -225,28 +201,17 @@
 	#define NKMM_SCRBAR_MARK_MAGIC  (0x20000000)  // ブックマーク
 	#define NKMM_SCRBAR_LINEN_MASK  (0x0fffffff)  // 行番号マスク
 	#define NKMM_SCRBAR_MAGIC_MASK  (0xf0000000)  // マジックマスク
-	// 検索文字列のある行の色 (REG/EditViewScrBarFoundColor:#0000d7)
-	#define NKMM_SCRBAR_FOUND_COLOR  _T("#f4a721") //_T("#32CD32") //_T("#0000d7")
-	// ブックマークのある行の色 (REG/EditViewScrBarMarkColor:#d80000)
-	#define NKMM_SCRBAR_MARK_COLOR   _T("#ff0032") //_T("#ff0000") //_T("#d80000")
-	// キャレットのある行の色 (REG/EditViewScrBarMarkColor:#d80000)
-	#define NKMM_SCRBAR_CURSOR_COLOR _T("#0026ff") //_T("#0000cd") //_T("#00d800")
-	// マーク描画の不透明度 (0:完全透明〜255:不透明)。AlphaBlend()で背景(つまみ等)と
-	// 合成するため、つまみに重なったマークは自然に透けて見える 20260810
+	#define NKMM_SCRBAR_FOUND_COLOR  _T("#f4a721")  // 検索文字列のある行の色 (REG/EditViewScrBarFoundColor)
+	#define NKMM_SCRBAR_MARK_COLOR   _T("#ff0032")  // ブックマークのある行の色 (REG/EditViewScrBarMarkColor)
+	#define NKMM_SCRBAR_CURSOR_COLOR _T("#0026ff")  // キャレットのある行の色 (REG/EditViewScrBarCursorColor)
+	// マーク描画の不透明度 (0:完全透明〜255:不透明)。AlphaBlend()で背景(つまみ等)と合成する 20260810
 	#define NKMM_SCRBAR_MARK_ALPHA   (220)
 
 	#define NKMM_EDITVIEW_H_SCRBAR_REDRAW_TIMING  (1)  // 水平スクロールバーの更新タイミングを修正
-	// システム(Explorer)風の細いスクロールバーにする 20260717
-	// SetWindowTheme(hwnd, L"Explorer", NULL) を適用する。テーマ無効環境では従来通りの見た目にフォールバックする
-	#define NKMM_SCRBAR_SYSTEM_STYLE (1)
-	// スクロールバー上の検索/ブックマークのマークをクリックしたら該当行へジャンプする 20260810
-	// VScrollBarWndProcのサブクラス化(NKMM_SCRBAR_SYSTEM_STYLE)を前提とするため、そちらが無効な場合は動作しない
-	#define NKMM_SCRBAR_MARKER_CLICK_JUMP (1)
-	// マウスホバー開始時にもマーカーを再描画する(ホバー中もマーク位置が見えるように) 20260810
-	// 同じくNKMM_SCRBAR_SYSTEM_STYLEのサブクラス化が前提
-	#define NKMM_SCRBAR_MARKER_HOVER_REDRAW (1)
-	// 水平スクロールバーは内容がウィンドウ幅に収まる間は非表示にし、テキスト表示領域を広げる 20260817
-	#define NKMM_EDITVIEW_HSCRBAR_AUTOHIDE (1)
+	#define NKMM_SCRBAR_SYSTEM_STYLE (1)          // システム(Explorer)風の細いスクロールバーにする 20260717
+	#define NKMM_SCRBAR_MARKER_CLICK_JUMP (1)     // マーククリックで該当行へジャンプ(NKMM_SCRBAR_SYSTEM_STYLE前提) 20260810
+	#define NKMM_SCRBAR_MARKER_HOVER_REDRAW (1)   // マウスホバー中もマーカーを再描画(同前提) 20260810
+	#define NKMM_EDITVIEW_HSCRBAR_AUTOHIDE (1)    // 水平スクロールバーは内容が収まる間は非表示にする 20260817
 
 //------------------------------------------------------------------
 // 行間を上揃えではなく下揃えにする
@@ -834,27 +799,18 @@
 
 //------------------------------------------------------------------
 // カラーフォント(絵文字等のCOLR/CPALカラーグリフ)の描画対応 20260716
-//  - 既存のGDI描画はそのまま残し、DirectWrite/Direct2Dでカラーグリフだけを
-//    追加でオーバーレイ描画する(GDIはCOLR/CPAL形式のカラーフォントを
-//    単色でしか描画できないため)
-//  - Direct2D/DirectWriteが利用できない環境(DLL不在など)では自動的に
-//    何もせず、従来通りのGDI描画のみになる
+//  - GDIはCOLR/CPAL形式を単色でしか描画できないため、既存のGDI描画は残し
+//    DirectWrite/Direct2Dでカラーグリフだけをオーバーレイ描画する(D2D/DWriteが
+//    無い環境では自動的に従来のGDI描画のみになる)
+//  - ZWJ絵文字合字(NKMM_FIX_COLOR_FONT内、専用フラグ無し)、絵文字フォントの
+//    固定指定(共通設定「全般」、既定NKMM_COLOR_FONT_EMOJI_FONT_NAME)にも対応
 //  - sakura_core\view\CColorFontRenderer.h/.cpp
-//  - 詳細はchangelog/NKMM_FIX_COLOR_FONT.md参照
-//  @date 20260816 絵文字解決に使うフォントを本文フォント起点のシステム自動
-//    フォールバック任せにせず、固定指定できるようにした(ResolveFallbackHFONT/
-//    TryShapeClusterの両方で使用)。指定フォントに該当グリフが無い場合は
-//    従来通りのシステムフォールバックへ自動的に戻る。
-//  @date 20260816 共通設定「全般」タブに「絵文字フォントを使う」チェック+
-//    フォント選択ボタンを追加し、実行時にON/OFF・フォント変更できるように
-//    した(CommonSetting_Window::m_bUseEmojiFont/m_lfEmoji)。
-//    NKMM_COLOR_FONT_EMOJI_FONT_NAMEは初回起動時の既定値(既定でON)としてのみ
-//    使われ、以後はユーザー設定(sakura.ini)が優先される。
+//  - 設計・実装の詳細はdocs/color_font_emoji_design.html、
+//    changelog/NKMM_FIX_COLOR_FONT.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_COLOR_FONT
 
-//! 絵文字解決に使うフォント名の既定値(初回起動時、CommonSetting_Window::m_lfEmoji
-//! へ初期投入される)。ユーザーは共通設定「全般」タブでいつでも変更・無効化できる。
+//! 絵文字解決に使うフォント名の既定値(初回起動時のみ使用。以後はユーザー設定(sakura.ini)が優先)
 #define NKMM_COLOR_FONT_EMOJI_FONT_NAME L"Segoe UI Emoji"
 
 //------------------------------------------------------------------
@@ -1009,34 +965,14 @@
 
 //------------------------------------------------------------------
 // マルチカーソル編集(第一段) 20260830-31
-//
-//  操作:
-//  - F_ADD_CURSOR_UP/F_ADD_CURSOR_DOWNという独立したコマンドを新設し、
-//    既定でCtrl+Alt+↑/↓に割り当て(VS Codeの「カーソルの追加」相当)。
-//    既存のF_UP2_BOX/F_DOWN2_BOX(矩形選択の2行ジャンプ)へ文脈依存で相乗り
-//    させなかったのは、キー割り当て設定画面から見たときにキーの動作が
-//    分からなくなるため。F_UP2_BOX/F_DOWN2_BOXは既定キー無しになるが
-//    コマンド自体は残り、手動での再割り当ては引き続き可能
-//  - マルチカーソルと矩形選択は排他。どちらかを開始すると他方は解除
-//  - Ctrl+Shift+U(F_MULTICURSOR_UNDO)で直近に追加したカーソルを1個だけ取り消す
-//    (VS CodeのCtrl+U「直前のカーソル操作を元に戻す」相当。テキスト編集の
-//    Undo(Ctrl+Z)とは別系統)
-//  - 追加カーソル位置での同時タイピング・BackSpace・Delete・IME確定文字挿入は
-//    1回のUndoにまとまる(HandleCommandが既に開いているCOpeBlkに相乗りするだけ
-//    で実現。新規Undo基盤は不要)
-//  - Escで追加カーソルを一括解除
-//  - IME再変換・矩形選択との併存は非対応(既存のIsBoxSelecting()時と同じ扱い)
-//
-//  位置の持ち方(CEditView::SExtraCursor参照):
-//  - 追加カーソルは絶対位置を持たず、「プライマリからの相対行数・相対桁数
-//    (レイアウト単位、作成時に固定・以後不変)」だけを持ち、実位置は毎回
-//    その場で算出する。桁の基準はプライマリの表示上の桁ではなく、プライマリが
-//    本来保持している桁(CCaret::m_nCaretPosX_Prev)を使う
-//  - この方式により、上下移動でバッファ端や短い行に達しても他カーソルとの
-//    相対位置関係が絶対に崩れず、衝突もしない(整数オフセットが常に一定のため)
-//  - 移動系コマンド(F_UP/DOWN/LEFT/RIGHT/GOLINETOP/GOLINEEND等)はプライマリを
-//    動かすだけで追加カーソルは自動追従する。編集系コマンド(タイピング・削除等)
-//    だけが、実際の編集結果を反映するために相対値を再計算する
+//  - Ctrl+Alt+↑/↓でカーソル追加(F_ADD_CURSOR_UP/DOWN、VS Code相当)、
+//    Ctrl+Shift+U(F_MULTICURSOR_UNDO)で直近の追加を1個だけ取り消し、Escで
+//    一括解除。矩形選択とは排他。IME再変換は非対応
+//  - 追加カーソルは絶対位置を持たず、プライマリからの相対行数・相対桁数
+//    (レイアウト単位、作成時に固定)だけを保持し、実位置は毎回その場で算出する
+//    (CEditView::SExtraCursor)。編集は既存のCOpeBlkに相乗りする形で
+//    プライマリの1回のUndo/Redoに自動的にまとまる(新規Undo基盤は不要)
+//  - 設計・全体像はdocs/multicursor_design.html参照
 //------------------------------------------------------------------
 #define NKMM_MULTI_CURSOR
 	// 追加カーソルの上限数。VS Code既定のeditor.multiCursorLimitに倣う
@@ -1229,44 +1165,12 @@
 
 //------------------------------------------------------------------
 // グリフアトラスの統計をステータスバーに常時表示するデバッグHUD 20260802
-//  - NKMM_FIX_GLYPH_ATLAS_CACHEとは独立にON/OFFする(通常ビルドでは無効のまま)。
-//    このフラグを有効にしてもNKMM_FIX_GLYPH_ATLAS_CACHE自体が無効、または
-//    共通設定「全般」タブの「グリフキャッシュを使う」がOFFのままなら何も
-//    表示しない(両方ONにする必要がある)
-//  - ページ数・エントリ数・(プロセス寿命での累積)ヒット数・ミス数・
-//    ヒット率・WarmUpAscii()で焼いた枚数を1行のテキストで、CEditView_Paint.cpp
-//    のOnPaint末尾からステータスバーの専用パーツ(index 9、末尾に追加)へ
-//    SetStatusText()で書く。既存パーツ(0〜8、位置表示・検索結果の一時
-//    メッセージ等)とは表示を奪い合わない。分割ウィンドウ時はアクティブ
-//    ペインのみ更新する
-//  - CEditWnd.cppのステータスバー分割(WM_SIZE時、nStArr/pszLabel)に、
-//    このマクロが有効なときだけ末尾へ1パーツ追加する。幅は代表的な最大長
-//    ラベル文字列から計算するので、実際の値がどれだけ長くても既存パーツを
-//    圧迫しない。ついでにnStArr[]の配列サイズが実際のnStArrNum(9、この
-//    マクロ併用時10)に対して1小さいまま(8)だった既存のバッファ書き込み
-//    超過バグも一緒に直した
-//  - 手描きのオーバーレイ(GetDC+ExtTextOut)、ステータスバー パーツ0の
-//    使い回し、OutputDebugStringWへのログ出しは、画面上でリアルタイムに
-//    確認できる・既存表示と競合しない、のどちらかを満たせず不採用にした
-//    経緯がある。デバッグ時の参考として残す:
-//      20260802 案1: gr/pPs->rcPaint(部分再描画矩形)に相対配置 →
-//        キャレット点滅や1文字入力のような小さい範囲だけの再描画では
-//        画面上端がそもそも再描画対象に入らず表示されなかった
-//      20260802 案2: CEditView自身の実DCへ固定位置描画 →
-//        CEditViewはScrollWindowEx()で高速スクロール時にピクセルを直接
-//        シフトする子ウィンドウのため、invalidateを経由しないHUDの
-//        ピクセルがスクロールで引きずられテキスト領域内に残像が残った
-//      20260802 案3: フレームウィンドウの実DCへ固定位置描画 →
-//        GetDCは子ウィンドウ(タブ・ツールバー)が占める領域を自動的に
-//        クリップ除外するため、その領域に描いても見えなかった
-//      20260802 案4: ステータスバー パーツ0(検索結果等の一時メッセージ
-//        表示場所)を使い回す → パーツ0の実幅がウィンドウ幅・分割数次第で
-//        狭く、全項目が入りきらず隣のパーツの再描画で尻切れに見えた。
-//        文言を削って要点だけにする案・実幅を実測して"..."で削る案も
-//        検討したが、そもそも見たい情報が見えなくなる本末転倒な対処だった
-//      20260802 案5: OutputDebugStringWへ全項目をログ出力 →
-//        DebugView等の別ツールなしに画面上でリアルタイム確認できないと
-//        HUDとして意味がないとの指摘で不採用
+//  - NKMM_FIX_GLYPH_ATLAS_CACHEとは独立にON/OFF(両方ONの時のみ表示、通常
+//    ビルドでは無効のまま)。ページ数・エントリ数・累積ヒット/ミス数・
+//    ヒット率等をステータスバーの専用パーツ(index 9、末尾に追加)に表示する
+//  - 手描きオーバーレイ/固定位置描画/既存パーツの使い回し/ログ出力は
+//    いずれも不採用にした経緯がある。詳細・検討した5案は
+//    changelog/NKMM_DEBUG_GLYPH_ATLAS_HUD.md参照
 //  - sakura_core\view\CGlyphAtlasCache.h,cpp: CGlyphAtlasCache::GetStats()
 //  - sakura_core\view\CEditView_Paint.cpp
 //  - sakura_core\window\CEditWnd.cpp
@@ -1353,39 +1257,18 @@
 
 //------------------------------------------------------------------
 // 元に戻す(Undo)履歴のデータ量に上限を設ける 20260802
-//  - COpeBuf(Undo/Redoバッファ)は元々件数・データ量とも無制限で、
-//    CDeleteOpe/CInsertOpe/CReplaceOpeが保持するテキストのコピー
-//    (COpeLineData、実体はCNativeW)がセッション中ずっと積み上がり続ける。
-//    超長い行を削除しても、そのコピーがUndo履歴に残り続ける限りメモリは
-//    解放されない(NKMM_FIX_SHRINK_LINE_BUFFERは「現在表示されている行」の
-//    バッファしか縮められないため、この分は対象外)
-//  - 件数ではなくデータ量(バイト数)で上限を管理する。共通設定「編集」タブに
-//    KB単位の入力欄を追加(0=無制限、既定0=従来通りの挙動を維持)
-//  - COpe::GetDataByteSize()(仮想関数、既定0)をCDeleteOpe/CInsertOpe/
-//    CReplaceOpeでオーバーライドし、保持するCNativeWの実バッファ容量
-//    (_GetMemory()->capacity())を合計する。COpeBlk::AppendOpe()のたびに
-//    加算してブロック単位のバイト数をO(1)でキャッシュし、COpeBuf側でも
-//    全ブロックの合計をO(1)で追跡する(履歴全体を毎回舐めない)
-//  - COpeBuf::AppendOpeBlk()の末尾で上限判定(_ShrinkToBudget())を行い、
-//    超過していたら一番古い(Undo方向の)ブロックから破棄する。Redo対象
-//    (m_nCurrentPointer以降)は直後に必要になり得るため破棄しない。
-//    「保存済みに一致する」基準点(m_nNoModifiedIndex、行ごとの変更行
-//    表示に使う)が破棄対象に含まれていた場合は-1(追跡不能)にする。
-//    この場合、行ごとの「変更行」表示が実態より多め(安全側)になるだけで、
-//    ファイル全体の変更フラグ(CDocEditor::IsModified())は別の独立した
-//    フラグのため影響を受けない
+//  - COpeBuf(Undo/Redoバッファ)は元々件数・データ量とも無制限で、削除した
+//    行のテキストコピーがセッション中ずっと積み上がり続ける。件数ではなく
+//    データ量(バイト数)で上限を管理し、超過時は一番古いブロックから破棄する
+//    (Redo対象は破棄しない)。共通設定「編集」タブにKB単位の入力欄を追加
+//    (0=無制限、既定0=従来通りの挙動を維持)
+//  - sakura_core\COpe.h,COpeBlk.h,cpp,COpeBuf.h,cpp: GetDataByteSize()/
+//    GetByteSize()/_ShrinkToBudget()
 //  - sakura_core\env\CommonSetting.h: CommonSetting_Edit::m_nUndoBufMaxKB
-//  - sakura_core\env\CShareData.cpp,CShareData_IO.cpp: 既定値・INI永続化
-//  - sakura_core\COpe.h: COpe::GetDataByteSize()
-//  - sakura_core\COpeBlk.h,cpp: COpeBlk::GetByteSize()
-//  - sakura_core\COpeBuf.h,cpp: COpeBuf::_ShrinkToBudget()
 //  - sakura_core\prop\CPropComEdit.cpp、sakura_rc.h,rc: 共通設定UI
-//    (IDD_PROP_EDIT「編集」タブに追加。EN_US言語版rcは未対応 20260802。
-//    未対応でもビルド・実行は可能で、この設定のUIが出ないだけ)
-//  - 20260802 アップダウンコントロール(IDC_SPIN_UNDOBUFMAXKB)を追加。
-//    Win32のアップダウンコントロールは刻み幅をネイティブに持たず、矢印
-//    クリックのたびに来るUDN_DELTAPOS通知をアプリ側で解釈する仕組みのため、
-//    他の項目(1刻み)と違いここでは4KBずつ増減させている
+//    (EN_US言語版rcは未対応。未対応でもビルド・実行は可能でUIが出ないだけ)
+//  - 実装の詳細(バイト数追跡の仕組み、破棄時のm_nNoModifiedIndex処理等)は
+//    changelog/NKMM_FIX_UNDO_BUFFER_LIMIT.md参照
 //------------------------------------------------------------------
 #define NKMM_FIX_UNDO_BUFFER_LIMIT
 
@@ -1505,48 +1388,13 @@
 //  - keybind_presets/*.key(VSCode/Visual Studio/ReSharper/Sublime Text/Notepad++)を
 //    sakura_rc.rcにRCDATAとして埋め込み、実行時にFindResource+一時ファイル経由で
 //    CImpExpKeybind::Import()へ渡す(keybind_presetsフォルダは実行時に不要)
-//  - 20260829 Visual Studio 6/Visual Basic 6を削除。Visual Studio.keyとの差分が
-//    あまりにも乏しく、独立したプリセットとして維持する価値が薄いと判断した
-//    (詳細はkeybind_presets/README.md参照)
-//  - 20260823 SublimeText.key/NotepadPlusPlus.keyを追加(IDR_KEYBINDPRESET_
-//    SUBLIMETEXT=249/IDR_KEYBINDPRESET_NOTEPADPLUSPLUS=251)。IDEよりテキスト
-//    エディタの方が対応不能な項目(デバッグ/リファクタリング等)が少なく素直に
-//    対応するとの判断。TeraPadは公式のショートカット一覧資料が見つからず
-//    確認精度が低いため見送った(詳細はkeybind_presets/README.md参照)
-//  - 20260823 CImpExpKeybind::Import()がKEYBIND_COUNT<100の差分形式ファイル
-//    (このディレクトリの全プリセットが該当)で正しく動かない不具合を発見・修正。
-//    原因はsakura_core/env/CShareData_IO.cppのIO_KeyBind()終盤にある
-//    「sKeyBind.m_nKeyNameArrNum = nKeyNameArrUsed;」で、nKeyNameArrUsedが
-//    関数先頭(既定値へのフォースより前)でキャプチャされており、既存キーの
-//    上書きではインクリメントされないため、ファイル自身のKEYBIND_COUNT件数まで
-//    巻き戻ってしまっていた。結果、後続のCImpExpKeybind::Import()側マージ処理が
-//    KEYBIND_COUNT件目以降の変更(たまたま既定テーブル上の位置がそれより後ろの
-//    キー、G/H/S/R等ほとんど)を一切拾えず、位置が先頭寄りだったキー(例: F4)だけ
-//    反映されるという再現しにくい壊れ方をしていた(Import()自体は成功(true)を
-//    返すため気付きにくい)。IO_KeyBind()側でnKeyNameArrUsedも既定値フォースと
-//    同時に補正して解消(詳細はkeybind_presets/README.md参照)。
-//    keybind_presets/*.keyはsakura.vcxproj(と.filters)にも`<None>`+
-//    ResourceCompileのAdditionalDependenciesとして登録し、編集時にsakura_rc.rcを
-//    手動でtouchしなくても再ビルドで確実に反映されるようにした
-//  - 20260823 CSharp2005.key(VisualStudio.keyと内容が完全重複)とVisualCpp2.key
-//    (UI未配線・対象が古すぎて確認精度が低い)を削除。代わりにVisualAssist.keyを
-//    IDR_KEYBINDPRESET_VISUALASSISTとして正式に配線した。ReSharper.key/
-//    VisualAssist.keyには、実際にAlt+O(ReSharperはCtrl+Shift+Gも)で「同名の
-//    C/C++ヘッダ(ソース)を開く」(F_OPEN_HfromtoC)を持つことをWeb検索で確認した上で
-//    追加し、VisualStudio.keyとの差分にした(詳細はkeybind_presets/README.md参照)
-//  - 20260823 VisualAssist.key/IDR_KEYBINDPRESET_VISUALASSISTを削除。ReSharper.key
-//    との差分がAlt+O(ヘッダ/ソース切り替え)1行のみで、かつVisual Assist自体の
-//    知名度がReSharperより低いため、独立したプリセットとして維持する価値が薄いと
-//    判断した(詳細はkeybind_presets/README.md参照)
-//  - プリセット適用は必ず「CShareData::ResetKeyBindToDefault()で既定へ戻してから、
-//    選んだプリセットの差分をインポートする」方式。直前まで別プリセットが当たって
-//    いた場合の残留を防ぐ。先頭の「サクラエディタ」はnResId=0扱いで、差分インポート
-//    無しの初期化のみ(NKMM_FIX_KEYBIND_TOOLBAR_RESETの「初期化」ボタンをこの
-//    プリセットへ統合したため、このタブでは初期化ボタン自体を置き換える)
-//  - コンボは常に現在のキー割り当てを再判定して表示する(DetectCurrentPresetIndex/
-//    UpdatePresetCombo)。全プリセットについて「初期化→インポート」をm_Commonの
-//    コピー上でシミュレートして現在値と比較するため、どのプリセットとも一致しない
-//    ときは先頭の「カスタマイズ」を選択状態にする
+//  - 適用は必ず「CShareData::ResetKeyBindToDefault()で既定へ戻してから、選んだ
+//    プリセットの差分をインポートする」方式。コンボは現在のキー割り当てを
+//    都度再判定して表示する(全プリセットをシミュレートして現在値と比較。
+//    DetectCurrentPresetIndex/UpdatePresetCombo)
+//  - 採用/除外したプリセットの経緯、および差分形式.keyファイルが正しく
+//    インポートされない不具合(IO_KeyBind()のnKeyNameArrUsed巻き戻り、
+//    20260823発見・修正)の詳細はkeybind_presets/README.md参照
 //  - sakura_core\sakura_rc.h,rc: IDC_COMBO_KEYBINDLIST_PRESET, IDR_KEYBINDPRESET_*
 //    (無効時はNKMM_FIX_KEYBIND_TOOLBAR_RESETの「初期化」ボタンを代わりに配置)
 //  - sakura_core\prop\CPropComKeybindList.cpp, CPropCommon.h
@@ -1687,97 +1535,32 @@
 
 //------------------------------------------------------------------
 // コマンドパレット(VSCode風) 20260818
-//  - Shift+Ctrl+Pで開く。絞り込みEditと一覧(種別/名前/ID/キーまたはパス)の
-//    シンプルなモーダルダイアログ。対象は全コマンド(CFuncLookupで列挙、
-//    ショートカットはCKeyBind::GetKeyStrで取得)と、現在開いているファイル
-//    (CAppNodeManager::GetOpenedWindowArr、タブ=別プロセスをまたいで列挙)。
-//    Enterで選択項目を実行(コマンドはWM_COMMAND転送、ファイルは
-//    ActivateFrameWindow()でアクティブ化)、Escapeでキャンセル
-//  - 既定のShift+Ctrl+Pは印刷プレビュー(F_PRINT_PREVIEW)に割り当て済み
-//    だったため、このキーはコマンドパレットへ差し替え、印刷プレビュー側は
-//    既定ショートカットなしにした(func/CKeyBind.cpp)
+//  - Shift+Ctrl+Pで開く(既定の割り当て先だった印刷プレビューF_PRINT_PREVIEWは
+//    既定ショートカットなしになる、func/CKeyBind.cpp)。全コマンド・開いている
+//    ファイル(タブ=別プロセスをまたいで列挙)を1つの絞り込みリストから検索・
+//    実行する、単一列owner draw(NM_CUSTOMDRAW)のシンプルなモーダルダイアログ
 //  - sakura_core\dlg\CDlgCommandPalette.h/.cpp: ダイアログ本体
 //  - sakura_core\cmd\CViewCommander_Window.cpp: Command_COMMAND_PALETTE()
 //  - sakura_core\Funccode_x.hsrc: F_COMMAND_PALETTE(31338)
-//
-// [見た目] 20260819、VSCodeのクイックオープン/コマンドパレットに寄せて、
-// 複数列のレポート形式ListViewから単一列(ヘッダ非表示)のowner draw
-// (NM_CUSTOMDRAW、CDlgCommandPalette::OnListCustomDraw())へ作り直した。
-// コマンド行はアイコン無し+太字名+右寄せグレーのショートカットキー、
-// ウィンドウ/最近使ったファイル行はアイコン(GetShellIconIndex()、
-// SHGetFileInfoの共有システムアイコン一覧を拡張子ごとにキャッシュ)+
-// 太字ファイル名+グレーの格納フォルダ、最近使ったファイルのみ右に
-// 「最近使用」タグを出す。
-//  - ヘッダー非表示(LVS_NOCOLUMNHEADER)は、生成後にSetWindowLongPtr()で
-//    後から立てると comctl32 内でヘッダーが「表示状態のまま高さ0」に
-//    中途半端に壊れ、行のレイアウト計算まで破綻してクラッシュすることが
-//    あった。sakura_rc.rcのダイアログテンプレート側でIDC_LIST_COMMANDPALETTEの
-//    生成時スタイルとして直接指定している(実行時トグルは行わない)
-//  - LVS_REPORT表示でのCDDS_ITEMPREPAINT時点ではNMCUSTOMDRAW::rcが
-//    信頼できない(comctl32のバージョン依存の癖)ため、ListView_GetItemRect()
-//    で改めて矩形を取得している(ImageList_Draw()は座標指定のみで矩形に
-//    依存しないため気づきにくいが、DrawText()はこの壊れた矩形でクリップされ
-//    何も見えなくなる)
-//  - 同様にNMCUSTOMDRAW::uItemStateのCDIS_SELECTEDも実際の選択状態と
-//    無関係に立つことがあるため信用せず、ListView_GetItemState()で実際の
-//    選択状態を取得している。CDRF_SKIPDEFAULTで既定描画を止めている分、
-//    選択行の背景(COLOR_HIGHLIGHT)も自前でFillRect()する必要がある
+//  - UI・comctl32周りの実装詳細はdocs/command_palette_design.html参照
 //------------------------------------------------------------------
 #define NKMM_COMMAND_PALETTE
 
 //------------------------------------------------------------------
-// コマンドパレットのローマ字入力対応 20260819
-// 20260820 絞り込みエンジンを正規化+スコアリング付き部分列マッチ方式へ全面書き換え
-//
-// [絞り込みエンジン本体] util/RomajiFuzzyMatch.hpp(sakura非依存の汎用ヘッダオンリー
-// 実装。ブラウザ拡張Gretel Barのsrc/fuzzy_match.jsを参考にC++へ移植)+
-// util/CFuzzyMatchJp.h/.cpp(sakuraとの結線。CDlgCommandPalette::UpdateList()から
-// 呼ぶFuzzyMatchJapanese())。クエリ・検索対象の両方を同じ規則で正規化してから
-// (VSCodeのクイックオープン等と同種の)スコアリング付き部分列マッチを行う方式。
-// 表示中の入力文字列自体は変換しない(※下記のライブかな変換は別経路)。
-//  - 正規化は「ひらがな→カタカナのoffset統合→ローマ字(ヘボン式)」の順で行い、
-//    拗音(きゃ/しゃ等)・外来語表記の拡張かな(ふぁ/うぃ等)・促音(っ)・長音(ー)・
-//    半角カナ+濁点/半濁点・全角英数記号もすべて同じ正規化結果に畳み込む
-//  - 命令式ローマ字(si/ti/tu/hu/zi/sya...)もヘボン式へのエイリアス表で吸収する
-//  - 一致した箇所には、連続一致・単語先頭一致ほど高くなるスコアを付け、
-//    CDlgCommandPalette::UpdateList()側でスコア降順に並べ替えて表示する
-//    (最もタイトに一致したものを上に出す)
-//  - 部分列マッチのため、末尾が入力途中の断片であっても自然に緩く一致する
-//    (以前のような専用ワイルドカード処理は不要になった)
-//
-// [漢字ヒューリスティック] NKMM_COMMAND_PALETTE_ROMAJI_KANJIで追加有効化。
-// util/CKanjiReadingDict.h/.cpp(元データはGretel Barのsrc/kanji_dict.js。
-// sakura_rc.rc全体から抽出した使用漢字と突き合わせて漏れを補完済み、以後も
-// 気づいたら追加していく方針)。上記の正規化エンジン自体は漢字の読みを知らず
-// 素通しするだけのため、CFuzzyMatchJp.cpp側でクエリ・検索対象の文字列中の
-// 漢字を先に「読みの先頭モーラが一致しそうなひらがな」へ事前展開してから
-// 正規化エンジンに渡す(厳密な読み検証ではないヒューリスティック)。
-//  - 「開く(ひらく)」のように1漢字が複数モーラ分の読みを持つ送り仮名付きの語は、
-//    CFuzzyMatchJp.cpp内の複数モーラ読みテーブル(g_aMultiMoraKanjiTable)で
-//    個別に対応(汎用の仕組み。気づいた語を随時追加していく)
-//  - ノイズが気になる場合はNKMM_COMMAND_PALETTE_ROMAJI_KANJIの行だけコメント
-//    アウトすれば(NKMM_COMMAND_PALETTE_ROMAJI本体は有効なまま)いつでも無効化できる
-//
-// [漢字読み全件テーブルによる自動フォールバック] 20260821
-// NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLEで追加有効化(既定は無効)。
-// util/CKanjiReadingTableJIS1.h(JIS第1水準漢字2965字の音訓読み全件テーブル)。
-//  - g_aMultiMoraKanjiTableに無い漢字だけの自動フォールバック(優先順位:
-//    g_aMultiMoraKanjiTable(手動) > このテーブル(自動) > CKanjiReadingDict)
-//  - 選び方は「最初の訓読みの活用語幹、無ければ最初の音読み」の機械的ルールの
-//    みのため、複数の読みを持つ漢字で実際の使われ方と違う読みを選んでしまう
-//    ことがある。既定で無効にしているのはそのため
-//  - 詳細はchangelog/NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE.md参照
-//
-// [フィルタ欄のライブかな変換] dlg/CDlgCommandPalette.cpp
-// (PaletteFilterEditSubclassProc/ApplyLiveKanaConversion/IsImeComposing)。
-// Windows検索ボックス等と同様、確定したモーラ分をその場でかなへ変換して表示する。
-//  - WM_CHARで末尾へのASCII入力(a-z/A-Z/-)を横取りしてConvertRomajiToKana()で変換。
-//    ">"/"edt "(絞り込みモード切り替え記号)は保持し、それより後ろだけ変換する
-//  - 実際のIMEのON/OFF状態(ImmGetOpenStatus)に従う。IME OFF(半角英数直接入力)の
-//    ときは変換せず素通しし、ONのときだけ働く
-//  - WM_IME_COMPOSITIONを見て、変換確定前(未確定文字列)の間も一覧をライブ更新する
-//  - IME変換中はEscapeを横取りせず、まずIME標準の「未確定文字列を取り消す」動作に
-//    委ねる(IsImeComposing()で判定)。確定後・未入力時のEscapeだけパレットを閉じる
+// コマンドパレットのローマ字入力対応 20260819(20260820絞り込みエンジンを
+// 正規化+スコアリング付き部分列マッチ方式へ全面書き換え)
+//  - util/RomajiFuzzyMatch.hpp(sakura非依存の汎用正規化+部分列マッチエンジン)
+//    + util/CFuzzyMatchJp.h/.cpp(sakuraとの結線、漢字ヒューリスティック展開、
+//    フィルタ欄のライブかな変換)
+//  - NKMM_COMMAND_PALETTE_ROMAJI_KANJIで漢字読みヒューリスティック(util/
+//    CKanjiReadingDict)を追加有効化(既定ON、本体と連動)。ノイズが気になる
+//    場合はこの行だけコメントアウトすれば本体は有効なまま無効化できる
+//  - NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLEでJIS第1水準漢字の音訓読み
+//    全件テーブル(util/CKanjiReadingTableJIS1.h)による自動フォールバックを
+//    追加有効化(既定OFF。機械的な読み選択のため実際の使われ方と食い違う
+//    ことがある。詳細はchangelog/NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE.md参照)
+//  - 正規化パイプライン・誤ヒット対策・漢字ヒューリスティックの詳細は
+//    docs/command_palette_design.html参照
 //------------------------------------------------------------------
 #define NKMM_COMMAND_PALETTE_ROMAJI
 #ifdef NKMM_COMMAND_PALETTE_ROMAJI
@@ -1788,10 +1571,9 @@
 #endif // NKMM_COMMAND_PALETTE_ROMAJI_KANJI
 
 //------------------------------------------------------------------
-// コマンドパレットの行の名前を描くとき、g_aMultiMoraKanjiTable(手動で実地
-// 検証済みの上書きテーブル)に登録されている漢字だけ色を変えて表示するデバッグ
-// 表示。まだ検証していない漢字(単独モーラ辞書やJIS1TABLEの自動フォールバック
-// 任せの箇所)が一覧を眺めるだけで一目でわかるようにする 20260821
+// コマンドパレットの漢字読みカバレッジ可視化デバッグ表示 20260821
+//  - g_aMultiMoraKanjiTable(手動で実地検証済みの上書きテーブル)に登録済みの
+//    漢字だけ色を変えて表示し、未検証の漢字を一覧を眺めるだけで判別できるようにする
 //  - NKMM_COMMAND_PALETTE_ROMAJI_KANJIとは独立にON/OFFする(既定は無効)
 //  - dlg/CDlgCommandPalette.cpp: OnListCustomDraw()
 //------------------------------------------------------------------
