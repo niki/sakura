@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sakura fork 設計ドキュメント目次</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8C%B8</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+    --card-shadow-hover: 0 4px 10px rgba(38,32,31,.08), 0 14px 32px rgba(38,32,31,.09);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514;
+      --surface:#241C1B;
+      --ink:#EEE5E1;
+      --ink-soft:#B3A29D;
+      --ink-faint:#7C6E6A;
+      --rule:#3A2E2C;
+      --sakura:#E28CA8;
+      --sakura-ink:#F3B9CC;
+      --sakura-tint:#3A2530;
+      --ok-bg:#28331F;
+      --ok-ink:#9FC28F;
+      --warn-bg:#362C15;
+      --warn-ink:#E0BE79;
+      --scope-bg:#232C36;
+      --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+      --card-shadow-hover: 0 4px 14px rgba(0,0,0,.4), 0 16px 36px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514;
+    --surface:#241C1B;
+    --ink:#EEE5E1;
+    --ink-soft:#B3A29D;
+    --ink-faint:#7C6E6A;
+    --rule:#3A2E2C;
+    --sakura:#E28CA8;
+    --sakura-ink:#F3B9CC;
+    --sakura-tint:#3A2530;
+    --ok-bg:#28331F;
+    --ok-ink:#9FC28F;
+    --warn-bg:#362C15;
+    --warn-ink:#E0BE79;
+    --scope-bg:#232C36;
+    --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    --card-shadow-hover: 0 4px 14px rgba(0,0,0,.4), 0 16px 36px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600;
+    color:var(--ink);
+    text-wrap:balance;
+    letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  code, .mono{ font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace; font-size:.88em; }
+
+  main{ max-width:1080px; margin:0 auto; padding:64px 40px 100px; }
+
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    letter-spacing:.1em;
+    color:var(--sakura-ink);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1.title{ font-size:2.6rem; line-height:1.25; margin:0 0 12px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:66ch; margin:0; }
+
+  section{ margin:56px 0; }
+  section > h2{
+    font-size:1.3rem;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:26px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.78rem;
+    color:var(--sakura);
+    font-weight:600;
+  }
+  .section-lede{ font-size:.92rem; color:var(--ink-soft); max-width:68ch; margin:-14px 0 26px; }
+
+  .card-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:18px;
+  }
+  .card{
+    display:flex;
+    gap:16px;
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:14px;
+    padding:22px 22px 20px;
+    text-decoration:none;
+    color:inherit;
+    box-shadow:var(--shadow);
+    transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  }
+  .card:hover{
+    transform:translateY(-2px);
+    box-shadow:var(--card-shadow-hover);
+    border-color:var(--sakura);
+  }
+  .card .icon{
+    font-size:1.7rem;
+    line-height:1;
+    flex:0 0 auto;
+    width:44px; height:44px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:10px;
+  }
+  .card .body{ min-width:0; }
+  .card h3{
+    font-size:1.05rem;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .card .flag{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem;
+    color:var(--sakura-ink);
+    background:var(--sakura-tint);
+    border-radius:999px;
+    padding:2px 9px;
+    margin-bottom:10px;
+  }
+  .card p{
+    font-size:.85rem;
+    color:var(--ink-soft);
+    margin:0;
+    max-width:none;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .card .meta{
+    margin-top:12px;
+    display:flex; flex-wrap:wrap; gap:6px;
+  }
+  .card .chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.66rem;
+    color:var(--ink-faint);
+    border:1px solid var(--rule);
+    border-radius:999px;
+    padding:2px 8px;
+  }
+
+  .card.ref{ border-style:dashed; }
+  .card.ref .flag{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  footer{
+    border-top:1px solid var(--rule);
+    margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 760px){
+    main{ padding:40px 20px 80px; }
+    h1.title{ font-size:2rem; }
+    .card-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <header class="masthead">
+    <div class="eyebrow">docs/ — sakura fork</div>
+    <h1 class="title">設計ドキュメント目次</h1>
+    <p class="subtitle">このフォークで追加した主な独自機能(<code class="mono">NKMM_*</code>フラグ)の設計リファレンス集。各ページはデータモデル・中核メカニズム・既知の制約・変更履歴までを1ページにまとめたもので、実装に手を入れる前の下調べ用に使う。</p>
+  </header>
+
+  <section id="design-refs">
+    <h2><span class="num">01</span>機能別 設計リファレンス</h2>
+    <p class="section-lede">実装済みの独自機能ごとに、なぜその設計になったか・どこで踏んだ不具合をどう直したかまで含めて記録している。</p>
+    <div class="card-grid">
+
+      <a class="card" href="multicursor_design.html">
+        <span class="icon">🌸</span>
+        <span class="body">
+          <span class="flag">NKMM_MULTI_CURSOR</span>
+          <h3>マルチカーソル編集</h3>
+          <p>VS Code / Sublime Text風の複数カーソル編集。プライマリからの固定オフセット方式、既存の単一カーソルコマンドを再生する設計、全20パスの変更履歴。</p>
+          <span class="meta"><span class="chip">2026-08-30〜31</span><span class="chip">設計パス20</span></span>
+        </span>
+      </a>
+
+      <a class="card" href="command_palette_design.html">
+        <span class="icon">🔍</span>
+        <span class="body">
+          <span class="flag">NKMM_COMMAND_PALETTE</span>
+          <h3>コマンドパレット</h3>
+          <p>VS Code風のコマンドパレット/クイックオープン。接頭辞によるモード切替、ローマ字あいまい検索エンジン、漢字ヒューリスティック、オーナードロー描画。</p>
+          <span class="meta"><span class="chip">2026-08-18〜21</span></span>
+        </span>
+      </a>
+
+      <a class="card" href="scrollbar_marker_design.html">
+        <span class="icon">📏</span>
+        <span class="body">
+          <span class="flag">NKMM_FIX_EDITVIEW_SCRBAR</span>
+          <h3>スクロールバーマーカー</h3>
+          <p>検索結果・ブックマーク・キャレット行をスクロールバー上に重ね描き。2017年の初版から2026年のスレッドプール化・クリックジャンプまでの二段階の開発史。</p>
+          <span class="meta"><span class="chip">2017-06〜2026-08</span></span>
+        </span>
+      </a>
+
+      <a class="card" href="color_font_emoji_design.html">
+        <span class="icon">🎨</span>
+        <span class="body">
+          <span class="flag">NKMM_FIX_COLOR_FONT</span>
+          <h3>絵文字カラーフォント</h3>
+          <p>GDI描画にDirect2D/DirectWriteでCOLR/CPALカラーグリフを重ね描き。ZWJ絵文字合字、キーキャップ結合表示、絵文字フォント固定指定UI。</p>
+          <span class="meta"><span class="chip">2026-07-17〜08-17</span><span class="chip">コメント整理 09-01</span></span>
+        </span>
+      </a>
+
+      <a class="card" href="session_restore_design.html">
+        <span class="icon">🔁</span>
+        <span class="body">
+          <span class="flag">NKMM_SESSION_RESTORE</span>
+          <h3>セッション復元</h3>
+          <p>終了時に開いていたファイル(未保存内容含む)を次回起動時に自動復元。「タブ=別プロセス」制約下での保存/復元トリガー設計、セキュリティ修正。</p>
+          <span class="meta"><span class="chip">2026-08-14〜09-01</span></span>
+        </span>
+      </a>
+
+    </div>
+  </section>
+
+  <section id="other-refs">
+    <h2><span class="num">02</span>仕様リファレンス</h2>
+    <p class="section-lede">個別機能の設計記録ではなく、現行の全体仕様を一覧できる参照資料。</p>
+    <div class="card-grid">
+
+      <a class="card ref" href="sakura_keybind_list.html">
+        <span class="icon">⌨️</span>
+        <span class="body">
+          <span class="flag">全機能</span>
+          <h3>キー割り当て一覧</h3>
+          <p>全F-codeの既定キー・各キーバインドプリセット(VS Code/Sublime Text/Notepad++等)を横断比較できる一覧表。</p>
+        </span>
+      </a>
+
+    </div>
+  </section>
+
+  <footer>
+    <span>sakura fork — docs/</span>
+    <span>2026-09-01 時点</span>
+  </footer>
+</main>
+
+</body>
+</html>
