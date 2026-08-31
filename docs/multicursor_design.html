@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>マルチカーソル編集 設計リファレンス</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514;
+      --surface:#241C1B;
+      --ink:#EEE5E1;
+      --ink-soft:#B3A29D;
+      --ink-faint:#7C6E6A;
+      --rule:#3A2E2C;
+      --sakura:#E28CA8;
+      --sakura-ink:#F3B9CC;
+      --sakura-tint:#3A2530;
+      --code-bg:#120E0D;
+      --code-ink:#E9DED8;
+      --code-soft:#96877F;
+      --code-accent:#E7A6BC;
+      --ok-bg:#28331F;
+      --ok-ink:#9FC28F;
+      --warn-bg:#362C15;
+      --warn-ink:#E0BE79;
+      --scope-bg:#232C36;
+      --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514;
+    --surface:#241C1B;
+    --ink:#EEE5E1;
+    --ink-soft:#B3A29D;
+    --ink-faint:#7C6E6A;
+    --rule:#3A2E2C;
+    --sakura:#E28CA8;
+    --sakura-ink:#F3B9CC;
+    --sakura-tint:#3A2530;
+    --code-bg:#120E0D;
+    --code-ink:#E9DED8;
+    --code-soft:#96877F;
+    --code-accent:#E7A6BC;
+    --ok-bg:#28331F;
+    --ok-ink:#9FC28F;
+    --warn-bg:#362C15;
+    --warn-ink:#E0BE79;
+    --scope-bg:#232C36;
+    --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600;
+    color:var(--ink);
+    text-wrap:balance;
+    letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{
+    font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+    font-size:.88em;
+  }
+  code.inline{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:.08em .38em;
+    color:var(--sakura-ink);
+  }
+
+  /* ---- layout shell ---- */
+  .shell{
+    display:grid;
+    grid-template-columns:248px minmax(0,1fr);
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .toc{
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+    padding:32px 18px 32px 28px;
+    border-right:1px solid var(--rule);
+  }
+  .toc-brand{
+    font-family:'Shippori Mincho',serif;
+    font-weight:700;
+    font-size:1.02rem;
+    margin-bottom:2px;
+  }
+  .toc-brand small{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+    font-size:.68rem;
+    letter-spacing:.06em;
+    color:var(--sakura-ink);
+    margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif;
+    font-size:.68rem;
+    letter-spacing:.09em;
+    color:var(--ink-faint);
+    font-weight:600;
+    margin:0 0 8px;
+    text-transform:uppercase;
+  }
+  .toc a{
+    display:block;
+    font-size:.83rem;
+    color:var(--ink-soft);
+    text-decoration:none;
+    padding:4px 0 4px 12px;
+    border-left:2px solid transparent;
+    line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    letter-spacing:.1em;
+    color:var(--sakura-ink);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-top:22px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    padding:5px 11px;
+    border-radius:999px;
+    background:var(--surface);
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:24px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.8rem;
+    color:var(--sakura);
+    font-weight:600;
+  }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:66ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:64ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+    margin:22px 0 30px;
+  }
+  .principle{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:18px 18px 16px;
+  }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+    font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  pre{
+    background:var(--code-bg);
+    color:var(--code-ink);
+    border-radius:10px;
+    padding:18px 20px;
+    overflow-x:auto;
+    margin:0 0 22px;
+    font-size:.82rem;
+    line-height:1.7;
+    box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+  figure{ margin:0 0 26px; }
+  figcaption{ font-size:.78rem; color:var(--ink-faint); margin-top:8px; }
+
+  .callout{
+    border:1px solid var(--rule);
+    border-left:3px solid var(--sakura);
+    background:var(--surface);
+    border-radius:0 10px 10px 0;
+    padding:16px 20px;
+    margin:0 0 22px;
+    font-size:.9rem;
+    max-width:64ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+
+  /* diagram */
+  .diagram{
+    display:flex; align-items:stretch; gap:0; margin:18px 0 30px;
+    border:1px solid var(--rule); border-radius:12px; overflow:hidden; background:var(--surface);
+  }
+  .diagram .stage{
+    flex:1; padding:18px 16px; position:relative;
+    border-right:1px dashed var(--rule);
+  }
+  .diagram .stage:last-child{ border-right:none; }
+  .diagram .stage h5{
+    font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.06em;
+    color:var(--ink-faint); text-transform:uppercase; margin:0 0 8px;
+  }
+  .diagram .stage p{ font-size:.8rem; margin:0; max-width:none; color:var(--ink-soft); }
+  .diagram .stage:after{
+    content:"→"; position:absolute; right:-13px; top:50%; transform:translateY(-50%);
+    color:var(--sakura); font-size:1.1rem; z-index:2;
+  }
+  .diagram .stage:last-child:after{ content:none; }
+
+  /* timeline (pass log) */
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline:before{
+    content:""; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:var(--rule);
+  }
+  .pass{ position:relative; padding-bottom:34px; }
+  .pass:last-child{ padding-bottom:0; }
+  .pass:before{
+    content:""; position:absolute; left:-28px; top:5px; width:9px; height:9px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--sakura);
+  }
+  .pass-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .pass-num{ font-family:'IBM Plex Mono',monospace; color:var(--sakura-ink); font-size:.78rem; font-weight:600; }
+  .pass-title{ font-weight:700; font-size:.97rem; }
+  .pass-date{ font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--ink-faint); margin-left:auto; }
+  .pass p{ font-size:.88rem; color:var(--ink-soft); max-width:70ch; margin:0 0 8px; }
+  .pass p:last-child{ margin-bottom:0; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule);
+    margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+    .diagram{ flex-direction:column; }
+    .diagram .stage{ border-right:none; border-bottom:1px dashed var(--rule); }
+    .diagram .stage:after{ content:"↓"; right:auto; left:16px; top:auto; bottom:-13px; transform:none; }
+    .diagram .stage:last-child{ border-bottom:none; }
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    html{ scroll-behavior:smooth; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">マルチカーソル編集<small>NKMM_MULTI_CURSOR / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+        <a href="#data-model">データモデル</a>
+      </div>
+      <div class="toc-group">
+        <h5>中核メカニズム</h5>
+        <a href="#resolve">位置の解決</a>
+        <a href="#dispatch">コマンドの分岐</a>
+        <a href="#apply">一括再生ループ</a>
+        <a href="#merge">カーソルの統合</a>
+        <a href="#goal">希望桁の記憶</a>
+        <a href="#render">描画とIME</a>
+        <a href="#undo">Undo/Redo</a>
+      </div>
+      <div class="toc-group">
+        <h5>仕様</h5>
+        <a href="#commands">コマンドとキー</a>
+        <a href="#dismiss">選択解除の条件</a>
+        <a href="#settings">設定項目</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#limits">既知の制約</a>
+        <a href="#files">変更ファイル一覧</a>
+        <a href="#history">変更履歴(全17パス)</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">マルチカーソル編集</h1>
+      <p class="subtitle lede">VS Code / Sublime Text 風の複数カーソル編集を桜エディタに追加した機能の設計記録。データモデル、各メカニズムの動作原理、既知の制約、そして17回にわたる設計パスの履歴をまとめる。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_MULTI_CURSOR</b></span>
+        <span class="chip">実装期間 <b>2026-08-30 〜 08-31</b></span>
+        <span class="chip">設計パス <b>17</b></span>
+        <span class="chip">カーソル上限 <b class="mono">NKMM_MULTICURSOR_MAX = 10000</b></span>
+      </div>
+    </header>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>プライマリカーソル(既存の <code class="inline">CCaret</code> / <code class="inline">CViewSelect</code>)は無改変のまま使う。追加カーソルは実体を持たず、プライマリからの<strong>固定オフセット</strong>として保持し、必要になった瞬間ごとに実位置へ解決する。編集や選択の実行は、専用のマルチカーソル用ロジックを新規に書くのではなく、各カーソルの解決済み位置に実カーソルを一時的になりすまさせ、既存の単一カーソル用コマンドをそのまま再実行する「コマンド再生」方式で行う。</p>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — オフセット方式</span>
+          <p>追加カーソルの位置・アンカー・希望桁は、いずれもプライマリの対応する値からの相対値としてのみ保持する。絶対位置を直接持つフィールドはひとつもない。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — コマンド再生</span>
+          <p><code class="inline">Command_WCHAR</code>や<code class="inline">Command_RIGHT</code>など既存の単一カーソル実装を、各カーソルの実位置でそのまま再実行する。ラインの折り返し・クランプ・希望桁の計算はすべて既存コードに委譲され、多重実装しない。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — Undoはタダ</span>
+          <p>1コマンドの実行中に開く <code class="inline">COpeBlk</code> にN個の <code class="inline">COpe</code> が積まれるだけなので、N個のカーソル分の編集が自動的に1回のUndoにまとまる。新規のUndo基盤は不要だった。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">この文書の読み方</span>
+        <p>「中核メカニズム」以降はコードを触る際のリファレンス。末尾の「変更履歴」は、なぜ今の形になったかを時系列で追う付録で、各パスで実際に踏んだ設計ミス・ユーザー指摘・検証方法まで含めて記録している。</p>
+      </div>
+    </section>
+
+    <section id="data-model">
+      <h2><span class="num">01</span>データモデル</h2>
+      <p><code class="inline">CEditView::SExtraCursor</code> ひとつが追加カーソル1個分の全状態。プライマリの3つの異なる基準点(実キャレット位置・希望桁・選択アンカー)それぞれから、独立した相対値を持つ。</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>フィールド</th><th>基準点</th><th>更新されるタイミング</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">nRelLine</code> / <code class="inline">nRelColumn</code></td><td>プライマリの実キャレット位置(レイアウト単位)</td><td>作成時に固定。実際の編集・選択再生(<code class="inline">ApplyToAllCursors</code>)が走った回のみ、その結果で更新</td></tr>
+            <tr><td><code class="inline">nDesiredRelColumn</code></td><td>プライマリの希望桁(<code class="inline">GetCaret().m_nCaretPosX_Prev</code>)</td><td>横移動・編集でのみ更新。上下移動でのクランプでは書き換わらない</td></tr>
+            <tr><td><code class="inline">bHasSelection</code></td><td>—</td><td>そのカーソル自身が選択中かどうか</td></tr>
+            <tr><td><code class="inline">nAnchorRelLine</code> / <code class="inline">nAnchorRelColumn</code></td><td>プライマリの選択アンカー(<code class="inline">m_sSelectBgn</code>)</td><td>選択開始時に固定。選択が続く限り、そのカーソル自身のアンカーとして独立に保持</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>この「オフセットは実際の編集・移動が起きた回にしか書き換わらない」という不変条件が、境界(文書先頭・末尾)をまたいでもカーソル同士の順序・間隔が保たれる根拠になっている。ドキュメント範囲外に解決されたカーソルは、その回の再生対象からも描画対象からも単純に除外され(「非アクティブ」)、オフセット自体はまったく触らない。</p>
+    </section>
+
+    <section id="resolve">
+      <h2><span class="num">02</span>位置の解決</h2>
+      <p>4つの関数がすべて同じ「基準点 + オフセット → 行幅でクランプ → 文字境界へスナップ」というパターンを共有する(<code class="inline">CEditView.cpp</code>)。</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>関数</th><th>役割</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">ResolveExtraCursorFromBase</code></td><td>共通ヘルパー。基準点+相対オフセットの実位置を算出し、行幅でクランプ、全角文字の中間に着地しないよう <code class="inline">LineColumnToIndex</code>/<code class="inline">LineIndexToColumn</code> を往復させて境界へスナップする</td></tr>
+            <tr><td><code class="inline">ResolveExtraCursor</code></td><td>上記をプライマリの実キャレット位置基準で呼ぶ。カーソル本体の表示・編集に使う</td></tr>
+            <tr><td><code class="inline">ResolveExtraCursorAnchor</code></td><td>プライマリの選択アンカー基準で呼ぶ。<code class="inline">bHasSelection==false</code>なら無効を返す</td></tr>
+            <tr><td><code class="inline">ResolveExtraCursorSelectAreaLine</code></td><td>アンカー〜現在位置を独立に解決し、プライマリの選択描画と同じ <code class="inline">GetSelectAreaLineFromRange</code> に渡す。行をまたぐ選択・折り返しは、この既存ロジックにそのまま乗るぶん新規コード不要</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="dispatch">
+      <h2><span class="num">03</span>コマンドの分岐</h2>
+      <p><code class="inline">CViewCommander::DispatchMoveMultiCursor(bSelect, fnMoveOnce)</code> が、移動系コマンドを2つの経路に振り分ける。</p>
+
+      <div class="diagram">
+        <div class="stage">
+          <h5>高速パス</h5>
+          <p>選択が一切絡まない移動(素の矢印キー等)。<code class="inline">fnMoveOnce()</code>をプライマリに対して1回呼ぶだけ。追加カーソルは触らず、次に参照される瞬間に自動追従する</p>
+        </div>
+        <div class="stage">
+          <h5>判定</h5>
+          <p><code class="inline">bSelect==true</code>、またはプライマリ・いずれかのextraが現在選択中なら拡張パスへ</p>
+        </div>
+        <div class="stage">
+          <h5>拡張パス</h5>
+          <p><code class="inline">ApplyToAllCursors(fnMoveOnce)</code> を呼び、全カーソルそれぞれの実位置で同じコマンドを独立に再実行する</p>
+        </div>
+      </div>
+
+      <p>「選択が既にある状態でのShiftなし矢印」も拡張パスに含む — 見た目は移動だが実際は <code class="inline">Command_CANCEL_MODE</code>(選択をどちらかの端へ収束させる操作)であり、各カーソル自身の選択状態で再実行しないと、折り返した状態のまま取り残されるカーソルが出る(第十五パスで発見)。</p>
+    </section>
+
+    <section id="apply">
+      <h2><span class="num">04</span>一括再生ループ — <code class="inline">ApplyToAllCursors</code></h2>
+      <p>タイピング・削除・貼り付けは常にこの経路を通る。選択が絡む移動もここに合流する。プライマリ+全extraをドキュメント降順(下から上)で並べ、実カーソルを使い回して1個ずつ「なりすまし」ながら本物の単一カーソルコマンドを実行する。</p>
+
+      <pre><code><span class="cm">// 概念的な流れ(CViewCommander_Edit.cpp)</span>
+vAll = [primary, ...活動中のextra]  <span class="cm">// 各々の現在位置を解決</span>
+sort(vAll, 降順)                    <span class="cm">// 未処理カーソルの位置を編集で狂わせないため</span>
+
+<span class="kw">nPrimaryGoalOrig</span>  = GetCaret().m_nCaretPosX_Prev   <span class="cm">// ループ前に確定</span>
+<span class="kw">sPrimarySelectOrig</span> = GetSelectionInfo().m_sSelect  <span class="cm">// 同上</span>
+vExtraAnchor[], vExtraGoal[] を事前計算               <span class="cm">// 同じ理由</span>
+
+for slot in vAll:
+    実カーソルを slot の位置へ移動
+    slot が primary なら 元の選択/希望桁を明示的に復元   <span class="cm">// ← 次項で詳述</span>
+    そうでなければ そのextra自身のアンカー/希望桁を注入
+    fnEditOnce()  <span class="cm">// 本物の Command_WCHAR / Command_RIGHT 等をそのまま実行</span>
+    結果を(一時的に絶対値のまま)保存
+
+primary を最終位置へ確定
+残りのextraを primary の最終位置基準に相対化
+MergeOverlappingCursorsIfNeeded()
+Redraw()</code></pre>
+
+      <div class="callout">
+        <span class="label">なぜ毎回「復元」が要るのか</span>
+        <p>降順ソートのため、プライマリより下の行にextraが1つでもあれば、そのextraは<em>プライマリより先に</em>処理される。extraの番の処理は共有状態(<code class="inline">m_sSelectBgn</code> / <code class="inline">m_sSelect</code> / <code class="inline">m_nCaretPosX_Prev</code>)をそのextra自身の値で上書きするため、「プライマリの番はそのまま触らなくても正しい」という前提は成立しない。プライマリの番が来るたびに、ループ開始前に確定させておいた本来の値へ明示的に戻す必要がある(第十四パスで実際に踏んだ不具合)。</p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <caption>この経路を通るコマンド</caption>
+          <thead><tr><th>操作</th><th>経由</th></tr></thead>
+          <tbody>
+            <tr><td>タイピング・BackSpace・Delete・貼り付け・IME確定</td><td><span class="pill ok">常時</span></td></tr>
+            <tr><td>Shift+矢印などの選択拡張</td><td><span class="pill ok">常時</span></td></tr>
+            <tr><td>選択がある状態でのShiftなし矢印(収束)</td><td><span class="pill ok">常時</span></td></tr>
+            <tr><td>選択が絡まない素の移動</td><td><span class="pill scope">高速パスのみ、ここは通らない</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="merge">
+      <h2><span class="num">05</span>カーソルの統合</h2>
+      <p><code class="inline">CViewCommander::MergeOverlappingCursorsIfNeeded()</code>(第十六パス)。VS Codeの <code class="inline">CursorCollection.normalize()</code> と同じ考え方で、重なった/接したカーソルを1個にまとめる。<code class="inline">ApplyToAllCursors</code> の末尾、全カーソルの位置が確定した直後にのみ呼ぶ — カーソル同士が実際に独立して動いて衝突しうるのはこの経路だけで、高速パス(プライマリ+全extraの純粋な平行移動)では既存の重なりが増えることは原理的にない。</p>
+      <ul>
+        <li>プライマリ+各extraを「アンカー〜現在位置」の範囲として集め、開始位置順に整列</li>
+        <li>片方が無選択(幅0)なら<strong>接触</strong>しているだけで統合、両方に選択があれば<strong>本当に重なっている</strong>場合のみ統合(VS Codeと同じ厳密さ)</li>
+        <li>方向(アンカー側)は後から追加されたカーソルを優先して引き継ぐ</li>
+        <li>プライマリは実体を消せない singleton のため、統合に関わったら必ずプライマリの識別が生き残る</li>
+      </ul>
+      <p>設定 <code class="inline">bMultiCursorMergeOverlapping</code>(既定オン)でオフにできる。</p>
+    </section>
+
+    <section id="goal">
+      <h2><span class="num">06</span>希望桁の記憶(<code class="inline">nDesiredRelColumn</code>)</h2>
+      <p>第十七パスで追加。プライマリには元々 <code class="inline">CCaret::m_nCaretPosX_Prev</code> という「希望桁」があり、上下移動で短い行を通過して一時的に桁がクランプされても、長い行に戻れば元の桁へ復元できる。追加カーソルにはこの仕組みが無く、クランプされた実桁がそのまま新しい"本来の"オフセットとして上書きされ続けていた — これが「位置がずれて戻らない」というユーザー報告の実体だった。</p>
+      <p>絶対位置方式へ全面的に作り直す必要はなく、<code class="inline">ApplyToAllCursors</code> が実カーソルを使い回して本物の単一カーソルコマンドを再生しているという既存の仕組みをそのまま利用: 各カーソルの番の前後で <code class="inline">GetCaret().m_nCaretPosX_Prev</code> を注入・回収するだけで、桜が元から持っている希望桁ロジック(上下移動でのみ読む、それ以外の操作では即上書き)をそのまま流用できた。「これは上下移動か」を判定する新規コードは一切書いていない。</p>
+    </section>
+
+    <section id="render">
+      <h2><span class="num">07</span>描画とIME</h2>
+      <h4>キャレットの描画</h4>
+      <p>Win32のネイティブキャレットは1ウィンドウにつき1個までのため、プライマリは既存のまま、追加カーソルは <code class="inline">CEditView_Paint.cpp</code> でGDIによる手動描画(<code class="inline">FillRect</code>)。OSのキャレット点滅タイマーと同期させると「消灯フェーズで再描画されそのまま不可視になる」問題が出たため、常時表示に統一。色はドキュメントタイプの設定色(<code class="inline">COLORIDX_CARET</code>/<code class="inline">_IME</code>)をプライマリと同じロジックで再導出している。</p>
+      <h4>選択ハイライト</h4>
+      <p><code class="inline">CColor_Select</code>(<code class="inline">view/colors/CColor_Found.cpp</code>)にextra用のキャッシュ(<code class="inline">m_vExtraSelectCache</code>)を追加し、既存の1行分キャッシュの仕組みをそのまま複数化。既知のコズメティックな差異として、extraの行末選択が画面右端まで伸びず、実際の最終文字位置で止まる(選択されるテキスト自体は正しい)。</p>
+      <h4>IME</h4>
+      <p><code class="inline">WM_IME_NOTIFY</code>受信時にextra分の<code class="inline">Redraw()</code>を追加(色が更新されるよう)。IME再変換(reconversion)はマルチカーソル中は無効化 — 矩形選択時に既にある制約と同じ扱い。文字確定の挿入自体は通常のタイピングと同じ経路で全カーソルへ反映される。</p>
+    </section>
+
+    <section id="undo">
+      <h2><span class="num">08</span>Undo / Redo</h2>
+      <p>新規実装ゼロ。<code class="inline">HandleCommand</code>が1コマンドにつき1個の<code class="inline">COpeBlk</code>を開き、<code class="inline">InsertData_CEditView</code>/<code class="inline">DeleteData_CEditView</code>の呼び出しは開いているブロックに<code class="inline">COpe</code>を積むだけ — N個のカーソル分の編集が自動的に1回のUndoステップにまとまる。<code class="inline">CDocVisitor::SetAllEol</code>(EOL一括変換)が使っているのと同じ既存パターン。</p>
+    </section>
+
+    <section id="commands">
+      <h2><span class="num">09</span>コマンドとキー割り当て</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>F-code</th><th>既定キー</th><th>動作</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">F_ADD_CURSOR_UP</td><td class="mono">Ctrl+Alt+↑</td><td>最上段カーソルの1行上・同じ桁に新規カーソルを追加</td></tr>
+            <tr><td class="mono">F_ADD_CURSOR_DOWN</td><td class="mono">Ctrl+Alt+↓</td><td>最下段カーソルの1行下・同じ桁に新規カーソルを追加</td></tr>
+            <tr><td class="mono">F_MULTICURSOR_UNDO</td><td class="mono">Ctrl+Shift+U</td><td>直近に追加したカーソルを1個だけ取り消す(テキストのUndoとは別系統)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Ctrl+Alt+↑/↓ は元々 <code class="inline">F_UP2_BOX</code>/<code class="inline">F_DOWN2_BOX</code>(矩形選択の2行ジャンプ)の既定キーだったが、独立コマンドとして新規F-codeを割り当てた(既存コマンドに <code class="inline">IsBoxSelecting()</code>で分岐させて二重役割を持たせる案は、キー割り当て設定画面で表示名が実態と食い違う問題があり却下)。矩形選択とマルチカーソルは相互排他 — どちらかの開始が他方を解除する。</p>
+    </section>
+
+    <section id="dismiss">
+      <h2><span class="num">10</span>選択解除の条件</h2>
+      <p>VS Codeの標準的な解除トリガーと突き合わせながら、ユーザーの指示で1つずつ実装した(第九〜十五パス)。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>トリガー</th><th>状態</th><th>実装箇所</th></tr></thead>
+          <tbody>
+            <tr><td>Esc</td><td><span class="pill ok">実装済み</span></td><td class="mono">Command_CANCEL_MODE</td></tr>
+            <tr><td>装飾キーなしの通常クリック</td><td><span class="pill ok">実装済み</span></td><td class="mono">CEditView_Mouse.cpp / OnLBUTTONDOWN</td></tr>
+            <tr><td>検索・置換ダイアログを開く</td><td><span class="pill ok">実装済み</span></td><td class="mono">Command_SEARCH_DIALOG / Command_REPLACE_DIALOG</td></tr>
+            <tr><td>フォーカスロス全般</td><td><span class="pill ok">実装済み</span></td><td class="mono">CEditView::OnKillFocus</td></tr>
+            <tr><td>選択がある状態でのShiftなし矢印</td><td><span class="pill ok">確認済み(無改修)</span></td><td>選択のみ収束、カーソル自体は残る — 単一カーソルの既存ロジックがそのまま正しく動く</td></tr>
+            <tr><td>矩形選択の開始</td><td><span class="pill ok">実装済み</span></td><td class="mono">Command_BEGIN_BOXSELECT ほか</td></tr>
+            <tr><td>保存など特定コマンドの実行</td><td><span class="pill scope">対象外(ユーザー判断)</span></td><td>「何か操作すれば勝手に解除されそう」という理由で見送り。再提案しない</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="settings">
+      <h2><span class="num">11</span>設定項目</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>設定</th><th>既定値</th><th>公開方法</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">NKMM_MULTICURSOR_MAX</td><td class="mono">10000</td><td>コンパイル時定数。VS Codeの<code class="inline">editor.multiCursorLimit</code>既定に合わせた</td></tr>
+            <tr><td class="mono">bMultiCursorMergeOverlapping</td><td class="mono">true</td><td><code class="inline">[Common]</code>セクションのini専用設定。ダイアログ項目なし — <code class="inline">m_bAutoColumnPaste</code>と同じ既存の運用パターンを踏襲</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="limits">
+      <h2><span class="num">12</span>既知の制約・対象外</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>項目</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill warn">残存リスク</span></td><td><code class="inline">nRelLine</code>はプライマリとの行数差を固定オフセットとして持つのみ。マルチカーソルの編集操作を介さず、折り返し行数そのものが変わる要因(ウィンドウ幅変更等)が起きると、その瞬間に意味がズレる可能性がある。桁の希望値問題(第十七パス)とは別の問題クラスで、未対応</td></tr>
+            <tr><td><span class="pill scope">対象外</span></td><td>マウスでのカーソル追加/削除(Ctrl+Alt+クリック等)、「次の一致箇所を選択」(Ctrl+D相当)</td></tr>
+            <tr><td><span class="pill scope">対象外</span></td><td>マルチカーソル中のIME再変換 — 矩形選択と同じ制約を踏襲</td></tr>
+            <tr><td><span class="pill warn">コズメティック</span></td><td>extraの行末選択ハイライトが画面右端まで伸びない(選択テキスト自体は正しい) — レガシーROP2描画パスと行末余白の solid-fill 処理には未対応のため</td></tr>
+            <tr><td><span class="pill warn">精度の妥協</span></td><td>カーソル統合が起きた回、統合に無関係な他カーソルの希望桁も一律リセットされる。安全側(実桁に合わせる)にしか倒れないため実害は小さいと判断し、統合前後の対応関係を個別追跡する精緻な実装は見送った</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">13</span>変更ファイル一覧</h2>
+      <div class="tablewrap filemap">
+        <table>
+          <thead><tr><th>ファイル</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">view/CEditView.h</td><td><code class="inline">SExtraCursor</code>定義、<code class="inline">m_vExtraCursors</code>、Resolve系宣言</td></tr>
+            <tr><td class="mono">view/CEditView.cpp</td><td>Resolve系実装、<code class="inline">OnKillFocus</code>拡張、IME通知拡張</td></tr>
+            <tr><td class="mono">view/CEditView_Mouse.cpp</td><td>素クリックでの解除</td></tr>
+            <tr><td class="mono">view/CEditView_Paint.cpp</td><td>追加カーソルの手動描画</td></tr>
+            <tr><td class="mono">view/CEditView_Ime.cpp</td><td>マルチカーソル中の再変換無効化</td></tr>
+            <tr><td class="mono">view/colors/CColor_Found.cpp</td><td><code class="inline">CColor_Select</code>のextra選択キャッシュ</td></tr>
+            <tr><td class="mono">cmd/CViewCommander.h / .cpp</td><td>F-code分岐、<code class="inline">DispatchMoveMultiCursor</code>宣言・配線</td></tr>
+            <tr><td class="mono">cmd/CViewCommander_Edit.cpp</td><td><code class="inline">ApplyToAllCursors</code>、<code class="inline">MergeOverlappingCursorsIfNeeded</code>、<code class="inline">Command_AddCursorUp/Down</code>、<code class="inline">Command_MULTICURSOR_UNDO</code></td></tr>
+            <tr><td class="mono">cmd/CViewCommander_Search.cpp</td><td>検索・置換ダイアログでの解除</td></tr>
+            <tr><td class="mono">env/CommonSetting.h / CShareData.cpp / CShareData_IO.cpp</td><td><code class="inline">bMultiCursorMergeOverlapping</code>設定の定義・既定値・ini入出力</td></tr>
+            <tr><td class="mono">func/CKeyBind.cpp、Funccode_x.hsrc、Funccode.cpp、sakura_rc.rc、resource/MainMenu.ini</td><td>新規F-codeの4箇所register(キー割り当て・列挙・設定リスト・文字列リソース・メインメニュー)</td></tr>
+            <tr><td class="mono">my_config.h</td><td><code class="inline">NKMM_MULTI_CURSOR</code>フラグ定義</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="history">
+      <h2><span class="num">14</span>変更履歴(全17パス)</h2>
+      <p class="lede">2026-08-30〜08-31の2日間で踏んだ設計・修正の全記録。各パスは前のパスの実装が前提になっている。</p>
+
+      <div class="timeline">
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">01</span><span class="pass-title">初期実装</span></div>
+          <p>Ctrl+Alt+↑/↓でのカーソル追加、Ctrl+Shift+Uでの取り消し、タイピング/BS/Delete/IME確定の一括反映、Esc全解除、矩形選択との排他、GDI手動描画、上限10000。設計段階の懸念だったUndo/Redoは既存<code class="inline">COpeBlk</code>の再利用でゼロ新規実装と判明。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">02</span><span class="pass-title">キー割り当ての設計修正</span></div>
+          <p>既存<code class="inline">F_UP2_BOX</code>/<code class="inline">F_DOWN2_BOX</code>への二重役割案をユーザーが却下(キー割り当て設定画面での表示名不一致)。独立F-codeを新設。新規F-codeが設定画面に表示されるには<code class="inline">Funccode.cpp</code>の分類配列・<code class="inline">sakura_rc.rc</code>の文字列リソース登録も必要と判明(2箇所を最初漏らして修正)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">03</span><span class="pass-title">メインメニューへの4箇所目の登録</span></div>
+          <p>プルダウンメニューは<code class="inline">resource/MainMenu.ini</code>という独自形式の別リソースだと判明、追加登録。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">04</span><span class="pass-title">移動系コマンドの専用フック</span></div>
+          <p>通常の矢印移動で追加カーソルが追従しない不具合。<code class="inline">DispatchMoveMultiCursor</code>を新設し16個の移動コマンドに配線。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">05</span><span class="pass-title">描画の点滅同期を撤回</span></div>
+          <p>OSキャレットの点滅タイマーに同期させると消灯フェーズのまま固まる不具合。常時表示の塗りつぶし矩形に変更。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">06</span><span class="pass-title">境界をまたぐ順序保証の再設計</span></div>
+          <p>可変の「保留デルタ」方式で3カーソルの往復移動をトレースしたところ順序が入れ替わる不具合を発見。「プライマリからの固定オフセット、毎回その場で解決」方式に全面変更 — 以後の設計の土台になる。折り返し行数を考慮しない既知の制約が残る。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">07</span><span class="pass-title">横方向のオフセットに拡張</span></div>
+          <p><code class="inline">nRelColumn</code>を追加、同じ固定オフセット方式を桁にも適用。移動コマンドは「プライマリを動かすだけ」に単純化できた。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">08</span><span class="pass-title">レイアウト単位への移行</span></div>
+          <p>プライマリ自身が短い行でクランプされると、そのクランプ後の桁がextraの基準点として使われてしまう不具合。<code class="inline">m_nCaretPosX_Prev</code>(希望桁)を基準にするよう修正し、あわせてロジック単位からレイアウト単位(折り返し対応)へ全面移行。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">09</span><span class="pass-title">Release専用ビルドバグと文字境界スナップ</span></div>
+          <p><code class="inline">USE_STRICT_INT</code>がDebugのみ有効なため、<code class="inline">.GetValue()</code>がRelease(intの素の型)でコンパイルエラー。<code class="inline">ToInt()</code>ヘルパーへ統一。あわせて全角文字の中間に着地するバグを<code class="inline">LineColumnToIndex</code>/<code class="inline">LineIndexToColumn</code>往復で修正。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">10</span><span class="pass-title">キャレット色をプライマリに追従</span></div>
+          <p>ハードコードされた既定色ではなく、ドキュメントタイプの設定色をプライマリと同じロジックで再導出するよう修正。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">11</span><span class="pass-title">選択のミラーリング</span></div>
+          <p>extraがプライマリの選択形状を平行移動して再現できるよう<code class="inline">CColor_Select</code>を拡張。直後、実際のShift+矢印キーが専用F-code経路(<code class="inline">F_RIGHT_SEL</code>等)を通り<code class="inline">DispatchMoveMultiCursor</code>を経由していなかった不具合を追加修正。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">12</span><span class="pass-title">選択削除が1文字しか消えない不具合</span></div>
+          <p><code class="inline">ApplyToAllCursors</code>が各カーソルの編集前に無条件で選択解除していた名残バグ。プライマリ自身の削除まで巻き添えで壊れていた。ループ前に選択状態を確定→各カーソルへ翻訳して注入、に修正。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">13</span><span class="pass-title">解除条件チェックリスト(Esc以外)</span></div>
+          <p>VS Codeの標準トリガーと突き合わせ、素クリック→検索/置換ダイアログ→フォーカスロス→Shiftなし矢印(無改修で正しいと確認)の順に1つずつ実装。保存等の特定コマンドは対象外と判断。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">14</span><span class="pass-title">選択を「平行移動」から「独立再生」へ全面書き換え</span></div>
+          <p>extraの行がプライマリより短いと選択が次の行へ折り返さない不具合。<code class="inline">ApplyToAllCursors</code>を選択移動にも転用し、各カーソル自身の実位置で本物のコマンドを再実行する方式へ全面書き換え。以後の設計の中心的な仕組みになる。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">15</span><span class="pass-title">降順処理でのプライマリ状態の巻き添え</span></div>
+          <p>前パス直後の回帰: 1回のShift+→でプライマリが過剰選択。降順ループ中、プライマリより下のextraが先に処理され共有状態を書き換えるため。ループ開始前の状態をプライマリの番ごとに明示的に復元するよう修正。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">16</span><span class="pass-title">折り返し選択キャンセルでの取り残し</span></div>
+          <p>前々パス直後の回帰: 折り返した選択を素の←でキャンセルすると、extraが折り返し先の行に取り残される。「選択があるときのShiftなし矢印」も<code class="inline">ApplyToAllCursors</code>経由に含めるよう修正 — これで解除条件チェックリスト完了。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">17</span><span class="pass-title">カーソル統合 + 希望桁の記憶</span></div>
+          <p>VS Codeの<code class="inline">multiCursorMergeOverlapping</code>を調査・移植、設定でオンオフ可能に。続けて「位置がずれて戻らない」報告を調査 — 絶対位置化という当初案をユーザーの指摘で撤回し、プライマリの既存の希望桁機構(<code class="inline">m_nCaretPosX_Prev</code>)をextraにも同じ構造で追加する、より小さな修正に着地。ここまでの全機能に対する回帰確認込みで検証済み。</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>sakura fork — NKMM_MULTI_CURSOR</span>
+      <span>2026-08-31 時点の実装状態</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  try{
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function(a){
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if(el) map[id] = a;
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var a = map[entry.target.id];
+        if(!a) return;
+        if(entry.isIntersecting){
+          links.forEach(function(l){ l.classList.remove('active'); });
+          a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+    Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
