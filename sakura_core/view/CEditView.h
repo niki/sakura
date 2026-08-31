@@ -707,10 +707,17 @@ public:
 	//! 動いた結果を毎回改めて解決するだけになるため)
 	struct SExtraCursor {
 		int			nRelLine;			//!< プライマリからの相対行数(レイアウト単位、作成時に固定)
-		int			nRelColumn;			//!< プライマリからの相対桁数(レイアウト単位、作成時に固定)
+		int			nRelColumn;			//!< プライマリからの相対桁数(レイアウト単位、実際に解決された/クランプされ得る値)
 		bool		bHasSelection = false;		//!< このカーソル自身が選択中か
 		int			nAnchorRelLine = 0;			//!< 選択起点(アンカー)のプライマリのアンカーからの相対行(選択開始時に固定)
 		int			nAnchorRelColumn = 0;		//!< 選択起点(アンカー)のプライマリのアンカーからの相対桁(選択開始時に固定)
+		//! 上下移動用の「希望桁」(CCaret::m_nCaretPosX_Prev相当)。プライマリのGetCaret().
+		//! m_nCaretPosX_Prevからの相対値。nRelColumnと違い、短い行を上下移動で通過するときの
+		//! クランプでは書き換わらない(横移動・編集など実際に桁が変わった操作でのみ更新)。
+		//! これが無いと、短い行のせいで一時的にクランプされた実桁(nRelColumn)がそのまま
+		//! 新しい"本来の"相対値として上書きされてしまい、長い行に戻ってもクランプ前の桁位置に
+		//! 復元できなくなる 20260831
+		int			nDesiredRelColumn = 0;
 	};
 	//! 基準点からnRelLine/nRelColumnだけオフセットした実位置を算出する共通ヘルパー。
 	//! ResolveExtraCursor/ResolveExtraCursorAnchorの両方が使う

@@ -1025,7 +1025,17 @@ void CViewCommander::Command_AddCursorUp( void )
 		return;
 	}
 
-	m_pCommanderView->m_vExtraCursors.push_back( { nNewRel, nTopmostRelColumn } );
+	{
+		CEditView::SExtraCursor ne;
+		ne.nRelLine = nNewRel;
+		ne.nRelColumn = nTopmostRelColumn;
+		// 希望桁(nDesiredRelColumn)は「今の実桁と同じ、プライマリの希望桁からの相対値」として
+		// 初期化する(作成直後は希望と実桁が一致している)。プライマリ自身の実桁と希望桁が
+		// (上下移動の途中で)食い違っているケースにも正しく対応するため、それぞれ別々に基準を取る
+		int nNewAbsColumn = ToInt(GetCaret().GetCaretLayoutPos().GetX2()) + nTopmostRelColumn;
+		ne.nDesiredRelColumn = nNewAbsColumn - ToInt(GetCaret().m_nCaretPosX_Prev);
+		m_pCommanderView->m_vExtraCursors.push_back( ne );
+	}
 	m_pCommanderView->Redraw();
 }
 
@@ -1060,7 +1070,14 @@ void CViewCommander::Command_AddCursorDown( void )
 		return;
 	}
 
-	m_pCommanderView->m_vExtraCursors.push_back( { nNewRel, nBottommostRelColumn } );
+	{
+		CEditView::SExtraCursor ne;
+		ne.nRelLine = nNewRel;
+		ne.nRelColumn = nBottommostRelColumn;
+		int nNewAbsColumn = ToInt(GetCaret().GetCaretLayoutPos().GetX2()) + nBottommostRelColumn;
+		ne.nDesiredRelColumn = nNewAbsColumn - ToInt(GetCaret().m_nCaretPosX_Prev);
+		m_pCommanderView->m_vExtraCursors.push_back( ne );
+	}
 	m_pCommanderView->Redraw();
 }
 
@@ -1116,9 +1133,16 @@ void CViewCommander::ApplyToAllCursors( const std::function<void()>& fnEditOnce 
 	// extraがあると必ずそうなる)。プライマリの番が来るたびに明示的に復元する必要がある 20260902
 	CLayoutRange sPrimarySelectBgnOrig = m_pCommanderView->GetSelectionInfo().m_sSelectBgn;
 	CLayoutRange sPrimarySelectOrig = m_pCommanderView->GetSelectionInfo().m_sSelect;
+	// プライマリの「希望桁」(CCaret::m_nCaretPosX_Prev、上下移動時の着地列を決めるためだけに
+	// 単一カーソル側が既に持っている値)も、選択状態と全く同じ理由でループ開始前に確定させておく。
+	// ApplyToAllCursorsは実カーソルを使い回して各カーソルを順番に"演じる"ため、fnEditOnceの
+	// 中身(Command_UP/DOWN等)は単一カーソル用の実装がそのままGetCaret().m_nCaretPosX_Prevを
+	// 読み書きする。これを各extra自身の「希望桁」の記憶場所としてそのまま流用する 20260831
+	CLayoutInt nPrimaryGoalOrig = GetCaret().m_nCaretPosX_Prev;
 
 	std::vector<CLayoutPoint> vExtraAnchor( vAll.size() );
 	std::vector<bool> vHadSelection( vAll.size(), false );
+	std::vector<CLayoutInt> vExtraGoal( vAll.size() );
 	for( size_t j = 0; j < vAll.size(); ++j ){
 		if( vAll[j].bPrimary ){
 			vHadSelection[j] = m_pCommanderView->GetSelectionInfo().IsTextSelected();
@@ -1128,19 +1152,22 @@ void CViewCommander::ApplyToAllCursors( const std::function<void()>& fnEditOnce 
 		if( extra.bHasSelection && m_pCommanderView->ResolveExtraCursorAnchor( extra, &vExtraAnchor[j] ) ){
 			vHadSelection[j] = true;
 		}
+		vExtraGoal[j] = nPrimaryGoalOrig + CLayoutInt(extra.nDesiredRelColumn);
 	}
 
 	CLayoutPoint ptPrimaryNew;
 	CLayoutRange sPrimarySelectBgnNew, sPrimarySelectNew;
+	CLayoutInt nPrimaryGoalNew = nPrimaryGoalOrig;
 	for( size_t j = 0; j < vAll.size(); ++j ){
 		auto& slot = vAll[j];
 		GetCaret().MoveCursor( slot.ptCaret, false );
 
 		if( slot.bPrimary ){
-			// プライマリの選択状態を、ループ開始前の本来の状態に明示的に復元してから使う
+			// プライマリの選択状態・希望桁を、ループ開始前の本来の状態に明示的に復元してから使う
 			// (単一カーソル時と全く同じ挙動になる)
 			m_pCommanderView->GetSelectionInfo().m_sSelectBgn = sPrimarySelectBgnOrig;
 			m_pCommanderView->GetSelectionInfo().m_sSelect = sPrimarySelectOrig;
+			GetCaret().m_nCaretPosX_Prev = nPrimaryGoalOrig;
 		}
 		else if( vHadSelection[j] ){
 			CLayoutPoint ptFrom = vExtraAnchor[j];
@@ -1148,9 +1175,11 @@ void CViewCommander::ApplyToAllCursors( const std::function<void()>& fnEditOnce 
 			m_pCommanderView->GetSelectionInfo().m_sSelectBgn.Set( ptFrom );
 			if( PointCompare( ptTo, ptFrom ) < 0 ) std::swap( ptFrom, ptTo );
 			m_pCommanderView->GetSelectionInfo().m_sSelect = CLayoutRange( ptFrom, ptTo );
+			GetCaret().m_nCaretPosX_Prev = vExtraGoal[j];
 		}
 		else{
 			m_pCommanderView->GetSelectionInfo().DisableSelectArea( false );
+			GetCaret().m_nCaretPosX_Prev = vExtraGoal[j];
 		}
 
 		fnEditOnce();
@@ -1158,11 +1187,16 @@ void CViewCommander::ApplyToAllCursors( const std::function<void()>& fnEditOnce 
 		CLayoutPoint ptNew = GetCaret().GetCaretLayoutPos();
 		bool bNowSelected = m_pCommanderView->GetSelectionInfo().IsTextSelected();
 		CLayoutPoint ptAnchorNew = m_pCommanderView->GetSelectionInfo().m_sSelectBgn.GetFrom();
+		// fnEditOnceが実際に呼んだ単一カーソル用コマンドが、GetCaret().m_nCaretPosX_Prevを
+		// 適切に更新済み(上下移動なら据え置き、それ以外なら新しい実桁に上書き)なので、
+		// ここでそのまま読み出すだけでよい。判定ロジックをここで作り直す必要はない
+		CLayoutInt nGoalResult = GetCaret().m_nCaretPosX_Prev;
 
 		if( slot.bPrimary ){
 			ptPrimaryNew = ptNew;
 			sPrimarySelectBgnNew = m_pCommanderView->GetSelectionInfo().m_sSelectBgn;
 			sPrimarySelectNew = m_pCommanderView->GetSelectionInfo().m_sSelect;
+			nPrimaryGoalNew = nGoalResult;
 		}else{
 			// 結果を基に、新しいプライマリ位置が確定してから相対値を再計算する必要があるため、
 			// いったん絶対位置のまま覚えておく(下で相対化する)
@@ -1174,14 +1208,16 @@ void CViewCommander::ApplyToAllCursors( const std::function<void()>& fnEditOnce 
 				extra.nAnchorRelLine = ToInt(ptAnchorNew.GetY2());
 				extra.nAnchorRelColumn = ToInt(ptAnchorNew.GetX2());
 			}
+			extra.nDesiredRelColumn = ToInt(nGoalResult);
 		}
 	}
 
 	// 降順ループの都合上、最後に処理したのがプライマリとは限らないため、
-	// プライマリカーソルと選択状態を新しい位置へ明示的に戻し、ビューへ反映する
+	// プライマリカーソル・選択状態・希望桁を新しい位置へ明示的に戻し、ビューへ反映する
 	GetCaret().MoveCursor( ptPrimaryNew, true );
 	m_pCommanderView->GetSelectionInfo().m_sSelectBgn = sPrimarySelectBgnNew;
 	m_pCommanderView->GetSelectionInfo().m_sSelect = sPrimarySelectNew;
+	GetCaret().m_nCaretPosX_Prev = nPrimaryGoalNew;
 
 	// 上のループで一時的に絶対位置を入れていた処理済みextraを、プライマリの確定位置基準の
 	// 相対値に変換し直す(未処理=非アクティブだったextraは元の相対値のままなので触らない)
@@ -1190,6 +1226,7 @@ void CViewCommander::ApplyToAllCursors( const std::function<void()>& fnEditOnce 
 		auto& extra = m_pCommanderView->m_vExtraCursors[slot.nExtraIdx];
 		extra.nRelLine = extra.nRelLine - ToInt(ptPrimaryNew.GetY2());
 		extra.nRelColumn = extra.nRelColumn - ToInt(ptPrimaryNew.GetX2());
+		extra.nDesiredRelColumn = extra.nDesiredRelColumn - ToInt(nPrimaryGoalNew);
 		if( extra.bHasSelection ){
 			extra.nAnchorRelLine = extra.nAnchorRelLine - ToInt(sPrimarySelectBgnNew.GetFrom().GetY2());
 			extra.nAnchorRelColumn = extra.nAnchorRelColumn - ToInt(sPrimarySelectBgnNew.GetFrom().GetX2());
@@ -1332,6 +1369,14 @@ void CViewCommander::MergeOverlappingCursorsIfNeeded( void )
 	}else{
 		m_pCommanderView->GetSelectionInfo().DisableSelectArea( false );
 	}
+	// 統合は「実際に桁が変わり得る」操作なので、希望桁もここで実桁に合わせてリセットする
+	// (横移動・編集と同じ扱い)。統合に一切関わらなかった他のカーソルの希望桁は、下のループで
+	// nRelColumnと同じ値にそろえて作り直される点も含め、この関数が呼ばれた=何かしら統合が
+	// 起きた回であれば全カーソル分リセットする単純な仕様にしている(統合と無関係なカーソルが
+	// たまたま短い行を上下移動で通過中だった場合に希望桁が一足早くリセットされる可能性はあるが、
+	// 極めて稀な複合ケースであり、常に「安全側(クランプされた実桁に合わせる)」に倒れるだけで
+	// 実害はないため許容している) 20260831
+	GetCaret().m_nCaretPosX_Prev = ptPrimaryCaret.GetX2();
 
 	// 生き残ったextra(統合されなかったもの・統合の勝者になったもの)を、新しいプライマリ
 	// 位置基準の相対値として作り直す。統合で消えたextra(敗者)はここで自然に脱落する。
@@ -1350,6 +1395,7 @@ void CViewCommander::MergeOverlappingCursorsIfNeeded( void )
 			ne.nAnchorRelLine = ToInt(ptAnchor.GetY2()) - ToInt(ptPrimaryAnchor.GetY2());
 			ne.nAnchorRelColumn = ToInt(ptAnchor.GetX2()) - ToInt(ptPrimaryAnchor.GetX2());
 		}
+		ne.nDesiredRelColumn = ne.nRelColumn;	// 統合は実桁が変わり得る操作なので希望桁もリセットする
 		vNewExtras.push_back( ne );
 	}
 	m_pCommanderView->m_vExtraCursors = std::move( vNewExtras );
