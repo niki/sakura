@@ -80,15 +80,9 @@ void CViewCommander::Command_SEARCH_BOX( void )
 /* 検索(単語検索ダイアログ) */
 void CViewCommander::Command_SEARCH_DIALOG( void )
 {
-#ifdef NKMM_MULTI_CURSOR
-	// 検索ダイアログを開くとフォーカスがダイアログへ移り、以降のタイプ/移動系操作は
-	// マルチカーソルに関知しないダイアログ側の処理になるため、ここで単一カーソルに戻す
-	// (Esc・通常クリックに続く、標準的なマルチカーソル解除操作の1つ) 20260831
-	if( !m_pCommanderView->m_vExtraCursors.empty() ){
-		m_pCommanderView->m_vExtraCursors.clear();
-		m_pCommanderView->Redraw();
-	}
-#endif // NKMM_
+	// マルチカーソルの解除: ダイアログ作成(CreateDialogParam)のWM_INITDIALOGで
+	// フォーカスがダイアログへ移るため、CEditView::OnKillFocus()側の一括クリアで
+	// 既にカバーされる(旧: ここでも個別にクリアしていたが、二重処理だったため撤去) 20260831
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	CNativeW		cmemCurText;
 #ifdef NKMM_FIX_SEARCH_KEY_REGEXP_AUTO_QUOTE
@@ -682,13 +676,7 @@ void CViewCommander::Command_REPLACE_DIALOG( void )
 {
 	BOOL		bSelected = FALSE;
 
-#ifdef NKMM_MULTI_CURSOR
-	// 検索ダイアログと同じ理由でマルチカーソルを解除する 20260831
-	if( !m_pCommanderView->m_vExtraCursors.empty() ){
-		m_pCommanderView->m_vExtraCursors.clear();
-		m_pCommanderView->Redraw();
-	}
-#endif // NKMM_
+	// マルチカーソルの解除: Command_SEARCH_DIALOGと同じ理由でOnKillFocus()側に任せる 20260831
 
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	CNativeW	cmemCurText;

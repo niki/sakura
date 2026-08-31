@@ -47,10 +47,10 @@ bool CColor_Select::BeginColorEx(const CStringRef& cStr, int nPos, CLayoutInt nL
 			m_nSelectEnd = view.LineColumnToIndex(pcLayout, nSelectTo) + pcLayout->GetLogicOffset();
 		}
 #ifdef NKMM_MULTI_CURSOR
-		// マルチカーソル: 追加カーソルの選択範囲も、行頭で1回だけプライマリと同じ考え方で
-		// 算出してキャッシュする。各extraはプライマリの選択範囲(m_sSelect)をnRelLine/
-		// nRelColumnだけ平行移動しただけなので、キャレット追従(ResolveExtraCursor)と
-		// 同じ理屈でShift+方向キー等のプライマリの選択操作にそのまま追従する 20260831
+		// マルチカーソル: 追加カーソルの選択範囲も、行頭で1回だけ算出してキャッシュする。
+		// ResolveExtraCursorSelectAreaLineが各extra自身のアンカー〜現在位置を独立に解決する
+		// ため、プライマリの選択範囲(m_sSelect)を単純に平行移動したものではない(行の長さが
+		// カーソルごとに違っても正しく折り返す。詳細はResolveExtraCursorSelectAreaLine参照) 20260831
 		m_vExtraSelectCache.clear();
 		m_vExtraSelectCache.reserve(view.m_vExtraCursors.size());
 		for( const auto& extra : view.m_vExtraCursors ){

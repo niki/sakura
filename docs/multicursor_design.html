@@ -405,7 +405,7 @@
       <div class="meta-row">
         <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_MULTI_CURSOR</b></span>
         <span class="chip">実装期間 <b>2026-08-30 〜 08-31</b></span>
-        <span class="chip">設計パス <b>17</b></span>
+        <span class="chip">設計パス <b>20</b></span>
         <span class="chip">カーソル上限 <b class="mono">NKMM_MULTICURSOR_MAX = 10000</b></span>
       </div>
     </header>
@@ -566,7 +566,26 @@ Redraw()</code></pre>
 
     <section id="undo">
       <h2><span class="num">08</span>Undo / Redo</h2>
-      <p>新規実装ゼロ。<code class="inline">HandleCommand</code>が1コマンドにつき1個の<code class="inline">COpeBlk</code>を開き、<code class="inline">InsertData_CEditView</code>/<code class="inline">DeleteData_CEditView</code>の呼び出しは開いているブロックに<code class="inline">COpe</code>を積むだけ — N個のカーソル分の編集が自動的に1回のUndoステップにまとまる。<code class="inline">CDocVisitor::SetAllEol</code>(EOL一括変換)が使っているのと同じ既存パターン。</p>
+      <p><strong>編集の記録自体は新規実装ゼロ。</strong><code class="inline">HandleCommand</code>が1コマンドにつき1個の<code class="inline">COpeBlk</code>を開き、<code class="inline">InsertData_CEditView</code>/<code class="inline">DeleteData_CEditView</code>の呼び出しは開いているブロックに<code class="inline">COpe</code>を積むだけ — N個のカーソル分の編集が自動的に1回のUndoステップにまとまる。<code class="inline">CDocVisitor::SetAllEol</code>(EOL一括変換)が使っているのと同じ既存パターン。</p>
+
+      <p><strong>ただし「戻した後の状態」の復元には専用機構が必要だった</strong>(第十八パス)。単一カーソル時代の<code class="inline">Command_UNDO</code>/<code class="inline">Command_REDO</code>は「ブロック内で最後に処理したOpe」の位置を最終的なキャレット位置として無条件に信頼する実装だった — 単一カーソルなら常にそれで正しいが、<code class="inline">ApplyToAllCursors</code>が1ブロックにN個のカーソル分のOpeを積むと、「最後に処理したOpe」は必ずしもプライマリのものではなくなる(ドキュメント降順で処理するため、画面上どのカーソルが最後に積まれるかはカーソルの配置次第)。</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>要素</th><th>役割</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">COpe::nCursorSlot</code></td><td><code class="inline">ApplyToAllCursors</code>が編集直後に付与する識別子。<code class="inline">-1</code>=単一カーソル(マルチカーソル無関係)、<code class="inline">0</code>=プライマリ、<code class="inline">1</code>以上=そのextraの編集時点での<code class="inline">m_vExtraCursors</code>内index+1</td></tr>
+            <tr><td><code class="inline">CViewCommander::RestoreMultiCursorAfterUndoRedo(pcOpeBlk, nOpeBlkNum, bIsUndo)</code></td><td><code class="inline">Command_UNDO</code>/<code class="inline">Command_REDO</code>共通の復元処理。<code class="inline">nCursorSlot</code>でOpeをスロットごとに束ね、プライマリ・各extraそれぞれ自身の状態(Undo: <code class="inline">_Before</code>、Redo: <code class="inline">_After</code>)へ明示的に戻し、<code class="inline">m_vExtraCursors</code>を丸ごと再構築する</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>選択の復元は別の機能フラグ<code class="inline">NKMM_UNDO_RESTORE_SELECTION</code>が担う</strong>(VS Code同様、「選択→削除」のUndoで削除前の選択状態も復元する)。単一カーソル向けに独立して実装した機能だが、マルチカーソルでは<code class="inline">RestoreMultiCursorAfterUndoRedo</code>が各スロットの<code class="inline">CReplaceOpe::bHadSelection</code>を読み取り、プライマリ・extraそれぞれの選択を独立に復元する形で合流している。Redoでは選択を復元しない(削除後に選択すべき対象が残らないため、単一カーソル時のRedoも一貫して選択を出さない仕様)。設定<code class="inline">bUndoRestoreSelection</code>(既定true)でオフにできる。</p>
+
+      <div class="callout">
+        <span class="label">見つかった不具合の系譜</span>
+        <p>①プライマリが復元後に別カーソルの位置に来てしまう(<code class="inline">nCursorSlot</code>導入前) → ②プライマリは直るがextraが復元されず一律クリアされる(暫定対応) → ③ユーザーの「設計修正の許可」を受けextra側も同じ機構で正式に復元する形へ書き直し → ④カーソル統合(<code class="inline">MergeOverlappingCursorsIfNeeded</code>)を経た選択のUndo復元を個別検証、既存の単一カーソル経路がそのまま正しく処理することを確認。詳細はメモリファイル<code class="inline">project_undo_restore_selection_feature.md</code>を参照。</p>
+      </div>
     </section>
 
     <section id="commands">
@@ -593,7 +612,7 @@ Redraw()</code></pre>
           <tbody>
             <tr><td>Esc</td><td><span class="pill ok">実装済み</span></td><td class="mono">Command_CANCEL_MODE</td></tr>
             <tr><td>装飾キーなしの通常クリック</td><td><span class="pill ok">実装済み</span></td><td class="mono">CEditView_Mouse.cpp / OnLBUTTONDOWN</td></tr>
-            <tr><td>検索・置換ダイアログを開く</td><td><span class="pill ok">実装済み</span></td><td class="mono">Command_SEARCH_DIALOG / Command_REPLACE_DIALOG</td></tr>
+            <tr><td>検索・置換ダイアログを開く</td><td><span class="pill ok">実装済み</span></td><td class="mono">CEditView::OnKillFocus(下記参照)</td></tr>
             <tr><td>フォーカスロス全般</td><td><span class="pill ok">実装済み</span></td><td class="mono">CEditView::OnKillFocus</td></tr>
             <tr><td>選択がある状態でのShiftなし矢印</td><td><span class="pill ok">確認済み(無改修)</span></td><td>選択のみ収束、カーソル自体は残る — 単一カーソルの既存ロジックがそのまま正しく動く</td></tr>
             <tr><td>矩形選択の開始</td><td><span class="pill ok">実装済み</span></td><td class="mono">Command_BEGIN_BOXSELECT ほか</td></tr>
@@ -601,6 +620,7 @@ Redraw()</code></pre>
           </tbody>
         </table>
       </div>
+      <p>検索・置換ダイアログの解除は、当初<code class="inline">Command_SEARCH_DIALOG</code>/<code class="inline">Command_REPLACE_DIALOG</code>側で個別に明示クリアしていたが、ダイアログ作成(<code class="inline">CreateDialogParam</code>)の<code class="inline">WM_INITDIALOG</code>で編集ビューが必ず<code class="inline">WM_KILLFOCUS</code>を受け取ることを確認し、<code class="inline">OnKillFocus</code>側の一括クリアと二重処理になっていたため個別クリアは撤去した(第二十パス、重複整理)。</p>
     </section>
 
     <section id="settings">
@@ -611,6 +631,7 @@ Redraw()</code></pre>
           <tbody>
             <tr><td class="mono">NKMM_MULTICURSOR_MAX</td><td class="mono">10000</td><td>コンパイル時定数。VS Codeの<code class="inline">editor.multiCursorLimit</code>既定に合わせた</td></tr>
             <tr><td class="mono">bMultiCursorMergeOverlapping</td><td class="mono">true</td><td><code class="inline">[Common]</code>セクションのini専用設定。ダイアログ項目なし — <code class="inline">m_bAutoColumnPaste</code>と同じ既存の運用パターンを踏襲</td></tr>
+            <tr><td class="mono">bUndoRestoreSelection</td><td class="mono">true</td><td><code class="inline">[Common]</code>セクションのini専用設定(<code class="inline">NKMM_UNDO_RESTORE_SELECTION</code>フラグ、機能的には単一カーソルにも効くが<a href="#undo">08節</a>のマルチカーソルUndo/Redo復元と密接に関わる)。ダイアログ項目なし、同じ運用パターン</td></tr>
           </tbody>
         </table>
       </div>
@@ -627,6 +648,7 @@ Redraw()</code></pre>
             <tr><td><span class="pill scope">対象外</span></td><td>マルチカーソル中のIME再変換 — 矩形選択と同じ制約を踏襲</td></tr>
             <tr><td><span class="pill warn">コズメティック</span></td><td>extraの行末選択ハイライトが画面右端まで伸びない(選択テキスト自体は正しい) — レガシーROP2描画パスと行末余白の solid-fill 処理には未対応のため</td></tr>
             <tr><td><span class="pill warn">精度の妥協</span></td><td>カーソル統合が起きた回、統合に無関係な他カーソルの希望桁も一律リセットされる。安全側(実桁に合わせる)にしか倒れないため実害は小さいと判断し、統合前後の対応関係を個別追跡する精緻な実装は見送った</td></tr>
+            <tr><td><span class="pill warn">コズメティック</span></td><td>マルチカーソルのUndo復元直後、ステータスバーの選択文字数表示(「N字(M行)選択」)が一瞬古いまま残ることがある。選択データ自体・描画・以後の操作はすべて正しい。原因を一部特定した(<code class="inline">CCaret::MoveCursor</code>内部の<code class="inline">ShowCaretPosInfo</code>呼び出し順)が完全解消には至らず、実害が軽微なため追加調査は見送った(第十九パス)</td></tr>
           </tbody>
         </table>
       </div>
@@ -645,19 +667,21 @@ Redraw()</code></pre>
             <tr><td class="mono">view/CEditView_Ime.cpp</td><td>マルチカーソル中の再変換無効化</td></tr>
             <tr><td class="mono">view/colors/CColor_Found.cpp</td><td><code class="inline">CColor_Select</code>のextra選択キャッシュ</td></tr>
             <tr><td class="mono">cmd/CViewCommander.h / .cpp</td><td>F-code分岐、<code class="inline">DispatchMoveMultiCursor</code>宣言・配線</td></tr>
-            <tr><td class="mono">cmd/CViewCommander_Edit.cpp</td><td><code class="inline">ApplyToAllCursors</code>、<code class="inline">MergeOverlappingCursorsIfNeeded</code>、<code class="inline">Command_AddCursorUp/Down</code>、<code class="inline">Command_MULTICURSOR_UNDO</code></td></tr>
-            <tr><td class="mono">cmd/CViewCommander_Search.cpp</td><td>検索・置換ダイアログでの解除</td></tr>
-            <tr><td class="mono">env/CommonSetting.h / CShareData.cpp / CShareData_IO.cpp</td><td><code class="inline">bMultiCursorMergeOverlapping</code>設定の定義・既定値・ini入出力</td></tr>
+            <tr><td class="mono">cmd/CViewCommander_Edit.cpp</td><td><code class="inline">ApplyToAllCursors</code>、<code class="inline">MergeOverlappingCursorsIfNeeded</code>、<code class="inline">AddCursorInDirection</code>(<code class="inline">Command_AddCursorUp/Down</code>の共通実装)、<code class="inline">Command_MULTICURSOR_UNDO</code>、<code class="inline">RestoreMultiCursorAfterUndoRedo</code></td></tr>
+            <tr><td class="mono">cmd/CViewCommander_Search.cpp</td><td>(第二十パスで個別クリアは撤去。<code class="inline">OnKillFocus</code>に一本化)</td></tr>
+            <tr><td class="mono">COpe.h</td><td><code class="inline">COpe::nCursorSlot</code>(マルチカーソルのUndo/Redo識別子)、<code class="inline">CReplaceOpe::bHadSelection</code>(<code class="inline">NKMM_UNDO_RESTORE_SELECTION</code>)</td></tr>
+            <tr><td class="mono">view/CEditView_Command_New.cpp</td><td><code class="inline">ReplaceData_CEditView</code>系への<code class="inline">bHadSelection</code>引数追加</td></tr>
+            <tr><td class="mono">env/CommonSetting.h / CShareData.cpp / CShareData_IO.cpp</td><td><code class="inline">bMultiCursorMergeOverlapping</code>・<code class="inline">bUndoRestoreSelection</code>設定の定義・既定値・ini入出力</td></tr>
             <tr><td class="mono">func/CKeyBind.cpp、Funccode_x.hsrc、Funccode.cpp、sakura_rc.rc、resource/MainMenu.ini</td><td>新規F-codeの4箇所register(キー割り当て・列挙・設定リスト・文字列リソース・メインメニュー)</td></tr>
-            <tr><td class="mono">my_config.h</td><td><code class="inline">NKMM_MULTI_CURSOR</code>フラグ定義</td></tr>
+            <tr><td class="mono">my_config.h</td><td><code class="inline">NKMM_MULTI_CURSOR</code>・<code class="inline">NKMM_UNDO_RESTORE_SELECTION</code>フラグ定義</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
     <section id="history">
-      <h2><span class="num">14</span>変更履歴(全17パス)</h2>
-      <p class="lede">2026-08-30〜08-31の2日間で踏んだ設計・修正の全記録。各パスは前のパスの実装が前提になっている。</p>
+      <h2><span class="num">14</span>変更履歴(全20パス)</h2>
+      <p class="lede">2026-08-30〜08-31の2日間で踏んだ設計・修正の全記録。各パスは前のパスの実装が前提になっている。第18〜19パスは機能的にはUndo/Redo(<code class="inline">NKMM_UNDO_RESTORE_SELECTION</code>)寄りだが、マルチカーソルのUndo/Redo復元機構(<code class="inline">nCursorSlot</code>)そのものを作った回でもあるためここに含める。</p>
 
       <div class="timeline">
         <div class="pass">
@@ -727,6 +751,18 @@ Redraw()</code></pre>
         <div class="pass">
           <div class="pass-head"><span class="pass-num">17</span><span class="pass-title">カーソル統合 + 希望桁の記憶</span></div>
           <p>VS Codeの<code class="inline">multiCursorMergeOverlapping</code>を調査・移植、設定でオンオフ可能に。続けて「位置がずれて戻らない」報告を調査 — 絶対位置化という当初案をユーザーの指摘で撤回し、プライマリの既存の希望桁機構(<code class="inline">m_nCaretPosX_Prev</code>)をextraにも同じ構造で追加する、より小さな修正に着地。ここまでの全機能に対する回帰確認込みで検証済み。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">18</span><span class="pass-title">マルチカーソルUndo/Redoで復元先がプライマリでない不具合</span></div>
+          <p>単一カーソル時代の<code class="inline">Command_UNDO</code>/<code class="inline">Command_REDO</code>は「ブロック内で最後に処理したOpe」の位置を無条件に信頼する実装だったため、マルチカーソルの一括編集後にUndoすると、プライマリではなくどこかのextraの位置にキャレットが復元される不具合をユーザーが画面写真付きで報告(折り返した3行構成での再現)。当初は<code class="inline">COpe::bIsPrimaryCursorOpe</code>(bool)でプライマリの位置だけを個別復元し、extraは一律クリアする暫定対応にしたが、ユーザーから「設計に修正が必要なら修正してよい」と許可を受け、<code class="inline">nCursorSlot</code>(int、プライマリ/どのextraかを識別)へ設計変更し、<code class="inline">RestoreMultiCursorAfterUndoRedo</code>で全カーソルを正式に復元する形に作り直した。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">19</span><span class="pass-title">選択削除のUndoで選択状態も復元(NKMM_UNDO_RESTORE_SELECTION)</span></div>
+          <p>VS Code同様、「範囲選択→削除」をUndoすると単にテキストが戻るだけでなく選択状態も復元される挙動を、別の機能フラグとして追加。単一カーソル向けの基礎実装(<code class="inline">CReplaceOpe::bHadSelection</code>、設定<code class="inline">bUndoRestoreSelection</code>)の後、前パスで作った<code class="inline">nCursorSlot</code>機構に選択復元ロジックを合流させ、マルチカーソルでもプライマリ・extra双方の選択が正しく復元されることを確認(統合されたカーソルのUndoも含む)。副次的に、マルチカーソルのUndo/Redoが遠い行の見た目を変えうるのに単一カーソル時代の再描画省略最適化(<code class="inline">NKMM_FIX_UNDOREDO</code>)がそれを考慮していない不具合も発見・修正。ステータスバーの選択文字数表示が一瞬古いまま残るコズメティックな副作用は原因を一部特定したのみで残存。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">20</span><span class="pass-title">重複コードの整理</span></div>
+          <p>実装が一巡した後、ユーザーの依頼で重複処理の洗い出しを実施。<code class="inline">Command_AddCursorUp</code>/<code class="inline">Command_AddCursorDown</code>(上下対称なだけの同一ロジック)を<code class="inline">AddCursorInDirection(int nDir)</code>に統合。検索/置換ダイアログの明示的なカーソル解除クリアが、ダイアログ作成時に必ず発火する<code class="inline">OnKillFocus</code>の一括クリアと二重処理になっていたため撤去。<code class="inline">Command_UNDO</code>/<code class="inline">Command_REDO</code>にそれぞれ個別に書かれていた復元処理(前パスまでの<code class="inline">nCursorSlot</code>ベースの約150行、ほぼ同一ロジック)を<code class="inline">RestoreMultiCursorAfterUndoRedo</code>1関数に統合 — Undo/Redoの非対称な挙動(<code class="inline">m_sSelectBgn</code>を常にSetするかどうか等)を1つも変えないよう慎重に設計し、既存の全回帰テスト(clipboard読み取りによる機能検証)で統合前と完全一致することを確認済み。</p>
         </div>
       </div>
     </section>

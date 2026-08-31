@@ -284,6 +284,135 @@ void CViewCommander::Command_IME_CHAR( WORD wChar )
 
 
 
+#ifdef NKMM_MULTI_CURSOR
+//! Command_UNDO/Command_REDO共通: マルチカーソルの一括編集(ApplyToAllCursors)がpcOpeBlkに
+//! 複数カーソル分のOpeを積んでいた場合、単純に「ブロック内の最後に処理したOpe」を最終状態と
+//! するロジックは必ずしもプライマリのOpeとは限らない結果になる。ApplyToAllCursors側でOpeごとに
+//! 記録したnCursorSlot(0=プライマリ、1以上=extra)を手がかりに、プライマリ・各extraそれぞれ
+//! 自身の状態へ明示的に戻す。Undo/Redoでほぼ同一だった処理(SSlotRestore収集→プライマリ復元→
+//! extra再構築→Redraw)を1関数へ統合したもの。bIsUndoで変わる点は3つだけ:
+//!  - 復元元: Undoは各スロットで最初に見つかったOpeの_Before、Redoは最後に見つかったOpeの_After
+//!  - 選択復元: UndoのみNKMM_UNDO_RESTORE_SELECTION+bHadSelectionのOPE_REPLACEから復元する
+//!    (Redoは削除後に選択すべき対象が残らないため、単一カーソル時も一貫して選択を出さない仕様)
+//!  - m_sSelectBgn: Undoは選択の有無に関わらず常にSet()する(元の単一カーソル版Undoの挙動を
+//!    踏襲)。Redoは元々Set()を一切呼んでいなかった(DisableSelectAreaはm_sSelectBgnを触らない
+//!    ため、次に実際の選択操作が始まるまで古い値が残るだけで実害はないが、統合にあたり挙動を
+//!    変えないためそのまま踏襲する)
+//! bFastMode(大量Opeの一括Undo/Redo)ではptCaretPos_Before等がループ内で計算されない分岐のため
+//! 呼び出し側で除外し、pcOpeBlk!=NULLも呼び出し側で確認してから呼ぶこと 20260831
+void CViewCommander::RestoreMultiCursorAfterUndoRedo( COpeBlk* pcOpeBlk, int nOpeBlkNum, bool bIsUndo )
+{
+	struct SSlotRestore{
+		int nSlot;
+		int nPosOpeIdx = -1;			//!< 位置(Undo:_Before/Redo:_After)の復元に使うOpe
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+		CReplaceOpe* pcSelOpe = NULL;	//!< 選択があった場合のOPE_REPLACE(Undoのみ使用)
+#endif // NKMM_
+	};
+	std::vector<SSlotRestore> vSlots;
+	for( int k = 0; k < nOpeBlkNum; ++k ){
+		COpe* pcCandidate = pcOpeBlk->GetOpe(k);
+		if( pcCandidate->nCursorSlot < 0 ) continue;
+		SSlotRestore* pSlot = NULL;
+		for( auto& s : vSlots ){ if( s.nSlot == pcCandidate->nCursorSlot ){ pSlot = &s; break; } }
+		if( !pSlot ){ vSlots.push_back( SSlotRestore{ pcCandidate->nCursorSlot } ); pSlot = &vSlots.back(); }
+		if( bIsUndo ){
+			if( pSlot->nPosOpeIdx < 0 ) pSlot->nPosOpeIdx = k;	// 降順走査、最初(最小index)を残す
+		}else{
+			pSlot->nPosOpeIdx = k;	// 昇順走査、最後(最大index)を残す
+		}
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+		if( bIsUndo && pcCandidate->GetCode() == OPE_REPLACE ){
+			CReplaceOpe* pcCandidateReplace = static_cast<CReplaceOpe*>(pcCandidate);
+			if( pcCandidateReplace->bHadSelection ) pSlot->pcSelOpe = pcCandidateReplace;
+		}
+#endif // NKMM_
+	}
+
+	SSlotRestore* pPrimarySlot = NULL;
+	for( auto& s : vSlots ){ if( s.nSlot == 0 ){ pPrimarySlot = &s; break; } }
+
+	// プライマリ自身の分がこの一括編集に含まれていなければ(通常起こらないが、プライマリの
+	// 選択範囲が空でIsEmptyArea等により編集自体が無かった場合等)、他のextra分だけ復元しても
+	// 相対化の基準点が無いため何もしない
+	if( !pPrimarySlot ) return;
+
+	COpe* pcPrimaryPosOpe = pcOpeBlk->GetOpe( pPrimarySlot->nPosOpeIdx );
+	CLayoutPoint ptPrimaryPos;
+	GetDocument()->m_cLayoutMgr.LogicToLayout(
+		bIsUndo ? pcPrimaryPosOpe->m_ptCaretPos_PHY_Before : pcPrimaryPosOpe->m_ptCaretPos_PHY_After,
+		&ptPrimaryPos );
+
+	CLayoutPoint ptPrimaryAnchor = ptPrimaryPos;	// 選択が無ければアンカー=キャレット位置とみなす(extraの相対化の基準用)
+	bool bPrimaryHasSelection = false;
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+	CLayoutPoint ptPrimarySelTo;
+	if( bIsUndo && pPrimarySlot->pcSelOpe && GetDllShareData().m_Common.m_sEdit.m_bUndoRestoreSelection ){
+		GetDocument()->m_cLayoutMgr.LogicToLayout( pPrimarySlot->pcSelOpe->m_ptCaretPos_PHY_Before, &ptPrimaryAnchor );
+		GetDocument()->m_cLayoutMgr.LogicToLayout( pPrimarySlot->pcSelOpe->m_ptCaretPos_PHY_To, &ptPrimarySelTo );
+		bPrimaryHasSelection = true;
+	}
+#endif // NKMM_
+	if( bIsUndo ){
+		m_pCommanderView->GetSelectionInfo().m_sSelectBgn.Set( ptPrimaryAnchor );
+	}
+	if( bPrimaryHasSelection ){
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+		m_pCommanderView->GetSelectionInfo().m_sSelect = CLayoutRange( ptPrimaryAnchor, ptPrimarySelTo );
+#endif // NKMM_
+	}else{
+		m_pCommanderView->GetSelectionInfo().DisableSelectArea( false );
+	}
+	// 選択状態を確定させてからMoveCursorを呼ぶ(MoveCursor内部でShowCaretPosInfo()を呼び
+	// ステータスバーの選択文字数表示を更新するため、選択確定より先に呼ぶと古い選択状態のまま
+	// 表示してしまう)
+	GetCaret().MoveCursor( ptPrimaryPos, true );
+	GetCaret().m_nCaretPosX_Prev = ptPrimaryPos.GetX2();
+
+	// 残りのextra分を、プライマリの新しい位置・選択アンカー基準の相対値として作り直す。既存の
+	// m_vExtraCursorsは編集直後(=Undo/Redo対象の古い状態)の値しか持っていないため丸ごと置き換える。
+	// このブロックに現れなかった(非アクティブだった、または元々存在しなかった)extraは
+	// 復元しようがなく消える
+	std::vector<CEditView::SExtraCursor> vNewExtras;
+	for( auto& s : vSlots ){
+		if( s.nSlot == 0 ) continue;
+		COpe* pcPosOpe = pcOpeBlk->GetOpe( s.nPosOpeIdx );
+		CLayoutPoint ptExtraPos;
+		GetDocument()->m_cLayoutMgr.LogicToLayout(
+			bIsUndo ? pcPosOpe->m_ptCaretPos_PHY_Before : pcPosOpe->m_ptCaretPos_PHY_After,
+			&ptExtraPos );
+		CLayoutPoint ptExtraCaret = ptExtraPos;
+
+		CEditView::SExtraCursor ne;
+		ne.bHasSelection = false;
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+		if( bIsUndo && s.pcSelOpe && GetDllShareData().m_Common.m_sEdit.m_bUndoRestoreSelection ){
+			CLayoutPoint ptExtraAnchor, ptExtraSelTo;
+			GetDocument()->m_cLayoutMgr.LogicToLayout( s.pcSelOpe->m_ptCaretPos_PHY_Before, &ptExtraAnchor );
+			GetDocument()->m_cLayoutMgr.LogicToLayout( s.pcSelOpe->m_ptCaretPos_PHY_To, &ptExtraSelTo );
+			ne.bHasSelection = true;
+			ne.nAnchorRelLine = ToInt(ptExtraAnchor.GetY2()) - ToInt(ptPrimaryAnchor.GetY2());
+			ne.nAnchorRelColumn = ToInt(ptExtraAnchor.GetX2()) - ToInt(ptPrimaryAnchor.GetX2());
+			ptExtraCaret = ptExtraSelTo;
+		}
+#endif // NKMM_
+		ne.nRelLine = ToInt(ptExtraCaret.GetY2()) - ToInt(ptPrimaryPos.GetY2());
+		ne.nRelColumn = ToInt(ptExtraCaret.GetX2()) - ToInt(ptPrimaryPos.GetX2());
+		ne.nDesiredRelColumn = ne.nRelColumn;
+		vNewExtras.push_back( ne );
+	}
+	m_pCommanderView->m_vExtraCursors = std::move( vNewExtras );
+
+	// 呼び出し元にあるNKMM_FIX_UNDOREDOの「プライマリの行が変わらなければ全画面再描画を
+	// 省略する」最適化は、単一カーソル時代の前提(影響範囲は常にキャレット行の近辺)が
+	// マルチカーソルでは崩れる — ここで復元したプライマリ・各extraの選択は、プライマリの
+	// 行と無関係な遠い行の見た目にも影響するため、その最適化に関係なくここで確実に再描画する
+	m_pCommanderView->Redraw();
+}
+#endif // NKMM_
+
+
+
 //	from CViewCommander_New.cpp
 /* Undo 元に戻す */
 void CViewCommander::Command_UNDO( void )
@@ -552,111 +681,12 @@ void CViewCommander::Command_UNDO( void )
 		// 積んでいた場合、上のループは最後に処理したOpe(降順でi==0、ドキュメント最下段の
 		// カーソルのOpeであり、プライマリが一番上にあるほど後から処理され高いindexに積まれる
 		// ため、必ずしもプライマリのOpeではない)の結果をそのまま最終状態として残してしまう。
-		// ApplyToAllCursors側でOpeごとに記録したnCursorSlot(0=プライマリ、1以上=extra)を
-		// 手がかりに、プライマリ・各extraそれぞれ自身の直前の状態(位置・選択)へ明示的に
-		// 戻す(ApplyToAllCursors自身が「降順処理でも最後にプライマリを明示的に確定させる」
-		// のと全く同じ考え方を、Undo側にも、かつextra全員に対して適用する)。bFastMode
-		// (大量Opeの一括Undo)ではptCaretPos_Before等がループ内で計算されない分岐のため対象外
-		// (元々ここまで大量のOpeが1コマンドに積まれるのは通常のマルチカーソル編集では
-		// 起こらない規模) 20260831
+		// RestoreMultiCursorAfterUndoRedo()がnCursorSlotを手がかりに、プライマリ・各extra
+		// それぞれ自身の直前の状態(位置・選択)へ明示的に戻す。bFastMode(大量Opeの一括Undo)
+		// ではptCaretPos_Before等がループ内で計算されない分岐のため対象外(元々ここまで大量の
+		// Opeが1コマンドに積まれるのは通常のマルチカーソル編集では起こらない規模) 20260831
 		if( !bFastMode && pcOpeBlk ){
-			struct SSlotRestore{
-				int nSlot;
-				int nPosOpeIdx = -1;			//!< 最初(最小index)に見つかったOpe。位置(_Before)の復元に使う
-#ifdef NKMM_UNDO_RESTORE_SELECTION
-				CReplaceOpe* pcSelOpe = NULL;	//!< 選択があった場合のOPE_REPLACE(このスロットの中で見つかった最後のもの)
-#endif // NKMM_
-			};
-			std::vector<SSlotRestore> vSlots;
-			for( int k = 0; k < nOpeBlkNum; ++k ){
-				COpe* pcCandidate = pcOpeBlk->GetOpe(k);
-				if( pcCandidate->nCursorSlot < 0 ) continue;
-				SSlotRestore* pSlot = NULL;
-				for( auto& s : vSlots ){ if( s.nSlot == pcCandidate->nCursorSlot ){ pSlot = &s; break; } }
-				if( !pSlot ){ vSlots.push_back( SSlotRestore{ pcCandidate->nCursorSlot } ); pSlot = &vSlots.back(); }
-				if( pSlot->nPosOpeIdx < 0 ) pSlot->nPosOpeIdx = k;
-#ifdef NKMM_UNDO_RESTORE_SELECTION
-				if( pcCandidate->GetCode() == OPE_REPLACE ){
-					CReplaceOpe* pcCandidateReplace = static_cast<CReplaceOpe*>(pcCandidate);
-					if( pcCandidateReplace->bHadSelection ) pSlot->pcSelOpe = pcCandidateReplace;
-				}
-#endif // NKMM_
-			}
-
-			SSlotRestore* pPrimarySlot = NULL;
-			for( auto& s : vSlots ){ if( s.nSlot == 0 ){ pPrimarySlot = &s; break; } }
-
-			// プライマリ自身の分がこの一括編集に含まれていなければ(通常起こらないが、
-			// プライマリの選択範囲が空でIsEmptyArea等により編集自体が無かった場合等)、
-			// 他のextra分だけ復元しても相対化の基準点が無いため何もしない
-			if( pPrimarySlot ){
-				COpe* pcPrimaryPosOpe = pcOpeBlk->GetOpe( pPrimarySlot->nPosOpeIdx );
-				CLayoutPoint ptPrimaryBefore;
-				GetDocument()->m_cLayoutMgr.LogicToLayout( pcPrimaryPosOpe->m_ptCaretPos_PHY_Before, &ptPrimaryBefore );
-
-				CLayoutPoint ptPrimaryAnchor = ptPrimaryBefore;	// 選択が無ければアンカー=キャレット位置とみなす(extraの相対化の基準用)
-				bool bPrimaryHasSelection = false;
-#ifdef NKMM_UNDO_RESTORE_SELECTION
-				CLayoutPoint ptPrimarySelTo;
-				if( pPrimarySlot->pcSelOpe && GetDllShareData().m_Common.m_sEdit.m_bUndoRestoreSelection ){
-					GetDocument()->m_cLayoutMgr.LogicToLayout( pPrimarySlot->pcSelOpe->m_ptCaretPos_PHY_Before, &ptPrimaryAnchor );
-					GetDocument()->m_cLayoutMgr.LogicToLayout( pPrimarySlot->pcSelOpe->m_ptCaretPos_PHY_To, &ptPrimarySelTo );
-					bPrimaryHasSelection = true;
-				}
-#endif // NKMM_
-				m_pCommanderView->GetSelectionInfo().m_sSelectBgn.Set( ptPrimaryAnchor );
-				if( bPrimaryHasSelection ){
-#ifdef NKMM_UNDO_RESTORE_SELECTION
-					m_pCommanderView->GetSelectionInfo().m_sSelect = CLayoutRange( ptPrimaryAnchor, ptPrimarySelTo );
-#endif // NKMM_
-				}else{
-					m_pCommanderView->GetSelectionInfo().DisableSelectArea( false );
-				}
-				// 選択状態を確定させてからMoveCursorを呼ぶ(MoveCursor内部でShowCaretPosInfo()
-				// を呼びステータスバーの選択文字数表示を更新するため、選択確定より先に呼ぶと
-				// 古い選択状態のまま表示してしまう) 20260831
-				GetCaret().MoveCursor( ptPrimaryBefore, true );
-				GetCaret().m_nCaretPosX_Prev = ptPrimaryBefore.GetX2();
-
-				// 残りのextra分を、プライマリの新しい位置・選択アンカー基準の相対値として
-				// 作り直す。既存のm_vExtraCursorsは編集直後(=Undo対象の古い状態)の値しか
-				// 持っていないため丸ごと置き換える。このブロックに現れなかった(非アクティブ
-				// だった、または元々存在しなかった)extraは復元しようがなく消える
-				std::vector<CEditView::SExtraCursor> vNewExtras;
-				for( auto& s : vSlots ){
-					if( s.nSlot == 0 ) continue;
-					COpe* pcPosOpe = pcOpeBlk->GetOpe( s.nPosOpeIdx );
-					CLayoutPoint ptExtraBefore;
-					GetDocument()->m_cLayoutMgr.LogicToLayout( pcPosOpe->m_ptCaretPos_PHY_Before, &ptExtraBefore );
-					CLayoutPoint ptExtraCaret = ptExtraBefore;
-
-					CEditView::SExtraCursor ne;
-					ne.bHasSelection = false;
-#ifdef NKMM_UNDO_RESTORE_SELECTION
-					if( s.pcSelOpe && GetDllShareData().m_Common.m_sEdit.m_bUndoRestoreSelection ){
-						CLayoutPoint ptExtraAnchor, ptExtraSelTo;
-						GetDocument()->m_cLayoutMgr.LogicToLayout( s.pcSelOpe->m_ptCaretPos_PHY_Before, &ptExtraAnchor );
-						GetDocument()->m_cLayoutMgr.LogicToLayout( s.pcSelOpe->m_ptCaretPos_PHY_To, &ptExtraSelTo );
-						ne.bHasSelection = true;
-						ne.nAnchorRelLine = ToInt(ptExtraAnchor.GetY2()) - ToInt(ptPrimaryAnchor.GetY2());
-						ne.nAnchorRelColumn = ToInt(ptExtraAnchor.GetX2()) - ToInt(ptPrimaryAnchor.GetX2());
-						ptExtraCaret = ptExtraSelTo;
-					}
-#endif // NKMM_
-					ne.nRelLine = ToInt(ptExtraCaret.GetY2()) - ToInt(ptPrimaryBefore.GetY2());
-					ne.nRelColumn = ToInt(ptExtraCaret.GetX2()) - ToInt(ptPrimaryBefore.GetX2());
-					ne.nDesiredRelColumn = ne.nRelColumn;
-					vNewExtras.push_back( ne );
-				}
-				m_pCommanderView->m_vExtraCursors = std::move( vNewExtras );
-
-				// この下のNKMM_FIX_UNDOREDOブロックは「プライマリの行が変わらなければ
-				// 全画面再描画を省略する」最適化だが、単一カーソル時代の前提(影響範囲は常に
-				// キャレット行の近辺)がマルチカーソルでは崩れる — 上で復元したプライマリ・
-				// 各extraの選択は、プライマリの行と無関係な遠い行の見た目にも影響するため、
-				// その最適化に関係なくここで確実に再描画する 20260831
-				m_pCommanderView->Redraw();
-			}
+			RestoreMultiCursorAfterUndoRedo( pcOpeBlk, nOpeBlkNum, true /* bIsUndo */ );
 		}
 #endif // NKMM_
 #ifdef NKMM_FIX_EDITVIEW_SCRBAR
@@ -966,54 +996,12 @@ void CViewCommander::Command_REDO( void )
 #ifdef NKMM_MULTI_CURSOR
 		// Undo側(Command_UNDO)と全く同じ理由: マルチカーソルの一括編集(ApplyToAllCursors)が
 		// このブロックに複数カーソル分のOpeを積んでいた場合、昇順走査でも「最後に処理したOpe」
-		// (i==nOpeBlkNum-1)が必ずしもプライマリのOpeとは限らない。ApplyToAllCursors側で
-		// Opeごとに記録したnCursorSlot(0=プライマリ、1以上=extra)を手がかりに、プライマリ・
-		// 各extraそれぞれ自身の直後の位置へ明示的に戻す。Redoでは元々選択状態を復元しない
-		// (削除後に選択すべき対象が残らないため、単一カーソル時のRedoも一貫して選択を出さない
-		// 仕様) 20260831
+		// (i==nOpeBlkNum-1)が必ずしもプライマリのOpeとは限らない。RestoreMultiCursorAfterUndoRedo()
+		// がnCursorSlotを手がかりに、プライマリ・各extraそれぞれ自身の直後の位置へ明示的に戻す。
+		// Redoでは元々選択状態を復元しない(削除後に選択すべき対象が残らないため、単一カーソル時の
+		// Redoも一貫して選択を出さない仕様) 20260831
 		if( !bFastMode && pcOpeBlk ){
-			struct SSlotRestore{ int nSlot; int nPosOpeIdx = -1; };
-			std::vector<SSlotRestore> vSlots;
-			for( int k = 0; k < nOpeBlkNum; ++k ){
-				COpe* pcCandidate = pcOpeBlk->GetOpe(k);
-				if( pcCandidate->nCursorSlot < 0 ) continue;
-				SSlotRestore* pSlot = NULL;
-				for( auto& s : vSlots ){ if( s.nSlot == pcCandidate->nCursorSlot ){ pSlot = &s; break; } }
-				if( !pSlot ){ vSlots.push_back( SSlotRestore{ pcCandidate->nCursorSlot } ); pSlot = &vSlots.back(); }
-				pSlot->nPosOpeIdx = k;	// 昇順走査のため、最後に見つかったもの(最大index)を残す
-			}
-
-			SSlotRestore* pPrimarySlot = NULL;
-			for( auto& s : vSlots ){ if( s.nSlot == 0 ){ pPrimarySlot = &s; break; } }
-
-			if( pPrimarySlot ){
-				COpe* pcPrimaryPosOpe = pcOpeBlk->GetOpe( pPrimarySlot->nPosOpeIdx );
-				CLayoutPoint ptPrimaryAfter;
-				GetDocument()->m_cLayoutMgr.LogicToLayout( pcPrimaryPosOpe->m_ptCaretPos_PHY_After, &ptPrimaryAfter );
-				// Undo側と同じ理由で、選択状態(ここでは常に非選択)を確定させてからMoveCursorを
-				// 呼ぶ 20260831
-				m_pCommanderView->GetSelectionInfo().DisableSelectArea( false );
-				GetCaret().MoveCursor( ptPrimaryAfter, true );
-				GetCaret().m_nCaretPosX_Prev = ptPrimaryAfter.GetX2();
-
-				std::vector<CEditView::SExtraCursor> vNewExtras;
-				for( auto& s : vSlots ){
-					if( s.nSlot == 0 ) continue;
-					COpe* pcPosOpe = pcOpeBlk->GetOpe( s.nPosOpeIdx );
-					CLayoutPoint ptExtraAfter;
-					GetDocument()->m_cLayoutMgr.LogicToLayout( pcPosOpe->m_ptCaretPos_PHY_After, &ptExtraAfter );
-					CEditView::SExtraCursor ne;
-					ne.nRelLine = ToInt(ptExtraAfter.GetY2()) - ToInt(ptPrimaryAfter.GetY2());
-					ne.nRelColumn = ToInt(ptExtraAfter.GetX2()) - ToInt(ptPrimaryAfter.GetX2());
-					ne.nDesiredRelColumn = ne.nRelColumn;
-					vNewExtras.push_back( ne );
-				}
-				m_pCommanderView->m_vExtraCursors = std::move( vNewExtras );
-
-				// Undo側と同じ理由(「プライマリの行が変わらなければ全画面再描画を省略する」
-				// 最適化がマルチカーソルの遠い行への影響を考慮しない)でここでも確実に再描画する
-				m_pCommanderView->Redraw();
-			}
+			RestoreMultiCursorAfterUndoRedo( pcOpeBlk, nOpeBlkNum, false /* bIsUndo */ );
 		}
 #endif // NKMM_
 		m_pCommanderView->SetDrawSwitch(bDrawSwitchOld); // 2007.07.22 ryoji
@@ -1174,8 +1162,10 @@ void CViewCommander::Command_DELETE_BACK( void )
 
 
 #ifdef NKMM_MULTI_CURSOR
-//! マルチカーソル: 現在の最上段カーソルの1行上(同じ桁)に新しいカーソルを追加する	20260830
-void CViewCommander::Command_AddCursorUp( void )
+//! Command_AddCursorUp/Downの共通実装。nDir<0で最上段カーソルの1行上、nDir>0で最下段
+//! カーソルの1行下(いずれも同じ桁)に新しいカーソルを追加する。上下で対称なだけの処理
+//! だったため統合 20260831
+void CViewCommander::AddCursorInDirection( int nDir )
 {
 	// マルチカーソルと矩形選択は排他。矩形選択中であれば解除してから追加する
 	if( m_pCommanderView->GetSelectionInfo().IsBoxSelecting() ){
@@ -1187,79 +1177,57 @@ void CViewCommander::Command_AddCursorUp( void )
 		return;
 	}
 
-	// プライマリ(相対0)+追加カーソルの中から最上段(nRelLineが最小)を探す。
-	// 新カーソルの相対桁は「最上段カーソルと同じ相対桁」を引き継ぐ(プライマリなら0)
-	int nTopmostRel = 0;
-	int nTopmostRelColumn = 0;
+	// プライマリ(相対0)+追加カーソルの中から最上段/最下段(nRelLineが最小/最大)を探す。
+	// 新カーソルの相対桁は「その端のカーソルと同じ相対桁」を引き継ぐ(プライマリなら0)
+	int nEdgeRel = 0;
+	int nEdgeRelColumn = 0;
 	for( const auto& extra : m_pCommanderView->m_vExtraCursors ){
-		if( extra.nRelLine < nTopmostRel ){
-			nTopmostRel = extra.nRelLine;
-			nTopmostRelColumn = extra.nRelColumn;
+		if( ( nDir < 0 ) ? ( extra.nRelLine < nEdgeRel ) : ( extra.nRelLine > nEdgeRel ) ){
+			nEdgeRel = extra.nRelLine;
+			nEdgeRelColumn = extra.nRelColumn;
 		}
 	}
 
-	int nNewRel = nTopmostRel - 1;
+	int nNewRel = nEdgeRel + nDir;
 	CLayoutInt nPrimaryLine = GetCaret().GetCaretLayoutPos().GetY2();
-	if( ToInt(nPrimaryLine) + nNewRel < 0 ){
-		// 文書先頭を超えるので追加しない(この第一弾ではカーソル追加時点での
-		// 境界超過は非対応。既存カーソルの上下移動での「非アクティブ」機構とは別)
-		return;
+	if( nDir < 0 ){
+		if( ToInt(nPrimaryLine) + nNewRel < 0 ){
+			// 文書先頭を超えるので追加しない(この第一弾ではカーソル追加時点での
+			// 境界超過は非対応。既存カーソルの上下移動での「非アクティブ」機構とは別)
+			return;
+		}
+	}else{
+		CLayoutInt nDocLineCount = GetDocument()->m_cLayoutMgr.GetLineCount();
+		if( ToInt(nDocLineCount) <= ToInt(nPrimaryLine) + nNewRel ){
+			// 文書末尾を超えるので追加しない
+			return;
+		}
 	}
 
 	{
 		CEditView::SExtraCursor ne;
 		ne.nRelLine = nNewRel;
-		ne.nRelColumn = nTopmostRelColumn;
+		ne.nRelColumn = nEdgeRelColumn;
 		// 希望桁(nDesiredRelColumn)は「今の実桁と同じ、プライマリの希望桁からの相対値」として
 		// 初期化する(作成直後は希望と実桁が一致している)。プライマリ自身の実桁と希望桁が
 		// (上下移動の途中で)食い違っているケースにも正しく対応するため、それぞれ別々に基準を取る
-		int nNewAbsColumn = ToInt(GetCaret().GetCaretLayoutPos().GetX2()) + nTopmostRelColumn;
+		int nNewAbsColumn = ToInt(GetCaret().GetCaretLayoutPos().GetX2()) + nEdgeRelColumn;
 		ne.nDesiredRelColumn = nNewAbsColumn - ToInt(GetCaret().m_nCaretPosX_Prev);
 		m_pCommanderView->m_vExtraCursors.push_back( ne );
 	}
 	m_pCommanderView->Redraw();
 }
 
+//! マルチカーソル: 現在の最上段カーソルの1行上(同じ桁)に新しいカーソルを追加する	20260830
+void CViewCommander::Command_AddCursorUp( void )
+{
+	AddCursorInDirection( -1 );
+}
+
 //! マルチカーソル: 現在の最下段カーソルの1行下(同じ桁)に新しいカーソルを追加する	20260830
 void CViewCommander::Command_AddCursorDown( void )
 {
-	// マルチカーソルと矩形選択は排他。矩形選択中であれば解除してから追加する
-	if( m_pCommanderView->GetSelectionInfo().IsBoxSelecting() ){
-		m_pCommanderView->GetSelectionInfo().DisableSelectArea( true );
-	}
-
-	if( (int)m_pCommanderView->m_vExtraCursors.size() >= NKMM_MULTICURSOR_MAX ){
-		ErrorBeep();
-		return;
-	}
-
-	// プライマリ(相対0)+追加カーソルの中から最下段(nRelLineが最大)を探す
-	int nBottommostRel = 0;
-	int nBottommostRelColumn = 0;
-	for( const auto& extra : m_pCommanderView->m_vExtraCursors ){
-		if( extra.nRelLine > nBottommostRel ){
-			nBottommostRel = extra.nRelLine;
-			nBottommostRelColumn = extra.nRelColumn;
-		}
-	}
-
-	int nNewRel = nBottommostRel + 1;
-	CLayoutInt nPrimaryLine = GetCaret().GetCaretLayoutPos().GetY2();
-	CLayoutInt nDocLineCount = GetDocument()->m_cLayoutMgr.GetLineCount();
-	if( ToInt(nDocLineCount) <= ToInt(nPrimaryLine) + nNewRel ){
-		// 文書末尾を超えるので追加しない
-		return;
-	}
-
-	{
-		CEditView::SExtraCursor ne;
-		ne.nRelLine = nNewRel;
-		ne.nRelColumn = nBottommostRelColumn;
-		int nNewAbsColumn = ToInt(GetCaret().GetCaretLayoutPos().GetX2()) + nBottommostRelColumn;
-		ne.nDesiredRelColumn = nNewAbsColumn - ToInt(GetCaret().m_nCaretPosX_Prev);
-		m_pCommanderView->m_vExtraCursors.push_back( ne );
-	}
-	m_pCommanderView->Redraw();
+	AddCursorInDirection( 1 );
 }
 
 //! マルチカーソル: 直近に追加したカーソルを1個取り消す(VS CodeのCtrl+U相当)	20260830

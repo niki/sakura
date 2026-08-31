@@ -134,6 +134,8 @@ public:
 #ifdef NKMM_MULTI_CURSOR
 	void Command_AddCursorUp( void );		/* マルチカーソル: 最上段のカーソルの1行上(同じ桁)に追加 */
 	void Command_AddCursorDown( void );	/* マルチカーソル: 最下段のカーソルの1行下(同じ桁)に追加 */
+	//! Command_AddCursorUp/Downの共通実装。nDir<0で上方向、nDir>0で下方向 20260831
+	void AddCursorInDirection( int nDir );
 	void Command_MULTICURSOR_UNDO( void );	/* マルチカーソル: 直近に追加したカーソルを1個取り消す */
 	//! プライマリ+追加カーソルの各位置に対して1回ずつfnEditOnceを実行する(ドキュメント降順)。
 	//! fnEditOnceはCommand_WCHAR等、現在のGetCaret()位置に作用する既存コマンドをそのまま渡す想定。
@@ -144,6 +146,10 @@ public:
 	//! 重なった(接した)カーソル同士を1個に統合する(設定でオン/オフ可能、既定オン)。
 	//! ApplyToAllCursorsの末尾で呼ぶ。VS CodeのeditorMultiCursorMergeOverlapping相当
 	void MergeOverlappingCursorsIfNeeded( void );
+	//! Command_UNDO/Command_REDO共通: pcOpeBlk内のnCursorSlot付きOpeから、プライマリ+各extraを
+	//! それぞれ自身の状態(bIsUndo?_Before:_After、Undoのみ選択も)へ明示的に復元する。
+	//! 呼び出し側でbFastMode/pcOpeBlk!=NULLを確認してから呼ぶこと
+	void RestoreMultiCursorAfterUndoRedo( COpeBlk* pcOpeBlk, int nOpeBlkNum, bool bIsUndo );
 #endif // NKMM_
 	void Command_WordDeleteToStart( void );	/* 単語の左端まで削除 */
 	void Command_WordDeleteToEnd( void );	/* 単語の右端まで削除 */
