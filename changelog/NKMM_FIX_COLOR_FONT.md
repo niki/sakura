@@ -12,6 +12,8 @@
 - `sakura_core/charset/charcode.cpp`
 - `sakura_core/my_config.h`
 
+このファイルは2026-07-17時点の初版セッション(§1〜6)の記録。以降の合字対応・絵文字フォント固定指定UI(§7)、2026-08-31のコメント整理(§8)は末尾に追記している。設計・アーキテクチャの詳細なリファレンスは [docs/color_font_emoji_design.html](../docs/color_font_emoji_design.html) を参照。
+
 ---
 
 ## 背景
@@ -73,8 +75,52 @@
 
 ---
 
+## 7. ZWJ絵文字合字・絵文字フォント固定指定UI(2026-08-16〜17セッション)
+
+初版(§1〜6)から約1か月後、別セッションで以下を追加。すべて既存の`NKMM_FIX_COLOR_FONT`配下、`main`にコミット済み(`5b5568288`〜`12d9a6fbe`)。
+
+### 7.1 グリフアトラスのページプール分離
+
+通常テキスト用`CGlyphAtlasCache`が内部に持っていたシェルフパッキングのページ管理ロジックを`CAtlasPagePool`(`sakura_core/view/CAtlasPagePool.h/.cpp`、新規)として抽出。`CColorFontRenderer`側のカラーグリフとも将来共用できる想定で設計したが、**このセッション時点ではCColorFontRenderer側への適用は行われておらず、現在も未適用のまま**(グリフ単位のキャッシュを持たず毎フレームDirect2Dで描き直す方式は変わっていない)。
+
+### 7.2 ZWJ絵文字合字(レンダリングのみ)
+
+`CEditView::m_vPendingClusterCalls`+`FlushPendingCluster()`(`CEditView_ColorFont.cpp`、新規)による1ステップ遅延のクラスタ蓄積と、`CColorFontRenderer::TryShapeCluster()`(新規)による実際のDirectWriteテキストシェーピングを実装。プレーンテキストは即時パス(バッファリング無し)のまま。
+
+ZWJ・VS15/VS16・肌色修飾子(Fitzpatrick、U+1F3FB–1F3FF)・結合用囲み記号(キーキャップ、U+20E3)がクラスタ継続の候補として扱われる。成功判定は「1ラン・1グリフ」のみ厳密に要求し、それ以外は必ず変更前と同一の1文字ずつのフォールバック描画へ戻る(退行しない設計)。
+
+**カーソル移動・文字数カウント・桁幅は意図的に対象外**(`CNativeW::GetSizeOfChar()`等には一切手を入れていない)。「表示される絵だけを合字化する、フルのグラフェムクラスタ対応はしない」という選択を明示的に行った。
+
+キーキャップ合字で右/下端が欠けて見える2件のクリッピング問題を発見・修正:
+- 幅: 構成文字が全てBMP内の細い桁のクラスタでは、セル幅の単純合算では正方形の絵文字グリフに足りない → 行の高さを下限に`rcUnion.right`を拡張。
+- 高さ: `TryShapeCluster`が解決するフォントに`ResolveFallbackHFONT`と同等の「行の高さに収まるまで縮小するループ」が無かった → 同種の縮小ループを追加。
+
+### 7.3 絵文字用フォントの固定指定
+
+本文フォント起点のシステム自動フォールバック任せだと、フォント次第でフォールバック解決が分かれて合字化に失敗するケース(例: 本文フォントが「ＭＳ ゴシック」だとheart-on-fireが2ランに分かれ合字化しない)が見つかったため、絵文字解決に使うフォントを固定指定できる機能を追加。
+
+- コンパイル時定数`NKMM_COLOR_FONT_EMOJI_FONT_NAME`(`my_config.h`、既定`"Segoe UI Emoji"`)は初回起動時の初期値としてのみ使用。
+- 共通設定「全般」タブに「絵文字フォントを固定指定する」チェック+フォント選択ボタン+ラベル+「絵文字の合字を有効にする」チェックを追加(`CPropComGeneral.cpp`)。「未選択=システムの自動選択」という明示状態を持たせている。
+- `CColorFontRenderer::FindSpecifiedEmojiFont()`は指定フォントに該当グリフが無ければ`NULL`を返し、既存の`MapCharacters`フォールバックへ自動的に戻る(指定フォントが無い環境でも壊れない)。
+- `TryGetColorLayers()`の既存分岐に「フォント全体はカラーでもそのグリフ自体にCOLR/CPALレイヤーが無い」ケース(キーキャップの数字部分など)へのフォールバック漏れが同時に見つかり修正。以前は`FetchColorLayers`失敗時に諦めて何も描いていなかったが、白黒の輪郭グリフとして前景色で描画するよう修正した。
+
+設計・詳細な経緯は [docs/color_font_emoji_design.html](../docs/color_font_emoji_design.html) を参照。
+
+## 8. コメントのリファクタリング(2026-08-31)
+
+§7の3回のコミット(`5b5568288`〜`12d9a6fbe`)は短期間の段階的な変更だったため、コメントの更新が実際の挙動に追いついていない箇所が複数残っていた。**ロジック・UI挙動は一切変更せず**、以下のコメントのみを現状に合わせて修正した。
+
+- `CShareData.cpp`: `m_bUseEmojiLigature`の既定値コメントが「既定で有効」のままだったのを、実際の値(`FALSE`)に合わせて修正。あわせて、UIでは「絵文字フォント」チェックと連動して操作可否が変わる旨を明記(ロジック自体は独立のまま)。
+- `CPropComGeneral.cpp`: `IDC_CHECK_EMOJILIGATURE`の`EnableWindow`呼び出し2箇所(`OnInitDialog`、`IDC_CHECK_USEEMOJIFONT`ハンドラ)に、この連動が機能的な前提ではなくUI上の分かりやすさのためであり、チェック不可の間も値自体はクリアされない旨を追記。
+- `CommonSetting.h`: `m_bUseEmojiLigature`のメンバコメントに既定値(OFF)を明記。
+- `CAtlasPagePool.h`・`CGlyphAtlasCache.cpp`: 「`CColorFontRenderer`のカラーグリフアトラスと共用」という現在形の誤った記述を、「共用を想定して抽出したが実際には未適用のまま」という経緯の説明へ修正(§7.1参照)。
+
+デバッグ用`OutputDebugStringW`ログ(下記「動作確認について」参照)は実コードの整理が必要な項目のため、今回のコメント整理の対象外として引き続き未対応のまま残っている。
+
+---
+
 ## 動作確認について
 
 このセッションはWindows専用のsandboxビルド環境の制約上、開発者本人が実機（Visual Studio + 実際のSakura.exe）で都度スクリーンショット・デバッグログ（`OutputDebugStringW`経由の`[ColorFont]`ログ）を取得しながら反復修正を行った。最終的に複数行・横スクロール・文字幅混在（かな漢字＋絵文字）の各パターンで正常表示を確認済み。
 
-デバッグ用の`OutputDebugStringW`ログは`CColorFontRenderer.cpp`内に残っているため、リリース前に整理（削除またはデバッグビルド限定化）を推奨。
+デバッグ用の`OutputDebugStringW`ログは`CColorFontRenderer.cpp`内に残っているため、リリース前に整理（削除またはデバッグビルド限定化）を推奨。§8時点でも未対応。

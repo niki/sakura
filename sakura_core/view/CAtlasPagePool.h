@@ -1,13 +1,19 @@
 ﻿/*!	@file
 	@brief GDI互換ビットマップページのシェルフパッキングプール
 
-	CGlyphAtlasCache(通常テキストのグリフキャッシュ)とCColorFontRenderer
-	(カラーグリフ=絵文字のキャッシュ)は、キーの構造やセルの焼き方(GDIの
-	ExtTextOutか、Direct2D+BitBltか)こそ違うものの、「固定サイズの正方形
-	ページを何枚か持ち、シェルフパッキングでセルの置き場所を配る」という
-	ページ管理部分は完全に同じロジックだった。このクラスはその重複を
-	解消するための共通部品で、セルの中身をどう描くかには一切関与しない
-	(呼び出し側がGetPageDC()で取得したHDCへ自分で描く)。
+	CGlyphAtlasCache(通常テキストのグリフキャッシュ)が内部に持っていた
+	「固定サイズの正方形ページを何枚か持ち、シェルフパッキングでセルの
+	置き場所を配る」というページ管理ロジックを抽出した共通部品。セルの
+	中身をどう描くかには一切関与しない(呼び出し側がGetPageDC()で取得した
+	HDCへ自分で描く)。
+
+	抽出時点ではCColorFontRenderer(カラーグリフ=絵文字のオーバーレイ描画)
+	もキーの構造やセルの焼き方(GDIのExtTextOutではなくDirect2D+BitBlt)こそ
+	違え同種のページ管理を持つ想定で「共通化できる部品」として設計したが、
+	CColorFontRendererは現状これを一切参照していない — グリフ単位のビットマップ
+	キャッシュ自体を持たず、毎フレームDirect2Dへ描き直す方式のまま
+	(詳細はdocs/color_font_emoji_design.html参照)。実際に使っているのは
+	CGlyphAtlasCacheのみ 20260831。
 */
 #ifndef SAKURA_CATLASPAGEPOOL_7C9E9B3F_5B7B_4C9E_8B9B_3F7C9E9B3F5B_H_
 #define SAKURA_CATLASPAGEPOOL_7C9E9B3F_5B7B_4C9E_8B9B_3F7C9E9B3F5B_H_

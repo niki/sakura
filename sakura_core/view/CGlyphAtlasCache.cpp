@@ -122,8 +122,11 @@ void CGlyphAtlasCache::DumpPageToFile(int nPageIndex, const wchar_t* pszPath) co
 }
 #endif // NKMM_
 
-//! シェルフパッキングでのページ確保自体はCAtlasPagePool(CColorFontRendererの
-//! カラーグリフアトラスと共用)に委譲し、結果をSGlyphAtlasEntryへ詰め替えるだけ。
+//! シェルフパッキングでのページ確保自体はCAtlasPagePoolに委譲し、結果を
+//! SGlyphAtlasEntryへ詰め替えるだけ。CAtlasPagePoolは元々CColorFontRenderer側の
+//! カラーグリフとも共用する想定で抽出したが、CColorFontRendererは現状これを
+//! 参照しておらず(グリフ単位のキャッシュを持たず毎フレームDirect2Dで描き直す)、
+//! 実際にCAtlasPagePoolを使っているのはこのクラスのみ 20260831。
 bool CGlyphAtlasCache::AllocCell(int w, int h, SGlyphAtlasEntry* pOut)
 {
 	SAtlasCellRect rc;

@@ -205,7 +205,11 @@ INT_PTR CPropGeneral::DispatchEvent(
 			case IDC_CHECK_USEEMOJIFONT:	/* 絵文字フォントを使う 20260816 */
 				{
 					m_Common.m_sWindow.m_bUseEmojiFont = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_USEEMOJIFONT );
-					// 20260817 「絵文字フォント」がOFFなら「合字」も連動して無効化
+					// 20260817 「絵文字フォント」がOFFの間は「合字」チェックの操作を無効化する。
+					// 合字シェーピング自体はフォント固定指定が無くても動作する(本文フォントを
+					// 起点に試みる、CColorFontRenderer::TryShapeCluster参照)ため機能的な前提
+					// ではなく、設定項目を分かりやすく揃えるためのUI上の連動。チェック状態
+					// (m_bUseEmojiLigature)自体はここではクリアしない — 再度ONにすれば元の値に戻る。
 					::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_EMOJILIGATURE ), m_Common.m_sWindow.m_bUseEmojiFont );
 					HFONT hFont = UpdateEmojiFontLabel( hwndDlg );
 					if( m_hEmojiFont != NULL ){ ::DeleteObject( m_hEmojiFont ); }
@@ -462,7 +466,8 @@ void CPropGeneral::SetData( HWND hwndDlg )
 	// 20260816 絵文字フォントの固定指定
 	::CheckDlgButton( hwndDlg, IDC_CHECK_USEEMOJIFONT, m_Common.m_sWindow.m_bUseEmojiFont );
 	m_hEmojiFont = UpdateEmojiFontLabel( hwndDlg );
-	// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)を有効にするか（「絵文字フォント」がOFFなら無効化）
+	// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)。「絵文字フォント」がOFFの間は
+	// チェック自体を操作不能にする(UI上の連動のみ。理由はCShareData.cppの既定値コメント参照)。
 	::CheckDlgButton( hwndDlg, IDC_CHECK_EMOJILIGATURE, m_Common.m_sWindow.m_bUseEmojiLigature );
 	::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_EMOJILIGATURE ), m_Common.m_sWindow.m_bUseEmojiFont );
 #endif // NKMM_

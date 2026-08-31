@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>絵文字カラーフォント 設計リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8E%A8</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514;
+      --surface:#241C1B;
+      --ink:#EEE5E1;
+      --ink-soft:#B3A29D;
+      --ink-faint:#7C6E6A;
+      --rule:#3A2E2C;
+      --sakura:#E28CA8;
+      --sakura-ink:#F3B9CC;
+      --sakura-tint:#3A2530;
+      --code-bg:#120E0D;
+      --code-ink:#E9DED8;
+      --code-soft:#96877F;
+      --code-accent:#E7A6BC;
+      --ok-bg:#28331F;
+      --ok-ink:#9FC28F;
+      --warn-bg:#362C15;
+      --warn-ink:#E0BE79;
+      --scope-bg:#232C36;
+      --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514;
+    --surface:#241C1B;
+    --ink:#EEE5E1;
+    --ink-soft:#B3A29D;
+    --ink-faint:#7C6E6A;
+    --rule:#3A2E2C;
+    --sakura:#E28CA8;
+    --sakura-ink:#F3B9CC;
+    --sakura-tint:#3A2530;
+    --code-bg:#120E0D;
+    --code-ink:#E9DED8;
+    --code-soft:#96877F;
+    --code-accent:#E7A6BC;
+    --ok-bg:#28331F;
+    --ok-ink:#9FC28F;
+    --warn-bg:#362C15;
+    --warn-ink:#E0BE79;
+    --scope-bg:#232C36;
+    --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600;
+    color:var(--ink);
+    text-wrap:balance;
+    letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{
+    font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+    font-size:.88em;
+  }
+  code.inline{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:.08em .38em;
+    color:var(--sakura-ink);
+  }
+
+  /* ---- layout shell ---- */
+  .shell{
+    display:grid;
+    grid-template-columns:248px minmax(0,1fr);
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .toc{
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+    padding:32px 18px 32px 28px;
+    border-right:1px solid var(--rule);
+  }
+  .toc-brand{
+    font-family:'Shippori Mincho',serif;
+    font-weight:700;
+    font-size:1.02rem;
+    margin-bottom:2px;
+  }
+  .toc-brand small{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+    font-size:.68rem;
+    letter-spacing:.06em;
+    color:var(--sakura-ink);
+    margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif;
+    font-size:.68rem;
+    letter-spacing:.09em;
+    color:var(--ink-faint);
+    font-weight:600;
+    margin:0 0 8px;
+    text-transform:uppercase;
+  }
+  .toc a{
+    display:block;
+    font-size:.83rem;
+    color:var(--ink-soft);
+    text-decoration:none;
+    padding:4px 0 4px 12px;
+    border-left:2px solid transparent;
+    line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    letter-spacing:.1em;
+    color:var(--sakura-ink);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-top:22px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    padding:5px 11px;
+    border-radius:999px;
+    background:var(--surface);
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:24px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.8rem;
+    color:var(--sakura);
+    font-weight:600;
+  }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:66ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:64ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+    margin:22px 0 30px;
+  }
+  .principle{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:18px 18px 16px;
+  }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+    font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  pre{
+    background:var(--code-bg);
+    color:var(--code-ink);
+    border-radius:10px;
+    padding:18px 20px;
+    overflow-x:auto;
+    margin:0 0 22px;
+    font-size:.82rem;
+    line-height:1.7;
+    box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+  figure{ margin:0 0 26px; }
+  figcaption{ font-size:.78rem; color:var(--ink-faint); margin-top:8px; }
+
+  .callout{
+    border:1px solid var(--rule);
+    border-left:3px solid var(--sakura);
+    background:var(--surface);
+    border-radius:0 10px 10px 0;
+    padding:16px 20px;
+    margin:0 0 22px;
+    font-size:.9rem;
+    max-width:64ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+  .callout.mismatch{ border-left-color:var(--warn-ink); }
+  .callout.mismatch .label{ color:var(--warn-ink); }
+
+  /* diagram */
+  .diagram{
+    display:flex; align-items:stretch; gap:0; margin:18px 0 30px;
+    border:1px solid var(--rule); border-radius:12px; overflow:hidden; background:var(--surface);
+  }
+  .diagram .stage{
+    flex:1; padding:18px 16px; position:relative;
+    border-right:1px dashed var(--rule);
+  }
+  .diagram .stage:last-child{ border-right:none; }
+  .diagram .stage h5{
+    font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.06em;
+    color:var(--ink-faint); text-transform:uppercase; margin:0 0 8px;
+  }
+  .diagram .stage p{ font-size:.8rem; margin:0; max-width:none; color:var(--ink-soft); }
+  .diagram .stage:after{
+    content:"→"; position:absolute; right:-13px; top:50%; transform:translateY(-50%);
+    color:var(--sakura); font-size:1.1rem; z-index:2;
+  }
+  .diagram .stage:last-child:after{ content:none; }
+
+  /* timeline (pass log) */
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline:before{
+    content:""; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:var(--rule);
+  }
+  .pass{ position:relative; padding-bottom:34px; }
+  .pass:last-child{ padding-bottom:0; }
+  .pass:before{
+    content:""; position:absolute; left:-28px; top:5px; width:9px; height:9px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--sakura);
+  }
+  .pass-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .pass-num{ font-family:'IBM Plex Mono',monospace; color:var(--sakura-ink); font-size:.78rem; font-weight:600; }
+  .pass-title{ font-weight:700; font-size:.97rem; }
+  .pass-date{ font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--ink-faint); margin-left:auto; }
+  .pass p{ font-size:.88rem; color:var(--ink-soft); max-width:70ch; margin:0 0 8px; }
+  .pass p:last-child{ margin-bottom:0; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule);
+    margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+    .diagram{ flex-direction:column; }
+    .diagram .stage{ border-right:none; border-bottom:1px dashed var(--rule); }
+    .diagram .stage:after{ content:"↓"; right:auto; left:16px; top:auto; bottom:-13px; transform:none; }
+    .diagram .stage:last-child{ border-bottom:none; }
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    html{ scroll-behavior:smooth; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">絵文字カラーフォント<small>NKMM_FIX_COLOR_FONT / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+        <a href="#coexist">GDIとDirectWriteの共存</a>
+      </div>
+      <div class="toc-group">
+        <h5>中核メカニズム</h5>
+        <a href="#layers">COLR/CPALレイヤー取得とフォールバック</a>
+        <a href="#ligature">ZWJ絵文字合字</a>
+        <a href="#special">VS/ZWJ/肌色/キーキャップの扱い</a>
+        <a href="#font">絵文字フォント指定UI</a>
+      </div>
+      <div class="toc-group">
+        <h5>実態と乖離</h5>
+        <a href="#reverted">撤回された設計・未実装のキャッシュ</a>
+        <a href="#mismatch">コードとコメントの食い違い(解消済み)</a>
+      </div>
+      <div class="toc-group">
+        <h5>仕様</h5>
+        <a href="#settings">設定項目</a>
+        <a href="#limits">既知の制約・TODO</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#files">変更ファイル一覧</a>
+        <a href="#history">変更履歴</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">絵文字カラーフォント</h1>
+      <p class="subtitle lede">GDIでは単色でしか描画できないCOLR/CPAL形式のカラーグリフ(絵文字)を、Direct2D/DirectWriteでオーバーレイ描画する機能の設計記録。ZWJ絵文字合字・肌色修飾子・キーキャップの結合表示、絵文字フォントの固定指定UIまでを含む。初回調査時にコードとコメントの食い違いが複数見つかり、2026-08-31にコメント側を実挙動へ合わせて修正した。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_FIX_COLOR_FONT</b></span>
+        <span class="chip">初版 <b>2026-07-17</b></span>
+        <span class="chip">合字対応 <b>2026-08-16〜17</b></span>
+        <span class="chip">中核クラス <b class="mono">CColorFontRenderer</b></span>
+      </div>
+    </header>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>既存のGDI描画パイプラインには一切手を入れず、そのまま残す。GDIの描画結果の<strong>直後に</strong>、カラーグリフだけをDirect2D/DirectWriteで追加描画する「オーバーレイ」方式を採る。Direct2D/DirectWriteが利用できない環境(DLL不在など)では自動的に何もせず、従来通りのGDI描画のみにフォールバックする。</p>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — GDIは変えない</span>
+          <p>通常のテキスト描画・選択範囲反転・ルーラー描画はすべて既存のGDI経路のまま。カラーグリフの描画位置・フォント・色をキューに積み、1行分のGDI描画が確定した後にだけ上乗せする。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — 合字はレンダリングのみ</span>
+          <p>ZWJ絵文字の合字化は「描かれる絵」だけを1グリフへ統合し、<code class="inline">CNativeW::GetSizeOfChar()</code>等のカーソル移動・文字数計算コードには一切手を入れない — フルのグラフェムクラスタ対応より侵襲性の低い選択。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — 失敗は必ず個別描画へ</span>
+          <p>合字シェーピングの成功判定は「1ラン・1グリフ」のみ。それ以外は全て失敗として扱い、変更前と完全に同じ1文字ずつのフォールバック描画に戻る — 最悪でも退行(regression)にはならない設計。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">この文書の読み方 — 食い違いは2026-08-31に解消済み</span>
+        <p>本機能は2026-07-17に初版が入り、2026-08-16〜17にZWJ合字・絵文字フォント固定指定UIが集中して追加された。この文書の初版作成時の調査で、<strong>コード中のコメントが説明する設計意図と、実際の挙動が一致していない箇所</strong>が複数見つかった(<a href="#mismatch">07節</a>)。机上の設計ミスではなく、短期間に段階的な変更が重なった結果コメントの更新が追いつかなかったことによるもので、2026-08-31にコメント側を実挙動に合わせて修正済み(ロジック・UI挙動は無変更)。デバッグログの残置(<a href="#limits">09節</a>)のみ、コメントではなく実コードの整理が要る項目として未対応のまま残っている。</p>
+      </div>
+    </section>
+
+    <section id="coexist">
+      <h2><span class="num">01</span>GDIとDirectWriteの共存</h2>
+      <p><code class="inline">CFigure_Text::DrawImp</code>がGDIで通常描画した<strong>直後</strong>に、<code class="inline">figures/CFigureStrategy.cpp</code>が描画位置(<code class="inline">rcColorCell</code>)・使用HFONT・前景/背景色を取得し<code class="inline">CEditView::TryQueueColorGlyph()</code>へ渡す。この時点ではまだ描画せず、キューに積むだけ(GDIの描画結果はそのまま画面に残る)。</p>
+      <p>1行分の全GDI描画(選択範囲反転・ルーラーも含む)が終わった直後、<code class="inline">CEditView_Paint.cpp</code>の<code class="inline">OnPaint</code>末尾で次の順に呼ぶ。</p>
+      <pre><code>CGlyphAtlasCache::getInstance()-&gt;FlushQueue(gr, nGlyphQueueMark);  <span class="cm">// 先に通常グリフのアトラス転送</span>
+FlushColorGlyphQueue(gr);                                          <span class="cm">// その後カラーグリフのオーバーレイ</span></code></pre>
+      <p>この順序は重要 — オーバーレイは「確定した下地のピクセルの上に重ね描きする」ことを前提にしている。</p>
+      <p><code class="inline">CColorFontRenderer::FlushQueue()</code>の内部では、Sakuraの画面バッファ(DDB)へ直接<code class="inline">BindDC</code>すると一部描画が反映されない不具合があったため、<strong>自前の32bpp DIBセクション(<code class="inline">m_hdcOffscreen</code>)へ一旦BitBltでコピー→Direct2Dで描画→結果をセルごとにBitBltで実HDCへ書き戻す</strong>、という迂回構成になっている。</p>
+      <p>D2D1/DWriteは<code class="inline">LOAD_LIBRARY_SEARCH_SYSTEM32</code>でSystem32からのみロードし、ポータブル配布時のDLL探索順序ハイジャック対策が明示的に取られている(<code class="inline">CColorFontRenderer.h</code>)。<code class="inline">IDWriteFactory2</code>(Windows 8.1相当)が無い環境では初期化が失敗し続け、機能全体が自動的に無効化される。</p>
+    </section>
+
+    <section id="layers">
+      <h2><span class="num">02</span>COLR/CPALレイヤー取得とフォールバック解決</h2>
+      <div class="diagram">
+        <div class="stage">
+          <h5>1. フォントフェイス化</h5>
+          <p><code class="inline">GetOrCreateFontFaceEntry(hFont)</code>でHFONT→<code class="inline">IDWriteFontFace2</code>変換(キャッシュ付き)、<code class="inline">IsColorFont()</code>判定</p>
+        </div>
+        <div class="stage">
+          <h5>2. 本文フォント優先</h5>
+          <p>本文フォント自身がグリフを持ち、かつカラーフォントならそのまま採用(GDI描画結果を信用)</p>
+        </div>
+        <div class="stage">
+          <h5>3. フォールバック解決</h5>
+          <p>グリフが無い、またはVS16強制指定がある場合は<code class="inline">ResolveFallbackHFONT()</code>で代替フォント解決</p>
+        </div>
+        <div class="stage">
+          <h5>4. レイヤー取得</h5>
+          <p><code class="inline">FetchColorLayers()</code>が<code class="inline">IDWriteFactory2::TranslateColorGlyphRun</code>を呼び、最大8レイヤー(<code class="inline">SColorGlyphCell::MAX_LAYERS</code>)を取得。パレットインデックス<code class="inline">0xFFFF</code>は前景色扱い</p>
+        </div>
+      </div>
+      <p><code class="inline">ResolveFallbackHFONT()</code>: 絵文字フォントが固定指定されていればまず<code class="inline">FindSpecifiedEmojiFont()</code>を試し、無ければ<code class="inline">IDWriteFontFallback::MapCharacters</code>(GDIのSystemLinkに頼らない自前解決)を使う。返る<code class="inline">fScale</code>(x-height基準の見た目合わせ)をフォントサイズに反映した上、GDI実測幅(<code class="inline">fAdvanceX</code>)に収まるよう「縮小→再測定」を8回、その後「1刻みずつ拡大し直す」フェーズで余白を削る反復収束ロジックを持つ。</p>
+      <div class="callout">
+        <span class="label">フォント全体はカラーでもグリフ単体はモノクロなことがある</span>
+        <p>絵文字フォント内の普通の英数字グリフ(キーキャップの数字部分など)には COLR/CPAL レイヤーが無く、<code class="inline">TranslateColorGlyphRun</code>が<code class="inline">DWRITE_E_NOCOLOR</code>を返し<code class="inline">FetchColorLayers()</code>が<code class="inline">false</code>になる。この場合に諦めて何も描かずreturnするのではなく、白黒の輪郭グリフとして前景色で描画するフォールバックへ必ず落とす(<code class="inline">bGotColorLayers</code>判定)。絵文字フォント固定指定機能の追加によって数字がSegoe UI Emoji側へ強制解決されるようになった際に発覚したバグで、修正済み。</p>
+      </div>
+    </section>
+
+    <section id="ligature">
+      <h2><span class="num">03</span>ZWJ絵文字合字</h2>
+      <p><code class="inline">CEditView::TryQueueColorGlyph()</code>(<code class="inline">CEditView_ColorFont.cpp</code>)で、直前の文字がZWJだったか・自身がZWJ/VS15/VS16/肌色修飾子/結合用囲み記号(キーキャップ)かを判定し、該当すれば即座にキューへ積まず<code class="inline">m_vPendingClusterCalls</code>(<code class="inline">SPendingGlyphCall</code>配列、<code class="inline">CColorGlyphCell.h</code>)へ保留する。プレーンテキストはこの判定に一切引っかからず、変更前と完全に同じ即時パスを通る(バッファリングのオーバーヘッド無し)。</p>
+      <p>区間が確定すると<code class="inline">FlushPendingCluster()</code>が起動する。要素が1個だけなら合字化の余地なし→即フォールバック。2個以上かつ「フォント/前景色/背景色/ベースラインオフセットが揃っている」かつ共通設定の合字チェックがONの場合のみ<code class="inline">TryShapeCluster()</code>を試行する。</p>
+      <p><code class="inline">TryShapeCluster()</code>(実際のDirectWriteテキストシェーピング): クラスタ全体のテキストを<code class="inline">IDWriteTextLayout</code>に流し込み、自作の<code class="inline">IDWriteTextRenderer</code>(<code class="inline">CGlyphRunCaptureRenderer</code>)経由で<code class="inline">DrawGlyphRun</code>をフックし、実際のグリフランを記録するだけの最小実装で「本物のGSUB合字が起きたか」を検証する。</p>
+      <div class="callout">
+        <span class="label">成功/失敗判定 — 1ラン・1グリフのみ成功</span>
+        <p>成功条件は<code class="inline">nRunCount==1 &amp;&amp; nGlyphCount==1</code>。複数ランに分かれた(フォールバック途中でフォントが切替わった)場合や、1ランのglyphCountが1でない(フォントのGSUB合字テーブルに該当組み合わせが無く複数グリフのまま)場合は失敗として扱い、呼び出し側は1文字ずつのフォールバック描画に戻る — 最悪でも変更前と<strong>バイト単位で同一の挙動</strong>になる。成功時は実際にシェーピングで使われたフォント(本文フォントとは限らない)を<code class="inline">ConvertFontFaceToLOGFONT</code>でLOGFONT化し直し、既存のFetchColorLayers経路へそのまま乗せる。</p>
+      </div>
+      <div class="callout">
+        <span class="label">キーキャップ合字の右端欠け対策</span>
+        <p>合字化された絵文字グリフはフォントのem正方形サイズで描画されるため、見た目上ほぼ正方形になる。キーキャップ(数字+VS16+結合用囲み記号)のように、構成文字が全てBMP内の細い桁ばかりのクラスタでは、各セル幅を単純に合算しただけでは正方形に足りず右端が欠けて見える問題があった。対策として、行の高さを下限に<code class="inline">rcUnion.right</code>を拡張して正方形を確保している(2026-08-16、コミット<code class="inline">173b02673</code>で追加、現在のコードに反映済み)。</p>
+      </div>
+    </section>
+
+    <section id="special">
+      <h2><span class="num">04</span>VS/ZWJ/肌色/キーキャップの扱い</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>判定関数</th><th>対象</th><th>所在</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">IsZWJChar</td><td>U+200D(Zero Width Joiner)</td><td><code class="inline">CEditView_ColorFont.cpp</code></td></tr>
+            <tr><td class="mono">IsVariationSelectorChar</td><td>U+FE0E(VS15、テキスト表示指定)/ U+FE0F(VS16、絵文字表示指定)</td><td>同上</td></tr>
+            <tr><td class="mono">IsFitzpatrickModifier</td><td>U+1F3FB〜U+1F3FF(肌色修飾子)。ZWJ不要でそのまま付着</td><td>同上</td></tr>
+            <tr><td class="mono">IsCombiningEnclosingKeycap</td><td>U+20E3(結合用囲み記号、キーキャップ)</td><td>同上</td></tr>
+            <tr><td class="mono">IsInvisibleFormatChar</td><td>VS15/VS16/ZWJが単独で来た場合、背景色で塗り潰すだけ(レイヤー無し)のセルを返す</td><td><code class="inline">CColorFontRenderer.cpp</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code class="inline">IsInvisibleFormatChar()</code>はGDIのSystemLinkフォールバックが無意味な四角/記号(tofu)を描いてしまうのを消すために存在する。</p>
+      <p><code class="inline">bForceEmojiPresentation</code>(VS16直後判定)は<code class="inline">CFigureStrategy.cpp</code>で「行末を超えて読まないよう境界を確認」しつつ次の1文字を覗き見て決定し、<code class="inline">TryGetColorLayers</code>へ渡す。本文フォントがそのコードポイントのモノクロ持ち駒を持っていても、VS16があれば強制的にカラー(絵文字)フォント解決へ回す — ❤/✏️/⚠️のような両対応(dual-presentation)記号を確実に色付きにするための仕組み。</p>
+    </section>
+
+    <section id="font">
+      <h2><span class="num">05</span>絵文字フォント指定UI</h2>
+      <p>本文フォント起点のシステム自動フォールバックに任せず、絵文字解決に使うフォントを固定指定できる機能(2026-08-16追加)。共通設定「全般」タブ→描画グループに配置。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>設定項目</th><th>データ構造</th><th>既定値</th></tr></thead>
+          <tbody>
+            <tr><td>絵文字フォントを固定指定する</td><td class="mono">CommonSetting_Window::m_bUseEmojiFont</td><td class="mono">TRUE</td></tr>
+            <tr><td>絵文字フォント本体</td><td class="mono">m_lfEmoji(LOGFONT、lfFaceNameのみ使用)</td><td class="mono">"Segoe UI Emoji"</td></tr>
+            <tr><td>プレビュー用ポイントサイズ</td><td class="mono">m_nEmojiPointSize</td><td class="mono">110(11.0pt)</td></tr>
+            <tr><td>絵文字の合字を有効にする</td><td class="mono">m_bUseEmojiLigature</td><td class="mono">FALSE<span class="pill warn" style="margin-left:6px">要注意</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code class="inline">NKMM_COLOR_FONT_EMOJI_FONT_NAME</code>(<code class="inline">my_config.h</code>、既定<code class="inline">L"Segoe UI Emoji"</code>)は<strong>初回起動時にのみ</strong><code class="inline">m_lfEmoji</code>へ初期投入される既定値であり、以後はユーザー設定(<code class="inline">sakura.ini</code>)が優先される。</p>
+      <p><code class="inline">FindSpecifiedEmojiFont()</code>は指定フォント名をシステムフォントコレクションから検索し、対象コードポイントに<code class="inline">IDWriteFont::HasCharacter()</code>で該当グリフがあるかを確認した上で返す。フォントが未インストール、または該当文字を持たない場合は<code class="inline">NULL</code>を返し既存の<code class="inline">MapCharacters</code>フォールバックへ自動的に戻る — 指定フォントが他の環境に存在しなくても壊れずに劣化する設計。</p>
+      <p><strong>「未選択=システム自動選択」状態</strong>は<code class="inline">GetConfiguredEmojiFontName()</code>で判定する。</p>
+      <pre><code><span class="kw">if</span>( !sWindow.m_bUseEmojiFont || 0 == sWindow.m_lfEmoji.lfFaceName[0] ){
+    <span class="kw">return</span> NULL;  <span class="cm">// システムの自動選択にフォールバック</span>
+}</code></pre>
+      <p>ラベル表示(<code class="inline">UpdateEmojiFontLabel()</code>)は、チェックOFF、またはONでもフォント名が空(未選択)の場合「(システムの自動選択)」に切り替わる — <code class="inline">CPropCommon::SetFontLabel</code>の空文字列規約をあえて使わず、この機能専用に判読しやすいメッセージを用意している。</p>
+      <p>UI構成: 「絵文字フォントを固定指定する」チェック、「絵文字フォントの選択」ボタン(押下でフォント選択ダイアログ、選ぶと自動的にチェックON)、選択中フォント名のラベル、「絵文字の合字を有効にする」チェックの4点セット。既存の「タイプ別フォント」と異なり、フォント指定チェックはOFFでも常に操作可能(システム任せへいつでも戻せるようにする、という明示的な要件)。</p>
+    </section>
+
+    <section id="reverted">
+      <h2><span class="num">06</span>撤回された設計・未実装のキャッシュ</h2>
+      <div class="callout">
+        <span class="label">グリフ幅拡張(D2D横方向変形) — 撤回済み、現在も未採用</span>
+        <p>VS16の桁ぶんまで絵文字を拡大して隙間を埋める案を2回試した(均一拡大は縦方向にはみ出す、横方向だけのD2D変形は見た目が不自然)。いずれも撤回され、<strong>現在も撤回されたまま</strong> — VS16の桁は<code class="inline">IsInvisibleFormatChar</code>により単に背景色で塗り潰されるだけになっている。連続する強制カラー絵文字の間に視認できる隙間が残るが、現状は許容として据え置かれている。</p>
+      </div>
+      <div class="callout">
+        <span class="label">グリフ単位のビットマップキャッシュは実装されていない</span>
+        <p><code class="inline">CAtlasPagePool</code>は元々、通常テキスト用<code class="inline">CGlyphAtlasCache</code>が内部に持っていたページプール管理コードを、<code class="inline">CColorFontRenderer</code>側のカラーグリフとも将来共用できる想定で切り出した共通部品。しかし<strong><code class="inline">CColorFontRenderer.cpp</code>/<code class="inline">.h</code>のどこにも<code class="inline">CAtlasPagePool</code>への参照は無く</strong>、この抽出時にもColorFontRenderer側への適用は行われなかった。<strong>つまりColorFontRenderer自身にはグリフ単位のキャッシュが一切無く、毎回Direct2Dで描き直している。</strong>パフォーマンス上の共通点は「フォントフェイスキャッシュ」「ブラシキャッシュ(上限64件で丸ごとクリア)」「フォールバックHFONTキャッシュ(プロセス寿命)」という<strong>フォント単位/色単位</strong>のキャッシュのみで、いずれもグリフ単位ではない。フォント世代カウンタ<code class="inline">CViewFont::s_nGeneration</code>は<code class="inline">NKMM_FIX_COLOR_FONT</code>と<code class="inline">NKMM_FIX_GLYPH_ATLAS_CACHE</code>の両方でインクリメントを共有しており、フォント再作成時に両方のキャッシュが無効化される点だけは確かに連携している。<span class="pill ok" style="margin-left:6px">2026-08-31 コメント修正済み</span> — <code class="inline">CAtlasPagePool.h</code>/<code class="inline">CGlyphAtlasCache.cpp</code>の該当コメントは「共用している」という誤った現在形の記述から、上記の経緯(共用を想定して抽出したが未適用のまま)を正確に説明する記述へ更新した。</p>
+      </div>
+      <p>「グリフをビットマップとしてキャッシュする(BitBlitキャッシュ)」という設計案についても、コミット履歴上そのような実装が存在した痕跡は見当たらない。<code class="inline">CColorFontRenderer</code>は一貫して「毎フレーム、その場でDirect2Dへ描画→BitBltで転送」という方式のみで運用されている。</p>
+    </section>
+
+    <section id="mismatch">
+      <h2><span class="num">07</span>コードとコメントの食い違い(2026-08-31 解消)</h2>
+      <p>短期間(2026-08-16〜17)に段階的な変更が重なった結果、コメントの更新が追いついていない箇所が複数残っていた。2026-08-31にコメントのリファクタリングを行い、以下はいずれも<strong>コメント側を現在のコードの実態に合わせて修正済み</strong>(ロジック・UI挙動そのものは変更していない)。</p>
+      <div class="callout">
+        <span class="label pill ok" style="display:inline-block">解消済み</span><span class="label">「絵文字フォント」OFFで「合字」チェックが操作不能になる点の説明不足</span>
+        <p>2026-08-17のコミット(<code class="inline">12d9a6fbe</code>)で、「絵文字フォント」チェックをOFFにすると「合字」チェック自体が<code class="inline">EnableWindow(..., m_bUseEmojiFont)</code>で無効化(グレーアウト)されるようになったが、<code class="inline">CShareData.cpp</code>側のコメントは「独立の設定」とだけ書かれ、このUI連動に触れていなかった。<strong>ロジック(<code class="inline">TryShapeCluster()</code>は指定フォントが無くても本文フォント起点で合字を試みる)自体は今も独立のまま</strong>で、変更したのはコメントのみ: <code class="inline">CShareData.cpp</code>の既定値コメントと、<code class="inline">CPropComGeneral.cpp</code>の<code class="inline">EnableWindow</code>呼び出し2箇所(<code class="inline">OnInitDialog</code>/<code class="inline">IDC_CHECK_USEEMOJIFONT</code>ハンドラ)に、「これは分かりやすさのためのUI上の連動であり、チェックが無効化されても<code class="inline">m_bUseEmojiLigature</code>の値自体はクリアされない」という説明を追記した。</p>
+      </div>
+      <div class="callout">
+        <span class="label pill ok" style="display:inline-block">解消済み</span><span class="label"><code class="inline">m_bUseEmojiLigature</code>の既定値コメント</span>
+        <p><code class="inline">CShareData.cpp</code>のコメントが「既定で有効にする」のままだったのを、実際の代入値(<code class="inline">FALSE</code>、コミット<code class="inline">d3554d8b4</code>)に合わせて「既定はOFF(合字化で見た目が変わることに驚くユーザーが出ないようオプトインにした)」へ書き換えた。<code class="inline">CommonSetting.h</code>のメンバコメントにも既定値の注記を追加した。</p>
+      </div>
+      <div class="callout">
+        <span class="label pill ok" style="display:inline-block">解消済み</span><span class="label"><code class="inline">CAtlasPagePool</code>の「共用」表現</span>
+        <p><a href="#reverted">06節</a>参照。「共用している」という現在形の誤りを、「共用を想定して抽出したが実際には未適用」という経緯の説明へ修正した。</p>
+      </div>
+      <div class="callout mismatch">
+        <span class="label">デバッグログの残置(未対応)</span>
+        <p><code class="inline">CColorFontRenderer.cpp</code>内に複数箇所<code class="inline">OutputDebugStringW</code>による<code class="inline">[ColorFont]</code>ログが残っている(フォールバックフォント解決失敗時、オフスクリーンサーフェス確保失敗時、<code class="inline">FlushQueue</code>のBindDC/EndDraw結果など)。<code class="inline">changelog/NKMM_FIX_COLOR_FONT.md</code>末尾で「リリース前に整理(削除またはデバッグビルド限定化)を推奨」と明記されているが、これはコメントではなく実コードの整理を要する項目のため今回のコメントリファクタリングでは対象外とし、<a href="#limits">既知の制約</a>として残した。</p>
+      </div>
+      <p><code class="inline">changelog/NKMM_FIX_COLOR_FONT.md</code>にも2026-08-16〜17の合字対応・絵文字フォント固定指定・2026-08-31のコメント整理について追記済み(<a href="#files">10節</a>)。</p>
+    </section>
+
+    <section id="settings">
+      <h2><span class="num">08</span>設定項目</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>項目</th><th>ini(<code class="inline">[Common]</code>セクション)</th><th>UI</th></tr></thead>
+          <tbody>
+            <tr><td>絵文字フォント固定指定の有無</td><td class="mono">bUseEmojiFont</td><td>全般タブ「絵文字フォントを固定指定する」チェック</td></tr>
+            <tr><td>絵文字フォント本体</td><td class="mono">lfEmoji / nEmojiPointSize / lfEmojiFaceName</td><td>「絵文字フォントの選択」ボタン+ラベル表示</td></tr>
+            <tr><td>絵文字の合字</td><td class="mono">bUseEmojiLigature</td><td>全般タブ「絵文字の合字を有効にする」チェック(絵文字フォントOFF時はグレーアウト、<a href="#mismatch">07節</a>参照)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>ini入出力は<code class="inline">CShareData_IO.cpp</code>の<code class="inline">IOProfileData</code>(bool)+<code class="inline">ShareData_IO_Sub_LogFont</code>ヘルパー(既存の「タイプ別フォント」永続化と同じ呼び出し形)で行う。</p>
+    </section>
+
+    <section id="limits">
+      <h2><span class="num">09</span>既知の制約・TODO</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>項目</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill warn">未対応</span></td><td>カーソル移動・文字数カウント・桁幅は未対応。<code class="inline">NKMM_FIX_COLOR_FONT</code>は<code class="inline">view/</code>配下のみで完結しており、キャレット制御・<code class="inline">CNativeW</code>の文字数計算コードには一切手を入れていない。合字化されて見た目上1グリフになっても、内部的には従来通りZWJ/VS/修飾子を含む複数コードユニットとして扱われ続ける</td></tr>
+            <tr><td><span class="pill scope">対象外</span></td><td>フラグ(国旗)の地域指示記号(regional indicator)ペア結合 — ZWJを介さない別の結合方式のため、今回のクラスタリング機構の対象に含まれていない</td></tr>
+            <tr><td><span class="pill warn">厳密判定ゆえの限界</span></td><td>合字化の成功判定は<code class="inline">glyphCount==1</code>かつ<code class="inline">nRunCount==1</code>のみ。フォントのGSUBに該当する合字が定義されていない組み合わせでは、この機構上、常に複数グリフのままフォールバック(1文字ずつ個別描画)扱いになる。どの組み合わせが実際に合字化されるかはフォント・Windowsバージョン依存であり、事前に列挙するテーブルを持たない設計</td></tr>
+            <tr><td><span class="pill scope">環境依存</span></td><td><code class="inline">IDWriteFactory2</code>(Windows 8.1相当)が無い環境では機能全体が自動的に無効化される</td></tr>
+            <tr><td><span class="pill warn">要整理</span></td><td>デバッグログ(<code class="inline">OutputDebugStringW</code>による<code class="inline">[ColorFont]</code>ログ)の残置。<code class="inline">changelog/NKMM_FIX_COLOR_FONT.md</code>で以前から「リリース前に整理」と指摘されているが未対応(<a href="#mismatch">07節</a>)。コード・コメント側の食い違い自体は2026-08-31に解消済み</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">10</span>変更ファイル一覧</h2>
+      <div class="tablewrap filemap">
+        <table>
+          <thead><tr><th>ファイル</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">view/CColorFontRenderer.h / .cpp</td><td>D2D/DWriteシングルトン本体。DLL動的ロード、<code class="inline">TryGetColorLayers</code>/<code class="inline">TryShapeCluster</code>/<code class="inline">FlushQueue</code>/<code class="inline">ResolveFallbackHFONT</code>/<code class="inline">FindSpecifiedEmojiFont</code>/<code class="inline">GetConfiguredEmojiFontName</code></td></tr>
+            <tr><td class="mono">view/CColorGlyphCell.h</td><td><code class="inline">SColorGlyphLayer</code>/<code class="inline">SColorGlyphCell</code>/<code class="inline">SPendingGlyphCall</code>のPOD定義のみ。d2d1.h/dwrite.hに非依存</td></tr>
+            <tr><td class="mono">view/CEditView_ColorFont.cpp</td><td><code class="inline">CEditView::TryQueueColorGlyph</code>/<code class="inline">FlushPendingCluster</code>/<code class="inline">FlushColorGlyphQueue</code>、ZWJ/VS/肌色/キーキャップの判定関数群</td></tr>
+            <tr><td class="mono">view/CAtlasPagePool.h / .cpp</td><td><code class="inline">NKMM_FIX_GLYPH_ATLAS_CACHE</code>配下、通常テキスト用のシェルフパッキングページプール。<code class="inline">CColorFontRenderer</code>からは現在参照されていない(<a href="#reverted">06節</a>)</td></tr>
+            <tr><td class="mono">view/CEditView.h</td><td><code class="inline">m_vPendingColorGlyphs</code>/<code class="inline">m_vPendingClusterCalls</code>メンバ、関数宣言</td></tr>
+            <tr><td class="mono">view/figures/CFigureStrategy.cpp</td><td><code class="inline">CFigure_Text::DrawImp</code>内、GDI描画直後の<code class="inline">TryQueueColorGlyph</code>呼び出し元、<code class="inline">bForceEmojiPresentation</code>判定</td></tr>
+            <tr><td class="mono">view/CEditView_Paint.cpp</td><td><code class="inline">OnPaint</code>末尾での<code class="inline">FlushColorGlyphQueue(gr)</code>呼び出し</td></tr>
+            <tr><td class="mono">view/CViewFont.h / .cpp</td><td><code class="inline">s_nGeneration</code>(フォント再生成カウンタ)。ColorFontRendererとGlyphAtlasCache双方のキャッシュ無効化に使用</td></tr>
+            <tr><td class="mono">charset/charcode.cpp</td><td><code class="inline">NKMM_FIX_EMOJI_WIDTH</code>(独立フラグ)、<code class="inline">CalcPxWidthByFont2</code>の桁幅丸め処理</td></tr>
+            <tr><td class="mono">env/CommonSetting.h、CShareData.cpp、CShareData_IO.cpp</td><td><code class="inline">m_bUseEmojiFont</code>/<code class="inline">m_lfEmoji</code>/<code class="inline">m_nEmojiPointSize</code>/<code class="inline">m_bUseEmojiLigature</code>の定義・既定値・ini入出力</td></tr>
+            <tr><td class="mono">prop/CPropCommon.h、CPropComGeneral.cpp</td><td>共通設定「全般」タブのUI実装、<code class="inline">m_hEmojiFont</code>、<code class="inline">UpdateEmojiFontLabel</code></td></tr>
+            <tr><td class="mono">sakura_rc.h、sakura.hh、sakura_rc.rc</td><td>コントロールID(<code class="inline">IDC_CHECK_USEEMOJIFONT</code>等)・ヘルプID・ダイアログリソース</td></tr>
+            <tr><td class="mono">my_config.h</td><td><code class="inline">NKMM_FIX_COLOR_FONT</code>、<code class="inline">NKMM_COLOR_FONT_EMOJI_FONT_NAME</code>、<code class="inline">NKMM_FIX_EMOJI_WIDTH</code>(独立フラグ)</td></tr>
+            <tr><td class="mono">changelog/NKMM_FIX_COLOR_FONT.md</td><td>初版(2026-07-17)の設計経緯。8月16〜17日の合字対応は未反映(<a href="#mismatch">07節</a>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="history">
+      <h2><span class="num">11</span>変更履歴</h2>
+      <p class="lede">2026-07-17の初版から、2026-08-16に1日で集中して合字対応・絵文字フォント指定UIが追加され、翌日にも修正が入っている。すべて<code class="inline">main</code>ブランチにコミット済み。</p>
+      <div class="timeline">
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">01</span><span class="pass-title">初期実装</span><span class="pass-date">2026-07-17</span></div>
+          <p>GDI描画はそのまま残し、Direct2D/DirectWriteでCOLR/CPALカラーグリフだけを追加でオーバーレイ描画する基本設計を実装。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">02</span><span class="pass-title">グリフアトラス、プール処理を分離</span><span class="pass-date">2026-08-16 07:06</span></div>
+          <p>通常テキスト用<code class="inline">CGlyphAtlasCache</code>のページ管理ロジックを<code class="inline">CAtlasPagePool</code>として抽出。コミットメッセージに「絵文字の合字対応」とあるが、実際には結合(合字)そのものはまだ実装されていない(コミットメッセージ自身に「（実際には結合はしていない）」と明記)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">03</span><span class="pass-title">ZWJ/VS15/VS16/肌色修飾子の合字対応(表示のみ)</span><span class="pass-date">2026-08-16 08:06</span></div>
+          <p><code class="inline">TryShapeCluster</code>によるクラスタリング・シェーピング機構を実装。「表示のみ、カーソル移動は未対応」という設計上の制約はこの回から一貫している。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">04</span><span class="pass-title">キーキャップ合字対応</span><span class="pass-date">2026-08-16 08:53</span></div>
+          <p><code class="inline">IsCombiningEnclosingKeycap</code>を継続判定に追加。この直後、右/下端が欠けて見えるクリッピング問題が2件見つかり、幅の正方形化・フォントの行高さフィットの2段階で修正された(<a href="#ligature">03節</a>)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">05</span><span class="pass-title">絵文字フォント固定指定・UI設定化</span><span class="pass-date">2026-08-16 13:20</span></div>
+          <p>ハードコードされた定数(<code class="inline">NKMM_COLOR_FONT_EMOJI_FONT_NAME</code>)を、共通設定「全般」タブのUI(チェック+ボタン+ラベル)として実行時変更可能にした。「未選択=システムの自動選択」という明示状態を持たせることをユーザーから要件として指定された。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">06</span><span class="pass-title">合字の初期値修正</span><span class="pass-date">2026-08-16 13:26</span></div>
+          <p><code class="inline">m_bUseEmojiLigature</code>の既定値を<code class="inline">FALSE</code>に変更。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">07</span><span class="pass-title">絵文字/合字チェックボックスの活性連動</span><span class="pass-date">2026-08-17 12:43</span></div>
+          <p>「絵文字フォント」チェックOFF時に「合字」チェックをグレーアウトするUI連動を追加。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">08</span><span class="pass-title">コメントのリファクタリング</span><span class="pass-date">2026-08-31</span></div>
+          <p>直近3回のパスで生じていたコメントと実挙動の食い違いを解消(<a href="#mismatch">07節</a>)。<code class="inline">CShareData.cpp</code>の既定値・独立性コメント、<code class="inline">CPropComGeneral.cpp</code>のUI連動箇所2箇所、<code class="inline">CommonSetting.h</code>のメンバコメント、<code class="inline">CAtlasPagePool.h</code>/<code class="inline">CGlyphAtlasCache.cpp</code>の「共用」表現を修正。ロジック・UI挙動そのものは一切変更していない。<code class="inline">changelog/NKMM_FIX_COLOR_FONT.md</code>にも08-16〜17のセッション内容を追記した。</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>sakura fork — NKMM_FIX_COLOR_FONT</span>
+      <span>2026-08-31 時点の実装状態</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  try{
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function(a){
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if(el) map[id] = a;
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var a = map[entry.target.id];
+        if(!a) return;
+        if(entry.isIntersecting){
+          links.forEach(function(l){ l.classList.remove('active'); });
+          a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+    Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

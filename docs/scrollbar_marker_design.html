@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>スクロールバーマーカー 設計リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%8F</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514;
+      --surface:#241C1B;
+      --ink:#EEE5E1;
+      --ink-soft:#B3A29D;
+      --ink-faint:#7C6E6A;
+      --rule:#3A2E2C;
+      --sakura:#E28CA8;
+      --sakura-ink:#F3B9CC;
+      --sakura-tint:#3A2530;
+      --code-bg:#120E0D;
+      --code-ink:#E9DED8;
+      --code-soft:#96877F;
+      --code-accent:#E7A6BC;
+      --ok-bg:#28331F;
+      --ok-ink:#9FC28F;
+      --warn-bg:#362C15;
+      --warn-ink:#E0BE79;
+      --scope-bg:#232C36;
+      --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514;
+    --surface:#241C1B;
+    --ink:#EEE5E1;
+    --ink-soft:#B3A29D;
+    --ink-faint:#7C6E6A;
+    --rule:#3A2E2C;
+    --sakura:#E28CA8;
+    --sakura-ink:#F3B9CC;
+    --sakura-tint:#3A2530;
+    --code-bg:#120E0D;
+    --code-ink:#E9DED8;
+    --code-soft:#96877F;
+    --code-accent:#E7A6BC;
+    --ok-bg:#28331F;
+    --ok-ink:#9FC28F;
+    --warn-bg:#362C15;
+    --warn-ink:#E0BE79;
+    --scope-bg:#232C36;
+    --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600;
+    color:var(--ink);
+    text-wrap:balance;
+    letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{
+    font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+    font-size:.88em;
+  }
+  code.inline{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:.08em .38em;
+    color:var(--sakura-ink);
+  }
+
+  /* ---- layout shell ---- */
+  .shell{
+    display:grid;
+    grid-template-columns:248px minmax(0,1fr);
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .toc{
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+    padding:32px 18px 32px 28px;
+    border-right:1px solid var(--rule);
+  }
+  .toc-brand{
+    font-family:'Shippori Mincho',serif;
+    font-weight:700;
+    font-size:1.02rem;
+    margin-bottom:2px;
+  }
+  .toc-brand small{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+    font-size:.68rem;
+    letter-spacing:.06em;
+    color:var(--sakura-ink);
+    margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif;
+    font-size:.68rem;
+    letter-spacing:.09em;
+    color:var(--ink-faint);
+    font-weight:600;
+    margin:0 0 8px;
+    text-transform:uppercase;
+  }
+  .toc a{
+    display:block;
+    font-size:.83rem;
+    color:var(--ink-soft);
+    text-decoration:none;
+    padding:4px 0 4px 12px;
+    border-left:2px solid transparent;
+    line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    letter-spacing:.1em;
+    color:var(--sakura-ink);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-top:22px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    padding:5px 11px;
+    border-radius:999px;
+    background:var(--surface);
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:24px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.8rem;
+    color:var(--sakura);
+    font-weight:600;
+  }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:66ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:64ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+    margin:22px 0 30px;
+  }
+  .principle{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:18px 18px 16px;
+  }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+    font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  .swatch{
+    display:inline-block; width:10px; height:10px; border-radius:2px;
+    margin-right:6px; vertical-align:middle; border:1px solid rgba(0,0,0,.15);
+  }
+
+  pre{
+    background:var(--code-bg);
+    color:var(--code-ink);
+    border-radius:10px;
+    padding:18px 20px;
+    overflow-x:auto;
+    margin:0 0 22px;
+    font-size:.82rem;
+    line-height:1.7;
+    box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+  figure{ margin:0 0 26px; }
+  figcaption{ font-size:.78rem; color:var(--ink-faint); margin-top:8px; }
+
+  .callout{
+    border:1px solid var(--rule);
+    border-left:3px solid var(--sakura);
+    background:var(--surface);
+    border-radius:0 10px 10px 0;
+    padding:16px 20px;
+    margin:0 0 22px;
+    font-size:.9rem;
+    max-width:64ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+
+  /* diagram */
+  .diagram{
+    display:flex; align-items:stretch; gap:0; margin:18px 0 30px;
+    border:1px solid var(--rule); border-radius:12px; overflow:hidden; background:var(--surface);
+  }
+  .diagram .stage{
+    flex:1; padding:18px 16px; position:relative;
+    border-right:1px dashed var(--rule);
+  }
+  .diagram .stage:last-child{ border-right:none; }
+  .diagram .stage h5{
+    font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.06em;
+    color:var(--ink-faint); text-transform:uppercase; margin:0 0 8px;
+  }
+  .diagram .stage p{ font-size:.8rem; margin:0; max-width:none; color:var(--ink-soft); }
+  .diagram .stage:after{
+    content:"→"; position:absolute; right:-13px; top:50%; transform:translateY(-50%);
+    color:var(--sakura); font-size:1.1rem; z-index:2;
+  }
+  .diagram .stage:last-child:after{ content:none; }
+
+  /* timeline (pass log) */
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline:before{
+    content:""; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:var(--rule);
+  }
+  .pass{ position:relative; padding-bottom:34px; }
+  .pass:last-child{ padding-bottom:0; }
+  .pass:before{
+    content:""; position:absolute; left:-28px; top:5px; width:9px; height:9px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--sakura);
+  }
+  .pass-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .pass-num{ font-family:'IBM Plex Mono',monospace; color:var(--sakura-ink); font-size:.78rem; font-weight:600; }
+  .pass-title{ font-weight:700; font-size:.97rem; }
+  .pass-date{ font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--ink-faint); margin-left:auto; }
+  .pass p{ font-size:.88rem; color:var(--ink-soft); max-width:70ch; margin:0 0 8px; }
+  .pass p:last-child{ margin-bottom:0; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule);
+    margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+    .diagram{ flex-direction:column; }
+    .diagram .stage{ border-right:none; border-bottom:1px dashed var(--rule); }
+    .diagram .stage:after{ content:"↓"; right:auto; left:16px; top:auto; bottom:-13px; transform:none; }
+    .diagram .stage:last-child{ border-bottom:none; }
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    html{ scroll-behavior:smooth; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">スクロールバーマーカー<small>NKMM_FIX_EDITVIEW_SCRBAR / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+        <a href="#markers">表示されるマーカー種別</a>
+      </div>
+      <div class="toc-group">
+        <h5>中核メカニズム</h5>
+        <a href="#control">コントロールの実体とテーマ</a>
+        <a href="#flow">描画パイプライン</a>
+        <a href="#color">色分けと半透明合成</a>
+        <a href="#position">位置計算</a>
+        <a href="#interaction">クリック・ホバー操作</a>
+      </div>
+      <div class="toc-group">
+        <h5>性能</h5>
+        <a href="#perf">パフォーマンス施策の変遷</a>
+      </div>
+      <div class="toc-group">
+        <h5>仕様</h5>
+        <a href="#settings">設定項目</a>
+        <a href="#limits">既知の制約・対象外</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#files">変更ファイル一覧</a>
+        <a href="#history">変更履歴</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">スクロールバーマーカー</h1>
+      <p class="subtitle lede">検索結果・ブックマーク・キャレット行を垂直スクロールバー上に色付きマーカーとして重ね描きする機能の設計記録。2017年に基本機能が実装され、2026年にスレッドプール化・クリックジャンプ・Explorerテーマ対応など大規模な性能改善とUX強化が集中して行われた、二段階の開発史を持つ。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_FIX_EDITVIEW_SCRBAR</b></span>
+        <span class="chip">初版 <b>2017-06-09</b></span>
+        <span class="chip">性能改修 <b>2026-08-06〜17</b></span>
+        <span class="chip">中核クラス <b class="mono">ScrBarMarker</b></span>
+      </div>
+    </header>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>マーカー専用のカスタムコントロールは作らず、標準の<code class="inline">SCROLLBAR</code>ウィンドウ(Explorerテーマ適用済み)の上から、ウィンドウプロシージャのサブクラス化とGDIの半透明合成(<code class="inline">AlphaBlend</code>)だけでオーバーレイ描画する。ドキュメント全体の走査(キャッシュ「作成」)と、実際にピクセルへ描く処理(「描画」)を明確に2段階へ分離し、それぞれ専用のスレッドプールワーク(<code class="inline">PTP_WORK</code>)に投げることで、編集操作のたびに走る重い処理をUIスレッドから追い出す。</p>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — 素のスクロールバーへの上乗せ</span>
+          <p>ネイティブ<code class="inline">SCROLLBAR</code>コントロールをそのまま使い、<code class="inline">GetDC</code>で取得したHDCへ非同期に直接矩形を上書きする。<code class="inline">WM_PAINT</code>自体はフックしない。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — 作成と描画の分離</span>
+          <p>全行スキャンして<code class="inline">vLines_</code>キャッシュを作る<code class="inline">Build</code>と、そのキャッシュを画面に反映するだけの<code class="inline">Draw</code>を別スレッドプールワークに分離。色変更・ホバー再描画など「描くだけでよい」更新はDrawだけで済ませる。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — 数値チューニングより方式変更</span>
+          <p>デバウンス・OpenMP並列化・重複描画スキップ・スレッドプール化・色キャッシュなど、性能問題は都度その場しのぎの数値調整ではなく、根本原因(スレッド生成コスト、レジストリ多重読み込み等)を特定してから方式ごと変更する形で潰されてきた。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">この文書の読み方</span>
+        <p>「中核メカニズム」以降はコードを触る際のリファレンス。「パフォーマンス施策の変遷」は、2026年に集中して行われた性能改修が何が原因でどう直ったかを時系列で追う付録で、同種の重い編集フック(<code class="inline">Command_INSTEXT</code>等)を新設する際の注意点としても読める。</p>
+      </div>
+    </section>
+
+    <section id="markers">
+      <h2><span class="num">01</span>表示されるマーカー種別</h2>
+      <p>実装されているのは3種類のみ。検索結果・ブックマークの2種は<code class="inline">ScrBarMarker::vLines_</code>(<code class="inline">uint32_t</code>配列)に、下位28ビット(<code class="inline">NKMM_SCRBAR_LINEN_MASK</code>)へレイアウト行番号、上位4ビット(<code class="inline">NKMM_SCRBAR_MAGIC_MASK</code>)へ種別ビットをORで詰めるビットパッキング方式で格納する(1行に両方あれば両ビットが立つ)。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>種別</th><th>マジック値</th><th>既定色</th><th>判定方法</th></tr></thead>
+          <tbody>
+            <tr><td>検索結果(検索文字列のある行)</td><td class="mono">NKMM_SCRBAR_FOUND_MAGIC<br><span class="mono" style="color:var(--ink-faint)">0x10000000</span></td><td><span class="swatch" style="background:#f4a721"></span><code class="inline">#f4a721</code></td><td><code class="inline">ScrBarMarker::IsFoundLine()</code>。<code class="inline">m_bCurSrchKeyMark</code>(検索ハイライト有効か)と<code class="inline">IsSearchString()</code>の判定結果に基づく</td></tr>
+            <tr><td>ブックマーク行</td><td class="mono">NKMM_SCRBAR_MARK_MAGIC<br><span class="mono" style="color:var(--ink-faint)">0x20000000</span></td><td><span class="swatch" style="background:#ff0032"></span><code class="inline">#ff0032</code></td><td><code class="inline">CBookmarkGetter(pCDocLine).IsBookmarked()</code>(<code class="inline">m_pcDocLine->m_sMark.m_cBookmarked</code>を返すだけ)</td></tr>
+            <tr><td>キャレット(カーソル)のある行</td><td>専用マジック値なし(<code class="inline">vLines_</code>キャッシュと別経路)</td><td><span class="swatch" style="background:#0026ff"></span><code class="inline">#0026ff</code></td><td>現在のキャレット位置(<code class="inline">GetCaret().GetCaretLayoutPos().GetY2()</code>)から毎回直接Y座標を計算、常に1本のみ描画</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>変更行/diffやエラー行(Lintエラー等)を示すマーカー種別は<strong>実装されていない</strong>。マジック値のビット割り当て(<code class="inline">NKMM_SCRBAR_MAGIC_MASK</code>の残り2ビット)から拡張の余地は見て取れるが、明記された計画は無い。</p>
+    </section>
+
+    <section id="control">
+      <h2><span class="num">02</span>コントロールの実体とテーマ</h2>
+      <p>垂直スクロールバーは標準の<code class="inline">SCROLLBAR</code>ウィンドウクラス(<code class="inline">CreateScrollBar()</code>, <code class="inline">CEditView_Scroll.cpp</code>)。<code class="inline">NKMM_SCRBAR_SYSTEM_STYLE</code>(2026-07-18)により<code class="inline">SetWindowTheme(hwnd, L"Explorer", NULL)</code>でExplorer風の細いビジュアルスタイルを適用した上で使う(テーマ無効環境では従来の見た目にフォールバック)。</p>
+      <pre><code><span class="cm">// CEditView_Scroll.cpp</span>
+CUxTheme::getInstance()-&gt;SetWindowTheme( m_hwndVScrollBar, L<span class="kw">"Explorer"</span>, NULL );
+<span class="cm">// ホバー解除時にマーカーを再描画するためサブクラス化</span>
+g_pOldVScrollBarWndProc = (WNDPROC)::SetWindowLongPtr(
+    m_hwndVScrollBar, GWLP_WNDPROC, (LONG_PTR)VScrollBarWndProc );</code></pre>
+      <p><code class="inline">VScrollBarWndProc</code>によるサブクラス化(<code class="inline">SetWindowLongPtr(GWLP_WNDPROC, ...)</code>)で<code class="inline">WM_MOUSEMOVE</code>/<code class="inline">WM_MOUSELEAVE</code>/<code class="inline">WM_TIMER</code>/<code class="inline">WM_LBUTTONDOWN</code>/<code class="inline">WM_DESTROY</code>を横取りし、それ以外は<code class="inline">CallWindowProc()</code>で元のプロシージャへ素通しする。マーカー描画そのものは<code class="inline">WM_PAINT</code>をフックせず、<code class="inline">GetDC(hwnd)</code>で取得したHDCへスレッドプール経由で直接矩形を上書きする、ネイティブのペイントとは独立したオーバーレイ方式。</p>
+      <p>クリックジャンプ・ホバー再描画のどちらも、この<code class="inline">NKMM_SCRBAR_SYSTEM_STYLE</code>によるサブクラス化が前提で、それが無効な場合は動作しない。</p>
+    </section>
+
+    <section id="flow">
+      <h2><span class="num">03</span>描画パイプライン</h2>
+      <p>編集・ブックマーク・検索の各操作から最終的に画面反映までの経路は次の通り。</p>
+      <div class="diagram">
+        <div class="stage">
+          <h5>要求</h5>
+          <p>編集/ブックマーク/検索操作 → <code class="inline">SB_Marker_Clear()</code> がデバウンスタイマー(150ms)をリセット</p>
+        </div>
+        <div class="stage">
+          <h5>作成</h5>
+          <p>入力停止後 <code class="inline">ScrBarMarkerDebounceTimerProc</code> → <code class="inline">SB_Marker_Build()</code> → <code class="inline">ScrBarMarker::Build()</code>。変更なければ即描画要求、無ければ<code class="inline">SubmitThreadpoolWork(pBuildWork_)</code></p>
+        </div>
+        <div class="stage">
+          <h5>スキャン</h5>
+          <p><code class="inline">BuildWorkCallback()</code>が全行スキャンして<code class="inline">vLines_</code>キャッシュを再構築 → <code class="inline">SB_Marker_DrawRequest()</code> → <code class="inline">PostMessage(WM_APP_SCRBAR_PAINT)</code></p>
+        </div>
+        <div class="stage">
+          <h5>描画</h5>
+          <p><code class="inline">WM_APP_SCRBAR_PAINT</code>ハンドラ → <code class="inline">SB_Marker_Draw()</code> → <code class="inline">SubmitThreadpoolWork(pDrawWork_)</code> → <code class="inline">DrawWorkCallback()</code>が<code class="inline">GetDC</code>→<code class="inline">AlphaBlendMyRect()</code>で上乗せ描画</p>
+        </div>
+      </div>
+      <p>描画完了は<code class="inline">PostMessage(WM_APP_SCRBAR_ENDPAINT)</code>で通知され、そのハンドラが<code class="inline">WaitForDraw(false)</code>でハンドルの後始末を行い、検索ヒット件数を検索ダイアログへ反映、<code class="inline">UpdateWindow(m_hwndVScrollBar)</code>で締めくくる。</p>
+      <p>「キャッシュ作成」と「描画」を分けているのは、色変更やホバー時の再表示など<strong>キャッシュ自体は変わらず画面に描き直すだけでよい更新</strong>を、全行再スキャンを伴わない軽量パスにできるようにするため(<a href="#interaction">05節</a>のホバー再描画がこの分離を利用している)。</p>
+    </section>
+
+    <section id="color">
+      <h2><span class="num">04</span>色分けと半透明合成</h2>
+      <p>色は<code class="inline">RegKey(NKMM_REGKEY)</code>(レジストリキー<code class="inline">Software\sakura-niki</code>)経由で3つの値名から読み込まれる(<code class="inline">ScrBarMarker::RefreshColorCache()</code>)。</p>
+      <pre><code>clrSearchCache_ = si::ColorString::ToCOLORREF(
+    RegKey(NKMM_REGKEY).get_s(_T(<span class="kw">"EditViewScrBarFoundColor"</span>), NKMM_SCRBAR_FOUND_COLOR));
+clrMarkCache_ = si::ColorString::ToCOLORREF(
+    RegKey(NKMM_REGKEY).get_s(_T(<span class="kw">"EditViewScrBarMarkColor"</span>), NKMM_SCRBAR_MARK_COLOR));
+clrCursorCache_ = si::ColorString::ToCOLORREF(
+    RegKey(NKMM_REGKEY).get_s(_T(<span class="kw">"EditViewScrBarCursorColor"</span>), NKMM_SCRBAR_CURSOR_COLOR));</code></pre>
+      <p>色を都度レジストリから読むのは重いため(<a href="#perf">06節</a>で発覚した経緯)、<code class="inline">ScrBarMarker</code>のコンストラクタと<code class="inline">BuildWorkCallback()</code>(実際に文書が変化した時だけ走る経路)でのみ再読込し、<code class="inline">DrawWorkCallback()</code>はメンバのキャッシュ値を読むだけになっている。</p>
+      <p>描画自体は<code class="inline">CGraphics::AlphaBlendMyRect(rc, color, alpha)</code>により、GDIの<code class="inline">AlphaBlend()</code>APIで半透明合成する。1×1の単色ビットマップを転送元とし、指定矩形サイズまで引き伸ばして合成する(ピクセル単位のアルファは持たず定数アルファのみ)。不透明度は<code class="inline">NKMM_SCRBAR_MARK_ALPHA</code>(既定220/255)。半透明化(2026-08-10)は、つまみ(サム)に重なったマークが自然に透けて見えるようにするためで、それ以前は<code class="inline">FillSolidMyRect()</code>による不透明な塗り潰しだった。</p>
+      <p>検索マークは横幅いっぱい(高さ2px程度)の細い横線、ブックマーク・カーソル行マークは<code class="inline">nCxVScroll/3</code>四方程度の小さな正方形として描かれる。</p>
+    </section>
+
+    <section id="position">
+      <h2><span class="num">05</span>位置計算</h2>
+      <p><code class="inline">DrawWorkCallback()</code>内の<code class="inline">fnLineToY</code>ラムダ、および<code class="inline">HitTest()</code>内の同一式(当たり判定を表示とズレさせないためコメントで明記して同じ式を複製している)がドキュメント行数→スクロールバー座標変換の核心。</p>
+      <pre><code>auto fnLineToY = [=](uint32_t ln) -&gt; <span class="kw">int</span> {
+    <span class="kw">return</span> nBarTop +
+        (bEnable ? ((<span class="kw">int</span>)((<span class="kw">float</span>)(ln &amp; NKMM_SCRBAR_LINEN_MASK) / ToInt(nAllLines) * nBarHeight))
+                 : ((<span class="kw">int</span>)((<span class="kw">float</span>)(ln &amp; NKMM_SCRBAR_LINEN_MASK) /
+                          ToInt(pEditView-&gt;GetTextArea().m_nViewRowNum) * nBarHeight)));
+};</code></pre>
+      <p><code class="inline">nBarTop</code>はスクロールバー上端の矢印ボタン分のオフセット(<code class="inline">SM_CYVSCROLL</code>)、<code class="inline">nBarHeight</code>は<code class="inline">GetScrollBarInfo()</code>で取得した実際のトラック領域の高さから上下の矢印ボタン分を差し引いた値。<code class="inline">bEnable</code>(スクロール可能=全行数が表示行数を超えている)かどうかで分母を「全レイアウト行数」か「画面に表示できる行数」に切り替える — スクロール不要でバー自体が実質フル表示のときの位置ズレ対策。単純な線形補間であり、折り返しを考慮した「レイアウト行」ベースの座標系を使う。</p>
+      <p>マーク矩形のサイズ・位置補正(<code class="inline">fnDrawMarkAtY</code>)は、矩形の中心が計算Yに来るよう<code class="inline">y - height/2</code>し、上下矢印ボタンの領域にはみ出さないようマージン補正を行う。</p>
+    </section>
+
+    <section id="interaction">
+      <h2><span class="num">06</span>クリック・ホバー操作</h2>
+      <h4>クリックでジャンプ(<code class="inline">NKMM_SCRBAR_MARKER_CLICK_JUMP</code>, 2026-08-10)</h4>
+      <p><code class="inline">VScrollBarWndProc</code>の<code class="inline">WM_LBUTTONDOWN</code>ハンドラが、クリックY座標に最も近い検索/ブックマークのマーク行(許容誤差<code class="inline">max(DpiScaleY(4), 4)</code>px)を<code class="inline">ScrBarMarker::HitTest()</code>で探索し、見つかれば<code class="inline">_SB_Marker_HitTestAndJump()</code>経由で<code class="inline">AddCurrentLineToHistory()</code>(ジャンプ前の位置を履歴登録)→<code class="inline">MoveCursorSelecting()</code>でその行へジャンプする。メッセージを消費し、既定のスクロールバー動作(ページスクロール/サム位置ジャンプ)は行わない。</p>
+      <ul>
+        <li>つまみ(現在の表示位置を示すサム)の上をクリックした場合は、マークジャンプより<strong>つまみのドラッグ操作を優先</strong>する(<code class="inline">HitTest()</code>冒頭で<code class="inline">xyThumbTop</code>〜<code class="inline">xyThumbBottom</code>範囲内なら即<code class="inline">false</code>を返す) — マークがたまたまつまみに重なった時にスクロールバーがつまめなくなる事態を防ぐ設計</li>
+        <li>マークの無い位置のクリックは<code class="inline">CallWindowProc()</code>で素通しし、既定動作(ページスクロール等)に任せる</li>
+      </ul>
+      <h4>ホバー時の再描画(<code class="inline">NKMM_SCRBAR_MARKER_HOVER_REDRAW</code>, 2026-08-10)</h4>
+      <p>Explorerテーマのホバー(フェード)アニメーションでスクロールバー全体が自前描画され、マーカーが数百msかけて消されてしまう問題への対策。<code class="inline">WM_MOUSEMOVE</code>で非ホバー→ホバーへの遷移を検出した時点で即1回<code class="inline">SB_Marker_CallPaint()</code>し、以後50ms間隔・最大8回(400ms)のタイマーで<code class="inline">_SB_Marker_HoverRedraw()</code>(軽量パス、<code class="inline">SetScrollInfo</code>更新なし)を繰り返し呼んでマークの再表示を維持する。<code class="inline">WM_MOUSELEAVE</code>でもマーカー再描画とタイマー停止を行う。</p>
+      <p>キーボード操作によるマーカー専用ショートカットは無い(通常のカーソル移動・検索コマンド(F3等)がマーカー更新を間接的にトリガーするのみ)。</p>
+    </section>
+
+    <section id="perf">
+      <h2><span class="num">07</span>パフォーマンス施策の変遷</h2>
+      <p class="lede">2017年のキャッシュ化から2026年のスレッドプール化まで、その場しのぎの数値調整では再発するたびに閾値を動かすだけになっていた問題を、根本原因を特定してから方式ごと変更する形で1つずつ潰してきた記録。</p>
+      <div class="timeline">
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">01</span><span class="pass-title">キャッシュ化</span><span class="pass-date">2017-06-10</span></div>
+          <p>全行スキャン結果を<code class="inline">vLines_</code>配列にキャッシュし、スクロールのたびに再スキャンしないようにした。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">02</span><span class="pass-title">バックグラウンドスレッド化</span></div>
+          <p>キャッシュ「作成」と「描画」をそれぞれ別スレッドで実行(当初は<code class="inline">_beginthreadex</code>による都度スレッド生成)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">03</span><span class="pass-title">入力デバウンス化</span><span class="pass-date">2026-07-28</span></div>
+          <p><code class="inline">Clear()</code>は即座に再構築せず<code class="inline">SetTimer(..., 150ms)</code>をリセットするだけにし、連続入力(タイプ入力)が止まってから1回だけ<code class="inline">Build()</code>する(<code class="inline">IDT_SCRBAR_MARKER_DEBOUNCE</code>, <code class="inline">SCRBAR_MARKER_DEBOUNCE_MS=150</code>)。ただし描画抑制中(<code class="inline">SetDrawSwitch(false)</code>、ReplaceAll等のバルク編集)は例外的にデバウンスせず同期<code class="inline">Build()</code>を呼ぶ(競合防止)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">04</span><span class="pass-title">ReplaceAll激重バグの修正</span><span class="pass-date">2026-07-28</span></div>
+          <p><code class="inline">Command_INSTEXT</code>が編集毎に無条件で呼ぶ<code class="inline">SB_Marker_Clear</code>が、ReplaceAll中に1行ごとにスレッド生成+<code class="inline">Sleep(10)</code>を引き起こし、20,000行の置換で200秒以上かかっていた。<code class="inline">GetDrawSwitch()==false</code>中は<code class="inline">WaitForBuild</code>/<code class="inline">WaitForDraw</code>で既存スレッドを止めた上で即returnするガードを追加(<code class="inline">changelog/NKMM_FIX_SCRBAR_MARKER_REPLACEALL_PERF.md</code>)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">05</span><span class="pass-title">水平スクロールバーの再描画スキップ判定バグ修正</span><span class="pass-date">2026-08-06</span></div>
+          <p><code class="inline">SetScrollInfo</code>スキップ判定の更新漏れを修正(<code class="inline">changelog/NKMM_FIX_EDITVIEW_SCRBAR_HWIDTH_SKIP.md</code>)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">06</span><span class="pass-title">競合クラッシュ修正・OpenMP並列化・重複描画スキップ</span><span class="pass-date">2026-08-09</span></div>
+          <p><code class="inline">SB_Marker_BuildThread</code>と<code class="inline">ChangeCurRegexp()</code>の競合クラッシュ、<code class="inline">WM_APP_SCRBAR_PAINT</code>のブロッキング待ちを解消。「折り返しなし」かつ「正規表現でない」検索に限り、<code class="inline">BuildWorkCallback</code>の全行スキャンループを<code class="inline">#pragma omp parallel for schedule(dynamic, 4096)</code>で並列化(折り返しありは<code class="inline">LogicToLayout()</code>の共有キャッシュ競合、正規表現は単一共有エンジン<code class="inline">CEditView::m_CurRegexp</code>の競合のため対象外)。さらに、行番号順処理でY座標がほぼ単調増加である性質を利用し、直前と同じYなら描画をスキップする重複描画スキップも追加(ヒット数が数万〜数十万件になる巨大ファイルで<code class="inline">FillRect</code>呼び出しが爆発するのを防ぐ)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">07</span><span class="pass-title">スレッドプール化・クリックジャンプ・半透明化・CPU対策</span><span class="pass-date">2026-08-10</span></div>
+          <p>編集の度に<code class="inline">_beginthreadex</code>でOSスレッドを新規生成し起動直後に<code class="inline">Sleep(10)</code>していたのを、<code class="inline">CreateThreadpoolWork</code>/<code class="inline">SubmitThreadpoolWork</code>による常駐ワーカーへの投入方式に変更しスレッド生成コストと<code class="inline">Sleep(10)</code>を排除。取りこぼし防止のため<code class="inline">bRebuildPending_</code>/<code class="inline">bRestartRequestDrawThread_</code>のコアレッシング機構を導入したが、その後発覚したTOCTOUレースを<code class="inline">mtxBuildState_</code>/<code class="inline">mtxDrawState_</code>(<code class="inline">std::mutex</code>)で修正した。同日、<a href="#interaction">クリックジャンプ</a>・ホバー再描画・<a href="#color">AlphaBlend半透明化</a>を追加し、ホバー中のCPU使用率対策を2段階で実施: 第一段はホバー中50ms間隔の再描画タイマーが毎回<code class="inline">SetScrollInfo(redraw=TRUE)</code>(ネイティブ全面再描画、テーマアニメーション再トリガー)を発生させ続けていたのを<code class="inline">Draw(bUpdateScrollInfo=false)</code>の軽量描画パスへ分離。第二段は<code class="inline">DrawWorkCallback()</code>が呼ばれる度に色設定をレジストリから都度読んでいた(1回で12回のレジストリAPI呼び出し)ことと、ホバー中ずっとタイマーを回し続けていたことの2点が原因と判明し、<a href="#color">色キャッシュ</a>導入と<code class="inline">NKMM_SB_HOVER_REDRAW_MAX_TICKS</code>(既定8回=400ms)でのバースト後自動<code class="inline">KillTimer()</code>で解消した。<code class="inline">CGraphics</code>側でも、呼び出しの度に<code class="inline">CreateCompatibleDC</code>/<code class="inline">CreateCompatibleBitmap</code>していたのをインスタンス生存期間中使い回す方式に変更(<code class="inline">changelog/NKMM_FIX_EDITVIEW_SCRBAR_THREADPOOL.md</code> / <code class="inline">NKMM_FIX_SCRBAR_MARKER_INTERACTION.md</code>)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">08</span><span class="pass-title">水平スクロールバーの自動非表示</span><span class="pass-date">2026-08-17</span></div>
+          <p>各行の文字数がウィンドウ幅に収まっている間はバー自体を非表示にし、その分テキスト表示領域を広げる(内容がウィンドウ幅を超えたら自動的に再表示)。従来は常にバーの領域を確保した上で不要なときはグレーアウトするだけだった。マーカー描画そのものではなく水平バー周りの表示最適化。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings">
+      <h2><span class="num">08</span>設定項目</h2>
+      <p>共通設定ダイアログや<code class="inline">.ini</code>には、この機能に対応する設定項目は<strong>一切無い</strong>。機能自体(検索/ブックマーク/カーソル行表示、クリックジャンプ、ホバー再描画)のON/OFFは<code class="inline">my_config.h</code>のコンパイル時フラグでのみ制御可能で、実行時にユーザーが無効化する手段は無い。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>項目</th><th>公開方法</th><th>既定値</th></tr></thead>
+          <tbody>
+            <tr><td>検索結果の色</td><td>レジストリ<code class="inline">HKCU\Software\sakura-niki</code>の値名<code class="inline">EditViewScrBarFoundColor</code>(REG_SZ、<code class="inline">#RRGGBB</code>)</td><td class="mono">#f4a721</td></tr>
+            <tr><td>ブックマークの色</td><td>同上、値名<code class="inline">EditViewScrBarMarkColor</code></td><td class="mono">#ff0032</td></tr>
+            <tr><td>キャレット行の色</td><td>同上、値名<code class="inline">EditViewScrBarCursorColor</code></td><td class="mono">#0026ff</td></tr>
+            <tr><td>不透明度・クリック許容誤差・デバウンス時間・ホバータイマー周期/上限</td><td><span class="pill scope">実行時設定不可</span> — すべてソースコード中の定数</td><td>220/255、<code class="inline">max(DpiScaleY(4),4)</code>px、150ms、50ms×8回</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>色の3項目はUIから設定する手段が無く、<code class="inline">regedit</code>等での直接操作、またはアプリ側が<code class="inline">RegKey</code>ラッパー経由で読むだけの「隠し設定」的な位置づけになっている。</p>
+    </section>
+
+    <section id="limits">
+      <h2><span class="num">09</span>既知の制約・対象外</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>項目</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill warn">未対応</span></td><td><code class="inline">CreateThreadpoolWork()</code>が失敗した場合(メモリ不足等)のエラーハンドリングは未実装。<code class="inline">pBuildWork_</code>/<code class="inline">pDrawWork_</code>が<code class="inline">nullptr</code>のまま<code class="inline">SubmitThreadpoolWork()</code>されるとクラッシュする(旧<code class="inline">_beginthreadex</code>実装も同様に未対応だったため、既存と同水準のまま据え置き)</td></tr>
+            <tr><td><span class="pill warn">未検証</span></td><td>スレッドプールへの投入が正しく行われるか、再構築要求の取りこぼしが実際に起きないか、ウィンドウ多数オープン時にスレッド数が増えなくなったか、といった実機での網羅的な動作確認は行われていない(<code class="inline">NKMM_FIX_EDITVIEW_SCRBAR_THREADPOOL.md</code>)</td></tr>
+            <tr><td><span class="pill warn">未解決</span></td><td>開いているウィンドウ数に応じてReplaceAllが遅くなる現象が残っている。原因候補として共有メモリ(<code class="inline">DLLSHAREDATA</code>)経由のウィンドウ間同期等が挙げられているが、「実運用で数十枚のウィンドウを開いたまま大量置換を繰り返す状況はまず起きない」として既知の制限扱い</td></tr>
+            <tr><td><span class="pill scope">スコープ外</span></td><td>Undo履歴の段数上限が無く無制限に蓄積し続ける設計上の問題を発見したが、エディタ本体の改善は今回のスコープ外として見送られた</td></tr>
+            <tr><td><span class="pill warn">既知の副作用</span></td><td>検索ハイライトの一時無効化(<code class="inline">CSuppressSrchKeyMarkForReplaceAll</code>)により、ReplaceAll実行中(および完了直後の一瞬)は編集画面上の検索文字列ハイライト表示も無効化される。実害はほぼ無いと見られるが完全には否定していない</td></tr>
+            <tr><td><span class="pill scope">対象外</span></td><td>変更行/diffマーカー、エラー行(Lint等)マーカーは未実装。マジック値のビット割り当てに拡張の余地はあるが、明記された計画は無い</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">10</span>変更ファイル一覧</h2>
+      <div class="tablewrap filemap">
+        <table>
+          <thead><tr><th>ファイル</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">my_config.h</td><td>フラグ定義一式、マジック値、既定色、既定不透明度</td></tr>
+            <tr><td class="mono">view/CEditView.h</td><td><code class="inline">ScrBarMarker</code>クラス定義、<code class="inline">_SB_Marker_*</code>ラッパー宣言、トレース用マクロ</td></tr>
+            <tr><td class="mono">view/CEditView.cpp</td><td><code class="inline">ScrBarMarker</code>の全実装(<code class="inline">BuildWorkCallback</code>/<code class="inline">DrawWorkCallback</code>/<code class="inline">Build</code>/<code class="inline">Draw</code>/<code class="inline">Add</code>/<code class="inline">Del</code>/<code class="inline">IsFoundLine</code>/<code class="inline">HitTest</code>/<code class="inline">WaitForBuild</code>/<code class="inline">WaitForDraw</code>/<code class="inline">RefreshColorCache</code>)、<code class="inline">WM_APP_SCRBAR_PAINT</code>/<code class="inline">_ENDPAINT</code>ハンドラ、デバウンスタイマーコールバック</td></tr>
+            <tr><td class="mono">view/CEditView_Scroll.cpp</td><td><code class="inline">CreateScrollBar()</code>(Explorerテーマ・サブクラス化)、<code class="inline">VScrollBarWndProc</code>(ホバー検出・クリックジャンプ・ホバー再描画タイマー)、<code class="inline">AdjustScrollBars()</code></td></tr>
+            <tr><td class="mono">uiparts/CGraphics.h / .cpp</td><td><code class="inline">AlphaBlendMyRect()</code>(半透明矩形塗り潰し)、<code class="inline">FillSolidMyRect()</code>(旧・不透明版、現在マーカーには未使用)</td></tr>
+            <tr><td class="mono">cmd/CViewCommander_Bookmark.cpp</td><td>ブックマーク登録/解除時の<code class="inline">SB_Marker_CallPaint</code>/<code class="inline">SB_Marker_Clear</code>呼び出し</td></tr>
+            <tr><td class="mono">cmd/CViewCommander_Search.cpp</td><td>検索/置換系コマンドからの<code class="inline">SB_Marker_Clear</code>呼び出し群、<code class="inline">CSuppressSrchKeyMarkForReplaceAll</code>(ReplaceAll中の競合防止ガード)</td></tr>
+            <tr><td class="mono">view/CEditView_Command_New.cpp、_Command.cpp、_Cmdisrch.cpp</td><td>編集(<code class="inline">ReplaceData_CEditView3</code>)・インクリメンタル検索からの<code class="inline">SB_Marker_Clear</code>/<code class="inline">_CallPaint</code>発火</td></tr>
+            <tr><td class="mono">CLoadAgent.cpp、CGrepAgent.cpp</td><td>ファイル読み込み後・Grep結果表示後のマーカー再構築/描画要求</td></tr>
+            <tr><td class="mono">dlg/CDlgFind.cpp、CDlgReplace.cpp</td><td>検索/置換ダイアログ操作に応じたマーカークリア、ヒット件数のダイアログ表示連携</td></tr>
+            <tr><td class="mono">docplus/CBookmarkManager.h / .cpp</td><td><code class="inline">CBookmarkGetter::IsBookmarked()</code>(マーカー対象行の判定)</td></tr>
+            <tr><td class="mono">changelog/NKMM_FIX_EDITVIEW_SCRBAR_HWIDTH_SKIP.md</td><td>水平バー更新漏れ修正の詳細記録</td></tr>
+            <tr><td class="mono">changelog/NKMM_FIX_EDITVIEW_SCRBAR_THREADPOOL.md</td><td>スレッドプール化・mutex導入の詳細記録</td></tr>
+            <tr><td class="mono">changelog/NKMM_FIX_SCRBAR_MARKER_INTERACTION.md</td><td>クリックジャンプ・ホバー再描画・AlphaBlend化・CPU対策の詳細記録</td></tr>
+            <tr><td class="mono">changelog/NKMM_FIX_SCRBAR_MARKER_REPLACEALL_PERF.md</td><td>ReplaceAll激重バグの原因究明・段階的修正の詳細記録</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="history">
+      <h2><span class="num">11</span>変更履歴</h2>
+      <p class="lede">2017年の基本機能実装と、2026年に集中して行われた性能改修・UX強化という二段階の開発史。詳細な経緯は<a href="#perf">07節</a>を参照。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>日付</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">2017-06-09</td><td>検索結果・ブックマークをスクロールバーに表示する機能を新規実装</td></tr>
+            <tr><td class="mono">2017-06-10</td><td>キャッシュを使用した高速化</td></tr>
+            <tr><td class="mono">2017-06-11</td><td>カーソル行位置の表示を追加</td></tr>
+            <tr><td class="mono">2017-06〜2018</td><td>描画キャッシュのスレッド化、追加・削除ロジック修正、描画回数削減、トレース整理等の一連の改善</td></tr>
+            <tr><td class="mono">2017-07-21</td><td>縦スクロールバーの再描画をマーカー描画のタイミングに合わせる</td></tr>
+            <tr><td class="mono">2026-07-18</td><td>Explorer風ビジュアルスタイル化(<code class="inline">NKMM_SCRBAR_SYSTEM_STYLE</code>導入)</td></tr>
+            <tr><td class="mono">2026-07-19</td><td>マウスがスクロールバーから離れた時の再描画(マーカー消失問題対応)</td></tr>
+            <tr><td class="mono">2026-07-28</td><td>入力時デバウンス化、ReplaceAll激重バグの調査・修正</td></tr>
+            <tr><td class="mono">2026-08-06</td><td>水平スクロールバーのSetScrollInfoスキップ判定バグ修正</td></tr>
+            <tr><td class="mono">2026-08-09</td><td>競合クラッシュ修正、ブロッキング解消、OpenMP並列化、重複描画スキップ</td></tr>
+            <tr><td class="mono">2026-08-10</td><td>スレッドプール化・mutex導入、クリックジャンプ機能、ホバー再描画、AlphaBlend半透明化、CPU使用率対策2段階</td></tr>
+            <tr><td class="mono">2026-08-17</td><td>水平スクロールバーの自動非表示(内容が画面幅に収まる間は非表示)</td></tr>
+            <tr><td class="mono">2026-08-18</td><td>セッションのバッファ復元時にスクロールバー(マーカー含む)が更新されない不具合対応</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      <span>sakura fork — NKMM_FIX_EDITVIEW_SCRBAR</span>
+      <span>2026-08-31 時点の実装状態</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  try{
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function(a){
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if(el) map[id] = a;
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var a = map[entry.target.id];
+        if(!a) return;
+        if(entry.isIntersecting){
+          links.forEach(function(l){ l.classList.remove('active'); });
+          a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+    Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

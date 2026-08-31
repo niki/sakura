@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>コマンドパレット 設計リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%94%8D</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514;
+      --surface:#241C1B;
+      --ink:#EEE5E1;
+      --ink-soft:#B3A29D;
+      --ink-faint:#7C6E6A;
+      --rule:#3A2E2C;
+      --sakura:#E28CA8;
+      --sakura-ink:#F3B9CC;
+      --sakura-tint:#3A2530;
+      --code-bg:#120E0D;
+      --code-ink:#E9DED8;
+      --code-soft:#96877F;
+      --code-accent:#E7A6BC;
+      --ok-bg:#28331F;
+      --ok-ink:#9FC28F;
+      --warn-bg:#362C15;
+      --warn-ink:#E0BE79;
+      --scope-bg:#232C36;
+      --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514;
+    --surface:#241C1B;
+    --ink:#EEE5E1;
+    --ink-soft:#B3A29D;
+    --ink-faint:#7C6E6A;
+    --rule:#3A2E2C;
+    --sakura:#E28CA8;
+    --sakura-ink:#F3B9CC;
+    --sakura-tint:#3A2530;
+    --code-bg:#120E0D;
+    --code-ink:#E9DED8;
+    --code-soft:#96877F;
+    --code-accent:#E7A6BC;
+    --ok-bg:#28331F;
+    --ok-ink:#9FC28F;
+    --warn-bg:#362C15;
+    --warn-ink:#E0BE79;
+    --scope-bg:#232C36;
+    --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600;
+    color:var(--ink);
+    text-wrap:balance;
+    letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{
+    font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+    font-size:.88em;
+  }
+  code.inline{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:.08em .38em;
+    color:var(--sakura-ink);
+  }
+
+  /* ---- layout shell ---- */
+  .shell{
+    display:grid;
+    grid-template-columns:248px minmax(0,1fr);
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .toc{
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+    padding:32px 18px 32px 28px;
+    border-right:1px solid var(--rule);
+  }
+  .toc-brand{
+    font-family:'Shippori Mincho',serif;
+    font-weight:700;
+    font-size:1.02rem;
+    margin-bottom:2px;
+  }
+  .toc-brand small{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+    font-size:.68rem;
+    letter-spacing:.06em;
+    color:var(--sakura-ink);
+    margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif;
+    font-size:.68rem;
+    letter-spacing:.09em;
+    color:var(--ink-faint);
+    font-weight:600;
+    margin:0 0 8px;
+    text-transform:uppercase;
+  }
+  .toc a{
+    display:block;
+    font-size:.83rem;
+    color:var(--ink-soft);
+    text-decoration:none;
+    padding:4px 0 4px 12px;
+    border-left:2px solid transparent;
+    line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    letter-spacing:.1em;
+    color:var(--sakura-ink);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-top:22px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    padding:5px 11px;
+    border-radius:999px;
+    background:var(--surface);
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:24px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.8rem;
+    color:var(--sakura);
+    font-weight:600;
+  }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:66ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:64ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+    margin:22px 0 30px;
+  }
+  .principle{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:18px 18px 16px;
+  }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+    font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  pre{
+    background:var(--code-bg);
+    color:var(--code-ink);
+    border-radius:10px;
+    padding:18px 20px;
+    overflow-x:auto;
+    margin:0 0 22px;
+    font-size:.82rem;
+    line-height:1.7;
+    box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+  figure{ margin:0 0 26px; }
+  figcaption{ font-size:.78rem; color:var(--ink-faint); margin-top:8px; }
+
+  .callout{
+    border:1px solid var(--rule);
+    border-left:3px solid var(--sakura);
+    background:var(--surface);
+    border-radius:0 10px 10px 0;
+    padding:16px 20px;
+    margin:0 0 22px;
+    font-size:.9rem;
+    max-width:64ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+
+  /* diagram */
+  .diagram{
+    display:flex; align-items:stretch; gap:0; margin:18px 0 30px;
+    border:1px solid var(--rule); border-radius:12px; overflow:hidden; background:var(--surface);
+  }
+  .diagram .stage{
+    flex:1; padding:18px 16px; position:relative;
+    border-right:1px dashed var(--rule);
+  }
+  .diagram .stage:last-child{ border-right:none; }
+  .diagram .stage h5{
+    font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.06em;
+    color:var(--ink-faint); text-transform:uppercase; margin:0 0 8px;
+  }
+  .diagram .stage p{ font-size:.8rem; margin:0; max-width:none; color:var(--ink-soft); }
+  .diagram .stage:after{
+    content:"→"; position:absolute; right:-13px; top:50%; transform:translateY(-50%);
+    color:var(--sakura); font-size:1.1rem; z-index:2;
+  }
+  .diagram .stage:last-child:after{ content:none; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule);
+    margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+    .diagram{ flex-direction:column; }
+    .diagram .stage{ border-right:none; border-bottom:1px dashed var(--rule); }
+    .diagram .stage:after{ content:"↓"; right:auto; left:16px; top:auto; bottom:-13px; transform:none; }
+    .diagram .stage:last-child{ border-bottom:none; }
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    html{ scroll-behavior:smooth; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">コマンドパレット<small>NKMM_COMMAND_PALETTE / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+        <a href="#modes">モードと接頭辞</a>
+      </div>
+      <div class="toc-group">
+        <h5>中核メカニズム</h5>
+        <a href="#build">行データの構築</a>
+        <a href="#update">絞り込みの実行</a>
+        <a href="#fuzzy">あいまい検索エンジン</a>
+        <a href="#kanji">漢字ヒューリスティック</a>
+        <a href="#kana">ライブかな変換</a>
+        <a href="#render">オーナードロー描画</a>
+        <a href="#preview">ライブプレビュー</a>
+      </div>
+      <div class="toc-group">
+        <h5>仕様</h5>
+        <a href="#keys">キー操作</a>
+        <a href="#binding">キー割り当て・登録箇所</a>
+        <a href="#appearance">外観</a>
+        <a href="#settings">設定項目</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#limits">既知の制約・対象外</a>
+        <a href="#files">変更ファイル一覧</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">コマンドパレット</h1>
+      <p class="subtitle lede">VS Code風のコマンドパレット/クイックオープンを桜エディタに追加した機能の設計記録。コマンド・ウィンドウ・最近使ったファイル・アウトライン・ブックマークを1つの絞り込みUIに統合し、日本語ローマ字入力にも対応させた。データフロー、あいまい検索エンジンの内部、オーナードロー描画、既知の制約をまとめる。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_COMMAND_PALETTE</b></span>
+        <span class="chip">初版 <b>2026-08-18</b></span>
+        <span class="chip">ローマ字対応 <b>2026-08-19〜21</b></span>
+        <span class="chip">既定キー <b class="mono">Shift+Ctrl+P</b></span>
+        <span class="chip">F-code <b class="mono">F_COMMAND_PALETTE = 31338</b></span>
+      </div>
+    </header>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>「コマンド実行」「ウィンドウ切り替え」「最近使ったファイル」「アウトラインジャンプ」「ブックマークジャンプ」という別々の既存UIを、1個の絞り込みEdit+1個のリストへ統合する。対象の切り替えは新規UIを作らず、VS Code同様に<strong>先頭の記号(接頭辞)</strong>で行う。リストは1万件規模でも重くならないよう仮想リスト(<code class="inline">LVS_OWNERDATA</code>)化し、絞り込みロジックは日本語のローマ字入力(かな漢字変換前の直接入力)にそのままマッチできるよう、専用のあいまい検索エンジンを新規に持つ。</p>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — 接頭辞でモード切替</span>
+          <p><code class="inline">&gt;</code>=コマンド、<code class="inline">edt </code>=開いているウィンドウ、<code class="inline">@</code>=アウトライン、<code class="inline">#</code>=ブックマーク、それ以外(空欄含む)=最近使ったファイル。新規モーダルを作らず1つのEditと1つのListViewで完結させる。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — 正規化してから照合</span>
+          <p>クエリ・検索対象の両方を同じ規則(かな→ローマ字ヘボン式)で正規化し、正規化後の文字列同士を照合する。表示中の入力文字列自体は変換しない(ライブかな変換は別経路)。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — 誤ヒットは方式ごと潰す</span>
+          <p>ギャップ許容の飛び石マッチは、無関係な漢字の読み同士が偶然つながる誤ヒットを繰り返し生んだ。数値チューニングでは再発したため、最終的に「正規化後の連続部分文字列一致」へ方式そのものを変更した。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">この文書の読み方</span>
+        <p>「中核メカニズム」以降はコードを触る際のリファレンス。あいまい検索まわりは特に、過去に踏んだ誤ヒットの実例と、それをどう修正したかという経緯そのものが設計判断の根拠になっている(<a href="#fuzzy">05節</a>)。</p>
+      </div>
+    </section>
+
+    <section id="modes">
+      <h2><span class="num">01</span>モードと接頭辞</h2>
+      <p>フィルタ欄の先頭文字列で絞り込み対象を切り替える。判定・切り替えは <code class="inline">CDlgCommandPalette::UpdateList()</code>(<code class="inline">dlg/CDlgCommandPalette.cpp</code>)。ダイアログを開いた直後は <code class="inline">OnInitDialog()</code> がフィルタ欄へ既定文字列 <code class="inline">"&gt;"</code> をセットするため、常にコマンド検索モードから始まる。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>接頭辞</th><th>対象</th><th>内部種別 <code class="inline">EPaletteRowKind</code></th><th>備考</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">&gt;</td><td>全コマンド</td><td class="mono">ROWKIND_COMMAND</td><td>既定で開いたときのモード</td></tr>
+            <tr><td class="mono">edt&nbsp;(半角空白必須)</td><td>開いているウィンドウ</td><td class="mono">ROWKIND_WINDOW</td><td>タブ=別プロセスをまたいで列挙</td></tr>
+            <tr><td class="mono">@</td><td>現在の文書のアウトライン解析結果</td><td class="mono">ROWKIND_OUTLINE</td><td>2026-08-21追加。初回切替時に遅延構築</td></tr>
+            <tr><td class="mono">#</td><td>現在の文書のブックマーク一覧</td><td class="mono">ROWKIND_BOOKMARK</td><td>2026-08-21追加。初回切替時に遅延構築</td></tr>
+            <tr><td>(それ以外・空欄)</td><td>最近使ったファイル</td><td class="mono">ROWKIND_RECENT</td><td>既定モード(2026-08-19)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>接頭辞に続く文字列は、対象名に対する絞り込みクエリとして使う(部分一致/あいまい一致、詳細は<a href="#fuzzy">05節</a>)。</p>
+    </section>
+
+    <section id="build">
+      <h2><span class="num">02</span>行データの構築</h2>
+      <p>全モード共通の行データ配列 <code class="inline">m_vAllRows</code> を持ち、コマンド・ウィンドウ・最近使ったファイルの3種は <strong>ダイアログを開いた瞬間に1回だけ</strong> <code class="inline">BuildAllRows()</code> でまとめて構築する。アウトライン・ブックマークの2種は毎回コストがかかるため、その接頭辞へ<strong>初めて</strong>切り替わったときだけ <code class="inline">BuildOutlineRows()</code> / <code class="inline">BuildBookmarkRows()</code> で遅延構築する。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>関数</th><th>取得元</th><th>備考</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">BuildAllRows()</td><td><code class="inline">CFuncLookup</code>(コマンド全列挙)、<code class="inline">CKeyBind::GetKeyStr()</code>(ショートカット文字列)、<code class="inline">CAppNodeManager::GetOpenedWindowArr()</code>(開いているウィンドウ)、<code class="inline">CMRUFile</code>(最近使ったファイル)</td><td><code class="inline">std::set&lt;EFunctionCode&gt;</code>で同一機能番号の重複登録(複数カテゴリに載る機能)を除去</td></tr>
+            <tr><td class="mono">BuildOutlineRows()</td><td><code class="inline">CEditDoc::m_cDocOutline</code>の<code class="inline">MakeFuncList_C</code>/<code class="inline">MakeFuncList_Java</code>/<code class="inline">MakeTopicList_txt</code>等</td><td>通常のCtrl+F11アウトラインダイアログと同じ解析ルーチンを再利用。プラグイン(WSH)によるアウトライン解析には非対応で、素のテキスト・トピック解析へフォールバック</td></tr>
+            <tr><td class="mono">BuildBookmarkRows()</td><td><code class="inline">MakeFuncList_BookMark()</code></td><td>空行のブックマークは<code class="inline">"(空行)"</code>というプレースホルダ名で表示(アウトラインと違い除外しない)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="update">
+      <h2><span class="num">03</span>絞り込みの実行 — <code class="inline">UpdateList()</code></h2>
+      <p>フィルタ欄の入力(またはEN_CHANGE)のたびに呼ばれる中心関数。IME変換中は <code class="inline">ImmGetCompositionStringW()</code> で未確定文字列も補ってから接頭辞・クエリを判定し、<code class="inline">m_vAllRows</code>を線形走査して <code class="inline">FuzzyMatchJapaneseCached()</code> でスコア付き判定する。</p>
+      <ul>
+        <li>空クエリ時は元の並び順のまま(ソートしない)</li>
+        <li>クエリありのときはスコア降順に <code class="inline">std::stable_sort</code>(ただしアウトラインモードのみ、ファイル内の行順を保つためソート対象外)</li>
+        <li>結果は <code class="inline">m_vMatchedRowIndices</code>(表示インデックス→<code class="inline">m_vAllRows</code>添字のマップ)に格納し、<code class="inline">ListView_SetItemCount()</code>で反映</li>
+        <li>末尾で <code class="inline">AdjustListHeight()</code> と件数表示の再描画を行う</li>
+      </ul>
+      <div class="callout">
+        <span class="label">仮想リスト化した理由</span>
+        <p>以前は1件ごとに <code class="inline">ListView_InsertItem()</code> を呼んで組み立てていたが、コマンド1万件規模で約1.8秒かかっていた。行データをアプリ側(<code class="inline">m_vAllRows</code>/<code class="inline">m_vMatchedRowIndices</code>)だけで保持し、<code class="inline">LVN_GETDISPINFO</code>と<code class="inline">NM_CUSTOMDRAW</code>で都度引き当てる<code class="inline">LVS_OWNERDATA</code>方式へ書き換えて解消した。</p>
+      </div>
+    </section>
+
+    <section id="fuzzy">
+      <h2><span class="num">04</span>あいまい検索エンジン</h2>
+      <p>2箇所のファイルに役割分担している。<code class="inline">util/RomajiFuzzyMatch.hpp</code> はsakuraに一切依存しないUTF-8ヘッダオンリーの汎用エンジン(ブラウザ拡張Gretel Barの<code class="inline">src/fuzzy_match.js</code>を移植)、<code class="inline">util/CFuzzyMatchJp.h/.cpp</code> がsakuraとの結線層(漢字読み展開・ライブかな変換・呼び出し口)を担う。</p>
+
+      <h4>正規化パイプライン — <code class="inline">fuzzy::NormalizeForSearch()</code></h4>
+      <div class="diagram">
+        <div class="stage">
+          <h5>Stage2</h5>
+          <p>半角カナ→全角統合、ひらがな→カタカナへのoffset統合</p>
+        </div>
+        <div class="stage">
+          <h5>Pass1</h5>
+          <p>モーラ分解。拗音(きゃ/しゃ等)は<code class="inline">kana::LookupDigraph</code>で2文字先読み</p>
+        </div>
+        <div class="stage">
+          <h5>Pass2</h5>
+          <p>促音(っ)・長音(ー)の確定変換</p>
+        </div>
+        <div class="stage">
+          <h5>Pass3</h5>
+          <p><code class="inline">kana::RomajiAliases()</code>で命令式ローマ字(si/ti/tu/hu/zi...)をヘボン式(shi/chi/tsu/fu/ji...)へ畳み込み</p>
+        </div>
+      </div>
+      <p><code class="inline">namespace kana</code>(<code class="inline">RomajiFuzzyMatch.hpp</code>内)がこのために必要な変換テーブルを提供する: <code class="inline">HalfwidthBaseToFullwidth</code>(半角カナ基底→全角)、<code class="inline">ApplyDakuten</code>/<code class="inline">ApplyHandakuten</code>(濁点/半濁点)、<code class="inline">LookupDigraph</code>(拗音・外来語拡張音のカタカナ2文字→ローマ字)、<code class="inline">LookupMonograph</code>(カタカナ1文字→ローマ字)、<code class="inline">RomajiAliases</code>(命令式→ヘボン式のエイリアス表。撥音の二重n表記<code class="inline">"nn"→"n"</code>もここで畳み込む)。</p>
+
+      <div class="callout">
+        <span class="label">2026-08-21: 飛び石マッチから連続部分文字列マッチへの方式変更</span>
+        <p><code class="inline">RomajiFuzzyMatch.hpp</code>の<code class="inline">FuzzyMatchNormalized()</code>(ギャップ許容の貪欲法部分列マッチ)をそのまま使うと、漢字ヒューリスティックで1漢字が複数文字のローマ字に展開されることも相まって、無関係な別の漢字の読みへギャップ越しにまたがって一致してしまう実例が繰り返し見つかった。</p>
+        <p>例: <code class="inline">"kensaku"</code>が「(矩形選択)単語の左端に移動」にヒット(「選」が複数モーラ読みテーブルで"えら"に展開され、遠く離れた文字と繋がっていた)。<code class="inline">"shu"</code>が「小文字」にヒット(小→"shi"の"sh"から、間の"i"を飛ばして隣の"fu"の"u"へ食い込んでいた)。</p>
+        <p>ギャップの許容量を数値で細かく調整しても同種の偶然一致が次々見つかったため、方式そのものを変更した: パターンは正規化後の文字列に対して<strong>「連続した部分文字列」</strong>として現れることを必須にする(出現位置自体は文字列中のどこでもよい)。VS Code風の離れた頭文字だけのマッチ(例: <code class="inline">"gc"</code>→<code class="inline">"GetChanges"</code>)はできなくなるが、実際にこのパレットで必要になった例(kensaku/modosu/migi/hidari/shita/mae/doro/kopi-等)はすべて「正規化後の文字列に連続して現れる」ケースだったため支障はなかった。</p>
+      </div>
+
+      <p>この結果、現在の本線 <code class="inline">FuzzyMatchJapaneseCached()</code>(<code class="inline">CFuzzyMatchJp.cpp</code>)は <code class="inline">sPrecomputedTarget.find(pattern.normalized)</code> という単純な連続部分文字列検索を行っており、<code class="inline">RomajiFuzzyMatch.hpp</code>側の <code class="inline">FuzzyMatchNormalized()</code>(ギャップ許容の飛び石マッチ)は汎用エンジンとして残ってはいるが<strong>このパレットからは現在呼ばれていない</strong>。スコアは「出現位置が先頭に近いほど・対象文字列全体が短いほど」高くなる単純な加減算で、<code class="inline">UpdateList()</code>側でスコア降順に並べ替える(最もタイトに一致したものを上に出す)。</p>
+    </section>
+
+    <section id="kanji">
+      <h2><span class="num">05</span>漢字ヒューリスティック</h2>
+      <p><code class="inline">NKMM_COMMAND_PALETTE_ROMAJI_KANJI</code>(<code class="inline">NKMM_COMMAND_PALETTE_ROMAJI</code>が有効なら自動的にON)。正規化エンジン自体は漢字の読みを知らず素通しするだけのため、<code class="inline">CFuzzyMatchJp.cpp</code>側でクエリ・検索対象の文字列中の漢字を先に「読みの先頭モーラが一致しそうなひらがな」へ事前展開してから正規化エンジンに渡す(厳密な読み検証ではないヒューリスティック)。</p>
+
+      <div class="tablewrap">
+        <table>
+          <caption>展開の優先順位(<code class="inline">ExpandKanjiReadings()</code>)</caption>
+          <thead><tr><th>順位</th><th>データ源</th><th>性質</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td class="mono">g_aMultiMoraKanjiTable</td><td>手動・実地検証済みの上書きテーブル(約90字弱)。「開く(ひらく)」のように1漢字が複数モーラの読みを持つ送り仮名付きの語などを個別登録</td></tr>
+            <tr><td>2</td><td class="mono">CKanjiReadingTableJIS1(JIS1TABLE)</td><td>JIS第1水準漢字2965字の音訓読み全件テーブル。<code class="inline">NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE</code>有効時のみ(既定<span class="pill warn">無効</span>)</td></tr>
+            <tr><td>3</td><td class="mono">CKanjiReadingDict::GetHiraByKanji()</td><td>漢字1文字→読みの先頭モーラへの逆引き単独モーラ辞書(常時有効)。元データはGretel Barの<code class="inline">src/kanji_dict.js</code>移植</td></tr>
+            <tr><td>4</td><td>(該当なし)</td><td>漢字はそのまま素通し。直接その漢字を含む文字列同士のリテラル一致にのみ寄与</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>JIS1TABLEを既定無効にしている理由は、選び方が「最初の訓読みの活用語幹、無ければ最初の音読み」という機械的ルールのみで、複数の読みを持つ漢字では実際の使われ方と違う読みを選んでしまうことがあるため(詳細は <code class="inline">changelog/NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE.md</code>)。ノイズが気になる場合は <code class="inline">NKMM_COMMAND_PALETTE_ROMAJI_KANJI</code> の行だけコメントアウトすれば(本体の<code class="inline">NKMM_COMMAND_PALETTE_ROMAJI</code>は有効なまま)いつでも無効化できる。</p>
+
+      <div class="callout">
+        <span class="label">2026-08-21: 単独漢字クエリの誤ヒット対策 — <code class="inline">ContainsAllQueryKanji()</code></span>
+        <p>単独モーラ辞書は粗い変換のため、単独の漢字が無関係な短いローマ字表記(例:「右」→"u"1文字)にまで縮み、無関係な文字列("UTF-8"等)にまで誤ヒットする問題があった。修正として、クエリ中の各漢字1文字ごとに、検索対象文字列中にその漢字自体が(展開前の原文として)含まれているかを必須チェックするようにした。不成立なら展開・照合を行わず即座に不一致とする。純粋なローマ字クエリには漢字が無いため、このチェックは通常の入力では何もしない(no-op)。</p>
+      </div>
+
+      <p>データの正確性は「使われたら直す」方針で運用している。2026-08-21には<code class="inline">g_aKanjiReadingTable</code>の14行に混入していた余分なかな文字(逆引きテーブルを汚染していた)を発見・除去し、多用される単独漢字(右/左/下/前など)の欠落を、実際にライブパレットへクエリを打って空振りを確認する方式で洗い出して補完した。</p>
+    </section>
+
+    <section id="kana">
+      <h2><span class="num">06</span>ライブかな変換</h2>
+      <p>あいまい検索とは別の関心事として、フィルタ欄の入力そのものをWindows検索ボックス風に「確定したモーラ分をその場でかなへ変換して表示する」機能。変換テーブル・トークナイザは<code class="inline">CFuzzyMatchJp.cpp</code>側、実際のフック(<code class="inline">WM_CHAR</code>/<code class="inline">WM_IME_COMPOSITION</code>)は<code class="inline">CDlgCommandPalette.cpp</code>側にある。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>関数</th><th>役割</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">g_aKanaRomaTable</td><td>五十音1〜2文字とそれに対応するローマ字表記(最大3種類、命令式含む)のテーブル</td></tr>
+            <tr><td class="mono">TokenizeQuery()</td><td>クエリ文字列をローマ字の「もじ単位」(最長一致優先、<code class="inline">"sha"</code>を分割しない)とそれ以外の1文字に分割。子音字が連続する箇所(<code class="inline">"kekka"</code>の<code class="inline">"kk"</code>等)は促音として1トークンに畳み込む</td></tr>
+            <tr><td class="mono">ConvertRomajiToKana()</td><td>各トークンを逆引きマップでひらがなへ変換。1モーラに満たない末尾の断片はローマ字のまま残す。半角<code class="inline">"-"</code>は全角長音<code class="inline">"ー"</code>に変換</td></tr>
+            <tr><td class="mono">ApplyLiveKanaConversion()</td><td><code class="inline">CDlgCommandPalette.cpp</code>側。<code class="inline">"&gt;"/"@"/"edt "</code>等の接頭辞はそのまま残し、後続部分だけ<code class="inline">ConvertRomajiToKana()</code>にかける</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul>
+        <li><code class="inline">WM_CHAR</code>で末尾へのASCII入力(a-z/A-Z/-)を横取りして変換。実際のIME ON/OFF状態(<code class="inline">ImmGetOpenStatus</code>)に従い、IME OFF(半角英数直接入力)のときは変換せず素通しする</li>
+        <li><code class="inline">WM_IME_COMPOSITION</code>を見て、変換確定前(未確定文字列)の間も一覧をライブ更新する — 通常のEDITコントロールの<code class="inline">GetWindowText()</code>は未確定文字列を含まないため、<code class="inline">UpdateList()</code>は<code class="inline">ImmGetCompositionStringW</code>で直接読む</li>
+        <li>IME変換中は<code class="inline">IsImeComposing()</code>で判定し、Escapeキーの横取りを避けて、まずIME標準の「未確定文字列取り消し」動作に委ねる。確定後・未入力時のEscapeだけパレットを閉じる</li>
+      </ul>
+    </section>
+
+    <section id="render">
+      <h2><span class="num">07</span>オーナードロー描画</h2>
+      <p>一覧は<code class="inline">LVS_REPORT | LVS_OWNERDATA | LVS_NOCOLUMNHEADER</code>の単一列(ヘッダ非表示)仮想リスト。行データは<code class="inline">m_vAllRows</code>/<code class="inline">m_vMatchedRowIndices</code>としてアプリ側だけで保持し、<code class="inline">LVN_GETDISPINFO</code>(テキストのみ、スクリーンリーダー等向け)と<code class="inline">NM_CUSTOMDRAW</code>(<code class="inline">OnListCustomDraw()</code>、実際の描画)で都度引き当てる。</p>
+      <ul>
+        <li>左端にCtrl+1〜9のクイックキー番号(9行目まで)</li>
+        <li>コマンド行はアイコン無し。ウィンドウ/最近使ったファイル行は<code class="inline">GetShellIconIndex()</code>(拡張子ごとにキャッシュした<code class="inline">SHGetFileInfo</code>共有システムアイコン)</li>
+        <li>名前は通常のリストフォント、右寄せグレーでショートカットキー/「最近使用」タグ/アウトライン・ブックマークの「N 行目」を小さめフォントで表示</li>
+        <li>名前中、直近の絞り込み実クエリに一致した部分だけ<code class="inline">COLOR_HOTLIGHT</code>でハイライト(部分文字列一致のみ追跡、あいまい一致箇所そのものは追わない)</li>
+        <li>選択行の背景は<code class="inline">"Explorer::ListView"</code>テーマの<code class="inline">DrawThemeBackground(..., LVP_LISTITEM, LISS_SELECTED, ...)</code>による半透明選択色(非対応環境では<code class="inline">COLOR_HIGHLIGHT</code>反転にフォールバック)</li>
+        <li><code class="inline">NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE</code>(既定無効)有効時は、<code class="inline">g_aMultiMoraKanjiTable</code>に手動登録済みの漢字だけ色を変えて表示するデバッグ表示。未検証の漢字(単独モーラ辞書やJIS1TABLE任せの箇所)を一覧を眺めるだけで判別できる</li>
+      </ul>
+      <div class="callout">
+        <span class="label">comctl32の3つの落とし穴</span>
+        <p><strong>ヘッダ非表示の実行時トグル</strong>: <code class="inline">SetWindowLongPtr()</code>で生成後に<code class="inline">LVS_NOCOLUMNHEADER</code>を立てると、ヘッダーが「表示状態のまま高さ0」に中途半端に壊れクラッシュすることがあった → <code class="inline">sakura_rc.rc</code>のダイアログテンプレート側で生成時スタイルとして直接指定。<strong><code class="inline">NMCUSTOMDRAW::rc</code></strong>: <code class="inline">CDDS_ITEMPREPAINT</code>時点では信頼できず(comctl32バージョン依存)、<code class="inline">ListView_GetItemRect()</code>で改めて矩形を取得している。<strong><code class="inline">NMCUSTOMDRAW::uItemState</code>のCDIS_SELECTED</strong>: 実際の選択状態と無関係に立つことがあるため信用せず、選択状態は自前追跡(<a href="#preview">08節</a>)する。この3点は<a href="../docs/multicursor_design.html">マルチカーソル機能</a>とは別に、このパレット固有で踏んだ問題。</p>
+      </div>
+    </section>
+
+    <section id="preview">
+      <h2><span class="num">08</span>ライブプレビュー・選択状態の自前追跡</h2>
+      <p><code class="inline">LivePreviewSelection()</code>が選択行の変化を一元的に受け取る集約点。アウトライン/ブックマーク行が選択されるたびに、Enterで確定する前に<code class="inline">JumpToRow()</code>でエディタのカーソルをその位置へライブ移動する(VS Codeの「Go to Symbol」プレビューと同じ挙動)。パレットをEscapeでキャンセルした場合は、開く前のカーソル位置(<code class="inline">m_nOrigCaretX</code>/<code class="inline">m_nOrigCaretY</code>)へ<code class="inline">MoveCaretTo()</code>で明示的に戻してから閉じる。</p>
+      <p><code class="inline">LVS_OWNERDATA</code>化後、<code class="inline">ListView_GetItemState()</code>/<code class="inline">NMCUSTOMDRAW::uItemState</code>のいずれも「全行が選択中」を返すなど信用できなかったため、選択されている行は<code class="inline">LivePreviewSelection()</code>経由で更新するメンバ<code class="inline">m_nSelectedDispIndex</code>だけを唯一の正として扱う。描画(<a href="#render">07節</a>)・キー操作(↑↓・Ctrl+1〜9)・Enter確定のすべてがこの値を参照する。</p>
+    </section>
+
+    <section id="keys">
+      <h2><span class="num">09</span>キー操作</h2>
+      <p>フィルタ欄Editのサブクラスプロシージャ<code class="inline">PaletteFilterEditSubclassProc()</code>で処理する。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>キー</th><th>動作</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">↑ / ↓</td><td><code class="inline">MoveSelection()</code>で一覧選択を±1移動、<code class="inline">ListView_EnsureVisible()</code>でスクロール追従。アウトライン/ブックマーク行なら<code class="inline">LivePreviewSelection()</code>でライブジャンプ</td></tr>
+            <tr><td class="mono">Enter</td><td><code class="inline">WM_GETDLGCODE</code>で<code class="inline">DLGC_WANTMESSAGE</code>を横取りし、<code class="inline">IDOK</code>相当を発火 → <code class="inline">ExecuteSelected()</code> → <code class="inline">CloseDialog(0)</code></td></tr>
+            <tr><td class="mono">Escape</td><td><code class="inline">IDCANCEL</code>相当を発火。ライブプレビューで動いていた場合は開く前のカーソル位置へ戻してから閉じる。IME変換中(<code class="inline">IsImeComposing()</code>)はまずIME標準の取り消し動作に委ね、横取りしない</td></tr>
+            <tr><td class="mono">Ctrl+1 〜 Ctrl+9</td><td><code class="inline">ExecuteQuickIndex(N)</code>。絞り込み結果の表示上N番目(0開始)の行をEnterと同じ経路で即実行(Alfred/Raycast風)。数字キー単体では横取りしない(ファイル名等の数字入力を妨げないため)</td></tr>
+            <tr><td>マウスダブルクリック</td><td><code class="inline">NM_DBLCLK</code> → <code class="inline">ExecuteSelected()</code> → <code class="inline">CloseDialog(0)</code></td></tr>
+            <tr><td>フォーカスロス</td><td><code class="inline">OnActivate()</code>(<code class="inline">WA_INACTIVE</code>)がタイマーを仕込み、1回分メッセージループを回してから<code class="inline">CloseOnDeactivate()</code>で親ウィンドウを前面に戻しつつ自身を破棄する</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="binding">
+      <h2><span class="num">10</span>キー割り当て・登録箇所</h2>
+      <p>新規機能を1個追加するだけでも、桜エディタでは複数箇所への同時登録が必要になる(マルチカーソル機能の設計で踏んだのと同種の実装コスト)。</p>
+      <div class="tablewrap filemap">
+        <table>
+          <thead><tr><th>ファイル</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">Funccode_x.hsrc</td><td><code class="inline">F_COMMAND_PALETTE = 31338</code>の定義</td></tr>
+            <tr><td class="mono">func/Funccode.cpp</td><td>機能一覧配列への追加(<code class="inline">#ifdef NKMM_COMMAND_PALETTE</code>内)</td></tr>
+            <tr><td class="mono">func/CKeyBind.cpp</td><td>既定キーバインドテーブル。'P'行の4列目(Shift+Ctrl+)に<code class="inline">F_COMMAND_PALETTE</code>を割り当て。元々そこにあった<code class="inline">F_PRINT_PREVIEW</code>(印刷プレビュー)は既定キー無しに変更</td></tr>
+            <tr><td class="mono">cmd/CViewCommander.h / .cpp</td><td><code class="inline">case F_COMMAND_PALETTE:</code>のディスパッチ配線</td></tr>
+            <tr><td class="mono">cmd/CViewCommander_Window.cpp</td><td><code class="inline">Command_COMMAND_PALETTE()</code>本体。既に開いていれば<code class="inline">ActivateFrameWindow()</code>でアクティブ化するだけ(検索ダイアログと同じ流儀)、無ければ<code class="inline">DoModeless()</code>で生成</td></tr>
+            <tr><td class="mono">sakura_rc.rc</td><td>ダイアログテンプレート<code class="inline">IDD_DLG_COMMANDPALETTE</code>、STRINGTABLEの機能名<code class="inline">"コマンドパレット表示..."</code>(UTF-16LE、<a href="../CLAUDE.md">CLAUDE.md</a>の編集手順に従うこと)</td></tr>
+            <tr><td class="mono">sakura_rc.h</td><td>リソースID: <code class="inline">IDD_DLG_COMMANDPALETTE=248</code>, <code class="inline">IDC_EDIT_COMMANDPALETTE_FILTER=1904</code>, <code class="inline">IDC_LIST_COMMANDPALETTE=1905</code></td></tr>
+            <tr><td class="mono">window/CEditWnd.h / .cpp</td><td>メンバ<code class="inline">m_cDlgCommandPalette</code>の保持。メインメッセージループでの<code class="inline">MyIsDialogMessage()</code>中継。<code class="inline">WM_SIZE</code>/<code class="inline">WM_MOVE</code>時の<code class="inline">FollowParentWindow()</code>呼び出し</td></tr>
+            <tr><td class="mono">keybind_presets/*.key</td><td>VS Code/Sublime Text向けプリセットはCtrl+Shift+Pに割り当て、Notepad++向け(実際のCtrl+Shift+Pは記録マクロ再生)には割り当てない、という個別方針(<code class="inline">keybind_presets/README.md</code>参照)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>メニューバー(ファイル/編集/表示等のプルダウン)には項目として追加されておらず、キーバインドおよびコマンドパレット自身の一覧(<code class="inline">&gt;</code>モード)からのみ呼び出せる。</p>
+    </section>
+
+    <section id="appearance">
+      <h2><span class="num">11</span>外観</h2>
+      <h4>枠なしフローティングパネル</h4>
+      <p><code class="inline">sakura_rc.rc</code>側は<code class="inline">STYLE WS_POPUP</code>のみ(キャプション・システムメニューなし)。<code class="inline">DwmSetWindowAttribute(DWMWA_NCRENDERING_POLICY, DWMNCRP_DISABLED)</code>でDWMの非クライアント描画(影)を無効化し、さらにWindows 11がキャプション無しポップアップに自動で描き足すアクセントカラーの太い縁を<code class="inline">DwmSetWindowAttribute(DWMWA_BORDER_COLOR, DWMWA_COLOR_NONE)</code>で止めている。自前の縁取りは<code class="inline">WM_PAINT</code>でクライアント領域の一番外側に常に1デバイスピクセル幅(<code class="inline">COLOR_WINDOWFRAME</code>)を直描き — 非クライアント側の<code class="inline">WS_BORDER</code>は<code class="inline">GetSystemMetrics(SM_CXBORDER)</code>依存でDPI拡大率次第では1論理pxを超えて太くなる問題があったため。</p>
+      <h4>フォーカス強調・件数表示</h4>
+      <p>フィルタ欄がフォーカスを持つ間は<code class="inline">COLOR_HOTLIGHT</code>色の枠を周囲に描く。一覧の下・右下に絞り込み結果件数(「N 件」)を小さくグレー表示する。</p>
+      <h4>アニメーション</h4>
+      <p><code class="inline">CSlideInAnimator</code>(<code class="inline">CDlgFind</code>と共通のヘッダオンリーease-outアニメータ)を2箇所で使う。開くときは上から24dip分を150msかけてスライドイン(<code class="inline">StartSlideAnimation()</code>)。絞り込み結果の増減に応じて一覧・ダイアログ本体の高さを120msのease-outで滑らかに変化させる(<code class="inline">AdjustListHeight()</code>/<code class="inline">ApplyListHeight()</code>) — 絞り込みのたびに発生するため、開くときのスライドインより短い時間に設定している。</p>
+      <h4>選択行・背景色</h4>
+      <p>選択行は<code class="inline">"Explorer::ListView"</code>テーマの半透明選択色(取得失敗時は<code class="inline">COLOR_HIGHLIGHT</code>単色反転)。リスト背景色はVisual Studioのソリューションエクスプローラーに合わせた明るいグレー(<code class="inline">RGB(247, 250, 252)</code>)。</p>
+      <h4>全角入力警告</h4>
+      <p>フィルタ欄がIMEの全角入力モード(<code class="inline">IME_CMODE_FULLSHAPE</code>)のときは、背景・文字色をエラー赤系(<code class="inline">RGB(253, 231, 233)</code> / <code class="inline">RGB(164, 38, 44)</code>)で塗り、<code class="inline">"@"</code>のつもりで全角<code class="inline">"＠"</code>等を打ってしまう入力ミスに気づけるようにする(<code class="inline">IsImeFullWidthMode()</code>、<code class="inline">WM_CTLCOLOREDIT</code>で反映)。</p>
+    </section>
+
+    <section id="settings">
+      <h2><span class="num">12</span>設定項目</h2>
+      <p>実行時の<code class="inline">.ini</code>(共通設定ファイル)で直接カスタマイズできる項目はない。挙動を変えられるのはすべてビルド時のフラグ(<code class="inline">my_config.h</code>の<code class="inline">NKMM_COMMAND_PALETTE*</code>系)であり、設定ダイアログやiniのプロパティとしては公開されていない。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>フラグ</th><th>既定</th><th>依存関係</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">NKMM_COMMAND_PALETTE</td><td><span class="pill ok">有効</span></td><td>独立</td></tr>
+            <tr><td class="mono">NKMM_COMMAND_PALETTE_ROMAJI</td><td><span class="pill ok">有効</span></td><td>独立(機能的には<code class="inline">NKMM_COMMAND_PALETTE</code>と組み合わせて使う)</td></tr>
+            <tr><td class="mono">NKMM_COMMAND_PALETTE_ROMAJI_KANJI</td><td><span class="pill ok">有効(自動)</span></td><td><code class="inline">NKMM_COMMAND_PALETTE_ROMAJI</code>が有効なら自動ON</td></tr>
+            <tr><td class="mono">NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE</td><td><span class="pill warn">無効</span></td><td><code class="inline">NKMM_COMMAND_PALETTE_ROMAJI_KANJI</code>配下、手動でコメント解除が必要</td></tr>
+            <tr><td class="mono">NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE</td><td><span class="pill warn">無効</span></td><td><code class="inline">NKMM_COMMAND_PALETTE_ROMAJI_KANJI</code>配下、デバッグ専用</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>ユーザー側で変更可能なのは、キーバインド設定(共通設定→キー割り当て、または<code class="inline">keybind_presets/*.key</code>)による<code class="inline">F_COMMAND_PALETTE</code>のショートカットキー再割り当てのみ。</p>
+    </section>
+
+    <section id="limits">
+      <h2><span class="num">13</span>既知の制約・対象外</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>項目</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill warn">ヒューリスティックの限界</span></td><td>漢字ヒューリスティックは「読みの先頭モーラ」の粗い変換であり、厳密な読み検証ではない。単独モーラ辞書・JIS1TABLE任せの漢字は実際の読みと違うローマ字に展開されることがある。<code class="inline">NKMM_DEBUG_COMMAND_PALETTE_KANJI_COVERAGE</code>で「手動検証済みかどうか」を可視化できる</td></tr>
+            <tr><td><span class="pill warn">運用方針</span></td><td>漢字読みテーブルは全件監査ではなく、実際に空振りに気づいた語を都度<code class="inline">g_aMultiMoraKanjiTable</code>へ追加していく反応的な方針。網羅性を保証しない</td></tr>
+            <tr><td><span class="pill scope">対象外</span></td><td>プラグイン(WSH)によるアウトライン解析(<code class="inline">@</code>モード) — 素のテキスト・トピック解析へフォールバック</td></tr>
+            <tr><td><span class="pill scope">対象外</span></td><td>メインメニュー(プルダウン)への項目追加 — キーバインドとパレット自身の一覧からのみ呼び出し可能</td></tr>
+            <tr><td><span class="pill warn">JIS1TABLE既定無効</span></td><td>自動フォールバックの読み選択が「最初の訓読みの活用語幹、無ければ最初の音読み」という機械的ルールのみのため、実際の使われ方と異なる読みを選んでしまうことがある。既定で無効にしているのはそのため</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">14</span>変更ファイル一覧</h2>
+      <div class="tablewrap filemap">
+        <table>
+          <thead><tr><th>ファイル</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">dlg/CDlgCommandPalette.h / .cpp</td><td>ダイアログ本体。UI・入力処理・行データ構築・絞り込み・実行のすべてを持つ中心クラス</td></tr>
+            <tr><td class="mono">util/RomajiFuzzyMatch.hpp</td><td>sakura非依存のヘッダオンリーあいまい検索エンジン(<code class="inline">namespace fuzzy</code> / <code class="inline">namespace kana</code>)。正規化とスコアリング付き部分列マッチを提供</td></tr>
+            <tr><td class="mono">util/CFuzzyMatchJp.h / .cpp</td><td>sakuraとの結線層。<code class="inline">FuzzyMatchJapanese()</code>/<code class="inline">FuzzyMatchJapaneseCached()</code>、漢字読み事前展開、<code class="inline">g_aMultiMoraKanjiTable</code>、ライブかな変換一式</td></tr>
+            <tr><td class="mono">util/CKanjiReadingDict.h / .cpp</td><td>漢字1文字→読みの先頭モーラへの逆引き単独モーラ辞書。<code class="inline">GetHiraByKanji()</code></td></tr>
+            <tr><td class="mono">util/CKanjiReadingTableJIS1.h</td><td>JIS第1水準漢字2965字の音訓読み全件テーブル(<code class="inline">NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE</code>専用)</td></tr>
+            <tr><td class="mono">util/CSlideInAnimator.h</td><td>ヘッダオンリーの汎用ease-out値アニメーション。スライドイン表示・一覧の高さアニメーションで共用、<code class="inline">CDlgFind</code>とも共通化</td></tr>
+            <tr><td class="mono">cmd/CViewCommander.h / .cpp</td><td><code class="inline">F_COMMAND_PALETTE</code>のディスパッチ配線</td></tr>
+            <tr><td class="mono">cmd/CViewCommander_Window.cpp</td><td><code class="inline">Command_COMMAND_PALETTE()</code></td></tr>
+            <tr><td class="mono">Funccode_x.hsrc / func/Funccode.cpp</td><td><code class="inline">F_COMMAND_PALETTE = 31338</code>の定義・列挙</td></tr>
+            <tr><td class="mono">func/CKeyBind.cpp</td><td>既定キーバインド(Shift+Ctrl+P)</td></tr>
+            <tr><td class="mono">sakura_rc.rc / sakura_rc.h</td><td>ダイアログテンプレート、コントロールID、機能名文字列</td></tr>
+            <tr><td class="mono">window/CEditWnd.h / .cpp</td><td><code class="inline">m_cDlgCommandPalette</code>メンバ保持、メッセージループ中継、位置追従</td></tr>
+            <tr><td class="mono">keybind_presets/*.key、README.md</td><td>VS Code/Sublime Text/Notepad++各プリセットでのキー割り当て方針</td></tr>
+            <tr><td class="mono">my_config.h</td><td><code class="inline">NKMM_COMMAND_PALETTE*</code>系フラグ定義一式</td></tr>
+            <tr><td class="mono">changelog/NKMM_COMMAND_PALETTE_ROMAJI_KANJI_JIS1TABLE.md</td><td>JIS1TABLEフォールバック機能の設計経緯・既知の制限</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      <span>sakura fork — NKMM_COMMAND_PALETTE</span>
+      <span>2026-08-31 時点の実装状態</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  try{
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function(a){
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if(el) map[id] = a;
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var a = map[entry.target.id];
+        if(!a) return;
+        if(entry.isIntersecting){
+          links.forEach(function(l){ l.classList.remove('active'); });
+          a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+    Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

@@ -327,9 +327,14 @@ bool CShareData::InitShareData()
 			wcscpy_s( sWindow.m_lfEmoji.lfFaceName, NKMM_COLOR_FONT_EMOJI_FONT_NAME );
 			sWindow.m_nEmojiPointSize = 110;			// 11.0pt(見た目のプレビュー用初期値。実際の描画サイズは本文フォント基準で決まるため、この値自体は使わない)
 			sWindow.m_lfEmoji.lfHeight = -DpiPointsToPixels( 110, 10 );
-			// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)を既定で有効にする。
-			// 「絵文字フォントを使う」(フォント選択)とは独立の設定 — フォント選択を
-			// システム任せにしていても、合字化自体は行える。
+			// 20260816 絵文字の合字(ZWJ結合絵文字・キーキャップ等)。既定はOFF
+			// (合字化で見た目が変わることに驚くユーザーが出ないよう、オプトインにした)。
+			// シェーピング自体は「絵文字フォントを使う」(フォント選択)の有無に関わらず
+			// 動作する(TryShapeClusterは指定が無ければ本文フォントを起点に試みる)ため、
+			// ロジック上は独立の設定。ただし共通設定UIでは20260817以降、「絵文字フォント」
+			// チェックがOFFの間は「合字」チェックの操作自体を無効化している
+			// (CPropComGeneral.cpp — 分かりやすさのためのUI上の連動で、値そのものは
+			// 変更しない。詳細はdocs/color_font_emoji_design.html参照)。
 			sWindow.m_bUseEmojiLigature = FALSE;
 #endif // NKMM_
 
