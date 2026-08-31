@@ -1768,11 +1768,6 @@ void CControlTray::SaveSessionSnapshot( EditNode* pWndArr, int n )
 				// _MAX_PATHを超え得るため、共有メモリの固定長バッファへコピーする前に
 				// 切り詰める（終了処理中のオーバーフローでの他フィールド破壊を防止）
 				_tcsncpy_s( GetDllShareData().m_sWorkBuffer.m_szDumpBufferTargetPath_MYWM_DUMPBUFFER, _MAX_PATH, entry.bufFile.c_str(), _TRUNCATE );
-				// !!! TEMPORARY TEST CODE - レース条件再現テスト用。検証が終わったら必ず削除すること !!!
-				// tools/race_test.ps1でこのウィンドウ以外(未保存の無題バッファ)へ
-				// WM_QUERYENDSESSIONを直接送り込み、m_bSessionHandledByCloseAllはTRUEだが
-				// そちらのダンプはまだ、という状況を人為的に作って検証する
-				//::Sleep( 5000 );
 				::SendMessageAny( pWndArr[i].GetHwnd(), MYWM_DUMPBUFFER, 0, 0 );
 			}
 			vSessionEntries.push_back( entry );

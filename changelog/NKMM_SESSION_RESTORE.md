@@ -12,7 +12,7 @@
 - `sakura_core/_main/CNormalProcess.cpp`（復元フック）
 - `sakura_core/_main/CControlTray.cpp`（保存フック＝`CloseAllEditor()`、および`OnDestroy()`でのバックアップ/書き戻し）
 - `sakura_core/window/CEditWnd.cpp`（個別クローズ時のセッションクリア、WM_DESTROY）
-- `sakura_core/prop/CPropComGeneral.cpp`、`sakura_rc.rc`/`.h`、`sakura.hh`（共通設定「全般」タブのチェックボックス）
+- `sakura_core/prop/CPropComFile.cpp`、`sakura_rc.rc`/`.h`、`sakura.hh`（共通設定「ファイル」タブのチェックボックス）
 
 ---
 
@@ -56,6 +56,7 @@ v1スコープはユーザーとの相談で決定：タブグループ構成・
 - `bRestoreSession`がON
 - コマンドラインでファイル指定が一切無い（`GetFileNum()==0`かつ`m_fi.m_szPath`も空。1ファイルだけの起動は`m_fi`に入り`m_vFiles`は0件になるため、`GetFileNum()`だけでは判定不十分）
 - 他にsakuraウィンドウが1つも起動していない（`m_nEditArrNum==0`）。これにより「新規ウィンドウを開く」操作や二重起動時に誤って復元が発動しないようにしている（実機確認済み）
+- `-NOWIN=`/`-DEBUGMODE=`/Grep結果表示/Grepダイアログ単体起動のいずれでもない（`IsNoWindow()`/`IsDebugMode()`/`IsGrepMode()`/`IsGrepDlg()`。「通常のファイル編集ウィンドウ」ではない特殊な起動を復元対象から除外する）
 
 ### 永続化と`SaveShareData()`の落とし穴
 
@@ -77,6 +78,11 @@ v1スコープはユーザーとの相談で決定：タブグループ構成・
 - 他のウィンドウが拒否してシャットダウン自体がキャンセルされた場合、既に閉じてしまったウィンドウは戻らない（サクラエディタ既存の挙動、対応範囲外）。
 
 **NKMM_SESSION_RESTORE_BUFFER統合時に発見・対処したレース条件**: 詳細は[NKMM_SESSION_RESTORE_BUFFER.md](NKMM_SESSION_RESTORE_BUFFER.md)の「OSシャットダウン対応との統合」を参照。`m_bSessionHandledByCloseAll`だけを見て「保存確認を抑制してよいか」を判断すると、他ウィンドウのダンプ完了前に自分のクローズ処理が先行するレースでデータを失いかねなかったため、ウィンドウごとのローカルな実績フラグ(`CEditDoc::m_bSessionBufferCaptured`)を追加で確認するよう修正した。
+
+## セキュリティ修正（20260827〜28、セキュリティ監査セッションで発見・対応）
+
+- **`sakura.ini`の`Session[NN].szBuf`（バックアップファイル名）のパストラバーサル対策** — `a2e16f00d` 20260827。`[Session]`セクションは独自I/O（本セクション「永続化」参照）なので、他プロセスによる書き換えや手編集が可能な信頼できない入力。`LoadSessionFileList()`側で、値に`\`/`/`/`:`のいずれかを含む、または値そのものが`.`/`..`の場合は拒否し、`SessionBuffers\`配下の想定外のパスを組み立てられないようにした。詳細はNKMM_SESSION_RESTORE_BUFFER.mdの「永続化フォーマット」参照。
+- **固定長バッファへの生`_tcscpy`置換** — `4860a404c` 20260828。ini/コマンドライン(`-BUFRESTORE=`)由来でサイズ上限の無い文字列を、サイズ上限のある固定長バッファ（`EditInfo::m_szPath`/`m_szBufRestorePath`、共有メモリ`DLLSHAREDATA`のワークバッファ等）へコピーする箇所が計4箇所、境界チェック無しの`_tcscpy`のままだった。いずれも`_tcsncpy_s(..., _TRUNCATE)`へ置換し、規定長を超える場合はabortさせず切り詰める方式に統一した（該当箇所: `CCommandLine::SetFilesForSessionRestore()`、`CControlTray::SaveSessionSnapshot()`、`CNormalProcess::OpenFiles()`内2箇所）。
 
 ## 既知の制約
 

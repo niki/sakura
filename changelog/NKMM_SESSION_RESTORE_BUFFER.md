@@ -15,7 +15,7 @@
 - `sakura_core/config/system_constants.h`（`MYWM_DUMPBUFFER`）
 - `sakura_core/env/DLLSHAREDATA.h`（ワークバッファ`m_szDumpBufferTargetPath_MYWM_DUMPBUFFER`）
 - `sakura_core/window/CEditWnd.cpp`（`MYWM_DUMPBUFFER`ハンドラ）
-- `sakura_core/prop/CPropComGeneral.cpp`、`sakura_rc.rc`/`.h`、`sakura.hh`（共通設定「全般」タブの「バッファ内容の復元」チェックボックス、「セッションの復元」と連動して有効/無効化）
+- `sakura_core/prop/CPropComFile.cpp`、`sakura_rc.rc`/`.h`、`sakura.hh`（共通設定「ファイル」タブの「バッファ内容の復元」チェックボックス、「セッションの復元」と連動して有効/無効化）
 
 ---
 
@@ -67,6 +67,8 @@ struct SSessionEntry {
 ini追加キー: `Session[NN].bModified`、`Session[NN].szBuf`（ファイル名のみ。プロファイルフォルダが移動しても壊れないよう、絶対パスではなく`SessionBuffers\`からの相対名で保存する）。
 
 **後方互換**: 旧フォーマット（キー無し）を読んだ場合は`bModified=false`扱いになるだけで問題なく動く。`NKMM_SESSION_RESTORE`単体（バッファ機能OFF）のini書式ともキー単位で共存できる。
+
+**パストラバーサル対策（20260827、`LoadSessionFileList()`）**: `szBuf`はiniという信頼できない入力（他プロセス／手編集／`-PROF=`で指定されたプロジェクトローカルiniなど由来）であり、保存時の前提（ファイル名のみ、パス区切りなし）を読み込み側でも独立に検証する。値に`\`/`/`/`:`のいずれかを含む、または値そのものが`.`/`..`の場合は拒否し、`entry.bModified`をfalseへ落として通常のパスオープンへフォールバックする。検証しないと、`..`等による`SessionBuffers\`外への任意ファイル読み込み（→ユーザーの保存操作による任意ファイル上書き）を許してしまう。
 
 ### SessionBuffers\フォルダの管理（`ClearSessionBufferDir()`、唯一の掃除ポイント、非消費型）
 
@@ -162,6 +164,10 @@ ini追加キー: `Session[NN].bModified`、`Session[NN].szBuf`（ファイル名
 5. `WM_ENDSESSION`を`wParam==FALSE`（シャットダウン/ログオフ自体がキャンセルされた）で受け取った場合も、念のため同様に`m_bSessionHandledByCloseAll`を`FALSE`に戻す（二重の安全策）。
 
 **なぜB.3にレースの危険があるか**：OSが`WM_QUERYENDSESSION`を全ウィンドウへ厳密に1つずつ順番通り配送する保証はない（各ウィンドウは別プロセスであり、応答が遅いウィンドウをOS側がタイムアウトさせて他へ問い合わせを進める、といった状況が実際にあり得る）。そのため、代表ウィンドウがB.2のダンプを**まだB自身に対して行っていない**うちに、ウィンドウB自身の`WM_QUERYENDSESSION`が先に処理されてしまう可能性がある。もしB.3の判定が`m_bSessionHandledByCloseAll`（＝「誰かが処理を始めた」）だけを見ていたら、「代表が処理中だからどうせ退避される」と誤判定して確認を抑制し、実際にはまだダンプされていないBの内容がそのまま失われる。**これを防ぐために、ローカルな`m_bSessionBufferCaptured`（「自分自身が実際にダンプされたか」）を追加で見ている**。ダンプがまだなら`false`のままなので、レースが起きても確認ダイアログは正しく表示される（安全側に倒れる）。
+
+## セキュリティ修正（20260828）
+
+固定長バッファへの生`_tcscpy`置換（`4860a404c`）。バッファ復元パス(`-BUFRESTORE=`/ini由来、サイズ上限なし)を`EditInfo::m_szBufRestorePath`(`_MAX_PATH`固定長)や共有メモリのワークバッファへコピーする箇所が境界チェック無しのままだった。`_tcsncpy_s(..., _TRUNCATE)`へ置換し、規定長超過時はabortさせず切り詰める方式に統一（`CControlTray::SaveSessionSnapshot()`、`CNormalProcess::OpenFiles()`）。パス一覧側（`NKMM_SESSION_RESTORE`）の同種修正とあわせて[NKMM_SESSION_RESTORE.md](NKMM_SESSION_RESTORE.md)の「セキュリティ修正」節も参照。
 
 ## 既知の制約
 

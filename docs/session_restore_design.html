@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>セッション復元 設計リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%94%81</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514;
+      --surface:#241C1B;
+      --ink:#EEE5E1;
+      --ink-soft:#B3A29D;
+      --ink-faint:#7C6E6A;
+      --rule:#3A2E2C;
+      --sakura:#E28CA8;
+      --sakura-ink:#F3B9CC;
+      --sakura-tint:#3A2530;
+      --code-bg:#120E0D;
+      --code-ink:#E9DED8;
+      --code-soft:#96877F;
+      --code-accent:#E7A6BC;
+      --ok-bg:#28331F;
+      --ok-ink:#9FC28F;
+      --warn-bg:#362C15;
+      --warn-ink:#E0BE79;
+      --scope-bg:#232C36;
+      --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514;
+    --surface:#241C1B;
+    --ink:#EEE5E1;
+    --ink-soft:#B3A29D;
+    --ink-faint:#7C6E6A;
+    --rule:#3A2E2C;
+    --sakura:#E28CA8;
+    --sakura-ink:#F3B9CC;
+    --sakura-tint:#3A2530;
+    --code-bg:#120E0D;
+    --code-ink:#E9DED8;
+    --code-soft:#96877F;
+    --code-accent:#E7A6BC;
+    --ok-bg:#28331F;
+    --ok-ink:#9FC28F;
+    --warn-bg:#362C15;
+    --warn-ink:#E0BE79;
+    --scope-bg:#232C36;
+    --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600;
+    color:var(--ink);
+    text-wrap:balance;
+    letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{
+    font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+    font-size:.88em;
+  }
+  code.inline{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:.08em .38em;
+    color:var(--sakura-ink);
+  }
+
+  /* ---- layout shell ---- */
+  .shell{
+    display:grid;
+    grid-template-columns:248px minmax(0,1fr);
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .toc{
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+    padding:32px 18px 32px 28px;
+    border-right:1px solid var(--rule);
+  }
+  .toc-brand{
+    font-family:'Shippori Mincho',serif;
+    font-weight:700;
+    font-size:1.02rem;
+    margin-bottom:2px;
+  }
+  .toc-brand small{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+    font-size:.68rem;
+    letter-spacing:.06em;
+    color:var(--sakura-ink);
+    margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif;
+    font-size:.68rem;
+    letter-spacing:.09em;
+    color:var(--ink-faint);
+    font-weight:600;
+    margin:0 0 8px;
+    text-transform:uppercase;
+  }
+  .toc a{
+    display:block;
+    font-size:.83rem;
+    color:var(--ink-soft);
+    text-decoration:none;
+    padding:4px 0 4px 12px;
+    border-left:2px solid transparent;
+    line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    letter-spacing:.1em;
+    color:var(--sakura-ink);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-top:22px;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    padding:5px 11px;
+    border-radius:999px;
+    background:var(--surface);
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:24px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.8rem;
+    color:var(--sakura);
+    font-weight:600;
+  }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:66ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:64ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+    margin:22px 0 30px;
+  }
+  .principle{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:18px 18px 16px;
+  }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+    font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  pre{
+    background:var(--code-bg);
+    color:var(--code-ink);
+    border-radius:10px;
+    padding:18px 20px;
+    overflow-x:auto;
+    margin:0 0 22px;
+    font-size:.82rem;
+    line-height:1.7;
+    box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+  figure{ margin:0 0 26px; }
+  figcaption{ font-size:.78rem; color:var(--ink-faint); margin-top:8px; }
+
+  .callout{
+    border:1px solid var(--rule);
+    border-left:3px solid var(--sakura);
+    background:var(--surface);
+    border-radius:0 10px 10px 0;
+    padding:16px 20px;
+    margin:0 0 22px;
+    font-size:.9rem;
+    max-width:64ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+
+  /* diagram */
+  .diagram{
+    display:flex; align-items:stretch; gap:0; margin:18px 0 30px;
+    border:1px solid var(--rule); border-radius:12px; overflow:hidden; background:var(--surface);
+  }
+  .diagram .stage{
+    flex:1; padding:18px 16px; position:relative;
+    border-right:1px dashed var(--rule);
+  }
+  .diagram .stage:last-child{ border-right:none; }
+  .diagram .stage h5{
+    font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.06em;
+    color:var(--ink-faint); text-transform:uppercase; margin:0 0 8px;
+  }
+  .diagram .stage p{ font-size:.8rem; margin:0; max-width:none; color:var(--ink-soft); }
+  .diagram .stage:after{
+    content:"→"; position:absolute; right:-13px; top:50%; transform:translateY(-50%);
+    color:var(--sakura); font-size:1.1rem; z-index:2;
+  }
+  .diagram .stage:last-child:after{ content:none; }
+
+  /* timeline (pass log) */
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline:before{
+    content:""; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:var(--rule);
+  }
+  .pass{ position:relative; padding-bottom:34px; }
+  .pass:last-child{ padding-bottom:0; }
+  .pass:before{
+    content:""; position:absolute; left:-28px; top:5px; width:9px; height:9px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--sakura);
+  }
+  .pass-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .pass-num{ font-family:'IBM Plex Mono',monospace; color:var(--sakura-ink); font-size:.78rem; font-weight:600; }
+  .pass-title{ font-weight:700; font-size:.97rem; }
+  .pass-date{ font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--ink-faint); margin-left:auto; }
+  .pass p{ font-size:.88rem; color:var(--ink-soft); max-width:70ch; margin:0 0 8px; }
+  .pass p:last-child{ margin-bottom:0; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule);
+    margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+    .diagram{ flex-direction:column; }
+    .diagram .stage{ border-right:none; border-bottom:1px dashed var(--rule); }
+    .diagram .stage:after{ content:"↓"; right:auto; left:16px; top:auto; bottom:-13px; transform:none; }
+    .diagram .stage:last-child{ border-bottom:none; }
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    html{ scroll-behavior:smooth; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">セッション復元<small>NKMM_SESSION_RESTORE / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+        <a href="#constraint">マルチプロセス制約</a>
+      </div>
+      <div class="toc-group">
+        <h5>保存経路</h5>
+        <a href="#save">保存トリガー(CloseAllEditor)</a>
+        <a href="#shutdown">OSシャットダウン対応</a>
+        <a href="#dedup">二重発火防止</a>
+      </div>
+      <div class="toc-group">
+        <h5>復元経路</h5>
+        <a href="#restore">復元トリガー(InitializeProcess)</a>
+        <a href="#persist">永続化とSaveShareDataの落とし穴</a>
+      </div>
+      <div class="toc-group">
+        <h5>バッファ復元</h5>
+        <a href="#buffer">未保存内容の復元</a>
+        <a href="#race">レース条件の発見と対処</a>
+      </div>
+      <div class="toc-group">
+        <h5>実態と修正</h5>
+        <a href="#security">セキュリティ修正</a>
+        <a href="#comments">コメントリファクタリング</a>
+      </div>
+      <div class="toc-group">
+        <h5>仕様</h5>
+        <a href="#settings">設定項目</a>
+        <a href="#limits">既知の制約</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#files">変更ファイル一覧</a>
+        <a href="#history">変更履歴</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">セッション復元</h1>
+      <p class="subtitle lede">終了時に開いていたファイル(未保存の変更内容を含む)を、次回起動時に自動的に復元する機能の設計記録。「タブ1枚=別プロセス」というsakura特有のアーキテクチャ制約が、保存トリガー・復元トリガー双方の設計をどう規定したかを中心にまとめる。2026-08-27〜28のセキュリティ監査で見つかった修正、および2026-09-01のコメントリファクタリングの内容も含む。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_SESSION_RESTORE</b></span>
+        <span class="chip">初版 <b>2026-08-14</b></span>
+        <span class="chip">バッファ復元 <b class="mono">NKMM_SESSION_RESTORE_BUFFER</b></span>
+        <span class="chip">OSシャットダウン対応 <b>2026-08-15</b></span>
+      </div>
+    </header>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>v1スコープはタブグループ構成・ウィンドウ位置を対象外とし、ファイルパス一覧のみを保存・復元する。事前調査で、グループ情報を持たないフラットなファイルパス一覧を<code class="inline">sakura.exe f1 f2 f3</code>として素朴に再起動時へ渡すだけで、既存の複数ファイル起動ロジック(1本目のウィンドウに残りが自動的にタブ合流する)がそのまま働くことを確認済みなため、この方式を採用した。</p>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — 単一の集約点に一本化</span>
+          <p>保存は<code class="inline">CControlTray::CloseAllEditor()</code>という「閉じ始める前に全ウィンドウ一覧が取れる」唯一のタイミングに一本化する。per-windowのWM_DESTROYは連鎖クローズ時にきょうだいの情報が既に消えているため不採用。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — 既存経路の再利用</span>
+          <p>復元は保存したパス一覧を、通常のコマンドライン複数ファイル起動と同じ形(先頭を<code class="inline">m_fi</code>、残りを<code class="inline">m_vFiles</code>)に注入するだけ。グループ合流・<code class="inline">OpenFiles()</code>といった既存処理を素通しで再利用し、新規の復元専用ロジックを作らない。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — 安全側に倒す</span>
+          <p>OSシャットダウンのレース条件、iniのパストラバーサル、固定長バッファのオーバーフローなど、判断に迷うケースは常に「確認ダイアログを出す」「保存前に切り詰める」「読み込みを拒否する」といった安全側の挙動へ倒す。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">この文書の読み方</span>
+        <p>「保存経路」「復元経路」「バッファ復元」は仕組みそのもののリファレンス。「実態と修正」は2026-08-27〜28のセキュリティ監査と2026-09-01のコメント整理で見つかった、コードとコメントの実態を記録した節。今後この機能を触る際は、<a href="#security">セキュリティ修正</a>節にある2種類のバリデーション(パス検証・切り詰め)を壊さないよう注意すること。</p>
+      </div>
+    </section>
+
+    <section id="constraint">
+      <h2><span class="num">01</span>マルチプロセス制約</h2>
+      <p>サクラエディタの「タブ」は1プロセス内の複数ドキュメントではなく、<strong>タブ1枚=別プロセスの<code class="inline">sakura.exe</code></strong>が共有メモリ(<code class="inline">DLLSHAREDATA</code>/<code class="inline">CAppNodeManager</code>)経由でグループ化(<code class="inline">EditNode.m_nGroup</code>、IDは1始まり)されて見た目上まとまっているだけ。</p>
+      <p>この制約が2つの帰結を生む。</p>
+      <ul>
+        <li>「今開いている全ファイル」の取得には<code class="inline">CAppNodeManager::GetOpenedWindowArr()</code>(プロセス横断、共有メモリ経由)が必須</li>
+        <li>「本当にアプリが終了するタイミング」は1プロセスのWM_DESTROYだけでは判断できない — 複数ウィンドウ(=複数プロセス)が連鎖的に閉じる場合、自分が最後の1枚になった時点では既に他のウィンドウが配列から消えている</li>
+      </ul>
+      <p>この2点が、保存トリガーを「per-window WM_DESTROY」ではなく「<code class="inline">CloseAllEditor()</code>という単一の集約点」に置く根拠になっている(<a href="#save">02節</a>)。</p>
+    </section>
+
+    <section id="save">
+      <h2><span class="num">02</span>保存トリガー — <code class="inline">CControlTray::CloseAllEditor()</code></h2>
+      <p><code class="inline">GetOpenedWindowArr(&amp;pWndArr, TRUE)</code>で、閉じ始める前の完全な一覧をタブの実際の表示順(<code class="inline">bSort=TRUE</code>、<code class="inline">EditNode::m_nIndex</code>順)で取得する。当初は<code class="inline">bSort=FALSE</code>(共有メモリ配列上の生成順に近いスロット順)だったため、タブをドラッグで並べ替えた状態で「すべて閉じる」を行うと復元後にタブの並びが変わる不具合があり、修正された。</p>
+
+      <h4>「実質的に全終了か」の判定</h4>
+      <div class="diagram">
+        <div class="stage">
+          <h5>nGroup==0</h5>
+          <p>「ファイル→サクラエディタの終了」「編集の全終了」。常に全グループ対象</p>
+        </div>
+        <div class="stage">
+          <h5>nGroup!=0</h5>
+          <p>特定グループだけを閉じる操作(グループ化タブのタイトルバー×は実機確認上こちらを通る)</p>
+        </div>
+        <div class="stage">
+          <h5>判定</h5>
+          <p>現在開いている全ウィンドウがそのグループに属する(=他に残るグループが無い)なら、結果的に全終了と同じとみなす</p>
+        </div>
+      </div>
+      <p>上記いずれでもない場合(他のグループが残る)は何もしない。</p>
+
+      <h4>n≥2ルール</h4>
+      <p>ユーザー要望による追加ルール: 一括で閉じようとしているウィンドウが2枚以上のときだけ実ファイル一覧を保存する。<code class="inline">n==1</code>の終了は通常の単一ファイル起動と同じ意味なので、<strong>空リストで明示的に上書き</strong>し、以前の(複数ウィンドウ終了時の)古いセッションが残り続けないようにする。</p>
+
+      <h4>per-window WM_DESTROYを断念した理由</h4>
+      <p>当初<code class="inline">CEditWnd</code>のWM_DESTROYで<code class="inline">m_nEditArrNum==1</code>を見て保存する設計だったが、<code class="inline">RequestCloseEditor()</code>が同期的<code class="inline">SendMessage(MYWM_CLOSE)</code>で1枚ずつ順に閉じるため、複数ウィンドウが連鎖的に閉じる場合、最後の1枚が自分のWM_DESTROYで数を確認する時点で既に他のきょうだいウィンドウは配列から消えている(自分1枚分の情報しか取れない)。単発の1ウィンドウ直接クローズでは問題ないが、一括終了では機能しない。</p>
+      <p>この副次フックは現在も残っており、<code class="inline">CloseAllEditor()</code>を経由しない個別クローズで自分が最後の1枚になる場合に、古いセッションが紛らわしく残らないようその場でセッションを明示的にクリアする役割を担う。</p>
+    </section>
+
+    <section id="shutdown">
+      <h2><span class="num">03</span>OSシャットダウン対応</h2>
+      <p>2026-08-15追加。各ウィンドウ(=別プロセス)が独立してWM_QUERYENDSESSIONを受け取るため、<code class="inline">CloseAllEditor()</code>のような単一の集約点が存在しない。<code class="inline">CEditWnd::DispatchEvent()</code>のハンドラで以下の方式により対応する。</p>
+      <ul>
+        <li>最初にWM_QUERYENDSESSIONを受け取ったウィンドウが、まだ誰も閉じ始めていない時点での全ウィンドウ一覧からセッションを保存する。この保存処理は<code class="inline">CloseAllEditor()</code>と共通化され、<code class="inline">CControlTray::SaveSessionSnapshot(pWndArr, n)</code>として切り出されている</li>
+        <li>「自分が最初か」の判定は、単純なif/代入(読んでから書く)ではなく<code class="inline">InterlockedCompareExchange()</code>でアトミックに行う。WM_QUERYENDSESSIONが複数プロセスへ本当に1つずつ順番に配送される保証はOS実装依存でコード側では保証できないため、万一2つ以上のプロセスがほぼ同時にこの分岐へ入っても実際にスナップショットを取るのは1プロセスだけになる</li>
+        <li>拒否時(このウィンドウがシャットダウンを拒否した場合)はフラグをFALSEへ戻す。<code class="inline">WM_ENDSESSION</code>(<code class="inline">wParam==FALSE</code>=キャンセル)でも念のため同様に戻す(二重の安全策)</li>
+      </ul>
+      <p>他のウィンドウが拒否してシャットダウン自体がキャンセルされた場合、既に閉じてしまったウィンドウは戻らない(サクラエディタ既存の挙動、対応範囲外)。</p>
+    </section>
+
+    <section id="dedup">
+      <h2><span class="num">04</span>二重発火防止 — <code class="inline">m_bSessionHandledByCloseAll</code></h2>
+      <p><code class="inline">DLLSHAREDATA::m_sFlags</code>の一時共有フラグ(iniには保存しない)。<code class="inline">CloseAllEditor()</code>とper-window WM_DESTROYの個別クリアが二重に走って上書き合戦にならないよう調停する。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>タイミング</th><th>値</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">SaveSessionSnapshot()</code>末尾(保存/クリア完了直後)</td><td class="mono">TRUE</td></tr>
+            <tr><td><code class="inline">CloseAllEditor()</code>の<code class="inline">RequestCloseEditor()</code>(同期的に全ウィンドウを閉じ切る)が戻った後</td><td class="mono">FALSE</td></tr>
+            <tr><td>WM_QUERYENDSESSIONの拒否時</td><td class="mono">FALSE</td></tr>
+            <tr><td>WM_ENDSESSION(<code class="inline">wParam==FALSE</code>、キャンセル)時</td><td class="mono">FALSE</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>per-window WM_DESTROY側の個別クリアは、このフラグが立っていれば何もしない。</p>
+    </section>
+
+    <section id="restore">
+      <h2><span class="num">05</span>復元トリガー — <code class="inline">CNormalProcess::InitializeProcess()</code></h2>
+      <p>以下すべてを満たす場合のみ、保存されたファイル一覧を<code class="inline">CCommandLine</code>の内部ファイルリスト(先頭を<code class="inline">m_fi</code>、残りを<code class="inline">m_vFiles</code>)に注入し、既存の複数ファイル起動経路をそのまま再利用する。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>条件</th><th>目的</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">m_bRestoreSession</td><td>機能自体がONであること</td></tr>
+            <tr><td class="mono">GetFileNum()==0 && m_fi.m_szPath==""</td><td>コマンドラインでファイル指定が一切無い。1ファイルだけの起動は<code class="inline">m_fi</code>に入り<code class="inline">m_vFiles</code>は0件になるため、<code class="inline">GetFileNum()</code>だけでは判定不十分</td></tr>
+            <tr><td class="mono">m_nEditArrNum==0</td><td>他にsakuraウィンドウが1つも起動していない(真のコールドスタート)。「新規ウィンドウを開く」操作や二重起動時に誤って復元が発動しないようにする</td></tr>
+            <tr><td class="mono">!IsNoWindow() && !IsDebugMode()<br>&& !IsGrepMode() && !IsGrepDlg()</td><td>「通常のファイル編集ウィンドウ」ではない特殊な起動(<code class="inline">-NOWIN=</code>/<code class="inline">-DEBUGMODE=</code>/Grep結果表示/Grepダイアログ単体起動)を復元対象から除外する</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>すべて満たした上で<code class="inline">LoadSessionFileList()</code>が保存済みエントリを読み、<code class="inline">SetFilesForSessionRestore()</code>で注入する。</p>
+    </section>
+
+    <section id="persist">
+      <h2><span class="num">06</span>永続化と<code class="inline">SaveShareData()</code>の落とし穴</h2>
+      <p><code class="inline">CShareData_IO::SaveSessionFileList</code>/<code class="inline">LoadSessionFileList</code>は、<code class="inline">DLLSHAREDATA</code>や通常の<code class="inline">ShareData_IO_2</code>(設定の読み書き本体)を経由せず、<code class="inline">sakura.ini</code>の<code class="inline">[Session]</code>セクション(<code class="inline">_Session_Counts</code>、<code class="inline">Session[NN].szPath</code>等)へ独自に読み書きする。</p>
+      <div class="callout">
+        <span class="label">SaveShareData()が[Session]を丸ごと消す</span>
+        <p><code class="inline">CShareData_IO::SaveShareData()</code>(→<code class="inline">ShareData_IO_2(false)</code>)は<strong>iniファイル全体をゼロから組み立てて書き直す</strong>(<code class="inline">ReadProfile()</code>せず、既知のキーだけを書いて<code class="inline">WriteProfile()</code>で丸ごと上書き)。これは通常の設定保存では正しいが、<code class="inline">[Session]</code>のように独自に書き込むセクションは既知のキーではないため跡形もなく消される。<code class="inline">SaveShareData()</code>が呼ばれるのは<code class="inline">CControlTray::OnDestroy()</code>(トレイウィンドウのWM_DESTROY、アプリ終了時のただ一箇所)で、<code class="inline">CloseAllEditor()</code>で<code class="inline">[Session]</code>を書いた直後にこれが走り、書いたそばから消える不具合が実機で発生した。対策として<code class="inline">OnDestroy()</code>内で<code class="inline">SaveShareData()</code>の直前に<code class="inline">LoadSessionFileList()</code>で退避し、直後に<code class="inline">SaveSessionFileList()</code>で書き戻す。</p>
+      </div>
+      <p><strong>空リストの扱いに注意</strong>: <code class="inline">LoadSessionFileList()</code>は0件のとき<code class="inline">false</code>を返すため、戻り値で「退避が必要か」を判定すると、<code class="inline">n==1</code>終了時の「明示的な空クリア」が「退避不要」と誤判定され、書き戻されずセクションごと消えてしまう不具合が実機で発生した。<code class="inline">bRestoreSession</code>がONなら常に(空でも)無条件で書き戻すよう修正済み。</p>
+    </section>
+
+    <section id="buffer">
+      <h2><span class="num">07</span>未保存内容の復元(<code class="inline">NKMM_SESSION_RESTORE_BUFFER</code>)</h2>
+      <p><code class="inline">NKMM_SESSION_RESTORE</code>はファイルの<strong>パス一覧</strong>だけを保存し、次回起動時にそのパスを普通に開き直す。ディスク上のファイルを再読込するだけなので、未保存の変更や無題(一度も保存していない)バッファは復元されない。本機能は全終了時にバッファの中身そのものを退避し、次回復元時に(保存していなくても)その中身を復元できるようにする。</p>
+      <p>未保存内容が平文でプロファイルフォルダ配下に一時的に残るという性質があるため、既存の「セッションの復元」チェックボックスとは<strong>別の明示的なオプトインチェックボックス</strong>として分離してある。</p>
+
+      <h4>プロセス間の橋渡し</h4>
+      <p><a href="#constraint">01節</a>と同じ「タブ=別プロセス」制約がある。セッション復元時、先頭ファイルは自プロセス内で開かれるが、残りは<code class="inline">CNormalProcess::OpenFiles()</code>が<code class="inline">CControlTray::OpenNewEditor2()</code>経由で実際に<code class="inline">sakura.exe</code>を新規プロセスとして<code class="inline">CreateProcess</code>する。バッファの中身そのものを直接プロセス間で渡すことはできず、渡せるのはコマンドライン文字列だけ。</p>
+      <div class="diagram">
+        <div class="stage">
+          <h5>ダンプ</h5>
+          <p>全終了時、変更ありのウィンドウへ<code class="inline">MYWM_DUMPBUFFER</code>を同期送信。<code class="inline">CWriteManager::WriteFile_From_CDocLineMgr()</code>で<code class="inline">SessionBuffers\</code>配下(UTF-8+BOM、拡張子<code class="inline">.swp</code>)へ生ダンプ</p>
+        </div>
+        <div class="stage">
+          <h5>橋渡し</h5>
+          <p>別プロセスへは新設スイッチ<code class="inline">-BUFRESTORE="&lt;パス&gt;"</code>で橋渡し。先頭ファイル(自プロセス内)は<code class="inline">CCommandLine::SetFilesForSessionRestore()</code>が直接セット</p>
+        </div>
+        <div class="stage">
+          <h5>復元</h5>
+          <p><code class="inline">CDocFileOperation::RestoreBufferOverlay()</code>が<code class="inline">CReadManager::ReadFile_To_CDocLineMgr()</code>を直接呼び、<code class="inline">InitDoc()</code>/<code class="inline">SetFilePathAndIcon()</code>をあえて呼ばずにバッファ内容だけを上書きする</p>
+        </div>
+      </div>
+      <p><code class="inline">InitDoc()</code>(変更フラグをfalseへリセットしてしまう)と<code class="inline">SetFilePathAndIcon()</code>(ドキュメント識別情報=現在のファイルパスの変更)をあえて呼ばない理由は、現在のドキュメント識別情報を変えずにバッファ内容だけを上書きし、明示的に変更フラグを立てるため。これらを呼んでしまうと、名前付きファイルなのに復元後のバッファが「保存済み(未変更)」扱いになってしまい、未保存内容の復元という目的自体が崩れる。</p>
+
+      <h4>non-consumed設計(消費しない)</h4>
+      <p>復元時にバックアップファイルを削除する「消費型」にはしていない。理由は2つ。</p>
+      <ul>
+        <li>既存のパス一覧復元も、<code class="inline">LoadSessionFileList()</code>は読むだけで復元時に<code class="inline">[Session]</code>を消しておらず、次回全終了時の上書きまで残る設計。バッファ版もこれに揃え、「復元は読み取り専用、掃除は保存時の全消去のみ」という単一の掃除ポイントに統一した</li>
+        <li>消費型だと、復元してから一度も完全終了せずにクラッシュ/強制終了して再度コールドスタートした場合、2回目は既にバックアップファイルが無く復元できない。非消費型なら同じ未保存内容が毎回復元される=復旧機能としてより堅牢</li>
+      </ul>
+      <p>唯一の掃除ポイントは<code class="inline">ClearSessionBufferDir()</code>で、新しいバックアップファイルをダンプする前に<code class="inline">SessionBuffers\</code>の中身を無条件で全消去してから書き直す(元は参照されなくなったファイルだけ消す reconcile 方式だったが、早期return時の残骸問題で無条件全消去へ変更)。削除に失敗した場合(ファイルロック等)は無視する。</p>
+      <p>トレードオフ: 復元してから次に完全終了するまでの間、未保存内容の平文バックアップが<code class="inline">SessionBuffers\</code>に残り続ける。</p>
+    </section>
+
+    <section id="race">
+      <h2><span class="num">08</span>レース条件の発見と対処(2026-08-15)</h2>
+      <p>OSシャットダウン対応(<a href="#shutdown">03節</a>)とバッファ復元機能の組み合わせを精査したところ、保存確認の抑制ロジックに理論上のデータロス系のレース条件が見つかった。</p>
+      <div class="callout">
+        <span class="label">問題</span>
+        <p>当初の抑制条件(閉じるときに「変更を保存しますか？」を出さない条件)は<code class="inline">!IsValidPath() &amp;&amp; m_bSessionHandledByCloseAll &amp;&amp; m_bRestoreSessionBuffer</code>だった。<code class="inline">CloseAllEditor()</code>経由なら、全ウィンドウのダンプを完了させてから各ウィンドウの<code class="inline">OnFileClose()</code>を呼ぶ(単一プロセス内の同期ループ)ため問題は起きない。しかしOSシャットダウン経由の場合、各ウィンドウ(=別プロセス)が個別にWM_QUERYENDSESSIONを受け取り、OSがその配送順序をシリアライズする保証はない。そのため、代表ウィンドウが他ウィンドウBのバッファをダンプし終える<strong>前</strong>に、B自身のWM_QUERYENDSESSIONが先に処理され、Bの<code class="inline">OnFileClose()</code>が「<code class="inline">m_bSessionHandledByCloseAll</code>が立っている=どうせ退避される」と誤判定して確認を抑制し、そのまま閉じてしまう競合があり得た。この場合Bの内容は実際にはまだダンプされておらず、未保存の変更がそのまま失われる。</p>
+      </div>
+      <p><strong>対処</strong>: 「誰かが保存処理を始めた」ことしか示さない共有(複数プロセス)フラグ<code class="inline">m_bSessionHandledByCloseAll</code>だけに頼るのをやめ、「自分の内容が実際にダンプされたか」を示すローカルな(プロセス内、<code class="inline">CEditDoc</code>の)フラグ<code class="inline">m_bSessionBufferCaptured</code>を新設した。</p>
+      <ul>
+        <li><code class="inline">MYWM_GETFILEINFO</code>ハンドラ(<code class="inline">SaveSessionSnapshot()</code>が各ウィンドウへ問い合わせる際、ループ先頭で必ず呼ばれる)で、まず<code class="inline">false</code>にリセット — 過去の中断された試みのダンプ実績が今回の試みに紛れ込むのを防ぐ</li>
+        <li><code class="inline">MYWM_DUMPBUFFER</code>ハンドラで、ダンプに実際に成功した時だけ<code class="inline">true</code>にする</li>
+        <li>抑制条件を<code class="inline">!IsValidPath() &amp;&amp; m_bSessionHandledByCloseAll &amp;&amp; m_bSessionBufferCaptured</code>に変更</li>
+      </ul>
+      <p><code class="inline">m_bSessionBufferCaptured</code>単独ではなく<code class="inline">m_bSessionHandledByCloseAll</code>との組み合わせで見ている点が重要: 後者は全終了処理の開始/終了(成功・中断いずれも)で確実にFALSEへ戻るため、無関係な後日の個別クローズで過去のダンプ実績が誤って抑制に使われることもない。</p>
+    </section>
+
+    <section id="security">
+      <h2><span class="num">09</span>セキュリティ修正(2026-08-27〜28)</h2>
+      <p>初期実装(2026-08-14〜15)から約2週間後、別セッションのセキュリティ監査で2件の脆弱性が見つかり修正された。両方とも<code class="inline">main</code>にコミット済み(<code class="inline">a2e16f00d</code>/<code class="inline">4860a404c</code>)。</p>
+      <div class="callout">
+        <span class="label">パストラバーサル対策(20260827、LoadSessionFileList)</span>
+        <p><code class="inline">Session[NN].szBuf</code>(バックアップファイル名)は<code class="inline">[Session]</code>セクションの独自I/O経由で、他プロセスによる書き換えや手編集が可能な信頼できない入力。保存時の前提(ファイル名のみ、パス区切りなし)を読み込み側でも独立に検証する。</p>
+        <pre><code><span class="cm">// LoadSessionFileList() 内</span>
+<span class="kw">bool</span> bBufNameSafe = !strBufName.empty()
+    &amp;&amp; strBufName.find_first_of(L<span class="kw">"\\/:"</span>) == std::wstring::npos
+    &amp;&amp; strBufName != L<span class="kw">"."</span> &amp;&amp; strBufName != L<span class="kw">".."</span>;</code></pre>
+        <p><code class="inline">\</code>/<code class="inline">/</code>/<code class="inline">:</code>のいずれかを含む、または値そのものが<code class="inline">.</code>/<code class="inline">..</code>の場合は拒否し、<code class="inline">entry.bModified</code>をfalseへ落として通常のパスオープンへフォールバックする。検証しないと、<code class="inline">..</code>等による<code class="inline">SessionBuffers\</code>外への任意ファイル読み込み(→ユーザーの保存操作による任意ファイル上書き)を許してしまう。</p>
+      </div>
+      <div class="callout">
+        <span class="label">固定長バッファへの生_tcscpy置換(20260828)</span>
+        <p>ini/コマンドライン(<code class="inline">-BUFRESTORE=</code>)由来でサイズ上限の無い文字列を、サイズ上限のある固定長バッファへコピーする箇所が計4箇所、境界チェック無しの<code class="inline">_tcscpy</code>のままだった。いずれも<code class="inline">_tcsncpy_s(..., _TRUNCATE)</code>へ置換し、規定長を超える場合はabortさせず切り詰める方式に統一した。</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>関数</th><th>ファイル</th><th>コピー先</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">SetFilesForSessionRestore()</td><td class="mono">CCommandLine.h</td><td class="mono">m_fi.m_szPath</td></tr>
+              <tr><td class="mono">SaveSessionSnapshot()</td><td class="mono">CControlTray.cpp</td><td class="mono">DLLSHAREDATA::m_sWorkBuffer::m_szDumpBufferTargetPath_MYWM_DUMPBUFFER</td></tr>
+              <tr><td class="mono">OpenFiles()</td><td class="mono">CNormalProcess.cpp</td><td class="mono">fi.m_szPath</td></tr>
+              <tr><td class="mono">OpenFiles()</td><td class="mono">CNormalProcess.cpp</td><td class="mono">fi.m_szBufRestorePath</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><code class="inline">DLLSHAREDATA</code>は共有メモリ上の固定長構造体であり、ここでオーバーフローすると隣接する他フィールドを破壊しうる(終了処理中に発生するとクラッシュや破損データの書き込みにつながる)。切り詰めを選んだのは終了処理を止めない(abortしない)ため。</p>
+      </div>
+    </section>
+
+    <section id="comments">
+      <h2><span class="num">10</span>コメントリファクタリング(2026-09-01)</h2>
+      <p>初期実装からセキュリティ修正までの間に、コメントの更新が実態に追いついていない箇所が複数見つかったため、ロジックを変更せずコメントのみ修正した。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>箇所</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">my_config.h</td><td>「WM_QUERYENDSESSION/WM_ENDSESSIONは未対応(検討中)」という<strong>事実誤り</strong>のコメントを削除。2026-08-15に実際には対応済み(<a href="#shutdown">03節</a>)だったが、フラグ本体のコメントだけ更新されずに残っていた</td></tr>
+            <tr><td class="mono">CNormalProcess.cpp(<code class="inline">OpenFiles()</code>内、<code class="inline">m_szBufRestorePath</code>コピー)</td><td>4箇所ある<code class="inline">_tcsncpy_s(..., _TRUNCATE)</code>切り詰めのうち1箇所だけ、切り詰めが必要な理由を説明するコメントが欠落していた。他3箇所と揃える形で追加</td></tr>
+            <tr><td class="mono">CNormalProcess.cpp(<code class="inline">InitializeProcess()</code>冒頭)</td><td>復元トリガーの条件コメントが<code class="inline">IsNoWindow()</code>/<code class="inline">IsDebugMode()</code>/<code class="inline">IsGrepMode()</code>/<code class="inline">IsGrepDlg()</code>という追加ガード(実コードには存在)に触れていなかったため、簡潔な説明を追記</td></tr>
+            <tr><td class="mono">CControlTray.cpp(<code class="inline">SaveSessionSnapshot()</code>内)</td><td>「検証が終わったら必ず削除すること」という自己申告付きの一時テストコード(レース条件再現用、コメントアウト済みの<code class="inline">::Sleep(5000)</code>と付随コメント)が、検証完了後も残置されていたため削除。<code class="inline">tools/race_test.ps1</code>自体は再利用可能なテストツールとして残置</td></tr>
+            <tr><td class="mono">changelog/NKMM_SESSION_RESTORE.md<br>changelog/NKMM_SESSION_RESTORE_BUFFER.md</td><td>「対象ファイル」節が実装ファイルを<code class="inline">CPropComGeneral.cpp</code>(「全般」タブ)と誤記していたのを、実際の実装箇所<code class="inline">CPropComFile.cpp</code>(「ファイル」タブ)へ訂正。2026-08-27/28のセキュリティ修正が両ファイルとも未記載だったため追記(<a href="#security">09節</a>相当の内容)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="settings">
+      <h2><span class="num">11</span>設定項目</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>項目</th><th>ini</th><th>UI</th></tr></thead>
+          <tbody>
+            <tr><td>セッションの復元</td><td class="mono">bRestoreSession(既定OFF)</td><td>共通設定「ファイル」タブ「終了時に開いていたファイルを次回起動時に自動復元する」(<code class="inline">IDC_CHECK_RESTORE_SESSION</code>)</td></tr>
+            <tr><td>バッファ内容の復元</td><td class="mono">bRestoreSessionBuffer(既定OFF)</td><td>同タブ「未保存の変更内容もバッファから復元する」(<code class="inline">IDC_CHECK_RESTORE_SESSION_BUFFER</code>)。「セッションの復元」OFF時はグレーアウトして連動</td></tr>
+            <tr><td>保存されたセッション本体</td><td class="mono">[Session]セクション(独自I/O)<br>_Session_Counts、Session[NN].szPath/.bModified/.szBuf</td><td>UIなし(内部データ)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="limits">
+      <h2><span class="num">12</span>既知の制約</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>項目</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill scope">対象外</span></td><td>タブグループ構成・ウィンドウ位置はv1スコープ外(ユーザーとの相談で決定)</td></tr>
+            <tr><td><span class="pill warn">未対応</span></td><td>強制終了(タスクキル等、WM_DESTROYを経由しない終了)では保存されない</td></tr>
+            <tr><td><span class="pill warn">トレードオフ</span></td><td>バッファ復元は非消費型のため、復元してから一度も完全終了せずに長期間使い続けた場合、その間ずっと未保存内容の平文バックアップが<code class="inline">SessionBuffers\</code>に残る</td></tr>
+            <tr><td><span class="pill warn">未対応</span></td><td>大きく変更したファイルの全終了は、その場でファイルサイズ分のダンプI/Oが発生する。サイズ上限は設けていない</td></tr>
+            <tr><td><span class="pill scope">割り切り</span></td><td><code class="inline">ClearSessionBufferDir()</code>の削除失敗(ファイルロック等)は無視する。「タイミングが悪いときは仕方ない」という明示的な判断</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">13</span>変更ファイル一覧</h2>
+      <div class="tablewrap filemap">
+        <table>
+          <thead><tr><th>ファイル</th><th>内容</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">my_config.h</td><td><code class="inline">NKMM_SESSION_RESTORE</code>/<code class="inline">NKMM_SESSION_RESTORE_BUFFER</code>フラグ定義</td></tr>
+            <tr><td class="mono">env/CommonSetting.h</td><td><code class="inline">CommonSetting_General::m_bRestoreSession</code>/<code class="inline">m_bRestoreSessionBuffer</code>(既定OFF)</td></tr>
+            <tr><td class="mono">env/CShareData.cpp</td><td>既定値の設定</td></tr>
+            <tr><td class="mono">env/CShareData_IO.h / .cpp</td><td><code class="inline">SSessionEntry</code>、<code class="inline">SaveSessionFileList</code>/<code class="inline">LoadSessionFileList</code>(パストラバーサル対策込み)、<code class="inline">GetSessionBufferDir</code>/<code class="inline">GetSessionBufferFilePath</code>/<code class="inline">ClearSessionBufferDir</code></td></tr>
+            <tr><td class="mono">env/DLLSHAREDATA.h</td><td><code class="inline">SShare_Flags::m_bSessionHandledByCloseAll</code>、<code class="inline">m_sWorkBuffer::m_szDumpBufferTargetPath_MYWM_DUMPBUFFER</code></td></tr>
+            <tr><td class="mono">EditInfo.h</td><td><code class="inline">m_szBufRestorePath</code></td></tr>
+            <tr><td class="mono">_main/CCommandLine.h / .cpp</td><td><code class="inline">-BUFRESTORE=</code>スイッチ、<code class="inline">m_cmBufRestorePath</code>/<code class="inline">m_vBufRestorePaths</code>、<code class="inline">SetFilesForSessionRestore()</code>(境界チェック込み)</td></tr>
+            <tr><td class="mono">_main/CControlTray.cpp</td><td><code class="inline">CloseAllEditor()</code>(保存フック)、<code class="inline">SaveSessionSnapshot()</code>(保存本体)、<code class="inline">OnDestroy()</code>でのini退避/書き戻し</td></tr>
+            <tr><td class="mono">_main/CNormalProcess.cpp</td><td><code class="inline">InitializeProcess()</code>(復元トリガー)、<code class="inline">OpenFiles()</code>(境界チェック込みの橋渡し)</td></tr>
+            <tr><td class="mono">doc/CDocFileOperation.h / .cpp</td><td><code class="inline">RestoreBufferOverlay()</code></td></tr>
+            <tr><td class="mono">doc/CEditDoc.h / .cpp</td><td><code class="inline">m_bSessionBufferCaptured</code>、<code class="inline">OnFileClose()</code>の保存確認抑制ロジック</td></tr>
+            <tr><td class="mono">config/system_constants.h</td><td><code class="inline">MYWM_DUMPBUFFER</code></td></tr>
+            <tr><td class="mono">window/CEditWnd.cpp</td><td>個別クローズ時のセッションクリア(WM_DESTROY)、<code class="inline">WM_QUERYENDSESSION</code>/<code class="inline">WM_ENDSESSION</code>ハンドラ、<code class="inline">MYWM_DUMPBUFFER</code>ハンドラ</td></tr>
+            <tr><td class="mono">prop/CPropComFile.cpp</td><td>共通設定「ファイル」タブのチェックボックス実装</td></tr>
+            <tr><td class="mono">sakura_rc.rc / sakura_rc.h / sakura.hh</td><td>コントロールID・ダイアログリソース</td></tr>
+            <tr><td class="mono">tools/race_test.ps1</td><td>OSシャットダウン経由のレース条件再現テストツール</td></tr>
+            <tr><td class="mono">changelog/NKMM_SESSION_RESTORE.md</td><td>設計changelog(保存/復元トリガー、OSシャットダウン対応、セキュリティ修正)</td></tr>
+            <tr><td class="mono">changelog/NKMM_SESSION_RESTORE_BUFFER.md</td><td>設計changelog(バッファ復元、レース条件、セキュリティ修正)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="history">
+      <h2><span class="num">14</span>変更履歴</h2>
+      <div class="timeline">
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">01</span><span class="pass-title">初期実装</span><span class="pass-date">2026-08-14</span></div>
+          <p>ファイルパス一覧の保存・復元。<code class="inline">CloseAllEditor()</code>への一本化、n≥2ルール、<code class="inline">SaveShareData()</code>の落とし穴対応まで、この回で設計の骨格が確定した。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">02</span><span class="pass-title">バッファ内容の復元</span><span class="pass-date">2026-08-15</span></div>
+          <p><code class="inline">NKMM_SESSION_RESTORE_BUFFER</code>初期実装。未保存の新規ファイルを全終了時にバッファへ退避し、起動時に復元する。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">03</span><span class="pass-title">OSシャットダウン対応</span><span class="pass-date">2026-08-15</span></div>
+          <p>WM_QUERYENDSESSION/WM_ENDSESSION対応、およびバッファ復元との組み合わせで見つかったレース条件の対処(<code class="inline">m_bSessionBufferCaptured</code>導入)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">04</span><span class="pass-title">スクロールバー幅キャッシュの再計算漏れ修正</span><span class="pass-date">2026-08-18</span></div>
+          <p><code class="inline">RestoreBufferOverlay()</code>が「折り返さない」設定時のテキスト最大幅キャッシュを再計算していなかったため、復元直後は内容が画面幅を超えていても水平スクロールバーの表示要否を誤判定していた。<code class="inline">CLoadAgent::OnAfterLoad()</code>と同様に再計算するよう修正。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">05</span><span class="pass-title">パストラバーサル対策</span><span class="pass-date">2026-08-27</span></div>
+          <p>セキュリティ監査で発見。<code class="inline">Session[NN].szBuf</code>の読み込み時検証を追加(<a href="#security">09節</a>)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">06</span><span class="pass-title">固定長バッファのオーバーフロー対策</span><span class="pass-date">2026-08-28</span></div>
+          <p>4箇所の生<code class="inline">_tcscpy</code>を<code class="inline">_tcsncpy_s(..., _TRUNCATE)</code>へ置換(<a href="#security">09節</a>)。</p>
+        </div>
+        <div class="pass">
+          <div class="pass-head"><span class="pass-num">07</span><span class="pass-title">コメントリファクタリング</span><span class="pass-date">2026-09-01</span></div>
+          <p>事実誤りのコメント(OSシャットダウン未対応表記)の修正、欠落コメントの補完、changelogのファイル参照誤りの訂正とセキュリティ修正の追記、残置テストコードの削除(<a href="#comments">10節</a>)。ロジック・UI挙動は無変更。</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>sakura fork — NKMM_SESSION_RESTORE</span>
+      <span>2026-09-01 時点の実装状態</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  try{
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function(a){
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if(el) map[id] = a;
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var a = map[entry.target.id];
+        if(!a) return;
+        if(entry.isIntersecting){
+          links.forEach(function(l){ l.classList.remove('active'); });
+          a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+    Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

@@ -93,7 +93,10 @@ bool CNormalProcess::InitializeProcess()
 	   （先頭をm_fi、残りをm_vFiles）に注入する。これにより以降の処理
 	   （グループ合流・OpenFiles()）を素通しでそのまま使い回せる。
 	   「新規ウィンドウを開く」操作まで復元が乗っ取らないよう、他ウィンドウが
-	   1つでも起動していれば復元は行わない 20260814 */
+	   1つでも起動していれば復元は行わない 20260814。
+	   IsNoWindow/IsDebugMode/IsGrepMode/IsGrepDlgは、-NOWIN=/-DEBUGMODE=/
+	   Grep結果表示/Grepダイアログ単体起動など「通常のファイル編集ウィンドウ
+	   ではない」特殊な起動を復元対象から除外するための既存フラグの流用 */
 	bool bSessionRestoreInjected = false;	// 20260815 下のクラッシュ復元確認との競合防止に使う
 	if( GetDllShareData().m_Common.m_sGeneral.m_bRestoreSession
 		&& !CCommandLine::getInstance()->IsNoWindow()
@@ -674,6 +677,8 @@ void CNormalProcess::OpenFiles( HWND hwnd )
 			{
 				const wchar_t* pszBufRestore = CCommandLine::getInstance()->GetBufRestorePathForFile( i );
 				if( pszBufRestore ){
+					// 20260828 上のm_szPathと同じ理由(ini/-BUFRESTORE=由来でサイズ上限が
+					// 無い文字列が来得る)で、固定長バッファへコピーする前に切り詰める
 					_tcsncpy_s( fi.m_szBufRestorePath, _MAX_PATH, pszBufRestore, _TRUNCATE );
 				}else{
 					fi.m_szBufRestorePath[0] = _T('\0');

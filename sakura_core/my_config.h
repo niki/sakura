@@ -423,8 +423,11 @@
 //    (=別プロセス)が連鎖的に閉じる際にきょうだいの情報が既に消えているため
 //    不採用。CShareData_IO::SaveShareData()がini全体を書き直し[Session]を
 //    消してしまう問題はCControlTray::OnDestroy()で退避/書き戻しして対処
-//  - 既知の制約: WM_QUERYENDSESSION/WM_ENDSESSION(OSシャットダウン)は
-//    複数プロセスが独立に受け取るため未対応(検討中)
+//  - OSシャットダウン(WM_QUERYENDSESSION/WM_ENDSESSION)にも対応 20260815。
+//    複数プロセスが独立に受け取るため、CEditWnd.cppのハンドラで
+//    m_bSessionHandledByCloseAllをInterlockedCompareExchange()により
+//    プロセス間で1回だけ処理されるよう調停する
+//  - 既知の制約: タスクキル等WM_DESTROYを経由しない強制終了では保存されない
 //  - 詳細はchangelog/NKMM_SESSION_RESTORE.md参照
 //------------------------------------------------------------------
 #define NKMM_SESSION_RESTORE
