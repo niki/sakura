@@ -1867,6 +1867,25 @@
 //------------------------------------------------------------------
 #define NKMM_FIX_LOAD_BIGGER_READBUF
 
+//------------------------------------------------------------------
+// 選択範囲を削除した直後のUndoで、削除前の選択状態を復元する 20260831
+//  - VS Code等と同じ挙動: 「範囲選択→削除」をUndoすると、単にテキストが
+//    戻るだけでなく、その戻った範囲が改めて選択状態になる
+//  - 従来は選択の有無に関わらずUndo後は常にキャレットのみ(選択なし)だった
+//  - 素のBackSpace/Delete(選択なしの1文字削除)のUndoは対象外。方向(アンカー
+//    側)までは復元しない、単に「選択されていたか」の1フラグのみで判定する
+//  - CReplaceOpeにのみ対応。矩形選択の削除(DeleteData2経由)は対象外
+//    (矩形選択モード自体の復元が別途必要になるため、スコープ外とした)
+//  - COpe.h: CReplaceOpe::bHadSelection
+//  - view/CEditView.h,CEditView_Command_New.cpp: ReplaceData_CEditView/2/3に
+//    末尾の省略可能引数として追加、CEditView::DeleteData()の選択削除分岐で
+//    true を渡す
+//  - env/CommonSetting.h,CShareData.cpp,CShareData_IO.cpp: iniのみの設定
+//    bUndoRestoreSelection(既定true、ダイアログ項目なし)でオン/オフ可能
+//  - cmd/CViewCommander_Edit.cpp: Command_UNDO()のOPE_REPLACE処理
+//------------------------------------------------------------------
+#define NKMM_UNDO_RESTORE_SELECTION
+
 //
 //#define USE_SSE2
 

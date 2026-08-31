@@ -264,6 +264,10 @@ struct CommonSetting_Edit
 	// (ダイアログ項目無し)
 	bool	m_bMultiCursorMergeOverlapping;	//!< マルチカーソル: 重なった(接した)カーソル同士を1個に統合する(VS CodeのeditorMultiCursorMergeOverlapping相当) 20260831
 #endif // NKMM_
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+	// (ダイアログ項目無し)
+	bool	m_bUndoRestoreSelection;	//!< 選択範囲の削除・置換をUndoしたとき、復元した範囲を選択状態にする 20260831
+#endif // NKMM_
 };
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

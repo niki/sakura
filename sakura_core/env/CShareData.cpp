@@ -409,6 +409,9 @@ bool CShareData::InitShareData()
 #ifdef NKMM_MULTI_CURSOR
 			sEdit.m_bMultiCursorMergeOverlapping = true;	// マルチカーソル: 重なったら統合する(VS Code既定に合わせてtrue) 20260831
 #endif // NKMM_
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+			sEdit.m_bUndoRestoreSelection = true;	// 選択削除のUndoで選択状態を復元する(VS Code既定に合わせてtrue) 20260831
+#endif // NKMM_
 		}
 
 		// [ファイル]タブ

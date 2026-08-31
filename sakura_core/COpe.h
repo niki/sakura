@@ -93,6 +93,16 @@ private:
 public:
 	CLogicPoint	m_ptCaretPos_PHY_Before;	//!< キャレット位置。文字単位。			[共通]
 	CLogicPoint	m_ptCaretPos_PHY_After;		//!< キャレット位置。文字単位。			[共通]
+#ifdef NKMM_MULTI_CURSOR
+	//! マルチカーソルの一括編集(ApplyToAllCursors)で、このOpeがどのカーソルの編集による
+	//! ものかを識別する。-1=マルチカーソル無関係(通常の単一カーソル編集)、0=プライマリ
+	//! 自身、1以上=そのextraの編集時点でのm_vExtraCursors内index+1。Command_UNDO/REDO側で、
+	//! ブロック内の「最後に処理したOpe」(降順/昇順走査、必ずしも特定のカーソルとは限らない)
+	//! に頼らず、各カーソルの直前(Undo)/直後(Redo)の状態(位置・選択)へ確実に戻すために
+	//! 使う。1つの一括編集ブロックに複数カーソル分のOpeが混在するため、単なるプライマリか
+	//! どうかのbool 1個では各extraを個別に復元できず、識別子として持つ 20260831
+	int			nCursorSlot = -1;
+#endif // NKMM_
 };
 
 //!削除
@@ -143,6 +153,9 @@ public:
 	COpeLineData	m_pcmemDataDel;			//!< 操作に関連するデータ				[DELETE]
 	int				m_nOrgInsSeq;
 	int				m_nOrgDelSeq;
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+	bool			bHadSelection = false;	//!< この置換の直前が選択状態だったか(Undoでの選択復元用) 20260831
+#endif // NKMM_
 };
 
 //!キャレット移動

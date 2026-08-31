@@ -442,7 +442,8 @@ public:
 		bool				bRedraw,
 		COpeBlk*			pcOpeBlk,
 		bool				bFastMode = false,
-		const CLogicRange*	psDelRangeLogicFast = NULL
+		const CLogicRange*	psDelRangeLogicFast = NULL,
+		bool				bHadSelection = false	//!< 20260831 呼び出し前が選択状態だったか(NKMM_UNDO_RESTORE_SELECTION用)
 	);
 	void ReplaceData_CEditView2(
 		const CLogicRange&	sDelRange,			// 削除範囲。ロジック単位。
@@ -450,7 +451,8 @@ public:
 		CLogicInt			nInsDataLen,		// 挿入するデータの長さ
 		bool				bRedraw,
 		COpeBlk*			pcOpeBlk,
-		bool				bFastMode = false
+		bool				bFastMode = false,
+		bool				bHadSelection = false	//!< 20260831 呼び出し前が選択状態だったか(NKMM_UNDO_RESTORE_SELECTION用)
 	);
 	bool ReplaceData_CEditView3(
 		CLayoutRange	sDelRange,			// 削除範囲。レイアウト単位。
@@ -461,7 +463,8 @@ public:
 		int				nDelSeq,
 		int*			pnInsSeq,
 		bool			bFastMode = false,
-		const CLogicRange*	psDelRangeLogicFast = NULL
+		const CLogicRange*	psDelRangeLogicFast = NULL,
+		bool			bHadSelection = false	//!< 20260831 呼び出し前が選択状態だったか(NKMM_UNDO_RESTORE_SELECTION用)
 	);
 	void RTrimPrevLine( void );		/* 2005.10.11 ryoji 前の行にある末尾の空白を削除 */
 
@@ -695,7 +698,7 @@ public:
 	//! - レイアウト単位で持つため、折り返し表示中でもプライマリ自身の上下移動(表示行基準)と
 	//!   挙動が一致する(ロジック単位だった旧版では折り返し中にずれる既知の制約があった)
 	//!
-	//! 選択(bHasSelection/nAnchorRelLine/nAnchorRelColumn)は20260902に追加。当初は選択も
+	//! 選択(bHasSelection/nAnchorRelLine/nAnchorRelColumn)は20260831に追加。当初は選択も
 	//! 「プライマリのm_sSelectを平行移動するだけ」だったが、行の長さがカーソルごとに違う場合
 	//! (短い行の末尾で選択が止まってしまい、次の行へ回り込まない)に正しく折り返せなかった。
 	//! そこで選択の起点(アンカー)も、キャレット位置と全く同じ「プライマリ+固定オフセット」の
@@ -731,7 +734,7 @@ public:
 	//! 現在位置(ResolveExtraCursor)を、このカーソル自身の選択範囲として独立に解決し、
 	//! プライマリの選択範囲と全く同じGetSelectAreaLineFromRangeロジックでnLineNum行分を
 	//! 切り出す(プライマリの範囲を平行移動するのではない。短い行での折り返し等、行ごとに
-	//! 実際の文字数が違ってもこのカーソル自身の行として正しく扱われる) 20260902
+	//! 実際の文字数が違ってもこのカーソル自身の行として正しく扱われる) 20260831
 	//! 選択中でない、またはアンカー/現在位置の行がドキュメント範囲外なら無効な範囲
 	//! (IsValid()==false相当、Clear(-1))を返す
 	CLayoutRange ResolveExtraCursorSelectAreaLine( const SExtraCursor& extra, CLayoutInt nLineNum ) const;

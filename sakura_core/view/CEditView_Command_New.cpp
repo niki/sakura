@@ -605,7 +605,12 @@ void CEditView::DeleteData(
 				L"",					/* 挿入するデータ */
 				CLogicInt(0),			/* 挿入するデータの長さ */
 				bRedraw,
-				m_bDoing_UndoRedo?NULL:m_cCommander.GetOpeBlk()
+				m_bDoing_UndoRedo?NULL:m_cCommander.GetOpeBlk(),
+				false,					/* bFastMode */
+				NULL					/* psDelRangeLogicFast */
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+				, true					/* bHadSelection: 選択範囲の削除なのでUndoで選択復元の対象にする 20260831 */
+#endif // NKMM_
 			);
 		}
 	}else{
@@ -695,7 +700,8 @@ void CEditView::ReplaceData_CEditView(
 	bool				bRedraw,
 	COpeBlk*			pcOpeBlk,
 	bool				bFastMode,
-	const CLogicRange*	psDelRangeLogicFast
+	const CLogicRange*	psDelRangeLogicFast,
+	bool				bHadSelection
 )
 {
 	int opeSeq;
@@ -705,11 +711,11 @@ void CEditView::ReplaceData_CEditView(
 		opeSeq = GetDocument()->m_cDocEditor.m_cOpeBuf.GetCurrentPointer();
 	}
 	if( 0 == nInsDataLen ){
-		ReplaceData_CEditView3(sDelRange, NULL, NULL, bRedraw, pcOpeBlk, opeSeq, NULL, bFastMode, psDelRangeLogicFast);
+		ReplaceData_CEditView3(sDelRange, NULL, NULL, bRedraw, pcOpeBlk, opeSeq, NULL, bFastMode, psDelRangeLogicFast, bHadSelection);
 	}else{
 		COpeLineData insData;
 		StringToOpeLineData(pInsData, nInsDataLen, insData, opeSeq);
-		ReplaceData_CEditView3(sDelRange, NULL, &insData, bRedraw, pcOpeBlk, opeSeq, NULL, bFastMode, psDelRangeLogicFast);
+		ReplaceData_CEditView3(sDelRange, NULL, &insData, bRedraw, pcOpeBlk, opeSeq, NULL, bFastMode, psDelRangeLogicFast, bHadSelection);
 	}
 }
 
@@ -719,14 +725,15 @@ void CEditView::ReplaceData_CEditView2(
 	CLogicInt			nInsDataLen,		// 挿入するデータの長さ
 	bool				bRedraw,
 	COpeBlk*			pcOpeBlk,
-	bool				bFastMode
+	bool				bFastMode,
+	bool				bHadSelection
 )
 {
 	CLayoutRange sDelRangeLayout;
 	if( !bFastMode ){
 		this->m_pcEditDoc->m_cLayoutMgr.LogicToLayout(sDelRange,&sDelRangeLayout);
 	}
-	ReplaceData_CEditView(sDelRangeLayout,pInsData,nInsDataLen,bRedraw,pcOpeBlk,bFastMode,&sDelRange);
+	ReplaceData_CEditView(sDelRangeLayout,pInsData,nInsDataLen,bRedraw,pcOpeBlk,bFastMode,&sDelRange,bHadSelection);
 }
 
 
@@ -744,7 +751,8 @@ bool CEditView::ReplaceData_CEditView3(
 	int				nDelSeq,
 	int*			pnInsSeq,
 	bool			bFastMode,			//!< [in] CDocLineMgrを更新しない,行末チェックを省略する。bRedraw==falseの必要あり
-	const CLogicRange*	psDelRangeLogicFast
+	const CLogicRange*	psDelRangeLogicFast,
+	bool			bHadSelection		//!< [in] 20260831 呼び出し前が選択状態だったか(NKMM_UNDO_RESTORE_SELECTION用)
 )
 {
 	assert( (bFastMode && bRedraw == false) || (!bFastMode) ); // bFastModeのときは bReadraw == false
@@ -851,6 +859,9 @@ bool CEditView::ReplaceData_CEditView3(
 		pcReplaceOpe->m_ptCaretPos_PHY_Before = sDelRangeLogic.GetFrom();
 		pcReplaceOpe->m_ptCaretPos_PHY_To = sDelRangeLogic.GetTo();
 		pcReplaceOpe->m_ptCaretPos_PHY_After = pcReplaceOpe->m_ptCaretPos_PHY_Before;	// 操作後のキャレット位置
+#ifdef NKMM_UNDO_RESTORE_SELECTION
+		pcReplaceOpe->bHadSelection = bHadSelection;
+#endif // NKMM_
 	}
 
 	COpeLineData* pcMemDeleted = NULL;
