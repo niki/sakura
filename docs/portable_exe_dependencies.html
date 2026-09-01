@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<!-- gen:20260901T0000+09:00 (初版 2026-09-01 JST) -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>単一exe化 ファイル依存関係リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%A6</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514;
+      --surface:#241C1B;
+      --ink:#EEE5E1;
+      --ink-soft:#B3A29D;
+      --ink-faint:#7C6E6A;
+      --rule:#3A2E2C;
+      --sakura:#E28CA8;
+      --sakura-ink:#F3B9CC;
+      --sakura-tint:#3A2530;
+      --ok-bg:#28331F;
+      --ok-ink:#9FC28F;
+      --warn-bg:#362C15;
+      --warn-ink:#E0BE79;
+      --scope-bg:#232C36;
+      --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514;
+    --surface:#241C1B;
+    --ink:#EEE5E1;
+    --ink-soft:#B3A29D;
+    --ink-faint:#7C6E6A;
+    --rule:#3A2E2C;
+    --sakura:#E28CA8;
+    --sakura-ink:#F3B9CC;
+    --sakura-tint:#3A2530;
+    --ok-bg:#28331F;
+    --ok-ink:#9FC28F;
+    --warn-bg:#362C15;
+    --warn-ink:#E0BE79;
+    --scope-bg:#232C36;
+    --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600;
+    color:var(--ink);
+    text-wrap:balance;
+    letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  code, .mono{ font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace; font-size:.88em; }
+  code.inline{
+    background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+    padding:.08em .38em; color:var(--sakura-ink); white-space:nowrap;
+  }
+
+  main{ max-width:880px; margin:0 auto; padding:64px 40px 120px; }
+
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.1em;
+    color:var(--sakura-ink); text-transform:uppercase; margin-bottom:14px;
+  }
+  h1.title{ font-size:2.4rem; line-height:1.25; margin:0 0 12px; }
+  .subtitle{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; margin:0 0 22px; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:10px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem; padding:5px 11px; border-radius:999px;
+    background:var(--surface); border:1px solid var(--rule); color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:60px 0; }
+  section > h2{
+    font-size:1.4rem; padding-bottom:12px; border-bottom:1px solid var(--rule);
+    margin-bottom:20px; display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:.78rem; color:var(--sakura); font-weight:600; }
+  h3{ font-size:1.08rem; margin:28px 0 10px; }
+  p{ margin:0 0 14px; max-width:68ch; }
+  .lede{ font-size:.98rem; color:var(--ink-soft); max-width:68ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:64ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  table{ width:100%; border-collapse:collapse; margin:0; font-size:.85rem; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.7rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:9px 14px; border-bottom:1px solid var(--rule); background:var(--surface);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap; font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  .callout{
+    border:1px solid var(--rule); border-left:3px solid var(--sakura); background:var(--surface);
+    border-radius:0 10px 10px 0; padding:16px 20px; margin:0 0 22px; font-size:.9rem; max-width:64ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+
+  footer{
+    border-top:1px solid var(--rule); margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 640px){
+    main{ padding:40px 20px 90px; }
+    h1.title{ font-size:1.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <header class="masthead">
+    <div class="eyebrow">仕様リファレンス — sakura_core</div>
+    <h1 class="title">単一exe化 ファイル依存関係リファレンス</h1>
+    <p class="subtitle">sakura.exe が「起動・編集・保存・検索置換・シンタックスハイライト」という中核機能を、同梱ファイルなしの単体配布でも問題なく提供できることを確認した記録。どのファイルが本当に必須で、どのファイルが「あれば使うが無くても壊れない」任意の拡張なのかを一覧化する。新機能で外部ファイルへの依存を追加する際は、このページの表に追記し、フォールバック(または明示的なopt-in)を必ず実装すること。</p>
+    <div class="meta-row">
+      <span class="chip"><span class="dot"></span>初版 <b>2026-09-01</b></span>
+      <span class="chip">検証 <b>2026-08-27</b>（空フォルダにexe単体を配置しGUI自動操作で動作確認）</span>
+    </div>
+  </header>
+
+  <section id="required">
+    <h2><span class="num">01</span>起動に必須なファイル</h2>
+    <p class="lede">結論から言うと、<code class="inline">sakura.exe</code> 本体以外に必須のファイルは無い。</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>項目</th><th>状態</th><th>備考</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code class="inline">sakura.exe</code></td>
+            <td><span class="pill ok">必須</span></td>
+            <td>これ単体で編集・保存・検索置換・シンタックスハイライトが動作する。</td>
+          </tr>
+          <tr>
+            <td><code class="inline">sakura.ini</code></td>
+            <td><span class="pill ok">自動生成</span></td>
+            <td>存在しなければ既定値で起動し、初回実行時にプロファイルフォルダ配下へ自動作成される。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="optional">
+    <h2><span class="num">02</span>任意の外部ファイル（無くても機能低下のみ、クラッシュしない）</h2>
+    <p class="lede">以下はいずれも「存在すれば使う／存在しなければ静かにフォールバックまたは無効化」という設計になっている。</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>ファイル</th><th>機能</th><th>無い場合の挙動</th><th>関連コード</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code class="inline">bregonig.dll</code> / <code class="inline">bregonig64.dll</code></td>
+            <td>正規表現エンジン（鬼雲/Oniguruma系）</td>
+            <td>静的リンク済みのPCRE2へ自動フォールバック。置換ダイアログのステータス行に <code class="inline">fallback: bregonig.dll not found</code> と明示表示される。</td>
+            <td><code class="inline">extmodule/CBregexpDll2.cpp</code></td>
+          </tr>
+          <tr>
+            <td>言語リソースDLL（多言語UI用）</td>
+            <td>メニュー等のUI文字列の多言語化</td>
+            <td>読み込めなければ<code class="inline">exe自身のインスタンスハンドル</code>（内蔵の既定言語）を使う。</td>
+            <td><code class="inline">CSelectLang.cpp</code></td>
+          </tr>
+          <tr>
+            <td>Migemo辞書＋DLL</td>
+            <td>ローマ字によるあいまい（ひらがな）検索</td>
+            <td>Migemo機能自体が使えなくなるだけで、他の検索機能・起動には影響しない。</td>
+            <td><code class="inline">extmodule/CMigemo.cpp</code></td>
+          </tr>
+          <tr>
+            <td>外部Winヘルプ/HTMLヘルプ（.hlp/.chm）</td>
+            <td>オフラインヘルプ表示</td>
+            <td>既定は空文字＝そもそも参照されない。共通設定またはタイプ別設定でユーザーが明示的にパスを指定した場合のみ使う完全opt-in。</td>
+            <td><code class="inline">env/CHelpManager.cpp</code></td>
+          </tr>
+          <tr>
+            <td><code class="inline">sakura.keywordset.csv</code></td>
+            <td>強調キーワードセットの外部CSV管理・再読込</td>
+            <td>無ければ<code class="inline">CType.cpp</code>に組み込まれた既定キーワードセットをそのまま使う。主要言語のシンタックスハイライトは支障なし。</td>
+            <td><code class="inline">CKeyWordSetMgr.cpp/.h</code></td>
+          </tr>
+          <tr>
+            <td>プラグインDLL（<code class="inline">plugins/</code>配下）</td>
+            <td>マクロ／プラグインによる拡張</td>
+            <td>該当プラグインが一覧に出ない・実行できないだけで、他機能には影響しない。</td>
+            <td><code class="inline">extmodule/CDllHandler.cpp</code>, <code class="inline">prop/CPropComPlugin.cpp</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <span class="label">補足 — キー割り当てプリセット</span>
+      <p>かつては <code class="inline">keybind_presets/*.key</code> という外部ファイルだったが、2026-08-13の変更で <code class="inline">sakura_rc.rc</code> に RCDATA として埋め込み済み。現在は外部 <code class="inline">.key</code> ファイル無しでプリセット切替が完結する（<code class="inline">prop/CPropComKeybindList.cpp</code>）。<code class="inline">Publish/keybind_presets*.zip</code> は過去の配布形態の名残。</p>
+    </div>
+  </section>
+
+  <section id="legacy">
+    <h2><span class="num">03</span>Publishに同梱されているが、現行コードから未参照のもの</h2>
+    <p class="lede"><code class="inline">Publish/lua53.dll_</code> ・ <code class="inline">Publish/lua53_64.dll_</code> は、<code class="inline">sakura_core</code> 全体を <code class="inline">lua</code> でgrepしても実コードのヒットが無い（ヒットは全て <code class="inline">Evaluate</code> 等への誤爆）。現行の <code class="inline">sakura_core</code> にLua連携機能が存在しないため、単一exe化の観点では実害はないが、古いプラグインサンプル（<code class="inline">plugins_20170629.zip</code>）向けの残骸である可能性が高い。配布物整理の候補として残しておく。</p>
+  </section>
+
+  <section id="verification">
+    <h2><span class="num">04</span>検証履歴</h2>
+    <p>2026-08-27、<code class="inline">Release64\sakura.exe</code> だけを新規の空フォルダにコピーし、専用の使い捨てプロファイル（<code class="inline">-PROF=</code>）で起動してGUI自動操作（<code class="inline">PrintWindow</code>によるスクリーンショット＋<code class="inline">SendKeys</code>／<code class="inline">EnumChildWindows</code>+<code class="inline">SendMessage(BM_CLICK)</code>）で以下を確認済み。</p>
+    <ul>
+      <li>クラッシュなく起動し、メニュー・ツールバー・ルーラー・ステータスバーまで正しく描画される。</li>
+      <li><code class="inline">sakura.ini</code> がプロファイルフォルダ配下に自動生成される。</li>
+      <li>日本語テキストの入力・保存が正しく行える。</li>
+      <li><code class="inline">.cpp</code>として保存した瞬間、組み込みキーワードテーブルだけでC/C++のシンタックスハイライトが正しく効く。</li>
+      <li>置換ダイアログの正規表現エンジン表示が <code class="inline">PCRE2 ... (fallback: bregonig.dll not found)</code> になり、フォールバックが実際に使われていることが画面上で確認できる。</li>
+      <li>すべて置換を実行し、正しく置換・再描画される。</li>
+      <li>プロセスは安定動作し、終了後にゴミプロセスが残らない。</li>
+    </ul>
+  </section>
+
+  <section id="guideline">
+    <h2><span class="num">05</span>新機能を追加するときのルール</h2>
+    <p>外部ファイル（DLL・設定ファイル・データファイル等）に依存する機能を新規に追加する場合は、次のいずれかを満たすこと。</p>
+    <ul>
+      <li><strong>フォールバック方式</strong> — ファイルが無ければ組み込みの代替実装／既定動作に自動的に切り替える（<span class="pill ok">例: bregonig→PCRE2</span>）。</li>
+      <li><strong>opt-in方式</strong> — 既定では参照せず、ユーザーが設定で明示的にパスを指定したときだけ使う（<span class="pill scope">例: 外部ヘルプ</span>）。</li>
+      <li><strong>機能単位の無効化</strong> — その機能だけが使えなくなるにとどめ、起動や他機能に影響させない（<span class="pill warn">例: Migemo, プラグイン</span>）。</li>
+    </ul>
+    <p>いずれの方式であっても、対応後は本ページ（<a href="#optional">02節の表</a>）に追記すること。</p>
+  </section>
+
+  <footer>
+    <span>sakura fork — docs/</span>
+    <span><a href="index.html">← 目次に戻る</a></span>
+  </footer>
+</main>
+
+</body>
+</html>

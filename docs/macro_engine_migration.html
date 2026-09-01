@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<!-- gen:20260901T0000+09:00 (初版 2026-09-01 JST。changelog/NKMM_FIX_QUICKJS_MACRO.md, NKMM_FIX_PASCAL_MACRO.md, NKMM_FIX_VBS_MACRO.mdの要約) -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PPA・WSH代替マクロエンジン</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%94%A7</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4; --surface:#F1E8E5; --ink:#26201F; --ink-soft:#6E615D; --ink-faint:#9C8F8B;
+    --rule:#E6DAD7; --sakura:#AE4468; --sakura-ink:#7C2E49; --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A; --code-ink:#EDE3DD; --code-soft:#B7A9A3; --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC; --ok-ink:#3E5C38; --warn-bg:#F1E4C9; --warn-ink:#7A5A1E;
+    --bad-bg:#F1D8D5; --bad-ink:#8A3B32;
+    --scope-bg:#DEE3EA; --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+      --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+      --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+      --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+      --bad-bg:#3A2320; --bad-ink:#E8A79D;
+      --scope-bg:#232C36; --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+    --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+    --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+    --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+    --bad-bg:#3A2320; --bad-ink:#E8A79D;
+    --scope-bg:#232C36; --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px; line-height:1.85; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+  h1,h2,h3,h4{ font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif; font-weight:600; color:var(--ink); text-wrap:balance; letter-spacing:.01em; }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  code, .mono{ font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace; font-size:.88em; }
+  code.inline{ background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:.08em .38em; color:var(--sakura-ink); }
+
+  .shell{ display:grid; grid-template-columns:236px minmax(0,1fr); max-width:1160px; margin:0 auto; }
+  .toc{ position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:32px 16px 32px 26px; border-right:1px solid var(--rule); }
+  .toc-brand{ font-family:'Shippori Mincho',serif; font-weight:700; font-size:1rem; margin-bottom:2px; }
+  .toc-brand small{ display:block; font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:.66rem; letter-spacing:.06em; color:var(--sakura-ink); margin-top:4px; }
+  .toc nav{ margin-top:24px; }
+  .toc-group{ margin-bottom:18px; }
+  .toc-group h5{ font-family:'IBM Plex Sans JP',sans-serif; font-size:.66rem; letter-spacing:.09em; color:var(--ink-faint); font-weight:600; margin:0 0 8px; text-transform:uppercase; }
+  .toc a{ display:block; font-size:.81rem; color:var(--ink-soft); text-decoration:none; padding:4px 0 4px 11px; border-left:2px solid transparent; line-height:1.5; }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+
+  main{ padding:52px 52px 120px; min-width:0; }
+  .masthead{ margin-bottom:48px; }
+  .eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.1em; color:var(--sakura-ink); text-transform:uppercase; margin-bottom:14px; }
+  h1.title{ font-size:2.3rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.02rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+  .chip{ display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:.72rem; padding:5px 11px; border-radius:999px; background:var(--surface); border:1px solid var(--rule); color:var(--ink-soft); }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:56px 0; scroll-margin-top:24px; }
+  section > h2{ font-size:1.42rem; padding-bottom:11px; border-bottom:1px solid var(--rule); margin-bottom:20px; display:flex; align-items:baseline; gap:10px; }
+  section > h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:.76rem; color:var(--sakura); font-weight:600; }
+  h3{ font-size:1.1rem; margin:30px 0 10px; }
+  p{ margin:0 0 14px; max-width:68ch; }
+  .lede{ font-size:1rem; color:var(--ink-soft); max-width:68ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:66ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; margin-bottom:22px; }
+  table{ width:100%; border-collapse:collapse; margin:0; font-size:.85rem; }
+  th{ text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600; color:var(--ink-soft); font-size:.7rem; letter-spacing:.05em; text-transform:uppercase; padding:9px 14px; border-bottom:1px solid var(--rule); background:var(--surface); }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+
+  .pill{ display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em; padding:3px 9px; border-radius:999px; white-space:nowrap; font-family:'IBM Plex Sans JP',sans-serif; }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.bad{ background:var(--bad-bg); color:var(--bad-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  .callout{ border:1px solid var(--rule); border-left:3px solid var(--sakura); background:var(--surface); border-radius:0 10px 10px 0; padding:16px 20px; margin:0 0 22px; font-size:.9rem; max-width:66ch; }
+  .callout.warn{ border-left-color:#c9922e; }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{ font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em; text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px; }
+  .callout.warn .label{ color:var(--warn-ink); }
+
+  .diagram{ display:flex; align-items:stretch; gap:0; margin:18px 0 30px; border:1px solid var(--rule); border-radius:12px; overflow:hidden; background:var(--surface); }
+  .diagram .stage{ flex:1; padding:16px 14px; position:relative; border-right:1px dashed var(--rule); }
+  .diagram .stage:last-child{ border-right:none; }
+  .diagram .stage h5{ font-family:'IBM Plex Mono',monospace; font-size:.64rem; letter-spacing:.05em; color:var(--ink-faint); text-transform:uppercase; margin:0 0 8px; }
+  .diagram .stage p{ font-size:.79rem; margin:0; max-width:none; color:var(--ink-soft); }
+  .diagram .stage:after{ content:"→"; position:absolute; right:-13px; top:50%; transform:translateY(-50%); color:var(--sakura); font-size:1.1rem; z-index:2; }
+  .diagram .stage:last-child:after{ content:none; }
+
+  footer{ border-top:1px solid var(--rule); margin-top:70px; padding-top:24px; font-size:.78rem; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    main{ padding:36px 20px 90px; }
+    h1.title{ font-size:1.85rem; }
+    .diagram{ flex-direction:column; }
+    .diagram .stage{ border-right:none; border-bottom:1px dashed var(--rule); }
+    .diagram .stage:after{ content:"↓"; right:auto; left:16px; top:auto; bottom:-13px; transform:none; }
+    .diagram .stage:last-child{ border-bottom:none; }
+  }
+  @media (prefers-reduced-motion: no-preference){ html{ scroll-behavior:smooth; } }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">PPA・WSH代替<small>マクロエンジン まとめ</small></div>
+    <nav>
+      <div class="toc-group">
+        <h5>概要</h5>
+        <a href="#overview">背景と全体像</a>
+        <a href="#priority">拡張子と優先順位</a>
+      </div>
+      <div class="toc-group">
+        <h5>各エンジン</h5>
+        <a href="#qjs">QuickJSマクロ(.qjs)</a>
+        <a href="#pas">Pascal風マクロ(.pas)</a>
+        <a href="#vbs">VBScript風マクロ(.vbs)</a>
+      </div>
+      <div class="toc-group">
+        <h5>できないこと</h5>
+        <a href="#common-limits">共通の制限</a>
+        <a href="#unverified">未検証の項目</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#refs">参照ファイル</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">仕様リファレンス — sakura_core/macro</div>
+      <h1 class="title">PPA・WSH代替マクロエンジン</h1>
+      <p class="subtitle lede">サクラエディタのマクロは元々、外部DLL(<code class="inline">PPA.DLL</code>)またはOS登録済みの外部COMコンポーネント(WSHのJScript/VBScriptエンジン)に依存していた。どちらも「配布・保守が止まっている」「将来のWindowsで無くなる可能性がある」という共通の弱点を持つため、静的リンク済みのQuickJS(JavaScript)エンジンを土台にした代替を追加した。3本のchangelog(<code class="inline">changelog/NKMM_FIX_QUICKJS_MACRO.md</code>他)の要約と「できないこと」の一覧をまとめる。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>QuickJS基盤 <b>2026-07-26〜28</b></span>
+        <span class="chip">Pascal代替 <b>2026-08-16</b></span>
+        <span class="chip">VBScript代替 <b>2026-08-23</b></span>
+      </div>
+    </header>
+
+    <section id="overview-body">
+      <h2><span class="num">01</span>背景と全体像</h2>
+      <p><strong>PPA.DLL</strong>（Poor-Pascal for Application、ソース非公開の外部Pascalインタプリタ）は、本フォークでは2017年から<code class="inline">NKMM_USE_PPA</code>が無効化されており、事実上使えない状態だった。<strong>WSH(Windows Script Host)</strong>はOS登録済みの外部COMコンポーネント(<code class="inline">JScript.dll</code>/<code class="inline">VBScript.dll</code>)への依存で、無効化されている環境や、セキュリティ上の理由・将来のWindowsで廃止された環境では<code class="inline">.vbs</code>マクロが動かなくなる。</p>
+      <p>どちらも「マクロ関数本体(<code class="inline">CEditorIfObj</code>等の<code class="inline">MacroFuncInfo</code>テーブル)」自体には依存しておらず、依存していたのは「スクリプトエンジンへの接続部分」だけだった。そこでこの接続部分を、静的リンクした<a href="https://github.com/quickjs-ng/quickjs" target="_blank" rel="noopener">quickjs-ng</a>(MIT License、<code class="inline">libs/quickjs/</code>にvendor)向けに1つ作り、Pascal風・VBScript風のソースはこれ向けにJavaScriptへ変換してから流し込む、という設計にした。</p>
+
+      <div class="diagram">
+        <div class="stage"><h5>.qjs</h5><p>JavaScriptとしてそのまま<br>QuickJSエンジンへ</p></div>
+        <div class="stage"><h5>.pas</h5><p>Pascal→JSトランスパイラ<br>(CPasToJsTranspiler)</p></div>
+        <div class="stage"><h5>.vbs（WSH不在時）</h5><p>VBScript→JSトランスパイラ<br>(CVbsToJsTranspiler)</p></div>
+      </div>
+      <p style="margin-top:-14px" class="lede">↑ いずれも最終的には同じ<code class="inline">CQuickJSMacroMgr::ExecKeyMacro</code>(JSRuntime生成→実行→破棄、Editor系関数バインド、マクロ停止・例外表示)に合流する。マクロ関数本体のコードは1行も変更していない。</p>
+
+      <div class="callout">
+        <span class="label">セキュリティ上の副次効果</span>
+        <p>QuickJSに公開しているのは<code class="inline">CEditorIfObj</code>等が明示的に登録した関数だけで、WSHの<code class="inline">ActiveXObject("Scripting.FileSystemObject")</code>のような無制限アクセスの穴が無い。結果としてWSH版より狭いサンドボックスになっている。</p>
+      </div>
+    </section>
+
+    <section id="priority">
+      <h2><span class="num">02</span>拡張子と優先順位</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>拡張子</th><th>担当</th><th>ルール</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">.qjs</code></td>
+              <td><span class="pill ok">新規</span> QuickJS直接実行</td>
+              <td>新設の専用拡張子。他エンジンと衝突しない固定判定。</td>
+            </tr>
+            <tr>
+              <td><code class="inline">.pas</code></td>
+              <td><span class="pill ok">新規</span> Pascal→JSトランスパイル</td>
+              <td>新設の専用拡張子。旧PPAの<code class="inline">.ppa</code>とは別物（互換変換ではない）。</td>
+            </tr>
+            <tr>
+              <td><code class="inline">.vbs</code></td>
+              <td><span class="pill warn">共存</span> WSH優先、無ければVBS→JSへフォールバック</td>
+              <td>登録順(<code class="inline">CWSHMacroManager::declare()</code>→<code class="inline">CVbsMacroMgr::declare()</code>)により、WSHのVBScriptエンジンがレジストリに登録されている環境では従来通りWSHが処理し、無い環境でのみ自動的にトランスパイラ側へフォールバックする。利用者は環境の違いを意識せず同じ<code class="inline">.vbs</code>を書けるが、フォールバック時は後述の対応サブセットの制約を受ける。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>WSHが無い環境の動作を確認するための<code class="inline">NKMM_USE_WSH</code>フラグ（既定で有効）もある。無効化すると<code class="inline">CWSHMacroManager</code>自体がコンパイルから除外され、レジストリの実際の状態に関わらず確実に「WSHが無い」状態を再現できる。</p>
+    </section>
+
+    <section id="qjs">
+      <h2><span class="num">03</span>QuickJSマクロ（.qjs）</h2>
+      <p>拡張子<code class="inline">.qjs</code>のマクロファイルを、素のJavaScriptとしてそのまま実行する。Editor系関数は<code class="inline">Editor.InsText()</code>のような修飾付き呼び出しと、<code class="inline">InsText()</code>のような修飾無し呼び出しの両方に対応。</p>
+      <h3>できないこと・制限</h3>
+      <ul>
+        <li>引数の型変換は<code class="inline">VT_I4</code>/<code class="inline">VT_R8</code>/<code class="inline">VT_BSTR</code>/<code class="inline">VT_BOOL</code>/<code class="inline">VT_EMPTY</code>のみ対応。BigInt・オブジェクト・配列はそのまま渡せない（コマンド呼び出し経路では文字列化される）。</li>
+        <li><code class="inline">COutlineIfObj</code>/<code class="inline">CSmartIndentIfObj</code>/<code class="inline">CComplementIfObj</code>（アウトライン解析・スマートインデント・補完のプラグイン拡張ポイント）は未接続。プラグインからこれらを使うマクロは書けない。</li>
+        <li><code class="inline">Promise</code>/<code class="inline">async</code>/<code class="inline">await</code>は実行環境自体は有効だが、マクロ実行がジョブキューをポーリングしない同期モデルのため実質動作しない（<code class="inline">.then()</code>や<code class="inline">await</code>の継続が呼ばれるタイミングが無い）。</li>
+        <li><code class="inline">Proxy</code>・<code class="inline">WeakRef</code>・<code class="inline">performance.now()</code>は実行ファイルサイズ削減のため無効化済み（<code class="inline">Date.now()</code>は使用可）。</li>
+        <li>新規ファイルはUTF-8 BOM付きで保存する必要がある（BOM無しはCP932として誤読される既存仕様）。</li>
+      </ul>
+    </section>
+
+    <section id="pas">
+      <h2><span class="num">04</span>Pascal風マクロ（.pas）</h2>
+      <p>PPA.DLLの代わりに、独自の軽量トランスパイラ(<code class="inline">CPasToJsTranspiler</code>)でPascal風ソースをJavaScriptへ変換し、QuickJSエンジンで実行する。<code class="inline">S_</code>接頭辞（例: <code class="inline">S_InsText</code>）でサクラのEditor API、無印の呼び出しはPPA標準ライブラリ相当のランタイム関数として扱う。</p>
+      <h3>できないこと・制限</h3>
+      <ul>
+        <li><span class="pill bad">非対応</span> <code class="inline">(* ... *)</code>形式のブロックコメント（<code class="inline">{ ... }</code>と<code class="inline">//</code>のみ対応）。</li>
+        <li><span class="pill bad">非対応</span> 文字コードリテラル（<code class="inline">#13</code>等）、単項<code class="inline">+</code>、<code class="inline">case</code>文、<code class="inline">function</code>宣言（<code class="inline">procedure</code>のみ）。トランスパイル時にエラーとして検出される（無限ループはしない）。</li>
+        <li><span class="pill warn">形だけ</span> 型注釈（<code class="inline">: Integer</code>等）は構文としてスキップされるだけで、型チェックは一切行わない。</li>
+        <li><span class="pill warn">注意</span> 識別子の大文字小文字を正規化しない。元のPPA環境では動いていた表記ゆれのあるコード（例: <code class="inline">MDays</code>と<code class="inline">Mdays</code>の混在）はJS変換後に<code class="inline">ReferenceError</code>になる。</li>
+        <li><span class="pill warn">意味の違い</span> <code class="inline">Length</code>は「バイト数」ではなくUTF-16コード単位数を返す。</li>
+        <li><code class="inline">.pas</code>ファイルは<strong>UTF-8(BOM付き)</strong>で保存必須（BOM無しはShift-JISとして誤読され文字化けする）。</li>
+      </ul>
+    </section>
+
+    <section id="vbs">
+      <h2><span class="num">05</span>VBScript風マクロ（.vbsフォールバック）</h2>
+      <p>WSHが使えない環境でのみ、<code class="inline">CVbsToJsTranspiler</code>がVBScript風ソースをJavaScriptへ変換してQuickJSで実行する。<code class="inline">MsgBox</code>/<code class="inline">InputBox</code>等、サクラ本来の同名関数と引数の意味が異なる組み込み関数は、Pascal版と同じ<code class="inline">S_</code>接頭辞規約でサクラ側を呼び分ける。</p>
+      <h3>できないこと・制限</h3>
+      <ul>
+        <li><span class="pill bad">非対応</span> <code class="inline">Class...End Class</code>（クラス構文自体）。</li>
+        <li><span class="pill bad">非対応</span> COM/ActiveXオブジェクト全般（<code class="inline">CreateObject</code>、<code class="inline">New</code>によるオブジェクト生成、プロパティ/メソッドのドット記法アクセス）。ブラウザ/Node.js相当の実行環境が無いため意図的に対象外。</li>
+        <li><span class="pill bad">非対応</span> 行ラベル・エラー処理以外の<code class="inline">GoTo</code>。<code class="inline">On Error Resume Next</code>等は構文として無視されるだけで、実際のエラー握りつぶし動作は再現しない。</li>
+        <li><span class="pill warn">制限あり</span> 配列は1・2次元のみ（3次元以上はエラー）。<code class="inline">ReDim Preserve</code>は1次元のみ。配列名の判定が単一パスのフラットなスコープのため、宣言前の使用や、実行時に配列を返す関数の戻り値（例: <code class="inline">Split</code>の結果）への添字アクセスが誤動作しうる。</li>
+        <li><span class="pill warn">再現しない</span> <code class="inline">ByRef</code>引数は実際の参照渡しにならない（JSの値渡しの制約）。</li>
+        <li><span class="pill warn">簡略化</span> <code class="inline">Nothing</code>と<code class="inline">Null</code>はどちらもJSの<code class="inline">null</code>に畳み込まれ、区別されない。</li>
+        <li><span class="pill warn">注意</span> 大文字小文字を正規化しない（Pascal版と同じ制限）。</li>
+      </ul>
+    </section>
+
+    <section id="common-limits">
+      <h2><span class="num">06</span>3エンジン共通の制限</h2>
+      <ul>
+        <li>プラグインの拡張ポイント（アウトライン解析・スマートインデント・補完）はQuickJS系のいずれのエンジンにも未接続。これらを使う既存のWSHマクロ・プラグインは、WSHが使える環境でしか動かない。</li>
+        <li>いずれのトランスパイラも識別子の大文字小文字を正規化しない。元言語（Pascal/VBScript）は大文字小文字を区別しないが、変換後のJavaScriptは区別するため、表記ゆれのある既存マクロ資産は移植時に修正が要る。</li>
+        <li>関数の引数として渡せる型はスカラー値（整数・実数・文字列・真偽値・空）のみ。オブジェクトや配列を直接やり取りする既存マクロは書き換えが必要。</li>
+      </ul>
+    </section>
+
+    <section id="unverified">
+      <h2><span class="num">07</span>未検証の項目</h2>
+      <div class="callout warn">
+        <span class="label">重要</span>
+        <p>3本のchangelogはいずれも「サンドボックス環境ではフルビルド(リンクまで)が既存の問題で通らない」ため、<strong>ファイル単位コンパイル確認・Node.js上のモック実行確認までしか行われておらず、sakura.exe実機上での動作確認の多くが未実施</strong>と明記されている。2026-08-27以降、macro配下に追加の検証コミットは無い。実機で機能を使う前に、少なくとも以下は確認したほうがよい。</p>
+      </div>
+      <ul>
+        <li><code class="inline">.qjs</code>マクロの実機実行、マクロ停止ダイアログでの中断、<code class="inline">plugin.def</code>に<code class="inline">Type: qjs</code>を指定したプラグインの実機動作。</li>
+        <li><code class="inline">.pas</code>マクロの実機実行（<code class="inline">Editor.InsText()</code>と<code class="inline">InsText()</code>の両呼び出し形式、構文エラー時のダイアログ表示）。</li>
+        <li><code class="inline">.vbs</code>のWSHフォールバック — WSHが使える環境で既存挙動が変わらないこと、WSHを外した環境で<code class="inline">CVbsMacroMgr</code>へフォールバックすること。</li>
+        <li>削減後の実際の<code class="inline">sakura.exe</code>ファイルサイズ（QuickJS組み込みにより約2.2MB→約4.0MBに増加したとの記録があるが、その後の機能絞り込みでどこまで戻ったかは未実測）。</li>
+      </ul>
+    </section>
+
+    <section id="refs">
+      <h2><span class="num">08</span>参照ファイル</h2>
+      <ul>
+        <li><a href="../changelog/NKMM_FIX_QUICKJS_MACRO.md">changelog/NKMM_FIX_QUICKJS_MACRO.md</a> — QuickJS基盤本体の詳細設計・不具合修正記録</li>
+        <li><a href="../changelog/NKMM_FIX_PASCAL_MACRO.md">changelog/NKMM_FIX_PASCAL_MACRO.md</a> — Pascal→JSトランスパイラの詳細</li>
+        <li><a href="../changelog/NKMM_FIX_VBS_MACRO.md">changelog/NKMM_FIX_VBS_MACRO.md</a> — VBScript→JSトランスパイラの詳細</li>
+        <li><code class="inline">sakura_core/my_config.h</code> — <code class="inline">NKMM_FIX_QUICKJS_MACRO</code>/<code class="inline">NKMM_FIX_PASCAL_MACRO</code>/<code class="inline">NKMM_FIX_VBS_MACRO</code>/<code class="inline">NKMM_USE_WSH</code>/<code class="inline">NKMM_USE_PPA</code>フラグ定義</li>
+        <li><code class="inline">macro_bench/*.qjs, *.pas, *.vbs</code> — 動作確認・移植検証に使ったサンプルマクロ一式</li>
+      </ul>
+    </section>
+
+    <footer>
+      <span>sakura fork — docs/</span>
+      <span><a href="index.html">← 目次に戻る</a></span>
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

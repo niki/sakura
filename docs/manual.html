@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<!-- gen:20260901T0000+09:00 (初版 2026-09-01 JST) -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>簡易オンラインマニュアル</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%96</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --key-bg:#FFFFFF;
+    --key-border:#D8C9C5;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514;
+      --surface:#241C1B;
+      --ink:#EEE5E1;
+      --ink-soft:#B3A29D;
+      --ink-faint:#7C6E6A;
+      --rule:#3A2E2C;
+      --sakura:#E28CA8;
+      --sakura-ink:#F3B9CC;
+      --sakura-tint:#3A2530;
+      --ok-bg:#28331F;
+      --ok-ink:#9FC28F;
+      --warn-bg:#362C15;
+      --warn-ink:#E0BE79;
+      --scope-bg:#232C36;
+      --scope-ink:#9DB0C4;
+      --key-bg:#2A211F;
+      --key-border:#4A3B37;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514;
+    --surface:#241C1B;
+    --ink:#EEE5E1;
+    --ink-soft:#B3A29D;
+    --ink-faint:#7C6E6A;
+    --rule:#3A2E2C;
+    --sakura:#E28CA8;
+    --sakura-ink:#F3B9CC;
+    --sakura-tint:#3A2530;
+    --ok-bg:#28331F;
+    --ok-ink:#9FC28F;
+    --warn-bg:#362C15;
+    --warn-ink:#E0BE79;
+    --scope-bg:#232C36;
+    --scope-ink:#9DB0C4;
+    --key-bg:#2A211F;
+    --key-border:#4A3B37;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px;
+    line-height:1.85;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600; color:var(--ink); text-wrap:balance; letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  code, .mono{ font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace; font-size:.88em; }
+  code.inline{
+    background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+    padding:.08em .38em; color:var(--sakura-ink);
+  }
+
+  main{ max-width:840px; margin:0 auto; padding:60px 40px 120px; }
+
+  .masthead{ margin-bottom:44px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.1em;
+    color:var(--sakura-ink); text-transform:uppercase; margin-bottom:14px;
+  }
+  h1.title{ font-size:2.3rem; line-height:1.25; margin:0 0 12px; }
+  .subtitle{ font-size:1.02rem; color:var(--ink-soft); max-width:66ch; margin:0; }
+
+  /* 目次 */
+  .toc{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:8px 20px;
+    list-style:none; margin:32px 0 0; padding:20px 22px;
+    background:var(--surface); border:1px solid var(--rule); border-radius:12px;
+  }
+  .toc li{ font-size:.87rem; }
+  .toc a{ color:var(--ink-soft); text-decoration:none; }
+  .toc a:hover{ color:var(--sakura-ink); }
+  .toc .n{ font-family:'IBM Plex Mono',monospace; color:var(--sakura); margin-right:6px; font-size:.8em; }
+
+  section{ margin:56px 0; scroll-margin-top:20px; }
+  section > h2{
+    font-size:1.32rem; padding-bottom:11px; border-bottom:1px solid var(--rule);
+    margin-bottom:16px; display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:.75rem; color:var(--sakura); font-weight:600; }
+  p{ margin:0 0 14px; max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:64ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .key{
+    display:inline-block; font-weight:700; font-family:Consolas,'IBM Plex Mono',monospace;
+    background:var(--key-bg); border:1px solid var(--key-border); border-radius:5px;
+    padding:1px 8px; font-size:.85em; box-shadow:0 1px 0 var(--key-border);
+  }
+  .plus{ margin:0 3px; color:var(--ink-faint); font-size:.85em; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap; font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  .howto{
+    background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+    padding:14px 18px; margin:0 0 18px; font-size:.92rem;
+  }
+  .howto .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:8px;
+  }
+  .howto p:last-child{ margin-bottom:0; }
+
+  .more{ font-size:.85rem; color:var(--ink-faint); }
+
+  footer{
+    border-top:1px solid var(--rule); margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 640px){
+    main{ padding:40px 20px 90px; }
+    h1.title{ font-size:1.85rem; }
+    .toc{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <header class="masthead">
+    <div class="eyebrow">オンラインマニュアル — sakura fork</div>
+    <h1 class="title">簡易オンラインマニュアル</h1>
+    <p class="subtitle">ファイルの開閉・保存・基本的な検索置換・キー割り当てのカスタマイズといったサクラエディタ本来の使い方は、本家のヘルプ／既存のドキュメントを参照してください。このページでは、<strong>このフォークだけで使える独自機能</strong>の使い方だけを簡潔にまとめます。各機能の設計背景や既知の制約まで詳しく知りたい場合は、各節末尾のリンクから設計リファレンスを参照してください。</p>
+    <ul class="toc">
+      <li><span class="n">01</span><a href="#multicursor">マルチカーソル編集</a></li>
+      <li><span class="n">02</span><a href="#palette">コマンドパレット</a></li>
+      <li><span class="n">03</span><a href="#session">セッション復元</a></li>
+      <li><span class="n">04</span><a href="#emoji">絵文字カラーフォント</a></li>
+      <li><span class="n">05</span><a href="#scrollbar">スクロールバーマーカー</a></li>
+      <li><span class="n">06</span><a href="#replace">置換プレビュー</a></li>
+      <li><span class="n">07</span><a href="#undo">Undo時の選択復元</a></li>
+      <li><span class="n">08</span><a href="#keybind">キー割り当てプリセット</a></li>
+      <li><span class="n">09</span><a href="#ui">モダンUI</a></li>
+      <li><span class="n">10</span><a href="#portable">単一exe配布</a></li>
+    </ul>
+  </header>
+
+  <section id="multicursor">
+    <h2><span class="num">01</span>マルチカーソル編集</h2>
+    <p>VS Code / Sublime Text のように、複数箇所へ同時にカーソルを置いて編集できます。</p>
+    <div class="howto">
+      <span class="label">使い方</span>
+      <p><span class="key">Ctrl</span><span class="plus">+</span><span class="key">Alt</span><span class="plus">+</span><span class="key">↓</span> を押すたびに、現在のカーソルの下の行にカーソルが1本ずつ追加されます。<span class="key">Ctrl</span><span class="plus">+</span><span class="key">Alt</span><span class="plus">+</span><span class="key">↑</span> なら上方向。文字入力・削除・矢印移動などの通常操作は、追加した全カーソルに同時に反映されます。</p>
+      <p>やり直したいときは <span class="key">Ctrl</span><span class="plus">+</span><span class="key">Shift</span><span class="plus">+</span><span class="key">U</span> で、直近に追加したカーソルを1本だけ取り消せます。<span class="key">Esc</span> で通常の単一カーソルに戻ります。</p>
+    </div>
+    <p>マウスクリックでの追加（VS Codeの<code class="inline">Alt+クリック</code>相当）には対応していません。追加は上下方向のキー操作のみです。</p>
+    <p class="more">詳細設計 → <a href="multicursor_design.html">マルチカーソル編集 設計リファレンス</a></p>
+  </section>
+
+  <section id="palette">
+    <h2><span class="num">02</span>コマンドパレット</h2>
+    <p>VS Code風のコマンドパレット。メニューをたどらずに、名前の一部を入力するだけで機能を実行したり、開いているファイルへジャンプしたりできます。</p>
+    <div class="howto">
+      <span class="label">使い方</span>
+      <p><span class="key">Ctrl</span><span class="plus">+</span><span class="key">Shift</span><span class="plus">+</span><span class="key">P</span> で呼び出します。日本語の機能名でも、その<strong>ローマ字読み</strong>でも部分一致検索できます（あいまい検索）。IME変換中の候補にもリアルタイムに反応します。</p>
+    </div>
+    <p class="more">詳細設計 → <a href="command_palette_design.html">コマンドパレット 設計リファレンス</a></p>
+  </section>
+
+  <section id="session">
+    <h2><span class="num">03</span>セッション復元</h2>
+    <p>終了時に開いていたファイルを、次回起動時に自動的に開き直します。<span class="pill warn">既定OFF</span></p>
+    <div class="howto">
+      <span class="label">設定場所</span>
+      <p>共通設定ダイアログの「ファイル」タブにある次の2つのチェックボックスで制御します。</p>
+      <ul>
+        <li><strong>終了時に開いていたファイルを次回起動時に自動復元する</strong> — これをONにすると、開いていたファイルの一覧が保存され、次回起動時に自動で開き直されます。</li>
+        <li><strong>未保存の変更内容もバッファから復元する</strong> — 上のチェックがONのときだけ操作可能。保存前の未保存の編集内容まで含めて復元します（1つ目のチェックがOFFのときはグレーアウトします）。</li>
+      </ul>
+    </div>
+    <p class="more">詳細設計 → <a href="session_restore_design.html">セッション復元 設計リファレンス</a></p>
+  </section>
+
+  <section id="emoji">
+    <h2><span class="num">04</span>絵文字カラーフォント</h2>
+    <p>😀🎉👍 のようなカラー絵文字を、通常のモノクロ矩形（トーフ）ではなく元の色付きグリフで表示します。ZWJ結合絵文字（👨‍👩‍👧など）やキーキャップ（1️⃣など）の合字表示にも対応。特別な操作なしで、対応環境なら自動的に有効になります。</p>
+    <div class="howto">
+      <span class="label">設定場所</span>
+      <p>共通設定「全般」タブの描画グループに「絵文字フォントを固定指定する」チェックがあります。OFF（既定）ならシステムの自動選択に任せ、ONにすると指定したフォント固定で絵文字を描画します。同じ場所の「絵文字の合字を有効にする」で合字表示のON/OFFも切り替え可能です。</p>
+    </div>
+    <p>Windows 8.1相当（DirectWrite 2）に満たない環境では、この機能自体が自動的に無効化され、従来通りの表示になります。</p>
+    <p class="more">詳細設計 → <a href="color_font_emoji_design.html">絵文字カラーフォント 設計リファレンス</a></p>
+  </section>
+
+  <section id="scrollbar">
+    <h2><span class="num">05</span>スクロールバーマーカー</h2>
+    <p>右側のスクロールバー上に、検索結果・ブックマーク・現在のカーソル位置を色分けした短い線として重ね描きします。ファイル全体のどこに何があるか、スクロールせずに一目で把握できます。</p>
+    <ul>
+      <li><span class="pill warn" style="background:#f4a72133;color:#7a5a1e">オレンジ</span> 検索文字列のある行</li>
+      <li><span class="pill warn" style="background:#ff003233;color:#7a1e30">赤</span> ブックマークのある行</li>
+      <li><span class="pill warn" style="background:#0026ff33;color:#1e3e7a">青</span> 現在のカーソル行</li>
+    </ul>
+    <p>マーカー部分をクリックすると、該当行へ直接ジャンプできます。</p>
+    <p class="more">詳細設計 → <a href="scrollbar_marker_design.html">スクロールバーマーカー 設計リファレンス</a></p>
+  </section>
+
+  <section id="replace">
+    <h2><span class="num">06</span>置換プレビュー</h2>
+    <p>「置換」ダイアログに検索・置換の文字列を入力すると、実際に置換する前に、カーソルに近い一致箇所を対象として「置換前 / 置換後」のサンプルがダイアログ内にリアルタイム表示されます。意図通りの結果になるか、実行前に確認できます。</p>
+    <p>挿入・追加・行削除・クリップボード貼り付けなど、位置や外部データに依存する設定の場合はサンプル表示の対象外です（その旨がダイアログ内に表示されます）。</p>
+  </section>
+
+  <section id="undo">
+    <h2><span class="num">07</span>Undo時の選択範囲復元</h2>
+    <p>選択範囲を削除する操作を <span class="key">Ctrl</span><span class="plus">+</span><span class="key">Z</span>（元に戻す）で取り消すと、削除前に選択していた範囲がそのまま選択状態に復元されます（VS Code等と同じ挙動）。マルチカーソル編集時も、各カーソルの選択範囲がそれぞれ正しく復元されます。</p>
+  </section>
+
+  <section id="keybind">
+    <h2><span class="num">08</span>キー割り当てプリセット</h2>
+    <p>共通設定「キー割り当て」タブのプリセット選択コンボから、VS Code・Sublime Text・Notepad++等、他エディタ風のキー配置へワンクリックで一括切り替えできます。プリセットは実行ファイルに組み込み済みなので、追加ファイルは不要です。</p>
+    <p class="more">全キー一覧・プリセット比較表 → <a href="sakura_keybind_list.html">キー割り当て一覧</a></p>
+  </section>
+
+  <section id="ui">
+    <h2><span class="num">09</span>モダンなステータスバー・ツールバー</h2>
+    <p>ステータスバーとツールバーを、VS Code風のフラットなオーナードロー描画に変更しています。読み上げソフト等のネイティブなアクセシビリティ情報は維持されたまま、見た目だけが刷新されています（ダークモード自体には非対応）。</p>
+  </section>
+
+  <section id="portable">
+    <h2><span class="num">10</span>単一exe配布</h2>
+    <p><code class="inline">sakura.exe</code> は、これ単体をコピーするだけで動作します。<code class="inline">sakura.ini</code>は初回起動時に自動生成され、正規表現エンジンや主要言語のシンタックスハイライト用キーワードも実行ファイルに組み込み済みです。追加の辞書DLLやヘルプファイルなどは、使う場合だけ任意で用意すれば良い設計になっています。</p>
+    <p class="more">必須/任意ファイルの詳しい一覧 → <a href="portable_exe_dependencies.html">単一exe化 ファイル依存関係リファレンス</a></p>
+  </section>
+
+  <footer>
+    <span>sakura fork — docs/</span>
+    <span><a href="index.html">← 目次に戻る</a></span>
+  </footer>
+</main>
+
+</body>
+</html>

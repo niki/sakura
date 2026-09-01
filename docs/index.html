@@ -216,6 +216,23 @@
     <p class="subtitle">このフォークで追加した主な独自機能(<code class="mono">NKMM_*</code>フラグ)の設計リファレンス集。各ページはデータモデル・中核メカニズム・既知の制約・変更履歴までを1ページにまとめたもので、実装に手を入れる前の下調べ用に使う。</p>
   </header>
 
+  <section id="manual">
+    <h2><span class="num">00</span>オンラインマニュアル</h2>
+    <p class="section-lede">設計の経緯ではなく「使い方」だけを知りたい場合はこちら。</p>
+    <div class="card-grid">
+
+      <a class="card" href="manual.html">
+        <span class="icon">📖</span>
+        <span class="body">
+          <span class="flag">利用者向け</span>
+          <h3>簡易オンラインマニュアル</h3>
+          <p>このフォーク独自機能(マルチカーソル・コマンドパレット・セッション復元等)の使い方だけを簡潔にまとめた入門ガイド。</p>
+        </span>
+      </a>
+
+    </div>
+  </section>
+
   <section id="design-refs">
     <h2><span class="num">01</span>機能別 設計リファレンス</h2>
     <p class="section-lede">実装済みの独自機能ごとに、なぜその設計になったか・どこで踏んだ不具合をどう直したかまで含めて記録している。</p>
@@ -271,6 +288,16 @@
         </span>
       </a>
 
+      <a class="card" href="macro_engine_migration.html">
+        <span class="icon">🔧</span>
+        <span class="body">
+          <span class="flag">NKMM_FIX_QUICKJS_MACRO 他</span>
+          <h3>PPA・WSH代替マクロエンジン</h3>
+          <p>外部DLL(PPA.DLL)・外部COM(WSH)依存を、静的リンクしたQuickJSベースへ置き換え。.qjs/.pas/.vbsそれぞれの対応状況とできないこと一覧、未検証項目。</p>
+          <span class="meta"><span class="chip">2026-07-26〜08-23</span></span>
+        </span>
+      </a>
+
     </div>
   </section>
 
@@ -285,6 +312,15 @@
           <span class="flag">全機能</span>
           <h3>キー割り当て一覧</h3>
           <p>全F-codeの既定キー・各キーバインドプリセット(VS Code/Sublime Text/Notepad++等)を横断比較できる一覧表。</p>
+        </span>
+      </a>
+
+      <a class="card ref" href="portable_exe_dependencies.html">
+        <span class="icon">📦</span>
+        <span class="body">
+          <span class="flag">全機能</span>
+          <h3>単一exe化 ファイル依存関係</h3>
+          <p>sakura.exe単体配布で何が必須で何が任意(フォールバック/opt-in)なのかの一覧。新機能で外部ファイル依存を追加する際のルールも記載。</p>
         </span>
       </a>
 
