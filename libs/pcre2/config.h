@@ -6,7 +6,9 @@
    SUPPORT_PCRE2_16とSUPPORT_UNICODEのみ有効化した(下記参照)。
    他の設定値はconfigureを使わない場合の既定値のまま。
    sakura_core/extmodule/CRegexFallback.cpp (bregonig.dllが見つからない場合の
-   フォールバック正規表現エンジン)からのみ使用する。 */
+   フォールバック正規表現エンジン)からのみ使用する。
+   20260902 PCRE2 10.48に更新。設定値の変更なし(HAVE_SETRLIMITスタブが
+   追加されたのみ)。 */
 
 /* PCRE2 is written in Standard C, but there are a few non-standard things it
 can cope with, allowing it to run on SunOS4 and other "close to standard"
@@ -125,6 +127,9 @@ surrounded by #ifndef/#endif lines so that the value can be overridden by -D. */
 
 /* Define to 1 if you have the `secure_getenv' function. */
 /* #undef HAVE_SECURE_GETENV */
+
+/* Define to 1 if you have the `setrlimit' function. */
+/* #undef HAVE_SETRLIMIT */
 
 /* Define to 1 if you have the <stdint.h> header file. */
 /* #undef HAVE_STDINT_H */
@@ -254,7 +259,7 @@ surrounded by #ifndef/#endif lines so that the value can be overridden by -D. */
 #define PACKAGE_NAME "PCRE2"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PCRE2 10.47"
+#define PACKAGE_STRING "PCRE2 10.48"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "pcre2"
@@ -263,7 +268,7 @@ surrounded by #ifndef/#endif lines so that the value can be overridden by -D. */
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "10.47"
+#define PACKAGE_VERSION "10.48"
 
 /* The value of PARENS_NEST_LIMIT specifies the maximum depth of nested
    parentheses (of any kind) in a pattern. This limits the amount of system
@@ -491,7 +496,7 @@ surrounded by #ifndef/#endif lines so that the value can be overridden by -D. */
 #endif
 
 /* Version number of package */
-#define VERSION "10.47"
+#define VERSION "10.48"
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 /* #undef _FILE_OFFSET_BITS */
