@@ -652,6 +652,7 @@ Redraw()</code></pre>
             <tr><td><span class="pill warn">コズメティック</span></td><td>extraの行末選択ハイライトが画面右端まで伸びない(選択テキスト自体は正しい) — レガシーROP2描画パスと行末余白の solid-fill 処理には未対応のため</td></tr>
             <tr><td><span class="pill warn">精度の妥協</span></td><td>カーソル統合が起きた回、統合に無関係な他カーソルの希望桁も一律リセットされる。安全側(実桁に合わせる)にしか倒れないため実害は小さいと判断し、統合前後の対応関係を個別追跡する精緻な実装は見送った</td></tr>
             <tr><td><span class="pill warn">コズメティック</span></td><td>マルチカーソルのUndo復元直後、ステータスバーの選択文字数表示(「N字(M行)選択」)が一瞬古いまま残ることがある。選択データ自体・描画・以後の操作はすべて正しい。原因を一部特定した(<code class="inline">CCaret::MoveCursor</code>内部の<code class="inline">ShowCaretPosInfo</code>呼び出し順)が完全解消には至らず、実害が軽微なため追加調査は見送った(第十九パス)</td></tr>
+            <tr><td><span class="pill warn">残存リスク</span></td><td><code class="inline">keybind_presets/Default.key</code>(<a href="#files">13節</a>参照)は<code class="inline">KeyDataInit[]</code>の既定値と別に手動同期する静的ファイル。今後マルチカーソル系のデフォルトキーを変更したら、このファイルも忘れずに更新すること — 忘れても検知する仕組みはなく、「キー割り当て（実験機能）」タブの「デフォルト」プリセットを選んだときだけ古いキー割り当てに戻ってしまう(2026-09-03に実際に発生・修正)</td></tr>
           </tbody>
         </table>
       </div>
@@ -666,7 +667,7 @@ Redraw()</code></pre>
             <tr><td class="mono">view/CEditView.h</td><td><code class="inline">SExtraCursor</code>定義、<code class="inline">m_vExtraCursors</code>、Resolve系宣言</td></tr>
             <tr><td class="mono">view/CEditView.cpp</td><td>Resolve系実装、<code class="inline">OnKillFocus</code>拡張、IME通知拡張</td></tr>
             <tr><td class="mono">view/CEditView_Mouse.cpp</td><td>素クリックでの解除</td></tr>
-            <tr><td class="mono">view/CEditView_Paint.cpp</td><td>追加カーソルの手動描画</td></tr>
+            <tr><td class="mono">view/CEditView_Paint.cpp</td><td>追加カーソルの手動描画。2026-09-04: グリフアトラス/カラーフォントのBitBlt転送(<code class="inline">FlushQueue</code>/<code class="inline">FlushColorGlyphQueue</code>)より後ろへ描画順を移動 — それより前に描くと(グリフアトラスが有効な行で)BitBltにカーソルの矩形が上書きされ、共通設定を一度OKした後にだけ追加カーソルが見えなくなる不具合があった。<code class="inline">OnPaint2</code>冒頭に描画順まとめのコメントも追加</td></tr>
             <tr><td class="mono">view/CEditView_Ime.cpp</td><td>マルチカーソル中の再変換無効化</td></tr>
             <tr><td class="mono">view/colors/CColor_Found.cpp</td><td><code class="inline">CColor_Select</code>のextra選択キャッシュ</td></tr>
             <tr><td class="mono">cmd/CViewCommander.h / .cpp</td><td>F-code分岐、<code class="inline">DispatchMoveMultiCursor</code>宣言・配線</td></tr>
@@ -676,6 +677,7 @@ Redraw()</code></pre>
             <tr><td class="mono">view/CEditView_Command_New.cpp</td><td><code class="inline">ReplaceData_CEditView</code>系への<code class="inline">bHadSelection</code>引数追加</td></tr>
             <tr><td class="mono">env/CommonSetting.h / CShareData.cpp / CShareData_IO.cpp</td><td><code class="inline">bMultiCursorMergeOverlapping</code>・<code class="inline">bUndoRestoreSelection</code>設定の定義・既定値・ini入出力</td></tr>
             <tr><td class="mono">func/CKeyBind.cpp、Funccode_x.hsrc、Funccode.cpp、sakura_rc.rc、resource/MainMenu.ini</td><td>新規F-codeの4箇所register(キー割り当て・列挙・設定リスト・文字列リソース・メインメニュー)</td></tr>
+            <tr><td class="mono">keybind_presets/Default.key</td><td>5番目の登録漏れポイント(2026-09-03発見)。ビルド時に<code class="inline">sakura_rc.rc</code>へRCDATAとして埋め込まれる静的な「サクラエディタ既定」プリセットファイルで、<code class="inline">CKeyBind.cpp</code>の<code class="inline">KeyDataInit[]</code>とは別に手動で同期する必要がある。マルチカーソル4コマンド分(<code class="inline">F_ADD_CURSOR_UP/DOWN</code>・<code class="inline">F_MULTICURSOR_UNDO</code>・<code class="inline">F_ADD_CURSORS_TO_LINE_ENDS</code>)がずっと未反映のままだったため、「キー割り当て（実験機能）」タブのプリセットコンボで「デフォルト」を選ぶとこれらが軒並み消える不具合があった。修正後も、今後<code class="inline">KeyDataInit[]</code>の既定値を変える(特に既存キーを再割り当てする)たびにこのファイルを手動更新しないと同じ問題が再発する — 自動検知の仕組みはない</td></tr>
             <tr><td class="mono">my_config.h</td><td><code class="inline">NKMM_MULTI_CURSOR</code>・<code class="inline">NKMM_UNDO_RESTORE_SELECTION</code>フラグ定義</td></tr>
           </tbody>
         </table>
