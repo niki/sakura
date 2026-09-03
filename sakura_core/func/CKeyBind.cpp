@@ -803,7 +803,7 @@ static const KEYDATAINIT	KeyDataInit[] = {
 	{ 'F',		_T("F"),			{ F_0,				F_0,				F_SEARCH_DIALOG,		F_GREP_DIALOG,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 'G',		_T("G"),			{ F_0,				F_0,				F_JUMP_DIALOG,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 'H',		_T("H"),			{ F_0,				F_0,				F_REPLACE_DIALOG,		F_GREP_REPLACE_DLG,	F_0,					F_0,				F_TILE_V,				F_0 }, },
-	{ 'I',		_T("I"),			{ F_0,				F_0,				F_0,		F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	{ 'I',		_T("I"),			{ F_0,				F_0,				F_0,		F_0,				F_0,					F_ADD_CURSORS_TO_LINE_ENDS,F_0,					F_0 }, },
 	{ 'J',		_T("J"),			{ F_0,				F_0,				F_0,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 'K',		_T("K"),			{ F_0,				F_0,				F_LineDeleteToEnd,			F_DELETE_LINE,	F_0,					F_0,				F_0,					F_0 }, },
 	{ 'L',		_T("L"),			{ F_0,				F_0,				F_SELECTLINE,			F_EXECKEYMACRO,		F_LTRIM,				F_0,				F_TOLOWER,				F_TOUPPER }, },

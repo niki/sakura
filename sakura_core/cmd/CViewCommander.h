@@ -137,6 +137,8 @@ public:
 	//! Command_AddCursorUp/Downの共通実装。nDir<0で上方向、nDir>0で下方向 20260831
 	void AddCursorInDirection( int nDir );
 	void Command_MULTICURSOR_UNDO( void );	/* マルチカーソル: 直近に追加したカーソルを1個取り消す */
+	//! マルチカーソル: 選択範囲内の各行末にカーソルを追加する(VS CodeのShift+Alt+I相当) 20260903
+	void Command_AddCursorsToLineEnds( void );
 	//! プライマリ+追加カーソルの各位置に対して1回ずつfnEditOnceを実行する(ドキュメント降順)。
 	//! fnEditOnceはCommand_WCHAR等、現在のGetCaret()位置に作用する既存コマンドをそのまま渡す想定。
 	void ApplyToAllCursors( const std::function<void()>& fnEditOnce );

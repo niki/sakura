@@ -598,10 +598,12 @@ Redraw()</code></pre>
             <tr><td class="mono">F_ADD_CURSOR_UP</td><td class="mono">Ctrl+Alt+↑</td><td>最上段カーソルの1行上・同じ桁に新規カーソルを追加</td></tr>
             <tr><td class="mono">F_ADD_CURSOR_DOWN</td><td class="mono">Ctrl+Alt+↓</td><td>最下段カーソルの1行下・同じ桁に新規カーソルを追加</td></tr>
             <tr><td class="mono">F_MULTICURSOR_UNDO</td><td class="mono">Ctrl+Shift+U</td><td>直近に追加したカーソルを1個だけ取り消す(テキストのUndoとは別系統)</td></tr>
+            <tr><td class="mono">F_ADD_CURSORS_TO_LINE_ENDS</td><td class="mono">Shift+Alt+I</td><td>選択範囲がまたがる各物理行の行末にカーソルを追加(VS Codeの<code class="inline">insertCursorAtEndOfEachLineSelected</code>相当)</td></tr>
           </tbody>
         </table>
       </div>
       <p>Ctrl+Alt+↑/↓ は元々 <code class="inline">F_UP2_BOX</code>/<code class="inline">F_DOWN2_BOX</code>(矩形選択の2行ジャンプ)の既定キーだったが、独立コマンドとして新規F-codeを割り当てた(既存コマンドに <code class="inline">IsBoxSelecting()</code>で分岐させて二重役割を持たせる案は、キー割り当て設定画面で表示名が実態と食い違う問題があり却下)。矩形選択とマルチカーソルは相互排他 — どちらかの開始が他方を解除する。</p>
+      <p><code class="inline">F_ADD_CURSORS_TO_LINE_ENDS</code>(2026-09-03追加)は他の2コマンドと異なり、既存のマルチカーソル状態に1個ずつ足すのではなく「今の選択範囲」から新しいマルチカーソル状態を丸ごと作り直す。プライマリ自身の選択(<code class="inline">m_sSelect</code>)だけを見て、そこがまたがる各物理行の行末(<code class="inline">Command_GOLINEEND</code>の<code class="inline">nOption&amp;8</code>相当のアルゴリズムを流用)にカーソルを置く。選択されていなければ何もしない(ErrorBeepのみ)。複数行選択で終端がちょうど次の行の行頭(桁0)にある場合はその行を対象から除く — Shift+↓で行末まで選択したときに、実際には触れていない次の行にまでカーソルが増えるのを防ぐ、VS Codeと同じ扱い。既存の追加カーソルは呼び出し時に全て破棄される(他の追加カーソルが自分自身の選択を持っていても対象外)。</p>
     </section>
 
     <section id="dismiss">
@@ -668,7 +670,7 @@ Redraw()</code></pre>
             <tr><td class="mono">view/CEditView_Ime.cpp</td><td>マルチカーソル中の再変換無効化</td></tr>
             <tr><td class="mono">view/colors/CColor_Found.cpp</td><td><code class="inline">CColor_Select</code>のextra選択キャッシュ</td></tr>
             <tr><td class="mono">cmd/CViewCommander.h / .cpp</td><td>F-code分岐、<code class="inline">DispatchMoveMultiCursor</code>宣言・配線</td></tr>
-            <tr><td class="mono">cmd/CViewCommander_Edit.cpp</td><td><code class="inline">ApplyToAllCursors</code>、<code class="inline">MergeOverlappingCursorsIfNeeded</code>、<code class="inline">AddCursorInDirection</code>(<code class="inline">Command_AddCursorUp/Down</code>の共通実装)、<code class="inline">Command_MULTICURSOR_UNDO</code>、<code class="inline">RestoreMultiCursorAfterUndoRedo</code></td></tr>
+            <tr><td class="mono">cmd/CViewCommander_Edit.cpp</td><td><code class="inline">ApplyToAllCursors</code>、<code class="inline">MergeOverlappingCursorsIfNeeded</code>、<code class="inline">AddCursorInDirection</code>(<code class="inline">Command_AddCursorUp/Down</code>の共通実装)、<code class="inline">Command_MULTICURSOR_UNDO</code>、<code class="inline">RestoreMultiCursorAfterUndoRedo</code>、<code class="inline">Command_AddCursorsToLineEnds</code>(2026-09-03追加)</td></tr>
             <tr><td class="mono">cmd/CViewCommander_Search.cpp</td><td>(第二十パスで個別クリアは撤去。<code class="inline">OnKillFocus</code>に一本化)</td></tr>
             <tr><td class="mono">COpe.h</td><td><code class="inline">COpe::nCursorSlot</code>(マルチカーソルのUndo/Redo識別子)、<code class="inline">CReplaceOpe::bHadSelection</code>(<code class="inline">NKMM_UNDO_RESTORE_SELECTION</code>)</td></tr>
             <tr><td class="mono">view/CEditView_Command_New.cpp</td><td><code class="inline">ReplaceData_CEditView</code>系への<code class="inline">bHadSelection</code>引数追加</td></tr>

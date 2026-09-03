@@ -968,6 +968,8 @@
 //  - Ctrl+Alt+↑/↓でカーソル追加(F_ADD_CURSOR_UP/DOWN、VS Code相当)、
 //    Ctrl+Shift+U(F_MULTICURSOR_UNDO)で直近の追加を1個だけ取り消し、Escで
 //    一括解除。矩形選択とは排他。IME再変換は非対応
+//  - Shift+Alt+I(F_ADD_CURSORS_TO_LINE_ENDS)で選択範囲がまたがる各物理行の行末に
+//    カーソルを追加(VS CodeのinsertCursorAtEndOfEachLineSelected相当) 20260903
 //  - 追加カーソルは絶対位置を持たず、プライマリからの相対行数・相対桁数
 //    (レイアウト単位、作成時に固定)だけを保持し、実位置は毎回その場で算出する
 //    (CEditView::SExtraCursor)。編集は既存のCOpeBlkに相乗りする形で

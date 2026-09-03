@@ -602,7 +602,7 @@ void CEditView::OnPaint( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp 
 	OnPaint2( _hdc, pPs, bDrawFromComptibleBmp );
 }
 
-/*! 通常の描画処理 new 
+/*! 通常の描画処理 new
 	@param pPs  pPs.rcPaint は正しい必要がある
 	@param bDrawFromComptibleBmp  TRUE 画面バッファからhdcに作画する(コピーするだけ)。
 			TRUEの場合、pPs.rcPaint領域外は作画されないが、FALSEの場合は作画される事がある。
@@ -610,6 +610,41 @@ void CEditView::OnPaint( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp 
 
 	@date 2007.09.09 Moca 元々無効化されていた第三パラメータのbUseMemoryDCをbDrawFromComptibleBmpに変更。
 	@date 2009.03.26 ryoji 行番号のみ描画を通常の行描画と分離（効率化）
+
+	@par 描画順まとめ(下に書いたものほど後、=画面上で手前に乗る) 20260904
+		-# (bDrawFromComptibleBmp時は互換BMPからBitBltするだけで早期return)
+		-# キャレットを隠す(HideCaret_)。bUseMemoryDC時はgrをメモリDC(m_hdcCompatDC)に差し替える
+		-# (NKMM_FIX_BRACKET_PAIR_INLINE無効時のみ)対括弧強調の消去(DrawBracketPair(false))。
+			bUseMemoryDC時はここでは行わず、末尾のBitBlt転送の直前まで遅延する
+		-# 背景(透過テキスト時の背景画像/余白/行番号帯の塗り)
+		-# 全行のテキスト・選択範囲反転・(NKMM_FIX_BRACKET_PAIR_INLINE有効時は行内対括弧強調も)描画
+			(DrawLogicLine)。ここで文字を実際に描く代わりにCGlyphAtlasCache::DrawOrCache()へ
+			キューイングされることがある(即描画されない)
+		-# ルーラー描画
+		-# **CGlyphAtlasCache::FlushQueue()** — 上の行描画中にキューされたグリフのBitBltを
+			まとめて転送。「確定した下地の上に重ね描きする」処理
+		-# **FlushColorGlyphQueue()** — 同上の考え方でカラーフォント(絵文字等)のオーバーレイを転送
+		-# マルチカーソルの追加カーソル(NKMM_MULTI_CURSOR)。20260904にここへ移動 — 上の2つの
+			BitBlt転送より前に描くと、キャッシュされた文字のBitBltでカーソルの矩形が
+			上書きされて消えてしまうバグがあった(グリフアトラスが有効なときのみ再現。
+			m_bUseGlyphAtlasCache既定ONだが有効化がOnChangeSetting()経由のため、共通設定を
+			一度もOKしていない起動直後は未有効化で問題が起きず「設定を開いてOKした後にだけ
+			消える」ように見えていた)
+		-# (bUseMemoryDC時のみ)対括弧強調の消去(step 3で遅延した分)→メモリDCから画面DCへBitBlt転送
+		-# アクティブペインのアンダーライン描画
+		-# (NKMM_FIX_BRACKET_PAIR_INLINE無効時のみ)対括弧強調の描画(DrawBracketPair(true))。
+			bUseMemoryDCの有無に関わらず常にここで実行 — メモリDC経由のバッファリングを
+			経由しない別経路(内部で自前にDCを取得)で直接ウィンドウへ描くため、
+			この位置に置いても手前に乗る
+		-# プライマリキャレットを表示(ShowCaret_、Win32ネイティブキャレット)
+		-# (NKMM_DEBUG_GLYPH_ATLAS_HUDのみ)ステータスバーへグリフアトラスの統計を表示
+
+	@par 新しく「テキストの上に重ねて描く」ものを追加するときの指針
+		グリフアトラス/カラーフォントのBitBlt(FlushQueue/FlushColorGlyphQueue)は、それより前に
+		書いたピクセルを問答無用で上書きする。したがって新しいオーバーレイは必ずこの2つより
+		後ろに置くこと(このルールは元々コメントで説明されていたが、マルチカーソルの追加カーソルは
+		これを守らずに実装され、上記の不具合を生んだ)。逆に、対括弧強調(DrawBracketPair)のように
+		メモリDC経由の合成を経ずウィンドウへ直接描く経路を使うものは、この制約の外側にある。
 */
 void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp )
 {
@@ -860,43 +895,6 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 
 	cTextType.RewindGraphicsState(gr);
 
-#ifdef NKMM_MULTI_CURSOR
-	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	//        マルチカーソル: 追加カーソルのキャレット線を描画        //
-	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	// プライマリはWin32ネイティブキャレット(CCaret::ShowEditCaret)のまま。
-	// Win32のキャレットは1ウィンドウにつき1個までのため、追加カーソル分は
-	// ここで自前描画する。プライマリと同じ太さ(挿入/上書きモードに応じた
-	// GetCaretSize())の塗りつぶし矩形にする。プライマリの点滅(OSのキャレット
-	// 点滅タイマーは再描画を伴わない)には追従できないため、常時表示にする
-	// (点滅に同期させようとすると、たまたまOFF位相で再描画されたまま
-	// 次の再描画イベントまで消えっぱなしになりうるため、常時表示の方が安全) 20260830
-	// 色もプライマリと同じにする。CCaret::ShowEditCaret()と同じ参照先
-	// (タイプ別設定のCOLORIDX_CARET/COLORIDX_CARET_IME)から取得する 20260831
-	if( !m_vExtraCursors.empty() ){
-		CMySize sizeCaret = GetCaret().GetCaretSize();
-		if( 0 < sizeCaret.cx && 0 < sizeCaret.cy ){
-			int nCaretColorIdx = ( m_pTypeData->m_ColorInfoArr[COLORIDX_CARET_IME].m_bDisp && IsImeON() ) ? COLORIDX_CARET_IME : COLORIDX_CARET;
-			COLORREF crCaret = m_pTypeData->m_ColorInfoArr[nCaretColorIdx].m_sColorAttr.m_cTEXT;
-			HBRUSH hBrushCaret = ::CreateSolidBrush( crCaret );
-			for( const auto& extra : m_vExtraCursors ){
-				CLayoutPoint ptLayout;
-				if( !ResolveExtraCursor( extra, &ptLayout ) )
-					continue;	// 非アクティブ(プライマリの現在行+相対行がドキュメント範囲外)は非表示
-				if( ptLayout.GetY2() < GetTextArea().GetViewTopLine() || nLayoutLineTo < ptLayout.GetY2() )
-					continue;	// 画面外の行
-				POINT pt = GetCaret().CalcCaretDrawPos( ptLayout );
-				if( pt.y < GetTextArea().GetAreaTop() || GetTextArea().GetAreaBottom() < pt.y )
-					continue;	// 画面外(念のため)
-				RECT rcCaret = { pt.x, pt.y, pt.x + sizeCaret.cx, pt.y + sizeCaret.cy };
-				::FillRect( gr, &rcCaret, hBrushCaret );
-			}
-			::DeleteObject( hBrushCaret );
-		}
-	}
-#endif // NKMM_
-
-
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                       ルーラー描画                          //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -921,6 +919,48 @@ void CEditView::OnPaint2( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp
 	//BitBltされる構成と相性が悪く、後から描いた行の内容が反映されない
 	//ことがあったため、ここで1回にまとめる。
 	FlushColorGlyphQueue(gr);
+#endif // NKMM_
+
+#ifdef NKMM_MULTI_CURSOR
+	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+	//        マルチカーソル: 追加カーソルのキャレット線を描画        //
+	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+	// プライマリはWin32ネイティブキャレット(CCaret::ShowEditCaret)のまま。
+	// Win32のキャレットは1ウィンドウにつき1個までのため、追加カーソル分は
+	// ここで自前描画する。プライマリと同じ太さ(挿入/上書きモードに応じた
+	// GetCaretSize())の塗りつぶし矩形にする。プライマリの点滅(OSのキャレット
+	// 点滅タイマーは再描画を伴わない)には追従できないため、常時表示にする
+	// (点滅に同期させようとすると、たまたまOFF位相で再描画されたまま
+	// 次の再描画イベントまで消えっぱなしになりうるため、常時表示の方が安全) 20260830
+	// 色もプライマリと同じにする。CCaret::ShowEditCaret()と同じ参照先
+	// (タイプ別設定のCOLORIDX_CARET/COLORIDX_CARET_IME)から取得する 20260831
+	// 20260904 上のグリフアトラス/カラーフォントのBitBltより後ろに移動。両方とも
+	// 「確定した下地の上にBitBltで重ね描きする」処理のため、それより前に描画すると
+	// (グリフアトラスが有効な行では)キャッシュされた文字のBitBltでカーソルの矩形が
+	// 上書きされ、追加カーソルが見えなくなる(m_bUseGlyphAtlasCacheが既定でON、かつ
+	// 有効化がOnChangeSetting()経由のため、共通設定を一度もOKしていない起動直後は
+	// 未有効化で問題が起きず、設定を開いてOKした後にだけ再現していた)
+	if( !m_vExtraCursors.empty() ){
+		CMySize sizeCaret = GetCaret().GetCaretSize();
+		if( 0 < sizeCaret.cx && 0 < sizeCaret.cy ){
+			int nCaretColorIdx = ( m_pTypeData->m_ColorInfoArr[COLORIDX_CARET_IME].m_bDisp && IsImeON() ) ? COLORIDX_CARET_IME : COLORIDX_CARET;
+			COLORREF crCaret = m_pTypeData->m_ColorInfoArr[nCaretColorIdx].m_sColorAttr.m_cTEXT;
+			HBRUSH hBrushCaret = ::CreateSolidBrush( crCaret );
+			for( const auto& extra : m_vExtraCursors ){
+				CLayoutPoint ptLayout;
+				if( !ResolveExtraCursor( extra, &ptLayout ) )
+					continue;	// 非アクティブ(プライマリの現在行+相対行がドキュメント範囲外)は非表示
+				if( ptLayout.GetY2() < GetTextArea().GetViewTopLine() || nLayoutLineTo < ptLayout.GetY2() )
+					continue;	// 画面外の行
+				POINT pt = GetCaret().CalcCaretDrawPos( ptLayout );
+				if( pt.y < GetTextArea().GetAreaTop() || GetTextArea().GetAreaBottom() < pt.y )
+					continue;	// 画面外(念のため)
+				RECT rcCaret = { pt.x, pt.y, pt.x + sizeCaret.cx, pt.y + sizeCaret.cy };
+				::FillRect( gr, &rcCaret, hBrushCaret );
+			}
+			::DeleteObject( hBrushCaret );
+		}
+	}
 #endif // NKMM_
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

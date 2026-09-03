@@ -1241,6 +1241,78 @@ void CViewCommander::Command_MULTICURSOR_UNDO( void )
 	}
 }
 
+//! マルチカーソル: 選択範囲がまたがる各物理行の行末(改行単位。Command_GOLINEENDの
+//! nOption&8相当)にカーソルを追加する(VS CodeのShift+Alt+I、
+//! insertCursorAtEndOfEachLineSelected相当) 20260903
+//!
+//! 選択されていない場合は何もしない(ErrorBeepのみ)。既存の追加カーソルは全て
+//! 破棄したうえで、プライマリ自身の選択範囲だけを見て作り直す(他の追加カーソルが
+//! 自分自身の選択を持っていてもここでは対象外。このコマンドは常に「今の選択」から
+//! 新しいマルチカーソル状態を作る操作という位置づけ)。
+//!
+//! 複数行選択で選択終端がちょうど次の行の行頭(桁0)にある場合、その行は実際には
+//! 1文字も選択されていないためカーソルを追加しない(VS Codeと同じ扱い。Shift+↓で
+//! 行末まで選択したときに、触れていない次の行にまでカーソルが増えるのを防ぐ)
+void CViewCommander::Command_AddCursorsToLineEnds( void )
+{
+	if( !m_pCommanderView->GetSelectionInfo().IsTextSelected() || m_pCommanderView->GetSelectionInfo().IsBoxSelecting() ){
+		ErrorBeep();
+		return;
+	}
+
+	CLogicPoint ptLogicFrom, ptLogicTo;
+	GetDocument()->m_cLayoutMgr.LayoutToLogic( m_pCommanderView->GetSelectionInfo().m_sSelect.GetFrom(), &ptLogicFrom );
+	GetDocument()->m_cLayoutMgr.LayoutToLogic( m_pCommanderView->GetSelectionInfo().m_sSelect.GetTo(), &ptLogicTo );
+
+	CLogicInt nLineFrom = ptLogicFrom.GetY2();
+	CLogicInt nLineTo = ptLogicTo.GetY2();
+	if( nLineTo > nLineFrom && ptLogicTo.GetX2() == CLogicInt(0) ){
+		--nLineTo;
+	}
+
+	// 各物理行の行末(改行単位)の実位置(レイアウト座標)を集める。アルゴリズムは
+	// Command_GOLINEEND(nOption&8)の「折り返し単位の行末を1行分たどって物理行末を探す」
+	// ループと同じもので、任意の行から開始できるようここでも直接書いている
+	std::vector<CLayoutPoint> vLineEnds;
+	for( CLogicInt nLine = nLineFrom; nLine <= nLineTo; ++nLine ){
+		CLayoutPoint ptHead;
+		GetDocument()->m_cLayoutMgr.LogicToLayout( CLogicPoint( CLogicInt(0), nLine ), &ptHead );
+
+		const CLayout* pcLayout = GetDocument()->m_cLayoutMgr.SearchLineByLayoutY( ptHead.GetY2() );
+		if( !pcLayout ) continue;
+		CLayoutInt nRow = ptHead.GetY2();
+		const CLayout* pcLayoutNext = pcLayout->GetNextLayout();
+		while( pcLayout && pcLayoutNext && pcLayoutNext->GetLogicOffset() != 0 ){
+			pcLayout = pcLayoutNext;
+			pcLayoutNext = pcLayout->GetNextLayout();
+			++nRow;
+		}
+		vLineEnds.push_back( CLayoutPoint( pcLayout->CalcLayoutWidth( GetDocument()->m_cLayoutMgr ), nRow ) );
+	}
+
+	if( vLineEnds.empty() ) return;
+	if( (int)( vLineEnds.size() - 1 ) > NKMM_MULTICURSOR_MAX ){
+		ErrorBeep();
+		return;
+	}
+
+	m_pCommanderView->GetSelectionInfo().DisableSelectArea( true );
+	m_pCommanderView->m_vExtraCursors.clear();
+
+	GetCaret().MoveCursor( vLineEnds[0], true );
+	GetCaret().m_nCaretPosX_Prev = vLineEnds[0].GetX2();
+
+	for( size_t i = 1; i < vLineEnds.size(); ++i ){
+		CEditView::SExtraCursor ne;
+		ne.nRelLine = ToInt(vLineEnds[i].GetY2()) - ToInt(vLineEnds[0].GetY2());
+		ne.nRelColumn = ToInt(vLineEnds[i].GetX2()) - ToInt(vLineEnds[0].GetX2());
+		ne.nDesiredRelColumn = ne.nRelColumn;
+		m_pCommanderView->m_vExtraCursors.push_back( ne );
+	}
+
+	m_pCommanderView->Redraw();
+}
+
 //! マルチカーソル: プライマリ+追加カーソルの各位置に対して1回ずつfnEditOnceを実行する	20260830
 //!
 //! ドキュメント降順(末尾側から)で処理する。ある位置への編集は、その位置より手前
