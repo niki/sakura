@@ -715,7 +715,7 @@ static const KEYDATAINIT	KeyDataInit[] = {
 	{ VKEX_MDL_CLICK,	(LPCTSTR)STR_KEY_BIND_MID_CLICK,	{ F_0,		F_0,				F_0,					F_0,				F_0,					F_0,				F_0,					F_0 }, }, // novice 2004/10/11 マウス中ボタン対応
 	{ VKEX_LSD_CLICK,	(LPCTSTR)STR_KEY_BIND_LSD_CLICK,	{ F_0,				F_0,				F_0,					F_0,				F_0,					F_0,				F_0,					F_0 }, }, // novice 2004/10/10 マウスサイドボタン対応
 	{ VKEX_RSD_CLICK,	(LPCTSTR)STR_KEY_BIND_RSD_CLICK,	{ F_0,				F_0,				F_0,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
-	{ VKEX_TRI_CLICK,	(LPCTSTR)STR_KEY_BIND_TRI_CLICK,	{ F_0,		F_0,		F_0,			F_0,		F_0,			F_0,		F_0,			F_0 }, },
+	{ VKEX_TRI_CLICK,	(LPCTSTR)STR_KEY_BIND_TRI_CLICK,	{ F_SELECTLINE,	F_0,		F_0,			F_0,		F_0,			F_0,		F_0,			F_0 }, }, // 20260904 トリプルクリックを行選択に割り当て
 	{ VKEX_QUA_CLICK,	(LPCTSTR)STR_KEY_BIND_QUA_CLICK,	{ F_0,		F_0,		F_0,			F_0,		F_0,			F_0,		F_0,			F_0 }, },
 	{ VKEX_WHEEL_UP,	(LPCTSTR)STR_KEY_BIND_WHEEL_UP,		{ F_WHEELUP,		F_0,			F_0,		F_0,			F_0,				F_0,			F_0,				F_0 }, },
 	{ VKEX_WHEEL_DOWN,	(LPCTSTR)STR_KEY_BIND_WHEEL_DOWN,	{ F_WHEELDOWN,		F_0,		F_0,		F_0,		F_0,			F_0,		F_0,			F_0 }, },
