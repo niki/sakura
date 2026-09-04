@@ -150,6 +150,7 @@ body.edit-mode .cmp-table tbody tr{scroll-margin-top:40px;}
 .legend .legend-label{font-weight:600;}
 .legend .key{margin-right:2px;}
 tr.no-sakura td.func-cell{font-style:italic; color:var(--muted);}
+tr.unassigned td.func-cell{color:var(--muted);}
 
 .cmp-table{width:100%; border-collapse:collapse; font-size:12.5px;}
 .cmp-table th, .cmp-table td{
@@ -259,7 +260,7 @@ body.edit-mode .th-btns{display:flex;}
 <body>
 <div class="wrap">
 <h1>サクラエディタ キー割り当て一覧<span class="sub">sakura_core/func/CKeyBind.cpp の既定値と keybind_presets/*.key の内容から自動生成</span><span class="ver" data-tip="このファイルを生成したときの日時(JST)。再生成すると更新されます">gen:20260829T1832+09:00</span></h1>
-<p class="lead" data-tip="「共通設定 → キー割り当て（実験機能）」の一覧に近い見た目で、機能ごとにサクラエディタの既定キーと各キー割り当てプリセットのキーを横に並べています。全248行中、プリセットのいずれかで割り当てのある機能は44件（背景を強調表示）。「〇」はそのプリセットでは未上書きのままサクラ既定のキーが使える、「—」はサクラ既定も含めて割り当てなし。各アプリの公式資料と突き合わせて試験的に埋めています。">サクラの既定キーと各プリセットのキーを機能ごとに一覧表示（全248行）ⓘ</p>
+<p class="lead" data-tip="「共通設定 → キー割り当て（実験機能）」の一覧に近い見た目で、機能ごとにサクラエディタの既定キーと各キー割り当てプリセットのキーを横に並べています。全346行中、プリセットのいずれかで割り当てのある機能は45件（背景を強調表示）。「〇」はそのプリセットでは未上書きのままサクラ既定のキーが使える、「—」はサクラ既定も含めて割り当てなし。各アプリの公式資料と突き合わせて試験的に埋めています。うち95行（文字がグレーの行）は機能コード自体は存在するが既定キー・プリセットキーとも一切割り当てが無い機能で、対応する機能の並び順の位置にそのまま挿入しています。">サクラの既定キーと各プリセットのキーを機能ごとに一覧表示（全346行）ⓘ</p>
 <div class="legend"><span class="legend-label" data-tip="色分けの意味(各項目にカーソルを合わせると詳細を表示)">色分け ⓘ</span><span data-tip="各プリセット(.key)に実際に割り当て済み"><span class="key key-blue">Ctrl+X</span> 割当済</span><span data-tip="そのアプリの本来のキー（サクラでは未割り当て/キー衝突などのため参考表示）"><span class="key key-yellow">Ctrl+X</span> 参考</span><span data-tip="プリセットで実際に割り当て済みだが、そのキーはサクラ既定または同じキーセット内の別の機能に割り当てられている(衝突。他の色より優先して赤で表示)"><span class="key key-red">Ctrl+X</span> 衝突</span><span data-tip="プリセットは未上書きだが、サクラ既定のキーがそのまま使える"><span class="inherit">〇</span> 既定継承</span><span data-tip="サクラ既定にもキーが無い(このプリセットでは操作不可)"><span class="dash">—</span> 割当なし</span><span data-tip="サクラ既定がタブバー表示設定によって動的に変わる特殊なキー(タブバー非表示時の値を表示)"><span class="key key-dynamic">Ctrl+F4</span> 動的既定</span></div>
 <div class="controls"><input type="text" id="filterBox" placeholder="機能名・キーで絞り込み..."><label><input type="checkbox" id="presetOnly"> プリセットで使われている機能のみ表示</label><span class="sep"></span><button type="button" id="editToggle">✏ 編集モード</button><label data-tip="実キー入力で記号キー（;:,./[]など）を新規に割り当てるときに使う配列。キーの物理位置と実際に入力される文字は配列によって変わるため、正しく割り当てるにはお使いのOSのキーボード配列と合わせてください(既定はJIS)。既存のバッジや.keyのインポートには影響しません">配列: <select id="layoutSelect"><option value="jis">JIS</option><option value="us">US</option></select></label><button type="button" id="addRowBtn">＋ 行を追加</button><button type="button" id="exportBtn" data-tip="編集内容を全てJSONでバックアップ(このツール専用形式)">全体バックアップ</button><button type="button" id="importBtn" data-tip="全体バックアップJSONを読み込む">バックアップ復元</button><input type="file" id="importFile" accept="application/json" style="display:none"><input type="file" id="perAppImportFile" accept=".key,text/plain" style="display:none"><button type="button" id="resetBtn">編集を全て破棄</button><span class="count" id="rowCount"></span></div>
 <p class="lead" id="editHint" style="display:none">編集モード中はキーのバッジをクリックすると実際にキーを押して割り当てられます(点滅する緑のバッジの間に押してください。修飾キー(Ctrl/Shift/Alt)は押している間だけ反映され、離すと外れます。A・F5・↑などの実キーを押した瞬間に確定します。クリック以外の場所を押すとキャンセルされ元の値に戻ります)。「＋」で同じセルに別のキーを追加、キーバッジ右上の×で削除、行左端の×で行ごと削除、「＋ 行を追加」で新しい機能行を追加できます。機能名は通常のテキスト編集です。この編集内容はブラウザのlocalStorageにこのファイルの場所ごとに保存され、再度このHTMLを開いたときも復元されます（他の人やサーバーには送信されません）。ファイルとして保存・共有したい場合は「エクスポート」でJSONを書き出し、別環境では「インポート」で読み込んでください。注意: Ctrl+W・Ctrl+T・Ctrl+N・Ctrl+Tab・F11などブラウザ自身が予約しているショートカットは、Webページ側では取得できずブラウザの機能（タブを閉じる等）が先に実行されてしまいます。これはブラウザの仕様上回避できません。</p>
@@ -283,6 +284,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-blue" data-hex="78" data-slot="2" data-base-cls="key-blue">Ctrl+N</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="key key-blue" data-hex="78" data-slot="2" data-base-cls="key-blue">Ctrl+N</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_FILENEW_NEWWINDOW">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">新規ウインドウを開く</span><span class="fc">F_FILENEW_NEWWINDOW</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr class="in-preset" data-row-id="f_F_FILEOPEN">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">開く</span><span class="fc">F_FILEOPEN</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="79" data-slot="2">Ctrl+O</span></td>
@@ -291,6 +301,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="key key-blue" data-hex="79" data-slot="2" data-base-cls="key-blue">Ctrl+O</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-blue" data-hex="79" data-slot="2" data-base-cls="key-blue">Ctrl+O</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="key key-blue" data-hex="79" data-slot="2" data-base-cls="key-blue">Ctrl+O</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_FILEOPEN_DROPDOWN">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">開く(ドロップダウン)</span><span class="fc">F_FILEOPEN_DROPDOWN</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr class="in-preset" data-row-id="f_F_FILESAVE">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">上書き保存</span><span class="fc">F_FILESAVE</span></td>
@@ -355,6 +374,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+F10）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+F10）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_FILE_REOPEN_LATIN1">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">Latin1で開き直す</span><span class="fc">F_FILE_REOPEN_LATIN1</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_FILE_REOPEN_UNICODE">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">UTF-16 で開き直す</span><span class="fc">F_FILE_REOPEN_UNICODE</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="120" data-slot="6">Ctrl+Alt+F9</span></td>
@@ -364,6 +392,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+F9）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+F9）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_FILE_REOPEN_UNICODEBE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">UnicodeBEで開き直す</span><span class="fc">F_FILE_REOPEN_UNICODEBE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_FILE_REOPEN_UTF8">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">UTF-8 で開き直す</span><span class="fc">F_FILE_REOPEN_UTF8</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="119" data-slot="6">Ctrl+Alt+F8</span></td>
@@ -372,6 +409,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+F8）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+F8）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+F8）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_FILE_REOPEN_CESU8">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">CESU-8で開き直す</span><span class="fc">F_FILE_REOPEN_CESU8</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_FILE_REOPEN_UTF7">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">UTF-7 で開き直す</span><span class="fc">F_FILE_REOPEN_UTF7</span></td>
@@ -454,6 +500,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+B）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+B）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_VIEWMODE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ビューモード</span><span class="fc">F_VIEWMODE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_PROPERTY_FILE">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ファイルのプロパティ</span><span class="fc">F_PROPERTY_FILE</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="13" data-slot="4">Alt+Enter</span></td>
@@ -462,6 +517,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+Enter）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+Enter）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+Enter）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_PROFILEMGR">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">プロファイルマネージャ</span><span class="fc">F_PROFILEMGR</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_EXITALLEDITORS">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">編集をすべて終了</span><span class="fc">F_EXITALLEDITORS</span></td>
@@ -534,6 +598,42 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Del）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Del）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Del）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_WordCut">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">単語切り取り</span><span class="fc">F_WordCut</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_WordDelete">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">単語削除</span><span class="fc">F_WordDelete</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_LineCutToStart">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">行頭まで切り取り(改行単位)</span><span class="fc">F_LineCutToStart</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_LineCutToEnd">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">行末まで切り取り(改行単位)</span><span class="fc">F_LineCutToEnd</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_LineDeleteToStart">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">行頭まで削除（改行単位）</span><span class="fc">F_LineDeleteToStart</span></td>
@@ -679,6 +779,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+M）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+M）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_RECONVERT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">再変換</span><span class="fc">F_RECONVERT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_UP">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">上移動</span><span class="fc">F_UP</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="38" data-slot="0">↑</span></td>
@@ -714,6 +823,24 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（→）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（→）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（→）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_UP2">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">カーソル上移動(２行ごと)</span><span class="fc">F_UP2</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_DOWN2">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">カーソル下移動(２行ごと)</span><span class="fc">F_DOWN2</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_WORDLEFT">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">単語の左端に移動</span><span class="fc">F_WORDLEFT</span></td>
@@ -805,6 +932,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+End(Help)）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+End(Help)）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_CURLINECENTER">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">カーソル行をウィンドウ中央へ</span><span class="fc">F_CURLINECENTER</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr class="in-preset" data-row-id="f_F_JUMPHIST_PREV">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">移動履歴：前へ</span><span class="fc">F_JUMPHIST_PREV</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="189" data-slot="2">Ctrl+-</span></td>
@@ -823,6 +959,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Shift+-）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Shift+-）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_JUMPHIST_SET">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">現在位置を移動履歴に登録</span><span class="fc">F_JUMPHIST_SET</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_WndScrollDown">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">スクリーンを１行下にスクロール</span><span class="fc">F_WndScrollDown</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="38" data-slot="2">Ctrl+↑</span></td>
@@ -840,6 +985,33 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+↓）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+↓）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+↓）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_GONEXTPARAGRAPH">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">次の段落へ移動</span><span class="fc">F_GONEXTPARAGRAPH</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_GOPREVPARAGRAPH">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">前の段落へ移動</span><span class="fc">F_GOPREVPARAGRAPH</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_AUTOSCROLL">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">オートスクロール</span><span class="fc">F_AUTOSCROLL</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_WHEELUP">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ホイール上</span><span class="fc">F_WHEELUP</span></td>
@@ -876,6 +1048,60 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（ホイール右）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（ホイール右）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（ホイール右）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_WHEELPAGEUP">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ホイールページアップ</span><span class="fc">F_WHEELPAGEUP</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_WHEELPAGEDOWN">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ホイールページダウン</span><span class="fc">F_WHEELPAGEDOWN</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_WHEELPAGELEFT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ホイールページ左</span><span class="fc">F_WHEELPAGELEFT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_WHEELPAGERIGHT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ホイールページ右</span><span class="fc">F_WHEELPAGERIGHT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_MODIFYLINE_NEXT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">次の変更行へ移動</span><span class="fc">F_MODIFYLINE_NEXT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_MODIFYLINE_PREV">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">前の変更行へ移動</span><span class="fc">F_MODIFYLINE_PREV</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_SELECTWORD">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">現在位置の単語選択</span><span class="fc">F_SELECTWORD</span></td>
@@ -948,6 +1174,24 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Shift+→）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Shift+→）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Shift+→）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_UP2_SEL">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">(範囲選択)カーソル上移動(２行ごと)</span><span class="fc">F_UP2_SEL</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_DOWN2_SEL">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">(範囲選択)カーソル下移動(２行ごと)</span><span class="fc">F_DOWN2_SEL</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_WORDLEFT_SEL">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">（選択）単語の左端に移動</span><span class="fc">F_WORDLEFT_SEL</span></td>
@@ -1039,6 +1283,42 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Shift+End(Help)）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Shift+End(Help)）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_GONEXTPARAGRAPH_SEL">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">(範囲選択)次の段落へ移動</span><span class="fc">F_GONEXTPARAGRAPH_SEL</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_GOPREVPARAGRAPH_SEL">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">(範囲選択)前の段落へ移動</span><span class="fc">F_GOPREVPARAGRAPH_SEL</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_MODIFYLINE_NEXT_SEL">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">(範囲選択)次の変更行へ移動</span><span class="fc">F_MODIFYLINE_NEXT_SEL</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_MODIFYLINE_PREV_SEL">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">(範囲選択)前の変更行へ移動</span><span class="fc">F_MODIFYLINE_PREV_SEL</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_BEGIN_BOX">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">矩形選択の開始</span><span class="fc">F_BEGIN_BOX</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="117" data-slot="1">Shift+F6</span></td>
@@ -1119,6 +1399,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+→）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+→）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+→）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_GOLOGICALLINETOP_BOX">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">(矩形選択)行頭に移動(改行単位)</span><span class="fc">F_GOLOGICALLINETOP_BOX</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_GOLINETOP_BOX">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">（矩形選択）行頭に移動(折り返し単位)</span><span class="fc">F_GOLINETOP_BOX</span></td>
@@ -1210,6 +1499,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-blue" data-hex="67" data-slot="2" data-base-cls="key-blue">Ctrl+C</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="key key-blue" data-hex="67" data-slot="2" data-base-cls="key-blue">Ctrl+C</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_COPY_ADDCRLF">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">折り返し位置に改行をつけてコピー(選択範囲をクリップボードにコピー)</span><span class="fc">F_COPY_ADDCRLF</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_COPY_CRLF">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">CRLF改行でコピー</span><span class="fc">F_COPY_CRLF</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="119" data-slot="1">Shift+F8</span></td>
@@ -1264,6 +1562,33 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+,）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+,）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_COPY_COLOR_HTML">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">選択範囲内色付きHTMLコピー</span><span class="fc">F_COPY_COLOR_HTML</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_COPY_COLOR_HTML_LINENUMBER">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">選択範囲内行番号色付きHTMLコピー</span><span class="fc">F_COPY_COLOR_HTML_LINENUMBER</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_COPYFNAME">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">このファイル名をクリップボードにコピー</span><span class="fc">F_COPYFNAME</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_COPYPATH">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ドキュメントのパス名をコピー</span><span class="fc">F_COPYPATH</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="220" data-slot="2">Ctrl+\\</span></td>
@@ -1309,6 +1634,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+;）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+;）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_CTRL_CODE_DIALOG">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">コントロールコードの入力</span><span class="fc">F_CTRL_CODE_DIALOG</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr class="in-preset" data-row-id="f_F_TOLOWER">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">小文字に変換</span><span class="fc">F_TOLOWER</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="117" data-slot="2">Ctrl+F6</span> <span class="key" data-hex="76" data-slot="6">Ctrl+Alt+L</span></td>
@@ -1353,6 +1687,33 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+F10）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+F10）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+F10）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TOZENEI">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">半角英数→全角英数</span><span class="fc">F_TOZENEI</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TOHANEI">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">全角英数→半角英数</span><span class="fc">F_TOHANEI</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TOHANKATA">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">全角カタカナ→半角カタカナ</span><span class="fc">F_TOHANKATA</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_HANKATATOZENKATA">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">半角カタカナ→全角カタカナ</span><span class="fc">F_HANKATATOZENKATA</span></td>
@@ -1425,6 +1786,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+F9）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+F9）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+F9）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_CODECNV_UNICODEBE2SJIS">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">Unicode→SJISコード変換</span><span class="fc">F_CODECNV_UNICODEBE2SJIS</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_CODECNV_UTF82SJIS">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">（コード変換）UTF-8 → SJIS</span><span class="fc">F_CODECNV_UTF82SJIS</span></td>
@@ -1507,6 +1877,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-blue" data-hex="70" data-slot="2" data-base-cls="key-blue">Ctrl+F</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="key key-blue" data-hex="70" data-slot="2" data-base-cls="key-blue">Ctrl+F</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_SEARCH_BOX">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">検索(ボックス)</span><span class="fc">F_SEARCH_BOX</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr class="in-preset" data-row-id="f_F_SEARCH_NEXT">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">次の検索</span><span class="fc">F_SEARCH_NEXT</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="114" data-slot="0">F3</span></td>
@@ -1588,6 +1967,24 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-blue" data-hex="82" data-slot="2" data-base-cls="key-blue">Ctrl+R</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（F11, Ctrl+R）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_OUTLINE_TOGGLE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">アウトライン解析(toggle)</span><span class="fc">F_OUTLINE_TOGGLE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_FILETREE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ファイルツリー</span><span class="fc">F_FILETREE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_TAGJUMP">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">タグ移動</span><span class="fc">F_TAGJUMP</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="123" data-slot="0">F12</span> <span class="key" data-hex="84" data-slot="2">Ctrl+T</span></td>
@@ -1597,6 +1994,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（F12, Ctrl+T）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（F12, Ctrl+T）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_TAGJUMP_CLOSE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">閉じてタグジャンプ(元ウィンドウを閉じる)</span><span class="fc">F_TAGJUMP_CLOSE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_TAGJUMPBACK">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">タグ移動（戻る）</span><span class="fc">F_TAGJUMPBACK</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="123" data-slot="1">Shift+F12</span> <span class="key" data-hex="84" data-slot="3">Ctrl+Shift+T</span></td>
@@ -1605,6 +2011,78 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Shift+F12, Ctrl+Shift+T）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Shift+F12, Ctrl+Shift+T）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Shift+F12, Ctrl+Shift+T）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAGS_MAKE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">タグファイルの作成</span><span class="fc">F_TAGS_MAKE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_DIRECT_TAGJUMP">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ダイレクトタグジャンプ</span><span class="fc">F_DIRECT_TAGJUMP</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAGJUMP_KEYWORD">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">キーワードを指定してダイレクトタグジャンプ</span><span class="fc">F_TAGJUMP_KEYWORD</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_COMPARE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ファイル内容比較</span><span class="fc">F_COMPARE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_DIFF_DIALOG">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">DIFF差分表示(ダイアログ)</span><span class="fc">F_DIFF_DIALOG</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_DIFF_NEXT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">次の差分へ</span><span class="fc">F_DIFF_NEXT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_DIFF_PREV">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">前の差分へ</span><span class="fc">F_DIFF_PREV</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_DIFF_RESET">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">差分の全解除</span><span class="fc">F_DIFF_RESET</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr class="in-preset" data-row-id="f_F_BRACKETPAIR">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">対括弧の検索</span><span class="fc">F_BRACKETPAIR</span></td>
@@ -1660,6 +2138,78 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+F2）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+F2）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_ISEARCH_NEXT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">前方インクリメンタルサーチ</span><span class="fc">F_ISEARCH_NEXT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_ISEARCH_PREV">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">後方インクリメンタルサーチ</span><span class="fc">F_ISEARCH_PREV</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_ISEARCH_REGEXP_NEXT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">前方正規表現インクリメンタルサーチ</span><span class="fc">F_ISEARCH_REGEXP_NEXT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_ISEARCH_REGEXP_PREV">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">後方正規表現インクリメンタルサーチ</span><span class="fc">F_ISEARCH_REGEXP_PREV</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_ISEARCH_MIGEMO_NEXT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">前方MIGEMOインクリメンタルサーチ</span><span class="fc">F_ISEARCH_MIGEMO_NEXT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_ISEARCH_MIGEMO_PREV">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">後方MIGEMOインクリメンタルサーチ</span><span class="fc">F_ISEARCH_MIGEMO_PREV</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_FUNCLIST_NEXT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">次の関数リストマーク</span><span class="fc">F_FUNCLIST_NEXT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_FUNCLIST_PREV">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">前の関数リストマーク</span><span class="fc">F_FUNCLIST_PREV</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_CHGMOD_INS">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">挿入／上書きモード切り替え</span><span class="fc">F_CHGMOD_INS</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="45" data-slot="0">Ins</span></td>
@@ -1668,6 +2218,42 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ins）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ins）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ins）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_CHG_CHARSET">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">文字コードセット指定</span><span class="fc">F_CHG_CHARSET</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_CHGMOD_EOL_CRLF">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">入力改行コード指定(CRLF)</span><span class="fc">F_CHGMOD_EOL_CRLF</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_CHGMOD_EOL_LF">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">入力改行コード指定(LF)</span><span class="fc">F_CHGMOD_EOL_LF</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_CHGMOD_EOL_CR">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">入力改行コード指定(CR)</span><span class="fc">F_CHGMOD_EOL_CR</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_CANCEL_MODE">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">各種モードの取り消し</span><span class="fc">F_CANCEL_MODE</span></td>
@@ -1695,6 +2281,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+2）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+2）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+2）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_SHOWTAB">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">タブの表示</span><span class="fc">F_SHOWTAB</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_SHOWSTATUSBAR">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ステータスバーの表示／非表示</span><span class="fc">F_SHOWSTATUSBAR</span></td>
@@ -1741,6 +2336,24 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+7）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+7）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_SETFONTSIZEUP">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">フォントサイズ拡大</span><span class="fc">F_SETFONTSIZEUP</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_SETFONTSIZEDOWN">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">フォントサイズ縮小</span><span class="fc">F_SETFONTSIZEDOWN</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr class="in-preset" data-row-id="f_F_WRAPWINDOWWIDTH">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">折り返し桁数</span><span class="fc">F_WRAPWINDOWWIDTH</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="85" data-slot="6">Ctrl+Alt+U</span></td>
@@ -1749,6 +2362,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+U）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+U）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+U）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_FAVORITE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">履歴の管理</span><span class="fc">F_FAVORITE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_TMPWRAPNOWRAP">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">折り返さない</span><span class="fc">F_TMPWRAPNOWRAP</span></td>
@@ -1776,6 +2398,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="key key-blue" data-hex="87" data-slot="5" data-base-cls="key-blue">Shift+Alt+W</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+W）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+W）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_SELECT_COUNT_MODE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">文字カウント設定</span><span class="fc">F_SELECT_COUNT_MODE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_RECKEYMACRO">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">キーマクロの記録開始／終了</span><span class="fc">F_RECKEYMACRO</span></td>
@@ -1813,6 +2444,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Shift+L）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="key key-red" data-tip="サクラ既定では「コマンドパレット表示...」に割り当て済み(衝突)" data-hex="80" data-slot="3" data-base-cls="key-blue">Ctrl+Shift+P</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_EXECEXTMACRO">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">名前を指定してマクロ実行</span><span class="fc">F_EXECEXTMACRO</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_EXECMD_DIALOG">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">外部コマンド実行...</span><span class="fc">F_EXECMD_DIALOG</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="116" data-slot="2">Ctrl+F5</span></td>
@@ -1849,6 +2489,24 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Shift+;）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Shift+;）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_WIN_CLOSEALL">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">すべてのウィンドウを閉じる</span><span class="fc">F_WIN_CLOSEALL</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAB_CLOSEOTHER">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">このタブ以外を閉じる</span><span class="fc">F_TAB_CLOSEOTHER</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_WINCLOSE">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">閉じる</span><span class="fc">F_WINCLOSE</span></td>
 <td data-col="default" contenteditable="false"><span class="key key-dynamic" data-tip="タブバー非表示(既定)時の値。タブバー表示時の設定次第でF_GROUPCLOSEに動的に切り替わることがあります(CKeyBind::GetDefFuncCode)。" data-hex="115" data-slot="4">Alt+F4</span></td>
@@ -1857,6 +2515,24 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+F4）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+F4）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Alt+F4）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_FILESAVECLOSE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">保存して閉じる</span><span class="fc">F_FILESAVECLOSE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_FILE_REOPEN">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">開き直す</span><span class="fc">F_FILE_REOPEN</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_CASCADE">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">重ねて表示</span><span class="fc">F_CASCADE</span></td>
@@ -1885,6 +2561,114 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+T）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Alt+T）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_TOPMOST">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">常に手前に表示</span><span class="fc">F_TOPMOST</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_BIND_WINDOW">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">結合して表示</span><span class="fc">F_BIND_WINDOW</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_NEXTGROUP">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">次のグループ</span><span class="fc">F_NEXTGROUP</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_PREVGROUP">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">前のグループ</span><span class="fc">F_PREVGROUP</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAB_MOVERIGHT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">タブを右に移動</span><span class="fc">F_TAB_MOVERIGHT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAB_MOVELEFT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">タブを左に移動</span><span class="fc">F_TAB_MOVELEFT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAB_SEPARATE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">新規グループ</span><span class="fc">F_TAB_SEPARATE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAB_JOINTNEXT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">次のグループに移動</span><span class="fc">F_TAB_JOINTNEXT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAB_JOINTPREV">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">前のグループに移動</span><span class="fc">F_TAB_JOINTPREV</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAB_CLOSELEFT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">左をすべて閉じる</span><span class="fc">F_TAB_CLOSELEFT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAB_CLOSERIGHT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">右をすべて閉じる</span><span class="fc">F_TAB_CLOSERIGHT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_TAB_DUPLICATE">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ウィンドウを複製</span><span class="fc">F_TAB_DUPLICATE</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr class="in-preset" data-row-id="f_F_COMMAND_PALETTE">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">コマンドパレット表示...</span><span class="fc">F_COMMAND_PALETTE</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="80" data-slot="3">Ctrl+Shift+P</span></td>
@@ -1911,6 +2695,24 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="key key-blue" data-hex="9" data-slot="3" data-base-cls="key-blue">Ctrl+Shift+Tab</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-red" data-tip="サクラ既定では「半ページ上移動」に割り当て済み(衝突)" data-hex="33" data-slot="2" data-base-cls="key-blue">Ctrl+PageUp</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Shift+Tab）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_WINLIST">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">開いているウィンドウ一覧ポップアップ表示</span><span class="fc">F_WINLIST</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_DLGWINLIST">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ウィンドウ一覧表示</span><span class="fc">F_DLGWINLIST</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_MAXIMIZE_V">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">縦方向に最大化</span><span class="fc">F_MAXIMIZE_V</span></td>
@@ -1948,6 +2750,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（F5）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（F5）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_WIN_OUTPUT">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">アウトプットウィンドウ表示</span><span class="fc">F_WIN_OUTPUT</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_HOKAN">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">入力補完</span><span class="fc">F_HOKAN</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="32" data-slot="2">Ctrl+Space</span> <span class="key" data-hex="191" data-slot="2">Ctrl+/</span></td>
@@ -1957,6 +2768,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Space, Ctrl+/）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Ctrl+Space, Ctrl+/）がそのまま使えます">〇</span></td>
 </tr>
+<tr class="unassigned" data-row-id="f_F_TOGGLE_KEY_SEARCH">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">キャレット位置の単語を辞書検索する機能ON/OFF</span><span class="fc">F_TOGGLE_KEY_SEARCH</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
 <tr data-row-id="f_F_MENU_ALLFUNC">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">コマンド一覧</span><span class="fc">F_MENU_ALLFUNC</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="112" data-slot="1">Shift+F1</span></td>
@@ -1965,6 +2785,24 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Shift+F1）がそのまま使えます">〇</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Shift+F1）がそのまま使えます">〇</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit" data-tip="このプリセットでは未上書き。サクラ既定のキー（Shift+F1）がそのまま使えます">〇</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_EXTHELP1">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">外部ヘルプ１</span><span class="fc">F_EXTHELP1</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_EXTHTMLHELP">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">外部HTMLヘルプ</span><span class="fc">F_EXTHTMLHELP</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_ABOUT">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">バージョン情報</span><span class="fc">F_ABOUT</span></td>
@@ -2324,6 +3162,24 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
 <td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-yellow">Ctrl+U</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_HELP_CONTENTS">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ヘルプ目次</span><span class="fc">F_HELP_CONTENTS</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="unassigned" data-row-id="f_F_HELP_SEARCH">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">ヘルプキーワード検索</span><span class="fc">F_HELP_SEARCH</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr class="no-sakura" data-row-id="nosakura_Select_all_occurrences_226">
