@@ -1676,6 +1676,23 @@
 //------------------------------------------------------------------
 #define NKMM_UNDO_RESTORE_SELECTION
 
+//------------------------------------------------------------------
+// Ctrl+マウスホイールでフォントサイズを拡大縮小する 20260904
+//  - VS Code等と同じ挙動: Ctrl+ホイールでエディタのフォントサイズを一段階
+//    ずつ拡大/縮小する。既存の「フォントサイズ拡大/縮小」コマンド
+//    (F_SETFONTSIZEUP/F_SETFONTSIZEDOWN、mode=2)をそのまま流用するだけで、
+//    新規のC++ロジックは追加していない
+//  - mode=2は現在のドキュメントのみに効く一時的な変更で、iniには保存
+//    されない(CEditDoc::m_nPointSizeCur等)。ウィンドウを閉じれば元に戻る
+//  - 既存のホイール+修飾キー→コマンド解決の仕組み(CEditView::OnMOUSEWHEEL2、
+//    view/CEditView_Mouse.cpp)をそのまま使うため、キー割り当て
+//    (func/CKeyBind.cpp: KeyDataInit[]のVKEX_WHEEL_UP/DOWNのCtrl列)を
+//    F_0からF_SETFONTSIZEUP/F_SETFONTSIZEDOWNに変えるだけで動作する
+//  - 通常のキー割り当てテーブル経由なので、ユーザーは共通設定の
+//    キー割り当てタブから普通に変更・無効化できる
+//------------------------------------------------------------------
+#define NKMM_CTRL_WHEEL_FONT_ZOOM
+
 //
 //#define USE_SSE2
 

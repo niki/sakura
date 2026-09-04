@@ -717,8 +717,13 @@ static const KEYDATAINIT	KeyDataInit[] = {
 	{ VKEX_RSD_CLICK,	(LPCTSTR)STR_KEY_BIND_RSD_CLICK,	{ F_0,				F_0,				F_0,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ VKEX_TRI_CLICK,	(LPCTSTR)STR_KEY_BIND_TRI_CLICK,	{ F_SELECTLINE,	F_0,		F_0,			F_0,		F_0,			F_0,		F_0,			F_0 }, }, // 20260904 トリプルクリックを行選択に割り当て
 	{ VKEX_QUA_CLICK,	(LPCTSTR)STR_KEY_BIND_QUA_CLICK,	{ F_0,		F_0,		F_0,			F_0,		F_0,			F_0,		F_0,			F_0 }, },
+#ifdef NKMM_CTRL_WHEEL_FONT_ZOOM
+	{ VKEX_WHEEL_UP,	(LPCTSTR)STR_KEY_BIND_WHEEL_UP,		{ F_WHEELUP,		F_0,			F_SETFONTSIZEUP,	F_0,			F_0,				F_0,			F_0,				F_0 }, }, // 20260904 Ctrl+ホイールでフォント拡大
+	{ VKEX_WHEEL_DOWN,	(LPCTSTR)STR_KEY_BIND_WHEEL_DOWN,	{ F_WHEELDOWN,		F_0,		F_SETFONTSIZEDOWN,	F_0,		F_0,			F_0,		F_0,			F_0 }, }, // 20260904 Ctrl+ホイールでフォント縮小
+#else
 	{ VKEX_WHEEL_UP,	(LPCTSTR)STR_KEY_BIND_WHEEL_UP,		{ F_WHEELUP,		F_0,			F_0,		F_0,			F_0,				F_0,			F_0,				F_0 }, },
 	{ VKEX_WHEEL_DOWN,	(LPCTSTR)STR_KEY_BIND_WHEEL_DOWN,	{ F_WHEELDOWN,		F_0,		F_0,		F_0,		F_0,			F_0,		F_0,			F_0 }, },
+#endif // NKMM_CTRL_WHEEL_FONT_ZOOM
 	{ VKEX_WHEEL_LEFT,	(LPCTSTR)STR_KEY_BIND_WHEEL_LEFT,	{ F_WHEELLEFT,		F_0,		F_0,			F_0,		F_0,			F_0,		F_0,			F_0 }, },
 	{ VKEX_WHEEL_RIGHT,	(LPCTSTR)STR_KEY_BIND_WHEEL_RIGHT,	{ F_WHEELRIGHT,		F_0,		F_0,			F_0,		F_0,			F_0,		F_0,			F_0 }, },
 
