@@ -177,6 +177,11 @@ normal_action:;
 
 	// ALTキーが押されている、かつトリプルクリックでない		// 2007.11.15 nasukoji	トリプルクリック対応
 	if( GetKeyState_Alt() &&( ! tripleClickMode)){
+#ifdef NKMM_MULTI_CURSOR
+		// Alt+クリックでのカーソル追加(OnLBUTTONUP参照)用に、キャレット移動前の位置を
+		// 記憶しておく。ドラッグされて矩形選択が確定した場合は使われない 20260904
+		m_ptAltClickOrigCaretPos = GetCaret().GetCaretLayoutPos();
+#endif // NKMM_
 		if( GetSelectionInfo().IsTextSelected() ){	/* テキストが選択されているか */
 			/* 現在の選択範囲を非選択状態に戻す */
 			GetSelectionInfo().DisableSelectArea( true );
@@ -1495,6 +1500,11 @@ void CEditView::OnLBUTTONUP( WPARAM fwKeys, int xPos , int yPos )
 
 	/* 範囲選択終了 & マウスキャプチャーおわり */
 	if( GetSelectionInfo().IsMouseSelecting() ){	/* 範囲選択中 */
+#ifdef NKMM_MULTI_CURSOR
+		// 矩形選択(Alt+ドラッグ)として開始されたセッションかどうかを、この後の
+		// SelectEnd/DisableSelectAreaでフラグが消える前に控えておく 20260904
+		bool bWasBoxSelect = GetSelectionInfo().IsBoxSelecting();
+#endif // NKMM_
 		/* マウス キャプチャを解放 */
 		::ReleaseCapture();
 		GetCaret().ShowCaret_( GetHwnd() ); // 2002/07/22 novice
@@ -1508,6 +1518,44 @@ void CEditView::OnLBUTTONUP( WPARAM fwKeys, int xPos , int yPos )
 		if( GetSelectionInfo().m_sSelect.IsOne() ){
 			/* 現在の選択範囲を非選択状態に戻す */
 			GetSelectionInfo().DisableSelectArea( true );
+
+#ifdef NKMM_MULTI_CURSOR
+			// Alt+クリック(ドラッグせずボタンを離した=矩形選択にならなかった)場合、
+			// クリック位置に新しいカーソルを追加する(VS Code等と同じ挙動)。プライマリ自体は
+			// クリック前の位置に戻す。既存のextraカーソルは全てプライマリからの相対値で
+			// 保持されているため、プライマリさえ動かさずに済めば再計算は不要 20260904
+			if( bWasBoxSelect ){
+				CLayoutPoint ptClicked = GetCaret().GetCaretLayoutPos();
+				GetCaret().MoveCursor( m_ptAltClickOrigCaretPos, false );
+				GetCaret().m_nCaretPosX_Prev = m_ptAltClickOrigCaretPos.GetX2();
+
+				// クリック位置がプライマリや既存カーソルと重なる場合は追加しない
+				// (同じ位置に2つカーソルがあると、編集時に同じ場所へ二重に反映されてしまう)
+				if( ptClicked != m_ptAltClickOrigCaretPos ){
+					bool bDup = false;
+					for( const auto& extra : m_vExtraCursors ){
+						CLayoutPoint ptResolved;
+						if( ResolveExtraCursor( extra, &ptResolved ) && ptResolved == ptClicked ){
+							bDup = true;
+							break;
+						}
+					}
+					if( !bDup ){
+						if( (int)m_vExtraCursors.size() >= NKMM_MULTICURSOR_MAX ){
+							ErrorBeep();
+						}
+						else{
+							SExtraCursor ne;
+							ne.nRelLine = ToInt(ptClicked.GetY2()) - ToInt(m_ptAltClickOrigCaretPos.GetY2());
+							ne.nRelColumn = ToInt(ptClicked.GetX2()) - ToInt(m_ptAltClickOrigCaretPos.GetX2());
+							ne.nDesiredRelColumn = ne.nRelColumn;
+							m_vExtraCursors.push_back( ne );
+						}
+					}
+				}
+				Redraw();
+			}
+#endif // NKMM_
 		}
 	}
 	return;

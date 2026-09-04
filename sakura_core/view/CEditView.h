@@ -742,6 +742,11 @@ public:
 	//! 末尾 = 最後に追加したカーソルでもある(Ctrl+Shift+Uでの取り消しはpop_backのみでよい)。
 	//! 空 = 従来通りの単一カーソル動作(既存コードパスは無変更) 20260830
 	std::vector<SExtraCursor>	m_vExtraCursors;
+	//! Alt+クリック中、クリック位置へキャレットを動かす直前のプライマリ位置。
+	//! OnLBUTTONDOWNで記録し、OnLBUTTONUPでドラッグが起きなかった(=矩形選択にならなかった)
+	//! ことが分かった時点で使う: プライマリをこの位置に戻し、クリック位置の方を新しい
+	//! カーソルとして追加する(VS Code等のAlt+クリックと同じ挙動) 20260904
+	CLayoutPoint	m_ptAltClickOrigCaretPos;
 #endif // NKMM_
 
 	//主要オブジェクト
