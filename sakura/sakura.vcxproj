@@ -739,15 +739,12 @@
     <None Include="..\sakura_core\Funccode_x.hsrc" />
     <None Include="..\keybind_presets\VSCode.key" />
     <None Include="..\keybind_presets\VisualStudio.key" />
-    <None Include="..\keybind_presets\VisualStudio6.key" />
-    <None Include="..\keybind_presets\VisualBasic6.key" />
-    <None Include="..\keybind_presets\ReSharper.key" />
     <None Include="..\keybind_presets\SublimeText.key" />
     <None Include="..\keybind_presets\NotepadPlusPlus.key" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\sakura_core\sakura_rc.rc">
-      <AdditionalDependencies>..\keybind_presets\VSCode.key;..\keybind_presets\VisualStudio.key;..\keybind_presets\VisualStudio6.key;..\keybind_presets\VisualBasic6.key;..\keybind_presets\ReSharper.key;..\keybind_presets\SublimeText.key;..\keybind_presets\NotepadPlusPlus.key;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\keybind_presets\VSCode.key;..\keybind_presets\VisualStudio.key;..\keybind_presets\SublimeText.key;..\keybind_presets\NotepadPlusPlus.key;%(AdditionalDependencies)</AdditionalDependencies>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
