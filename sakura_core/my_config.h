@@ -1387,9 +1387,12 @@
 //------------------------------------------------------------------
 // 「キー割り当て(実験機能)」タブに、組み込みキーマッププリセットの選択コンボを追加 20260812
 //  - NKMM_FIX_KEYBIND_LIST_TAB(IDD_PROP_KEYBIND_LIST)の子機能。有効時のみ意味を持つ
-//  - keybind_presets/*.key(VSCode/Visual Studio/ReSharper/Sublime Text/Notepad++)を
+//  - keybind_presets/*.key(VSCode/Visual Studio/Sublime Text/Notepad++)を
 //    sakura_rc.rcにRCDATAとして埋め込み、実行時にFindResource+一時ファイル経由で
 //    CImpExpKeybind::Import()へ渡す(keybind_presetsフォルダは実行時に不要)
+//  - 20260904 ReSharperを削除。Visual Studio.keyとの差分がAlt+O(ヘッダ/ソース切替)の
+//    2箇所のみで、独立したプリセットとして維持する価値が薄いと判断した
+//    (詳細はkeybind_presets/README.md参照)
 //  - 適用は必ず「CShareData::ResetKeyBindToDefault()で既定へ戻してから、選んだ
 //    プリセットの差分をインポートする」方式。コンボは現在のキー割り当てを
 //    都度再判定して表示する(全プリセットをシミュレートして現在値と比較。

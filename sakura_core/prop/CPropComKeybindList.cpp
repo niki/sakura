@@ -42,12 +42,15 @@ struct SKeybindPresetInfo {
 		そもそも本機能(ヘッダ/ソース切り替え等)が無く、Visual Studio.keyとの差分が
 		あまりにも乏しく(基本操作がほぼ同一)、独立したプリセットとして維持する価値が
 		薄いと判断した(keybind_presets/README.md参照)。
+	@date 20260904 ReSharperを削除。Visual Studio.keyとの差分がAlt+O(ヘッダ/ソース切替)の
+		2箇所のみで、実際のReSharperが持つVisual Studioを大幅に上書きする独自キーマップ
+		(Go to Everything等)を反映できておらず、独立したプリセットとして維持する価値が
+		薄いと判断した(keybind_presets/README.md参照)。
 */
 static const SKeybindPresetInfo	s_KeybindPresetTable[] = {
 	{ 0,                                L"デフォルト" },
 	{ IDR_KEYBINDPRESET_VSCODE,        L"Visual Studio Code" },
 	{ IDR_KEYBINDPRESET_VISUALSTUDIO,  L"Visual Studio" },
-	{ IDR_KEYBINDPRESET_RESHARPER,     L"ReSharper(Visual Studio拡張)" },
 	{ IDR_KEYBINDPRESET_SUBLIMETEXT,   L"Sublime Text" },
 	{ IDR_KEYBINDPRESET_NOTEPADPLUSPLUS, L"Notepad++" },
 };

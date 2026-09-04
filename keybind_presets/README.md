@@ -10,7 +10,6 @@
 |---|---|
 | VSCode.key | Visual Studio Code |
 | VisualStudio.key | Visual Studio（現行版の既定キーマップ） |
-| ReSharper.key | ReSharper（Visual Studio 拡張） |
 | SublimeText.key | Sublime Text |
 | NotepadPlusPlus.key | Notepad++ |
 
@@ -26,13 +25,16 @@
 - サクラエディタはテキストエディタであり、コード補完・リファクタリング・デバッグ実行などのIDE機能は
   持っていません。そのため各キーマップの「ファイル操作・編集・検索・移動」に相当する部分だけを対象にしており、
   ビルド/実行/デバッグ/リファクタリング系のショートカットは含めていません。
-- **ReSharper.key** は、ReSharperが素のVisual Studioから変更するショートカットの大半が「コード解析・
-  ナビゲーション・リファクタリング」関連(Go to Everything、Alt+Enterのクイックフィックス等)で、
-  サクラエディタには対応する機能がないため、基本的な内容は`VisualStudio.key`と同じです(ファイル/編集/
-  検索の基本操作は拡張機能も変更しないため)。ただし「ヘッダ/ソースファイルの切り替え」(Alt+O、
-  Ctrl+Shift+Gの代替キーも持つ)は[ReSharper C++が実際に実装している機能](https://www.jetbrains.com/help/resharper/Navigation_in_CPP.html)
-  であることが確認できたため、サクラエディタの`F_OPEN_HfromtoC`(同名のC/C++ヘッダ(ソース)を開く)を
-  Alt+O・Ctrl+Shift+Gに割り当て、`VisualStudio.key`との差分にしています。
+- **ReSharper.key は削除しました(20260904)。** ReSharperが素のVisual Studioから変更するショートカット
+  の大半は「コード解析・ナビゲーション・リファクタリング」関連(Go to Everything、Alt+Enterの
+  クイックフィックス等)で、サクラエディタには対応する機能がないため、基本的な内容は`VisualStudio.key`
+  と同じでした(ファイル/編集/検索の基本操作は拡張機能も変更しないため)。「ヘッダ/ソースファイルの
+  切り替え」(Alt+O、Ctrl+Shift+Gの代替キーも持つ)は[ReSharper C++が実際に実装している機能](https://www.jetbrains.com/help/resharper/Navigation_in_CPP.html)
+  であることが確認できたため`F_OPEN_HfromtoC`をAlt+O・Ctrl+Shift+Gに割り当てて`VisualStudio.key`との
+  差分にしていましたが、結局`VisualStudio.key`全25行中23行が完全一致という薄い差分にとどまり、実際の
+  ReSharperが持つ独自キーマップの大半(コード解析・ナビゲーション・リファクタリング系)を反映できて
+  いない以上、独立したプリセットとして維持する価値が薄いと判断し、`VisualAssist.key`と同様の理由で
+  削除しました。
   **VisualAssist.key は削除しました(20260823)。** 同様の趣旨(Alt+Oのみ)で追加していましたが、
   ReSharperと比べて知名度が低く、`VisualStudio.key`との差分もAlt+O 1行のみで独立したプリセットとして
   維持する価値が薄いと判断したため削除しました。
@@ -47,7 +49,7 @@
   おり独立したプリセットである意味がなかったため、後者はUIの選択肢に配線されておらず実質到達不能な上、
   対象(1990年代前半のVisual C++ 2)の当時の資料が乏しく確認精度も低かったため削除しました。
 - **Grep(Ctrl+Shift+F)/Grep置換(Ctrl+Shift+H)の不具合を修正しました(20260823)。** VSCode.key/
-  VisualStudio.key/ReSharper.keyのCtrl+Shift+Fは、検索ダイアログを開く`F_SEARCH_DIALOG`
+  VisualStudio.keyのCtrl+Shift+Fは、検索ダイアログを開く`F_SEARCH_DIALOG`
   や置換ダイアログを開く`F_REPLACE_DIALOG`と対になるべきところ、誤って「ダイアログを開かず直前の設定で
   即実行する」`F_GREP`(ダイアログ版は`F_GREP_DIALOG`)を割り当てていました。Ctrl+Shift+Hに至っては
   何も割り当てられていませんでした。実際のVSCode/Visual Studioは共にCtrl+Shift+F=Find in Files、
@@ -112,10 +114,9 @@
     `F_COMMAND_PALETTE`割り当てを撤回し、未割り当てに戻しました。どちらのアプリも
     Ctrl+PとCtrl+Shift+Pは別々の機能(前者はファイル切り替え、後者はコマンドパレット)のため、
     Ctrl+Shift+P(Show Command Palette)側の`F_COMMAND_PALETTE`割り当てはそのまま残しています。
-- **VisualStudio.key / ReSharper.key に、公式のショートカット一覧
+- **VisualStudio.key に、公式のショートカット一覧
   ([Microsoft Learn](https://learn.microsoft.com/ja-jp/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio?view=visualstudio))
-  と突き合わせて見つかった不足分を追加しました(20260823)。両ファイルとも基本部分は同一のため
-  同じ内容を反映しています。
+  と突き合わせて見つかった不足分を追加しました(20260823)。
   - Ctrl+W(Window.CloseDocumentWindow、Ctrl+F4の代替) → `F_FILECLOSE`。Wキーの既定値
     (Ctrl+W=単語選択)を上書きしますが、Ctrl+Alt+W(折り返し一時設定)は温存しています
   - Ctrl+L(Edit.LineCut) → `F_CUT_LINE`、Ctrl+Shift+L(Edit.LineDelete) → `F_DELETE_LINE`。
@@ -149,7 +150,7 @@
     「(範囲選択)カーソル上下移動(２行ごと)」(`F_UP2_SEL`/`F_DOWN2_SEL`)がこのプリセットの範囲では
     上書きされます。この機能はほかに代替キーを持たない一意の機能ですが、使用頻度の低いマイナーな
     移動系機能のため、対象エディタに合わせたMoveLine割り当てを優先しました。
-  - **VisualStudio.key / ReSharper.key**: Alt+↑/↓(`Edit.MoveSelectedLinesUp`/`Down`、VS2013から)。
+  - **VisualStudio.key**: Alt+↑/↓(`Edit.MoveSelectedLinesUp`/`Down`、VS2013から)。
     [Microsoft Learnのデフォルトキーボードショートカット一覧](https://learn.microsoft.com/ja-jp/visualstudio/ide/default-keyboard-shortcuts-in-visual-studio?view=visualstudio)
     で確認。VSCode.keyと同様、サクラの既定の「(矩形選択)カーソル上下移動」(Alt+↑/↓)を上書きしますが、
     Ctrl+Alt+↑/↓側は残るため矩形選択自体は引き続きキーボードで操作できます。
