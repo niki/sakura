@@ -28,6 +28,7 @@
 #include "debug/CRunningTimer.h"
 #ifdef NKMM_MULTI_CURSOR
 #include <algorithm>
+#include "CSearchAgent.h"
 #endif // NKMM_
 
 
@@ -1165,6 +1166,8 @@ void CViewCommander::Command_DELETE_BACK( void )
 //! Command_AddCursorUp/Downの共通実装。nDir<0で最上段カーソルの1行上、nDir>0で最下段
 //! カーソルの1行下(いずれも同じ桁)に新しいカーソルを追加する。上下で対称なだけの処理
 //! だったため統合 20260831
+//! 追加元の端のカーソルが選択を持っていれば、その選択形状も1行分平行移動して新カーソルに
+//! 引き継ぐ(選択中のテキストを隣接行にも複製選択できるようにするため) 20260904
 void CViewCommander::AddCursorInDirection( int nDir )
 {
 	// マルチカーソルと矩形選択は排他。矩形選択中であれば解除してから追加する
@@ -1178,13 +1181,21 @@ void CViewCommander::AddCursorInDirection( int nDir )
 	}
 
 	// プライマリ(相対0)+追加カーソルの中から最上段/最下段(nRelLineが最小/最大)を探す。
-	// 新カーソルの相対桁は「その端のカーソルと同じ相対桁」を引き継ぐ(プライマリなら0)
+	// 新カーソルの相対桁は「その端のカーソルと同じ相対桁」を引き継ぐ(プライマリなら0)。
+	// 端のカーソルが選択を持っていれば、その選択の形(アンカーからの相対値)も一緒に
+	// 引き継ぐ対象として控えておく 20260904
 	int nEdgeRel = 0;
 	int nEdgeRelColumn = 0;
+	bool bEdgeHasSelection = m_pCommanderView->GetSelectionInfo().IsTextSelected();
+	int nEdgeAnchorRelLine = 0;
+	int nEdgeAnchorRelColumn = 0;
 	for( const auto& extra : m_pCommanderView->m_vExtraCursors ){
 		if( ( nDir < 0 ) ? ( extra.nRelLine < nEdgeRel ) : ( extra.nRelLine > nEdgeRel ) ){
 			nEdgeRel = extra.nRelLine;
 			nEdgeRelColumn = extra.nRelColumn;
+			bEdgeHasSelection = extra.bHasSelection;
+			nEdgeAnchorRelLine = extra.nAnchorRelLine;
+			nEdgeAnchorRelColumn = extra.nAnchorRelColumn;
 		}
 	}
 
@@ -1213,6 +1224,14 @@ void CViewCommander::AddCursorInDirection( int nDir )
 		// (上下移動の途中で)食い違っているケースにも正しく対応するため、それぞれ別々に基準を取る
 		int nNewAbsColumn = ToInt(GetCaret().GetCaretLayoutPos().GetX2()) + nEdgeRelColumn;
 		ne.nDesiredRelColumn = nNewAbsColumn - ToInt(GetCaret().m_nCaretPosX_Prev);
+		if( bEdgeHasSelection ){
+			// 追加元(端)のカーソルが選択を持っていれば、その選択形状を1行分平行移動して
+			// 新カーソルにも引き継ぐ。選択中のテキストをCtrl+Alt+↑/↓で隣接行にも
+			// 複製選択したいという自然な要求に対応するため 20260904
+			ne.bHasSelection = true;
+			ne.nAnchorRelLine = nEdgeAnchorRelLine + nDir;
+			ne.nAnchorRelColumn = nEdgeAnchorRelColumn;
+		}
 		m_pCommanderView->m_vExtraCursors.push_back( ne );
 	}
 	m_pCommanderView->Redraw();
@@ -1309,6 +1328,158 @@ void CViewCommander::Command_AddCursorsToLineEnds( void )
 		ne.nDesiredRelColumn = ne.nRelColumn;
 		m_pCommanderView->m_vExtraCursors.push_back( ne );
 	}
+
+	m_pCommanderView->Redraw();
+}
+
+//! マルチカーソル: 次の一致箇所を選択範囲に追加する(VS CodeのCtrl+D、
+//! addSelectionToNextFindMatch相当) 20260904
+//!
+//! プライマリが無選択の場合(=このコマンドの最初の1回)は、VS Codeと同様にまず
+//! 現在位置の単語を選択するだけで終える(カーソルはまだ増やさない)。この時点で
+//! 既存の(選択を持たない)追加カーソル(Ctrl+Alt+↑/↓・Shift+Alt+I等で追加されたもの)が
+//! あれば、それらの位置の単語もまとめて選択する(単語が見つからない位置は無選択のまま
+//! 残す)。既に選択がある場合は、その選択内容(大文字小文字を区別する完全一致)を検索
+//! キーとして、直前に追加した一致(無ければプライマリ自身の選択)の終端より後ろを前方
+//! 検索し、見つかった位置に新しい追加カーソル(選択付き)を足す。文書末まで見つからなければ
+//! 先頭から折り返して再検索する。折り返した結果が既存のいずれかのカーソルの選択範囲と
+//! 同じ箇所だった場合は「候補が尽きた」とみなしてErrorBeepのみで終える(無限ループ・
+//! 同一箇所の再選択を防止)。矩形選択中は非対応(ErrorBeepのみ)
+void CViewCommander::Command_AddSelectionToNextMatch( void )
+{
+	if( m_pCommanderView->GetSelectionInfo().IsBoxSelecting() ){
+		ErrorBeep();
+		return;
+	}
+
+	if( !m_pCommanderView->GetSelectionInfo().IsTextSelected() ){
+		if( !Command_SELECTWORD() ){
+			ErrorBeep();
+			return;
+		}
+		if( !m_pCommanderView->m_vExtraCursors.empty() ){
+			// 既存の(選択を持たない)追加カーソル(Ctrl+Alt+↑/↓・Shift+Alt+I等で追加された
+			// もの)が既にある状態での最初の1回: VS Codeと同様、プライマリだけでなく各追加
+			// カーソルの位置の単語もそれぞれ選択するだけで終える(この回では新しいカーソルは
+			// 増やさない)。単語が見つからない位置の追加カーソルは無選択のまま残す 20260904
+			CLayoutPoint ptPrimaryAnchor = m_pCommanderView->GetSelectionInfo().m_sSelectBgn.GetFrom();
+			CLayoutPoint ptPrimaryCaret  = GetCaret().GetCaretLayoutPos();
+			for( auto& extra : m_pCommanderView->m_vExtraCursors ){
+				if( extra.bHasSelection ) continue;
+				CLayoutPoint ptPos;
+				if( !m_pCommanderView->ResolveExtraCursor( extra, &ptPos ) ) continue;
+				const CLayout* pcLayout = GetDocument()->m_cLayoutMgr.SearchLineByLayoutY( ptPos.GetY2() );
+				if( !pcLayout ) continue;
+				CLogicInt nIdx = m_pCommanderView->LineColumnToIndex( pcLayout, ptPos.GetX2() );
+				CLayoutRange sWordRange;
+				bool bFoundWord = GetDocument()->m_cLayoutMgr.WhereCurrentWord( ptPos.GetY2(), nIdx, &sWordRange, NULL, NULL );
+				if( !bFoundWord && nIdx > CLogicInt(0) && nIdx >= pcLayout->GetLengthWithoutEOL() ){
+					// カーソルが行の可視末尾(改行より右)にあると、WhereCurrentWordは改行文字
+					// 自体を指してしまい必ず失敗する(CWordParse::WhereCurrentWord_2の
+					// IsLineDelimiterガード)。行の長さが揃わないマルチカーソルでは追加カーソルが
+					// 行末に来ることが多く、そのままだと単語が選択できない追加カーソルが
+					// 頻発するため、直前の1文字(サロゲートペア境界を考慮)の位置で再試行する 20260904
+					CLogicInt nLineLen = CLogicInt(0);
+					const wchar_t* pLineStr = GetDocument()->m_cLayoutMgr.GetLineStr( ptPos.GetY2(), &nLineLen );
+					if( pLineStr ){
+						const wchar_t* pPrev = CNativeW::GetCharPrev( pLineStr, ToInt(nLineLen), pLineStr + ToInt(nIdx) );
+						CLogicInt nIdxPrev = CLogicInt( (int)(pPrev - pLineStr) );
+						bFoundWord = GetDocument()->m_cLayoutMgr.WhereCurrentWord( ptPos.GetY2(), nIdxPrev, &sWordRange, NULL, NULL );
+					}
+				}
+				if( !bFoundWord ) continue;
+				extra.bHasSelection     = true;
+				extra.nAnchorRelLine    = ToInt(sWordRange.GetFrom().GetY2()) - ToInt(ptPrimaryAnchor.GetY2());
+				extra.nAnchorRelColumn  = ToInt(sWordRange.GetFrom().GetX2()) - ToInt(ptPrimaryAnchor.GetX2());
+				extra.nRelLine          = ToInt(sWordRange.GetTo().GetY2()) - ToInt(ptPrimaryCaret.GetY2());
+				extra.nRelColumn        = ToInt(sWordRange.GetTo().GetX2()) - ToInt(ptPrimaryCaret.GetX2());
+				extra.nDesiredRelColumn = extra.nRelColumn;
+			}
+			m_pCommanderView->Redraw();
+		}
+		return;
+	}
+
+	if( (int)m_pCommanderView->m_vExtraCursors.size() >= NKMM_MULTICURSOR_MAX ){
+		ErrorBeep();
+		return;
+	}
+
+	CNativeW cmemKey;
+	if( !m_pCommanderView->GetSelectedDataSimple( cmemKey ) || cmemKey.GetStringLength() <= CLogicInt(0) ){
+		ErrorBeep();
+		return;
+	}
+
+	SSearchOption sOpt( false, true, false );	// 正規表現なし・大小文字区別・単語のみ指定なし
+	CSearchStringPattern pattern;
+	pattern.SetPattern( NULL, cmemKey.GetStringPtr(), ToInt(cmemKey.GetStringLength()), sOpt, NULL );
+
+	// 検索開始位置: 直前に追加した一致(無ければプライマリ自身の選択)の終端
+	CLayoutPoint ptSearchFrom;
+	if( !m_pCommanderView->m_vExtraCursors.empty() ){
+		if( !m_pCommanderView->ResolveExtraCursor( m_pCommanderView->m_vExtraCursors.back(), &ptSearchFrom ) ){
+			ErrorBeep();
+			return;
+		}
+	}else{
+		ptSearchFrom = GetCaret().GetCaretLayoutPos();
+	}
+
+	const CLayout* pcLayoutFrom = GetDocument()->m_cLayoutMgr.SearchLineByLayoutY( ptSearchFrom.GetY2() );
+	if( !pcLayoutFrom ){
+		ErrorBeep();
+		return;
+	}
+	CLogicInt nIdxFrom = m_pCommanderView->LineColumnToIndex( pcLayoutFrom, ptSearchFrom.GetX2() );
+
+	CLayoutRange sRangeFound;
+	int nResult = GetDocument()->m_cLayoutMgr.SearchWord(
+		ptSearchFrom.GetY2(), nIdxFrom, SEARCH_FORWARD, &sRangeFound, pattern );
+	if( !nResult ){
+		// 文書末まで見つからなければ先頭から折り返して再検索
+		nResult = GetDocument()->m_cLayoutMgr.SearchWord(
+			CLayoutInt(0), CLogicInt(0), SEARCH_FORWARD, &sRangeFound, pattern );
+	}
+	if( !nResult ){
+		ErrorBeep();
+		return;
+	}
+
+	// 折り返し等で既存のいずれかのカーソルの選択範囲と同じ箇所に行き着いた場合は
+	// 「候補が尽きた」とみなす(無限ループ・同一箇所の再選択を防止)
+	bool bDup = ( m_pCommanderView->GetSelectionInfo().m_sSelect.GetFrom() == sRangeFound.GetFrom()
+	           && m_pCommanderView->GetSelectionInfo().m_sSelect.GetTo()   == sRangeFound.GetTo() );
+	if( !bDup ){
+		for( const auto& extra : m_pCommanderView->m_vExtraCursors ){
+			if( !extra.bHasSelection ) continue;
+			CLayoutPoint ptAnchor, ptCurrent;
+			if( !m_pCommanderView->ResolveExtraCursorAnchor( extra, &ptAnchor ) ) continue;
+			if( !m_pCommanderView->ResolveExtraCursor( extra, &ptCurrent ) ) continue;
+			CLayoutPoint ptFrom = ptAnchor, ptTo = ptCurrent;
+			if( PointCompare( ptTo, ptFrom ) < 0 ) std::swap( ptFrom, ptTo );
+			if( ptFrom == sRangeFound.GetFrom() && ptTo == sRangeFound.GetTo() ){
+				bDup = true;
+				break;
+			}
+		}
+	}
+	if( bDup ){
+		ErrorBeep();
+		return;
+	}
+
+	CLayoutPoint ptPrimaryAnchor = m_pCommanderView->GetSelectionInfo().m_sSelectBgn.GetFrom();
+	CLayoutPoint ptPrimaryCaret  = GetCaret().GetCaretLayoutPos();
+
+	CEditView::SExtraCursor ne;
+	ne.bHasSelection     = true;
+	ne.nAnchorRelLine    = ToInt(sRangeFound.GetFrom().GetY2()) - ToInt(ptPrimaryAnchor.GetY2());
+	ne.nAnchorRelColumn  = ToInt(sRangeFound.GetFrom().GetX2()) - ToInt(ptPrimaryAnchor.GetX2());
+	ne.nRelLine          = ToInt(sRangeFound.GetTo().GetY2()) - ToInt(ptPrimaryCaret.GetY2());
+	ne.nRelColumn        = ToInt(sRangeFound.GetTo().GetX2()) - ToInt(ptPrimaryCaret.GetX2());
+	ne.nDesiredRelColumn = ne.nRelColumn;
+	m_pCommanderView->m_vExtraCursors.push_back( ne );
 
 	m_pCommanderView->Redraw();
 }

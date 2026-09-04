@@ -259,7 +259,7 @@ body.edit-mode .th-btns{display:flex;}
 <body>
 <div class="wrap">
 <h1>サクラエディタ キー割り当て一覧<span class="sub">sakura_core/func/CKeyBind.cpp の既定値と keybind_presets/*.key の内容から自動生成</span><span class="ver" data-tip="このファイルを生成したときの日時(JST)。再生成すると更新されます">gen:20260829T1832+09:00</span></h1>
-<p class="lead" data-tip="「共通設定 → キー割り当て（実験機能）」の一覧に近い見た目で、機能ごとにサクラエディタの既定キーと各キー割り当てプリセットのキーを横に並べています。全239行中、プリセットのいずれかで割り当てのある機能は44件（背景を強調表示）。「〇」はそのプリセットでは未上書きのままサクラ既定のキーが使える、「—」はサクラ既定も含めて割り当てなし。各アプリの公式資料と突き合わせて試験的に埋めています。">サクラの既定キーと各プリセットのキーを機能ごとに一覧表示（全239行）ⓘ</p>
+<p class="lead" data-tip="「共通設定 → キー割り当て（実験機能）」の一覧に近い見た目で、機能ごとにサクラエディタの既定キーと各キー割り当てプリセットのキーを横に並べています。全248行中、プリセットのいずれかで割り当てのある機能は44件（背景を強調表示）。「〇」はそのプリセットでは未上書きのままサクラ既定のキーが使える、「—」はサクラ既定も含めて割り当てなし。各アプリの公式資料と突き合わせて試験的に埋めています。">サクラの既定キーと各プリセットのキーを機能ごとに一覧表示（全248行）ⓘ</p>
 <div class="legend"><span class="legend-label" data-tip="色分けの意味(各項目にカーソルを合わせると詳細を表示)">色分け ⓘ</span><span data-tip="各プリセット(.key)に実際に割り当て済み"><span class="key key-blue">Ctrl+X</span> 割当済</span><span data-tip="そのアプリの本来のキー（サクラでは未割り当て/キー衝突などのため参考表示）"><span class="key key-yellow">Ctrl+X</span> 参考</span><span data-tip="プリセットで実際に割り当て済みだが、そのキーはサクラ既定または同じキーセット内の別の機能に割り当てられている(衝突。他の色より優先して赤で表示)"><span class="key key-red">Ctrl+X</span> 衝突</span><span data-tip="プリセットは未上書きだが、サクラ既定のキーがそのまま使える"><span class="inherit">〇</span> 既定継承</span><span data-tip="サクラ既定にもキーが無い(このプリセットでは操作不可)"><span class="dash">—</span> 割当なし</span><span data-tip="サクラ既定がタブバー表示設定によって動的に変わる特殊なキー(タブバー非表示時の値を表示)"><span class="key key-dynamic">Ctrl+F4</span> 動的既定</span></div>
 <div class="controls"><input type="text" id="filterBox" placeholder="機能名・キーで絞り込み..."><label><input type="checkbox" id="presetOnly"> プリセットで使われている機能のみ表示</label><span class="sep"></span><button type="button" id="editToggle">✏ 編集モード</button><label data-tip="実キー入力で記号キー（;:,./[]など）を新規に割り当てるときに使う配列。キーの物理位置と実際に入力される文字は配列によって変わるため、正しく割り当てるにはお使いのOSのキーボード配列と合わせてください(既定はJIS)。既存のバッジや.keyのインポートには影響しません">配列: <select id="layoutSelect"><option value="jis">JIS</option><option value="us">US</option></select></label><button type="button" id="addRowBtn">＋ 行を追加</button><button type="button" id="exportBtn" data-tip="編集内容を全てJSONでバックアップ(このツール専用形式)">全体バックアップ</button><button type="button" id="importBtn" data-tip="全体バックアップJSONを読み込む">バックアップ復元</button><input type="file" id="importFile" accept="application/json" style="display:none"><input type="file" id="perAppImportFile" accept=".key,text/plain" style="display:none"><button type="button" id="resetBtn">編集を全て破棄</button><span class="count" id="rowCount"></span></div>
 <p class="lead" id="editHint" style="display:none">編集モード中はキーのバッジをクリックすると実際にキーを押して割り当てられます(点滅する緑のバッジの間に押してください。修飾キー(Ctrl/Shift/Alt)は押している間だけ反映され、離すと外れます。A・F5・↑などの実キーを押した瞬間に確定します。クリック以外の場所を押すとキャンセルされ元の値に戻ります)。「＋」で同じセルに別のキーを追加、キーバッジ右上の×で削除、行左端の×で行ごと削除、「＋ 行を追加」で新しい機能行を追加できます。機能名は通常のテキスト編集です。この編集内容はブラウザのlocalStorageにこのファイルの場所ごとに保存され、再度このHTMLを開いたときも復元されます（他の人やサーバーには送信されません）。ファイルとして保存・共有したい場合は「エクスポート」でJSONを書き出し、別環境では「インポート」で読み込んでください。注意: Ctrl+W・Ctrl+T・Ctrl+N・Ctrl+Tab・F11などブラウザ自身が予約しているショートカットは、Webページ側では取得できずブラウザの機能（タブを閉じる等）が先に実行されてしまいます。これはブラウザの仕様上回避できません。</p>
@@ -573,7 +573,7 @@ body.edit-mode .th-btns{display:flex;}
 </tr>
 <tr class="in-preset" data-row-id="f_F_DUPLICATELINE">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">行の複製（折り返し単位）</span><span class="fc">F_DUPLICATELINE</span></td>
-<td data-col="default" contenteditable="false"><span class="key" data-hex="121" data-slot="1">Shift+F10</span> <span class="key" data-hex="68" data-slot="2">Ctrl+D</span></td>
+<td data-col="default" contenteditable="false"><span class="key" data-hex="121" data-slot="1">Shift+F10</span> <span class="key" data-hex="73" data-slot="2" data-tip="20260904: 従来のCtrl+DはF_ADD_SELECTION_TO_NEXT_MATCHへ差し替え。Ctrl+Iは従来未使用だったため退避先に選定">Ctrl+I</span></td>
 <td data-col="VSCode" contenteditable="false"><span class="key key-blue" data-hex="40" data-slot="5" data-base-cls="key-blue">Shift+Alt+↓</span></td>
 <td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow">Ctrl+D</span></td>
 <td data-col="ReSharper" contenteditable="false"><span class="key key-yellow">Ctrl+D</span></td>
@@ -2281,9 +2281,9 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
-<tr class="no-sakura" data-row-id="nosakura_Add_selection_to_next_match_223">
-<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">次の一致を選択範囲に追加 (Add selection to next match)</span><span class="fc">(サクラ未実装)</span></td>
-<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<tr data-row-id="f_F_ADD_SELECTION_TO_NEXT_MATCH">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">次の一致を選択範囲に追加 (Add selection to next match)</span><span class="fc">F_ADD_SELECTION_TO_NEXT_MATCH</span></td>
+<td data-col="default" contenteditable="false"><span class="key" data-hex="68" data-slot="2">Ctrl+D</span></td>
 <td data-col="VSCode" contenteditable="false"><span class="key key-yellow">Ctrl+D</span></td>
 <td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow" data-tip="Edit.InsertNextMatchingCaret">Alt+Shift+.</span></td>
 <td data-col="ReSharper" contenteditable="false"><span class="key key-yellow" data-tip="Edit.InsertNextMatchingCaret">Alt+Shift+.</span></td>
@@ -2451,6 +2451,87 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-yellow">Ctrl+J</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="key key-yellow">Ctrl+J</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Highlight_word_occurrences_239">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">カーソル位置の単語と同じ文字列を自動ハイライト (Highlight all occurrences of word under cursor)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Surround_with_240">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">選択範囲を括弧/引用符で囲む (Surround selection with bracket/quote)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Increment_decrement_number_241">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">カーソル位置/選択中の数値をインクリメント・デクリメント (Increment/decrement number under cursor)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Column_sequential_number_242">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">矩形選択範囲への連番挿入 (Insert sequential numbers into column selection)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="key key-yellow" data-tip="列選択（矩形選択）に対して同一テキストまたは連番を挿入するColumn Editor機能">Alt+C</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Insert_snippet_tabstop_243">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">タブストップ対応スニペットの挿入 (Insert snippet with tab stops)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="key key-yellow" data-tip="スニペットのprefixを入力後Tabで展開・タブストップ間を移動">Tab</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow" data-tip="コードスニペットのショートカット入力後Tabで展開">Tab</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="key key-yellow" data-tip="Live Templateのショートカット入力後Tabで展開">Tab</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="key key-yellow" data-tip="スニペットのtabTrigger入力後Tabで展開">Tab</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Paste_clipboard_history_244">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">クリップボード履歴からの貼り付け (Paste from clipboard history)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow" data-tip="クリップボードリング。連続で押すと過去にコピーした内容を順に巡回">Ctrl+Shift+V</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="key key-yellow" data-tip="Visual Studioのクリップボードリングをそのまま使用">Ctrl+Shift+V</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Add_cursor_at_click_245">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">マウスクリック位置にカーソルを追加 (Add cursor at click position)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="key key-yellow">Alt+クリック</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow">Ctrl+Alt+クリック</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="key key-yellow">Ctrl+Alt+クリック</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="key key-yellow">Ctrl+クリック</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="key key-yellow">Ctrl+クリック</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_GotoDef_ctrlclick_246">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">Ctrl+クリックで定義へジャンプ (Go to definition via Ctrl+click)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="key key-yellow">Ctrl+クリック</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow">Ctrl+クリック</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="key key-yellow">Ctrl+クリック</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Tripleclick_select_line_247">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">トリプルクリックで行選択 (Select line via triple-click)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="key key-yellow">トリプルクリック</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow">トリプルクリック</span></td>
+<td data-col="ReSharper" contenteditable="false"><span class="key key-yellow">トリプルクリック</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="key key-yellow">トリプルクリック</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="key key-yellow">トリプルクリック</span></td>
 </tr>
 </tbody></table></div>
 <footer>sakura_core/func/CKeyBind.cpp（既定値）と keybind_presets/*.key（各プリセット）から生成。生成日時: 2026-08-25 15:02 (JST) / gen:20260825T1502+09:00</footer>

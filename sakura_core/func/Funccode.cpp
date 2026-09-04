@@ -174,6 +174,7 @@ const EFunctionCode pnFuncList_Move[] = {	//Oct. 16, 2000 JEPRO 変数名変更(
 	F_ADD_CURSOR_UP		,	//マルチカーソル: カーソルを上に追加	// NKMM_MULTI_CURSOR 20260830
 	F_ADD_CURSOR_DOWN	,	//マルチカーソル: カーソルを下に追加	// NKMM_MULTI_CURSOR 20260830
 	F_ADD_CURSORS_TO_LINE_ENDS	,	//マルチカーソル: 選択範囲の各行末にカーソルを追加	// NKMM_MULTI_CURSOR 20260903
+	F_ADD_SELECTION_TO_NEXT_MATCH	,	//マルチカーソル: 次の一致を選択範囲に追加	// NKMM_MULTI_CURSOR 20260904
 #endif // NKMM_
 	F_WORDLEFT			,	//単語の左端に移動
 	F_WORDRIGHT			,	//単語の右端に移動

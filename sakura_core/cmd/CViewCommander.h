@@ -139,6 +139,9 @@ public:
 	void Command_MULTICURSOR_UNDO( void );	/* マルチカーソル: 直近に追加したカーソルを1個取り消す */
 	//! マルチカーソル: 選択範囲内の各行末にカーソルを追加する(VS CodeのShift+Alt+I相当) 20260903
 	void Command_AddCursorsToLineEnds( void );
+	//! マルチカーソル: 次の一致箇所を選択範囲に追加する(VS CodeのCtrl+D、
+	//! addSelectionToNextFindMatch相当)。無選択なら現在位置の単語を選択するだけ(1回目) 20260904
+	void Command_AddSelectionToNextMatch( void );
 	//! プライマリ+追加カーソルの各位置に対して1回ずつfnEditOnceを実行する(ドキュメント降順)。
 	//! fnEditOnceはCommand_WCHAR等、現在のGetCaret()位置に作用する既存コマンドをそのまま渡す想定。
 	void ApplyToAllCursors( const std::function<void()>& fnEditOnce );

@@ -439,6 +439,7 @@ F_ADD_CURSOR_UP	= 31392,	// 最上段カーソルの1行上(同じ桁)にカーソルを追加		なし	
 F_ADD_CURSOR_DOWN	= 31393,	// 最下段カーソルの1行下(同じ桁)にカーソルを追加		なし		// NKMM_MULTI_CURSOR 20260830
 F_MULTICURSOR_UNDO	= 31394,	// 直近のカーソル追加操作を1つ取り消す		なし		// NKMM_MULTI_CURSOR 20260830
 F_ADD_CURSORS_TO_LINE_ENDS	= 31395,	// 選択範囲の各行末にカーソルを追加		なし		// NKMM_MULTI_CURSOR 20260903
+F_ADD_SELECTION_TO_NEXT_MATCH	= 31396,	// 次の一致を選択範囲に追加		なし		// NKMM_MULTI_CURSOR 20260904
 
 
 // 支援

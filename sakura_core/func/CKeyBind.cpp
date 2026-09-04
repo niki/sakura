@@ -798,12 +798,23 @@ static const KEYDATAINIT	KeyDataInit[] = {
 	{ 'A',		_T("A"),			{ F_0,				F_0,				F_SELECTALL,			F_0,				F_SORT_ASC,				F_0,				F_0,					F_0 }, },
 	{ 'B',		_T("B"),			{ F_0,				F_0,				F_BROWSE,				F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 'C',		_T("C"),			{ F_0,				F_0,				F_COPY,					F_0,	F_0,					F_0,				F_0,					F_0 }, },
+#ifdef NKMM_MULTI_CURSOR
+	// Ctrl+Dは元々F_DUPLICATELINE(行の二重化)の既定キーだったが、VS Code/Sublime Text等に
+	// 合わせてF_ADD_SELECTION_TO_NEXT_MATCH(次の一致を選択範囲に追加)へ差し替えた。
+	// 行の二重化はCtrl+Iへ退避している(Ctrl+Iは従来未使用だったため衝突なし) 20260904
+	{ 'D',		_T("D"),			{ F_0,				F_0,				F_ADD_SELECTION_TO_NEXT_MATCH,				F_0,		F_SORT_DESC,			F_0,				F_0,					F_0 }, },
+#else
 	{ 'D',		_T("D"),			{ F_0,				F_0,				F_DUPLICATELINE,				F_0,		F_SORT_DESC,			F_0,				F_0,					F_0 }, },
+#endif // NKMM_
 	{ 'E',		_T("E"),			{ F_0,				F_0,				F_CUT_LINE,				F_0,		F_0,					F_0,				F_CASCADE,				F_0 }, },
 	{ 'F',		_T("F"),			{ F_0,				F_0,				F_SEARCH_DIALOG,		F_GREP_DIALOG,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 'G',		_T("G"),			{ F_0,				F_0,				F_JUMP_DIALOG,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 'H',		_T("H"),			{ F_0,				F_0,				F_REPLACE_DIALOG,		F_GREP_REPLACE_DLG,	F_0,					F_0,				F_TILE_V,				F_0 }, },
-	{ 'I',		_T("I"),			{ F_0,				F_0,				F_0,		F_0,				F_0,					F_ADD_CURSORS_TO_LINE_ENDS,F_0,					F_0 }, },
+#ifdef NKMM_MULTI_CURSOR
+	{ 'I',		_T("I"),			{ F_0,				F_0,				F_DUPLICATELINE,		F_0,				F_0,					F_ADD_CURSORS_TO_LINE_ENDS,F_0,					F_0 }, },
+#else
+	{ 'I',		_T("I"),			{ F_0,				F_0,				F_0,		F_0,				F_0,					F_0,F_0,					F_0 }, },
+#endif // NKMM_
 	{ 'J',		_T("J"),			{ F_0,				F_0,				F_0,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 'K',		_T("K"),			{ F_0,				F_0,				F_LineDeleteToEnd,			F_DELETE_LINE,	F_0,					F_0,				F_0,					F_0 }, },
 	{ 'L',		_T("L"),			{ F_0,				F_0,				F_SELECTLINE,			F_EXECKEYMACRO,		F_LTRIM,				F_0,				F_TOLOWER,				F_TOUPPER }, },

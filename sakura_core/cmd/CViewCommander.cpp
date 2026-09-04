@@ -435,6 +435,7 @@ BOOL CViewCommander::HandleCommand(
 	case F_ADD_CURSOR_DOWN:		this->Command_AddCursorDown(); break;			// マルチカーソル: 下にカーソルを追加
 	case F_MULTICURSOR_UNDO:	this->Command_MULTICURSOR_UNDO(); break;		// マルチカーソル: 直近のカーソル追加操作を1つ取り消す
 	case F_ADD_CURSORS_TO_LINE_ENDS: this->Command_AddCursorsToLineEnds(); break;	// マルチカーソル: 選択範囲の各行末にカーソルを追加
+	case F_ADD_SELECTION_TO_NEXT_MATCH: this->Command_AddSelectionToNextMatch(); break;	// マルチカーソル: 次の一致を選択範囲に追加
 #endif // NKMM_
 	case F_WORDLEFT_BOX:	Sub_BoxSelectLock(lparam1); this->Command_WORDLEFT( true );break;			//(矩形選択)単語の左端に移動
 	case F_WORDRIGHT_BOX:	Sub_BoxSelectLock(lparam1); this->Command_WORDRIGHT( true );break;			//(矩形選択)単語の右端に移動
