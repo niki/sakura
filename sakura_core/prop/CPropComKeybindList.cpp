@@ -46,6 +46,11 @@ struct SKeybindPresetInfo {
 		2箇所のみで、実際のReSharperが持つVisual Studioを大幅に上書きする独自キーマップ
 		(Go to Everything等)を反映できておらず、独立したプリセットとして維持する価値が
 		薄いと判断した(keybind_presets/README.md参照)。
+	@date 20260905 「サクラエディタ v2.4.3」を追加。他プリセットは他アプリの操作感を
+		サクラに持ち込むものだが、これは本家(upstream/release-2.4.3)の既定キー割り当てへ
+		戻すためのもの。upstream/release-2.4.3のsakura_core/func/CKeyBind.cppのKeyDataInit[]と
+		本フォークの現行既定値を機能名ベースで突き合わせ、実際に割り当てが食い違う物理キーのみを
+		収録した(keybind_presets/README.md参照)。
 */
 static const SKeybindPresetInfo	s_KeybindPresetTable[] = {
 	{ 0,                                L"デフォルト" },
@@ -53,6 +58,7 @@ static const SKeybindPresetInfo	s_KeybindPresetTable[] = {
 	{ IDR_KEYBINDPRESET_VISUALSTUDIO,  L"Visual Studio" },
 	{ IDR_KEYBINDPRESET_SUBLIMETEXT,   L"Sublime Text" },
 	{ IDR_KEYBINDPRESET_NOTEPADPLUSPLUS, L"Notepad++" },
+	{ IDR_KEYBINDPRESET_V243,          L"サクラエディタ v2.4.3" },
 };
 
 //! プリセット選択コンボの先頭項目(index 0)の表示文字列。現在のキー割り当てが
