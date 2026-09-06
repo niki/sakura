@@ -22,6 +22,7 @@
 #include "CCommandLine.h"
 #include "env/CShareData_IO.h"
 #include "debug/CRunningTimer.h"
+#include "util/os.h"
 #include "sakura_rc.h"/// IDD_EXITTING 2002/2/10 aroka ヘッダ整理
 
 
@@ -44,8 +45,12 @@ bool CControlProcess::InitializeProcess()
 {
 	MY_RUNNINGTIMER( cRunningTimer, "CControlProcess::InitializeProcess" );
 
+	// 単一起動検出用Mutex/Eventは、UAC昇格の有無が異なるプロセス同士でも
+	// 同じオブジェクトを開けるよう、明示的なセキュリティ記述子を付与する。
+	CIpcSecurityAttributes cIpcSA;
+
 	// アプリケーション実行検出用(インストーラで使用)
-	m_hMutex = ::CreateMutex( NULL, FALSE, GSTR_MUTEX_SAKURA );
+	m_hMutex = ::CreateMutex( cIpcSA.Get(), FALSE, GSTR_MUTEX_SAKURA );
 	if( NULL == m_hMutex ){
 		ErrorBeep();
 		TopErrorMessage( NULL, _T("CreateMutex()失敗。\n終了します。") );
@@ -57,7 +62,7 @@ bool CControlProcess::InitializeProcess()
 	// 初期化完了イベントを作成する
 	std::tstring strInitEvent = GSTR_EVENT_SAKURA_CP_INITIALIZED;
 	strInitEvent += strProfileName;
-	m_hEventCPInitialized = ::CreateEvent( NULL, TRUE, FALSE, strInitEvent.c_str() );
+	m_hEventCPInitialized = ::CreateEvent( cIpcSA.Get(), TRUE, FALSE, strInitEvent.c_str() );
 	if( NULL == m_hEventCPInitialized )
 	{
 		ErrorBeep();
@@ -68,7 +73,7 @@ bool CControlProcess::InitializeProcess()
 	/* コントロールプロセスの目印 */
 	std::tstring strCtrlProcEvent = GSTR_MUTEX_SAKURA_CP;
 	strCtrlProcEvent += strProfileName;
-	m_hMutexCP = ::CreateMutex( NULL, TRUE, strCtrlProcEvent.c_str() );
+	m_hMutexCP = ::CreateMutex( cIpcSA.Get(), TRUE, strCtrlProcEvent.c_str() );
 	if( NULL == m_hMutexCP ){
 		ErrorBeep();
 		TopErrorMessage( NULL, _T("CreateMutex()失敗。\n終了します。") );

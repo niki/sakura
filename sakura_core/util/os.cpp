@@ -2,6 +2,7 @@
 #include "os.h"
 #include "util/module.h"
 #include "extmodule/CUxTheme.h"
+#include <Sddl.h>
 
 /*!	Comctl32.dll のバージョン番号を取得
 
@@ -409,6 +410,40 @@ CCurrentDirectoryBackupPoint::~CCurrentDirectoryBackupPoint()
 {
 	if(m_szCurDir[0]){
 		::SetCurrentDirectory(m_szCurDir);
+	}
+}
+
+
+/*!	IPCオブジェクト用のセキュリティ記述子を構築する
+
+	D:(A;;GA;;;WD)   Everyone(WD)にGENERIC_ALLを許可する明示的なDACL
+	S:(ML;;NW;;;LW)  Low整合性ラベル+No-Write-Up
+	                 (昇格プロセス/非昇格プロセスの双方から同じ
+	                  オブジェクトを開けるようにするため)
+
+	@date 2026.09.06 新規作成
+*/
+CIpcSecurityAttributes::CIpcSecurityAttributes()
+	: m_pSD(NULL)
+{
+	m_sa.nLength = sizeof(m_sa);
+	m_sa.bInheritHandle = FALSE;
+	m_sa.lpSecurityDescriptor = NULL;
+
+	if( ::ConvertStringSecurityDescriptorToSecurityDescriptor(
+			_T("D:(A;;GA;;;WD)S:(ML;;NW;;;LW)"),
+			SDDL_REVISION_1,
+			&m_pSD,
+			NULL
+	) ){
+		m_sa.lpSecurityDescriptor = m_pSD;
+	}
+}
+
+CIpcSecurityAttributes::~CIpcSecurityAttributes()
+{
+	if( m_pSD ){
+		::LocalFree( m_pSD );
 	}
 }
 

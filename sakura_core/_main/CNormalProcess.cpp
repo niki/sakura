@@ -37,6 +37,7 @@
 #include "env/CDocTypeManager.h"
 #include "env/CShareData_IO.h"
 #include "debug/CCrashHandler.h"
+#include "util/os.h"
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //               コンストラクタ・デストラクタ                  //
@@ -628,7 +629,9 @@ HANDLE CNormalProcess::_GetInitializeMutex() const
 	std::tstring strProfileName = to_tchar(CCommandLine::getInstance()->GetProfileName());
 	std::tstring strMutexInitName = GSTR_MUTEX_SAKURA_INIT;
 	strMutexInitName += strProfileName;
-	hMutex = ::CreateMutex( NULL, TRUE, strMutexInitName.c_str() );
+	// UAC昇格の有無が異なるプロセス同士でも同じMutexを開けるようにする
+	CIpcSecurityAttributes cIpcSA;
+	hMutex = ::CreateMutex( cIpcSA.Get(), TRUE, strMutexInitName.c_str() );
 	if( NULL == hMutex ){
 		ErrorBeep();
 		TopErrorMessage( NULL, _T("CreateMutex()失敗。\n終了します。") );

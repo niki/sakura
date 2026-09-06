@@ -67,6 +67,29 @@ private:
 };
 
 
+//	単一起動検出用Mutex/Event、共有メモリなど、同一ユーザーの複数プロセス間で
+//	共有するIPCオブジェクト用のセキュリティ記述子。
+//	既定(NULL)のDACLで作成すると、作成時のプロセスの整合性レベル(UAC昇格の
+//	有無)によって暗黙のセキュリティ記述子が変わり、後から起動した昇格済み/
+//	非昇格プロセスが同名オブジェクトを開けないことがある。
+//	明示的にEveryoneへアクセスを許可し、Low整合性ラベル(No-Write-Up)を
+//	付与することで、昇格の有無に関わらず同一ユーザーの全プロセスから
+//	一貫してアクセスできるようにする。
+//2026.09.06 追加
+class CIpcSecurityAttributes{
+public:
+	CIpcSecurityAttributes();
+	~CIpcSecurityAttributes();
+	//! 生成に失敗した場合はNULL(呼び出し側は既定のセキュリティ記述子にフォールバックする)
+	LPSECURITY_ATTRIBUTES Get(){ return m_pSD ? &m_sa : NULL; }
+private:
+	SECURITY_ATTRIBUTES m_sa;
+	PSECURITY_DESCRIPTOR m_pSD;
+	CIpcSecurityAttributes(const CIpcSecurityAttributes&) = delete;
+	CIpcSecurityAttributes& operator=(const CIpcSecurityAttributes&) = delete;
+};
+
+
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                      メッセージ定数                         //

@@ -85,7 +85,8 @@ CShareData::~CShareData()
 }
 
 
-static CMutex g_cMutexShareWork( FALSE, GSTR_MUTEX_SAKURA_SHAREWORK );
+// UAC昇格の有無が異なるプロセス同士でも同じMutexを開けるようにする
+static CMutex g_cMutexShareWork( FALSE, GSTR_MUTEX_SAKURA_SHAREWORK, CIpcSecurityAttributes().Get() );
 
 CMutex& CShareData::GetMutexShareWork(){
 	return g_cMutexShareWork;
@@ -113,9 +114,11 @@ bool CShareData::InitShareData()
 		std::tstring strProfileName = to_tchar(CCommandLine::getInstance()->GetProfileName());
 		std::tstring strShareDataName = GSTR_SHAREDATA;
 		strShareDataName += strProfileName;
+		// UAC昇格の有無が異なるプロセス同士でも同じ共有メモリを開けるようにする
+		CIpcSecurityAttributes cIpcSA;
 		m_hFileMap = ::CreateFileMapping(
 			INVALID_HANDLE_VALUE,	//	Sep. 6, 2003 wmlhq
-			NULL,
+			cIpcSA.Get(),
 			PAGE_READWRITE | SEC_COMMIT,
 			0,
 			sizeof( DLLSHAREDATA ),
