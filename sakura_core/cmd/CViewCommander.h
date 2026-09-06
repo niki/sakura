@@ -167,6 +167,9 @@ public:
 	void Command_CUT_LINE( void );			/* 行切り取り(折り返し単位) */
 	void Command_DELETE_LINE( void );		/* 行削除(折り返し単位) */
 	void Command_DUPLICATELINE( void );		/* 行の二重化(折り返し単位) */
+	//! 選択範囲内の複数行(無選択時はカーソル行と次の行)を1行に結合する
+	//! (Sublime TextのJoin Lines相当) 20260906
+	void Command_JoinLines( void );
 #ifdef NKMM_FIX_MOVE_LINE
 	void Command_MoveLineUp( void );		//カーソル行を上へ移動(改行単位)		// 20260823
 	void Command_MoveLineDown( void );		//カーソル行を下へ移動(改行単位)		// 20260823

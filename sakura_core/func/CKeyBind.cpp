@@ -820,7 +820,8 @@ static const KEYDATAINIT	KeyDataInit[] = {
 #else
 	{ 'I',		_T("I"),			{ F_0,				F_0,				F_0,		F_0,				F_0,					F_0,F_0,					F_0 }, },
 #endif // NKMM_
-	{ 'J',		_T("J"),			{ F_0,				F_0,				F_0,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
+	// Ctrl+JはSublime Text/VS Code等のJoin Lines(複数行を1行に結合)の既定キーに合わせた 20260906
+	{ 'J',		_T("J"),			{ F_0,				F_0,				F_JOINLINES,	F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 'K',		_T("K"),			{ F_0,				F_0,				F_LineDeleteToEnd,			F_DELETE_LINE,	F_0,					F_0,				F_0,					F_0 }, },
 	{ 'L',		_T("L"),			{ F_0,				F_0,				F_SELECTLINE,			F_EXECKEYMACRO,		F_LTRIM,				F_0,				F_TOLOWER,				F_TOUPPER }, },
 	{ 'M',		_T("M"),			{ F_0,				F_0,				F_SAVEKEYMACRO,			F_RECKEYMACRO,		F_MERGE,				F_0,				F_0,					F_LOADKEYMACRO }, },

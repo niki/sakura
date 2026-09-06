@@ -3204,6 +3204,7 @@ BEGIN
     F_SORT_ASC              "Ascending sort selected lines"
     F_SORT_DESC             "Decending sort selected lines"
     F_MERGE                 "Merge selected lines, Unique only"
+    F_JOINLINES             "Join lines"
     F_RECONVERT             "Reconvert"
 END
 

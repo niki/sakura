@@ -481,6 +481,123 @@ void CViewCommander::Command_DUPLICATELINE( void )
 
 
 
+//! 選択範囲内の複数行(無選択時はカーソル行と次の行)を1行に結合する(Sublime TextのJoin Lines相当) 20260906
+//!
+//! 各結合位置では、前の行の末尾の空白と次の行の先頭の空白をそれぞれまとめて半角スペース1個に
+//! 置き換える(どちらかの行が空/空白のみの場合は余計なスペースを入れずに詰める)。選択が複数行に
+//! またがらない場合(選択なし、または選択が1行内に収まっている場合)は、カーソル行と次の行を
+//! 結合する(VS Code/Sublime Textの既定動作相当)。矩形選択中、または結合先の次の行が無い
+//! (カーソル/選択が最終行にある)場合は何もしない
+void CViewCommander::Command_JoinLines( void )
+{
+	CDocLineMgr& cDocLineMgr = GetDocument()->m_cDocLineMgr;
+
+	if( m_pCommanderView->GetSelectionInfo().IsBoxSelecting() ){
+		ErrorBeep();
+		return;
+	}
+
+	CLogicInt nLineFrom, nLineTo;	// 結合対象の物理行範囲(両端含む)
+
+	if( m_pCommanderView->GetSelectionInfo().IsTextSelected() ){
+		CLogicRange sSelectOld;
+		GetDocument()->m_cLayoutMgr.LayoutToLogic( m_pCommanderView->GetSelectionInfo().m_sSelect, &sSelectOld );
+		nLineFrom = sSelectOld.GetFrom().GetY2();
+		nLineTo = sSelectOld.GetTo().GetY2();
+		if( nLineTo > nLineFrom && sSelectOld.GetTo().GetX2() == CLogicInt(0) ){
+			// 選択終端がちょうど次行の行頭にある場合、その行は実質選択されていない
+			--nLineTo;
+		}
+	}else{
+		nLineFrom = nLineTo = GetCaret().GetCaretLogicPos().GetY2();
+	}
+
+	if( nLineTo <= nLineFrom ){
+		// 選択が1行内に収まっている(または無選択) → 次の行と結合する通常動作にフォールバック
+		nLineTo = nLineFrom + CLogicInt(1);
+	}
+
+	if( nLineTo >= cDocLineMgr.GetLineCount() ){
+		ErrorBeep();	// 最終行なので結合先がない
+		return;
+	}
+
+	m_pCommanderView->GetSelectionInfo().DisableSelectArea( true );
+
+	CNativeW cmemJoined;
+	int nJoinCaretOffset = -1;	// 結合後、カーソルを置く位置(結合後の行内オフセット。文字単位)
+	for( CLogicInt i = nLineFrom; i <= nLineTo; ++i ){
+		const CDocLine* pcDocLine = cDocLineMgr.GetLine(i);
+		int nLen = ToInt( pcDocLine->GetLengthWithoutEOL() );
+		const wchar_t* pText = pcDocLine->GetPtr();
+
+		if( i == nLineFrom ){
+			cmemJoined.SetString( pText, nLen );
+		}else{
+			// 直前までの結合結果の末尾の空白をトリム
+			int nResultLen = ToInt( cmemJoined.GetStringLength() );
+			const wchar_t* pResult = cmemJoined.GetStringPtr();
+			int nTrimTo = nResultLen;
+			while( nTrimTo > 0 && WCODE::IsBlank( pResult[nTrimTo - 1] ) ) --nTrimTo;
+			cmemJoined._SetStringLength( nTrimTo );
+			if( nJoinCaretOffset < 0 ){
+				nJoinCaretOffset = nTrimTo;
+			}
+
+			// 次に結合する行の先頭の空白をスキップ
+			int nSkip = 0;
+			while( nSkip < nLen && WCODE::IsBlank( pText[nSkip] ) ) ++nSkip;
+
+			if( nTrimTo > 0 && nSkip < nLen ){
+				cmemJoined.AppendString( L" ", 1 );
+			}
+			cmemJoined.AppendString( pText + nSkip, nLen - nSkip );
+		}
+	}
+
+	const CEol& cEolLast = cDocLineMgr.GetLine(nLineTo)->GetEol();
+	if( cEolLast != EOL_NONE ){
+		cmemJoined.AppendString( cEolLast.GetValue2(), cEolLast.GetLen() );
+	}
+
+	CLogicRange sReplaceLogic(
+		CLogicPoint( CLogicInt(0), nLineFrom ),
+		CLogicPoint( CLogicInt(0), nLineTo + CLogicInt(1) )
+	);
+	CLayoutRange sReplaceLayout;
+	GetDocument()->m_cLayoutMgr.LogicToLayout( sReplaceLogic, &sReplaceLayout );
+
+	int opeSeq = GetDocument()->m_cDocEditor.m_cOpeBuf.GetNextSeq();
+	COpeLineData repData(1);
+	repData[0].nSeq = opeSeq;
+	repData[0].cmemLine.SetString( cmemJoined.GetStringPtr(), ToInt( cmemJoined.GetStringLength() ) );
+
+	m_pCommanderView->ReplaceData_CEditView3(
+		sReplaceLayout,
+		NULL,
+		&repData,
+		false,
+		m_pCommanderView->m_bDoing_UndoRedo?NULL:GetOpeBlk(),
+		opeSeq,
+		NULL
+	);
+
+	CLayoutPoint ptCaretNew;
+	GetDocument()->m_cLayoutMgr.LogicToLayout( CLogicPoint( CLogicInt(nJoinCaretOffset), nLineFrom ), &ptCaretNew );
+	GetCaret().MoveCursor( ptCaretNew, true );
+	GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX2();
+	if( !m_pCommanderView->m_bDoing_UndoRedo ){	/* アンドゥ・リドゥの実行中か */
+		GetOpeBlk()->AppendOpe(
+			new CMoveCaretOpe(
+				GetCaret().GetCaretLogicPos()	// 操作前後のキャレット位置
+			)
+		);
+	}
+	m_pCommanderView->RedrawAll();
+}
+
+
+
 #ifdef NKMM_FIX_MOVE_LINE
 //カーソル行を上へ移動(改行単位)		// 20260823
 //	macro\MoveLineUp.qjsのネイティブ実装版。折り返しの影響を受けないよう

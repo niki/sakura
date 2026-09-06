@@ -280,6 +280,17 @@ BOOL CViewCommander::HandleCommand(
 	case F_CUT_LINE:			Command_CUT_LINE();break;			//行切り取り(折り返し単位)
 	case F_DELETE_LINE:			Command_DELETE_LINE();break;		//行削除(折り返し単位)
 	case F_DUPLICATELINE:		Command_DUPLICATELINE();break;		//行の二重化(折り返し単位)
+#ifdef NKMM_MULTI_CURSOR
+	case F_JOINLINES:
+		if( !m_pCommanderView->m_vExtraCursors.empty() ){
+			ApplyToAllCursors( [this](){ Command_JoinLines(); } );
+		}else{
+			Command_JoinLines();
+		}
+		break;											//複数行を1行に結合(Sublime TextのJoin Lines相当)
+#else
+	case F_JOINLINES:			Command_JoinLines();break;			//複数行を1行に結合(Sublime TextのJoin Lines相当)
+#endif // NKMM_
 #ifdef NKMM_FIX_MOVE_LINE
 	case F_MOVE_LINE_UP:		Command_MoveLineUp();break;		//カーソル行を上へ移動(改行単位)		// 20260823
 	case F_MOVE_LINE_DOWN:		Command_MoveLineDown();break;		//カーソル行を下へ移動(改行単位)		// 20260823

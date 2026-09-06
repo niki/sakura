@@ -440,6 +440,7 @@ F_ADD_CURSOR_DOWN	= 31393,	// Å‰º’iƒJ[ƒ\ƒ‹‚Ì1s‰º(“¯‚¶Œ…)‚ÉƒJ[ƒ\ƒ‹‚ð’Ç‰Á		‚È‚
 F_MULTICURSOR_UNDO	= 31394,	// ’¼‹ß‚ÌƒJ[ƒ\ƒ‹’Ç‰Á‘€ì‚ð1‚ÂŽæ‚èÁ‚·		‚È‚µ		// NKMM_MULTI_CURSOR 20260830
 F_ADD_CURSORS_TO_LINE_ENDS	= 31395,	// ‘I‘ð”ÍˆÍ‚ÌŠes––‚ÉƒJ[ƒ\ƒ‹‚ð’Ç‰Á		‚È‚µ		// NKMM_MULTI_CURSOR 20260903
 F_ADD_SELECTION_TO_NEXT_MATCH	= 31396,	// ŽŸ‚Ìˆê’v‚ð‘I‘ð”ÍˆÍ‚É’Ç‰Á		‚È‚µ		// NKMM_MULTI_CURSOR 20260904
+F_JOINLINES		= 31397,	// •¡”s‚ð1s‚ÉŒ‹‡(Sublime Text‚ÌJoin Lines‘Š“–)		‚È‚µ		// 20260906
 
 
 // Žx‰‡

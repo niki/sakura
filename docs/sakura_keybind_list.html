@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<!-- gen:20260905T2118+09:00 (generated 2026-08-25 15:02 JST; VS6/VC++6・VB6プリセット廃止に伴い列を削除 2026-08-29 18:24 JST; 参考(key-yellow)欄の複数キー併記をバッジごとに分離 2026-08-29 18:32 JST; ReSharperプリセット廃止に伴い列を削除 2026-09-04 16:34 JST) -->
+<!-- gen:20260905T2118+09:00 (generated 2026-08-25 15:02 JST; VS6/VC++6・VB6プリセット廃止に伴い列を削除 2026-08-29 18:24 JST; 参考(key-yellow)欄の複数キー併記をバッジごとに分離 2026-08-29 18:32 JST; ReSharperプリセット廃止に伴い列を削除 2026-09-04 16:34 JST; F_JOINLINES実装に伴い「未実装」行を実装済み行へ統合 2026-09-06 12:43 JST) -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>サクラエディタ キー割り当て一覧</title>
@@ -56,10 +56,19 @@ p.lead{color:var(--muted); margin:2px 0 4px; font-size:10.5px; flex:none; cursor
   margin:0 0 8px; padding:6px 10px; border:1px solid var(--border);
   border-radius:6px; background:var(--header-bg);
 }
+.filter-wrap{position:relative; flex:1 1 220px; min-width:160px; display:flex;}
 .controls input[type="text"]{
-  flex:1 1 220px; min-width:160px; padding:5px 9px; font-size:12.5px;
+  flex:1 1 auto; width:100%; min-width:0; padding:5px 26px 5px 9px; font-size:12.5px;
   border:1px solid var(--key-border); border-radius:5px; background:var(--bg); color:var(--fg);
 }
+.controls .filter-clear{
+  position:absolute; top:50%; right:5px; transform:translateY(-50%);
+  width:17px; height:17px; padding:0; border:none; border-radius:50%;
+  background:var(--muted); color:var(--bg); font-size:10px; line-height:1;
+  display:none; align-items:center; justify-content:center; cursor:pointer;
+}
+.controls .filter-clear:hover{background:var(--fg);}
+.filter-wrap.has-value .filter-clear{display:flex;}
 .controls label{font-size:12px; color:var(--fg); display:flex; align-items:center; gap:5px; white-space:nowrap; cursor:help;}
 .controls select{
   font-size:12px; padding:3px 6px; border:1px solid var(--key-border); border-radius:5px;
@@ -267,10 +276,10 @@ body.edit-mode .th-btns{display:flex;}
 <body>
 <div class="wrap">
 <h1>サクラエディタ キー割り当て一覧<span class="sub">sakura_core/func/CKeyBind.cpp の既定値と keybind_presets/*.key の内容から自動生成</span><span class="ver" data-tip="このファイルを生成したときの日時(JST)。再生成すると更新されます">gen:20260905T2118+09:00</span></h1>
-<p class="lead" data-tip="「共通設定 → キー割り当て（実験機能）」の一覧に近い見た目で、機能ごとにサクラエディタの既定キーと各キー割り当てプリセットのキーを横に並べています。全346行中、プリセットのいずれかで割り当てのある機能は68件（背景を強調表示）。「✓」はそのプリセットでは未上書きのままサクラ既定のキーが使える、「—」はサクラ既定も含めて割り当てなし。各アプリの公式資料と突き合わせて試験的に埋めています（ReSharperはVisual Studioとの差分がAlt+O等ごく僅かで独立したプリセットとして維持する価値が薄いため2026-09-04に廃止）。v2.4.3列のみ他4アプリと性質が異なり、他アプリの操作感をサクラに持ち込むものではなく、本フォークが変更した既定キー割り当てを本家(upstream/release-2.4.3)のKeyDataInit[]へ戻すためのもの(2026-09-05追加、詳細はkeybind_presets/README.md参照)。うち80行（文字がグレーの行）は機能コード自体は存在するが既定キー・プリセットキーとも一切割り当てが無い機能で、対応する機能の並び順の位置にそのまま挿入しています。">サクラの既定キーと各プリセットのキーを機能ごとに一覧表示（全346行）ⓘ</p>
+<p class="lead" data-tip="「共通設定 → キー割り当て（実験機能）」の一覧に近い見た目で、機能ごとにサクラエディタの既定キーと各キー割り当てプリセットのキーを横に並べています。全347行中、プリセットのいずれかで割り当てのある機能は69件（背景を強調表示）。「✓」はそのプリセットでは未上書きのままサクラ既定のキーが使える、「—」はサクラ既定も含めて割り当てなし。各アプリの公式資料と突き合わせて試験的に埋めています（ReSharperはVisual Studioとの差分がAlt+O等ごく僅かで独立したプリセットとして維持する価値が薄いため2026-09-04に廃止）。v2.4.3列のみ他4アプリと性質が異なり、他アプリの操作感をサクラに持ち込むものではなく、本フォークが変更した既定キー割り当てを本家(upstream/release-2.4.3)のKeyDataInit[]へ戻すためのもの(2026-09-05追加、詳細はkeybind_presets/README.md参照)。うち80行（文字がグレーの行）は機能コード自体は存在するが既定キー・プリセットキーとも一切割り当てが無い機能で、対応する機能の並び順の位置にそのまま挿入しています。">サクラの既定キーと各プリセットのキーを機能ごとに一覧表示（全347行）ⓘ</p>
 <div class="legend"><span class="legend-label" data-tip="色分けの意味(各項目にカーソルを合わせると詳細を表示)">色分け ⓘ</span><span data-tip="各プリセット(.key)に実際に割り当て済み"><span class="key key-blue">Ctrl+X</span> 割当済</span><span data-tip="そのアプリの本来のキー（サクラでは未割り当て/キー衝突などのため参考表示）"><span class="key key-yellow">Ctrl+X</span> 参考</span><span data-tip="参考表示だが、そのキーはサクラ既定で別の機能に割り当て済み(実際に追加すると衝突する)。バッジにカーソルを合わせると衝突先の機能名が分かる"><span class="key key-yellow key-yellow-conflict">Ctrl+X</span> 参考(既定と衝突)</span><span data-tip="プリセットで実際に割り当て済みだが、そのキーはサクラ既定または同じキーセット内の別の機能に割り当てられている(衝突。他の色より優先して赤で表示)"><span class="key key-red">Ctrl+X</span> 衝突</span><span data-tip="プリセットは未上書きだが、サクラ既定のキーがそのまま使える"><span class="inherit" id="legendInheritGlyph">✓</span> 既定継承</span><span data-tip="サクラ既定にもキーが無い(このプリセットでは操作不可)"><span class="dash">—</span> 割当なし</span><span data-tip="サクラ既定がタブバー表示設定によって動的に変わる特殊なキー(タブバー非表示時の値を表示)"><span class="key key-dynamic">Ctrl+F4</span> 動的既定</span></div>
 <p class="lead" data-tip="単発の左クリックはダブル/トリプル/クアドラプルクリックと違い、CKeyBind.cppのキー割り当てテーブル(VKEX_*疑似キー)を経由する仕組み自体が無く、F-codeも持たない(view/CEditView_Mouse.cppに直接ハードコード)。そのため下の表の各行にある実キーバッジ(hex/slot付き)としては現れず、「共通設定→キー割り当て」でも変更できない。関連する行に参考バッジとして補足表示している">マウスの単発クリック+修飾キーはF-code非経由のハードコードのため変更できません: <span class="key">Alt+クリック</span>=クリック位置にマルチカーソルを追加(ドラッグ時は矩形選択、独立した行で補足)、<span class="key">Ctrl+クリック</span>=クリック位置の単語を選択(F_SELECTWORD行に補足)ⓘ</p>
-<div class="controls"><input type="text" id="filterBox" placeholder="機能名・キーで絞り込み..."><label><input type="checkbox" id="presetOnly"> プリセットで使われている機能のみ表示</label><span class="sep"></span><button type="button" id="editToggle">✏ 編集モード</button><label data-tip="実キー入力で記号キー（;:,./[]など）を新規に割り当てるときに使う配列。キーの物理位置と実際に入力される文字は配列によって変わるため、正しく割り当てるにはお使いのOSのキーボード配列と合わせてください(既定はJIS)。既存のバッジや.keyのインポートには影響しません">配列: <select id="layoutSelect"><option value="jis">JIS</option><option value="us">US</option></select></label><button type="button" id="addRowBtn">＋ 行を追加</button><button type="button" id="exportBtn" data-tip="編集内容を全てJSONでバックアップ(このツール専用形式)">全体バックアップ</button><button type="button" id="importBtn" data-tip="全体バックアップJSONを読み込む">バックアップ復元</button><input type="file" id="importFile" accept="application/json" style="display:none"><input type="file" id="perAppImportFile" accept=".key,text/plain" style="display:none"><button type="button" id="resetBtn">編集を全て破棄</button><span class="count" id="rowCount"></span></div>
+<div class="controls"><span class="filter-wrap"><input type="text" id="filterBox" placeholder="機能名・キーで絞り込み..."><button type="button" class="filter-clear" id="filterClearBtn" aria-label="絞り込みをクリア">✕</button></span><label><input type="checkbox" id="presetOnly"> プリセットで使われている機能のみ表示</label><span class="sep"></span><button type="button" id="editToggle">✏ 編集モード</button><label data-tip="実キー入力で記号キー（;:,./[]など）を新規に割り当てるときに使う配列。キーの物理位置と実際に入力される文字は配列によって変わるため、正しく割り当てるにはお使いのOSのキーボード配列と合わせてください(既定はJIS)。既存のバッジや.keyのインポートには影響しません">配列: <select id="layoutSelect"><option value="jis">JIS</option><option value="us">US</option></select></label><button type="button" id="addRowBtn">＋ 行を追加</button><button type="button" id="exportBtn" data-tip="編集内容を全てJSONでバックアップ(このツール専用形式)">全体バックアップ</button><button type="button" id="importBtn" data-tip="全体バックアップJSONを読み込む">バックアップ復元</button><input type="file" id="importFile" accept="application/json" style="display:none"><input type="file" id="perAppImportFile" accept=".key,text/plain" style="display:none"><button type="button" id="resetBtn">編集を全て破棄</button><span class="count" id="rowCount"></span></div>
 <p class="lead" id="editHint" style="display:none">編集モード中はキーのバッジをクリックすると実際にキーを押して割り当てられます(点滅する緑のバッジの間に押してください。修飾キー(Ctrl/Shift/Alt)は押している間だけ反映され、離すと外れます。A・F5・↑などの実キーを押した瞬間に確定します。クリック以外の場所を押すとキャンセルされ元の値に戻ります)。「＋」で同じセルに別のキーを追加、キーバッジ右上の×で削除、行左端の×で行ごと削除、「＋ 行を追加」で新しい機能行を追加できます。機能名は通常のテキスト編集です。この編集内容はブラウザのlocalStorageにこのファイルの場所ごとに保存され、再度このHTMLを開いたときも復元されます（他の人やサーバーには送信されません）。ファイルとして保存・共有したい場合は「エクスポート」でJSONを書き出し、別環境では「インポート」で読み込んでください。注意: Ctrl+W・Ctrl+T・Ctrl+N・Ctrl+Tab・F11などブラウザ自身が予約しているショートカットは、Webページ側では取得できずブラウザの機能（タブを閉じる等）が先に実行されてしまいます。これはブラウザの仕様上回避できません。</p>
 <div class="modal-overlay" id="freeKeysModal"><div class="modal-box"><div class="modal-header"><span id="freeKeysTitle">未割り当てのキー</span><button type="button" class="modal-close" id="freeKeysClose" aria-label="閉じる">×</button></div><p class="modal-note">このツールが把握している物理キー（サクラ既定またはいずれかのプリセットで実際に使われているキー）について、指定した列での割り当て状況を修飾キーの組み合わせごとに一覧表示します。JIS/US配列で対応がずれるため一部の記号キーは照合対象外です。英数字・記号(;:,./\[]など)・Space・Enterキーの単独/Shiftのみの組み合わせは通常の文字入力に使われるため、常に使用中として扱います。<span id="freeKeysCount"></span></p><div id="freeKeysBody"></div></div></div>
 <div class="cmp-scroll"><table class="cmp-table" id="cmpTable">
@@ -785,6 +794,15 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Visual Studio" contenteditable="false"><span class="inherit"></span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="inherit"></span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="inherit"></span></td>
+</tr>
+<tr class="in-preset" data-row-id="f_F_JOINLINES">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">複数行を1行に結合 (Join Lines)</span><span class="fc">F_JOINLINES</span></td>
+<td data-col="default" contenteditable="false"><span class="key" data-hex="74" data-slot="2">Ctrl+J</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="key key-yellow">Ctrl+J</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="key key-blue" data-hex="74" data-slot="2">Ctrl+J</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="key key-yellow">Ctrl+J</span></td>
 </tr>
 <tr class="unassigned" data-row-id="f_F_RECONVERT">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">再変換</span><span class="fc">F_RECONVERT</span></td>
@@ -1959,7 +1977,7 @@ body.edit-mode .th-btns{display:flex;}
 <tr class="in-preset" data-row-id="f_F_JUMP_DIALOG">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">指定行に移動...</span><span class="fc">F_JUMP_DIALOG</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="71" data-slot="2">Ctrl+G</span></td>
-<td data-col="v2.4.3" contenteditable="false"><span class="key key-blue" data-hex="74" data-slot="2">Ctrl+J</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="key key-red" data-hex="74" data-slot="2" data-tip="20260906: サクラ既定がCtrl+JをF_JOINLINES(複数行を1行に結合)に割り当てたため、このv2.4.3プリセットのCtrl+J(本家の指定行へ移動)を適用すると新既定と衝突する">Ctrl+J</span></td>
 <td data-col="VSCode" contenteditable="false"><span class="key key-blue" data-hex="71" data-slot="2">Ctrl+G</span></td>
 <td data-col="Visual Studio" contenteditable="false"><span class="key key-blue" data-hex="71" data-slot="2">Ctrl+G</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-blue" data-hex="71" data-slot="2">Ctrl+G</span></td>
@@ -3306,15 +3324,6 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="key key-yellow">Alt+U</span> <span class="key key-yellow">Ctrl+Alt+U</span></td>
 </tr>
-<tr class="no-sakura" data-row-id="nosakura_1_Join_Lines_238">
-<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">複数行を1行に結合 (Join Lines)</span><span class="fc">(サクラ未実装)</span></td>
-<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
-<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
-<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
-<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
-<td data-col="Sublime Text" contenteditable="false"><span class="key key-yellow">Ctrl+J</span></td>
-<td data-col="Notepad++" contenteditable="false"><span class="key key-yellow">Ctrl+J</span></td>
-</tr>
 <tr class="no-sakura" data-row-id="nosakura_Highlight_word_occurrences_239">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">カーソル位置の単語と同じ文字列を自動ハイライト (Highlight all occurrences of word under cursor)</span><span class="fc">(サクラ未実装)</span></td>
 <td data-col="default" contenteditable="false"><span class="dash">—</span></td>
@@ -3420,6 +3429,8 @@ body.edit-mode .th-btns{display:flex;}
   var table = document.getElementById("cmpTable");
   var tbody = table.querySelector("tbody");
   var box = document.getElementById("filterBox");
+  var filterWrap = box.closest(".filter-wrap");
+  var filterClearBtn = document.getElementById("filterClearBtn");
   var chk = document.getElementById("presetOnly");
   var countEl = document.getElementById("rowCount");
   var editToggle = document.getElementById("editToggle");
@@ -4459,8 +4470,14 @@ body.edit-mode .th-btns{display:flex;}
       if (visible) shown++;
     });
     countEl.textContent = shown + " / " + rows.length + " 行表示中";
+    filterWrap.classList.toggle("has-value", box.value !== "");
   }
   box.addEventListener("input", runFilter);
+  filterClearBtn.addEventListener("click", function(){
+    box.value = "";
+    runFilter();
+    box.focus();
+  });
   chk.addEventListener("change", runFilter);
 
   var editing = false;

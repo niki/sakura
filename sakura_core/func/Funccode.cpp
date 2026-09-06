@@ -156,6 +156,7 @@ const EFunctionCode pnFuncList_Edit[] = {	//Oct. 16, 2000 JEPRO 変数名変更(
 	F_SORT_ASC			,	//選択行の昇順ソート	2001.12.06 hor
 	F_SORT_DESC			,	//選択行の降順ソート	2001.12.06 hor
 	F_MERGE				,	//選択行のマージ		2001.12.06 hor
+	F_JOINLINES			,	//複数行を1行に結合(Sublime TextのJoin Lines相当)	20260906
 	F_RECONVERT				//再変換 				2002.04.09 minfu
 //		F_WORDSREFERENCE		//単語リファレンス
 };

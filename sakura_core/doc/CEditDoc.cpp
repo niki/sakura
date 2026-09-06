@@ -147,6 +147,7 @@ static const EFunctionCode EIsModificationForbidden[] = {
 	F_REPLACE,
 	F_REPLACE_ALL,
 	F_CHGMOD_INS,
+	F_JOINLINES,	// 20260906
 	F_HOKAN,
 };
 

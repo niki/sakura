@@ -94,6 +94,10 @@
     「選択行のマージ」が古いまま更新されておらず、これに引きずられて誤認したのが原因です。
     サクラには真の意味でのJoin Lines機能が存在しないため、紛らわしい割り当てのまま残すより
     削除する方を選びました(`F_MERGE`自体はサクラの既定Alt+Mで引き続き使えます)。
+  - **Ctrl+J(Join Lines)を復活させました(20260906)。** サクラエディタ本体に真のJoin Lines機能
+    (`F_JOINLINES`、選択範囲内の複数行、無選択時はカーソル行と次の行を1行に結合)が実装されたため、
+    上記で削除した割り当てが正しい対象を指すようになった。サクラの既定キーバインド自体も
+    Ctrl+Jに`F_JOINLINES`を割り当てている(このプリセット固有の変更ではない)。
   - **NotepadPlusPlus.key**: 当初はNotepad++はデフォルトキー割り当てが実行ファイルに埋め込み式で
     生の設定ファイルが無いと考え、コミュニティのショートカット一覧投稿([参照元](https://community.notepad-plus-plus.org/topic/12576/list-of-all-assigned-keyboard-shortcuts))
     等で裏取りしていましたが、その後(20260824)公式ソース`PowerEditor/src/Parameters.cpp`の
