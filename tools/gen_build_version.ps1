@@ -1,4 +1,4 @@
-# ビルド日時(JST)からバージョン情報ヘッダ(sakura_core/config/build_version_generated.h)を
+﻿# ビルド日時(JST)からバージョン情報ヘッダ(sakura_core/config/build_version_generated.h)を
 # 自動生成する。preBuild.bat から毎ビルド呼び出される。
 #
 # バージョン表記は "2.3.yy.mddx" 形式(yy=西暦下2桁、mdd=月[ゼロ埋めなし]+日[2桁ゼロ埋め]

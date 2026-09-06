@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   NKMM_SESSION_RESTORE_BUFFER のWM_QUERYENDSESSIONレース条件を手動で再現するためのテストツール。
 
