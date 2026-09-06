@@ -75,7 +75,7 @@ private:
 //	明示的にEveryoneへアクセスを許可し、Low整合性ラベル(No-Write-Up)を
 //	付与することで、昇格の有無に関わらず同一ユーザーの全プロセスから
 //	一貫してアクセスできるようにする。
-//2026.09.06 追加
+// 2026.09.06 追加
 class CIpcSecurityAttributes{
 public:
 	CIpcSecurityAttributes();

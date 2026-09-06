@@ -1722,6 +1722,8 @@
 //    まとまりが切れない(区切り文字を含まなければそのまま次の入力と結合できる)。
 //    通常のクリップボード貼り付け(Ctrl+V)も同じCommand_INSTEXT経由のため
 //    同様に分類される(区切り文字や改行を含む貼り付けは区切りになる)
+//
+//  実装箇所:
 //  - COpe.h: ECoalesceKind、eCoalesceKind、IsUndoCoalesceBreakChar()宣言
 //  - COpeBlk.h,cpp: IsCoalesceOpen()/SetCoalesceOpen()、
 //    GetCoalesceTick()/SetCoalesceTick()、DetachSingleOpe()

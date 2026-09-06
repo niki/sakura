@@ -58,11 +58,11 @@ namespace {
 
 	//! pcBlkが「1個のCInsertOpeのみで構成され、かつ挿入した側で結合分類済み
 	//! (eCoalesceKind != COALESCE_UNKNOWN)のブロック」かどうかを調べる。
+	//!
 	//! COpe自体にはInsertData_CEditView経由の挿入内容が残らない(m_cOpeLineDataは
-	//! 使われない)ため、挿入した実際の文字を知っている呼び出し側(Command_WCHAR
-	//! 等)が挿入直後にeCoalesceKindへ分類結果を書き込んでおく必要がある。
-	//! 分類されていない挿入(貼り付け等)はCOALESCE_UNKNOWNのままなので、
-	//! ここで自動的に対象外になる 20260906
+	//! 使われない)ため、挿入した実際の文字を知っている呼び出し側(Command_WCHAR等)が
+	//! 挿入直後にeCoalesceKindへ分類結果を書き込んでおく必要がある。分類されていない
+	//! 挿入(貼り付け等)はCOALESCE_UNKNOWNのままなので、ここで自動的に対象外になる 20260906
 	bool IsClassifiedSingleInsertBlk( COpeBlk* pcBlk, bool* pbHasBreakChar )
 	{
 		if( pcBlk->GetNum() != 1 ){
