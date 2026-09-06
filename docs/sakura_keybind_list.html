@@ -168,28 +168,26 @@ body.edit-mode .cmp-table tbody tr{scroll-margin-top:40px;}
 tr.no-sakura td.func-cell{font-style:italic; color:var(--muted);}
 tr.unassigned td.func-cell{color:var(--muted);}
 
-.cmp-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+/* table-layout:fixed + <colgroup>(下記)で列幅を固定し、内容がはみ出す場合は折り返す
+   ことで横スクロールが発生しないようにする。以前は1列目(機能名)をposition:stickyで
+   横固定していたが、列幅を container 内に収める方針にしたため不要になり撤去した 20260906 */
+.cmp-table{width:100%; border-collapse:collapse; font-size:12.5px; table-layout:fixed;}
 .cmp-table th, .cmp-table td{
   border:1px solid var(--border); padding:6px 8px; text-align:left; vertical-align:top;
+  overflow-wrap:break-word;
 }
 .cmp-table thead th{
   background:var(--header-bg); position:sticky; top:0; z-index:3; font-size:12px; color:var(--muted);
   font-weight:700;
 }
-.cmp-table th.func-col{min-width:190px; left:0; z-index:4; box-shadow:2px 0 4px -2px rgba(0,0,0,.25);}
 .cmp-table tbody tr:nth-child(even){background:var(--stripe);}
 .cmp-table tbody tr.in-preset{background:var(--section-bg);}
 .cmp-table tbody tr.in-preset:nth-child(even){background:var(--section-bg);}
 .cmp-table tbody tr:hover{background:var(--hover);}
-.cmp-table td.func-cell{
-  font-weight:600; min-width:170px; position:sticky; left:0; z-index:1;
-  background:var(--bg); box-shadow:2px 0 4px -2px rgba(0,0,0,.25);
-}
-.cmp-table tbody tr:nth-child(even) td.func-cell{background:var(--stripe);}
-.cmp-table tbody tr.in-preset td.func-cell{background:var(--section-bg);}
-.cmp-table tbody tr.in-preset:nth-child(even) td.func-cell{background:var(--section-bg);}
-.cmp-table tbody tr:hover td.func-cell{background:var(--hover);}
-.cmp-table td.func-cell .fc{display:block; color:var(--muted); font-weight:400; font-size:11px; font-family:Consolas,monospace;}
+.cmp-table td.func-cell{font-weight:600;}
+/* F-code(F_ADD_SELECTION_TO_NEXT_MATCHなど)はスペースを含まない長いトークンになりうる
+   ため、固定幅の列に収まるよう単語の途中でも折り返す 20260906 */
+.cmp-table td.func-cell .fc{display:block; color:var(--muted); font-weight:400; font-size:11px; font-family:Consolas,monospace; word-break:break-all;}
 .cmp-scroll{
   overflow-x:auto; overflow-y:auto; border:1px solid var(--border); border-radius:6px;
   flex:1 1 auto; min-height:120px;
@@ -213,7 +211,7 @@ footer{
 .tooltip.tooltip-below{transform-origin:top center;}
 
 .th-toolbar{display:flex; align-items:center; justify-content:space-between; gap:4px;}
-.th-toolbar .th-name{overflow:hidden; text-overflow:ellipsis;}
+.th-toolbar .th-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
 .th-btns{display:none; gap:2px; flex:none;}
 body.edit-mode .th-btns{display:flex;}
 .th-btn{
@@ -283,6 +281,7 @@ body.edit-mode .th-btns{display:flex;}
 <p class="lead" id="editHint" style="display:none">編集モード中はキーのバッジをクリックすると実際にキーを押して割り当てられます(点滅する緑のバッジの間に押してください。修飾キー(Ctrl/Shift/Alt)は押している間だけ反映され、離すと外れます。A・F5・↑などの実キーを押した瞬間に確定します。クリック以外の場所を押すとキャンセルされ元の値に戻ります)。「＋」で同じセルに別のキーを追加、キーバッジ右上の×で削除、行左端の×で行ごと削除、「＋ 行を追加」で新しい機能行を追加できます。機能名は通常のテキスト編集です。この編集内容はブラウザのlocalStorageにこのファイルの場所ごとに保存され、再度このHTMLを開いたときも復元されます（他の人やサーバーには送信されません）。ファイルとして保存・共有したい場合は「エクスポート」でJSONを書き出し、別環境では「インポート」で読み込んでください。注意: Ctrl+W・Ctrl+T・Ctrl+N・Ctrl+Tab・F11などブラウザ自身が予約しているショートカットは、Webページ側では取得できずブラウザの機能（タブを閉じる等）が先に実行されてしまいます。これはブラウザの仕様上回避できません。</p>
 <div class="modal-overlay" id="freeKeysModal"><div class="modal-box"><div class="modal-header"><span id="freeKeysTitle">未割り当てのキー</span><button type="button" class="modal-close" id="freeKeysClose" aria-label="閉じる">×</button></div><p class="modal-note">このツールが把握している物理キー（サクラ既定またはいずれかのプリセットで実際に使われているキー）について、指定した列での割り当て状況を修飾キーの組み合わせごとに一覧表示します。JIS/US配列で対応がずれるため一部の記号キーは照合対象外です。英数字・記号(;:,./\[]など)・Space・Enterキーの単独/Shiftのみの組み合わせは通常の文字入力に使われるため、常に使用中として扱います。<span id="freeKeysCount"></span></p><div id="freeKeysBody"></div></div></div>
 <div class="cmp-scroll"><table class="cmp-table" id="cmpTable">
+<colgroup><col style="width:21%"><col style="width:14%"><col style="width:11%"><col style="width:13.5%"><col style="width:13.5%"><col style="width:13.5%"><col style="width:13.5%"></colgroup>
 <thead><tr>
 <th class="func-col">機能</th>
 <th data-col="default"><div class="th-toolbar"><span class="th-name">サクラ既定</span><span class="th-btns"><button type="button" class="th-btn th-conflict" data-app="default" data-tip="サクラ既定の次の衝突位置へ移動">⚠</button><button type="button" class="th-btn th-free" data-app="default" data-tip="サクラ既定で未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="default" data-tip="サクラ既定用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="default" data-tip="サクラ既定用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th><th data-col="v2.4.3"><div class="th-toolbar"><span class="th-name">v2.4.3</span><span class="th-btns"><button type="button" class="th-btn th-conflict" data-app="v2.4.3" data-tip="v2.4.3の次の衝突位置へ移動">⚠</button><button type="button" class="th-btn th-free" data-app="v2.4.3" data-tip="v2.4.3で未割り当てのキーの組み合わせを一覧表示">🔎</button><button type="button" class="th-btn th-export" data-app="v2.4.3" data-tip="v2.4.3用の.keyを書き出す">⬆</button><button type="button" class="th-btn th-import" data-app="v2.4.3" data-tip="v2.4.3用の.keyを読み込む(この列だけ差し替え)">⬇</button></span></div></th>
@@ -3166,10 +3165,10 @@ body.edit-mode .th-btns{display:flex;}
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">マルチカーソル挿入 (Insert multiple cursors)</span><span class="fc">F_ADD_CURSOR_UP / F_ADD_CURSOR_DOWN</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="38" data-slot="6">Ctrl+Alt+↑</span> <span class="key" data-hex="40" data-slot="6">Ctrl+Alt+↓</span></td>
 <td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
-<td data-col="VSCode" contenteditable="false"><span class="key key-yellow">Alt+クリック</span> <span class="key key-yellow">Ctrl+Alt+↑</span> <span class="key key-yellow">Ctrl+Alt+↓</span></td>
-<td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow">Ctrl+Alt+クリック</span> <span class="key key-yellow">Alt+Shift+↑</span> <span class="key key-yellow">Alt+Shift+↓</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="key key-yellow">Ctrl+Alt+↑</span> <span class="key key-yellow">Ctrl+Alt+↓</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow">Alt+Shift+↑</span> <span class="key key-yellow">Alt+Shift+↓</span></td>
 <td data-col="Sublime Text" contenteditable="false"><span class="key key-yellow">Ctrl+Alt+↑</span> <span class="key key-yellow">Ctrl+Alt+↓</span></td>
-<td data-col="Notepad++" contenteditable="false"><span class="key key-yellow">Ctrl+クリック</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
 <tr data-row-id="f_F_ADD_CURSORS_TO_LINE_ENDS">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">選択範囲の各行末にカーソルを追加 (Insert Cursor at End of Each Line Selected)</span><span class="fc">F_ADD_CURSORS_TO_LINE_ENDS</span></td>
@@ -3766,6 +3765,26 @@ body.edit-mode .th-btns{display:flex;}
     });
     return usage;
   }
+  // 参考表示(key-yellow)バッジは実際の割当データ(data-hex/data-slot)を持たないため、
+  // 列ごとにテキストをparseComboTextで解析してhex_slotキーを組み立て、「同じ列(同じ
+  // プリセット/アプリ)内で2つ以上の機能が同じキーを参考表示している」自己衝突を検出
+  // できるようにする。サクラ既定とのクロス衝突(annotateReferenceConflicts側)とは別の
+  // チェックで、こちらは単に表の転記ミス(そのアプリの本来のキーを取り違えている等)に
+  // 気付くためのもの 20260906
+  function buildColRefUsageMap(trs){
+    var usage = {};
+    trs.forEach(function(tr){
+      var ownFunc = rowFuncOf(tr);
+      Array.prototype.forEach.call(tr.querySelectorAll(".key.key-yellow"), function(k){
+        var td = k.closest("td[data-col]");
+        var parsed = parseComboText(badgeText(k));
+        if (!td || !parsed || parsed.hex == null) return;
+        var mapKey = td.dataset.col + "_" + parsed.hex + "_" + slotIndex(parsed.mods);
+        (usage[mapKey] = usage[mapKey] || []).push(ownFunc);
+      });
+    });
+    return usage;
+  }
   function annotateReferenceConflicts(){
     // 参考表示(key-yellow)のバッジは実際の割当データ(data-hex/data-slot)を持たない
     // ため、recheckAllConflicts()の通常の衝突判定(td .key[data-hex])には一切
@@ -3776,13 +3795,26 @@ body.edit-mode .th-btns{display:flex;}
     // (誤解を招く)が、テキストをparseComboTextで解析してdefault列と突き合わせ、
     // ツールチップだけ動的に追記することで気付けるようにする 20260905
     var liveDefault = buildLiveDefaultMap();
-    Array.prototype.slice.call(tbody.querySelectorAll("tr")).forEach(function(tr){
+    var trs = Array.prototype.slice.call(tbody.querySelectorAll("tr"));
+    var refUsage = buildColRefUsageMap(trs);
+    trs.forEach(function(tr){
       var ownFunc = rowFuncOf(tr);
       Array.prototype.forEach.call(tr.querySelectorAll(".key.key-yellow"), function(k){
         if (k.dataset.tipBase === undefined){ k.dataset.tipBase = k.dataset.tip || ""; }
+        var td = k.closest("td[data-col]");
         var parsed = parseComboText(badgeText(k));
+        var mapKey = (td && parsed && parsed.hex != null) ? (td.dataset.col + "_" + parsed.hex + "_" + slotIndex(parsed.mods)) : null;
+        var selfOthers = mapKey ? (refUsage[mapKey] || []).filter(function(f){ return f !== ownFunc; }) : [];
         var hit = (parsed && parsed.hex != null) ? liveDefault[parsed.hex + "_" + slotIndex(parsed.mods)] : null;
-        if (hit && hit !== ownFunc){
+        // 優先度はkey-blueの自己衝突判定(recheckAllConflicts)と同様、同じプリセット内
+        // での取り合い(selfOthers)を、サクラ既定とのクロス衝突より先に判定する
+        if (selfOthers.length){
+          var selfJp = FUNC_JP[selfOthers[0]] || selfOthers[0];
+          var selfNote = "このプリセット内でも「" + selfJp + "」の参考表示と同じキーです(このアプリの本来のキーの転記が重複している可能性)";
+          k.dataset.tip = k.dataset.tipBase ? (k.dataset.tipBase + "／" + selfNote) : selfNote;
+          k.dataset.jumpTo = FUNC_TO_ROWID[selfOthers[0]] || "";
+          k.classList.add("key-yellow-conflict");
+        }else if (hit && hit !== ownFunc){
           var jp = FUNC_JP[hit] || hit;
           var note = "サクラ既定ではこのキーは「" + jp + "」に割り当て済み(参考表示であり実割当ではないが、追加すると衝突する)";
           k.dataset.tip = k.dataset.tipBase ? (k.dataset.tipBase + "／" + note) : note;
