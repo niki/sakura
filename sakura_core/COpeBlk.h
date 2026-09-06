@@ -49,6 +49,21 @@ public:
 	//! AppendOpe()のたびに加算するのでO(1)。 20260802
 	int GetByteSize() const { return m_nByteSize; }
 #endif // NKMM_
+#ifdef NKMM_UNDO_COALESCE_TYPING
+	//! 唯一の要素を取り出して(所有権を渡して)空にする。結合先ブロックへの
+	//! 移動専用の簡易実装で、要素数が1でない場合はNULLを返す 20260906
+	COpe* DetachSingleOpe();
+
+	//! このブロックの末尾へ、後続の連続入力を結合してよいか
+	//! (=空白・句読点を含まない1文字挿入で終わっているか) 20260906
+	bool IsCoalesceOpen() const { return m_bCoalesceOpen; }
+	void SetCoalesceOpen( bool b ) { m_bCoalesceOpen = b; }
+
+	//! このブロックへ最後に結合した時刻(GetTickCount64())。一定時間(アイドル)
+	//! 経過後は区切り文字が無くても結合を打ち切るための基準時刻 20260906
+	ULONGLONG GetCoalesceTick() const { return m_nCoalesceTick; }
+	void SetCoalesceTick( ULONGLONG t ) { m_nCoalesceTick = t; }
+#endif // NKMM_
 
 	//デバッグ
 	void DUMP();									//!< 編集操作要素ブロックのダンプ
@@ -58,6 +73,10 @@ private:
 	std::vector<COpe*>	m_ppCOpeArr;	//!< 操作の配列
 #ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
 	int	m_nByteSize = 0;				//!< AppendOpe()のたびに加算する概算バイト数 20260802
+#endif // NKMM_
+#ifdef NKMM_UNDO_COALESCE_TYPING
+	bool		m_bCoalesceOpen = false;	//!< 後続の連続入力をこのブロックへ結合してよいか 20260906
+	ULONGLONG	m_nCoalesceTick = 0;		//!< 最後に結合した時刻(GetTickCount64()) 20260906
 #endif // NKMM_
 
 	//参照カウンタ

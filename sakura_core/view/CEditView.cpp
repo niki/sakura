@@ -3133,9 +3133,21 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 {
 
 	if( NULL != m_cCommander.GetOpeBlk() && m_cCommander.GetOpeBlk()->Release() == 0 ){
-		if( 0 < m_cCommander.GetOpeBlk()->GetNum() ){	/* 操作の数を返す */
+		COpeBlk* pcOpeBlk = m_cCommander.GetOpeBlk();
+		int nOpeNum = pcOpeBlk->GetNum();	/* 操作の数を返す */
+		if( 0 < nOpeNum ){
 			/* 操作の追加 */
-			GetDocument()->m_cDocEditor.m_cOpeBuf.AppendOpeBlk( m_cCommander.GetOpeBlk() );
+			bool bMerged = false;
+#ifdef NKMM_UNDO_COALESCE_TYPING
+			// 空白・句読点で区切られるまでの連続入力を1つのUndo単位にまとめる設定の場合、
+			// 直前のブロックへ結合できないか試す(結合できたらpcOpeBlkはここで削除される) 20260906
+			if( GetDllShareData().m_Common.m_sEdit.m_bUndoCoalesceTyping ){
+				bMerged = GetDocument()->m_cDocEditor.m_cOpeBuf.TryMergeIntoLastOpeBlk( pcOpeBlk );
+			}
+#endif // NKMM_
+			if( !bMerged ){
+				GetDocument()->m_cDocEditor.m_cOpeBuf.AppendOpeBlk( pcOpeBlk );
+			}
 
 			// 2013.05.01 Moca 正確に変更行を表示するようになったので不要
 			//  if( bPaintLineNumber
@@ -3143,13 +3155,13 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 			//  	Call_OnPaint( PAINT_LINENUMBER, false );	// 自ペインの行番号（変更行）表示を更新 ← 変更行のみの表示更新で済ませている場合があるため
 
 			if( !m_pcEditWnd->UpdateTextWrap() ){	// 折り返し方法関連の更新	// 2008.06.10 ryoji
-				if( 0 < m_cCommander.GetOpeBlk()->GetNum() - GetDocument()->m_cDocEditor.m_nOpeBlkRedawCount ){
+				if( 0 < nOpeNum - GetDocument()->m_cDocEditor.m_nOpeBlkRedawCount ){
 					m_pcEditWnd->RedrawAllViews( this );	//	他のペインの表示を更新
 				}
 			}
 		}
 		else{
-			delete m_cCommander.GetOpeBlk();
+			delete pcOpeBlk;
 		}
 		m_cCommander.SetOpeBlk(NULL);
 	}

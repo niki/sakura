@@ -268,6 +268,9 @@ struct CommonSetting_Edit
 	// (ダイアログ項目無し)
 	bool	m_bUndoRestoreSelection;	//!< 選択範囲の削除・置換をUndoしたとき、復元した範囲を選択状態にする 20260831
 #endif // NKMM_
+#ifdef NKMM_UNDO_COALESCE_TYPING
+	bool	m_bUndoCoalesceTyping;		//!< 空白・句読点で区切られるまでの連続入力を1つのUndo単位にまとめる 20260906
+#endif // NKMM_
 };
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

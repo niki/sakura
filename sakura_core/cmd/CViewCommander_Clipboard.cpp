@@ -581,6 +581,31 @@ void CViewCommander::Command_INSTEXT(
 			bRedraw
 		);
 
+#ifdef NKMM_UNDO_COALESCE_TYPING
+		// 空白・句読点で区切られるまでの連続入力をUndo単位としてまとめる機能用に、
+		// 挿入した文字列を分類しておく。IME変換確定(WM_IME_COMPOSITION経由の
+		// F_INSTEXT_W)もこの経路を通るため、変換確定そのものではまとまりを
+		// 切らずに前後の入力と結合できるようにする 20260906
+		if( !m_pCommanderView->m_bDoing_UndoRedo ){
+			if( COpeBlk* pcOpeBlkForCoalesce = GetOpeBlk() ){
+				int nNumForCoalesce = pcOpeBlkForCoalesce->GetNum();
+				if( 0 < nNumForCoalesce ){
+					COpe* pcLastOpeForCoalesce = pcOpeBlkForCoalesce->GetOpe( nNumForCoalesce - 1 );
+					if( pcLastOpeForCoalesce->GetCode() == OPE_INSERT ){
+						bool bHasBreak = (nTextLen <= 0);
+						for( CLogicInt i = CLogicInt(0); i < nTextLen; ++i ){
+							if( IsUndoCoalesceBreakChar( pszText[ToInt(i)] ) ){
+								bHasBreak = true;
+								break;
+							}
+						}
+						pcLastOpeForCoalesce->eCoalesceKind = bHasBreak ? COpe::COALESCE_BREAK : COpe::COALESCE_WORD;
+					}
+				}
+			}
+		}
+#endif // NKMM_
+
 		// 挿入データの最後へカーソルを移動
 		GetCaret().MoveCursor( ptLayoutNew, bRedraw );
 		GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX2();

@@ -156,6 +156,9 @@
 #define IDC_EDIT_FL_FILTER              1749
 #define IDC_CHECK_RESTORE_SESSION       1750
 #define IDC_CHECK_RESTORE_SESSION_BUFFER 1751
+#ifdef NKMM_UNDO_COALESCE_TYPING
+#define IDC_CHECK_bUndoCoalesceTyping   1752
+#endif // NKMM_
 #define IDC_CHECK_DispTOOLBAR           1085
 #define IDC_EDIT_AUTOBACKUP_INTERVAL    1086
 #define IDC_BUTTON_OPENHELP1            1087

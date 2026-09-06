@@ -17,6 +17,70 @@
 #include "env/CShareData.h" // GetDllShareData() 20260802
 #endif // NKMM_
 
+#ifdef NKMM_UNDO_COALESCE_TYPING
+//! Undoの結合単位を区切る文字(空白・句読点等)かどうか。完全なUnicode網羅は
+//! 狙わず、ASCIIの記号類と主な日本語の句読点・括弧類のみを対象とする。
+//! 識別子で使われる'_'は区切りに含めない 20260906
+bool IsUndoCoalesceBreakChar( wchar_t c )
+{
+	if( iswspace(c) ){
+		return true;
+	}
+	switch( c ){
+	case L'.': case L',': case L'!': case L'?': case L';': case L':':
+	case L'\'': case L'"': case L'(': case L')': case L'[': case L']':
+	case L'{': case L'}': case L'<': case L'>': case L'/': case L'\\':
+	case L'|': case L'`': case L'~': case L'^': case L'*': case L'+':
+	case L'=': case L'@': case L'#': case L'$': case L'%': case L'&':
+	case L'-':
+	case 0x3001: /* 、 */		case 0x3002: /* 。 */
+	case 0x30FB: /* ・ */
+	case 0x300C: case 0x300D:	/* 「」 */
+	case 0x300E: case 0x300F:	/* 『』 */
+	case 0x3010: case 0x3011:	/* 【】 */
+	case 0x3008: case 0x3009:	/* 〈〉 */
+	case 0x300A: case 0x300B:	/* 《》 */
+	case 0xFF01: /* ！ */		case 0xFF1F: /* ？ */
+	case 0xFF08: /* （ */		case 0xFF09: /* ） */
+	case 0xFF0C: /* ， */		case 0xFF0E: /* ． */
+	case 0xFF1A: /* ： */		case 0xFF1B: /* ； */
+		return true;
+	default:
+		return false;
+	}
+}
+
+namespace {
+	//! 区切り文字が無くても、これ以上キー入力の間隔が空いたら結合を打ち切る
+	//! アイドル時間(ミリ秒)。一気に連続入力した「hello」はまとめてUndoされるが、
+	//! 「hello」の後1〜2秒待ってから続けて入力した分は別のまとまりになる 20260906
+	const ULONGLONG UNDO_COALESCE_IDLE_MS = 1500;
+
+	//! pcBlkが「1個のCInsertOpeのみで構成され、かつ挿入した側で結合分類済み
+	//! (eCoalesceKind != COALESCE_UNKNOWN)のブロック」かどうかを調べる。
+	//! COpe自体にはInsertData_CEditView経由の挿入内容が残らない(m_cOpeLineDataは
+	//! 使われない)ため、挿入した実際の文字を知っている呼び出し側(Command_WCHAR
+	//! 等)が挿入直後にeCoalesceKindへ分類結果を書き込んでおく必要がある。
+	//! 分類されていない挿入(貼り付け等)はCOALESCE_UNKNOWNのままなので、
+	//! ここで自動的に対象外になる 20260906
+	bool IsClassifiedSingleInsertBlk( COpeBlk* pcBlk, bool* pbHasBreakChar )
+	{
+		if( pcBlk->GetNum() != 1 ){
+			return false;
+		}
+		COpe* pcOpe = pcBlk->GetOpe( 0 );
+		if( pcOpe->GetCode() != OPE_INSERT ){
+			return false;
+		}
+		if( pcOpe->eCoalesceKind == COpe::COALESCE_UNKNOWN ){
+			return false;
+		}
+		*pbHasBreakChar = (pcOpe->eCoalesceKind == COpe::COALESCE_BREAK);
+		return true;
+	}
+}
+#endif // NKMM_
+
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //               コンストラクタ・デストラクタ                  //
@@ -91,6 +155,67 @@ bool COpeBuf::AppendOpeBlk( COpeBlk* pcOpeBlk )
 #endif // NKMM_
 	return true;
 }
+
+#ifdef NKMM_UNDO_COALESCE_TYPING
+/*!	直前にpushされたブロックへ結合できるなら結合する 20260906
+
+	結合条件:
+	  - 現在位置がバッファの末尾(Redo対象が無い)であること
+	  - 直前のブロックがIsCoalesceOpen()(=空白・句読点を含まない1文字挿入で
+	    終わっている)であること
+	  - 直前のブロックへ最後に結合してからUNDO_COALESCE_IDLE_MS以内であること
+	    (区切り文字が無くても、一定時間キー入力が空いたら新しいまとまりにする)
+	  - 直前のブロック最後の操作の「操作後」キャレット位置と、新ブロック最初の
+	    操作の「操作前」キャレット位置が一致すること(間にカーソル移動・
+	    マウスクリック・選択操作等の別操作が挟まっていない)
+	  - 新ブロック自体も「挿入した側で分類済みの1個のCInsertOpeのみ」で、
+	    区切り文字として分類されていないこと(改行はCommand_WCHAR側で
+	    iswspace()により区切り文字として分類されるため、この時点で対象外に
+	    なり必ず区切りになる。貼り付け等の未分類の挿入も対象外)
+
+	結合の可否に関わらず、新ブロック(結合されなかった場合はこの後
+	AppendOpeBlk()される想定)のIsCoalesceOpen()/結合時刻は、このブロック
+	単体が上記の「区切り文字を含まない1文字挿入」であるかどうかに応じて
+	設定する。これにより、区切り文字が挟まった直後や改行の直後は結合が止まり、
+	次の入力から新しいまとまりが始まる
+*/
+bool COpeBuf::TryMergeIntoLastOpeBlk( COpeBlk* pcOpeBlk )
+{
+	bool bHasBreakChar = true;
+	bool bPureInsert = IsClassifiedSingleInsertBlk( pcOpeBlk, &bHasBreakChar );
+	bool bWordChunk = bPureInsert && !bHasBreakChar;
+	ULONGLONG nNow = GetTickCount64();
+
+	if( bWordChunk && IsEnableUndo() && !IsEnableRedo() ){
+		COpeBlk* pcTail = m_vCOpeBlkArr[m_nCurrentPointer - 1];
+		if( pcTail->IsCoalesceOpen() && (nNow - pcTail->GetCoalesceTick()) <= UNDO_COALESCE_IDLE_MS ){
+			COpe* pcLastOpeOfTail = pcTail->GetOpe( pcTail->GetNum() - 1 );
+			COpe* pcFirstOpeOfNew = pcOpeBlk->GetOpe( 0 );
+			if( pcLastOpeOfTail->m_ptCaretPos_PHY_After == pcFirstOpeOfNew->m_ptCaretPos_PHY_Before ){
+				COpe* pcMovedOpe = pcOpeBlk->DetachSingleOpe();
+				pcTail->AppendOpe( pcMovedOpe );
+				// pcTailはこの後もIsCoalesceOpen()==trueのまま(単語が続く)。
+				// 結合時刻を更新し、次の文字への猶予をここから再度計る
+				pcTail->SetCoalesceTick( nNow );
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+				m_nTotalByteSize += pcMovedOpe->GetDataByteSize();
+				_ShrinkToBudget();
+#endif // NKMM_
+				delete pcOpeBlk;
+				return true;
+			}
+		}
+	}
+
+	// 結合しない場合、この後AppendOpeBlk()される新ブロック自身の
+	// 「後続への結合可否」と結合時刻を、このブロック単体の内容に応じて設定しておく
+	pcOpeBlk->SetCoalesceOpen( bWordChunk );
+	if( bWordChunk ){
+		pcOpeBlk->SetCoalesceTick( nNow );
+	}
+	return false;
+}
+#endif // NKMM_
 
 #ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
 /*!	共通設定の上限(KB)を超えていたら、古い(Undo方向の)ブロックから破棄して収める。 20260802

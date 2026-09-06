@@ -47,6 +47,12 @@ public:
 	void ClearAll();							//!< 全要素のクリア
 	bool AppendOpeBlk( COpeBlk* pcOpeBlk );		//!< 操作ブロックの追加
 	void SetNoModified();						//!< 現在位置で無変更な状態になったことを通知
+#ifdef NKMM_UNDO_COALESCE_TYPING
+	//! 直前にpushされたブロックへ結合できるなら結合する(結合できたらpcOpeBlkを
+	//! 削除してtrueを返す。できない場合は何もせずfalseを返す。呼び出し側は
+	//! false時のみ通常通りAppendOpeBlk()すること) 20260906
+	bool TryMergeIntoLastOpeBlk( COpeBlk* pcOpeBlk );
+#endif // NKMM_
 
 	//使用
 	COpeBlk* DoUndo( bool* pbModified );		//!< 現在のUndo対象の操作ブロックを返す

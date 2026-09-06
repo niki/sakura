@@ -420,6 +420,9 @@ bool CShareData::InitShareData()
 #ifdef NKMM_UNDO_RESTORE_SELECTION
 			sEdit.m_bUndoRestoreSelection = true;	// 選択削除のUndoで選択状態を復元する(VS Code既定に合わせてtrue) 20260831
 #endif // NKMM_
+#ifdef NKMM_UNDO_COALESCE_TYPING
+			sEdit.m_bUndoCoalesceTyping = false;	// 連続入力をまとめてUndoする(既定OFF、従来通りの1文字単位を維持) 20260906
+#endif // NKMM_
 		}
 
 		// [ファイル]タブ

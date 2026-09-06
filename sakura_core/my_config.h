@@ -1693,6 +1693,50 @@
 //------------------------------------------------------------------
 #define NKMM_CTRL_WHEEL_FONT_ZOOM
 
+//------------------------------------------------------------------
+// 連続する文字入力を、区切られるまで1つのUndo単位にまとめる 20260906
+//  - VS Code等と同じ挙動: 1文字ごとにCtrl+Zが効く従来の粒度ではなく、
+//    「hello」のように連続入力した分をまとめて1回のUndoで戻す。
+//    以下のいずれかで「まとまり」が閉じ、次の入力から新しいまとまりが始まる
+//     (1) 区切り文字(空白・句読点等、下記IsUndoCoalesceBreakChar())の入力
+//     (2) 直前の結合から一定時間(UNDO_COALESCE_IDLE_MS、既定1.5秒)以上の
+//         キー入力の間隔。区切り文字が無くても、「hello」の後2秒待ってから
+//         続けて入力した分は別のまとまりになる 20260906追加
+//     (3) 改行(Enter)。iswspace()により区切り文字として分類されるため常に
+//         区切りになる
+//     (4) カーソル移動・マウスクリック・選択操作等、間に別の操作が挟まること
+//         (隣接する操作のキャレット位置が不一致になるため自動的に区切れる)
+//  - 対象は「1個のCInsertOpeのみで構成され、挿入した側で結合分類済みの
+//    ブロック」のみ。複数操作が混在するブロック(NKMM_MULTI_CURSORの一括編集、
+//    選択範囲への上書き入力、上書きモードの1文字置換等)は対象外(結合せず、
+//    結合の起点にもしない)。NKMM_MULTI_CURSORの一括編集は元々1回のUndoで
+//    まとめて戻る仕様のため、この機能による変更は無い
+//  - COpe自体はInsertData_CEditView経由の挿入では挿入内容を保持しない
+//    (m_cOpeLineDataは常に空)。そのため挿入直後、実際に入力された文字列を
+//    知っている呼び出し側(Command_WCHAR、Command_INSTEXT)がCOpe::eCoalesceKind
+//    へ分類結果(区切り文字を含むか)を書き込む。分類していない挿入経路は
+//    COALESCE_UNKNOWNのままとなり、自動的に結合対象外になる
+//  - IME変換確定はWM_IME_COMPOSITION(GCS_RESULTSTR)経由でCommand_INSTEXT
+//    (F_INSTEXT_W)により変換結果全体が1回のHandleCommandで挿入される。
+//    Command_INSTEXTでも同様に挿入文字列を分類するため、変換確定そのものでは
+//    まとまりが切れない(区切り文字を含まなければそのまま次の入力と結合できる)。
+//    通常のクリップボード貼り付け(Ctrl+V)も同じCommand_INSTEXT経由のため
+//    同様に分類される(区切り文字や改行を含む貼り付けは区切りになる)
+//  - COpe.h: ECoalesceKind、eCoalesceKind、IsUndoCoalesceBreakChar()宣言
+//  - COpeBlk.h,cpp: IsCoalesceOpen()/SetCoalesceOpen()、
+//    GetCoalesceTick()/SetCoalesceTick()、DetachSingleOpe()
+//  - COpeBuf.cpp: IsUndoCoalesceBreakChar()定義、TryMergeIntoLastOpeBlk()、
+//    UNDO_COALESCE_IDLE_MS
+//  - cmd/CViewCommander_Edit.cpp: Command_WCHAR()でeCoalesceKindを設定
+//  - cmd/CViewCommander_Clipboard.cpp: Command_INSTEXT()でeCoalesceKindを設定
+//  - view/CEditView.cpp: SetUndoBuffer()
+//  - env/CommonSetting.h,CShareData.cpp,CShareData_IO.cpp: bUndoCoalesceTyping
+//    (既定false、共通設定「編集」タブの「元に戻す」グループでオン/オフ)
+//  - prop/CPropComEdit.cpp、sakura_rc.h,rc: 共通設定UI
+//    (EN_US言語版rcは未対応。未対応でもビルド・実行は可能でUIが出ないだけ)
+//------------------------------------------------------------------
+#define NKMM_UNDO_COALESCE_TYPING
+
 //
 //#define USE_SSE2
 

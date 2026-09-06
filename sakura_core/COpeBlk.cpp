@@ -75,6 +75,22 @@ COpe* COpeBlk::GetOpe( int nIndex )
 	return m_ppCOpeArr[nIndex];
 }
 
+#ifdef NKMM_UNDO_COALESCE_TYPING
+/* 唯一の要素を取り出して(所有権を渡して)空にする 20260906 */
+COpe* COpeBlk::DetachSingleOpe()
+{
+	if( m_ppCOpeArr.size() != 1 ){
+		return NULL;
+	}
+	COpe* p = m_ppCOpeArr[0];
+	m_ppCOpeArr.clear();
+#ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
+	m_nByteSize = 0;
+#endif // NKMM_
+	return p;
+}
+#endif // NKMM_
+
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                         デバッグ                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

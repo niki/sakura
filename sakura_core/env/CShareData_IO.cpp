@@ -2339,6 +2339,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 #ifdef NKMM_UNDO_RESTORE_SELECTION
 	cProfile.IOProfileData( pszSecName, LTEXT("bUndoRestoreSelection")		, common.m_sEdit.m_bUndoRestoreSelection );/* 選択削除のUndoで選択状態を復元する */ // 20260831
 #endif // NKMM_
+#ifdef NKMM_UNDO_COALESCE_TYPING
+	cProfile.IOProfileData( pszSecName, LTEXT("bUndoCoalesceTyping")		, common.m_sEdit.m_bUndoCoalesceTyping );/* 連続入力を空白・句読点区切りでまとめてUndoする */ // 20260906
+#endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("NoCaretMoveByActivation")	, common.m_sGeneral.m_bNoCaretMoveByActivation );/* マウスクリックにてアクティベートされた時はカーソル位置を移動しない 2007.10.02 nasukoji (add by genta) */
 	cProfile.IOProfileData( pszSecName, LTEXT("bScrollBarHorz")				, common.m_sWindow.m_bScrollBarHorz );/* 水平スクロールバーを使う */
 

@@ -25,6 +25,13 @@ enum EOpeCode {
 	OPE_MOVECARET	= 4, //!< キャレット移動
 };
 
+#ifdef NKMM_UNDO_COALESCE_TYPING
+//! Undoの結合単位を区切る文字(空白・句読点等)かどうか。完全なUnicode網羅は
+//! 狙わず、ASCIIの記号類と主な日本語の句読点・括弧類のみを対象とする。
+//! 識別子で使われる'_'は区切りに含めない 20260906
+bool IsUndoCoalesceBreakChar( wchar_t c );
+#endif // NKMM_
+
 class CLineData {
 public:
 	CNativeW cmemLine;
@@ -102,6 +109,15 @@ public:
 	//! 使う。1つの一括編集ブロックに複数カーソル分のOpeが混在するため、単なるプライマリか
 	//! どうかのbool 1個では各extraを個別に復元できず、識別子として持つ 20260831
 	int			nCursorSlot = -1;
+#endif // NKMM_
+#ifdef NKMM_UNDO_COALESCE_TYPING
+	//! Undoの結合可否の分類。COpeにはm_cOpeLineData等の実データを持たない
+	//! 挿入経路(InsertData_CEditView等)があり、後からブロックの中身を調べても
+	//! 何を挿入したか分からないため、挿入した側(Command_WCHAR等、実際に入力
+	//! された文字を知っている場所)がこの場で直接分類して記録しておく。
+	//! COALESCE_UNKNOWN(既定)は「この経路は分類対象外」を意味し、結合しない 20260906
+	enum ECoalesceKind{ COALESCE_UNKNOWN = 0, COALESCE_WORD = 1, COALESCE_BREAK = 2 };
+	ECoalesceKind	eCoalesceKind = COALESCE_UNKNOWN;
 #endif // NKMM_
 };
 

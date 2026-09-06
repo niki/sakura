@@ -259,6 +259,10 @@ void CPropEdit::SetData( HWND hwndDlg )
 	// 元に戻す履歴のデータ量上限(KB、0=無制限) 20260802
 	::SetDlgItemInt( hwndDlg, IDC_EDIT_UNDOBUFMAXKB, m_Common.m_sEdit.m_nUndoBufMaxKB, FALSE );
 #endif // NKMM_
+#ifdef NKMM_UNDO_COALESCE_TYPING
+	// 連続入力を空白・句読点区切りでまとめてUndoする 20260906
+	CheckDlgButtonBool( hwndDlg, IDC_CHECK_bUndoCoalesceTyping, m_Common.m_sEdit.m_bUndoCoalesceTyping );
+#endif // NKMM_
 
 	EnableEditPropInput( hwndDlg );
 }
@@ -325,6 +329,10 @@ int CPropEdit::GetData( HWND hwndDlg )
 	if( m_Common.m_sEdit.m_nUndoBufMaxKB < 0 ){
 		m_Common.m_sEdit.m_nUndoBufMaxKB = 0;
 	}
+#endif // NKMM_
+#ifdef NKMM_UNDO_COALESCE_TYPING
+	// 連続入力を空白・句読点区切りでまとめてUndoする 20260906
+	m_Common.m_sEdit.m_bUndoCoalesceTyping = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_bUndoCoalesceTyping );
 #endif // NKMM_
 
 	return TRUE;

@@ -159,6 +159,23 @@ end_of_for:;
 		true
 	);
 
+#ifdef NKMM_UNDO_COALESCE_TYPING
+	// 空白・句読点で区切られるまでの連続入力をUndo単位としてまとめる機能用に、
+	// 今挿入した文字が区切り文字かどうかをこの場で分類しておく。COpe自体は
+	// この経路(InsertData_CEditView)では挿入内容を保持しない(m_cOpeLineDataが
+	// 空のまま)ため、実際に入力された文字を知っているここで記録する必要がある。
+	// GetOpeBlk()の末尾が今追加したCInsertOpeであることを前提とする 20260906
+	if( COpeBlk* pcOpeBlkForCoalesce = GetOpeBlk() ){
+		int nNumForCoalesce = pcOpeBlkForCoalesce->GetNum();
+		if( 0 < nNumForCoalesce ){
+			COpe* pcLastOpeForCoalesce = pcOpeBlkForCoalesce->GetOpe( nNumForCoalesce - 1 );
+			if( pcLastOpeForCoalesce->GetCode() == OPE_INSERT ){
+				pcLastOpeForCoalesce->eCoalesceKind = IsUndoCoalesceBreakChar( wcChar ) ? COpe::COALESCE_BREAK : COpe::COALESCE_WORD;
+			}
+		}
+	}
+#endif // NKMM_
+
 	/* 挿入データの最後へカーソルを移動 */
 	GetCaret().MoveCursor( ptLayoutNew, true );
 	GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX2();
