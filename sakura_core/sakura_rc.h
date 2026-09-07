@@ -923,12 +923,13 @@
 #define IDC_STATIC_REPLACESAMPLE_AFTER  1907
 #endif // NKMM_
 #ifdef NKMM_UNDO_HISTORY_PANEL
-// 20260907 249,251,252はIDR_KEYBINDPRESET_*(918行目付近)で使用済みのため250を使う。
-// 追加時はファイル全体をgrepして未使用であることを確認してから採番すること。
-#define IDD_DLG_UNDOHISTORY             250
+// このパネルはダイアログテンプレートを使わず素のCreateWindowExで作る
+// (CDlgHistoryPanel.cpp参照)ため、IDD_DLG_UNDOHISTORYは無い。以下は
+// CreateWindowExの子ウィンドウIDとして直接使う。
 #define IDC_LIST_UNDOHISTORY            1908
 #define IDC_BUTTON_HISTORYUNDO          1909
 #define IDC_BUTTON_HISTORYREDO          1910
+#define IDC_BUTTON_HISTORYCLOSE         1911
 #define IDC_STATUSBAR_HISTORYPANEL      1912
 #endif // NKMM_
 #define IDC_STATIC                      -1

@@ -1,8 +1,10 @@
 ﻿/*!	@file
-	@brief Undo/Redo履歴パネル(Paint.NET風)ダイアログボックス
+	@brief Undo/Redo履歴パネル(Paint.NET風)ウィンドウ
 
 	@author Yu-zuki.
 	@date 2026.09.07 新規作成 // NKMM_UNDO_HISTORY_PANEL
+	@date 2026.09.07 CDialog依存をやめ、素のCreateWindowEx+自前WNDPROCへ全面書き直し
+		(詳細はCDlgHistoryPanel.hのクラスコメント参照) // NKMM_UNDO_HISTORY_PANEL
 */
 /*
 	This source code is designed for sakura editor.
@@ -12,6 +14,9 @@
 #include "StdAfx.h"
 
 #ifdef NKMM_UNDO_HISTORY_PANEL
+
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
 
 #include "dlg/CDlgHistoryPanel.h"
 #include "Funccode_enum.h"
@@ -27,122 +32,226 @@ namespace {
 	const wchar_t	szInitialStateLabel[] = L"(編集開始時点)";
 	//! CFuncLookup::Funccode2Name()が失敗した(名前を取れなかった)ときの代替ラベル
 	const wchar_t	szUnknownOpeLabel[] = L"(操作)";
-}
 
-/*! ダイアログのサブクラスプロシージャ。WM_MOUSEACTIVATEを横取りし、このパネルが
-	クリックでアクティブ化されてエディタ側からフォーカスを奪わないようにする。
-*/
-static LRESULT CALLBACK HistoryPanelDlgSubclassProc(
-	HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
-	UINT_PTR uIdSubclass, DWORD_PTR dwRefData )
-{
-	if( WM_MOUSEACTIVATE == uMsg ){
-		// MA_NOACTIVATEでクリック自体は素通ししつつアクティブ化だけを止める
-		// (一覧のクリックはSysListView32が自分自身へ::SetFocus()する経路でなお暗黙に
-		// アクティブ化してしまうため、OnNotify側でも明示的にエディタへフォーカスを
-		// 戻している)。
-		//
-		// ただし元に戻す/やり直しボタンは、sakuraプロセス全体が非アクティブな状態から
-		// の最初のクリックだと、MA_NOACTIVATEを返してもクリックがボタンの通常の
-		// クリック処理(WM_LBUTTONDOWN→BN_CLICKED)まで届かず、ウィンドウをアクティブ
-		// 化するだけで消費されてしまう(非アクティブ状態で1回目クリック→何も起きない、
-		// 2回目で初めてUndo/Redoが実行される、という2度押しになる)。ボタンを押したら
-		// 常に即座に動作させるため、WM_MOUSEACTIVATEの時点(クリックが消費される前)で
-		// カーソル位置がボタン上かを判定し、その場で自前でBN_CLICKEDを合成して即時
-		// 実行したうえでMA_NOACTIVATEANDEATを返し、本来のクリックメッセージは握り
-		// つぶす(パネルが既にアクティブな場合はWM_MOUSEACTIVATE自体が飛んでこないため
-		// 通常のBN_CLICKED経路と二重実行にはならない)。
-		POINT	pt;
-		::GetCursorPos( &pt );
-		::ScreenToClient( hwnd, &pt );
-		HWND	hChild = ::ChildWindowFromPointEx( hwnd, pt, CWP_SKIPINVISIBLE | CWP_SKIPDISABLED );
-		int		nCtrlId = ( NULL != hChild ) ? ::GetDlgCtrlID( hChild ) : 0;
-		if( IDC_BUTTON_HISTORYUNDO == nCtrlId || IDC_BUTTON_HISTORYREDO == nCtrlId ){
-			::SendMessage( hwnd, WM_COMMAND, MAKEWPARAM( nCtrlId, BN_CLICKED ), (LPARAM)hChild );
-			return MA_NOACTIVATEANDEAT;
-		}
-		return MA_NOACTIVATE;
-	}else if( WM_NCDESTROY == uMsg ){
-		::RemoveWindowSubclass( hwnd, HistoryPanelDlgSubclassProc, uIdSubclass );
+	//! 自前タイトルバーの見た目(WM_ERASEBKGNDで塗る)。色は決め打ちにせず、OSの現在の
+	//! 配色(GetSysColor(COLOR_ACTIVECAPTION)等)をそのつど問い合わせる。CDlgFuncList
+	//! (アウトライン解析)のドッキング時タイトル描画も同じ流儀で、これによりWindowsの
+	//! 「タイトルバーにアクセントカラーを表示する」設定に自動追従する(この設定が
+	//! オンだと、素のWS_CAPTIONダイアログも含め全ウィンドウのタイトルバーがこの色に
+	//! なる。オフなら既定の白系配色になる)。
+	const wchar_t	szTitleBarText[] = L"Undo履歴";
+
+	COLORREF TitleBarBackColor()
+	{
+		return ::GetSysColor( COLOR_ACTIVECAPTION );
 	}
-	return ::DefSubclassProc( hwnd, uMsg, wParam, lParam );
+	COLORREF TitleBarTextColor()
+	{
+		return ::GetSysColor( COLOR_CAPTIONTEXT );
+	}
+	//! 閉じるボタン押下中のフィードバック用に、タイトル帯の色を少し暗くする
+	COLORREF TitleBarBackColorPressed()
+	{
+		COLORREF	cr = TitleBarBackColor();
+		return RGB( GetRValue( cr ) * 3 / 4, GetGValue( cr ) * 3 / 4, GetBValue( cr ) * 3 / 4 );
+	}
+
+	const wchar_t		szHistoryPanelWndClass[] = L"SakuraHistoryPanelWndClass";	// NKMM_UNDO_HISTORY_PANEL
+
+
+	//! ウィンドウが最大化されているか(WINDOWPLACEMENT経由。IsZoomed()と等価)
+	bool HistoryPanelIsMaximized( HWND hwnd )
+	{
+		WINDOWPLACEMENT	wp = { sizeof( wp ) };
+		return ( ::GetWindowPlacement( hwnd, &wp ) && SW_MAXIMIZE == wp.showCmd );
+	}
+
+
+	/*! WM_NCCALCSIZEでクライアント矩形を「提案されたウィンドウ矩形そのまま」に
+		することでOS標準のキャプション・枠の描画領域を一切確保させない場合、
+		万一最大化されるとウィンドウ矩形自体がモニタの外(タスクバーの下)まで
+		含んでしまうため、最大化時だけモニタの作業領域に収まるよう補正する
+		(https://github.com/melak47/BorderlessWindow の adjust_maximized_client_rect相当。
+		このパネルに最大化ボタンは無いが、Win+↑等で最大化され得るための保険)
+	*/
+	void HistoryPanelAdjustMaximizedClientRect( HWND hwnd, RECT& rc )
+	{
+		if( !HistoryPanelIsMaximized( hwnd ) ){
+			return;
+		}
+		HMONITOR	hMonitor = ::MonitorFromWindow( hwnd, MONITOR_DEFAULTTONULL );
+		if( NULL == hMonitor ){
+			return;
+		}
+		MONITORINFO	mi = { sizeof( mi ) };
+		if( ::GetMonitorInfoW( hMonitor, &mi ) ){
+			rc = mi.rcWork;
+		}
+	}
+
+
+	/*! ウィンドウクラスの登録(プロセス内で一度だけ。sakuraのタブは別プロセスなので
+		プロセスごとの登録で十分)
+	*/
+	ATOM RegisterHistoryPanelClass( HINSTANCE hInstance )
+	{
+		static ATOM	atom = 0;
+		if( 0 == atom ){
+			WNDCLASSEXW	wcx = {};
+			wcx.cbSize        = sizeof( wcx );
+			wcx.style         = CS_HREDRAW | CS_VREDRAW;
+			wcx.lpfnWndProc   = CDlgHistoryPanel::WndProc;
+			wcx.hInstance     = hInstance;
+			wcx.hCursor       = ::LoadCursorW( NULL, IDC_ARROW );
+			wcx.hbrBackground = ::GetSysColorBrush( COLOR_BTNFACE );
+			wcx.lpszClassName = szHistoryPanelWndClass;
+			atom = ::RegisterClassExW( &wcx );
+		}
+		return atom;
+	}
 }
 
 
 CDlgHistoryPanel::CDlgHistoryPanel()
-	: CDialog( true )
+	: m_hWnd( NULL )
+	, m_hwndParent( NULL )
+	, m_hwndList( NULL )
+	, m_hwndUndoBtn( NULL )
+	, m_hwndRedoBtn( NULL )
+	, m_hwndCloseBtn( NULL )
+	, m_hwndStatusBar( NULL )
+	, m_hwndSizeGrip( NULL )
+	, m_hInstance( NULL )
 	, m_pcFuncLookup( NULL )
 	, m_pcView( NULL )
 	, m_bSuppressRefresh( false )
+	, m_hFontMain( NULL )
 	, m_hFontItalic( NULL )
+	, m_nTitleBarHeight( 0 )
+	, m_nCloseBtnWidth( 0 )
+	, m_nStatusBarHeight( 0 )
+	, m_nWidth( -1 )
+	, m_nHeight( -1 )
+	, m_nOffsetX( 0 )
+	, m_nOffsetY( 0 )
 	, m_bParentWasMinimized( false )
-	, m_hwndTrueParent( NULL )
 {
-	m_ptDefaultSize.x = 0;
-	m_ptDefaultSize.y = 0;
-	::SetRectEmpty( &m_rcListDefault );
 }
 
 
-/*! モードレスダイアログの表示。CDialog(true)によりタイトルバー・サイズ変更枠を
-	持つ通常の可変ダイアログとして扱われ、ユーザーが自由に移動・リサイズできる
-	(初期位置・サイズの決定はOnInitDialog参照)
+CDlgHistoryPanel::~CDlgHistoryPanel()
+{
+	if( NULL != m_hWnd && ::IsWindow( m_hWnd ) ){
+		::DestroyWindow( m_hWnd );
+	}
+}
+
+
+/*! 親ウィンドウ(エディタ)矩形の右下(20pxマージン)にこのパネルを配置するとした
+	場合のx,yを計算する。表示するたびの既定位置(DoModeless())にのみ使う。
+	以後の追従(FollowParentWindow())はここへ毎回スナップし直すのではなく、
+	m_nOffsetX/Yに基づく相対追従にする(ユーザーがドラッグした位置を尊重するため。
+	UpdateOffsetFromCurrentPosition()参照)。
+*/
+void CDlgHistoryPanel::ComputeBottomRightPosition( int nWidth, int nHeight, int& x, int& y ) const
+{
+	RECT	rcParent;
+	::GetWindowRect( m_hwndParent, &rcParent );
+	x = rcParent.right  - nWidth  - DpiScaleX( 20 );
+	y = rcParent.bottom - nHeight - DpiScaleY( 20 );
+}
+
+
+/*! 現在のこのパネルの位置と親ウィンドウの位置の差をm_nOffsetX/Yへ記録する。
+	このパネル自身のWM_MOVEのたびに呼ばれる(ユーザーがタイトル帯をドラッグして
+	動かした場合も、FollowParentWindow()が追従のため動かした場合も、結果として
+	「今の位置」を基準に記録し直すだけなので、そのつどの原因を区別する必要がない)
+*/
+void CDlgHistoryPanel::UpdateOffsetFromCurrentPosition()
+{
+	if( NULL == m_hWnd || NULL == m_hwndParent || !::IsWindow( m_hwndParent ) ){
+		return;
+	}
+	RECT	rcSelf, rcParent;
+	::GetWindowRect( m_hWnd, &rcSelf );
+	::GetWindowRect( m_hwndParent, &rcParent );
+	m_nOffsetX = rcSelf.left - rcParent.left;
+	m_nOffsetY = rcSelf.top  - rcParent.top;
+}
+
+
+/*! パネルの表示。生成時からWS_CAPTION|WS_THICKFRAMEを持つ独立したポップアップ
+	ウィンドウとして作る(見た目のキャプション・枠はWM_NCCALCSIZE/WM_NCHITTESTで
+	消す。詳細はCDlgHistoryPanel.hのクラスコメント参照)。位置は毎回、親ウィンドウ
+	(エディタ)の右下へ配置し直す。大きさは前回覚えた値(無ければ既定値)を使う。
 */
 HWND CDlgHistoryPanel::DoModeless( HINSTANCE hInstance, HWND hwndParent, CFuncLookup* pcFuncLookup, CEditView* pcView )
 {
 	m_pcFuncLookup = pcFuncLookup;
 	m_pcView = pcView;
+	m_hwndParent = hwndParent;
+	m_hInstance = hInstance;
 
-	// CDialog::DoModeless()はCreateDialogParam()がWM_INITDIALOGを同期的に配送するため、
-	// OnInitDialog()完了後に戻ってくる。そのOnInitDialog()の初回配置ロジックが使う
-	// 「正しい」オーナーを、下記のResolveDialogOwnerWindow()による誤補正より前に
-	// 確定させておく必要があるため、m_hwndParentへの反映を待たずここで控えておく。
-	m_hwndTrueParent = hwndParent;
+	RegisterHistoryPanelClass( hInstance );
 
-	HWND	hWnd = CDialog::DoModeless( hInstance, hwndParent, IDD_DLG_UNDOHISTORY, 0, SW_HIDE );
-	if( NULL != hWnd ){
-		// CDialog::DoModeless()内部のResolveDialogOwnerWindow()(NKMM_FIX_DIALOG_OWNER)は、
-		// 渡されたhwndParentがその時点で非表示ならGetForegroundWindow()に「補正」して
-		// しまう。トリガーとなった操作元ウィンドウが不明瞭なダイアログ/メッセージ
-		// ボックス向けの救済策だが、このパネルは常に所属するCEditWndがhwndParent引数
-		// として明確にわかっているため、この補正はむしろ有害(タブ切替直後などで
-		// hwndParentが一時的に非表示だと無関係な別ウィンドウ―別プロセスのことも
-		// ある―がオーナーにされ、以後::ShowOwnedPopups()によるタブ切替時の自動
-		// 非表示が本来のオーナーには効かなくなり、パネルが元のタブの位置に取り残
-		// される)。補正結果を明示的に上書きして確定させる。
-		::SetWindowLongPtr( hWnd, GWLP_HWNDPARENT, (LONG_PTR)hwndParent );
-		m_hwndParent = hwndParent;	// RestoreEditorFocus()/SetPlaceOfWindow()等が参照する側も合わせて訂正する
+	m_nTitleBarHeight = DpiScaleY( 28 );
+	m_nCloseBtnWidth  = DpiScaleX( 32 );
 
-		// WM_MOUSEACTIVATE(HistoryPanelDlgSubclassProc)でMA_NOACTIVATEを返すだけでは
-		// 不十分だった。一覧(SysListView32)は既定のクリック処理内で自分自身へ
-		// ::SetFocus()するが、Win32のSetFocus()は対象がアクティブでないトップレベル
-		// ウィンドウに属する場合、MA_NOACTIVATEの有無に関わらずそのトップレベルを
-		// 暗黙にアクティブ化してしまう。WS_EX_NOACTIVATEを立てるとこの暗黙アクティブ化
-		// 自体が起きなくなる(NM_CLICK自体はヒットテストで届くため行クリックの
-		// ジャンプ機能には影響しない)。
-		LONG_PTR	exStyle = ::GetWindowLongPtr( hWnd, GWL_EXSTYLE );
-		::SetWindowLongPtr( hWnd, GWL_EXSTYLE, exStyle | WS_EX_NOACTIVATE );
-		::ShowWindow( hWnd, SW_SHOWNOACTIVATE );
+	const DWORD	style   = WS_POPUP | WS_CLIPCHILDREN | WS_THICKFRAME | WS_CAPTION;
+	const DWORD	exStyle = WS_EX_NOACTIVATE;
+
+	// 既定サイズはCDialog版だった頃の初期表示(ダイアログテンプレート220x296DLUの
+	// 縦横それぞれ半分)に近い、小さめのコンパクトな大きさにする
+	int	nWidth  = ( 0 < m_nWidth  ) ? m_nWidth  : DpiScaleX( 220 );
+	int	nHeight = ( 0 < m_nHeight ) ? m_nHeight : DpiScaleY( 280 );
+
+	int	x, y;
+	ComputeBottomRightPosition( nWidth, nHeight, x, y );
+
+	HWND	hwnd = ::CreateWindowExW(
+		exStyle, szHistoryPanelWndClass, L"Undo履歴", style,
+		x, y, nWidth, nHeight,
+		hwndParent, NULL, hInstance, this );
+	if( NULL == hwnd ){
+		return NULL;
 	}
-	return hWnd;
+
+	m_bParentWasMinimized = ( 0 != ::IsIconic( hwndParent ) );
+	// FollowParentWindow()が使う追従用の相対オフセットを、今置いた既定位置(右下)
+	// を基準に初期化する(WM_MOVEでも同じ値に更新されるはずだが、明示しておく)
+	UpdateOffsetFromCurrentPosition();
+
+	::ShowWindow( hwnd, SW_SHOWNOACTIVATE );
+	return hwnd;
 }
 
 
-/*! 親ウィンドウ(エディタ本体)の最小化/復元にパネルの表示状態を追従させる。
-	位置は毎回の表示時にOnInitDialog()が既定位置へ配置し直すので、ここでは
-	追従させない。
+/*! 親ウィンドウ(エディタ本体)の移動・リサイズ・最小化/復元にパネルの位置・表示
+	状態を追従させる。CEditWnd::WM_MOVE/WM_SIZEハンドラから呼ばれる(CDlgFindの
+	FollowParentWindow()と同じ、既存の呼び出し口)。
 */
 void CDlgHistoryPanel::FollowParentWindow()
 {
-	if( NULL == GetHwnd() || NULL == m_hwndParent || !::IsWindow( m_hwndParent ) ){
+	if( NULL == m_hWnd || NULL == m_hwndParent || !::IsWindow( m_hwndParent ) ){
 		return;
 	}
 
 	bool	bIsMinimizedNow = ( 0 != ::IsIconic( m_hwndParent ) );
 	if( bIsMinimizedNow != m_bParentWasMinimized ){
-		::ShowWindow( GetHwnd(), bIsMinimizedNow ? SW_HIDE : SW_SHOWNOACTIVATE );
+		::ShowWindow( m_hWnd, bIsMinimizedNow ? SW_HIDE : SW_SHOWNOACTIVATE );
 		m_bParentWasMinimized = bIsMinimizedNow;
 	}
+	if( bIsMinimizedNow ){
+		return;	// 最小化中は位置を動かす必要が無い
+	}
+
+	// 親ウィンドウとの相対オフセット(m_nOffsetX/Y、ユーザーがタイトル帯をドラッグして
+	// 動かした位置を反映している。UpdateOffsetFromCurrentPosition()参照)を保ったまま
+	// 追従させる。表示のたびの既定位置(右下)へ毎回スナップし直すわけではない。
+	RECT	rcParent;
+	::GetWindowRect( m_hwndParent, &rcParent );
+	::SetWindowPos( m_hWnd, NULL, rcParent.left + m_nOffsetX, rcParent.top + m_nOffsetY, 0, 0,
+		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
 }
 
 
@@ -168,231 +277,438 @@ void CDlgHistoryPanel::OnUndoStackChanged()
 }
 
 
-BOOL CDlgHistoryPanel::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+/*! ウィンドウプロシージャ。WM_NCCREATE時にCREATESTRUCT::lpCreateParams(=DoModeless()
+	に渡したthis)をGWLP_USERDATAへ格納し、以後はそこから読み戻して振り分ける。
+	ダイアログテンプレート/DLGPROCを経由しないため、最初のWM_NCCALCSIZEから
+	一貫してHandleMessage()側で処理できる(CDialog版で必要だった「生成後に
+	WS_CAPTION|WS_THICKFRAMEを付与してSWP_FRAMECHANGEDで矯正する」回避策が丸ごと
+	不要になる)。
+*/
+LRESULT CALLBACK CDlgHistoryPanel::WndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	// CDlgWindowList(サイズ変更可能ダイアログの他の実例)と同じ手順: 先に_SetHwnd()して
-	// 自前の初期化を済ませ、CDialog::OnInitDialog()(SetData/SetDialogPosSize等を行う)は
-	// 最後にまとめて呼ぶ。ただしDWLP_USERだけはここで先に設定しておく必要がある。
-	// MyDialogProc()はWM_INITDIALOG以外の全メッセージをGetWindowLongPtr(hwndDlg,
-	// DWLP_USER)経由でこのオブジェクトへ振り分けるため、DWLP_USERを設定する前に
-	// 発生するWM_SIZE等(下記の初期リサイズ呼び出しが引き起こす分を含む)は誰にも
-	// 配送されずOnSize()が呼ばれないまま無視されてしまう。
-	_SetHwnd( hwndDlg );
-	::SetWindowLongPtr( hwndDlg, DWLP_USER, lParam );
-
-	// CDialog::OnSize()(この後)がGetWindowRect()の現在値でm_nWidth/m_nHeightを
-	// 問答無用で上書きしてしまうため、「サイズを記憶したことが一度もないか」の判定は
-	// その副作用が起きる前に確定させ、2回目以降の表示では失われた前回のサイズを
-	// 後で復元する必要がある。位置(m_xPos/m_yPos)は表示のたびに必ず既定位置へ
-	// 再計算するため(下記)、ここで記憶・復元する対象はサイズのみでよい。
-	bool	bFirstShowSize = ( -1 == m_nWidth || -1 == m_nHeight );
-	int		nSavedWidth = m_nWidth, nSavedHeight = m_nHeight;
-
-	// クリックでこのウィンドウ自体がアクティブ化されるのを防ぐ(HistoryPanelDlgSubclassProc
-	// のWM_MOUSEACTIVATE参照)
-	::SetWindowSubclass( hwndDlg, HistoryPanelDlgSubclassProc, 0, 0 );
-
-	HWND	hListView = GetItemHwnd( IDC_LIST_UNDOHISTORY );
-
-	// 飾りのステータスバー(CMainStatusBar::CreateStatusBar()と同じCreateStatusWindow)を
-	// 下部に作成し、その高さぶんだけ一覧を切り詰め、元に戻す/やり直しボタンを
-	// その左側に重ねて配置し直す(Paint.NETの履歴パネルと同じ見た目)。ボタンは
-	// テンプレート内で先に生成済みのため、後から作るステータスバーの背面に
-	// 隠れないようZ順をHWND_TOPで明示的に前面へ上げる。
-	{
-		// WS_CLIPSIBLINGSが無いと、このステータスバーが自身を再描画するたびに
-		// (兄弟である元に戻す/やり直しボタンの領域も含めて)矩形全体を塗りつぶし、
-		// Z順ではボタンの方が前面でも見た目上ボタンが消えてしまう。ダイアログ
-		// テンプレート側のボタンは既定でWS_CLIPSIBLINGSが付くが、CreateStatusWindow()
-		// はコードでの生成のため明示的に指定する必要がある。
-		HWND	hStatusBar = ::CreateStatusWindow( WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, _T(""), hwndDlg, IDC_STATUSBAR_HISTORYPANEL );
-
-		RECT	rcStatus;
-		GetItemClientRect( IDC_STATUSBAR_HISTORYPANEL, rcStatus );
-		int	nStatusHeight = rcStatus.bottom - rcStatus.top;
-
-		RECT	rcDlgClient;
-		::GetClientRect( hwndDlg, &rcDlgClient );
-
-		RECT	rcListNow;
-		GetItemClientRect( IDC_LIST_UNDOHISTORY, rcListNow );
-		::SetWindowPos( hListView, NULL, 0, 0,
-			rcListNow.right - rcListNow.left,
-			( rcDlgClient.bottom - nStatusHeight ) - rcListNow.top - DpiScaleY( 2 ),
-			SWP_NOMOVE | SWP_NOZORDER );
-
-		int	nBtnSize = nStatusHeight - DpiScaleY( 4 );
-		int	nBtnY = rcStatus.top + DpiScaleY( 2 );
-		::SetWindowPos( GetItemHwnd( IDC_BUTTON_HISTORYUNDO ), HWND_TOP,
-			rcStatus.left + DpiScaleX( 2 ), nBtnY, nBtnSize, nBtnSize, SWP_SHOWWINDOW );
-		::SetWindowPos( GetItemHwnd( IDC_BUTTON_HISTORYREDO ), HWND_TOP,
-			rcStatus.left + DpiScaleX( 2 ) + nBtnSize + DpiScaleX( 2 ), nBtnY, nBtnSize, nBtnSize, SWP_SHOWWINDOW );
+	CDlgHistoryPanel*	pThis;
+	if( WM_NCCREATE == uMsg ){
+		CREATESTRUCTW*	pcs = (CREATESTRUCTW*)lParam;
+		pThis = (CDlgHistoryPanel*)pcs->lpCreateParams;
+		pThis->m_hWnd = hwnd;
+		::SetWindowLongPtrW( hwnd, GWLP_USERDATA, (LONG_PTR)pThis );
+	}else{
+		pThis = (CDlgHistoryPanel*)::GetWindowLongPtrW( hwnd, GWLP_USERDATA );
 	}
-
-	// リサイズ用の隅つまみ(サイズボックス)は上のステータスバー作成より後に作ることで、
-	// 常にステータスバーより前面(隅に重なって見える)にする。
-	CreateSizeBox();
-	CDialog::OnSize();
-
-	// 直前のCDialog::OnSize()が上書きしたm_nWidth/m_nHeightを、このOnInitDialog
-	// 呼び出しの開始時点の値へ戻す。bFirstShowSizeなら-1のままで良く(この後の
-	// bFirstShowSizeブロックが改めて決定する)、そうでなければ前回OnDestroy()で
-	// 記憶したユーザーのサイズをそのまま復元し、このあとCDialog::OnInitDialog()内の
-	// SetDialogPosSize()が正しい値を使えるようにする。m_xPos/m_yPosは表示のたびに
-	// 必ず下で既定位置へ再計算するので、ここでは復元しない。
-	m_nWidth = nSavedWidth; m_nHeight = nSavedHeight;
-
-	// OnSize()のResizeItem()計算用に、ここまでで確定したレイアウトを基準値として
-	// 一度だけ記録しておく。この後の初回配置・SetDialogPosSize()による位置復元の
-	// どちらでも、この基準値からの相対計算で追従させる。
-	{
-		RECT	rc;
-		::GetWindowRect( hwndDlg, &rc );
-		m_ptDefaultSize.x = rc.right - rc.left;
-		m_ptDefaultSize.y = rc.bottom - rc.top;
-		GetItemClientRect( IDC_LIST_UNDOHISTORY, m_rcListDefault );
-		GetItemClientRect( IDC_BUTTON_HISTORYUNDO, m_rcUndoBtnDefault );
-		GetItemClientRect( IDC_BUTTON_HISTORYREDO, m_rcRedoBtnDefault );
-		GetItemClientRect( IDC_STATUSBAR_HISTORYPANEL, m_rcStatusBarDefault );
+	if( NULL != pThis ){
+		return pThis->HandleMessage( hwnd, uMsg, wParam, lParam );
 	}
-
-	if( bFirstShowSize ){
-		// 初回作成時のみ、ダイアログテンプレートの既定サイズの縦横それぞれ半分
-		// (面積では1/4)に縮小する。縮小自体はOnSize()自身のResizeItem()ロジックに
-		// 任せる(ここでm_ptDefaultSizeを基準にSetWindowPosするだけで、WM_SIZE経由で
-		// 一覧・ボタン・ステータスバーも連動して縮む)。以後ユーザーがリサイズした
-		// サイズはCDialog(true)によりOnDestroy()でm_nWidth/m_nHeightへ記憶される。
-		::SetWindowPos( hwndDlg, NULL, 0, 0, m_ptDefaultSize.x / 2, m_ptDefaultSize.y / 2,
-			SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
-	}
-
-	// 位置は表示されるたびに毎回、親ウィンドウ(エディタ)の右下へ配置し直す
-	// (CDlgFuncList「アウトライン解析」の非ドッキング時と同じ要領)。ユーザーが
-	// ドラッグした位置は記憶しない。m_hwndParentではなくm_hwndTrueParentを使う
-	// (この時点ではまだResolveDialogOwnerWindow()による誤補正後の値のままなので)。
-	{
-		// SetPlaceOfWindow()はm_bPlaceHorizontal/m_bPlaceVertical(既定true)が立って
-		// いると、呼び出し時点のこのウィンドウの「現在の」物理サイズでm_nWidth/
-		// m_nHeightを勝手に上書きしてしまう。bFirstShowSize==falseの回(サイズは
-		// 縮小し直さずCDialog::OnInitDialog()内のSetDialogPosSize()に復元を任せている)
-		// は、この時点ではまだウィンドウが生成直後の既定(自然)サイズのままなので、
-		// 上のnSavedWidth/nSavedHeightで正しく復元したはずのサイズがここで再び
-		// 上書きされてしまう。位置計算にはこのパネル自身の幅・高さは不要(親矩形と
-		// DLGPLACE_BRの組から一意に決まる)ため、ここでは無効化しておく。
-		bool	bSavedPlaceH = m_bPlaceHorizontal, bSavedPlaceV = m_bPlaceVertical;
-		m_bPlaceHorizontal = false;
-		m_bPlaceVertical = false;
-		RECT	rcParent;
-		::GetWindowRect( m_hwndTrueParent, &rcParent );
-		SetPlaceOfWindow( m_hwndTrueParent, &rcParent, CDialog::DLGPLACE_BR );
-		m_bPlaceHorizontal = bSavedPlaceH;
-		m_bPlaceVertical = bSavedPlaceV;
-		::SetWindowPos( hwndDlg, NULL, m_xPos, m_yPos, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
-	}
-
-	m_bParentWasMinimized = ( 0 != ::IsIconic( m_hwndTrueParent ) );
-
-	ListView_SetExtendedListViewStyleEx( hListView, LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT );
-
-	RECT	rc;
-	::GetClientRect( hListView, &rc );
-	int	nAvailWidth = ( rc.right - rc.left ) - ::GetSystemMetrics( SM_CXVSCROLL );
-
-	LV_COLUMN	col;
-	::ZeroMemory( &col, sizeof_raw( col ) );
-	col.mask     = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM;
-	col.fmt      = LVCFMT_LEFT;
-	col.cx       = nAvailWidth;
-	col.iSubItem = 0;
-	ListView_InsertColumn( hListView, 0, &col );
-
-	// Redo待ち(取り消し済み)行の表示用に、既定フォントのイタリック版を用意しておく
-	// (OnDestroyで破棄)
-	m_hFontItalic = CreateFontVariant( hListView, []( LOGFONT& lf ){
-		lf.lfItalic = TRUE;
-	} );
-
-	RefreshList();
-
-	CDialog::OnInitDialog( hwndDlg, wParam, lParam );
-
-	// TRUEを返すと既定のダイアログ管理が一覧(唯一のWS_TABSTOPコントロール)へ
-	// ::SetFocus()してしまう。フォーカスはスレッド単位でありウィンドウのアクティブ
-	// 状態とは無関係にすぐ奪われるため、SW_SHOWNOACTIVATEで表示しても編集中の
-	// キャレットからキーボード入力が奪われてしまう。このパネルは常時表示の
-	// 非対話的な参照用であり自らフォーカスを取りに行ってはならないため、
-	// CDlgCommandPaletteの「自前でフォーカスを設定したため」とは逆の理由でFALSEを返す。
-	return FALSE;
+	return ::DefWindowProcW( hwnd, uMsg, wParam, lParam );
 }
 
 
-/*! ユーザーのリサイズ操作(タイトルバー付きウィンドウのサイズ変更枠のドラッグ)に
-	応じて、一覧をダイアログいっぱいに追従させる(CDlgWindowList::OnSizeと同じ
-	ANCHOR_ALLパターン)
-*/
-BOOL CDlgHistoryPanel::OnSize( WPARAM wParam, LPARAM lParam )
+LRESULT CDlgHistoryPanel::HandleMessage( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	CDialog::OnSize( wParam, lParam );
+	switch( uMsg ){
+	case WM_NCCALCSIZE:
+		// wParam==FALSEは::CreateWindowEx()の内部で最初の1回だけ送られてくる
+		// (lParamは素のRECT*で、この時点の提案クライアント矩形をそのまま採用すれば
+		// よい)。ここをTRUEの場合と同じく「変更しない」で処理しないと、生成直後の
+		// 初回表示だけ本物のキャプション・枠のぶんクライアント矩形が縮められて
+		// しまい、最初のリサイズでWM_NCCALCSIZE(TRUE)が飛んでくるまで本物のタイトル
+		// バーが自前のタイトル帯の上に二重に見えてしまう(実機で発見された実バグ)。
+		if( TRUE == wParam ){
+			HistoryPanelAdjustMaximizedClientRect( hwnd, ( (NCCALCSIZE_PARAMS*)lParam )->rgrc[0] );
+		}
+		return 0;
 
-	if( 0 == m_ptDefaultSize.x || 0 == m_ptDefaultSize.y ){
-		// OnInitDialogでの記録より前(生成直後の最初のWM_SIZE)は何もしない
-		return TRUE;
+	case WM_NCHITTEST:
+		{
+			POINT	ptScreen = { (int)(short)LOWORD( lParam ), (int)(short)HIWORD( lParam ) };
+			return HitTest( ptScreen );
+		}
+
+	case WM_ERASEBKGND:
+		return OnEraseBkgnd( (HDC)wParam );
+
+	case WM_MOUSEACTIVATE:
+		return OnMouseActivate();
+
+	case WM_CREATE:
+		OnCreate();
+		return 0;
+
+	case WM_SIZE:
+		LayoutChildren();
+		return 0;
+
+	case WM_MOVE:
+		// このパネル自身が動いた(ユーザーがタイトル帯をドラッグした、または
+		// FollowParentWindow()自身が追従のため動かした)たびに、親ウィンドウとの
+		// 相対オフセットを記録し直す。FollowParentWindow()が動かした場合も
+		// 動かした後の位置=(親位置+既存オフセット)から同じオフセットが再計算
+		// されるだけなのでズレは生じない。
+		UpdateOffsetFromCurrentPosition();
+		break;	// 既定処理へ(WM_MOVEは戻り値を使わない)
+
+	case WM_GETMINMAXINFO:
+		{
+			MINMAXINFO*	pmmi = (MINMAXINFO*)lParam;
+			pmmi->ptMinTrackSize.x = DpiScaleX( 180 );
+			pmmi->ptMinTrackSize.y = DpiScaleY( 200 );
+		}
+		return 0;
+
+	case WM_COMMAND:
+		OnCommandMsg( LOWORD( wParam ), (HWND)lParam, HIWORD( wParam ) );
+		return 0;
+
+	case WM_NOTIFY:
+		return OnNotifyMsg( lParam );
+
+	case WM_DRAWITEM:
+		return OnDrawItemMsg( lParam );
+
+	case WM_DESTROY:
+		OnDestroyWindow();
+		return 0;
+
+	case WM_NCDESTROY:
+		{
+			LRESULT	lResult = ::DefWindowProcW( hwnd, uMsg, wParam, lParam );
+			m_hWnd = NULL;
+			return lResult;
+		}
+	}
+	return ::DefWindowProcW( hwnd, uMsg, wParam, lParam );
+}
+
+
+/*! 子ウィンドウの生成。ダイアログテンプレートを使わないため、フォントも
+	sakura標準のダイアログフォント相当(9pt、NKMM_RES_FONT_NAME)を自前で構築して
+	WM_SETFONTで配る(CFuncKeyWnd.cppの表示用フォント構築と同じ流儀)
+*/
+void CDlgHistoryPanel::OnCreate()
+{
+	{
+		LOGFONTW	lf = {};
+		lf.lfHeight        = DpiPointsToPixels( -9 );
+		lf.lfWeight        = FW_NORMAL;
+		lf.lfCharSet       = DEFAULT_CHARSET;
+		lf.lfOutPrecision  = OUT_TT_ONLY_PRECIS;
+		lf.lfQuality       = DEFAULT_QUALITY;
+		lf.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
+		::lstrcpynW( lf.lfFaceName, L"" NKMM_RES_FONT_NAME, _countof( lf.lfFaceName ) );
+		m_hFontMain = ::CreateFontIndirectW( &lf );
 	}
 
-	RECT	rc;
-	::GetWindowRect( GetHwnd(), &rc );
-	POINT	ptNew = { rc.right - rc.left, rc.bottom - rc.top };
+	m_hwndList = ::CreateWindowExW( 0, WC_LISTVIEWW, L"",
+		WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDATA | LVS_NOSORTHEADER | LVS_NOCOLUMNHEADER,
+		0, 0, 0, 0, m_hWnd, (HMENU)(INT_PTR)IDC_LIST_UNDOHISTORY, m_hInstance, NULL );
+	m_hwndUndoBtn = ::CreateWindowExW( 0, L"BUTTON", L"↶",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+		0, 0, 0, 0, m_hWnd, (HMENU)(INT_PTR)IDC_BUTTON_HISTORYUNDO, m_hInstance, NULL );
+	m_hwndRedoBtn = ::CreateWindowExW( 0, L"BUTTON", L"↷",
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT,
+		0, 0, 0, 0, m_hWnd, (HMENU)(INT_PTR)IDC_BUTTON_HISTORYREDO, m_hInstance, NULL );
+	m_hwndCloseBtn = ::CreateWindowExW( 0, L"BUTTON", L"×",
+		WS_CHILD | WS_VISIBLE | BS_OWNERDRAW,
+		0, 0, 0, 0, m_hWnd, (HMENU)(INT_PTR)IDC_BUTTON_HISTORYCLOSE, m_hInstance, NULL );
+	m_hwndStatusBar = ::CreateStatusWindowW( WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS, L"", m_hWnd, IDC_STATUSBAR_HISTORYPANEL );
+	m_hwndSizeGrip = ::CreateWindowExW( 0, L"SCROLLBAR", L"",
+		WS_CHILD | WS_VISIBLE | SBS_SIZEBOX | SBS_SIZEGRIP,
+		0, 0, 0, 0, m_hWnd, NULL, m_hInstance, NULL );
 
-	ResizeItem( GetItemHwnd( IDC_LIST_UNDOHISTORY ), m_ptDefaultSize, ptNew, m_rcListDefault, ANCHOR_ALL );
-	// 飾りのステータスバーは幅いっぱいに伸ばしつつ下端に貼り付ける。元に戻す/やり直し
-	// ボタンは大きさを変えず、Paint.NETの履歴パネルと同じくその左側に貼り付いたまま
-	// 追従させる。
-	ResizeItem( GetItemHwnd( IDC_STATUSBAR_HISTORYPANEL ), m_ptDefaultSize, ptNew, m_rcStatusBarDefault, ANCHOR_BOTTOM_LEFT_RIGHT );
-	ResizeItem( GetItemHwnd( IDC_BUTTON_HISTORYUNDO ), m_ptDefaultSize, ptNew, m_rcUndoBtnDefault, ANCHOR_BOTTOM_LEFT );
-	ResizeItem( GetItemHwnd( IDC_BUTTON_HISTORYREDO ), m_ptDefaultSize, ptNew, m_rcRedoBtnDefault, ANCHOR_BOTTOM_LEFT );
+	::SendMessage( m_hwndList, WM_SETFONT, (WPARAM)m_hFontMain, FALSE );
+	::SendMessage( m_hwndUndoBtn, WM_SETFONT, (WPARAM)m_hFontMain, FALSE );
+	::SendMessage( m_hwndRedoBtn, WM_SETFONT, (WPARAM)m_hFontMain, FALSE );
 
-	// ResizeItem()は一覧コントロール自体の外枠は追従させるが、内部の(単一)列の幅は
-	// OnInitDialogで設定した固定値のままになる。パネルを初期サイズより狭くすると
-	// 列幅の方が可視幅より広いままになり不要な水平スクロールバーが出てしまうため、
-	// リサイズのたびに列幅を可視幅(垂直スクロールバー分を差し引いた幅)に合わせ直す。
+	RECT	rcStatus;
+	::GetWindowRect( m_hwndStatusBar, &rcStatus );
+	m_nStatusBarHeight = rcStatus.bottom - rcStatus.top;
+
+	ListView_SetExtendedListViewStyleEx( m_hwndList, LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT );
+	LV_COLUMN	col = {};
+	col.mask     = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM;
+	col.fmt      = LVCFMT_LEFT;
+	col.cx       = 200;
+	col.iSubItem = 0;
+	ListView_InsertColumn( m_hwndList, 0, &col );
+
+	// Redo待ち(取り消し済み)行の表示用に、m_hFontMainのイタリック版を用意しておく
+	// (OnDestroyWindowで破棄)
+	m_hFontItalic = CreateFontVariant( m_hwndList, []( LOGFONT& lf ){
+		lf.lfItalic = TRUE;
+	} );
+
+	// DWMの合成が有効なら1pxの余白をクライアント領域へ食い込ませ、非クライアント
+	// 領域が実質0でも本来のウィンドウの影(ドロップシャドウ)を描画させる
+	// (BorderlessWindowのset_shadow()相当)。見た目上の「細い枠」はこの影で表現する。
 	{
-		HWND	hListView = GetItemHwnd( IDC_LIST_UNDOHISTORY );
-		RECT	rcList;
-		::GetClientRect( hListView, &rcList );
-		int		nAvailWidth = ( rcList.right - rcList.left ) - ::GetSystemMetrics( SM_CXVSCROLL );
-		if( 0 < nAvailWidth ){
-			ListView_SetColumnWidth( hListView, 0, nAvailWidth );
+		BOOL	bCompositionEnabled = FALSE;
+		if( SUCCEEDED( ::DwmIsCompositionEnabled( &bCompositionEnabled ) ) && bCompositionEnabled ){
+			MARGINS	margins = { 1, 1, 1, 1 };
+			::DwmExtendFrameIntoClientArea( m_hWnd, &margins );
 		}
 	}
 
-	::InvalidateRect( GetHwnd(), NULL, TRUE );
+	LayoutChildren();
+	RefreshList();
+}
+
+
+void CDlgHistoryPanel::OnDestroyWindow()
+{
+	// 次回表示時の既定サイズにするため、閉じる直前の大きさを覚えておく
+	RECT	rc;
+	if( ::GetWindowRect( m_hWnd, &rc ) ){
+		m_nWidth  = rc.right - rc.left;
+		m_nHeight = rc.bottom - rc.top;
+	}
+
+	if( NULL != m_hFontItalic ){
+		::DeleteObject( m_hFontItalic );
+		m_hFontItalic = NULL;
+	}
+	if( NULL != m_hFontMain ){
+		::DeleteObject( m_hFontMain );
+		m_hFontMain = NULL;
+	}
+
+	m_hwndList = m_hwndUndoBtn = m_hwndRedoBtn = m_hwndCloseBtn = m_hwndStatusBar = m_hwndSizeGrip = NULL;
+}
+
+
+/*! WM_SIZEのたびに現在のクライアント矩形から全子ウィンドウの位置・大きさを
+	計算し直す(CDialog::ResizeItem()のような「初期矩形からの固定オフセット」
+	方式は使わない。DPI/DLU換算やダイアログ初回縮小との食い違いでレイアウトが
+	ズレる実例が旧CDialog版であったため、常に「今のクライアント矩形」だけを
+	根拠にする単純な計算にしている)
+*/
+void CDlgHistoryPanel::LayoutChildren()
+{
+	if( NULL == m_hWnd || NULL == m_hwndList ){
+		return;	// OnCreate完了前(最初のWM_SIZE)は何もしない
+	}
+
+	RECT	rcClient;
+	::GetClientRect( m_hWnd, &rcClient );
+	int	nWidth  = rcClient.right - rcClient.left;
+	int	nHeight = rcClient.bottom - rcClient.top;
+	if( nWidth <= 0 || nHeight <= 0 ){
+		return;
+	}
+
+	::SetWindowPos( m_hwndCloseBtn, HWND_TOP,
+		nWidth - m_nCloseBtnWidth, 0, m_nCloseBtnWidth, m_nTitleBarHeight, SWP_NOZORDER );
+
+	int	nStatusTop = nHeight - m_nStatusBarHeight;
+	if( nStatusTop < m_nTitleBarHeight ){
+		nStatusTop = m_nTitleBarHeight;	// 極端に小さいサイズでも一覧が負にならないための安全弁
+	}
+	::SetWindowPos( m_hwndStatusBar, NULL, 0, nStatusTop, nWidth, m_nStatusBarHeight, SWP_NOZORDER );
+
+	int	nBtnSize = m_nStatusBarHeight - DpiScaleY( 4 );
+	if( nBtnSize < DpiScaleY( 8 ) ){
+		nBtnSize = DpiScaleY( 8 );
+	}
+	int	nBtnY = nStatusTop + DpiScaleY( 2 );
+	::SetWindowPos( m_hwndUndoBtn, HWND_TOP, DpiScaleX( 2 ), nBtnY, nBtnSize, nBtnSize, SWP_NOZORDER );
+	::SetWindowPos( m_hwndRedoBtn, HWND_TOP, DpiScaleX( 2 ) + nBtnSize + DpiScaleX( 2 ), nBtnY, nBtnSize, nBtnSize, SWP_NOZORDER );
+
+	int	nListTop    = m_nTitleBarHeight + DpiScaleY( 4 );
+	int	nListLeft   = DpiScaleX( 4 );
+	int	nListWidth  = nWidth - DpiScaleX( 8 );
+	int	nListHeight = nStatusTop - DpiScaleY( 2 ) - nListTop;
+	if( nListWidth  < 0 ) nListWidth  = 0;
+	if( nListHeight < 0 ) nListHeight = 0;
+	::SetWindowPos( m_hwndList, NULL, nListLeft, nListTop, nListWidth, nListHeight, SWP_NOZORDER );
+
+	// リサイズ用の隅つまみ(サイズグリップ)は常に右下隅・最前面
+	int	nGripW = ::GetSystemMetrics( SM_CXVSCROLL );
+	int	nGripH = ::GetSystemMetrics( SM_CYHSCROLL );
+	::SetWindowPos( m_hwndSizeGrip, HWND_TOP, nWidth - nGripW, nHeight - nGripH, nGripW, nGripH, SWP_NOZORDER );
+
+	// 一覧(単一)列の幅を可視幅(垂直スクロールバー分を差し引いた幅)に合わせ直す
+	// (合わせないと、パネルを狭くしたときに不要な水平スクロールバーが出てしまう)
+	{
+		RECT	rcList;
+		::GetClientRect( m_hwndList, &rcList );
+		int	nAvailWidth = ( rcList.right - rcList.left ) - ::GetSystemMetrics( SM_CXVSCROLL );
+		if( 0 < nAvailWidth ){
+			ListView_SetColumnWidth( m_hwndList, 0, nAvailWidth );
+		}
+	}
+
+	::InvalidateRect( m_hWnd, NULL, TRUE );
+}
+
+
+/*! 背景+自前タイトル帯(色付き背景+タイトル文字)の描画。一覧・ボタン等は
+	子ウィンドウなので別途自分自身のWM_PAINTで描画され、ここでは上書きされない
+*/
+LRESULT CDlgHistoryPanel::OnEraseBkgnd( HDC hdc )
+{
+	RECT	rcClient;
+	::GetClientRect( m_hWnd, &rcClient );
+	FillRectWithColor( hdc, &rcClient, ::GetSysColor( COLOR_BTNFACE ) );
+
+	RECT	rcTitle = { rcClient.left, rcClient.top, rcClient.right, rcClient.top + m_nTitleBarHeight };
+	FillRectWithColor( hdc, &rcTitle, TitleBarBackColor() );
+
+	::SetBkMode( hdc, TRANSPARENT );
+	::SetTextColor( hdc, TitleBarTextColor() );
+	HFONT	hOldFont = (HFONT)::SelectObject( hdc, m_hFontMain );
+
+	RECT	rcText = rcTitle;
+	rcText.left  += DpiScaleX( 8 );
+	rcText.right -= m_nCloseBtnWidth + DpiScaleX( 8 );	// 右端の閉じるボタンぶんの余白
+	::DrawText( hdc, szTitleBarText, -1, &rcText, DT_SINGLELINE | DT_VCENTER | DT_LEFT | DT_NOPREFIX | DT_END_ELLIPSIS );
+
+	::SelectObject( hdc, hOldFont );
 	return TRUE;
 }
 
 
-/*! 下部の「元に戻す」「やり直し」ボタン。COpeBuf::DoUndo/DoRedoは1ステップの
-	ジャンプと同じ経路(HandleCommand)を使う。行クリックのExecuteJump()と違い
-	1ステップだけなのでSetDrawSwitch()の抑制は不要
+/*! WM_NCHITTESTのカスタム判定。ウィンドウ矩形(スクリーン座標)の外周
+	SM_CXFRAME+SM_CXPADDEDBORDER相当の帯をリサイズ枠として扱い、それ以外は
+	クライアント座標に変換したうえでタイトル帯(m_nTitleBarHeight)の範囲内なら
+	HTCAPTION(ドラッグ移動)、それ以外はHTCLIENTを返す。一覧やボタン等の子
+	ウィンドウ上の点は、この関数に来る前に子ウィンドウ自身がHTCLIENTを返して
+	確定するため、ここに来る時点で「子ウィンドウの無い領域」であることが
+	保証されている(https://github.com/melak47/BorderlessWindow のhit_test()相当)
 */
-BOOL CDlgHistoryPanel::OnBnClicked( int wID )
+LRESULT CDlgHistoryPanel::HitTest( POINT ptScreen ) const
 {
+	RECT	rcWindow;
+	if( !::GetWindowRect( m_hWnd, &rcWindow ) ){
+		return HTNOWHERE;
+	}
+
+	POINT	border = {
+		::GetSystemMetrics( SM_CXFRAME ) + ::GetSystemMetrics( SM_CXPADDEDBORDER ),
+		::GetSystemMetrics( SM_CYFRAME ) + ::GetSystemMetrics( SM_CXPADDEDBORDER )
+	};
+
+	enum { REGION_CLIENT = 0, REGION_LEFT = 1, REGION_RIGHT = 2, REGION_TOP = 4, REGION_BOTTOM = 8 };
+	int	nRegion =
+		( ptScreen.x <  rcWindow.left   + border.x ? REGION_LEFT   : 0 ) |
+		( ptScreen.x >= rcWindow.right  - border.x ? REGION_RIGHT  : 0 ) |
+		( ptScreen.y <  rcWindow.top    + border.y ? REGION_TOP    : 0 ) |
+		( ptScreen.y >= rcWindow.bottom - border.y ? REGION_BOTTOM : 0 );
+
+	switch( nRegion ){
+	case REGION_LEFT:                    return HTLEFT;
+	case REGION_RIGHT:                   return HTRIGHT;
+	case REGION_TOP:                     return HTTOP;
+	case REGION_BOTTOM:                  return HTBOTTOM;
+	case REGION_TOP    | REGION_LEFT:    return HTTOPLEFT;
+	case REGION_TOP    | REGION_RIGHT:   return HTTOPRIGHT;
+	case REGION_BOTTOM | REGION_LEFT:    return HTBOTTOMLEFT;
+	case REGION_BOTTOM | REGION_RIGHT:   return HTBOTTOMRIGHT;
+	case REGION_CLIENT:
+		{
+			POINT	ptClient = ptScreen;
+			::ScreenToClient( m_hWnd, &ptClient );
+			return ( ptClient.y < m_nTitleBarHeight ) ? HTCAPTION : HTCLIENT;
+		}
+	default:
+		return HTNOWHERE;
+	}
+}
+
+
+/*! MA_NOACTIVATEでクリック自体は素通ししつつアクティブ化だけを止める(一覧の
+	クリックはSysListView32が自分自身へ::SetFocus()する経路でなお暗黙に
+	アクティブ化してしまうため、OnNotifyMsg側でも明示的にエディタへフォーカスを
+	戻している)。
+
+	ただし元に戻す/やり直し/閉じるの各ボタンは、sakuraプロセス全体が非アクティブな
+	状態からの最初のクリックだと、MA_NOACTIVATEを返してもクリックがボタンの通常の
+	クリック処理(WM_LBUTTONDOWN→BN_CLICKED)まで届かず、ウィンドウをアクティブ化
+	するだけで消費されてしまう(非アクティブ状態で1回目クリック→何も起きない、
+	2回目で初めて実行される、という2度押しになる)。ボタンを押したら常に即座に
+	動作させるため、WM_MOUSEACTIVATEの時点(クリックが消費される前)でカーソル位置が
+	ボタン上かを判定し、その場で自前でBN_CLICKEDを合成して即時実行したうえで
+	MA_NOACTIVATEANDEATを返し、本来のクリックメッセージは握りつぶす(パネルが
+	既にアクティブな場合はWM_MOUSEACTIVATE自体が飛んでこないため通常のBN_CLICKED
+	経路と二重実行にはならない)。
+*/
+LRESULT CDlgHistoryPanel::OnMouseActivate()
+{
+	POINT	pt;
+	::GetCursorPos( &pt );
+	::ScreenToClient( m_hWnd, &pt );
+	HWND	hChild = ::ChildWindowFromPointEx( m_hWnd, pt, CWP_SKIPINVISIBLE | CWP_SKIPDISABLED );
+	int		nCtrlId = ( NULL != hChild ) ? ::GetDlgCtrlID( hChild ) : 0;
+	if( IDC_BUTTON_HISTORYUNDO == nCtrlId || IDC_BUTTON_HISTORYREDO == nCtrlId
+	 || IDC_BUTTON_HISTORYCLOSE == nCtrlId ){
+		::SendMessage( m_hWnd, WM_COMMAND, MAKEWPARAM( nCtrlId, BN_CLICKED ), (LPARAM)hChild );
+		return MA_NOACTIVATEANDEAT;
+	}
+	return MA_NOACTIVATE;
+}
+
+
+/*! 下部の「元に戻す」「やり直し」ボタン、および自前タイトルバーの閉じるボタン。
+	COpeBuf::DoUndo/DoRedoは1ステップのジャンプと同じ経路(HandleCommand)を使う。
+	行クリックのExecuteJump()と違い1ステップだけなのでSetDrawSwitch()の抑制は不要
+*/
+void CDlgHistoryPanel::OnCommandMsg( int wID, HWND hwndCtl, UINT notifyCode )
+{
+	if( NULL == hwndCtl || BN_CLICKED != notifyCode ){
+		return;
+	}
+
 	if( IDC_BUTTON_HISTORYUNDO == wID || IDC_BUTTON_HISTORYREDO == wID ){
 		if( NULL != m_pcView ){
 			m_pcView->GetCommander().HandleCommand(
 				( IDC_BUTTON_HISTORYUNDO == wID ) ? F_UNDO : F_REDO, true, 0, 0, 0, 0 );
 		}
-		// BS_PUSHBUTTONの既定のクリック処理も一覧のクリック(OnNotify参照)と同様に
-		// このパネル自体をアクティブ化してしまうため、同じ理由で戻す。
+		// 既定のクリック処理も一覧のクリック(OnNotifyMsg参照)と同様にこのパネル
+		// 自体をアクティブ化してしまうため、同じ理由で戻す。
 		RestoreEditorFocus();
-		return TRUE;
+		return;
 	}
-	return CDialog::OnBnClicked( wID );
+
+	if( IDC_BUTTON_HISTORYCLOSE == wID ){
+		// F5キー(F_SHOWUNDOHISTORYPANEL)と同じトグルコマンドを呼ぶことで、
+		// このパネルを閉じる(Command_SHOWUNDOHISTORYPANEL()がGetHwnd()!=NULLから
+		// ::DestroyWindow()を行う経路。このパネル自身のWM_COMMAND処理から自分自身の
+		// DestroyWindow()を呼ぶことになるが、HandleMessage()はOnCommandMsg()から
+		// 戻った直後にreturnするだけでhwndに一切触れないため安全)。パネルは
+		// WS_EX_NOACTIVATE/MA_NOACTIVATEANDEATによりこのクリックでエディタ側の
+		// フォーカスを奪っていないため、Undo/Redoボタンと異なりRestoreEditorFocus()
+		// は不要。
+		if( NULL != m_pcView ){
+			m_pcView->GetCommander().HandleCommand( F_SHOWUNDOHISTORYPANEL, true, 0, 0, 0, 0 );
+		}
+		return;
+	}
+}
+
+
+/*! 自前タイトルバーの閉じるボタン(IDC_BUTTON_HISTORYCLOSE、BS_OWNERDRAW)の描画。
+	タイトル帯(OnEraseBkgnd)と地続きに見えるよう同系色で塗り、押下中
+	(ODS_SELECTED)だけ暗くして押下フィードバックを出す
+*/
+LRESULT CDlgHistoryPanel::OnDrawItemMsg( LPARAM lParam )
+{
+	LPDRAWITEMSTRUCT	pDIS = (LPDRAWITEMSTRUCT)lParam;
+	if( IDC_BUTTON_HISTORYCLOSE != pDIS->CtlID ){
+		return FALSE;
+	}
+
+	bool	bPressed = ( 0 != ( pDIS->itemState & ODS_SELECTED ) );
+	FillRectWithColor( pDIS->hDC, &pDIS->rcItem, bPressed ? TitleBarBackColorPressed() : TitleBarBackColor() );
+
+	::SetBkMode( pDIS->hDC, TRANSPARENT );
+	::SetTextColor( pDIS->hDC, TitleBarTextColor() );
+	HFONT	hOldFont = (HFONT)::SelectObject( pDIS->hDC, m_hFontMain );
+	::DrawText( pDIS->hDC, L"×", -1, &pDIS->rcItem, DT_SINGLELINE | DT_CENTER | DT_VCENTER | DT_NOPREFIX );
+	::SelectObject( pDIS->hDC, hOldFont );
+	return TRUE;
 }
 
 
 /*! 一覧のNM_CLICK・ボタンのBN_CLICKEDいずれも、既定のクリック処理内で対象
 	コントロールが自分自身へ::SetFocus()し、その結果WS_EX_NOACTIVATE/
-	WM_MOUSEACTIVATE(MA_NOACTIVATE)を設定していてもなおこのパネル(親ダイアログ)が
+	WM_MOUSEACTIVATE(MA_NOACTIVATE)を設定していてもなおこのパネル(親ウィンドウ)が
 	GetForegroundWindow()になってしまう。常時表示の非対話的な参照用パネルが
 	クリック1つでエディタ側のフォーカス・アクティブ状態を奪うのは避けたいため、
 	明示的にエディタへ戻す。
@@ -409,21 +725,11 @@ void CDlgHistoryPanel::RestoreEditorFocus()
 }
 
 
-BOOL CDlgHistoryPanel::OnDestroy()
-{
-	if( NULL != m_hFontItalic ){
-		::DeleteObject( m_hFontItalic );
-		m_hFontItalic = NULL;
-	}
-	return CDialog::OnDestroy();
-}
-
-
-BOOL CDlgHistoryPanel::OnNotify( WPARAM wParam, LPARAM lParam )
+LRESULT CDlgHistoryPanel::OnNotifyMsg( LPARAM lParam )
 {
 	NMHDR*	pNMHDR = (NMHDR*)lParam;
 	if( NULL == pNMHDR || IDC_LIST_UNDOHISTORY != pNMHDR->idFrom ){
-		return FALSE;
+		return 0;
 	}
 	if( NM_CLICK == pNMHDR->code ){
 		// クリックされた行までCommand_UNDO/Command_REDOをループ呼び出しでジャンプする
@@ -433,14 +739,12 @@ BOOL CDlgHistoryPanel::OnNotify( WPARAM wParam, LPARAM lParam )
 			ExecuteJump( pNMIA->iItem );
 		}
 		RestoreEditorFocus();
-		return TRUE;
+		return 0;
 	}
 	if( NM_CUSTOMDRAW == pNMHDR->code ){
-		LRESULT	lResult = OnListCustomDraw( lParam );
-		::SetWindowLongPtr( GetHwnd(), DWLP_MSGRESULT, lResult );
-		return TRUE;
+		return OnListCustomDraw( lParam );
 	}
-	return FALSE;
+	return 0;
 }
 
 
@@ -466,13 +770,12 @@ LRESULT CDlgHistoryPanel::OnListCustomDraw( LPARAM lParam )
 			int			nDispIndex = (int)pCD->nmcd.dwItemSpec;
 			int			nCurrent = cOpeBuf.GetCurrentPointer();
 			HDC			hdc = pCD->nmcd.hdc;
-			HWND		hListView = GetItemHwnd( IDC_LIST_UNDOHISTORY );
 
 			// レポート表示のCDDS_ITEMPREPAINT時点ではnmcd.rcが信頼できない
 			// (CDlgCommandPalette::OnListCustomDrawと同じ既知の癖)ため、
 			// ListView_GetItemRect()で改めて矩形を取得する。
 			RECT	rc;
-			ListView_GetItemRect( hListView, nDispIndex, &rc, LVIR_BOUNDS );
+			ListView_GetItemRect( m_hwndList, nDispIndex, &rc, LVIR_BOUNDS );
 
 			bool	bCurrent = ( nDispIndex == nCurrent );
 			bool	bRedoPending = ( nDispIndex > nCurrent );
@@ -559,8 +862,7 @@ void CDlgHistoryPanel::ExecuteJump( int nDispIndex )
 /*! COpeBuf::GetBlkCount()/GetBlkFuncCode()から一覧を作り直し、現在位置行を選択する */
 void CDlgHistoryPanel::RefreshList()
 {
-	HWND	hListView = GetItemHwnd( IDC_LIST_UNDOHISTORY );
-	if( NULL == hListView || NULL == m_pcView ){
+	if( NULL == m_hwndList || NULL == m_pcView ){
 		return;
 	}
 	COpeBuf&	cOpeBuf = m_pcView->GetDocument()->m_cDocEditor.m_cOpeBuf;
@@ -570,15 +872,15 @@ void CDlgHistoryPanel::RefreshList()
 	// 新しい行数を伝える前に選択状態を全解除しておく(件数が減った場合に、もう
 	// 存在しない添字の選択状態が残ったまま次回に持ち越されるのを防ぐ、
 	// CDlgCommandPalette::UpdateListと同じ理由)
-	ListView_SetItemState( hListView, -1, 0, LVIS_SELECTED | LVIS_FOCUSED );
-	ListView_SetItemCount( hListView, nCount );
-	ListView_SetItemState( hListView, nCurrent, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
-	ListView_EnsureVisible( hListView, nCurrent, FALSE );
-	::InvalidateRect( hListView, NULL, TRUE );
+	ListView_SetItemState( m_hwndList, -1, 0, LVIS_SELECTED | LVIS_FOCUSED );
+	ListView_SetItemCount( m_hwndList, nCount );
+	ListView_SetItemState( m_hwndList, nCurrent, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED );
+	ListView_EnsureVisible( m_hwndList, nCurrent, FALSE );
+	::InvalidateRect( m_hwndList, NULL, TRUE );
 
 	// 下部ボタンの有効/無効も一覧と同じタイミングで更新する
-	::EnableWindow( GetItemHwnd( IDC_BUTTON_HISTORYUNDO ), cOpeBuf.IsEnableUndo() );
-	::EnableWindow( GetItemHwnd( IDC_BUTTON_HISTORYREDO ), cOpeBuf.IsEnableRedo() );
+	::EnableWindow( m_hwndUndoBtn, cOpeBuf.IsEnableUndo() );
+	::EnableWindow( m_hwndRedoBtn, cOpeBuf.IsEnableRedo() );
 }
 
 #endif // NKMM_UNDO_HISTORY_PANEL

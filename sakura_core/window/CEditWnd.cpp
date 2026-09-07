@@ -1136,9 +1136,12 @@ void CEditWnd::MessageLoop( void )
 #ifdef NKMM_COMMAND_PALETTE
 		else if( MyIsDialogMessage( m_cDlgCommandPalette.GetHwnd(),					&msg ) ){}	//!<「コマンドパレット」ダイアログ
 #endif // NKMM_
-#ifdef NKMM_UNDO_HISTORY_PANEL
-		else if( MyIsDialogMessage( m_cDlgHistoryPanel.GetHwnd(),						&msg ) ){}	//!<「Undo履歴」パネル
-#endif // NKMM_
+		// 「Undo履歴」パネル(m_cDlgHistoryPanel)はNKMM_UNDO_HISTORY_PANEL 20260907時点で
+		// CDialog(ダイアログテンプレート)をやめ素のCreateWindowExへ作り直したため、
+		// ここには載せない(::IsDialogMessage()は実際のダイアログボックスクラスの
+		// ウィンドウを前提とするAPIで、素のポップアップには使えない/意味が無い。
+		// このパネルはWS_EX_NOACTIVATEで常時非活性化されフォーカスも取らない設計
+		// なので、そもそもキーボードメッセージのルーティングは不要)
 		else if( MyIsDialogMessage( m_cHokanMgr.GetHwnd(),								&msg ) ){}	//!<「入力補完」
 		else if( m_cToolbar.EatMessage(&msg ) ){ }													//!<ツールバー
 		//アクセラレータ
