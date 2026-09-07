@@ -952,6 +952,9 @@
     <ClInclude Include="..\sakura_core\window\CAutoScrollWnd.h">
       <Filter>Cpp Source Files\window</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\window\CBorderlessWnd.h">
+      <Filter>Cpp Source Files\window</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\window\CEditWnd.h">
       <Filter>Cpp Source Files\window</Filter>
     </ClInclude>
@@ -2421,6 +2424,9 @@
       <Filter>Cpp Source Files\dlg</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\window\CAutoScrollWnd.cpp">
+      <Filter>Cpp Source Files\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\window\CBorderlessWnd.cpp">
       <Filter>Cpp Source Files\window</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\window\CEditWnd.cpp">
