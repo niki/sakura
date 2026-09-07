@@ -64,6 +64,13 @@ public:
 	ULONGLONG GetCoalesceTick() const { return m_nCoalesceTick; }
 	void SetCoalesceTick( ULONGLONG t ) { m_nCoalesceTick = t; }
 #endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	//! このブロックを確定させたコマンドコード(EFunctionCode値。CViewCommander::
+	//! m_bPrevCommandと同じくint表現)。履歴パネルの表示ラベル解決
+	//! (CFuncLookup::Funccode2Name())に使う。未設定時はF_0(=0)のまま 20260907
+	int GetFuncCode() const { return m_nFuncCode; }
+	void SetFuncCode( int nFuncCode ) { m_nFuncCode = nFuncCode; }
+#endif // NKMM_
 
 	//デバッグ
 	void DUMP();									//!< 編集操作要素ブロックのダンプ
@@ -77,6 +84,9 @@ private:
 #ifdef NKMM_UNDO_COALESCE_TYPING
 	bool		m_bCoalesceOpen = false;	//!< 後続の連続入力をこのブロックへ結合してよいか 20260906
 	ULONGLONG	m_nCoalesceTick = 0;		//!< 最後に結合した時刻(GetTickCount64()) 20260906
+#endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	int	m_nFuncCode = 0;				//!< このブロックを確定させたコマンドコード(F_0=未設定) 20260907
 #endif // NKMM_
 
 	//参照カウンタ

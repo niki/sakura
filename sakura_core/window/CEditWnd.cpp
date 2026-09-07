@@ -721,6 +721,11 @@ HWND CEditWnd::Create(
 	/* ステータスバー */
 	LayoutStatusBar();
 
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	/* 「Undo履歴」パネル */
+	LayoutUndoHistoryPanel();
+#endif // NKMM_
+
 	/* ファンクションキー バー */
 	LayoutFuncKey();
 
@@ -991,6 +996,24 @@ void CEditWnd::LayoutStatusBar( void )
 	}
 }
 
+#ifdef NKMM_UNDO_HISTORY_PANEL
+/*! 「Undo履歴」パネルの表示/非表示切替
+	@date 2026.09.07 新規作成
+*/
+void CEditWnd::LayoutUndoHistoryPanel( void )
+{
+	if( m_pShareData->m_Common.m_sWindow.m_bDispUNDOHISTORYPANEL ){
+		if( NULL == m_cDlgHistoryPanel.GetHwnd() ){
+			m_cDlgHistoryPanel.DoModeless( G_AppInstance(), GetHwnd(), &GetDocument()->m_cFuncLookup, &GetActiveView() );
+		}
+	}else{
+		if( NULL != m_cDlgHistoryPanel.GetHwnd() ){
+			::DestroyWindow( m_cDlgHistoryPanel.GetHwnd() );
+		}
+	}
+}
+#endif // NKMM_
+
 /*! ファンクションキーの配置処理
 	@date 2006.12.19 ryoji 新規作成
 */
@@ -1112,6 +1135,9 @@ void CEditWnd::MessageLoop( void )
 		else if( MyIsDialogMessage( m_cDlgGrep.GetHwnd(),								&msg ) ){}	//!<「Grep」ダイアログ
 #ifdef NKMM_COMMAND_PALETTE
 		else if( MyIsDialogMessage( m_cDlgCommandPalette.GetHwnd(),					&msg ) ){}	//!<「コマンドパレット」ダイアログ
+#endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+		else if( MyIsDialogMessage( m_cDlgHistoryPanel.GetHwnd(),						&msg ) ){}	//!<「Undo履歴」パネル
 #endif // NKMM_
 		else if( MyIsDialogMessage( m_cHokanMgr.GetHwnd(),								&msg ) ){}	//!<「入力補完」
 		else if( m_cToolbar.EatMessage(&msg ) ){ }													//!<ツールバー
@@ -1385,6 +1411,11 @@ LRESULT CEditWnd::DispatchEvent(
 				m_cDlgCommandPalette.FollowParentWindow();
 			}
 #endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+			if( NULL != m_cDlgHistoryPanel.GetHwnd() ){
+				m_cDlgHistoryPanel.FollowParentWindow();
+			}
+#endif // NKMM_
 			return lResult;
 		}
 
@@ -1417,6 +1448,11 @@ LRESULT CEditWnd::DispatchEvent(
 #ifdef NKMM_COMMAND_PALETTE
 		if( NULL != m_cDlgCommandPalette.GetHwnd() ){
 			m_cDlgCommandPalette.FollowParentWindow();
+		}
+#endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+		if( NULL != m_cDlgHistoryPanel.GetHwnd() ){
+			m_cDlgHistoryPanel.FollowParentWindow();
 		}
 #endif // NKMM_
 		return DefWindowProc( hwnd, uMsg, wParam, lParam );
@@ -2429,6 +2465,11 @@ LRESULT CEditWnd::DispatchEvent(
 			case MYBCN_STATUSBAR:
 				LayoutStatusBar();		// 2006.12.19 ryoji
 				break;
+#ifdef NKMM_UNDO_HISTORY_PANEL
+			case MYBCN_UNDOHISTORY:
+				LayoutUndoHistoryPanel();	// 20260907
+				break;
+#endif // NKMM_
 			}
 			EndLayoutBars();	// 2006.12.19 ryoji
 		}
@@ -4914,6 +4955,12 @@ void  CEditWnd::SetActivePane( int nIndex )
 		/* モードレス時：現在位置表示の対象となるビューの変更 */
 		m_cDlgFuncList.ChangeView( (LPARAM)&GetActiveView() );
 	}
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	if( NULL != m_cDlgHistoryPanel.GetHwnd() ){	/* 「Undo履歴」パネル */
+		/* モードレス時：対象となるビューの変更 */
+		m_cDlgHistoryPanel.ChangeView( &GetActiveView() );
+	}
+#endif // NKMM_
 
 	return;
 }

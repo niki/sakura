@@ -120,6 +120,9 @@ struct CommonSetting_Window
 	BOOL			m_bDispTOOLBAR;				//!< 次回ウィンドウを開いたときツールバーを表示する
 	BOOL			m_bDispSTATUSBAR;			//!< 次回ウィンドウを開いたときステータスバーを表示する
 	BOOL			m_bDispFUNCKEYWND;			//!< 次回ウィンドウを開いたときファンクションキーを表示する
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	BOOL			m_bDispUNDOHISTORYPANEL;	//!< 次回ウィンドウを開いたときUndo履歴パネルを表示する 20260907
+#endif // NKMM_
 	BOOL			m_bMenuIcon;				//!< メニューにアイコンを表示する (アイコン付きメニュー)
 	BOOL			m_bScrollBarHorz;			//!< 水平スクロールバーを使う
 	BOOL			m_bUseCompatibleBMP;		//!< 再作画用互換ビットマップを使う 2007.09.09 Moca

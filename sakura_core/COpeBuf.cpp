@@ -217,6 +217,16 @@ bool COpeBuf::TryMergeIntoLastOpeBlk( COpeBlk* pcOpeBlk )
 }
 #endif // NKMM_
 
+#ifdef NKMM_UNDO_HISTORY_PANEL
+int COpeBuf::GetBlkFuncCode( int nIndex ) const
+{
+	if( nIndex < 0 || (int)m_vCOpeBlkArr.size() <= nIndex ){
+		return 0; // F_0
+	}
+	return m_vCOpeBlkArr[nIndex]->GetFuncCode();
+}
+#endif // NKMM_
+
 #ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
 /*!	共通設定の上限(KB)を超えていたら、古い(Undo方向の)ブロックから破棄して収める。 20260802
 

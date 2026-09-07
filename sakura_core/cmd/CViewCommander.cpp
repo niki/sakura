@@ -711,6 +711,9 @@ BOOL CViewCommander::HandleCommand(
 #ifdef NKMM_COMMAND_PALETTE
 	case F_COMMAND_PALETTE:	Command_COMMAND_PALETTE();break;	// コマンドパレット表示 // NKMM_COMMAND_PALETTE 20260818
 #endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	case F_SHOWUNDOHISTORYPANEL:	Command_SHOWUNDOHISTORYPANEL();break;	// Undo履歴パネル表示切替 // NKMM_UNDO_HISTORY_PANEL 20260907
+#endif // NKMM_
 	case F_GROUPCLOSE:		Command_GROUPCLOSE();break;		/* グループを閉じる */		// 2007.06.20 ryoji 追加
 	case F_NEXTGROUP:		Command_NEXTGROUP();break;		/* 次のグループ */			// 2007.06.20 ryoji 追加
 	case F_PREVGROUP:		Command_PREVGROUP();break;		/* 前のグループ */			// 2007.06.20 ryoji 追加

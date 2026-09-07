@@ -372,6 +372,7 @@
     <ClInclude Include="..\sakura_core\dlg\CDlgFind.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgGrep.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgGrepReplace.h" />
+    <ClInclude Include="..\sakura_core\dlg\CDlgHistoryPanel.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgInput1.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgJump.h" />
     <ClInclude Include="..\sakura_core\dlg\CDlgOpenFile.h" />
@@ -863,6 +864,7 @@
     <ClCompile Include="..\sakura_core\dlg\CDlgFind.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgGrep.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgGrepReplace.cpp" />
+    <ClCompile Include="..\sakura_core\dlg\CDlgHistoryPanel.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgInput1.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgJump.cpp" />
     <ClCompile Include="..\sakura_core\dlg\CDlgOpenFile.cpp" />

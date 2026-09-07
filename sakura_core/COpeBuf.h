@@ -53,6 +53,13 @@ public:
 	//! false時のみ通常通りAppendOpeBlk()すること) 20260906
 	bool TryMergeIntoLastOpeBlk( COpeBlk* pcOpeBlk );
 #endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	//! 履歴パネル用の読み取り専用列挙API。DoUndo/DoRedoと異なりm_nCurrentPointerを
+	//! 変更しない 20260907
+	int GetBlkCount() const { return (int)m_vCOpeBlkArr.size(); }
+	//! index番目(0開始)のブロックを確定させたコマンドコード。範囲外はF_0(0)を返す
+	int GetBlkFuncCode( int nIndex ) const;
+#endif // NKMM_
 
 	//使用
 	COpeBlk* DoUndo( bool* pbModified );		//!< 現在のUndo対象の操作ブロックを返す

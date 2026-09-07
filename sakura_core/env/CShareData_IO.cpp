@@ -2227,6 +2227,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispTOOLBAR")			, common.m_sWindow.m_bDispTOOLBAR );
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispSTATUSBAR")			, common.m_sWindow.m_bDispSTATUSBAR );
 	cProfile.IOProfileData( pszSecName, LTEXT("bDispFUNCKEYWND")		, common.m_sWindow.m_bDispFUNCKEYWND );
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	cProfile.IOProfileData( pszSecName, LTEXT("bDispUndoHistoryPanel"), common.m_sWindow.m_bDispUNDOHISTORYPANEL );
+#endif // NKMM_
 	cProfile.IOProfileData( pszSecName, LTEXT("nFUNCKEYWND_Place")		, common.m_sWindow.m_nFUNCKEYWND_Place );
 	cProfile.IOProfileData( pszSecName, LTEXT("nFUNCKEYWND_GroupNum")	, common.m_sWindow.m_nFUNCKEYWND_GroupNum );		// 2002/11/04 Moca ファンクションキーのグループボタン数
 	cProfile.IOProfileData( pszSecName, LTEXT("szLanguageDll")			, MakeStringBufferT( common.m_sWindow.m_szLanguageDll ) );
@@ -3744,7 +3747,7 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 	const WCHAR*	pszSecName = LTEXT("MainMenu");
 	int& nVersion = GetDllShareData().m_Common.m_sMainMenu.m_nVersion;
 	// ※メニュー定義を追加したらnCurrentVerを修正
-	const int nCurrentVer = 2;
+	const int nCurrentVer = 3;	// NKMM_UNDO_HISTORY_PANEL 20260907
 	nVersion = nCurrentVer;
 	if( cProfile.IOProfileData(pszSecName, LTEXT("nMainMenuVer"), nVersion) ){
 	}else{
@@ -3779,6 +3782,9 @@ void CShareData_IO::ShareData_IO_MainMenu( CDataProfile& cProfile )
 			{1, F_MODIFYLINE_NEXT_SEL, F_GOFILEEND_SEL, L'\0', true, false}, 	// (選択)次の変更行へ
 			{1, F_MODIFYLINE_PREV_SEL, F_MODIFYLINE_NEXT_SEL, L'\0', false, false}, 	// (選択)前の変更行へ
 			{2, F_DLGWINLIST, F_WIN_OUTPUT, L'D', false, false}, 	// ウインドウ一覧表示
+#ifdef NKMM_UNDO_HISTORY_PANEL
+			{3, F_SHOWUNDOHISTORYPANEL, F_REDRAW, L'L', true, false}, 	// Undo履歴ウィンドウ // NKMM_UNDO_HISTORY_PANEL 20260907
+#endif // NKMM_
 		};
 		for( int i = 0; i < _countof(addInfos); i++ ){
 			SMainMenuAddItemInfo& item = addInfos[i];

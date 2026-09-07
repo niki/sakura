@@ -133,6 +133,29 @@ void CViewCommander::Command_SHOWSTATUSBAR( void )
 }
 
 
+#ifdef NKMM_UNDO_HISTORY_PANEL
+/*! 「Undo履歴」パネルの表示/非表示(F5)
+	@date 2026.09.07 新規作成
+*/
+void CViewCommander::Command_SHOWUNDOHISTORYPANEL( void )
+{
+	CEditWnd*	pCEditWnd = GetEditWindow();
+
+	GetDllShareData().m_Common.m_sWindow.m_bDispUNDOHISTORYPANEL =
+		((NULL == pCEditWnd->m_cDlgHistoryPanel.GetHwnd())? TRUE: FALSE);
+	pCEditWnd->LayoutUndoHistoryPanel();
+
+	//全ウインドウに変更を通知する。
+	CAppNodeGroupHandle(0).PostMessageToAllEditors(
+		MYWM_BAR_CHANGE_NOTIFY,
+		(WPARAM)MYBCN_UNDOHISTORY,
+		(LPARAM)pCEditWnd->GetHwnd(),
+		pCEditWnd->GetHwnd()
+	);
+}
+#endif // NKMM_
+
+
 
 /* タイプ別設定一覧 */
 void CViewCommander::Command_TYPE_LIST( void )

@@ -766,6 +766,12 @@ void CViewCommander::Command_UNDO( void )
 	GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().x;	// 2007.10.11 ryoji 追加
 	m_pCommanderView->m_bDoing_UndoRedo = false;	/* アンドゥ・リドゥの実行中か */
 
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	if( NULL != GetEditWindow()->m_cDlgHistoryPanel.GetHwnd() ){
+		GetEditWindow()->m_cDlgHistoryPanel.OnUndoStackChanged();
+	}
+#endif // NKMM_
+
 	return;
 }
 
@@ -1077,6 +1083,12 @@ void CViewCommander::Command_REDO( void )
 
 	GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().x;	// 2007.10.11 ryoji 追加
 	m_pCommanderView->m_bDoing_UndoRedo = false;	/* アンドゥ・リドゥの実行中か */
+
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	if( NULL != GetEditWindow()->m_cDlgHistoryPanel.GetHwnd() ){
+		GetEditWindow()->m_cDlgHistoryPanel.OnUndoStackChanged();
+	}
+#endif // NKMM_
 
 	return;
 }

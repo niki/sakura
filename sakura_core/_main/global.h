@@ -78,6 +78,9 @@ enum EBarChangeNotifyType {
 	MYBCN_FUNCKEY	= 1,		//ファンクションキー
 	MYBCN_TAB		= 2,		//タブ
 	MYBCN_STATUSBAR	= 3,		//ステータスバー
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	MYBCN_UNDOHISTORY	= 4,	//Undo履歴パネル 20260907
+#endif // NKMM_
 };
 //@@@ To Here 2003.05.31 MIK
 

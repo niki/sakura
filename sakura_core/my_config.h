@@ -1739,6 +1739,34 @@
 //------------------------------------------------------------------
 #define NKMM_UNDO_COALESCE_TYPING
 
+//------------------------------------------------------------------
+// Undo/Redo履歴パネル(Paint.NET風)
+//  - 常時表示のフローティングパネルでUndo/Redo操作履歴を一覧表示し、
+//    クリックで任意の時点までジャンプする(Command_UNDO/REDOのN回ループ呼び出し)
+//  - F5キーに割り当て(既存の「再描画」はShift+F5へ退避)
+//  - Undo済み区間は通常表示、Redo待ち(取り消し済み)区間はグレーアウト表示
+//  - パネル下部に「元に戻す」「やり直し」ボタンを常設(Paint.NETの履歴パネルと
+//    同様の配置)
+//
+//  実装箇所:
+//  - COpeBlk.h,cpp: GetFuncCode()/SetFuncCode()、m_nFuncCode
+//    (このブロックを確定させたコマンドコード。CFuncLookup::Funccode2Name()で
+//    ラベル解決するため型はEFunctionCodeではなくint。CViewCommander::
+//    m_bPrevCommandと同じ表現)
+//  - COpeBuf.h,cpp: GetBlkCount()/GetBlkFuncCode() (読み取り専用列挙API、
+//    m_nCurrentPointerは変更しない)
+//  - view/CEditView.cpp: SetUndoBuffer()でm_nFuncCodeをスタンプ
+//  - dlg/CDlgHistoryPanel.h,cpp: パネル本体(CDlgCommandPaletteを土台に、
+//    フォーカス喪失で自滅しない常時表示化)。CDialog(true)によるタイトルバー・
+//    サイズ変更枠付きの可変ウィンドウで、位置は表示のたびに親の右下へ配置し
+//    直し(アウトライン解析パネルと同じ要領)、サイズのみユーザーがリサイズ
+//    した値を記憶する
+//  - window/CEditWnd.h,cpp、cmd/CViewCommander*、func/CKeyBind.cpp、
+//    env/CommonSetting.h,CShareData_IO.cpp、sakura_rc.h,rc、
+//    resource/MainMenu.ini(ウィンドウメニューに項目追加)
+//------------------------------------------------------------------
+#define NKMM_UNDO_HISTORY_PANEL
+
 //
 //#define USE_SSE2
 

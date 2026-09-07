@@ -421,6 +421,9 @@ public:
 #ifdef NKMM_COMMAND_PALETTE
 	void Command_COMMAND_PALETTE( void );	// コマンドパレット表示 // NKMM_COMMAND_PALETTE 20260818
 #endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	void Command_SHOWUNDOHISTORYPANEL( void );	// Undo履歴パネル表示切替 // NKMM_UNDO_HISTORY_PANEL 20260907
+#endif // NKMM_
 	void Command_GROUPCLOSE( void );	/* グループを閉じる */		// 2007.06.20 ryoji
 	void Command_NEXTGROUP( void );		/* 次のグループ */			// 2007.06.20 ryoji
 	void Command_PREVGROUP( void );		/* 前のグループ */			// 2007.06.20 ryoji

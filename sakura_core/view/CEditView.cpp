@@ -3136,6 +3136,12 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 		COpeBlk* pcOpeBlk = m_cCommander.GetOpeBlk();
 		int nOpeNum = pcOpeBlk->GetNum();	/* 操作の数を返す */
 		if( 0 < nOpeNum ){
+#ifdef NKMM_UNDO_HISTORY_PANEL
+			// HandleCommand呼び出し1回につき高々1つのOpeBlkが確定するため(COpeBlk.h
+			// 冒頭コメントの再帰ガード参照)、ディスパッチ時に保存された「現在実行中の
+			// コマンド」(m_bPrevCommand)がそのままこのブロックの操作名になる 20260907
+			pcOpeBlk->SetFuncCode( m_cCommander.m_bPrevCommand );
+#endif // NKMM_
 			/* 操作の追加 */
 			bool bMerged = false;
 #ifdef NKMM_UNDO_COALESCE_TYPING
@@ -3159,6 +3165,11 @@ void CEditView::SetUndoBuffer(bool bPaintLineNumber)
 					m_pcEditWnd->RedrawAllViews( this );	//	他のペインの表示を更新
 				}
 			}
+#ifdef NKMM_UNDO_HISTORY_PANEL
+			if( NULL != m_pcEditWnd->m_cDlgHistoryPanel.GetHwnd() ){
+				m_pcEditWnd->m_cDlgHistoryPanel.OnUndoStackChanged();
+			}
+#endif // NKMM_
 		}
 		else{
 			delete pcOpeBlk;

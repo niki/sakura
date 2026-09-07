@@ -910,6 +910,9 @@
     <ClInclude Include="..\sakura_core\dlg\CDlgGrepReplace.h">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\dlg\CDlgHistoryPanel.h">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\dlg\CDlgInput1.h">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
@@ -2376,6 +2379,9 @@
       <Filter>Cpp Source Files\dlg</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\dlg\CDlgGrepReplace.cpp">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\dlg\CDlgHistoryPanel.cpp">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\dlg\CDlgInput1.cpp">

@@ -54,6 +54,9 @@
 #ifdef NKMM_COMMAND_PALETTE
 #include "dlg/CDlgCommandPalette.h"
 #endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+#include "dlg/CDlgHistoryPanel.h"
+#endif // NKMM_
 #include "dlg/CDlgReplace.h"
 #include "dlg/CDlgJump.h"
 #include "dlg/CDlgGrep.h"
@@ -197,6 +200,9 @@ public:
 	void LayoutTabBar( void );			/* タブバーの配置処理 */			// 2006.12.19 ryoji
 	void LayoutStatusBar( void );		/* ステータスバーの配置処理 */		// 2006.12.19 ryoji
 	void EndLayoutBars( BOOL bAdjust = TRUE );	/* バーの配置終了処理 */	// 2006.12.19 ryoji
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	void LayoutUndoHistoryPanel( void );	//!< 「Undo履歴」パネルの表示/非表示切替 20260907
+#endif // NKMM_
 
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -372,6 +378,9 @@ public:
 	CDlgFind		m_cDlgFind;			// 「検索」ダイアログ
 #ifdef NKMM_COMMAND_PALETTE
 	CDlgCommandPalette	m_cDlgCommandPalette;	// 「コマンドパレット」ダイアログ // NKMM_COMMAND_PALETTE 20260818
+#endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	CDlgHistoryPanel	m_cDlgHistoryPanel;	// 「Undo履歴」パネル // NKMM_UNDO_HISTORY_PANEL 20260907
 #endif // NKMM_
 	CDlgReplace		m_cDlgReplace;		// 「置換」ダイアログ
 	CDlgJump		m_cDlgJump;			// 「指定行へジャンプ」ダイアログ
