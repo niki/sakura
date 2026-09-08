@@ -16,6 +16,7 @@
 
 #include "window/CBorderlessWnd.h"
 #include "util/window.h"
+#include "util/os.h" // GetMonitorWorkRect() 20260908
 
 namespace {
 	//! ウィンドウが最大化されているか(WINDOWPLACEMENT経由。IsZoomed()と等価)
@@ -59,6 +60,7 @@ CBorderlessWnd::CBorderlessWnd()
 	, m_nOffsetX( 0 )
 	, m_nOffsetY( 0 )
 	, m_bParentWasMinimized( false )
+	, m_bNeedsInitialResnap( false )
 {
 }
 
@@ -132,7 +134,12 @@ HWND CBorderlessWnd::CreateBorderlessWindow( HINSTANCE hInstance, HWND hwndParen
 	}
 
 	int	x, y;
-	ComputeBottomRightPosition( nWidth, nHeight, x, y );
+	// この時点ではまだCreate()を呼んでおらず、GetParentHwnd()(=m_hwndParent)は
+	// CWnd::Create()内で設定される前でNULLのまま。ComputeBottomRightPosition()に
+	// GetParentHwnd()を読ませると親矩形が取得できず(GetWindowRect(NULL,...)は失敗し
+	// rcParentが不定値のまま計算される)、結果が毎回モニタ左上(0,0)にクランプされて
+	// しまう実バグがあったため、ここでは引数のhwndParentを直接渡す 20260908
+	ComputeBottomRightPosition( hwndParent, nWidth, nHeight, x, y );
 
 	HWND	hwnd = Create( hwndParent, exStyle, GetWindowClassName(), GetTitleText(), style,
 		x, y, nWidth, nHeight, NULL );
@@ -144,6 +151,10 @@ HWND CBorderlessWnd::CreateBorderlessWindow( HINSTANCE hInstance, HWND hwndParen
 	// FollowParentWindow()が使う追従用の相対オフセットを、今置いた既定位置(右下)を
 	// 基準に初期化する(WM_MOVEでも同じ値に更新されるはずだが、明示しておく)
 	UpdateOffsetFromCurrentPosition();
+	// 次にFollowParentWindow()が呼ばれた時、上のComputeBottomRightPosition()の結果
+	// (親がまだ最終的な位置・大きさになっていない時点のものかもしれない)を鵜呑みに
+	// せず、その時点の親矩形で1回だけ取り直す(CBorderlessWnd.hのコメント参照) 20260908
+	m_bNeedsInitialResnap = true;
 
 	::ShowWindow( hwnd, SW_SHOWNOACTIVATE );
 	return hwnd;
@@ -155,12 +166,28 @@ HWND CBorderlessWnd::CreateBorderlessWindow( HINSTANCE hInstance, HWND hwndParen
 	のみ使う。以後の追従(FollowParentWindow())はここへ毎回スナップし直すのではなく、
 	m_nOffsetX/Yに基づく相対追従にする(ユーザーがドラッグした位置を尊重するため)。
 */
-void CBorderlessWnd::ComputeBottomRightPosition( int nWidth, int nHeight, int& x, int& y ) const
+void CBorderlessWnd::ComputeBottomRightPosition( HWND hwndParent, int nWidth, int nHeight, int& x, int& y ) const
 {
 	RECT	rcParent;
-	::GetWindowRect( GetParentHwnd(), &rcParent );
+	::GetWindowRect( hwndParent, &rcParent );
 	x = rcParent.right  - nWidth  - DpiScaleX( 20 );
 	y = rcParent.bottom - nHeight - DpiScaleY( 20 );
+
+	// 起動直後、前回の表示状態を復元してこの関数が呼ばれる経路(CEditWnd::Create()の
+	// 子ウィンドウ生成中)では、親ウィンドウがまだ保存された最終的な位置・大きさに
+	// なっておらず(例えばウィンドウサイズがCW_USEDEFAULT指定のまま等)、上のrcParentが
+	// 画面外の極端な値になっていることがある。その場合そのまま使うとウィンドウ自体は
+	// 生成されるが画面外に出て見えなくなり、「F5を押しても反応が無い(実際には非表示の
+	// まま閉じている)ように見え、もう一度押すとようやく画面内に現れる」という紛らわしい
+	// 挙動になる。MonitorFromWindow(...,MONITOR_DEFAULTTONEAREST)は親のrcParentがどんな
+	// 値でも必ずどこかのモニタを返すため、その作業領域内に収まるよう補正しておく 20260908
+	RECT	rcWork;
+	if( GetMonitorWorkRect( hwndParent, &rcWork ) ){
+		if( x + nWidth  > rcWork.right  ) x = rcWork.right  - nWidth;
+		if( y + nHeight > rcWork.bottom ) y = rcWork.bottom - nHeight;
+		if( x < rcWork.left ) x = rcWork.left;
+		if( y < rcWork.top  ) y = rcWork.top;
+	}
 }
 
 
@@ -201,6 +228,21 @@ void CBorderlessWnd::FollowParentWindow()
 	}
 	if( bIsMinimizedNow ){
 		return;	// 最小化中は位置を動かす必要が無い
+	}
+
+	if( m_bNeedsInitialResnap ){
+		// CreateBorderlessWindow()の時点の親矩形を鵜呑みにせず、この時点(=親ウィンドウが
+		// 実際にWM_MOVE/WM_SIZEを出せる=もう最終的な位置・大きさになっているはず)の
+		// 親矩形で1回だけ既定位置(右下)を取り直す。以後は通常通りオフセット追従に戻る
+		// (CBorderlessWnd.hのm_bNeedsInitialResnapのコメント参照) 20260908
+		RECT	rcSelf;
+		::GetWindowRect( GetHwnd(), &rcSelf );
+		int	x, y;
+		ComputeBottomRightPosition( hwndParent, rcSelf.right - rcSelf.left, rcSelf.bottom - rcSelf.top, x, y );
+		::SetWindowPos( GetHwnd(), NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+		UpdateOffsetFromCurrentPosition();
+		m_bNeedsInitialResnap = false;
+		return;
 	}
 
 	// 親ウィンドウとの相対オフセット(m_nOffsetX/Y、ユーザーがタイトル帯をドラッグして

@@ -192,6 +192,15 @@ void CEditView::InsertData_CEditView(
 		nColumnFrom = 0;
 	}
 
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	// 履歴パネルのツールチップ用。挿入方向のCOpeは元々、今まさに挿入しようとしている
+	// このinsDataがReplaceData_CLayoutMgr()呼び出しで消費されて空になった後は、
+	// 「一度もUndoされていない間」実データを持たない(COpe.h COpe::eCoalesceKindの
+	// コメント参照)ため、消費される前のこの時点でプレビュー用に1つだけコピーしておく 20260908
+	if( pcOpe ){
+		AppendOpeHistoryPreview( pcOpe->cmemHistoryPreviewIns, insData );
+	}
+#endif // NKMM_
 
 	if( !m_bDoing_UndoRedo && pcOpe ){	// アンドゥ・リドゥの実行中か
 		m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
@@ -861,6 +870,13 @@ bool CEditView::ReplaceData_CEditView3(
 		pcReplaceOpe->m_ptCaretPos_PHY_After = pcReplaceOpe->m_ptCaretPos_PHY_Before;	// 操作後のキャレット位置
 #ifdef NKMM_UNDO_RESTORE_SELECTION
 		pcReplaceOpe->bHadSelection = bHadSelection;
+#endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+		// 履歴パネルのツールチップ用。CInsertOpeと同じ理由(COpe.h参照)で、pInsDataが
+		// この後の呼び出しで消費されて空になる前にプレビュー用のコピーを取っておく 20260908
+		if( pInsData ){
+			AppendOpeHistoryPreview( pcReplaceOpe->cmemHistoryPreviewIns, *pInsData );
+		}
 #endif // NKMM_
 	}
 

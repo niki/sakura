@@ -52,6 +52,20 @@ template <>
 
 typedef std::vector<CLineData> COpeLineData;
 
+#ifdef NKMM_UNDO_HISTORY_PANEL
+//! 履歴パネルのツールチップ用プレビュー1個あたりの目安の最大文字数。あまり長いと
+//! ツールチップが巨大になるため、先頭部分だけ見せれば十分という考え方 20260908
+const int HISTORY_PREVIEW_MAXLEN = 120;
+
+//! pData(nDataLen文字)を、改行を"⏎"に置き換えた1行のプレビュー文字列としてcmemDstへ
+//! 追記する。HISTORY_PREVIEW_MAXLENを超えた時点で打ち切る(ちょうどでなくてよい) 20260908
+void AppendOpeHistoryPreview( CNativeW& cmemDst, const wchar_t* pData, int nDataLen );
+//! 複数行データ(COpeLineData)版。各行のcmemLineは通常末尾に改行文字自体を含んでいる
+//! (このコードベースの行データの慣習)ため、単純に先頭から流し込むだけで行区切りに
+//! "⏎"が入る。行間に別途区切りを追加する必要はない 20260908
+void AppendOpeHistoryPreview( CNativeW& cmemDst, const COpeLineData& cLineData );
+#endif // NKMM_
+
 #ifdef NKMM_FIX_UNDO_BUFFER_LIMIT
 //! COpeLineData(1つの操作が保持する行データの配列)の概算バイト数を合計する 20260802
 inline int CalcOpeLineDataByteSize(const COpeLineData& lineData)
@@ -118,6 +132,17 @@ public:
 	//! COALESCE_UNKNOWN(既定)は「この経路は分類対象外」を意味し、結合しない 20260906
 	enum ECoalesceKind{ COALESCE_UNKNOWN = 0, COALESCE_WORD = 1, COALESCE_BREAK = 2 };
 	ECoalesceKind	eCoalesceKind = COALESCE_UNKNOWN;
+#endif // NKMM_
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	//! 履歴パネルのツールチップ用、この操作で実際に挿入された文字列のプレビュー
+	//! (先頭部分のみ、複数行は"⏎"で1行化。既定は空)。OPE_INSERT/OPE_REPLACEの
+	//! 挿入側で使う。上のm_cOpeLineData/m_pcmemDataIns等は「今ドキュメントに実データが
+	//! 無い側」(=Undo方向で消した結果)だけを保持し、要らなくなったら空にする設計
+	//! (DoUndo/DoRedoのping-pong)のため、それを流用するとまだ一度もUndoされていない
+	//! (=ドキュメントに実データがある)ブロックのプレビューが常に空になってしまう。
+	//! そのため挿入した側(InsertData_CEditView/ReplaceData_CEditView3)がCOpe生成時に
+	//! 一度だけ独立してセットする専用領域とする 20260908
+	CNativeW	cmemHistoryPreviewIns;
 #endif // NKMM_
 };
 

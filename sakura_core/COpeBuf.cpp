@@ -225,6 +225,113 @@ int COpeBuf::GetBlkFuncCode( int nIndex ) const
 	}
 	return m_vCOpeBlkArr[nIndex]->GetFuncCode();
 }
+
+namespace {
+	//! GetBlkPreviewText()内で「連続する同方向(挿入/削除)のCOpeをまとめて1本の
+	//! 文字列としてつなげる」ためのrunの種類。コツコツ入力や連続バックスペースは
+	//! 1打鍵ごとに別のCOpeとして同じブロックに積まれる(COpeBuf::TryMergeIntoLastOpeBlk
+	//! 参照)ため、これをしないと"+a / +a / +a"のように1文字ごとに刻まれてしまい、
+	//! 実際に打った通りの並び("+aaa"のように)で見えない 20260908
+	enum EHistoryRunKind{ HISTORY_RUN_NONE, HISTORY_RUN_INS, HISTORY_RUN_DEL };
+
+	//! 直前まで貯めていたrun(cmemRun)を確定させてcmemPreviewへ追記し、cmemRunを
+	//! 空に戻す。何も貯まっていなければ何もしない 20260908
+	void FlushHistoryPreviewRun( CNativeW& cmemPreview, EHistoryRunKind eRun, CNativeW& cmemRun )
+	{
+		if( HISTORY_RUN_NONE != eRun && 0 < cmemRun.GetStringLength() ){
+			if( 0 < cmemPreview.GetStringLength() ){
+				cmemPreview.AppendString( L" / " );
+			}
+			cmemPreview.AppendString( HISTORY_RUN_INS == eRun ? L"+" : L"-" );
+			cmemPreview.AppendString( cmemRun.GetStringPtr(), cmemRun.GetStringLength() );
+		}
+		cmemRun.Clear();
+	}
+}
+
+/*! 履歴パネルのツールチップ用。挿入/削除/置換で実際に編集された文字列を
+	プレビュー形式にまとめる。連続する同方向(挿入/削除)のCOpeは1本の文字列に
+	つなげ、置換(削除+挿入が対になった単体の操作)やマルチカーソルの一括編集等で
+	方向が変わる箇所は" / "区切りで並べる。キャレット移動のみのブロックは対象外 20260908
+
+	挿入側のテキストはCOpe::cmemHistoryPreviewIns(挿入した側が生成時に一度だけ
+	コピーしておいた専用のプレビュー領域。COpe.h参照)から取る。DoUndo/DoRedoが
+	使うm_cOpeLineData/m_pcmemDataIns自体は「今ドキュメントに実データが無い側」だけを
+	保持するping-pong方式のため、それをそのまま読むと一度もUndoされていない
+	(=まだドキュメントに実データがある)ブロックのプレビューが常に空になってしまう。
+	削除側(m_cOpeLineData/m_pcmemDataDel)はいずれも生成時から常に実データを保持する
+	設計のため、そのまま読んで問題ない。
+
+	GetStringPtr()は一度もAppendString等されていない(空の)CNativeWではNULLを返す。
+	単引数のAppendString(const wchar_t*)は内部でwcslen()を呼ぶためNULLを渡すと
+	クラッシュする(削除側/挿入側どちらか一方だけが空の置換、つまり選択範囲の単純
+	削除等でpInsDataがNULLのまま作られるCReplaceOpeで実際に踏む経路)。そのため
+	ここでは常に長さ明示の2引数版で呼ぶ 20260908
+*/
+bool COpeBuf::GetBlkPreviewText( int nIndex, CNativeW& cmemPreview ) const
+{
+	if( nIndex < 0 || (int)m_vCOpeBlkArr.size() <= nIndex ){
+		return false;
+	}
+	COpeBlk*	pcBlk = m_vCOpeBlkArr[nIndex];
+
+	EHistoryRunKind	eRun = HISTORY_RUN_NONE;
+	CNativeW	cmemRun;
+	for( int i = 0; i < pcBlk->GetNum(); ++i ){
+		COpe*	pcOpe = pcBlk->GetOpe( i );
+		if( NULL == pcOpe ){
+			continue;
+		}
+
+		switch( pcOpe->GetCode() ){
+		case OPE_INSERT:
+			if( HISTORY_RUN_INS != eRun ){
+				FlushHistoryPreviewRun( cmemPreview, eRun, cmemRun );
+				eRun = HISTORY_RUN_INS;
+			}
+			cmemRun.AppendString( pcOpe->cmemHistoryPreviewIns.GetStringPtr(), pcOpe->cmemHistoryPreviewIns.GetStringLength() );
+			break;
+		case OPE_DELETE:
+			if( HISTORY_RUN_DEL != eRun ){
+				FlushHistoryPreviewRun( cmemPreview, eRun, cmemRun );
+				eRun = HISTORY_RUN_DEL;
+			}
+			AppendOpeHistoryPreview( cmemRun, ((CDeleteOpe*)pcOpe)->m_cOpeLineData );
+			break;
+		case OPE_REPLACE:
+			{
+				// 削除+挿入が対になった単体の操作。連続する挿入/削除runとは別の
+				// 1区切りとして扱う(前後のrunとの間には自動的に" / "が入る)
+				FlushHistoryPreviewRun( cmemPreview, eRun, cmemRun );
+				eRun = HISTORY_RUN_NONE;
+
+				CReplaceOpe*	p = (CReplaceOpe*)pcOpe;
+				CNativeW	cmemDel;
+				AppendOpeHistoryPreview( cmemDel, p->m_pcmemDataDel );
+				const CNativeW&	cmemIns = p->cmemHistoryPreviewIns;
+				if( 0 < cmemDel.GetStringLength() || 0 < cmemIns.GetStringLength() ){
+					if( 0 < cmemPreview.GetStringLength() ){
+						cmemPreview.AppendString( L" / " );
+					}
+					cmemPreview.AppendString( L"-" );
+					cmemPreview.AppendString( cmemDel.GetStringPtr(), cmemDel.GetStringLength() );
+					cmemPreview.AppendString( L" +" );
+					cmemPreview.AppendString( cmemIns.GetStringPtr(), cmemIns.GetStringLength() );
+				}
+			}
+			break;
+		default:
+			break; // OPE_MOVECARET等、プレビューする文字列を持たない操作は対象外
+		}
+
+		if( HISTORY_PREVIEW_MAXLEN * 2 <= cmemPreview.GetStringLength() + cmemRun.GetStringLength() ){
+			break; // 際限なく連結しない(打ち切り後もループ末尾のFlushHistoryPreviewRunでtrailing runは確定させる)
+		}
+	}
+	FlushHistoryPreviewRun( cmemPreview, eRun, cmemRun );
+
+	return 0 < cmemPreview.GetStringLength();
+}
 #endif // NKMM_
 
 #ifdef NKMM_FIX_UNDO_BUFFER_LIMIT

@@ -101,7 +101,7 @@ protected:
 	virtual void AfterCreateWindow();	//!< CWnd::Create()内で呼ばれる。既定のSW_SHOW即時表示を抑止する(表示はCreateBorderlessWindow()がSW_SHOWNOACTIVATEで行う)
 
 private:
-	void ComputeBottomRightPosition( int nWidth, int nHeight, int& x, int& y ) const;	//!< 親ウィンドウ矩形からこのウィンドウの右下配置(20pxマージン)のx,yを計算する。初回表示の既定位置にのみ使う
+	void ComputeBottomRightPosition( HWND hwndParent, int nWidth, int nHeight, int& x, int& y ) const;	//!< 親ウィンドウ矩形からこのウィンドウの右下配置(20pxマージン)のx,yを計算する。初回表示の既定位置にのみ使う。hwndParentは呼び出し側から明示的に渡す(CreateBorderlessWindow()内での初回呼び出し時点ではGetParentHwnd()=m_hwndParentがまだCWnd::Create()によって設定されておらずNULLのため、GetParentHwnd()を内部で読むと使えない) 20260908
 	void UpdateOffsetFromCurrentPosition();	//!< 現在のこのウィンドウの位置と親ウィンドウの位置の差をm_nOffsetX/Yへ記録する
 	LRESULT OnEraseBkgnd( HDC hdc );	//!< 背景+タイトル帯(色+文字)の描画
 	LRESULT HitTest( POINT ptScreen ) const;	//!< WM_NCHITTESTのカスタム判定(外周はリサイズ、タイトル帯はHTCAPTION)
@@ -117,6 +117,14 @@ private:
 	int		m_nOffsetX;		//!< 親ウィンドウ左上からのこのウィンドウの相対オフセット(px)。FollowParentWindow()の追従に使う(表示中のみ有効)
 	int		m_nOffsetY;		//!< 同上(Y方向)
 	bool	m_bParentWasMinimized;	//!< FollowParentWindow()が最小化⇔復元の遷移を検出するための直前状態
+	//! CreateBorderlessWindow()直後はtrue。次にFollowParentWindow()が呼ばれた時、
+	//! (通常のオフセット追従ではなく)ComputeBottomRightPosition()を今の親矩形で
+	//! 取り直して1回だけ位置を補正し直す。起動直後の「前回表示状態の自動復元」経路
+	//! (CEditWnd::Create()の子ウィンドウ生成中)ではメインウィンドウ自身がまだ最終的な
+	//! 位置・大きさになっていないことがあり、その時点のComputeBottomRightPosition()の
+	//! 結果を鵜呑みにしたoffsetのまま追従を続けると、親が本当の位置に落ち着いた後も
+	//! ずれた位置に留まり続けてしまうため 20260908
+	bool	m_bNeedsInitialResnap;
 };
 
 #endif /* _CBORDERLESSWND_H_ */

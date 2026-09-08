@@ -147,7 +147,11 @@ LRESULT CDlgHistoryPanel::OnCreate( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 	::GetWindowRect( m_hwndStatusBar, &rcStatus );
 	m_nStatusBarHeight = rcStatus.bottom - rcStatus.top;
 
-	ListView_SetExtendedListViewStyleEx( m_hwndList, LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT );
+	// LVS_EX_INFOTIP: 文字列が切れている行だけでなく、全ての行でLVN_GETINFOTIPを
+	// 発生させる(このリストは全行をNM_CUSTOMDRAWの自前描画で済ませておりLVM_SETITEM
+	// でテキストを設定していないため、これが無いと素の切れ表示判定が働かずツール
+	// チップ自体が出ない) 20260908
+	ListView_SetExtendedListViewStyleEx( m_hwndList, LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP, LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP );
 	LV_COLUMN	col = {};
 	col.mask     = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM;
 	col.fmt      = LVCFMT_LEFT;
@@ -301,6 +305,55 @@ LRESULT CDlgHistoryPanel::OnNotify( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 	if( NM_CUSTOMDRAW == pNMHDR->code ){
 		return OnListCustomDraw( lp );
 	}
+	if( LVN_GETINFOTIP == pNMHDR->code ){
+		return OnListGetInfoTip( lp );
+	}
+	return 0;
+}
+
+
+/*! 一覧描画・ツールチップ共通のラベル文字列組み立て。行nDispIndex(0開始)は
+	「ブロックnDispIndex個適用した状態」を表す(行0は固定のファイルを開いた時点)
+*/
+void CDlgHistoryPanel::BuildItemLabel( COpeBuf& cOpeBuf, int nDispIndex, wchar_t* pszBuf, int nBufLen ) const
+{
+	if( 0 == nDispIndex ){
+		::lstrcpyn( pszBuf, szInitialStateLabel, nBufLen );
+	}else{
+		int	nFuncCode = cOpeBuf.GetBlkFuncCode( nDispIndex - 1 );
+		if( NULL == m_pcFuncLookup
+		 || !m_pcFuncLookup->Funccode2Name( nFuncCode, pszBuf, nBufLen )
+		 || L'\0' == pszBuf[0] ){
+			::lstrcpyn( pszBuf, szUnknownOpeLabel, nBufLen );
+		}
+	}
+}
+
+
+/*! 行のツールチップ(LVS_EX_INFOTIP指定によりLVN_GETINFOTIPが全行分発生する)。
+	操作名のラベルに加えて、COpeBuf::GetBlkPreviewText()で実際に挿入/削除された
+	文字列(先頭部分のみ)を2行目に添える。行0(編集開始時点)はプレビュー対象の
+	ブロックが無いためラベルのみ 20260908
+*/
+LRESULT CDlgHistoryPanel::OnListGetInfoTip( LPARAM lParam )
+{
+	NMLVGETINFOTIPW*	pInfoTip = (NMLVGETINFOTIPW*)lParam;
+	if( NULL == m_pcView || NULL == pInfoTip->pszText || pInfoTip->cchTextMax <= 0 || pInfoTip->iItem < 0 ){
+		return 0;
+	}
+	COpeBuf&	cOpeBuf = m_pcView->GetDocument()->m_cDocEditor.m_cOpeBuf;
+
+	wchar_t	szLabel[256];
+	BuildItemLabel( cOpeBuf, pInfoTip->iItem, szLabel, _countof( szLabel ) );
+
+	CNativeW	cmemDetail;
+	if( 0 < pInfoTip->iItem && cOpeBuf.GetBlkPreviewText( pInfoTip->iItem - 1, cmemDetail ) ){
+		wchar_t	szTooltip[512];
+		auto_sprintf( szTooltip, L"%s\r\n%s", szLabel, cmemDetail.GetStringPtr() );
+		::lstrcpyn( pInfoTip->pszText, szTooltip, pInfoTip->cchTextMax );
+	}else{
+		::lstrcpyn( pInfoTip->pszText, szLabel, pInfoTip->cchTextMax );
+	}
 	return 0;
 }
 
@@ -349,16 +402,7 @@ LRESULT CDlgHistoryPanel::OnListCustomDraw( LPARAM lParam )
 				? (HFONT)::SelectObject( hdc, m_hFontItalic ) : NULL;
 
 			wchar_t	szLabel[256];
-			if( 0 == nDispIndex ){
-				::lstrcpyn( szLabel, szInitialStateLabel, _countof( szLabel ) );
-			}else{
-				int	nFuncCode = cOpeBuf.GetBlkFuncCode( nDispIndex - 1 );
-				if( NULL == m_pcFuncLookup
-				 || !m_pcFuncLookup->Funccode2Name( nFuncCode, szLabel, _countof( szLabel ) )
-				 || L'\0' == szLabel[0] ){
-					::lstrcpyn( szLabel, szUnknownOpeLabel, _countof( szLabel ) );
-				}
-			}
+			BuildItemLabel( cOpeBuf, nDispIndex, szLabel, _countof( szLabel ) );
 
 			int		nEdgePad = DpiScaleX( 8 );
 			RECT	rcText = { rc.left + nEdgePad, rc.top, rc.right - nEdgePad, rc.bottom };

@@ -21,6 +21,7 @@
 
 class CFuncLookup;
 class CEditView;
+class COpeBuf;
 
 /*!
 	@brief Undo/Redo履歴パネル(F5)
@@ -66,6 +67,8 @@ protected:
 private:
 	void RefreshList();	//!< COpeBuf::GetBlkCount()/GetBlkFuncCode()から一覧を作り直し、現在位置行を選択する。ボタンの有効/無効も同時に更新する
 	LRESULT OnListCustomDraw( LPARAM lParam );	//!< 一覧の描画(実行済み/Redo待ちの色分け)
+	LRESULT OnListGetInfoTip( LPARAM lParam );	//!< 行のツールチップ(LVN_GETINFOTIP)。COpeBuf::GetBlkPreviewText()で実際に編集された文字列を添える
+	void BuildItemLabel( COpeBuf& cOpeBuf, int nDispIndex, wchar_t* pszBuf, int nBufLen ) const;	//!< 一覧描画・ツールチップ共通のラベル文字列組み立て(OnListCustomDraw/OnListGetInfoTipから使う)
 	void ExecuteJump( int nDispIndex );	//!< クリックされた行までCommand_UNDO/Command_REDOをループ呼び出しする
 	void RestoreEditorFocus();	//!< 一覧クリック/ボタンクリックの既定処理がこのパネルをアクティブ化してしまうのを打ち消し、エディタへフォーカスを戻す
 

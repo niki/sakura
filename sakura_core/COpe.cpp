@@ -73,6 +73,33 @@ void CInsertOpe::DUMP( void )
 	return;
 }
 
+#ifdef NKMM_UNDO_HISTORY_PANEL
+void AppendOpeHistoryPreview( CNativeW& cmemDst, const wchar_t* pData, int nDataLen )
+{
+	if( NULL == pData || nDataLen <= 0 ){
+		return;
+	}
+	for( int i = 0; i < nDataLen && cmemDst.GetStringLength() < HISTORY_PREVIEW_MAXLEN; ++i ){
+		wchar_t	c = pData[i];
+		if( L'\r' == c || L'\n' == c ){
+			cmemDst.AppendString( L"\x23ce" ); // ⏎(改行があったことを示す記号)
+			if( L'\r' == c && i + 1 < nDataLen && L'\n' == pData[i + 1] ){
+				++i; // CRLFをまとめて1つの⏎にする
+			}
+		}else{
+			cmemDst.AppendString( &c, 1 );
+		}
+	}
+}
+
+void AppendOpeHistoryPreview( CNativeW& cmemDst, const COpeLineData& cLineData )
+{
+	for( size_t i = 0; i < cLineData.size() && cmemDst.GetStringLength() < HISTORY_PREVIEW_MAXLEN; ++i ){
+		AppendOpeHistoryPreview( cmemDst, cLineData[i].cmemLine.GetStringPtr(), cLineData[i].cmemLine.GetStringLength() );
+	}
+}
+#endif // NKMM_
+
 #ifdef NKMM_FIX_STATUSBAR_WORDNUM_CACHE
 // COpeLineDataの合計文字数(改行文字を除く、サロゲートペアは1文字)を求める 20260806
 int CalcOpeLineDataCharCount(const COpeLineData& lineData)

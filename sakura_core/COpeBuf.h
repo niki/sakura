@@ -20,6 +20,7 @@ class COpeBuf;
 #include <vector>
 #include "_main/global.h"
 class COpeBlk;/// 2002/2/10 aroka
+class CNativeW;
 
 
 
@@ -59,6 +60,10 @@ public:
 	int GetBlkCount() const { return (int)m_vCOpeBlkArr.size(); }
 	//! index番目(0開始)のブロックを確定させたコマンドコード。範囲外はF_0(0)を返す
 	int GetBlkFuncCode( int nIndex ) const;
+	//! 履歴パネルのツールチップ用。index番目(0開始)のブロックが実際に挿入/削除した
+	//! 文字列をプレビュー形式(先頭部分のみ、複数行は記号で1行化)にまとめてcmemPreviewへ
+	//! 追加する。表示できる内容が何もなかった場合(キャレット移動のみ等)はfalseを返す 20260908
+	bool GetBlkPreviewText( int nIndex, CNativeW& cmemPreview ) const;
 #endif // NKMM_
 
 	//使用
