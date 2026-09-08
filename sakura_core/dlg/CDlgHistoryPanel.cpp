@@ -32,6 +32,22 @@ namespace {
 
 	const wchar_t	szWindowClassName[] = L"SakuraHistoryPanelWndClass";
 	const wchar_t	szTitleText[]       = L"Undo履歴";
+
+	//! cr1とcr2をnRatio100:(100-nRatio100)の比率(%)で混ぜる。Redo領域の背景色を
+	//! Undo領域より少し濃くするのに使う 20260908
+	COLORREF BlendColor( COLORREF cr1, COLORREF cr2, int nRatio100 )
+	{
+		int	r = ( GetRValue( cr1 ) * nRatio100 + GetRValue( cr2 ) * ( 100 - nRatio100 ) ) / 100;
+		int	g = ( GetGValue( cr1 ) * nRatio100 + GetGValue( cr2 ) * ( 100 - nRatio100 ) ) / 100;
+		int	b = ( GetBValue( cr1 ) * nRatio100 + GetBValue( cr2 ) * ( 100 - nRatio100 ) ) / 100;
+		return RGB( r, g, b );
+	}
+
+	//! 一覧(SysListView32)のサブクラス化前の元のプロシージャ。CDlgHistoryPanel::
+	//! ListWndProc()参照。SysListView32は常に同じ既定プロシージャを持つ共有クラスの
+	//! ため、CEditView_Scroll.cppのg_pOldVScrollBarWndProcと同じく単一のグローバルで
+	//! 構わない(複数のパネルが同時に存在してもOldProc自体は同じ値になる) 20260908
+	WNDPROC	g_pOldListWndProc = NULL;
 }
 
 
@@ -46,6 +62,8 @@ CDlgHistoryPanel::CDlgHistoryPanel()
 	, m_bSuppressRefresh( false )
 	, m_hFontItalic( NULL )
 	, m_nStatusBarHeight( 0 )
+	, m_hThemeListView( NULL )
+	, m_nHotDispIndex( -1 )
 {
 }
 
@@ -98,8 +116,10 @@ LPCTSTR CDlgHistoryPanel::GetTitleText() const
 void CDlgHistoryPanel::GetDefaultSize( int& nWidth, int& nHeight ) const
 {
 	// CDialog版だった頃の初期表示(ダイアログテンプレート220x296DLUの縦横それぞれ
-	// 半分)に近い、小さめのコンパクトな大きさにする
-	nWidth  = DpiScaleX( 220 );
+	// 半分)に近い、小さめのコンパクトな大きさにする。幅はさらに、常時表示でも
+	// 邪魔になりにくいようやや狭めにする(GetMinTrackSize()の既定下限180pxより
+	// 少し余裕を持たせた190px) 20260908
+	nWidth  = DpiScaleX( 190 );
 	nHeight = DpiScaleY( 280 );
 }
 
@@ -147,17 +167,37 @@ LRESULT CDlgHistoryPanel::OnCreate( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 	::GetWindowRect( m_hwndStatusBar, &rcStatus );
 	m_nStatusBarHeight = rcStatus.bottom - rcStatus.top;
 
-	// LVS_EX_INFOTIP: 文字列が切れている行だけでなく、全ての行でLVN_GETINFOTIPを
-	// 発生させる(このリストは全行をNM_CUSTOMDRAWの自前描画で済ませておりLVM_SETITEM
-	// でテキストを設定していないため、これが無いと素の切れ表示判定が働かずツール
-	// チップ自体が出ない) 20260908
-	ListView_SetExtendedListViewStyleEx( m_hwndList, LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP, LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP );
+	// 20260908 以前はLVS_EX_INFOTIP+LVN_GETINFOTIPで詳細をツールチップ表示していたが、
+	// 狭いパネル内での位置調整(隣の行に重なる、Zオーダーでエディタの裏に回る等)や、
+	// LVS_OWNERDATA+LVS_EX_INFOTIPの組み合わせ特有のListView_HitTest()キャッシュ不具合
+	// など不具合が多く、ユーザーの判断でツールチップ自体を廃止。代わりに
+	// OnListCustomDraw()側でラベルへ直接プレビュー文字列を追記する方式にした
+	// (DT_END_ELLIPSISで自動的に省略される)
+	ListView_SetExtendedListViewStyleEx( m_hwndList, LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT );
 	LV_COLUMN	col = {};
 	col.mask     = LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM;
 	col.fmt      = LVCFMT_LEFT;
 	col.cx       = 200;
 	col.iSubItem = 0;
 	ListView_InsertColumn( m_hwndList, 0, &col );
+
+	// 一覧のどの行も覆っていない余白部分(最後の行より下)の既定背景は白(COLOR_WINDOW)の
+	// ままだと、行の描画(OnListCustomDraw()参照。Undo領域は明るいグレー)から浮いて
+	// 見えるため、Undo領域と同じ色に合わせておく 20260908
+	ListView_SetBkColor( m_hwndList, ::GetSysColor( COLOR_3DFACE ) );
+
+	// 現在位置行・ホバー行を単色反転ではなく半透明の選択色で描くため、
+	// CDlgCommandPaletteと同じ"Explorer::ListView"テーマを開いておく
+	// (OnDestroyでCloseThemeData) 20260908
+	if( CUxTheme::getInstance()->IsThemeActive() ){
+		m_hThemeListView = CUxTheme::getInstance()->OpenThemeData( m_hwndList, L"Explorer::ListView" );
+	}
+
+	// マウスホバー中の行を追跡するため、一覧(SysListView32)自体をサブクラス化する。
+	// WM_MOUSEMOVE/WM_MOUSELEAVEは一覧のHWNDへ直接届き、このパネル(親)のWM_NOTIFY
+	// 経由では受け取れないため 20260908
+	::SetWindowLongPtr( m_hwndList, GWLP_USERDATA, (LONG_PTR)this );
+	g_pOldListWndProc = (WNDPROC)::SetWindowLongPtr( m_hwndList, GWLP_WNDPROC, (LONG_PTR)ListWndProc );
 
 	// Redo待ち(取り消し済み)行の表示用に、既定フォントのイタリック版を用意しておく
 	// (OnDestroyで破棄)
@@ -177,8 +217,94 @@ LRESULT CDlgHistoryPanel::OnDestroy( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 		::DeleteObject( m_hFontItalic );
 		m_hFontItalic = NULL;
 	}
+	if( NULL != m_hThemeListView ){
+		CUxTheme::getInstance()->CloseThemeData( m_hThemeListView );
+		m_hThemeListView = NULL;
+	}
+	// サブクラス化を解除してから破棄する(CEditView_Scroll.cppのスクロールバー
+	// サブクラスと同じ流儀) 20260908
+	if( NULL != m_hwndList && NULL != g_pOldListWndProc ){
+		::SetWindowLongPtr( m_hwndList, GWLP_WNDPROC, (LONG_PTR)g_pOldListWndProc );
+	}
 	m_hwndList = m_hwndUndoBtn = m_hwndRedoBtn = m_hwndStatusBar = m_hwndSizeGrip = NULL;
 	return CBorderlessWnd::OnDestroy( hwnd, msg, wp, lp );
+}
+
+
+/*! 一覧(SysListView32)のサブクラスプロシージャ。WM_MOUSEMOVE/WM_MOUSELEAVEだけを
+	横取りしてホバー中の行を追跡し、それ以外は必ず元のプロシージャへ委譲する
+*/
+LRESULT CALLBACK CDlgHistoryPanel::ListWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
+{
+	CDlgHistoryPanel*	pThis = (CDlgHistoryPanel*)::GetWindowLongPtr( hwnd, GWLP_USERDATA );
+	if( NULL != pThis ){
+		if( WM_MOUSEMOVE == msg ){
+			pThis->OnListMouseMove( lp );
+		}else if( WM_MOUSELEAVE == msg ){
+			pThis->OnListMouseLeave();
+		}
+	}
+	return ::CallWindowProc( g_pOldListWndProc, hwnd, msg, wp, lp );
+}
+
+
+/*! ホバー中の行が変わったら、旧/新の行だけ再描画させてm_nHotDispIndexを更新する。
+	TrackMouseEvent(TME_LEAVE)は呼ぶたびに1回分のWM_MOUSELEAVE監視を仕込むだけの
+	軽い呼び出しのため、WM_MOUSEMOVEのたびに呼び直して構わない(標準的な作法)
+
+	行判定にListView_HitTest()を使わない理由: 以前はLVS_EX_INFOTIP(ツールチップ)も
+	併用しており、このLVS_OWNERDATA(仮想)+LVS_EX_INFOTIP構成では、ある行の
+	ツールチップが一度表示されると以後ListView_HitTest()がその行(または直前に
+	ホバーしていた行)を実際より大きく(複数行分)ヒットしてしまい、すぐ下の行へ
+	マウスを動かしてもヒットテストの戻り値が古い行のまま変わらなくなる不具合が
+	実際に見つかった(comctl32側の内部キャッシュの問題とみられる)。ツールチップ
+	自体はその後廃止したが、ペイント位置の取得に使うLVM_GETITEMRECT/
+	ListView_GetItemRect()はこの影響を受けず常に正しい座標を返すため、先頭表示行
+	(LVM_GETTOPINDEX)とその行の高さから算術的に行を割り出すこの実装のまま
+	(動作確認済みのため)維持する 20260908
+*/
+void CDlgHistoryPanel::OnListMouseMove( LPARAM lParam )
+{
+	int	x = (short)LOWORD( lParam );
+	int	y = (short)HIWORD( lParam );
+	int	nHit = -1;
+
+	int	nTopIndex = ListView_GetTopIndex( m_hwndList );
+	int	nCount = ListView_GetItemCount( m_hwndList );
+	RECT	rcTop;
+	if( 0 < nCount && ListView_GetItemRect( m_hwndList, nTopIndex, &rcTop, LVIR_BOUNDS ) ){
+		int	nItemHeight = rcTop.bottom - rcTop.top;
+		if( 0 < nItemHeight && rcTop.left <= x && x < rcTop.right && rcTop.top <= y ){
+			int	nCandidate = nTopIndex + ( y - rcTop.top ) / nItemHeight;
+			if( nTopIndex <= nCandidate && nCandidate < nCount ){
+				nHit = nCandidate;
+			}
+		}
+	}
+
+	if( nHit != m_nHotDispIndex ){
+		InvalidateHistoryRow( m_nHotDispIndex );
+		m_nHotDispIndex = nHit;
+		InvalidateHistoryRow( m_nHotDispIndex );
+	}
+
+	TRACKMOUSEEVENT	tme = { sizeof( tme ), TME_LEAVE, m_hwndList, 0 };
+	::TrackMouseEvent( &tme );
+}
+
+
+void CDlgHistoryPanel::OnListMouseLeave()
+{
+	InvalidateHistoryRow( m_nHotDispIndex );
+	m_nHotDispIndex = -1;
+}
+
+
+void CDlgHistoryPanel::InvalidateHistoryRow( int nDispIndex )
+{
+	if( 0 <= nDispIndex ){
+		ListView_RedrawItems( m_hwndList, nDispIndex, nDispIndex );
+	}
 }
 
 
@@ -305,56 +431,53 @@ LRESULT CDlgHistoryPanel::OnNotify( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 	if( NM_CUSTOMDRAW == pNMHDR->code ){
 		return OnListCustomDraw( lp );
 	}
-	if( LVN_GETINFOTIP == pNMHDR->code ){
-		return OnListGetInfoTip( lp );
-	}
 	return 0;
 }
 
 
-/*! 一覧描画・ツールチップ共通のラベル文字列組み立て。行nDispIndex(0開始)は
-	「ブロックnDispIndex個適用した状態」を表す(行0は固定のファイルを開いた時点)
+/*! 一覧の行表示ラベルの組み立て。行nDispIndex(0開始)は「ブロックnDispIndex個
+	適用した状態」を表す(行0は固定のファイルを開いた時点)。操作名に続けて、実際に
+	挿入/削除された文字列(COpeBuf::GetBlkPreviewText())を1行にまとめて追記する。
+	以前はこの詳細をツールチップ(LVS_EX_INFOTIP)で見せていたが、狭いパネル内での
+	位置調整(隣の行に重なる、Zオーダーでエディタの裏に回る)やLVS_OWNERDATA+
+	LVS_EX_INFOTIP特有のListView_HitTest()キャッシュ不具合など、不具合が多かった
+	ためツールチップ自体を廃止し、ラベルへ直接追記する方式にした。長すぎる場合は
+	呼び出し側のDrawText()のDT_END_ELLIPSISで自動的に省略される 20260908
 */
 void CDlgHistoryPanel::BuildItemLabel( COpeBuf& cOpeBuf, int nDispIndex, wchar_t* pszBuf, int nBufLen ) const
 {
+	wchar_t	szOpeName[256];
 	if( 0 == nDispIndex ){
-		::lstrcpyn( pszBuf, szInitialStateLabel, nBufLen );
+		::lstrcpyn( szOpeName, szInitialStateLabel, _countof( szOpeName ) );
 	}else{
 		int	nFuncCode = cOpeBuf.GetBlkFuncCode( nDispIndex - 1 );
 		if( NULL == m_pcFuncLookup
-		 || !m_pcFuncLookup->Funccode2Name( nFuncCode, pszBuf, nBufLen )
-		 || L'\0' == pszBuf[0] ){
-			::lstrcpyn( pszBuf, szUnknownOpeLabel, nBufLen );
+		 || !m_pcFuncLookup->Funccode2Name( nFuncCode, szOpeName, _countof( szOpeName ) )
+		 || L'\0' == szOpeName[0] ){
+			::lstrcpyn( szOpeName, szUnknownOpeLabel, _countof( szOpeName ) );
 		}
 	}
-}
-
-
-/*! 行のツールチップ(LVS_EX_INFOTIP指定によりLVN_GETINFOTIPが全行分発生する)。
-	操作名のラベルに加えて、COpeBuf::GetBlkPreviewText()で実際に挿入/削除された
-	文字列(先頭部分のみ)を2行目に添える。行0(編集開始時点)はプレビュー対象の
-	ブロックが無いためラベルのみ 20260908
-*/
-LRESULT CDlgHistoryPanel::OnListGetInfoTip( LPARAM lParam )
-{
-	NMLVGETINFOTIPW*	pInfoTip = (NMLVGETINFOTIPW*)lParam;
-	if( NULL == m_pcView || NULL == pInfoTip->pszText || pInfoTip->cchTextMax <= 0 || pInfoTip->iItem < 0 ){
-		return 0;
-	}
-	COpeBuf&	cOpeBuf = m_pcView->GetDocument()->m_cDocEditor.m_cOpeBuf;
-
-	wchar_t	szLabel[256];
-	BuildItemLabel( cOpeBuf, pInfoTip->iItem, szLabel, _countof( szLabel ) );
 
 	CNativeW	cmemDetail;
-	if( 0 < pInfoTip->iItem && cOpeBuf.GetBlkPreviewText( pInfoTip->iItem - 1, cmemDetail ) ){
-		wchar_t	szTooltip[512];
-		auto_sprintf( szTooltip, L"%s\r\n%s", szLabel, cmemDetail.GetStringPtr() );
-		::lstrcpyn( pInfoTip->pszText, szTooltip, pInfoTip->cchTextMax );
+	if( 0 < nDispIndex && cOpeBuf.GetBlkPreviewText( nDispIndex - 1, cmemDetail ) ){
+		// 20260909 実機でクラッシュを確認: auto_sprintf_s()はMSVC>=1400では
+		// tchar_snprintf_s()経由でtchar_vsprintf_s_imp()に落ちるが、これは1つの
+		// %sフィールドがバッファに収まらない場合、内部で使うvswprintf_s()が
+		// 切り詰めではなく_invalid_parameter_internal()/_invoke_watson()を呼んで
+		// そのままプロセスを異常終了させる実装だった(tchar_snprintf_sという名前
+		// にもかかわらず、tchar_vsprintf_s()を呼んでおりtchar_vsnprintf_s()を
+		// 呼んでいないためsnprintf相当の安全な切り詰めになっていない、既存コードの
+		// 罠)。cmemDetailはGetBlkPreviewText()で最大240文字程度になり得るため、
+		// この罠を確実に踏む。printf系を使わず、必ず切り詰められるlstrcpyn()と
+		// (長さ0でも安全な)CNativeW::AppendString(ptr,len)だけで組み立てる
+		CNativeW	cmemCombined;
+		cmemCombined.AppendString( szOpeName );
+		cmemCombined.AppendString( L"  " );
+		cmemCombined.AppendString( cmemDetail.GetStringPtr(), cmemDetail.GetStringLength() );
+		::lstrcpyn( pszBuf, cmemCombined.GetStringPtr(), nBufLen );
 	}else{
-		::lstrcpyn( pInfoTip->pszText, szLabel, pInfoTip->cchTextMax );
+		::lstrcpyn( pszBuf, szOpeName, nBufLen );
 	}
-	return 0;
 }
 
 
@@ -389,12 +512,39 @@ LRESULT CDlgHistoryPanel::OnListCustomDraw( LPARAM lParam )
 
 			bool	bCurrent = ( nDispIndex == nCurrent );
 			bool	bRedoPending = ( nDispIndex > nCurrent );
+			bool	bHot = ( !bCurrent && nDispIndex == m_nHotDispIndex );	// 現在位置行には重ねて描かない
 
-			COLORREF	crBack = bCurrent ? ::GetSysColor( COLOR_HIGHLIGHT ) : ::GetSysColor( COLOR_WINDOW );
-			COLORREF	crText = bCurrent ? ::GetSysColor( COLOR_HIGHLIGHTTEXT )
-				: ( bRedoPending ? ::GetSysColor( COLOR_GRAYTEXT ) : ::GetSysColor( COLOR_WINDOWTEXT ) );
+			// Undo領域(実行済み、まだ選択されていない行)は明るいグレー、Redo領域
+			// (取り消し済み)はそれより少し濃いグレー。これが下地の色になる
+			COLORREF	crLightGray = ::GetSysColor( COLOR_3DFACE );
+			// 20260908 ユーザー確認: 濃度40%(=crLightGray側の重み40%)だと参考画像より
+			// 少し濃かったため、crLightGray側の重みを70%まで上げて薄くした
+			// (BlendColor()の第3引数は第1引数側=明るい色の重みであり、下げると逆に
+			// 濃くなる。一度20に下げて実機確認したところ#C0C0C0→#B0B0B0と濃くなる
+			// 逆効果を招いたため70に修正) 20260908
+			COLORREF	crBack = bRedoPending ? BlendColor( crLightGray, ::GetSysColor( COLOR_3DSHADOW ), 70 ) : crLightGray;
+			COLORREF	crText = bRedoPending ? ::GetSysColor( COLOR_GRAYTEXT ) : ::GetSysColor( COLOR_WINDOWTEXT );
 
-			FillRectWithColor( hdc, &rc, crBack );
+			// カレント位置行は単色反転ではなく、CDlgCommandPaletteと同じ「エクスプローラーの
+			// ファイル一覧」風の半透明の選択色(LISS_SELECTED)を下地の上に重ねて描く。
+			// ホバー中の行(カレント位置を除く)も同じテーマのLISS_HOT(選択色よりさらに
+			// 淡い、Windows標準のホバー色)を重ねる。テーマ非対応環境(クラシックテーマ等)
+			// だけ、カレント位置行に限り従来通りCOLOR_HIGHLIGHTの単色反転+白文字へ
+			// フォールバックする(ホバー演出は元々「あれば嬉しい」装飾のため、非対応環境
+			// では単純に無しにする) 20260908
+			bool	bThemedCurrent = ( bCurrent && NULL != m_hThemeListView );
+			if( bThemedCurrent || ( bHot && NULL != m_hThemeListView ) ){
+				FillRectWithColor( hdc, &rc, crBack );
+				CUxTheme::getInstance()->DrawThemeBackground( m_hThemeListView, hdc, LVP_LISTITEM,
+					bThemedCurrent ? LISS_SELECTED : LISS_HOT, &rc, NULL );
+			}else if( bCurrent ){
+				crBack = ::GetSysColor( COLOR_HIGHLIGHT );
+				crText = ::GetSysColor( COLOR_HIGHLIGHTTEXT );
+				FillRectWithColor( hdc, &rc, crBack );
+			}else{
+				FillRectWithColor( hdc, &rc, crBack );
+			}
+
 			::SetBkMode( hdc, TRANSPARENT );
 			::SetTextColor( hdc, crText );
 

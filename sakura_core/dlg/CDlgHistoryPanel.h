@@ -18,6 +18,7 @@
 #ifdef NKMM_UNDO_HISTORY_PANEL
 
 #include "window/CBorderlessWnd.h"
+#include "extmodule/CUxTheme.h"
 
 class CFuncLookup;
 class CEditView;
@@ -66,11 +67,19 @@ protected:
 
 private:
 	void RefreshList();	//!< COpeBuf::GetBlkCount()/GetBlkFuncCode()から一覧を作り直し、現在位置行を選択する。ボタンの有効/無効も同時に更新する
-	LRESULT OnListCustomDraw( LPARAM lParam );	//!< 一覧の描画(実行済み/Redo待ちの色分け)
-	LRESULT OnListGetInfoTip( LPARAM lParam );	//!< 行のツールチップ(LVN_GETINFOTIP)。COpeBuf::GetBlkPreviewText()で実際に編集された文字列を添える
-	void BuildItemLabel( COpeBuf& cOpeBuf, int nDispIndex, wchar_t* pszBuf, int nBufLen ) const;	//!< 一覧描画・ツールチップ共通のラベル文字列組み立て(OnListCustomDraw/OnListGetInfoTipから使う)
+	LRESULT OnListCustomDraw( LPARAM lParam );	//!< 一覧の描画(実行済み/現在位置/Redo待ちの色分け)
+	void BuildItemLabel( COpeBuf& cOpeBuf, int nDispIndex, wchar_t* pszBuf, int nBufLen ) const;	//!< 一覧の行表示ラベル(操作名+実際に編集された文字列)の組み立て(OnListCustomDrawから使う)
 	void ExecuteJump( int nDispIndex );	//!< クリックされた行までCommand_UNDO/Command_REDOをループ呼び出しする
 	void RestoreEditorFocus();	//!< 一覧クリック/ボタンクリックの既定処理がこのパネルをアクティブ化してしまうのを打ち消し、エディタへフォーカスを戻す
+
+	//! 一覧(SysListView32)を乗っ取るサブクラスプロシージャ。WM_MOUSEMOVE/WM_MOUSELEAVEを
+	//! 横取りしてOnListMouseMove()/OnListMouseLeave()へ渡し、それ以外は元のプロシージャ
+	//! (cppの無名名前空間のg_pOldListWndProc)へ委譲する。static member関数なのでprivateな
+	//! OnListMouseMove()等へ直接アクセスできる 20260908
+	static LRESULT CALLBACK ListWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );
+	void OnListMouseMove( LPARAM lParam );		//!< ホバー中の行が変わったらm_nHotDispIndexを更新し、旧/新の行だけ再描画させる
+	void OnListMouseLeave();					//!< ホバー状態を解除する
+	void InvalidateHistoryRow( int nDispIndex );	//!< 指定行(表示上のブロック適用個数)だけ再描画させる。範囲外(-1等)は何もしない
 
 	HWND			m_hwndList;
 	HWND			m_hwndUndoBtn;
@@ -82,6 +91,13 @@ private:
 	bool			m_bSuppressRefresh;	//!< ExecuteJump()のループ中、通知経由のRefreshList()を抑制する(ループ末尾で1回だけ呼ぶ)
 	HFONT			m_hFontItalic;		//!< Redo待ち行の表示用(GetMainFont()のイタリック版)。OnCreateで生成しOnDestroyで破棄
 	int				m_nStatusBarHeight;	//!< 飾りのステータスバーの高さ(px、CreateStatusWindow直後に一度だけ取得する実測値)
+	//! 現在位置行の半透明選択色(CDlgCommandPaletteと同じ"Explorer::ListView"テーマの
+	//! LISS_SELECTED)・ホバー行の半透明色(LISS_HOT)を描くためのテーマハンドル。
+	//! テーマ無効環境(クラシックテーマ等)ではNULLのままになり、現在位置行は
+	//! 従来通りCOLOR_HIGHLIGHTの単色反転+白文字にフォールバックする。
+	//! OnCreateでOpenThemeData、OnDestroyでCloseThemeData 20260908
+	HTHEME			m_hThemeListView;
+	int				m_nHotDispIndex;	//!< マウスカーソルが乗っている行(表示上のブロック適用個数)。乗っていなければ-1 20260908
 };
 
 #endif // NKMM_UNDO_HISTORY_PANEL
