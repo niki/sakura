@@ -362,7 +362,7 @@ int tchar_snprintf_s(ACHAR* buf, size_t count, const ACHAR* format, ...)
 {
 	va_list v;
 	va_start(v,format);
-	int ret=tchar_vsprintf_s(buf,count,format,v);
+	int ret=tchar_vsnprintf_s(buf,count,format,v);
 	va_end(v);
 	return ret;
 }
@@ -370,7 +370,7 @@ int tchar_snprintf_s(WCHAR* buf, size_t count, const WCHAR* format, ...)
 {
 	va_list v;
 	va_start(v,format);
-	int ret=tchar_vsprintf_s(buf,count,format,v);
+	int ret=tchar_vsnprintf_s(buf,count,format,v);
 	va_end(v);
 	return ret;
 }
