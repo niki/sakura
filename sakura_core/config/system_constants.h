@@ -769,6 +769,16 @@ enum e_PM_SETCARETPOS_SELECTSTATE {
 #define MYWM_DUMPBUFFER (WM_APP+227)
 #endif // NKMM_
 
+#ifdef NKMM_UNDO_HISTORY_PANEL
+//! Undo履歴パネル：一覧クリック(NM_CLICK)ハンドラ自身の中でExecuteJump()〜
+//! RefreshList()(ListView_SetItemCount/SetItemState等)を同期的に呼ぶと、
+//! まだ処理中のSysListView32自身のWM_LBUTTONUPコールスタック上へ再入してしまい
+//! comctl32内部でクラッシュ/ハングする(実機で確認)。NM_CLICKハンドラ内では
+//! このメッセージをPostMessageするだけに留め、通知処理が完全に戻り切った後の
+//! 別メッセージとしてジャンプを実行するために使う。wParam=対象行 20260909
+#define MYWM_HISTORYPANEL_JUMP (WM_APP+228)
+#endif // NKMM_
+
 /* 再変換対応 */ // 20020331 aroka
 #ifndef WM_IME_REQUEST
 #define MYWM_IME_REQUEST 0x288  // ==WM_IME_REQUEST

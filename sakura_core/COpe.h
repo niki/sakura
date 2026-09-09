@@ -134,15 +134,20 @@ public:
 	ECoalesceKind	eCoalesceKind = COALESCE_UNKNOWN;
 #endif // NKMM_
 #ifdef NKMM_UNDO_HISTORY_PANEL
-	//! 履歴パネルのツールチップ用、この操作で実際に挿入された文字列のプレビュー
-	//! (先頭部分のみ、複数行は"⏎"で1行化。既定は空)。OPE_INSERT/OPE_REPLACEの
-	//! 挿入側で使う。上のm_cOpeLineData/m_pcmemDataIns等は「今ドキュメントに実データが
-	//! 無い側」(=Undo方向で消した結果)だけを保持し、要らなくなったら空にする設計
-	//! (DoUndo/DoRedoのping-pong)のため、それを流用するとまだ一度もUndoされていない
-	//! (=ドキュメントに実データがある)ブロックのプレビューが常に空になってしまう。
-	//! そのため挿入した側(InsertData_CEditView/ReplaceData_CEditView3)がCOpe生成時に
-	//! 一度だけ独立してセットする専用領域とする 20260908
+	//! 履歴パネルのツールチップ用、この操作で実際に挿入/削除された文字列のプレビュー
+	//! (先頭部分のみ、複数行は"⏎"で1行化。既定は空)。cmemHistoryPreviewInsは
+	//! OPE_INSERT/OPE_REPLACEの挿入側、cmemHistoryPreviewDelはOPE_DELETE/OPE_REPLACEの
+	//! 削除側で使う。上のm_cOpeLineData/m_pcmemDataIns/m_pcmemDataDel等はCommand_UNDO/
+	//! Command_REDOのping-pongで「今ドキュメントに実データが無い側」だけを保持し、
+	//! Undo/Redoが実際にそちら方向へ適用された直後にclear()される設計(CViewCommander_Edit.cpp
+	//! 参照)。削除側は生成時にこそ実データを持つが、一度でもUndoされる(=削除が取り消され
+	//! 実データが再び本文側に戻る)とその時点でclear()されてしまうため、そのまま流用すると
+	//! 「複数ブロックをまとめて一気にUndoした後」に削除系の行のプレビューだけ空になる
+	//! (挿入側は元から常に空スタートなので同じ問題を踏まない代わりに元々専用領域が要る)。
+	//! そのためどちらも、生成した側(DeleteData2/ReplaceData_CEditView3)がCOpe生成時に
+	//! 一度だけ独立してコピーしておく専用領域とする 20260908, 20260909(Del側追加)
 	CNativeW	cmemHistoryPreviewIns;
+	CNativeW	cmemHistoryPreviewDel;
 #endif // NKMM_
 };
 

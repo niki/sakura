@@ -444,6 +444,12 @@ void CEditView::DeleteData2(
 	//2007.10.18 kobake COpeの追加をここにまとめる
 	if( pcOpe ){
 		pcOpe->m_cOpeLineData.swap(memDeleted);
+#ifdef NKMM_UNDO_HISTORY_PANEL
+		// 履歴パネルのツールチップ用。m_cOpeLineDataは後でUndoされた時点でclear()
+		// される(COpe.h参照)ため、生成時のこの時点でプレビュー用に1つだけコピーして
+		// おく 20260909
+		AppendOpeHistoryPreview( pcOpe->cmemHistoryPreviewDel, pcOpe->m_cOpeLineData );
+#endif // NKMM_
 		m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
 			_ptCaretPos,
 			&pcOpe->m_ptCaretPos_PHY_After
@@ -1015,6 +1021,14 @@ bool CEditView::ReplaceData_CEditView3(
 			pcReplaceOpe->m_pcmemDataDel.swap(*pcMemDeleted);
 		}
 	}
+#ifdef NKMM_UNDO_HISTORY_PANEL
+	// 履歴パネルのツールチップ用。m_pcmemDataDelは後でUndoされた時点でclear()
+	// される(COpe.h参照)ため、生成時のこの時点でプレビュー用に1つだけコピーして
+	// おく(CInsertOpe側と同じ理由で挿入側は既に上でコピー済み) 20260909
+	if( pcOpeBlk ){
+		AppendOpeHistoryPreview( pcReplaceOpe->cmemHistoryPreviewDel, pcReplaceOpe->m_pcmemDataDel );
+	}
+#endif // NKMM_
 
 	if( pcOpeBlk ){
 		if( bFastMode ){

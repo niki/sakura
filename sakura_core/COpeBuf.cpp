@@ -254,13 +254,14 @@ namespace {
 	つなげ、置換(削除+挿入が対になった単体の操作)やマルチカーソルの一括編集等で
 	方向が変わる箇所は" / "区切りで並べる。キャレット移動のみのブロックは対象外 20260908
 
-	挿入側のテキストはCOpe::cmemHistoryPreviewIns(挿入した側が生成時に一度だけ
-	コピーしておいた専用のプレビュー領域。COpe.h参照)から取る。DoUndo/DoRedoが
-	使うm_cOpeLineData/m_pcmemDataIns自体は「今ドキュメントに実データが無い側」だけを
-	保持するping-pong方式のため、それをそのまま読むと一度もUndoされていない
-	(=まだドキュメントに実データがある)ブロックのプレビューが常に空になってしまう。
-	削除側(m_cOpeLineData/m_pcmemDataDel)はいずれも生成時から常に実データを保持する
-	設計のため、そのまま読んで問題ない。
+	挿入側・削除側どちらのテキストもCOpe::cmemHistoryPreviewIns/cmemHistoryPreviewDel
+	(生成した側が生成時に一度だけコピーしておいた専用のプレビュー領域。COpe.h参照)
+	から取る。DoUndo/DoRedoが使うm_cOpeLineData/m_pcmemDataIns/m_pcmemDataDel自体は
+	「今ドキュメントに実データが無い側」だけを保持するping-pong方式で、Undo/Redoが
+	実際にその方向へ適用された直後にclear()される(CViewCommander_Edit.cpp参照)ため、
+	それをそのまま読むと「一度もUndoされていない」挿入側だけでなく「一度でもUndoされた」
+	削除側(=一括Undoでスキップされた"間"のRedo待ちブロック)のプレビューまで空になって
+	しまう。専用領域を使うことでUndo/Redoの往復回数に関係なく常に安定して読める 20260909
 
 	GetStringPtr()は一度もAppendString等されていない(空の)CNativeWではNULLを返す。
 	単引数のAppendString(const wchar_t*)は内部でwcslen()を呼ぶためNULLを渡すと
@@ -296,7 +297,7 @@ bool COpeBuf::GetBlkPreviewText( int nIndex, CNativeW& cmemPreview ) const
 				FlushHistoryPreviewRun( cmemPreview, eRun, cmemRun );
 				eRun = HISTORY_RUN_DEL;
 			}
-			AppendOpeHistoryPreview( cmemRun, ((CDeleteOpe*)pcOpe)->m_cOpeLineData );
+			cmemRun.AppendString( pcOpe->cmemHistoryPreviewDel.GetStringPtr(), pcOpe->cmemHistoryPreviewDel.GetStringLength() );
 			break;
 		case OPE_REPLACE:
 			{
@@ -306,8 +307,7 @@ bool COpeBuf::GetBlkPreviewText( int nIndex, CNativeW& cmemPreview ) const
 				eRun = HISTORY_RUN_NONE;
 
 				CReplaceOpe*	p = (CReplaceOpe*)pcOpe;
-				CNativeW	cmemDel;
-				AppendOpeHistoryPreview( cmemDel, p->m_pcmemDataDel );
+				const CNativeW&	cmemDel = p->cmemHistoryPreviewDel;
 				const CNativeW&	cmemIns = p->cmemHistoryPreviewIns;
 				if( 0 < cmemDel.GetStringLength() || 0 < cmemIns.GetStringLength() ){
 					if( 0 < cmemPreview.GetStringLength() ){

@@ -420,18 +420,37 @@ LRESULT CDlgHistoryPanel::OnNotify( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 	}
 	if( NM_CLICK == pNMHDR->code ){
 		// クリックされた行までCommand_UNDO/Command_REDOをループ呼び出しでジャンプする
-		// (Paint.NETの履歴パネルと同じ、クリック即実行のUI)
+		// (Paint.NETの履歴パネルと同じ、クリック即実行のUI)。ここではPostMessageする
+		// だけに留め、実際のジャンプ(ExecuteJump〜RefreshList)はDispatchEvent_WM_APP
+		// (MYWM_HISTORYPANEL_JUMP)側で行う。このNM_CLICKハンドラ自身がまだ
+		// SysListView32自身のWM_LBUTTONUP処理のコールスタック上にいるため、ここで
+		// 同期的にRefreshList()のListView_SetItemCount/SetItemState等を呼ぶと
+		// 自分自身のリストへ再入することになり、comctl32内部でクラッシュ/ハングする
+		// (実機で確認、system_constants.h MYWM_HISTORYPANEL_JUMP参照) 20260909
 		NMITEMACTIVATE*	pNMIA = (NMITEMACTIVATE*)lp;
 		if( 0 <= pNMIA->iItem ){
-			ExecuteJump( pNMIA->iItem );
+			::PostMessage( GetHwnd(), MYWM_HISTORYPANEL_JUMP, (WPARAM)pNMIA->iItem, 0 );
 		}
-		RestoreEditorFocus();
 		return 0;
 	}
 	if( NM_CUSTOMDRAW == pNMHDR->code ){
 		return OnListCustomDraw( lp );
 	}
 	return 0;
+}
+
+
+/*! MYWM_HISTORYPANEL_JUMP(一覧クリックの実処理をNM_CLICKハンドラから遅延させた
+	もの。OnNotify参照)を受け取り、実際のジャンプを行う
+*/
+LRESULT CDlgHistoryPanel::DispatchEvent_WM_APP( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
+{
+	if( MYWM_HISTORYPANEL_JUMP == msg ){
+		ExecuteJump( (int)wp );
+		RestoreEditorFocus();
+		return 0;
+	}
+	return CBorderlessWnd::DispatchEvent_WM_APP( hwnd, msg, wp, lp );
 }
 
 
@@ -603,6 +622,17 @@ void CDlgHistoryPanel::ExecuteJump( int nDispIndex )
 			m_pcView->SetDrawSwitch( false );
 		}
 		cCmd.HandleCommand( bUndo ? F_UNDO : F_REDO, false, 0, 0, 0, 0 );
+	}
+
+	// Command_UNDO/REDO内部の再描画は「その1ステップ単独で見て、キャレット行が
+	// 変わった/折り返しが変わった」場合にのみ全体再描画(Call_OnPaint)する条件判定に
+	// なっている(CViewCommander_Edit.cpp)。最後の1ステップ(描画有効の状態で実行される
+	// 唯一のステップ)がその条件に当てはまらないと、中間ステップ群(描画停止中に実際には
+	// 正しく適用されている)の変更が一切画面へ反映されないまま残ってしまう
+	// (データは正しいのに描画だけが古いまま、というバグ。実機で確認 20260909)。
+	// 2ステップ以上飛ばした場合は、ループの後で無条件に全体を再描画して確実に反映させる。
+	if( 1 < nSteps ){
+		m_pcView->RedrawAll();
 	}
 
 	m_bSuppressRefresh = false;

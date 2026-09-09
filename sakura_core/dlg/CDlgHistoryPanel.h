@@ -64,6 +64,7 @@ protected:
 	virtual LRESULT OnDestroy( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );
 	virtual LRESULT OnCommand( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );	//!< 「元に戻す」「やり直し」ボタン。それ以外(閉じるボタン含む)は基底へ委譲する
 	virtual LRESULT OnNotify( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );
+	virtual LRESULT DispatchEvent_WM_APP( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );	//!< MYWM_HISTORYPANEL_JUMP(一覧クリックの実処理を、NM_CLICKハンドラ自身のコールスタックの外まで遅延させる)を受け取る 20260909
 
 private:
 	void RefreshList();	//!< COpeBuf::GetBlkCount()/GetBlkFuncCode()から一覧を作り直し、現在位置行を選択する。ボタンの有効/無効も同時に更新する
