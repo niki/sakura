@@ -68,12 +68,15 @@ void CGlyphAtlasCache::Clear()
 		wchar_t szExeDir[_MAX_PATH];
 		GetExedir(szExeDir);	// sakura.exe のあるディレクトリ(util/file.h)
 		wchar_t szDumpDir[MAX_PATH];
-		swprintf_s(szDumpDir, L"%s\\sakura_glyph_atlas_dump", szExeDir);
+		// 非切り詰めのswprintf_sはszExeDir+接尾辞がszDumpDirに収まらない場合(Debug
+		// ビルドでは)assertでプロセスごと落ちる。デバッグ専用機能とはいえ安全に
+		// 切り詰める 20260909
+		_snwprintf_s(szDumpDir,_countof(szDumpDir),_TRUNCATE,L"%s\\sakura_glyph_atlas_dump", szExeDir);
 		::CreateDirectoryW(szDumpDir, NULL);	// 既に存在していればエラーになるが無視してよい
 
 		for( int i = 0; i < m_pagePool.GetPageCount(); ++i ){
 			wchar_t szPath[MAX_PATH];
-			swprintf_s(szPath, L"%s\\clear%03d_page%d.bmp", szDumpDir, m_nDumpCounter, i);
+			_snwprintf_s(szPath,_countof(szPath),_TRUNCATE,L"%s\\clear%03d_page%d.bmp", szDumpDir, m_nDumpCounter, i);
 			DumpPageToFile(i, szPath);
 		}
 		++m_nDumpCounter;

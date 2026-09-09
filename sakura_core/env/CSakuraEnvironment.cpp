@@ -246,7 +246,9 @@ void CSakuraEnvironment::ExpandParameter(const wchar_t* pszSource, wchar_t* pszB
 				WCHAR*	pEnd;
 				WCHAR*	p;
 
-				wcscpy_s( buff, _MAX_PATH, to_wchar(pcDoc->m_cDocFile.GetFilePath()) );
+				// 非切り詰めのwcscpy_sはファイルパスがbuffに収まらない場合(Debugビルドでは)
+				// assertでプロセスごと落ちる。長いパス(_MAX_PATH超)を安全に切り詰める 20260909
+				wcsncpy_s( buff, _MAX_PATH, to_wchar(pcDoc->m_cDocFile.GetFilePath()), _TRUNCATE );
 				pEnd = NULL;
 				for ( p = buff; *p != '\0'; p++) {
 					if (*p == L'\\') {

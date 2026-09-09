@@ -163,18 +163,31 @@ protected:
 		profile->assign(1,value);
 	}
 	//StringBufferW
+	// 20260909 wcscpy_s(非切り詰め)はiniの値が対象バッファ(nDataCount)に収まらない場合、
+	// (Debugビルドでは)corecrt_internal_string_templates.hのassertでプロセスごと
+	// 落ちる。ここは固定長配列(例: LOGFONT::lfFaceName)を生の文字列としてやり取りする
+	// 経路のため、書き込み側が未終端バッファを書き出してしまった場合や、iniを手編集
+	// された場合にiniの値が想定より長くなり得る。読み込みは安全に切り詰めるべきなので
+	// wcsncpy_s(..., _TRUNCATE)にする(GetIniFileName/TagJumpKeywords等、既存の
+	// 「切り詰めて継続、abortしない」方針に合わせる)。
 	void profile_to_value(const wstring& profile, StringBufferW* value)
 	{
-		wcscpy_s(value->pData,value->nDataCount,profile.c_str());
+		wcsncpy_s(value->pData,value->nDataCount,profile.c_str(),_TRUNCATE);
 	}
 	void value_to_profile(const StringBufferW& value, wstring* profile)
 	{
-		*profile = value.pData;
+		// value.pDataは生の固定長配列で、nDataCount文字以内でヌル終端されている保証が
+		// 呼び出し側の実装に委ねられている(実際に未終端のまま渡された実例がある)。
+		// 素朴に*profile=value.pDataとするとwstringのoperator=がヌル終端まで走査して
+		// しまい、バッファ外の隣接メモリを読んでゴミ混じりの長大な文字列をiniへ書き込む
+		// (次回読み込み時に上のprofile_to_valueで切り詰められるとはいえ、そもそも
+		// 不正な値を書き出さないほうがよい)。nDataCountまでに制限して走査する。
+		*profile = wstring(value.pData, wcsnlen(value.pData, value.nDataCount));
 	}
 	//StringBufferA
 	void profile_to_value(const wstring& profile, StringBufferA* value)
 	{
-		strcpy_s(value->pData,value->nDataCount,to_achar(profile.c_str()));
+		strncpy_s(value->pData,value->nDataCount,to_achar(profile.c_str()),_TRUNCATE);
 	}
 	void value_to_profile(const StringBufferA& value, wstring* profile)
 	{
@@ -184,7 +197,7 @@ protected:
 	template <int N>
 	void profile_to_value(const wstring& profile, StaticString<WCHAR, N>* value)
 	{
-		wcscpy_s(value->GetBufferPointer(),value->GetBufferCount(),profile.c_str());
+		wcsncpy_s(value->GetBufferPointer(),value->GetBufferCount(),profile.c_str(),_TRUNCATE);
 	}
 	template <int N>
 	void value_to_profile(const StaticString<WCHAR, N>& value, wstring* profile)
@@ -195,7 +208,7 @@ protected:
 	template <int N>
 	void profile_to_value(const wstring& profile, StaticString<ACHAR, N>* value)
 	{
-		strcpy_s(value->GetBufferPointer(),value->GetBufferCount(),to_achar(profile.c_str()));
+		strncpy_s(value->GetBufferPointer(),value->GetBufferCount(),to_achar(profile.c_str()),_TRUNCATE);
 	}
 	template <int N>
 	void value_to_profile(const StaticString<ACHAR, N>& value, wstring* profile)
@@ -218,7 +231,8 @@ protected:
 	//                         入出力部                            //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 public:
-	// 注意：StringBuffer系はバッファが足りないとabortします
+	// 注意：StringBuffer系/StaticString系はバッファが足りない場合、
+	// 20260909以前はabortしていたが、現在は安全に切り詰める(下のprofile_to_value参照)
 	template <class T> //T=={bool, int, WORD, wchar_t, char, wstring, StringBufferA, StringBufferW, StaticString}
 	bool IOProfileData( const WCHAR* pszSectionName, const WCHAR* pszEntryKey, T& tEntryValue )
 	{

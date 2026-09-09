@@ -263,11 +263,32 @@ TCHAR* strtotcs( TCHAR* dest, const WCHAR* src, size_t count );
 // スタックバッファオーバーフローの温床になっていた）。配列以外（ポインタ）を
 // 渡すとコンパイルエラーになるので、その場合は書き込み可能サイズを明示して
 // auto_sprintf_s を使うこと。
+//
+// ★注意(2026.09.09)★ auto_sprintf/auto_snprintf_s/auto_sprintf_s の3つは、
+// 「収まらない出力をどう扱うか」がそれぞれ違う。名前だけでは区別しづらく、
+// 実際にauto_sprintf_s()が「収まらない1個の%sフィールドをCRTのvswprintf_s()に
+// 丸投げしてクラッシュ(_invalid_parameter_internal/_invoke_watson)させる」
+// 実装だったことに起因する実クラッシュが発生している(CDlgHistoryPanel.cpp参照)。
+//   - auto_sprintf / auto_snprintf_s : 収まらなければ「異常」として扱う
+//     (tchar_sprintf_s→非切り詰めのtchar_vsprintf_s。単一の%sフィールドが
+//     入りきらないとCRTの不正パラメータハンドラでプロセスごと落ちる)。
+//     フォーマット結果が書き込み先に必ず収まると確信できる場合のみ使うこと。
+//   - auto_sprintf_s : 収まらなければ安全に切り詰める(2026.09.09、
+//     tchar_snprintf_sの実装をtchar_vsnprintf_s(_TRUNCATE版)経由に修正済み)。
+//     可変長データ(ユーザー入力・ファイルパス・プレビュー文字列等)を%sへ渡す
+//     場合は、収まりきる保証が無い限りこちらを使うこと。
+// なお下のMinGW(非MSVC)分岐は、上のMSVC分岐と名前の対応が入れ替わっている
+// (auto_snprintf_sがtchar_vsnprintf_s＝切り詰め版、auto_sprintf_sが
+// tchar_vsprintf_s＝非切り詰め版)。ここでは動作未確認のため、MSVC分岐と
+// 合わせる修正はせずコメントの追記のみに留めている。
 #if defined(_MSC_VER) && _MSC_VER>=1400
 #define auto_snprintf_s(buf, count, format, ...) tchar_sprintf_s((buf), count, (format), __VA_ARGS__)
 #define auto_sprintf(buf, format, ...)           tchar_sprintf_s((buf), std::size(buf), (format), __VA_ARGS__)
 #define auto_sprintf_s(buf, nBufCount, format, ...) tchar_snprintf_s((buf), nBufCount, (format), __VA_ARGS__)
 #else
+// MinGW等、上のMSVC>=1400分岐に入らないビルド向け。上のコメント通り、
+// auto_snprintf_s/auto_sprintf_sの安全/非安全の対応がMSVC分岐と入れ替わっている
+// (auto_snprintf_sが切り詰め版、auto_sprintf_sが非切り詰め版)ので注意。
 inline int auto_snprintf_s(ACHAR* buf, size_t count, const ACHAR* format, ...)   { va_list v; va_start(v,format); int ret=tchar_vsnprintf_s(buf,count,format,v); va_end(v); return ret; }
 inline int auto_snprintf_s(WCHAR* buf, size_t count, const WCHAR* format, ...)   { va_list v; va_start(v,format); int ret=tchar_vsnprintf_s(buf,count,format,v); va_end(v); return ret; }
 template <size_t N> inline int auto_sprintf(ACHAR (&buf)[N], const ACHAR* format, ...){ va_list v; va_start(v,format); int ret=tchar_vsprintf_s(buf,N,format,v); va_end(v); return ret; }

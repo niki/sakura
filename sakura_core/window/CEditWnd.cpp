@@ -1544,7 +1544,11 @@ LRESULT CEditWnd::DispatchEvent(
 						if( GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() ){
 							const WCHAR* pszFile = to_wchar(GetDocument()->m_cDocFile.GetFileName());
 							WCHAR temp[256];
-							wcscpy_s(temp, pszFile);
+							// 非切り詰めのwcscpy_s(dst,src)はファイルパスがtempに収まらない場合
+							// (Debugビルドでは)assertでプロセスごと落ちる。ファイルパスは
+							// _MAX_PATH(260)まであり得るため、256のtempより長くなり得る。
+							// 安全に切り詰める 20260909
+							wcsncpy_s(temp,_countof(temp),pszFile,_TRUNCATE);
 							::PathRemoveFileSpec(temp);
 							::ShellExecute(NULL, L"explore", temp, NULL, NULL, SW_SHOWNORMAL);
 						}
