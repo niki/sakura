@@ -159,20 +159,24 @@ BOOL CPrint::PrintDlg( PRINTDLG *pPD, MYDEVMODE *pMYDEVMODE )
 	pDEVMODE = (DEVMODE*)::GlobalLock( m_hDevMode );
 	pDEVNAMES = (DEVNAMES*)::GlobalLock( m_hDevNames );
 
+	// プリンタドライバ名/デバイス名/ポート名はプリンタドライバが返す可変長の文字列
+	// (DEVNAMES)で、こちら側の固定長バッファに必ず収まる保証は無い。非切り詰めの
+	// _tcscpy_sは収まらない場合(Debugビルドでは)assertでプロセスごと落ちるため、
+	// 安全に切り詰める auto_strcpy_s にする 20260910
 	// プリンタドライバ名
-	_tcscpy_s(
+	auto_strcpy_s(
 		pMYDEVMODE->m_szPrinterDriverName,
 		_countof(pMYDEVMODE->m_szPrinterDriverName),
 		(const TCHAR*)pDEVNAMES + pDEVNAMES->wDriverOffset
 	);
 	// プリンタデバイス名
-	_tcscpy_s(
+	auto_strcpy_s(
 		pMYDEVMODE->m_szPrinterDeviceName,
 		_countof(pMYDEVMODE->m_szPrinterDeviceName),
 		(const TCHAR*)pDEVNAMES + pDEVNAMES->wDeviceOffset
 	);
 	// プリンタポート名
-	_tcscpy_s(
+	auto_strcpy_s(
 		pMYDEVMODE->m_szPrinterOutputName,
 		_countof(pMYDEVMODE->m_szPrinterOutputName),
 		(const TCHAR*)pDEVNAMES + pDEVNAMES->wOutputOffset
@@ -241,20 +245,22 @@ BOOL CPrint::GetDefaultPrinter( MYDEVMODE* pMYDEVMODE )
 	pDEVMODE = (DEVMODE*)::GlobalLock( m_hDevMode );
 	pDEVNAMES = (DEVNAMES*)::GlobalLock( m_hDevNames );
 
+	// 非切り詰めのままだと収まらないプリンタドライバ名等でプロセスごと落ちるため、
+	// 上のPrintDlg()と同じくauto_strcpy_sで安全に切り詰める 20260910
 	// プリンタドライバ名
-	_tcscpy_s(
+	auto_strcpy_s(
 		pMYDEVMODE->m_szPrinterDriverName,
 		_countof(pMYDEVMODE->m_szPrinterDriverName),
 		(const TCHAR*)pDEVNAMES + pDEVNAMES->wDriverOffset
 	);
 	// プリンタデバイス名
-	_tcscpy_s(
+	auto_strcpy_s(
 		pMYDEVMODE->m_szPrinterDeviceName,
 		_countof(pMYDEVMODE->m_szPrinterDeviceName),
 		(const TCHAR*)pDEVNAMES + pDEVNAMES->wDeviceOffset
 	);
 	// プリンタポート名
-	_tcscpy_s(
+	auto_strcpy_s(
 		pMYDEVMODE->m_szPrinterOutputName,
 		_countof(pMYDEVMODE->m_szPrinterOutputName),
 		(const TCHAR*)pDEVNAMES + pDEVNAMES->wOutputOffset

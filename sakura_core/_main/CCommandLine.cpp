@@ -287,14 +287,16 @@ void CCommandLine::ParseCommandLine( LPCTSTR pszCmdLineSrc, bool bResponse )
 				if( len > 0 ){
 					cmWork.SetString( &pszToken[1], len - ( pszToken[len] == _T('"') ? 1 : 0 ));
 					cmWork.Replace( _T("\"\""), _T("\"") );
-					_tcscpy_s( szPath, _countof(szPath), cmWork.GetStringPtr() );	/* ファイル名 */
+					// コマンドライン由来の可変長文字列でszPath(_MAX_PATH)に収まる保証が無いため、
+					// 非切り詰めの_tcscpy_sでプロセスごと落ちないようauto_strcpy_sにする 20260910
+					auto_strcpy_s( szPath, _countof(szPath), cmWork.GetStringPtr() );	/* ファイル名 */
 				}
 				else {
 					szPath[0] = _T('\0');
 				}
 			}
 			else{
-				_tcscpy_s( szPath, _countof(szPath), pszToken );		/* ファイル名 */
+				auto_strcpy_s( szPath, _countof(szPath), pszToken );		/* ファイル名 */
 			}
 
 			// Nov. 11, 2005 susu

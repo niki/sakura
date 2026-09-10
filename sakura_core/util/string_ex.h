@@ -25,6 +25,7 @@
 #define SAKURA_STRING_EX_29EB1DD7_7259_4D6C_A651_B9174E5C3D3C9_H_
 
 #include <iterator>	// std::size
+#include <cerrno>	// EINVAL (auto_strcat_s)
 
 // 2007.10.19 kobake
 // string.h で定義されている関数を拡張したようなモノ達
@@ -202,18 +203,42 @@ inline WCHAR* auto_memcpy(WCHAR* dest, const WCHAR* src, size_t count){ return :
 // （かつては境界チェック無しの strcpy/wcscpy 直呼びで、auto_sprintf と同種のバッファ
 // オーバーフロー要因だった）。配列以外（ポインタ）を渡すとコンパイルエラーになるので、
 // その場合は書き込み可能サイズを明示して auto_strcpy_s / auto_strcat_s を使うこと。
-inline errno_t auto_strcpy_s(ACHAR* dst, size_t nDstCount, const ACHAR* src){ return strcpy_s(dst,nDstCount,src); }
-inline errno_t auto_strcpy_s(WCHAR* dst, size_t nDstCount, const WCHAR* src){ return wcscpy_s(dst,nDstCount,src); }
-template <size_t N> inline ACHAR* auto_strcpy(ACHAR (&dst)[N], const ACHAR* src){ auto_strcpy_s(dst,N,src); return dst; }
-template <size_t N> inline WCHAR* auto_strcpy(WCHAR (&dst)[N], const WCHAR* src){ auto_strcpy_s(dst,N,src); return dst; }
+//
+// ★注意(2026.09.10)★ auto_sprintf/auto_sprintf_s と同じ理由で、auto_strcpy_s /
+// auto_strcat_s も名前だけでは安全性を区別しづらい。以前はどちらも内部で
+// strcpy_s/wcscpy_s/strcat_s/wcscat_s（非切り詰め。収まらないとDebugビルドでは
+// assertでプロセスごと落ちる／Releaseでも失敗してdstに書き込まない）を直接呼んで
+// おり、「_s版＝安全」という見た目に反して非切り詰めのままだった。
+//   - auto_strcpy / auto_strcat（配列版、サイズ暗黙）: 収まらなければ「異常」として
+//     扱う（内部でこの auto_strcpy_s / auto_strcat_s を呼ぶが、書き込み先サイズは
+//     配列サイズそのものなので、収まらない＝想定外のケース。auto_sprintfと同じ位置
+//     づけ）。srcが書き込み先に必ず収まると確信できる場合のみ使うこと。
+//   - auto_strcpy_s / auto_strcat_s（書き込み可能サイズ明示）: 収まらなければ安全に
+//     切り詰める。可変長データ（ユーザー入力・ファイルパス等）を固定長バッファへ
+//     コピーする場合は、収まりきる保証が無い限りこちらを使うこと。
+inline errno_t auto_strcpy_s(ACHAR* dst, size_t nDstCount, const ACHAR* src){ return strncpy_s(dst,nDstCount,src,_TRUNCATE); }
+inline errno_t auto_strcpy_s(WCHAR* dst, size_t nDstCount, const WCHAR* src){ return wcsncpy_s(dst,nDstCount,src,_TRUNCATE); }
+template <size_t N> inline ACHAR* auto_strcpy(ACHAR (&dst)[N], const ACHAR* src){ strcpy_s(dst,N,src); return dst; }
+template <size_t N> inline WCHAR* auto_strcpy(WCHAR (&dst)[N], const WCHAR* src){ wcscpy_s(dst,N,src); return dst; }
 inline ACHAR* auto_strncpy(ACHAR* dst,const ACHAR* src,size_t count){ return strncpy(dst,src,count); }
 inline WCHAR* auto_strncpy(WCHAR* dst,const WCHAR* src,size_t count){ return wcsncpy(dst,src,count); }
 inline ACHAR* auto_memset(ACHAR* dest, ACHAR c, size_t count){        memset (dest,c,count); return dest; }
 inline WCHAR* auto_memset(WCHAR* dest, WCHAR c, size_t count){ return wmemset(dest,c,count);              }
-inline errno_t auto_strcat_s(ACHAR* dst, size_t nDstCount, const ACHAR* src){ return strcat_s(dst,nDstCount,src); }
-inline errno_t auto_strcat_s(WCHAR* dst, size_t nDstCount, const WCHAR* src){ return wcscat_s(dst,nDstCount,src); }
-template <size_t N> inline ACHAR* auto_strcat(ACHAR (&dst)[N], const ACHAR* src){ auto_strcat_s(dst,N,src); return dst; }
-template <size_t N> inline WCHAR* auto_strcat(WCHAR (&dst)[N], const WCHAR* src){ auto_strcat_s(dst,N,src); return dst; }
+// auto_strcat_s: dstの現在の文字列長までは（未終端でも）安全にnDstCountでスキャンし、
+// 残り容量ぶんだけ切り詰めてsrcを追記する。strncat_s/wcsncat_sはMinGWフォールバック側に
+// 実装が無いため、既にある strncpy_s/wcsncpy_s(_TRUNCATE) の組み合わせだけで完結させる。
+inline errno_t auto_strcat_s(ACHAR* dst, size_t nDstCount, const ACHAR* src){
+	size_t nDstLen = strnlen(dst,nDstCount);
+	if(nDstLen>=nDstCount) return EINVAL; // 未終端
+	return strncpy_s(dst+nDstLen,nDstCount-nDstLen,src,_TRUNCATE);
+}
+inline errno_t auto_strcat_s(WCHAR* dst, size_t nDstCount, const WCHAR* src){
+	size_t nDstLen = wcsnlen(dst,nDstCount);
+	if(nDstLen>=nDstCount) return EINVAL; // 未終端
+	return wcsncpy_s(dst+nDstLen,nDstCount-nDstLen,src,_TRUNCATE);
+}
+template <size_t N> inline ACHAR* auto_strcat(ACHAR (&dst)[N], const ACHAR* src){ strcat_s(dst,N,src); return dst; }
+template <size_t N> inline WCHAR* auto_strcat(WCHAR (&dst)[N], const WCHAR* src){ wcscat_s(dst,N,src); return dst; }
 
 //比較系
 inline int auto_memcmp (const ACHAR* p1, const ACHAR* p2, size_t count){ return amemcmp(p1,p2,count); }

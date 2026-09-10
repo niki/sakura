@@ -1262,8 +1262,10 @@ void GetStrTrancateWidth( TCHAR* dest, int nSize, const TCHAR* path, HDC hDC, in
 		strTemp2 += _T("...");
 		if( nPxWidth < calc.GetTextWidth(strTemp2.c_str()) ){
 			// 入りきらなかったので1文字前までをコピー
+			// nSize-3で確保した余白ぶんだけ"..."が収まる想定だが、非切り詰めの_tcscat_sだと
+			// 万一想定がずれた場合にプロセスごと落ちるため、安全に切り詰めるauto_strcat_sにする 20260910
 			_tcsncpy_s(dest, t_max(0, nSize - 3), strTempOld.c_str(), _TRUNCATE);
-			_tcscat_s(dest, nSize, _T("..."));
+			auto_strcat_s(dest, nSize, _T("..."));
 			return;
 		}
 		strTempOld = strTemp;
@@ -1404,7 +1406,7 @@ void GetShortViewPath( TCHAR* dest, int nSize, const TCHAR* path, HDC hDC, int n
 				strLeftFile += strFile; // C:\...\longfilename
 				int nExtLen = nPathLen - nExtPos;
 				GetStrTrancateWidth(dest, t_max(0, nSize - nExtLen), strLeftFile.c_str(), hDC, nPxWidth - nExtWidth);
-				_tcscat_s(dest, nSize, &path[nExtPos+1]); // 拡張子連結 C:\...\longf...ext
+				auto_strcat_s(dest, nSize, &path[nExtPos+1]); // 拡張子連結 C:\...\longf...ext (非切り詰めのabortを避ける 20260910)
 			}else{
 				// ファイル名が置けないくらい拡張子か左側が長い。パスの左側を優先して残す
 				GetStrTrancateWidth(dest, nSize, strTemp.c_str(), hDC, nPxWidth);

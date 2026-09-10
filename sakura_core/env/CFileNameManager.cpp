@@ -527,42 +527,46 @@ bool CFileNameManager::GetMenuFullLabel(
 //			::PathCompactPathEx(temp6, temp5.c_str(), compactlen, L'\\');
 			///
 			
+			// tempは実ファイル/フォルダ名由来の可変長文字列で、末尾にサイズ表記(" [%d MB]"等)を
+			// 付けるとszFileName(_MAX_PATH)に収まらないことがある。非切り詰めの_stprintf_sは
+			// 収まらない場合(Debugビルドでは)assertでプロセスごと落ちるため、安全に切り詰める
+			// auto_sprintf_sにする 20260910
 			if (isInvalid) {
 				// フォルダでもファイルでもないと判断した場合はフォルダと同じ扱いにする
 				std::tstring temp7 = si::util::rtrim(temp, _T('\\'));
-				_stprintf_s( szFileName, _T("%s"), temp7.c_str());
+				auto_sprintf_s( szFileName, _countof(szFileName), _T("%s"), temp7.c_str());
 			}
 			else if (isDir) {
 				// フォルダ
 				std::tstring temp7 = si::util::rtrim(temp, _T('\\'));
-				_stprintf_s( szFileName, _T("%s"), temp7.c_str());
+				auto_sprintf_s( szFileName, _countof(szFileName), _T("%s"), temp7.c_str());
 			}
 			else if (size_low < 1024) {
 				// 1KB未満
-				_stprintf_s( szFileName, _T("%s [1 KB]"), temp);
+				auto_sprintf_s( szFileName, _countof(szFileName), _T("%s [1 KB]"), temp);
 //				_stprintf_s( szFileName, _T("%s (%s) [1 KB]"), temp4.c_str(), temp6);
 			}
 			else if (size_low < 1024 * 1024) {
 				// 1MB未満
-				_stprintf_s( szFileName, _T("%s [%d KB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024));
+				auto_sprintf_s( szFileName, _countof(szFileName), _T("%s [%d KB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024));
 //				_stprintf_s(szFileName, _T("%s (%s) [%d KB]"), temp4.c_str(), temp6,
 //				            (int32_t)(((double)size_low + 0.5) / 1024));
 			}
 			else if (size_low < 1024 * 1024 * 10) {
 				// 10MB未満
-				_stprintf_s( szFileName, _T("%s [%.2f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
+				auto_sprintf_s( szFileName, _countof(szFileName), _T("%s [%.2f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
 //				_stprintf_s(szFileName, _T("%s (%s) [%.2f MB]"), temp4.c_str(), temp6,
 //				            ((double)size_low + 0.5) / 1024 / 1024);
 			}
 			else if (size_low < 1024 * 1024 * 100) {
 				// 100MB未満
-				_stprintf_s( szFileName, _T("%s [%.1f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
+				auto_sprintf_s( szFileName, _countof(szFileName), _T("%s [%.1f MB]"), temp, ((double)size_low + 0.5) / 1024 / 1024);
 //				_stprintf_s(szFileName, _T("%s (%s) [%.1f MB]"), temp4.c_str(), temp6,
 //				            ((double)size_low + 0.5) / 1024 / 1024);
 			}
 			else {
 				// 100MB以上 (ケアなし)
-				_stprintf_s( szFileName, _T("%s [%d MB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024 / 1024));
+				auto_sprintf_s( szFileName, _countof(szFileName), _T("%s [%d MB]"), temp, (int32_t)(((double)size_low + 0.5) / 1024 / 1024));
 //				_stprintf_s(szFileName, _T("%s (%s) [%d MB]"), temp4.c_str(), temp6,
 //				            (int32_t)(((double)size_low + 0.5) / 1024 / 1024));
 			}

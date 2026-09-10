@@ -33,9 +33,11 @@ void GetCandidateDirs( TCHAR szCandidateDir[2][_MAX_PATH] )
 	szCandidateDir[0][0] = _T('\0');
 	szCandidateDir[1][0] = _T('\0');
 	GetExedir( szCandidateDir[0], NULL );	// 末尾に'\\'が付かない実装のため明示的に付与する
-	_tcscat_s( szCandidateDir[0], _MAX_PATH, _T("\\CrashDumps\\") );
+	// クラッシュハンドラ自身が非切り詰め関数の失敗で落ちては本末転倒なので、
+	// exeパスが長く収まりきらない場合も安全に切り詰める auto_strcat_s を使う 20260910
+	auto_strcat_s( szCandidateDir[0], _MAX_PATH, _T("\\CrashDumps\\") );
 	if( 0 != ::GetTempPath( _MAX_PATH, szCandidateDir[1] ) ){
-		_tcscat_s( szCandidateDir[1], _MAX_PATH, _T("sakura_CrashDumps\\") );
+		auto_strcat_s( szCandidateDir[1], _MAX_PATH, _T("sakura_CrashDumps\\") );
 	}
 }
 

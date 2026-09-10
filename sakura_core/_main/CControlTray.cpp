@@ -1395,7 +1395,10 @@ bool CControlTray::OpenNewEditor(
 #ifdef _DEBUG
 //	dwCreationFlag |= DEBUG_PROCESS; //2007.09.22 kobake デバッグ用フラグ
 #endif
-	TCHAR szCmdLine[1024]; _tcscpy_s(szCmdLine, _countof(szCmdLine), cCmdLineBuf.c_str());
+	// cCmdLineBufは複数ファイルのドラッグ&ドロップ等で1024文字を超えうる可変長文字列。
+	// 非切り詰めの_tcscpy_sは収まらない場合(Debugビルドでは)assertでプロセスごと落ちるため、
+	// 安全に切り詰めるauto_strcpy_sにする 20260910
+	TCHAR szCmdLine[1024]; auto_strcpy_s(szCmdLine, _countof(szCmdLine), cCmdLineBuf.c_str());
 	BOOL bCreateResult = CreateProcess(
 		szEXE,					// 実行可能モジュールの名前
 		szCmdLine,				// コマンドラインの文字列

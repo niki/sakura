@@ -4747,8 +4747,10 @@ void CEditWnd::GetTooltipText(TCHAR* wszBuf, size_t nBufCount, int nID) const
 			const TCHAR* pszKey = ppcAssignedKeyList[j]->GetStringPtr();
 			int nKeyLen = _tcslen(pszKey);
 			if ( nLen + 9 + nKeyLen < nBufCount ){
-				_tcscat_s( wszBuf, nBufCount, _T("\n        ") );
-				_tcscat_s( wszBuf, nBufCount, pszKey );
+				// サイズチェック済みだが、非切り詰めの_tcscat_sは万一の想定漏れでプロセスごと
+				// 落ちるため、安全に切り詰めるauto_strcat_sにする 20260910
+				auto_strcat_s( wszBuf, nBufCount, _T("\n        ") );
+				auto_strcat_s( wszBuf, nBufCount, pszKey );
 				nLen += 9 + nKeyLen;
 			}
 			delete ppcAssignedKeyList[j];
