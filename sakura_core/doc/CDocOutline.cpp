@@ -598,12 +598,18 @@ void CDocOutline::MakeFuncList_BookMark( CFuncInfoArr* pcFuncInfoArr )
 }
 
 #ifdef NKMM_CODE_FOLDING
-/*! アウトライン解析結果(関数/構造体等)から折りたたみ範囲を算出し、行にマークする
+/*! アウトライン解析結果(関数/構造体/トピック等)から折りたたみ範囲を算出し、行にマークする
 
-	@note 対象はC/C++のみ(コードフォールディング機能 Phase2 MVP時点、20260911)。
-		他の言語種別は追って対応。既存の折りたたみ状態はいったん全展開にリセットしてから
-		再登録する(再登録前に折りたたまれていた範囲も展開状態に戻る)。
+	@note 組み込みのアウトライン解析方式(C/C++/Java/Perl/Python/HTML/プレーンテキスト等)に
+		対応する。CFoldRangeCalculatorは深さ(nDepth)ベースの汎用アルゴリズムのため、
+		プレーンテキストのようにフラット(深さ0のみ)な種別でも「次の見出しの直前まで」を
+		範囲として自然に折りたたみ対象になる。ブックマーク一覧/ファイルツリー/ルール
+		ファイル汎用種別(OUTLINE_BOOKMARK/OUTLINE_FILETREE/OUTLINE_FILE)はコード構造を
+		表すものではなく折りたたみの対象として意味を持たないため未対応、プラグイン提供の
+		アウトライン種別も未対応(既知の制限)。既存の折りたたみ状態はいったん全展開に
+		リセットしてから再登録する(再登録前に折りたたまれていた範囲も展開状態に戻る)。
 	@date 2026.09.11 Yu-zuki. 新規作成
+	@date 2026.09.11 Yu-zuki. C/C++限定から組み込みアウトライン種別全般へ対応拡大(ユーザー指摘)
 */
 void CDocOutline::UpdateFoldRanges( void )
 {
@@ -611,12 +617,36 @@ void CDocOutline::UpdateFoldRanges( void )
 	cFoldMgr.ResetAllFoldMark( &m_pcDocRef->m_cDocLineMgr );
 
 	EOutlineType nOutlineType = m_pcDocRef->m_cDocType.GetDocumentAttribute().m_eDefaultOutline;
-	if( OUTLINE_C != nOutlineType && OUTLINE_CPP != nOutlineType && OUTLINE_C_CPP != nOutlineType ){
-		return;	// Phase2 MVP: C/C++以外は未対応
-	}
 
 	CFuncInfoArr cFuncInfoArr;
-	MakeFuncList_C( &cFuncInfoArr, nOutlineType, m_pcDocRef->m_cDocFile.GetFilePath() );
+	switch( nOutlineType ){
+	case OUTLINE_C:
+	case OUTLINE_C_CPP:
+	case OUTLINE_CPP:
+		MakeFuncList_C( &cFuncInfoArr, nOutlineType, m_pcDocRef->m_cDocFile.GetFilePath() );
+		break;
+	case OUTLINE_PLSQL:		MakeFuncList_PLSQL( &cFuncInfoArr );		break;
+	case OUTLINE_JAVA:		MakeFuncList_Java( &cFuncInfoArr );			break;
+	case OUTLINE_COBOL:		MakeTopicList_cobol( &cFuncInfoArr );		break;
+	case OUTLINE_ASM:		MakeTopicList_asm( &cFuncInfoArr );			break;
+	case OUTLINE_PERL:		MakeFuncList_Perl( &cFuncInfoArr );			break;
+	case OUTLINE_VB:		MakeFuncList_VisualBasic( &cFuncInfoArr );	break;
+	case OUTLINE_WZTXT:		MakeTopicList_wztxt( &cFuncInfoArr );		break;
+	case OUTLINE_HTML:		MakeTopicList_html( &cFuncInfoArr, false );	break;
+	case OUTLINE_TEX:		MakeTopicList_tex( &cFuncInfoArr );			break;
+	case OUTLINE_PYTHON:	MakeFuncList_python( &cFuncInfoArr );		break;
+	case OUTLINE_ERLANG:	MakeFuncList_Erlang( &cFuncInfoArr );		break;
+	case OUTLINE_XML:		MakeTopicList_html( &cFuncInfoArr, true );	break;
+	case OUTLINE_BOOKMARK:	// ブックマーク一覧はコード構造ではないため対象外
+	case OUTLINE_FILE:		// ルールファイル種別は多岐にわたり対象外(既知の制限)
+	case OUTLINE_FILETREE:	// ファイルツリーは対象外
+		return;
+	case OUTLINE_TEXT:
+	default:
+		// プラグイン提供の種別も含め、それ以外はプレーンテキストのトピック解析にフォールバック
+		MakeTopicList_txt( &cFuncInfoArr );
+		break;
+	}
 
 	const CLogicInt nDocLineCount = m_pcDocRef->m_cDocLineMgr.GetLineCount();
 	std::vector<SFoldRange> vecRanges = CFoldRangeCalculator::Calculate( &cFuncInfoArr, nDocLineCount );
