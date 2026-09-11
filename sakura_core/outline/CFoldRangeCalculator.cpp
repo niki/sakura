@@ -28,7 +28,7 @@
 
 /*!	アウトライン解析結果(CFuncInfoArr)から折りたたみ範囲を算出する
 
-	@date 2026.09.11 Yu-zuki. 新規作成 (コードフォールディング機能 Phase1)
+	@date 2026.09.11 Yu-zuki. 新規作成
 */
 std::vector<SFoldRange> CFoldRangeCalculator::Calculate( CFuncInfoArr* pcFuncInfoArr, CLogicInt nDocLineCount )
 {

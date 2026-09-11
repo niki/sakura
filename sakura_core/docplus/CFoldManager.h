@@ -27,8 +27,7 @@
 class CDocLine;
 class CDocLineMgr;
 
-//! 行に付加するコードフォールディング情報
-//  Phase1: データモデルのみ。表示(非表示化)への反映はまだ行わない 20260911
+//! 行に付加するコードフォールディング情報 20260911
 class CLineFolded{
 public:
 	CLineFolded() : m_bFoldable(false), m_bFolded(false), m_bHidden(false), m_nEndLine(-1), m_nNameCol(-1), m_nNameLen(0) { }

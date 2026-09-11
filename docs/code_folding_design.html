@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>コードフォールディング 設計リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%81</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --bad-bg:#F1D9D6;
+    --bad-ink:#7C2E2E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+      --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+      --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+      --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+      --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+      --scope-bg:#232C36; --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+    --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+    --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+    --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+    --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+    --scope-bg:#232C36; --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px; line-height:1.85; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600; color:var(--ink); text-wrap:balance; letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{ font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace; font-size:.88em; }
+  code.inline{
+    background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+    padding:.08em .38em; color:var(--sakura-ink);
+  }
+
+  .shell{ display:grid; grid-template-columns:248px minmax(0,1fr); max-width:1180px; margin:0 auto; }
+  .toc{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:32px 18px 32px 28px; border-right:1px solid var(--rule);
+  }
+  .toc-brand{ font-family:'Shippori Mincho',serif; font-weight:700; font-size:1.02rem; margin-bottom:2px; }
+  .toc-brand small{
+    display:block; font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:.68rem;
+    letter-spacing:.06em; color:var(--sakura-ink); margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif; font-size:.68rem; letter-spacing:.09em;
+    color:var(--ink-faint); font-weight:600; margin:0 0 8px; text-transform:uppercase;
+  }
+  .toc a{
+    display:block; font-size:.83rem; color:var(--ink-soft); text-decoration:none;
+    padding:4px 0 4px 12px; border-left:2px solid transparent; line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.1em;
+    color:var(--sakura-ink); text-transform:uppercase; margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem; padding:5px 11px; border-radius:999px; background:var(--surface);
+    border:1px solid var(--rule); color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem; padding-bottom:12px; border-bottom:1px solid var(--rule);
+    margin-bottom:24px; display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--sakura); font-weight:600; }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:70ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:68ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:22px 0 30px; }
+  .principle{ background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:18px 18px 16px; }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap; font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.bad{ background:var(--bad-bg); color:var(--bad-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  pre{
+    background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:18px 20px;
+    overflow-x:auto; margin:0 0 22px; font-size:.82rem; line-height:1.7; box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+
+  .callout{
+    border:1px solid var(--rule); border-left:3px solid var(--sakura); background:var(--surface);
+    border-radius:0 10px 10px 0; padding:16px 20px; margin:0 0 22px; font-size:.9rem; max-width:68ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+  .callout.bad{ border-left-color:var(--bad-ink); }
+  .callout.bad .label{ color:var(--bad-ink); }
+
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline:before{ content:""; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:var(--rule); }
+  .pass{ position:relative; padding-bottom:30px; }
+  .pass:last-child{ padding-bottom:0; }
+  .pass:before{
+    content:""; position:absolute; left:-28px; top:5px; width:9px; height:9px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--sakura);
+  }
+  .pass.bad:before{ border-color:var(--bad-ink); }
+  .pass-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .pass-num{ font-family:'IBM Plex Mono',monospace; color:var(--sakura-ink); font-size:.78rem; font-weight:600; }
+  .pass-title{ font-weight:700; font-size:.97rem; }
+  .pass p{ font-size:.88rem; color:var(--ink-soft); max-width:72ch; margin:0 0 8px; }
+  .pass p:last-child{ margin-bottom:0; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule); margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+  }
+  @media (prefers-reduced-motion: no-preference){ html{ scroll-behavior:smooth; } }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">コードフォールディング<small>NKMM_CODE_FOLDING / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+        <a href="#data-model">データモデル</a>
+        <a href="#hide-show">非表示化の仕組み</a>
+      </div>
+      <div class="toc-group">
+        <h5>中核メカニズム</h5>
+        <a href="#toggle">全体トグル</a>
+        <a href="#navigate">アウトライン表示中の操作</a>
+        <a href="#highlight">ヘッダ行のハイライト</a>
+        <a href="#types">対応アウトライン種別</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#bugs">見つけて修正した不具合</a>
+        <a href="#limits">既知の制約</a>
+        <a href="#files">変更ファイル一覧</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">コードフォールディング</h1>
+      <p class="subtitle lede">文書全体を関数/構造体等のヘッダ行だけのアウトライン表示に折りたたむ機能の設計記録。データモデル、非表示化とコメント色分けを両立させる仕組み、実装過程で発見・修正した実クラッシュの記録をまとめる。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_CODE_FOLDING</b></span>
+        <span class="chip">実装日 <b>2026-09-11</b></span>
+        <span class="chip">既定キー <b class="mono">Ctrl+Shift+[ / Ctrl+Shift+]</b></span>
+        <span class="chip">見つけた実クラッシュ <b>3件</b></span>
+      </div>
+    </header>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>VS Codeの「Fold All」に相当する、文書<strong>全体</strong>を一括で折りたたむ/展開するトグル動作として実装した。個々の関数を個別に開閉するのではなく、<code class="inline">Ctrl+Shift+[</code>(同じ動作の<code class="inline">Ctrl+Shift+]</code>も)を押すたびに「フルソース」⇔「ヘッダ行だけのアウトライン一覧」を切り替える。既存のアウトライン解析エンジン(<code class="inline">CDocOutline</code>)が既に持っている関数/構造体の位置情報を再利用し、折りたたみ専用の構文解析は新規に書いていない。</p>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — 全体トグル、個別行ではない</span>
+          <p>最初はカーソル行だけを開閉する方式で実装したが、「対象の行をfoldするのではなく、全体をfoldしてアウトライン一覧になるようにする」という指示で全面的に作り直した。<code class="inline">CLayoutMgr::ToggleFold(CLogicInt)</code>(単一行版)は将来のガターUI向けに残しているが、コマンドからは<code class="inline">ToggleFoldAll()</code>のみを使う。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — 非表示化と色分けの分離</span>
+          <p><code class="inline">_DoLayout()</code>自体は折りたたみを一切意識せず、常に全行分の色分けを含めて通常通りレイアウトを生成する。折りたたみは、その「後」に非表示にすべき行の<code class="inline">CLayout</code>ノードだけを連結リストから取り除く、完全に別の後処理として実装している。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — 既存の色分けアーキテクチャに乗る</span>
+          <p>ヘッダ行の関数名ハイライトは、正規表現エンジンを新設せず、既存の<code class="inline">CColor_Select</code>/<code class="inline">CColor_Found</code>と同じ「<code class="inline">BeginColorEx</code>で行頭の<code class="inline">CLayout</code>を参照して判定する」パターンにそのまま乗せた。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">この文書の読み方</span>
+        <p>「中核メカニズム」以降はコードを触る際のリファレンス。「見つけて修正した不具合」は、実装過程で実際にクラッシュダンプを解析して特定した3件のヒープ破壊系バグの記録で、この機能に限らず<code class="inline">CLayout</code>連結リストを直接いじる将来のコードにとっても教訓になる内容を含む。</p>
+      </div>
+    </section>
+
+    <section id="data-model">
+      <h2><span class="num">01</span>データモデル</h2>
+      <p><code class="inline">CDocLine::MarkType</code>に追加した<code class="inline">CLineFolded</code>ひとつが、行1本分の折りたたみ状態。既存の<code class="inline">CLineBookmarked</code>/<code class="inline">CLineFuncList</code>等と同じ、docplus流儀の「行に付加する軽量マーク」パターンを踏襲している。</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>フィールド</th><th>意味を持つ行</th><th>役割</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">m_bFoldable</code></td><td>全行</td><td>この行が折りたたみ開始行(関数/構造体等のヘッダ行)になりうるか</td></tr>
+            <tr><td><code class="inline">m_bFolded</code></td><td>ヘッダ行のみ</td><td>この開始行が現在折りたたまれているか</td></tr>
+            <tr><td><code class="inline">m_bHidden</code></td><td>非ヘッダ行</td><td>折りたたみにより非表示になっているか(開始行自身は対象外、常にfalse)</td></tr>
+            <tr><td><code class="inline">m_nEndLine</code></td><td>ヘッダ行のみ</td><td>折りたたみ範囲の終了行(0オリジン)</td></tr>
+            <tr><td><code class="inline">m_nNameCol</code> / <code class="inline">m_nNameLen</code></td><td>ヘッダ行のみ</td><td>関数/メソッド名部分の桁位置・文字数(ハイライト用。未特定なら<code class="inline">m_nNameCol=-1</code>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><code class="inline">CFoldRangeCalculator::Calculate()</code>が、アウトライン解析結果(<code class="inline">CFuncInfoArr</code>)から折りたたみ範囲を算出する。<code class="inline">CFuncInfo</code>には開始行しか記録されていないため、深さ(<code class="inline">m_nDepth</code>)をキーにしたスタック走査で「次に現れる同じか浅い深さの項目の直前まで」を終了行とみなす。</p>
+
+      <pre><code><span class="cm">// 同じか浅い深さの項目が現れたら、それより深い開いたままの項目を</span>
+<span class="cm">// すべて「直前の行」で閉じる。</span>
+<span class="kw">while</span>( !vecOpenIndex.empty() ){
+    SFoldRange&amp; rOpen = vecResult[vecOpenIndex.back()];
+    <span class="kw">if</span>( rOpen.nDepth &lt; nDepth ){ <span class="kw">break</span>; }
+    rOpen.nEndLine = nStartLine - <span class="mono">1</span>;
+    vecOpenIndex.pop_back();
+}</code></pre>
+
+      <p>この汎用アルゴリズムのおかげで、C/C++のような深いネスト構造だけでなく、プレーンテキストのトピック解析のように深さが常に0のフラットな種別でも「次の見出しの直前まで」が自然に折りたたみ範囲になる(<a href="#types">対応アウトライン種別</a>参照)。</p>
+    </section>
+
+    <section id="hide-show">
+      <h2><span class="num">02</span>非表示化とコメント色分けの両立</h2>
+      <p>最初の実装では、<code class="inline">_DoLayout()</code>のレイアウト生成ループ自体に「非表示行はレイアウトノードを作らない」というスキップ処理を入れていた。これは動いたが、隠された行のテキスト(たとえば複数行コメントの開始)が色分けエンジンに一切渡されなくなるため、折りたたみ範囲をまたいだ先の色分けがずれるバグを生んだ。</p>
+
+      <div class="callout bad">
+        <span class="label">やめた設計</span>
+        <p><code class="inline">_DoLayout()</code>のループ内で非表示行をスキップする方式。色分けの状態機械(<code class="inline">colorPrev</code>/<code class="inline">exInfoPrev</code>)がその行のテキストを一度も見ないまま次の行に進んでしまい、以降の色分けが本来と異なる状態から再開されてしまう。</p>
+      </div>
+
+      <p>最終的な設計は、<strong>非表示化を完全に別の後処理に分離</strong>すること。<code class="inline">_DoLayout()</code>自体は折りたたみを意識せず常に全行分を生成し(色分けは常に正しい)、<code class="inline">CLayoutMgr::ToggleFoldAll()</code>がその「後」で非表示にすべき行の<code class="inline">CLayout</code>ノードだけを連結リストから物理的に取り除く。</p>
+
+      <pre><code>_DoLayout( <span class="kw">false</span> ); <span class="cm">// 折りたたみ非対応、常に全行分の色分けを含めて生成</span>
+
+<span class="cm">// その後、非表示にすべき行のCLayoutノードだけを個別に取り除く</span>
+CLayout* pNode = m_pLayoutTop;
+<span class="kw">while</span>( pNode ){
+    CLayout* pNodeNext = pNode-&gt;GetNextLayout();
+    <span class="kw">if</span>( cFoldMgr.GetLineFoldHidden( pNode-&gt;GetDocLineRef() ) ){
+        <span class="cm">// … 連結リストから外して delete …</span>
+        _TextWidthMultisetErase( pNode ); <span class="cm">// 下記「不具合」参照。忘れるとヒープ破壊</span>
+        <span class="kw">delete</span> pNode;
+        m_nLines--;
+    }
+    pNode = pNodeNext;
+}</code></pre>
+
+      <p>この設計は<code class="inline">CLayout</code>ノードを一旦「無駄に」全部作ってから大半を捨てる(全折りたたみ時は大部分が捨てられる)ため計算量的には非効率だが、折りたたみのON/OFFは高頻度操作ではないため許容している。引き換えに、色分けの正しさを<code class="inline">_DoLayout()</code>本体に一切手を入れずに保証できる。</p>
+    </section>
+
+    <section id="toggle">
+      <h2><span class="num">03</span>全体トグル</h2>
+      <p><code class="inline">CLayoutMgr::ToggleFoldAll()</code>が本体。現在の状態は「ヘッダ行以外に表示されている行が1つでもあるか」で判定し、1つでもあれば「折りたたむ」方向、無ければ(ヘッダ行以外すべて非表示なら)「展開する」方向にする。ネストした範囲(クラスの中のメンバ関数等)も区別せず一律に処理する。非表示行に対する多重の<code class="inline">SetLineFoldHidden</code>呼び出しはべき等なので安全。</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>関数</th><th>役割</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">CLayoutMgr::ToggleFoldAll()</code></td><td>本体。マーク更新→<code class="inline">_DoLayout()</code>→非表示行のノード除去、の3段階</td></tr>
+            <tr><td><code class="inline">CViewCommander::Command_FOLD_TOGGLE()</code></td><td>キーバインド(<code class="inline">F_FOLD_TOGGLE</code>)のエントリポイント。キャレット位置の調整・画面中央への移動も担当</td></tr>
+            <tr><td><code class="inline">CSuppressScrBarMarkerForFoldToggle</code></td><td>RAIIガード。<code class="inline">ToggleFoldAll()</code>実行中、スクロールバーマーカーの背景スレッドを止める(<a href="#bugs">不具合#1</a>参照)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><code class="inline">_DoLayout()</code>を直接呼ぶ(<code class="inline">DoLayout_Range()</code>による部分再構築ではなく)方式を選んだ理由は単純さと確実性。色分け継続状態の引き継ぎ等が絡む部分再構築の経路は複雑で、折りたたみのON/OFFという低頻度操作にそこまでのコストをかける価値は無いと判断した。</p>
+    </section>
+
+    <section id="navigate">
+      <h2><span class="num">04</span>アウトライン表示中の操作</h2>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>操作</th><th>挙動</th></tr></thead>
+          <tbody>
+            <tr><td>文字入力・削除・貼り付け等</td><td><span class="pill warn">禁止</span> <code class="inline">CEditDoc::IsModificationForbidden()</code>が、通常の読み取り専用時と同じ「編集禁止コマンド一覧」(<code class="inline">EIsModificationForbidden</code>)を流用してブロックする</td></tr>
+            <tr><td>折りたたみ発生時のキャレット</td><td>非表示になった行にいた場合、直近の手前の表示行(=元いたスコープのヘッダ行)まで遡る。手前に無ければ直後の表示行まで進める</td></tr>
+            <tr><td>Enter / Tab / ダブルクリック</td><td><span class="pill ok">ジャンプ</span> 現在のキャレット位置(選択中のヘッダ行)を維持したまま全展開する。<code class="inline">Command_FOLD_TOGGLE()</code>をそのまま流用</td></tr>
+            <tr><td>Esc</td><td><span class="pill ok">戻る</span> アウトライン表示に入る直前のキャレット位置(<code class="inline">m_ptPreFoldCaretLogic</code>)へ戻して全展開する。<code class="inline">Command_FOLD_CANCEL()</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>ジャンプ・復帰のどちらも、既存の<code class="inline">NKMM_FIX_CENTERING_CURSOR_JUMP</code>機構(タグジャンプ等が使うのと同じ<code class="inline">m_nCenteringCursor++</code>)を流用し、移動先が画面中央付近に来るようにしている。</p>
+    </section>
+
+    <section id="highlight">
+      <h2><span class="num">05</span>ヘッダ行のハイライト</h2>
+      <p>アウトライン表示中、各ヘッダ行の<strong>関数/メソッド名の部分だけ</strong>を検索マーク色(<code class="inline">COLORIDX_SEARCH</code>)でハイライトする。戻り値の型・クラス修飾子・引数リストはハイライトしない。</p>
+
+      <p>名前の桁位置は正規表現ではなく、アウトライン解析が既に持っている情報だけで求めている。<code class="inline">CFuncInfo::m_cmemFuncName</code>は<code class="inline">"Namespace::ClassName::funcName"</code>形式(<code class="inline">CType_Cpp.cpp</code>の<code class="inline">szNamespace</code>が生成、<code class="inline">"::"</code>区切り)なので、最後の区切り以降(短い名前)を取り出し、ヘッダ行の実テキストの中を単純な部分文字列検索(<code class="inline">std::wstring::find</code>)するだけ。見つからなければ行全体をハイライトするフォールバックになる。</p>
+
+      <pre><code>size_t nSep = sFullName.rfind( L<span class="mono">"::"</span> );
+std::wstring sShortName = ( nSep == npos ) ? sFullName : sFullName.substr( nSep + <span class="mono">2</span> );
+<span class="cm">// sLineText.find(sShortName) で見つかった位置・長さを CFoldManager に記録</span></code></pre>
+
+      <p>ハイライト自体は<code class="inline">CColor_OutlineHeader</code>(新規クラス、<code class="inline">CColorStrategy</code>の派生)が担当する。<code class="inline">CColor_Select</code>/<code class="inline">CColor_Found</code>と同じ「行が変わったら1回だけ<code class="inline">BeginColorEx</code>で判定し、以降はキャッシュを見るだけ」というパターンで、優先順位は<strong>選択範囲 &gt; アウトラインヘッダ &gt; 検索マーク &gt; 通常の色分け</strong>(<code class="inline">SColorStrategyInfo::CheckChangeColor</code>/<code class="inline">DoChangeColor</code>)。新規ファイルを増やさず、既存の<code class="inline">CColor_Found.h/.cpp</code>に同居させている。</p>
+    </section>
+
+    <section id="types">
+      <h2><span class="num">06</span>対応アウトライン種別</h2>
+      <p>当初はC/C++限定のMVPとして実装したが、「テキストなどのほかのタイプでもできるようにしたい」という指示で、組み込みのアウトライン解析方式全般に対応を拡大した。<code class="inline">CDocOutline::UpdateFoldRanges()</code>が、文書の既定アウトライン種別に応じて対応する<code class="inline">MakeFuncList_*</code>/<code class="inline">MakeTopicList_*</code>を呼び分ける。</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>種別</th><th>対応</th><th>備考</th></tr></thead>
+          <tbody>
+            <tr><td>C / C++ / Java / Perl / VB / Python / Erlang / PL-SQL</td><td><span class="pill ok">対応</span></td><td>ネストしたクラス/メソッドも深さベースで正しく折りたためる</td></tr>
+            <tr><td>COBOL / アセンブラ / 階層付きテキスト / HTML / XML / TeX</td><td><span class="pill ok">対応</span></td><td></td></tr>
+            <tr><td>プレーンテキスト</td><td><span class="pill ok">対応</span></td><td>見出し記号(■○●等、共通設定の<code class="inline">m_szMidashiKigou</code>)で始まる行だけがトピックとして認識される(既存仕様、今回変更していない)</td></tr>
+            <tr><td>ブックマーク一覧 / ファイルツリー / ルールファイル種別</td><td><span class="pill bad">非対応</span></td><td>コード構造を表すものではないため対象外</td></tr>
+            <tr><td>プラグイン提供の種別</td><td><span class="pill warn">フォールバック</span></td><td>プレーンテキストのトピック解析にフォールバックする</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="bugs">
+      <h2><span class="num">07</span>見つけて修正した不具合</h2>
+      <p>実装・検証の過程で、実際にクラッシュダンプ(<code class="inline">CrashDumps\*.dmp</code>)を解析して根本原因を特定した3件のヒープ破壊系バグを含む。いずれも「<code class="inline">CLayout</code>連結リストを直接操作するコードは、既存の全ての関連キャッシュ/背景スレッドとの不変条件を守らないとヒープが壊れる」という同じ教訓に帰着する。</p>
+
+      <div class="timeline">
+        <div class="pass bad">
+          <div class="pass-head"><span class="pass-num">#1</span><span class="pass-title">スクロールバーマーカーの背景スレッドとの競合</span></div>
+          <p><code class="inline">ToggleFoldAll()</code>内の<code class="inline">_DoLayout()</code>実行中、スクロールバーマーカーのバックグラウンド構築スレッド(<code class="inline">ScrBarMarker::BuildWorkCallback</code>)が並行して同じ<code class="inline">CLayout</code>連結リストを参照し、解放済みメモリへのアクセスでヒープを破壊 → 無関係なCOMCTL32内で不可解にクラッシュ。<code class="inline">Command_REPLACE_ALL</code>で過去に一度発見・対策済みの同種パターン(<code class="inline">CSuppressSrchKeyMarkForReplaceAll</code>)を参考に、<code class="inline">CSuppressScrBarMarkerForFoldToggle</code>というRAIIガードで対策した。</p>
+        </div>
+        <div class="pass bad">
+          <div class="pass-head"><span class="pass-num">#2</span><span class="pass-title"><code class="inline">_TextWidthMultisetErase</code>呼び忘れ</span></div>
+          <p>非表示行の<code class="inline">CLayout</code>ノードを連結リストから取り除いて<code class="inline">delete</code>する際、テキスト最大幅キャッシュ(<code class="inline">m_multisetTextWidth</code>)からの登録解除を呼び忘れていた。<code class="inline">CLayoutMgr.h</code>のコメントで明記されている「<code class="inline">CLayout</code>削除時は必ずこのフックを通すこと」という契約違反で、解放済みポインタがキャッシュに残り続け、後で無関係なメモリ確保(mimalloc)がその領域に触れた時に不定動作。</p>
+        </div>
+        <div class="pass bad">
+          <div class="pass-head"><span class="pass-num">#3</span><span class="pass-title">スクロールバーマーカーのキャッシュ配列サイズ取り違え</span></div>
+          <p><code class="inline">ScrBarMarker::BuildWorkCallback()</code>が、キャッシュ配列のサイズを<code class="inline">CLayoutMgr::GetLineCount()</code>(レイアウト行数=折りたたみで激減)で確保していたが、実際の書き込みは<code class="inline">CDocLineMgr</code>(論理行数=常に全行分)基準のインデックスで行っていたため、アウトライン表示中に検索するたびに確保領域を超えてヒープへ書き込む、ヒープバッファオーバーフローだった。F2/F3やCtrl+F後の検索実行など、一見バラバラに見えた複数のクラッシュ報告の共通原因だった。</p>
+        </div>
+      </div>
+
+      <p>この3件に加えて、オフバイワン(<code class="inline">m_nFuncLineCRLF</code>の1オリジン/0オリジンの取り違え)、キャレット位置の取得タイミング、<code class="inline">LogicToLayout()</code>の範囲外/NULLフォールバック不足、名前ハイライトの区切り文字の取り違え、といった軽微だが実害のあるバグも見つけて修正した。全件の詳細は<a href="../changelog/NKMM_CODE_FOLDING.md"><code class="inline">changelog/NKMM_CODE_FOLDING.md</code></a>を参照。</p>
+    </section>
+
+    <section id="limits">
+      <h2><span class="num">08</span>既知の制約</h2>
+      <ul>
+        <li>行番号マージンへの+/-アイコン表示・マウスクリックでの折りたたみは未実装(前例の無いUIのため、キーバインドのみで操作する方式に絞った)。</li>
+        <li>折りたたみ範囲の解析(<code class="inline">UpdateFoldRanges</code>)は文書を開いてから最初の1回だけ行う。以降の編集でアウトライン構造が変化しても自動では再解析しない。</li>
+        <li>個別行単位の折りたたみ(<code class="inline">CLayoutMgr::ToggleFold(CLogicInt)</code>)は実装済みだが、コマンドからは未使用。</li>
+        <li>ブックマーク一覧・ファイルツリー・ルールファイル種別・プラグイン提供のアウトライン種別は折りたたみ非対応。</li>
+        <li>マクロ(<code class="inline">.qjs</code>/<code class="inline">.vbs</code>/<code class="inline">.pas</code>)から呼び出せるコマンドテーブルへの登録は行っていない。</li>
+      </ul>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">09</span>変更ファイル一覧</h2>
+      <div class="filemap">
+        <ul>
+          <li><code class="inline">sakura_core/docplus/CFoldManager.h</code> / <code class="inline">.cpp</code> — 新規。行ごとの折りたたみ状態</li>
+          <li><code class="inline">sakura_core/outline/CFoldRangeCalculator.h</code> / <code class="inline">.cpp</code> — 新規。範囲算出アルゴリズム</li>
+          <li><code class="inline">sakura_core/doc/CDocOutline.h</code> / <code class="inline">.cpp</code> — <code class="inline">UpdateFoldRanges()</code></li>
+          <li><code class="inline">sakura_core/doc/CEditDoc.h</code> / <code class="inline">.cpp</code> — 状態フラグ、編集禁止ガード</li>
+          <li><code class="inline">sakura_core/doc/layout/CLayoutMgr.h</code> / <code class="inline">CLayoutMgr_DoLayout.cpp</code> — <code class="inline">ToggleFold</code>/<code class="inline">ToggleFoldAll</code></li>
+          <li><code class="inline">sakura_core/doc/layout/CLayoutMgr.cpp</code> — <code class="inline">LogicToLayout()</code>のフォールバック修正</li>
+          <li><code class="inline">sakura_core/doc/logic/CDocLine.h</code> — <code class="inline">MarkType</code>への追加</li>
+          <li><code class="inline">sakura_core/cmd/CViewCommander.h</code> / <code class="inline">.cpp</code> / <code class="inline">CViewCommander_Outline.cpp</code> — コマンド本体</li>
+          <li><code class="inline">sakura_core/view/CEditView.cpp</code> — ダブルクリック、スクロールバーマーカーのキャッシュサイズ修正</li>
+          <li><code class="inline">sakura_core/view/colors/CColorStrategy.h</code> / <code class="inline">.cpp</code>、<code class="inline">CColor_Found.h</code> / <code class="inline">.cpp</code> — ヘッダ行ハイライト</li>
+          <li><code class="inline">sakura_core/func/CKeyBind.cpp</code> / <code class="inline">Funccode_x.hsrc</code> — キーバインド</li>
+          <li><code class="inline">sakura_core/my_config.h</code> — フラグ定義</li>
+          <li><code class="inline">docs/sakura_keybind_list.html</code> — キー一覧への反映</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <span>コードフォールディング設計リファレンス</span>
+      <span>最終更新 2026-09-11</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  var links = document.querySelectorAll('.toc a[href^="#"]');
+  var map = {};
+  links.forEach(function(a){
+    var id = a.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if(el) map[id] = a;
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var a = map[entry.target.id];
+      if(!a) return;
+      if(entry.isIntersecting){
+        links.forEach(function(l){ l.classList.remove('active'); });
+        a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+})();
+</script>
+</body>
+</html>
