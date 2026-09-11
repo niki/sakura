@@ -34,6 +34,9 @@
 #include "CColor_KeywordSet.h"
 #include "CColor_Found.h"
 #include "CColor_Heredoc.h"
+#ifdef NKMM_CODE_FOLDING
+#include "doc/CEditDoc.h"
+#endif // NKMM_
 #include "doc/layout/CLayout.h"
 #include "window/CEditWnd.h"
 #include "types/CTypeSupport.h"
@@ -72,6 +75,24 @@ bool SColorStrategyInfo::CheckChangeColor(const CStringRef& cLineStr)
 			bChange = true;
 		}
 	}
+
+#ifdef NKMM_CODE_FOLDING
+	//アウトライン表示中のヘッダ行ハイライト終了
+	if(m_pStrategyOutlineHeader){
+		if(m_pStrategyOutlineHeader->EndColor(cLineStr,this->GetPosInLogic())){
+			m_pStrategyOutlineHeader = NULL;
+			bChange = true;
+		}
+	}
+	//アウトライン表示中のヘッダ行ハイライト開始
+	if(!m_pStrategyOutlineHeader){
+		CColor_OutlineHeader* pcOutlineHeader = pool->GetOutlineHeaderStrategy();
+		if(pcOutlineHeader->BeginColorEx(cLineStr,this->GetPosInLogic(), m_pDispPos->GetLayoutLineRef(), this->GetLayout())){
+			m_pStrategyOutlineHeader = pcOutlineHeader;
+			bChange = true;
+		}
+	}
+#endif // NKMM_
 
 	//検索色終了
 	if(m_pStrategyFound){
@@ -151,12 +172,23 @@ void SColorStrategyInfo::DoChangeColor(CColor3Setting *pcColor)
 {
 	if(m_pStrategySelect){
 		m_cIndex.eColorIndex = m_pStrategySelect->GetStrategyColor();
-	}else if(m_pStrategyFound){
+	}
+#ifdef NKMM_CODE_FOLDING
+	else if(m_pStrategyOutlineHeader){
+		m_cIndex.eColorIndex = m_pStrategyOutlineHeader->GetStrategyColor();
+	}
+#endif // NKMM_
+	else if(m_pStrategyFound){
 		m_cIndex.eColorIndex = m_pStrategyFound->GetStrategyColor();
 	}else{
 		m_cIndex.eColorIndex = m_pStrategy->GetStrategyColorSafe();
 	}
 
+#ifdef NKMM_CODE_FOLDING
+	if(m_pStrategyOutlineHeader){
+		m_cIndex.eColorIndex2 = m_pStrategyOutlineHeader->GetStrategyColor();
+	}else
+#endif // NKMM_
 	if(m_pStrategyFound){
 		m_cIndex.eColorIndex2 = m_pStrategyFound->GetStrategyColor();
 	}else{
@@ -178,6 +210,9 @@ CColorStrategyPool::CColorStrategyPool()
 	m_pcView = &(CEditWnd::getInstance()->GetView(0));
 	m_pcSelectStrategy = new CColor_Select();
 	m_pcFoundStrategy = new CColor_Found();
+#ifdef NKMM_CODE_FOLDING
+	m_pcOutlineHeaderStrategy = new CColor_OutlineHeader();
+#endif // NKMM_
 //	m_vStrategies.push_back(new CColor_Found);				// マッチ文字列
 	m_vStrategies.push_back(new CColor_RegexKeyword);		// 正規表現キーワード
 	m_vStrategies.push_back(new CColor_Heredoc);			// ヒアドキュメント
@@ -198,6 +233,9 @@ CColorStrategyPool::~CColorStrategyPool()
 {
 	SAFE_DELETE(m_pcSelectStrategy);
 	SAFE_DELETE(m_pcFoundStrategy);
+#ifdef NKMM_CODE_FOLDING
+	SAFE_DELETE(m_pcOutlineHeaderStrategy);
+#endif // NKMM_
 	m_vStrategiesDisp.clear();
 	int size = (int)m_vStrategies.size();
 	for(int i = 0; i < size; i++ ){
@@ -224,6 +262,9 @@ void CColorStrategyPool::NotifyOnStartScanLogic()
 {
 	m_pcSelectStrategy->OnStartScanLogic();
 	m_pcFoundStrategy->OnStartScanLogic();
+#ifdef NKMM_CODE_FOLDING
+	m_pcOutlineHeaderStrategy->OnStartScanLogic();
+#endif // NKMM_
 	int size = GetStrategyCount();
 	for(int i = 0; i < size; i++ ){
 		GetStrategy(i)->OnStartScanLogic();

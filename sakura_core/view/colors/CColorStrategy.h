@@ -79,6 +79,9 @@ class CColorStrategy;
 
 class CColor_Found;
 class CColor_Select;
+#ifdef NKMM_CODE_FOLDING
+class CColor_OutlineHeader;
+#endif // NKMM_
 
 //! 色設定
 struct CColor3Setting {
@@ -88,7 +91,11 @@ struct CColor3Setting {
 };
 
 struct SColorStrategyInfo{
-	SColorStrategyInfo() : m_sDispPosBegin(0,0), m_pStrategy(NULL), m_pStrategyFound(NULL), m_pStrategySelect(NULL), m_colorIdxBackLine(COLORIDX_TEXT) {
+	SColorStrategyInfo() : m_sDispPosBegin(0,0), m_pStrategy(NULL), m_pStrategyFound(NULL), m_pStrategySelect(NULL),
+#ifdef NKMM_CODE_FOLDING
+		m_pStrategyOutlineHeader(NULL),
+#endif // NKMM_
+		m_colorIdxBackLine(COLORIDX_TEXT) {
 		m_cIndex.eColorIndex = COLORIDX_TEXT;
 		m_cIndex.eColorIndex2 = COLORIDX_TEXT;
 		m_cIndex.eColorIndexBg = COLORIDX_TEXT;
@@ -110,6 +117,9 @@ struct SColorStrategyInfo{
 	CColorStrategy*		m_pStrategy;
 	CColor_Found*		m_pStrategyFound;
 	CColor_Select*		m_pStrategySelect;
+#ifdef NKMM_CODE_FOLDING
+	CColor_OutlineHeader*	m_pStrategyOutlineHeader;
+#endif // NKMM_
 	EColorIndexType		m_colorIdxBackLine;
 	CColor3Setting		m_cIndex;
 
@@ -204,6 +214,9 @@ public:
 	//特定取得
 	CColor_Found*   GetFoundStrategy() const{ return m_pcFoundStrategy; }
 	CColor_Select*  GetSelectStrategy() const{ return m_pcSelectStrategy; }
+#ifdef NKMM_CODE_FOLDING
+	CColor_OutlineHeader* GetOutlineHeaderStrategy() const{ return m_pcOutlineHeaderStrategy; }
+#endif // NKMM_
 
 	//イベント
 	void NotifyOnStartScanLogic();
@@ -228,6 +241,9 @@ private:
 	std::vector<CColorStrategy*>	m_vStrategiesDisp;	//!< 色分け表示対象
 	CColor_Found*					m_pcFoundStrategy;
 	CColor_Select*					m_pcSelectStrategy;
+#ifdef NKMM_CODE_FOLDING
+	CColor_OutlineHeader*			m_pcOutlineHeaderStrategy;
+#endif // NKMM_
 
 	CColor_LineComment*				m_pcLineComment;
 	CColor_BlockComment*			m_pcBlockComment1;

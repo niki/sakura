@@ -544,31 +544,43 @@ void CEditDoc::GetEditInfo(
 	@date 2000.08.14 genta 新規作成
 	@date 2014.07.27 novice 編集禁止の場合の検索方法変更
 */
+//! EIsModificationForbidden[]に該当コマンドがあるかどうか(バイナリサーチ)
+static bool _IsInModificationForbiddenList( EFunctionCode nCommand )
+{
+	int lbound = 0;
+	int ubound = _countof(EIsModificationForbidden) - 1;
+
+	while( lbound <= ubound ){
+		int mid = ( lbound + ubound ) / 2;
+
+		if( nCommand < EIsModificationForbidden[mid] ){
+			ubound = mid - 1;
+		} else if( nCommand > EIsModificationForbidden[mid] ){
+			lbound = mid + 1;
+		}else{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool CEditDoc::IsModificationForbidden( EFunctionCode nCommand ) const
 {
+#ifdef NKMM_CODE_FOLDING
+	// アウトライン表示(全折りたたみ)中は、通常の「編集禁止コマンド一覧」を
+	// 流用して編集操作を禁止する。カーソル移動や折りたたみトグル自体は
+	// この一覧に含まれないため引き続き操作できる 20260911
+	if( m_bOutlineFolded && _IsInModificationForbiddenList( nCommand ) ){
+		return true;
+	}
+#endif // NKMM_
+
 	//	編集可能の場合
 	if( IsEditable() )
 		return false; // 常に書き換え許可
 
 	//	編集禁止の場合(バイナリサーチ)
-	{
-		int lbound = 0;
-		int ubound = _countof(EIsModificationForbidden) - 1;
-
-		while( lbound <= ubound ){
-			int mid = ( lbound + ubound ) / 2;
-
-			if( nCommand < EIsModificationForbidden[mid] ){
-				ubound = mid - 1;
-			} else if( nCommand > EIsModificationForbidden[mid] ){
-				lbound = mid + 1;
-			}else{
-				return true;
-			}
-		}
-	}
-
-	return false;
+	return _IsInModificationForbiddenList( nCommand );
 }
 
 

@@ -298,6 +298,10 @@ protected:
 	// 2005.11.21 Moca 引用符の色分け情報を引数から除去
 public:
 	void _DoLayout(bool bBlockingHook);	/* 現在の折り返し文字数に合わせて全データのレイアウト情報を再生成します */
+#ifdef NKMM_CODE_FOLDING
+	bool ToggleFold( CLogicInt nHeaderLine );	//!< 指定行(折りたたみ開始行)の折りたたみ状態をトグルする。成功したらtrue 20260911
+	bool ToggleFoldAll( void );	//!< 文書全体の折りたたみ可能な範囲をまとめてトグルする(アウトライン表示⇔全展開)。折りたたみ可能な範囲が無ければfalse 20260911
+#endif // NKMM_
 protected:
 	// 2005.11.21 Moca 引用符の色分け情報を引数から除去
 	// 2009.08.28 nasukoji	テキスト最大幅算出用引数追加

@@ -74,6 +74,29 @@ BOOL CViewCommander::HandleCommand(
 		m_pCommanderView->AutoScrollExit();
 	}
 	m_pCommanderView->GetCaret().m_bClearStatus = true;
+
+#ifdef NKMM_CODE_FOLDING
+	// アウトライン表示(全折りたたみ)中にEnterキー(改行入力=F_WCHARの'\r'/'\n')が
+	// 押された場合は、通常の改行挿入(編集禁止のため元々無効)の代わりに
+	// 「その関数へジャンプ」(=全展開してキャレット位置のヘッダ行へ留まる)として扱う 20260911
+	if( GetDocument()->m_bOutlineFolded && F_WCHAR == nCommand &&
+		( L'\r' == (wchar_t)lparam1 || L'\n' == (wchar_t)lparam1 ) ){
+		Command_FOLD_TOGGLE();
+		return TRUE;
+	}
+	// アウトライン表示中のTabキー(通常はF_INDENT_TAB)も同様に「ジャンプ」として扱う 20260911
+	if( GetDocument()->m_bOutlineFolded && F_INDENT_TAB == nCommand ){
+		Command_FOLD_TOGGLE();
+		return TRUE;
+	}
+	// アウトライン表示中のEscキー(通常はF_CANCEL_MODE)は「戻る」
+	// (アウトライン表示前のキャレット位置へ戻って全展開する) 20260911
+	if( GetDocument()->m_bOutlineFolded && F_CANCEL_MODE == nCommand ){
+		Command_FOLD_CANCEL();
+		return TRUE;
+	}
+#endif // NKMM_
+
 	// -------------------------------------
 	//	Jan. 10, 2005 genta
 	//	Call message translators
@@ -582,6 +605,9 @@ BOOL CViewCommander::HandleCommand(
 	case F_JUMP_SRCHSTARTPOS:	Command_JUMP_SRCHSTARTPOS();break;			// 検索開始位置へ戻る 02/06/26 ai
 	case F_FUNCLIST_NEXT:	Command_FUNCLIST_NEXT();break;					// 次の関数リストマーク	2014.01.05
 	case F_FUNCLIST_PREV:	Command_FUNCLIST_PREV();break;					// 前の関数リストマーク	2014.01.05
+#ifdef NKMM_CODE_FOLDING
+	case F_FOLD_TOGGLE:		Command_FOLD_TOGGLE();break;				// 折りたたみのトグル(カーソル行)	20260911
+#endif // NKMM_
 
 
 	/* モード切り替え系 */

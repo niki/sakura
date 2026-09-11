@@ -51,6 +51,9 @@ public:
 #ifdef NKMM_FIX_OUTLINE
 	static EOutlineType ResolveOutlineType_C_CPP( EOutlineType nOutlineType, const TCHAR* pszFileName );	//!< OUTLINE_C_CPPをファイル拡張子からOUTLINE_C/OUTLINE_CPPへ解決する 20260811
 #endif // NKMM_
+#ifdef NKMM_CODE_FOLDING
+	void	UpdateFoldRanges( void );		//!< アウトライン解析結果(関数/構造体等)から折りたたみ範囲を算出し、行にマークする 20260911
+#endif // NKMM_
 private:
 	CEditDoc* m_pcDocRef;
 };

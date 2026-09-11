@@ -18,6 +18,7 @@
 
 #include "StdAfx.h"
 #include <string.h>
+#include <string>
 #include <vector>
 #include "doc/CDocOutline.h"
 #include "doc/CEditDoc.h"
@@ -29,6 +30,10 @@
 #include "io/CTextStream.h"
 #include "extmodule/CBregexp.h"
 #include "util/other_util.h"
+#ifdef NKMM_CODE_FOLDING
+#include "docplus/CFoldManager.h"
+#include "outline/CFoldRangeCalculator.h"
+#endif // NKMM_
 
 
 
@@ -591,3 +596,63 @@ void CDocOutline::MakeFuncList_BookMark( CFuncInfoArr* pcFuncInfoArr )
 	}
 	return;
 }
+
+#ifdef NKMM_CODE_FOLDING
+/*! アウトライン解析結果(関数/構造体等)から折りたたみ範囲を算出し、行にマークする
+
+	@note 対象はC/C++のみ(コードフォールディング機能 Phase2 MVP時点、20260911)。
+		他の言語種別は追って対応。既存の折りたたみ状態はいったん全展開にリセットしてから
+		再登録する(再登録前に折りたたまれていた範囲も展開状態に戻る)。
+	@date 2026.09.11 Yu-zuki. 新規作成
+*/
+void CDocOutline::UpdateFoldRanges( void )
+{
+	CFoldManager cFoldMgr;
+	cFoldMgr.ResetAllFoldMark( &m_pcDocRef->m_cDocLineMgr );
+
+	EOutlineType nOutlineType = m_pcDocRef->m_cDocType.GetDocumentAttribute().m_eDefaultOutline;
+	if( OUTLINE_C != nOutlineType && OUTLINE_CPP != nOutlineType && OUTLINE_C_CPP != nOutlineType ){
+		return;	// Phase2 MVP: C/C++以外は未対応
+	}
+
+	CFuncInfoArr cFuncInfoArr;
+	MakeFuncList_C( &cFuncInfoArr, nOutlineType, m_pcDocRef->m_cDocFile.GetFilePath() );
+
+	const CLogicInt nDocLineCount = m_pcDocRef->m_cDocLineMgr.GetLineCount();
+	std::vector<SFoldRange> vecRanges = CFoldRangeCalculator::Calculate( &cFuncInfoArr, nDocLineCount );
+
+	for( size_t i = 0; i < vecRanges.size(); ++i ){
+		const SFoldRange& rRange = vecRanges[i];
+		if( rRange.nEndLine <= rRange.nStartLine ){
+			continue;	// 本体が無い(1行だけ)の項目は折りたたみ対象外
+		}
+		CDocLine* pHeaderDocLine = m_pcDocRef->m_cDocLineMgr.GetLine( rRange.nStartLine );
+		if( NULL == pHeaderDocLine ){
+			continue;
+		}
+		cFoldMgr.SetLineFoldable( pHeaderDocLine, true );
+		cFoldMgr.SetLineFoldEndLine( pHeaderDocLine, rRange.nEndLine );
+
+		// 関数/メソッド名部分だけをハイライトできるよう、ヘッダ行のテキストから
+		// 名前の実際の桁位置を探しておく(正規表現ではなく単純な部分文字列検索)。
+		// CFuncInfo::m_cmemFuncNameは "Namespace::ClassName::funcName" 形式(CType_Cpp.cppの
+		// szNamespace参照、"::"区切り。文字通りのコロン2文字)なので、最後の区切り以降
+		// (短い名前)をヘッダ行テキストから検索する。見つからなければ-1のままとし、
+		// 呼び出し側(CColor_OutlineHeader)は行全体をハイライトするフォールバックになる 20260911
+		CFuncInfo* pcInfo = cFuncInfoArr.GetAt( rRange.nFuncInfoIndex );
+		if( NULL != pcInfo && NULL != pcInfo->m_cmemFuncName.GetStringPtr() ){
+			std::wstring sFullName = pcInfo->m_cmemFuncName.GetStringPtr();
+			size_t nSep = sFullName.rfind( L"::" );
+			std::wstring sShortName = ( std::wstring::npos == nSep ) ? sFullName : sFullName.substr( nSep + 2 );
+			if( !sShortName.empty() ){
+				std::wstring sLineText( pHeaderDocLine->GetPtr(), (size_t)ToInt(pHeaderDocLine->GetLengthWithoutEOL()) );
+				size_t nFoundPos = sLineText.find( sShortName );
+				if( std::wstring::npos != nFoundPos ){
+					cFoldMgr.SetLineFoldNameCol( pHeaderDocLine, (int)nFoundPos );
+					cFoldMgr.SetLineFoldNameLen( pHeaderDocLine, (int)sShortName.length() );
+				}
+			}
+		}
+	}
+}
+#endif // NKMM_

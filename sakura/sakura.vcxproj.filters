@@ -985,6 +985,9 @@
     <ClInclude Include="..\sakura_core\docplus\CDiffManager.h">
       <Filter>Cpp Source Files\docplus</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\docplus\CFoldManager.h">
+      <Filter>Cpp Source Files\docplus</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\docplus\CFuncListManager.h">
       <Filter>Cpp Source Files\docplus</Filter>
     </ClInclude>
@@ -1055,6 +1058,9 @@
       <Filter>Cpp Source Files\outline</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\outline\CFuncInfoArr.h">
+      <Filter>Cpp Source Files\outline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\outline\CFoldRangeCalculator.h">
       <Filter>Cpp Source Files\outline</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\func\CFuncKeyWnd.h">
@@ -2459,6 +2465,9 @@
     <ClCompile Include="..\sakura_core\docplus\CDiffManager.cpp">
       <Filter>Cpp Source Files\docplus</Filter>
     </ClCompile>
+    <ClCompile Include="..\sakura_core\docplus\CFoldManager.cpp">
+      <Filter>Cpp Source Files\docplus</Filter>
+    </ClCompile>
     <ClCompile Include="..\sakura_core\docplus\CFuncListManager.cpp">
       <Filter>Cpp Source Files\docplus</Filter>
     </ClCompile>
@@ -2523,6 +2532,9 @@
       <Filter>Cpp Source Files\outline</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\outline\CFuncInfo.cpp">
+      <Filter>Cpp Source Files\outline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\outline\CFoldRangeCalculator.cpp">
       <Filter>Cpp Source Files\outline</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\outline\CFuncInfoArr.cpp">

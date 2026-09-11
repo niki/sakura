@@ -9,6 +9,9 @@
 #include "view/colors/CColorStrategy.h"
 #include "util/window.h"
 #include "debug/CRunningTimer.h"
+#ifdef NKMM_CODE_FOLDING
+#include "docplus/CFoldManager.h"
+#endif // NKMM_
 
 //2008.07.27 kobake
 static bool _GetKeywordLength(
@@ -379,6 +382,154 @@ void CLayoutMgr::_DoLayout(bool bBlockingHook)
 		}
 	}
 }
+
+
+#ifdef NKMM_CODE_FOLDING
+/*! 指定行(折りたたみ開始行)の折りたたみ状態をトグルする
+
+	@retval true 状態を変更した
+	@retval false 対象行が折りたたみ開始行ではない、または折りたたむ本体が無い
+
+	@note 全体再レイアウト(_DoLayout)を伴う。折りたたみのON/OFFは高頻度操作ではないため、
+		DoLayout_Rangeでの部分再構築(色分け継続状態の引き継ぎ等が絡み複雑)ではなく、
+		単純さと確実性を優先してこの方式にしている
+	@date 2026.09.11 Yu-zuki. 新規作成
+*/
+bool CLayoutMgr::ToggleFold( CLogicInt nHeaderLine )
+{
+	CDocLine* pHeaderDocLine = m_pcDocLineMgr->GetLine( nHeaderLine );
+	if( NULL == pHeaderDocLine ){
+		return false;
+	}
+
+	CFoldManager cFoldMgr;
+	if( !cFoldMgr.GetLineFoldable( pHeaderDocLine ) ){
+		return false;
+	}
+
+	const CLogicInt nEndLine = CLogicInt( cFoldMgr.GetLineFoldEndLine( pHeaderDocLine ) );
+	if( nEndLine <= nHeaderLine ){
+		return false;
+	}
+
+	const bool bFoldTo = !cFoldMgr.GetLineFolded( pHeaderDocLine );
+	cFoldMgr.SetLineFolded( pHeaderDocLine, bFoldTo );
+
+	CDocLine*	p = pHeaderDocLine->GetNextLine();
+	CLogicInt	n = nHeaderLine + CLogicInt(1);
+	while( NULL != p && n <= nEndLine ){
+		cFoldMgr.SetLineFoldHidden( p, bFoldTo );
+		p = p->GetNextLine();
+		n++;
+	}
+
+	_DoLayout( false );
+	return true;
+}
+
+/*! 文書全体をアウトライン表示(関数/構造体のヘッダ行だけ)⇔全展開でトグルする
+
+	@retval true 状態を変更した
+	@retval false 折りたたみ可能な行が1つも無い
+
+	@note アウトライン表示中は、折りたたみ開始行(ヘッダ行)以外の行は#includeや
+		ファイル先頭コメント、関数外の変数宣言、空行なども含めて一律非表示にする
+		(折りたたみ範囲の外にある行も対象。ユーザー指摘により、範囲の中身だけを
+		隠す従来方式から変更 20260911)。
+		現在の状態は「ヘッダ行以外に表示されている行が1つでもあるか」で判定する。
+		1つでもあれば「折りたたむ」方向、無ければ(=ヘッダ行以外すべて非表示なら)
+		「展開する」方向にする。
+	@date 2026.09.11 Yu-zuki. 新規作成
+	@date 2026.09.11 Yu-zuki. ヘッダ行以外を全て非表示にする方式へ変更(ユーザー指摘)
+*/
+bool CLayoutMgr::ToggleFoldAll( void )
+{
+	CFoldManager cFoldMgr;
+
+	bool bFoldTo = false;
+	bool bAnyFoldable = false;
+	{
+		CDocLine* p = m_pcDocLineMgr->GetDocLineTop();
+		while( NULL != p ){
+			if( cFoldMgr.GetLineFoldable( p ) ){
+				bAnyFoldable = true;
+			}else if( !cFoldMgr.GetLineFoldHidden( p ) ){
+				bFoldTo = true;
+			}
+			p = p->GetNextLine();
+		}
+	}
+	if( !bAnyFoldable ){
+		return false;
+	}
+
+	CDocLine* p = m_pcDocLineMgr->GetDocLineTop();
+	while( NULL != p ){
+		if( cFoldMgr.GetLineFoldable( p ) ){
+			// ヘッダ行自身は常に表示する
+			cFoldMgr.SetLineFolded( p, bFoldTo );
+			cFoldMgr.SetLineFoldHidden( p, false );
+		}else{
+			cFoldMgr.SetLineFoldHidden( p, bFoldTo );
+		}
+		p = p->GetNextLine();
+	}
+
+	if( NULL != m_pcEditDoc ){
+		m_pcEditDoc->m_bOutlineFolded = bFoldTo;
+	}
+
+	// _DoLayout()は折りたたみを意識せず「全行」分のレイアウト/色分けを通常通り生成する。
+	// これは複数行コメント等の色分け継続状態(colorPrev/exInfoPrev)が、隠すべき行の
+	// テキストも実際にスキャンすることで初めて正しく引き継がれるため。以前は_DoLayout
+	// 自身に「非表示行はレイアウトノードを作らない」スキップ処理を入れていたが、
+	// それだと隠された行の中身(例:複数行コメントの開始)が色分けエンジンに一切
+	// 渡されず、以降の色分けがずれてしまうバグがあった(ユーザー指摘により修正)。
+	// 代わりに、通常通り全行分生成した「後」で、非表示にすべき行のレイアウトノードだけを
+	// 個別に連結リストから取り除く 20260911
+	_DoLayout( false );
+
+	{
+		CLayout* pNode = m_pLayoutTop;
+		while( NULL != pNode ){
+			CLayout* pNodeNext = pNode->GetNextLayout();
+			if( cFoldMgr.GetLineFoldHidden( pNode->GetDocLineRef() ) ){
+				CLayout* pPrevNode = pNode->m_pPrev;
+				if( NULL == pPrevNode ){
+					m_pLayoutTop = pNode->m_pNext;
+				}else{
+					pPrevNode->m_pNext = pNode->m_pNext;
+				}
+				if( NULL == pNode->m_pNext ){
+					m_pLayoutBot = pPrevNode;
+				}else{
+					pNode->m_pNext->m_pPrev = pPrevNode;
+				}
+#ifdef NKMM_FIX_TEXTWIDTH_MULTISET_CACHE
+				// pNodeを消す前にm_multisetTextWidthからも消す。CLayoutノードの削除は
+				// 必ずこのフックを通すことが前提(CLayoutMgr.h m_multisetTextWidthのコメント参照)。
+				// ここを素通りすると、解放済みCLayout*が幅キャッシュに残ったまま次のフルレイアウト
+				// (_Empty()経由の一括clear)まで生き続け、その間にヒープが再利用されると
+				// 不定動作・破損の原因になる。 20260911
+				_TextWidthMultisetErase( pNode );
+#endif // NKMM_
+				delete pNode;
+				m_nLines--;
+			}
+			pNode = pNodeNext;
+		}
+		m_nPrevReferLine = CLayoutInt(0);
+		m_pLayoutPrevRefer = NULL;
+#ifdef NKMM_FIX_TEXTWIDTH_TOPK_CACHE
+		// 削除に伴いnLayoutYが全てズレる可能性があるため、次点候補キャッシュも破棄する。
+		// (空になれば次回参照時に全行スキャンでフォールバック再構築される) 20260911
+		m_vTextWidthTopK.clear();
+#endif // NKMM_
+	}
+
+	return true;
+}
+#endif // NKMM_
 
 
 

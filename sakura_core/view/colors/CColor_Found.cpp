@@ -4,6 +4,11 @@
 #include "types/CTypeSupport.h"
 #include "view/CViewSelect.h"
 #include <limits.h>
+#ifdef NKMM_CODE_FOLDING
+#include "doc/layout/CLayout.h"
+#include "doc/CEditDoc.h"
+#include "docplus/CFoldManager.h"
+#endif // NKMM_
 
 
 void CColor_Select::OnStartScanLogic()
@@ -150,4 +155,63 @@ bool CColor_Found::EndColor(const CStringRef& cStr, int nPos)
 
 	return false;
 }
+
+#ifdef NKMM_CODE_FOLDING
+void CColor_OutlineHeader::OnStartScanLogic()
+{
+	m_nCheckedLine = CLayoutInt(-1);
+	m_nHighlightBegin = CLogicInt(-1);
+	m_nHighlightEnd = CLogicInt(-1);
+}
+
+/*! アウトライン表示中のヘッダ行で、ハイライトすべき桁範囲を判定する
+
+	@note 行頭(nPos==0とは限らない。折り返し等で行の途中から呼ばれることもあるため、
+		「行が変わったら1回だけ判定する」方式にしている)で対象行かどうか・
+		ハイライト範囲(関数/メソッド名部分。CDocOutline::UpdateFoldRanges()が
+		事前に単純な部分文字列検索で特定済み)を確定し、以降はキャッシュを見るだけにする。
+		名前の位置が特定できなかった場合は行全体をハイライトするフォールバックにする。
+	@date 2026.09.11 Yu-zuki. 名前部分だけをハイライトするよう変更(ユーザー指摘、行全体版から変更)
+*/
+bool CColor_OutlineHeader::BeginColorEx(const CStringRef& cStr, int nPos, CLayoutInt nLineNum, const CLayout* pcLayout)
+{
+	if( !cStr.IsValid() || NULL == pcLayout ){
+		return false;
+	}
+
+	if( m_nCheckedLine != nLineNum ){
+		m_nCheckedLine = nLineNum;
+		m_nHighlightBegin = CLogicInt(-1);
+		m_nHighlightEnd = CLogicInt(-1);
+
+		const CEditView* pcView = CColorStrategyPool::getInstance()->GetCurrentView();
+		if( NULL != pcView && NULL != pcView->GetDocument() && pcView->GetDocument()->m_bOutlineFolded ){
+			const CDocLine* pDocLine = pcLayout->GetDocLineRef();
+			CFoldManager cFoldMgr;
+			if( cFoldMgr.GetLineFoldable( pDocLine ) ){
+				int nNameCol = cFoldMgr.GetLineFoldNameCol( pDocLine );
+				int nNameLen = cFoldMgr.GetLineFoldNameLen( pDocLine );
+				if( nNameCol >= 0 && nNameLen > 0 ){
+					m_nHighlightBegin = CLogicInt(nNameCol);
+					m_nHighlightEnd = CLogicInt(nNameCol + nNameLen);
+				}else{
+					// 名前の位置が特定できなかった場合は行全体をハイライトする(フォールバック)
+					m_nHighlightBegin = CLogicInt(0);
+					m_nHighlightEnd = cStr.GetLength();
+				}
+			}
+		}
+	}
+
+	if( m_nHighlightBegin < 0 ){
+		return false;
+	}
+	return ( CLogicInt(nPos) == m_nHighlightBegin );
+}
+
+bool CColor_OutlineHeader::EndColor(const CStringRef& cStr, int nPos)
+{
+	return CLogicInt(nPos) >= m_nHighlightEnd;
+}
+#endif // NKMM_
 

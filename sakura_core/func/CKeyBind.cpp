@@ -856,10 +856,19 @@ static const KEYDATAINIT	KeyDataInit[] = {
 	{ 0x00de,	(LPCTSTR)STR_KEY_BIND_HAT_ENG_QT,		{ F_0,				F_0,				F_COPYTAG,				F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 0x00dc,	_T("\\"),			{ F_0,				F_0,				F_COPYPATH,				F_SPLIT_H,			F_0,					F_0,				F_0,					F_0 }, },
 	{ 0x00c0,	(LPCTSTR)STR_KEY_BIND_AT_ENG_BQ,		{ F_0,				F_0,				F_COPYLINES,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
+#ifdef NKMM_CODE_FOLDING
+	// Shift+Ctrl+[ / Shift+Ctrl+] はVS Code等のコード折りたたみトグルに合わせた既定キー 20260911
+	{ 0x00db,	_T("["),			{ F_0,				F_0,				F_BRACKETPAIR,			F_FOLD_TOGGLE,		F_0,					F_0,				F_0,					F_0 }, },
+#else
 	{ 0x00db,	_T("["),			{ F_0,				F_0,				F_BRACKETPAIR,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
+#endif // NKMM_
 	{ 0x00bb,	_T(";"),			{ F_0,				F_0,				F_INS_TIME,					F_SPLIT_VH,			F_0,				F_0,				F_0,					F_0 }, },
 	{ 0x00ba,	_T(":"),			{ F_0,				F_0,				F_INS_DATE,		F_0,				F_0,				F_0,				F_0,					F_0 }, },
+#ifdef NKMM_CODE_FOLDING
+	{ 0x00dd,	_T("]"),			{ F_0,				F_0,				F_BRACKETPAIR,			F_FOLD_TOGGLE,		F_0,					F_0,				F_0,					F_0 }, },
+#else
 	{ 0x00dd,	_T("]"),			{ F_0,				F_0,				F_BRACKETPAIR,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
+#endif // NKMM_
 	{ 0x00bc,	_T(","),			{ F_0,				F_0,				_COPYWITHLINENUM,					F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 0x00be,	_T("."),			{ F_0,				F_0,				F_COPYLINESASPASSAGE,	F_0,				F_0,					F_0,				F_0,					F_0 }, },
 	{ 0x00bf,	_T("/"),			{ F_0,				F_0,				F_HOKAN,				F_0,				F_0,					F_0,				F_0,					F_0 }, },

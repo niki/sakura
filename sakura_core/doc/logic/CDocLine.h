@@ -26,6 +26,9 @@
 #include "docplus/CDiffManager.h"
 #include "docplus/CModifyManager.h"
 #include "docplus/CFuncListManager.h"
+#ifdef NKMM_CODE_FOLDING
+#include "docplus/CFoldManager.h"
+#endif // NKMM_
 
 class CDocLine;
 class COpeBlk;
@@ -116,6 +119,9 @@ public:
 		CLineBookmarked	m_cBookmarked;	//ブックマーク
 		CLineFuncList	m_cFuncList;	//関数リストマーク
 		CLineDiffed		m_cDiffmarked;	//DIFF差分情報
+#ifdef NKMM_CODE_FOLDING
+		CLineFolded		m_cFolded;		//コードフォールディング情報
+#endif // NKMM_
 	};
 	MarkType m_sMark;
 

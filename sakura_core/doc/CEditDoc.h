@@ -164,6 +164,11 @@ public:
 	//動的状態
 public:
 	int				m_nCommandExecNum;			//!< コマンド実行回数
+#ifdef NKMM_CODE_FOLDING
+	bool			m_bFoldRangesReady = false;	//!< UpdateFoldRanges()を一度でも実行済みか(トグル操作の度に再解析しないためのガード) 20260911
+	bool			m_bOutlineFolded = false;		//!< 文書全体がアウトライン表示(全折りたたみ)状態か。trueの間は編集を禁止する 20260911
+	CLogicPoint		m_ptPreFoldCaretLogic;			//!< アウトライン表示に入る直前のキャレット論理位置(Escで戻る用) 20260911
+#endif // NKMM_
 
 	//環境情報
 public:

@@ -29,6 +29,9 @@
 #ifdef NKMM_MULTI_CURSOR
 #include <vector>
 #endif // NKMM_
+#ifdef NKMM_CODE_FOLDING
+class CLayout;
+#endif // NKMM_
 
 class CColor_Select : public CColorStrategy{
 public:
@@ -79,6 +82,31 @@ private:
 	EColorIndexType highlightColors[ COLORIDX_SEARCHTAIL - COLORIDX_SEARCH + 1 ]; ///< チェックが付いている検索文字列色の配列。
 	unsigned validColorNum; ///< highlightColorsの何番目の要素までが有効か。
 };
+
+#ifdef NKMM_CODE_FOLDING
+//! アウトライン表示(全折りたたみ)中、折りたたみ開始行(関数/構造体のヘッダ行)全体を
+//! 検索マーク(COLORIDX_SEARCH)と同じ色で表示するためのストラテジー。
+//! CColor_Selectと同様、BeginColorExで行頭のCLayoutを参照して判定する 20260911
+class CColor_OutlineHeader : public CColorStrategy{
+public:
+	virtual EColorIndexType GetStrategyColor() const{ return COLORIDX_SEARCH; }
+	//色替え
+	virtual void InitStrategyStatus(){ }
+	virtual bool BeginColor(const CStringRef& cStr, int nPos){ return false; }
+	virtual bool Disp() const { return true; }
+	virtual bool EndColor(const CStringRef& cStr, int nPos);
+
+	virtual bool BeginColorEx(const CStringRef& cStr, int nPos, CLayoutInt, const CLayout*);
+
+	//イベント
+	virtual void OnStartScanLogic();
+
+private:
+	CLayoutInt		m_nCheckedLine;		//!< 直近に判定した行(行頭で1回だけ判定するためのキャッシュ)
+	CLogicInt		m_nHighlightBegin;	//!< ハイライト開始桁(未判定/対象外なら-1)
+	CLogicInt		m_nHighlightEnd;	//!< ハイライト終了桁
+};
+#endif // NKMM_
 
 #endif /* SAKURA_CCOLOR_FOUND_60044D4E_3082_4A9D_98C5_2FE626D3DA1E_H_ */
 /*[EOF]*/

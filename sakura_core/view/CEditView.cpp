@@ -856,6 +856,14 @@ LRESULT CEditView::DispatchEvent(
 			m_bActivateByMouse = FALSE;		// マウスによるアクティベートを示すフラグをOFF
 		}
 		//		MYTRACE( _T(" WM_LBUTTONDBLCLK wParam=%08xh, x=%d y=%d\n"), wParam, LOWORD( lParam ), HIWORD( lParam ) );
+#ifdef NKMM_CODE_FOLDING
+		// アウトライン表示(全折りたたみ)中のダブルクリックは、単語選択の代わりに
+		// 「その関数へジャンプ」(=全展開してクリックしたヘッダ行へ留まる)として扱う 20260911
+		if( GetDocument()->m_bOutlineFolded ){
+			GetCommander().HandleCommand( F_FOLD_TOGGLE, true, 0, 0, 0, 0 );
+			return 0L;
+		}
+#endif // NKMM_
 		OnLBUTTONDBLCLK( wParam, (short)LOWORD( lParam ), (short)HIWORD( lParam ) );
 		return 0L;
 
@@ -3230,9 +3238,26 @@ void CALLBACK CEditView::ScrBarMarker::BuildWorkCallback(PTP_CALLBACK_INSTANCE /
 		rSBMarker.RefreshColorCache();
 
 		// ラインの配列を作成
-		const CLayoutInt nAllLines = pEditView->m_pcEditDoc->m_cLayoutMgr.GetLineCount();
+		// 20260911 Yu-zuki. 以前はここでm_cLayoutMgr.GetLineCount()(レイアウト行数)を
+		// vLines/vCacheの両方のサイズ根拠に使っていたが、vLinesの中身自体は
+		// m_cDocLineMgr(論理行)を先頭から辿って詰めているため、実際の要素数は
+		// 論理行数であってレイアウト行数ではない。アウトライン表示(折りたたみ)中は
+		// ToggleFoldAll()が非表示行のCLayoutノードをレイアウトリストから間引くため、
+		// レイアウト行数(nAllLines)が論理行数より大幅に少なくなる。この状態で
+		// vCacheをnAllLines基準の小さいサイズで確保すると、直後のループ(並列/直列
+		// どちらも)がvLines.size()(=論理行数)基準のインデックスでvCache[i]に書き込む
+		// ため、vCacheの確保サイズを超えてヒープを破壊する(領域外書き込み)。
+		// 破損は書き込んだ瞬間には症状が出ず、後で無関係なヒープ割り当て
+		// (mi_theap_malloc等)がその場所を触った時に初めてクラッシュするため、
+		// 「折りたたみ中に検索する」以外の操作に見えても実際には検索(SB_Marker_Clear
+		// 経由でこのBuildWorkCallbackがスケジュールされる)がトリガーになっている。
+		// vCacheはvLinesと同じ添字(論理行番号)でアクセスされるので、サイズも
+		// vLines.size()に合わせて確保しなければならない。
 		std::vector<const CDocLine *> vLines;
-		vLines.reserve((size_t)ToInt(nAllLines + 1));
+		{
+			CLogicInt nAllLogicLines = pEditView->m_pcEditDoc->m_cDocLineMgr.GetLineCount();
+			vLines.reserve((size_t)ToInt(nAllLogicLines + CLogicInt(1)));
+		}
 
 		// 要素を詰め込む
 		{
@@ -3243,8 +3268,8 @@ void CALLBACK CEditView::ScrBarMarker::BuildWorkCallback(PTP_CALLBACK_INSTANCE /
 			}
 		}
 
-		// キャッシュ用
-		std::vector<uint32_t> vCache((size_t)ToInt(nAllLines + 1), 0u);
+		// キャッシュ用(vLinesと同じ添字=論理行番号でアクセスするため、vLines.size()基準で確保する)
+		std::vector<uint32_t> vCache(vLines.size(), 0u);
 
 		CLayoutInt nLineHint = CLayoutInt(0);
 		bool bNoTextWrap = (pEditView->m_pcEditDoc->m_nTextWrapMethodCur == WRAP_NO_TEXT_WRAP);

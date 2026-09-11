@@ -388,6 +388,7 @@
     <ClInclude Include="..\sakura_core\dlg\CDlgWinSize.h" />
     <ClInclude Include="..\sakura_core\docplus\CBookmarkManager.h" />
     <ClInclude Include="..\sakura_core\docplus\CDiffManager.h" />
+    <ClInclude Include="..\sakura_core\docplus\CFoldManager.h" />
     <ClInclude Include="..\sakura_core\docplus\CFuncListManager.h" />
     <ClInclude Include="..\sakura_core\docplus\CModifyManager.h" />
     <ClInclude Include="..\sakura_core\doc\CBlockComment.h" />
@@ -584,6 +585,7 @@
     <ClInclude Include="..\sakura_core\outline\CDlgFuncList.h" />
     <ClInclude Include="..\sakura_core\outline\CFuncInfo.h" />
     <ClInclude Include="..\sakura_core\outline\CFuncInfoArr.h" />
+    <ClInclude Include="..\sakura_core\outline\CFoldRangeCalculator.h" />
     <ClInclude Include="..\sakura_core\parse\CWordParse.h" />
     <ClInclude Include="..\sakura_core\plugin\CComplementIfObj.h" />
     <ClInclude Include="..\sakura_core\plugin\CDllPlugin.h" />
@@ -881,6 +883,7 @@
     <ClCompile Include="..\sakura_core\dlg\CDlgWinSize.cpp" />
     <ClCompile Include="..\sakura_core\docplus\CBookmarkManager.cpp" />
     <ClCompile Include="..\sakura_core\docplus\CDiffManager.cpp" />
+    <ClCompile Include="..\sakura_core\docplus\CFoldManager.cpp" />
     <ClCompile Include="..\sakura_core\docplus\CFuncListManager.cpp" />
     <ClCompile Include="..\sakura_core\docplus\CModifyManager.cpp" />
     <ClCompile Include="..\sakura_core\doc\CBlockComment.cpp" />
@@ -1305,6 +1308,7 @@
     <ClCompile Include="..\sakura_core\outline\CDlgFuncList.cpp" />
     <ClCompile Include="..\sakura_core\outline\CFuncInfo.cpp" />
     <ClCompile Include="..\sakura_core\outline\CFuncInfoArr.cpp" />
+    <ClCompile Include="..\sakura_core\outline\CFoldRangeCalculator.cpp" />
     <ClCompile Include="..\sakura_core\parse\CWordParse.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CDllPlugin.cpp" />
     <ClCompile Include="..\sakura_core\plugin\CJackManager.cpp" />

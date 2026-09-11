@@ -201,6 +201,7 @@ doc/logic/CDocLine.o \
 doc/logic/CDocLineMgr.o \
 docplus/CBookmarkManager.o \
 docplus/CDiffManager.o \
+docplus/CFoldManager.o \
 docplus/CFuncListManager.o \
 docplus/CModifyManager.o \
 env/CAppNodeManager.o \
@@ -258,6 +259,7 @@ mem/CRecycledBuffer.o \
 mfclike/CMyWnd.o \
 outline/CDlgFileTree.o \
 outline/CDlgFuncList.o \
+outline/CFoldRangeCalculator.o \
 outline/CFuncInfo.o \
 outline/CFuncInfoArr.o \
 parse/CWordParse.o \

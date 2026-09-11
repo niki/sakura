@@ -898,14 +898,41 @@ void CLayoutMgr::LogicToLayout(
 			pLayout = SearchLineByLayoutY(nCaretPosY);
 		}
 		if( !pLayout ){
-			pptLayout->SetY( m_nLines );
-			return;
+			// 20260911 Yu-zuki. nCaretPosYはptLogic.y(ロジック行番号)をそのままレイアウトY
+			// のヒントとして使っているため、折りたたみでレイアウト行数がロジック行数より
+			// 大幅に少なくなっている場合、範囲外(nCaretPosY >= m_nLines)になりSearchLineByLayoutY()
+			// がNULLを返すことがある。以前はここで即座にpptLayoutをm_nLines(範囲外)に設定して
+			// returnしていたため、呼び出し元では常に最終行(EOF)扱いになっていた
+			// (折りたたみトグル時のキャレット復元が常にEOF行になるバグの原因)。
+			// 有効な最終レイアウト行にクランプして検索し直し、以降の「ロジックYが一致するまで
+			// 手前へ戻る」ループに委ねることで、正しいレイアウト行を見つけられるようにする。
+			nCaretPosY = GetLineCount() - CLayoutInt(1);
+			pLayout = SearchLineByLayoutY(nCaretPosY);
+			if( !pLayout ){
+				pptLayout->SetY( m_nLines );
+				return;
+			}
 		}
 
 		//ロジックYがでかすぎる場合は、一致するまでデクリメント (
-		while(pLayout->GetLogicLineNo() > ptLogic.GetY2()){
+		// 20260911 Yu-zuki. pLayoutのNULLチェックが無かったため、折りたたみで
+		// 対象ロジック行より手前が全て非表示(CLayoutノードが存在しない)の場合、
+		// GetPrevLayout()がリスト先頭でNULLを返した直後に次のループ条件判定で
+		// pLayout->GetLogicLineNo()を呼び出しヌルポインタ参照でクラッシュしていた
+		// (折りたたみ中にF2/F3で非表示行にジャンプすると発生)。
+		while(pLayout && pLayout->GetLogicLineNo() > ptLogic.GetY2()){
 			pLayout = pLayout->GetPrevLayout();
 			nCaretPosY--;
+		}
+		if( !pLayout ){
+			// 手前に表示行が無かった -> 文書先頭から見て最初の表示行にフォールバックする
+			// (CViewCommander::Command_FOLD_TOGGLE()の「手前に無ければ直後まで進める」と同じ考え方)。
+			pLayout = m_pLayoutTop;
+			nCaretPosY = CLayoutInt(0);
+			if( !pLayout ){
+				pptLayout->SetY( m_nLines );
+				return;
+			}
 		}
 
 		//ロジックYが同じでOffsetが行き過ぎている場合は戻る
