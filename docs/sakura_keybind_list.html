@@ -3413,6 +3413,96 @@ body.edit-mode .th-btns{display:flex;}
 <td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
 <td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
 </tr>
+<tr class="no-sakura" data-row-id="nosakura_Save_selection_as_new_file_400">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">選択範囲を新規ファイル/新規タブとして保存 (Save/open selection as new file)</span><span class="fc" data-tip="サクラのタブは別プロセスとして起動されるため新規タブは常にファイルパス経由でしか開けない。選択範囲を一時/新規ファイルに書き出してからOpenNewEditorを呼ぶ形（セッション復元バッファ機能と同じ手法）で実装可能">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash" data-tip="標準搭載ではなく拡張機能が必要">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash" data-tip="コピー＆新規タブ＆貼り付けの手動操作が基本">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash" data-tip="コピー＆新規タブ＆貼り付けの手動操作が基本">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Delete_matching_lines_401">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">正規表現に一致する行を削除 (Delete lines matching regex)</span><span class="fc" data-tip="置換ダイアログの「置換対象：行削除」モード＋正規表現ですべて置換すれば現状でも同等のことが可能（専用の単発コマンドとしては未実装）">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash" data-tip="検索でマークした行をメニューから一括削除する機能はあるが専用のキー割り当てはない">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Delete_nonmatching_lines_402">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">正規表現に一致しない行を削除 (Delete lines NOT matching regex)</span><span class="fc" data-tip="一致行削除は置換ダイアログの「置換対象：行削除」で代替可能だが、不一致行の削除に相当する機能はサクラに存在しない（反転ロジックの追加が必要）">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash" data-tip="検索でマークした行をメニューから一括削除する機能はあるが専用のキー割り当てはない">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Pin_tab_403">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">タブの固定/ピン留め (Pin tab)</span><span class="fc">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash" data-tip="デフォルトキーは無くコマンドパレット/右クリックメニューから実行">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_MRU_tab_switch_404">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">直前にアクティブだったタブへ切り替え (Switch to most-recently-used tab)</span><span class="fc" data-tip="既存のF_NEXTWINDOW/F_PREVWINDOW(CControlTray::ActiveNextWindow/ActivePrevWindow)はタブの並び順を巡回するだけで、直前にアクティブだったタブへ戻るMRU順の切替とは別ロジック">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="key key-yellow" data-tip="開いているエディタをMRU順に巡回。離すと最後に止まったタブが新たな基準になる">Ctrl+Tab</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="key key-yellow">Ctrl+Tab</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="key key-yellow">Ctrl+Tab</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Tab_number_jump_405">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">タブ番号を指定してジャンプ (Go to tab by number)</span><span class="fc" data-tip="ブラウザ/VSCode等の慣習ではCtrl+1〜8が1〜8番目のタブへ直接ジャンプ、Ctrl+9は開いている数に関わらず「最後のタブ」へジャンプする9個構成。実装するならF_CUSTMENU_1〜24と同じ「同一概念のFコードを番号分だけ用意する」既存パターンを踏襲する形になる（パラメータ付き単一コマンドという仕組みはサクラのキー割り当てには無いため）">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="key key-yellow" data-tip="Ctrl+1〜8=1〜8番目のタブ、Ctrl+9=最後のタブ">Ctrl+1〜9</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="key key-yellow" data-tip="Ctrl+1〜8=1〜8番目のタブ、Ctrl+9=最後のタブ">Ctrl+1〜9</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Trim_trailing_whitespace_onsave_406">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">保存時に行末の空白を自動削除 (Trim trailing whitespace on save)</span><span class="fc" data-tip="手動コマンドの「行末の空白を削除」(F_RTRIM)は既存だが、保存のたびに自動実行するオプションはCSaveAgent.cppに無い">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash" data-tip="設定項目files.trimTrailingWhitespaceとしてON/OFF。専用キー割り当ては無い">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash" data-tip="設定項目trim_trailing_white_space_on_saveとしてON/OFF">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Readonly_save_prompt_407">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">読み取り専用ファイル保存時の属性解除確認 (Prompt to clear read-only attribute on save)</span><span class="fc" data-tip="読み取り専用属性のファイルを保存しようとした際に属性解除してリトライするか確認する専用フローがCSaveAgent.cppに無い">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash" data-tip="保存失敗時に属性解除を促すダイアログを表示">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Batch_folder_encoding_convert_408">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">フォルダ一括エンコード変換 (Batch-convert file encoding across a folder)</span><span class="fc" data-tip="Grep置換のDoGrepReplaceFile(フォルダ走査+デコード+再エンコード書き戻しパイプライン)を流用し、置換処理部分を単純な再エンコード出力に差し替える形で実装可能。単体ファイル用のF_CODECNV_*コマンドは開いているタブの中身にしか作用しないため流用不可">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash">—</span></td>
+</tr>
+<tr class="no-sakura" data-row-id="nosakura_Search_all_open_tabs_409">
+<td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">開いている全タブを横断した検索 (Search across all open tabs)</span><span class="fc" data-tip="現状の検索はアクティブな1ファイルのみ、Grepはディスク上のフォルダのみが対象。未保存の内容も含め開いている全タブだけをまとめて検索する機能は無い">(サクラ未実装)</span></td>
+<td data-col="default" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="v2.4.3" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="VSCode" contenteditable="false"><span class="dash" data-tip="検索パネル内のトグルボタン「Search only in Open Editors」として存在。デフォルトキー割り当ては無く、専用コマンド化の要望Issueも立っている(#131437)">—</span></td>
+<td data-col="Visual Studio" contenteditable="false"><span class="dash">—</span></td>
+<td data-col="Sublime Text" contenteditable="false"><span class="dash" data-tip="独立コマンドではなく、Find in FilesダイアログのWhere欄に<open files>を指定する方式で実現">—</span></td>
+<td data-col="Notepad++" contenteditable="false"><span class="dash" data-tip="検索ダイアログ(Ctrl+F)内の「Find All in All Opened Documents」ボタンとして存在">—</span></td>
+</tr>
 <tr class="in-preset" data-row-id="f_F_SELECTLINE_triclick">
 <td class="func-cell" data-col="func"><button type="button" class="row-del" data-tip="この行を削除" aria-label="この行を削除">×</button><span class="func-text" contenteditable="false">トリプルクリックで行選択</span><span class="fc">F_SELECTLINE</span></td>
 <td data-col="default" contenteditable="false"><span class="key" data-hex="261" data-slot="0">トリプルクリック</span></td>
