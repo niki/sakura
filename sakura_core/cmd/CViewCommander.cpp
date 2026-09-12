@@ -81,12 +81,12 @@ BOOL CViewCommander::HandleCommand(
 	// 「その関数へジャンプ」(=全展開してキャレット位置のヘッダ行へ留まる)として扱う 20260911
 	if( GetDocument()->m_bOutlineFolded && F_WCHAR == nCommand &&
 		( L'\r' == (wchar_t)lparam1 || L'\n' == (wchar_t)lparam1 ) ){
-		Command_FOLD_TOGGLE();
+		Command_OUTLINE_FOLD_TOGGLE();
 		return TRUE;
 	}
 	// アウトライン表示中のTabキー(通常はF_INDENT_TAB)も同様に「ジャンプ」として扱う 20260911
 	if( GetDocument()->m_bOutlineFolded && F_INDENT_TAB == nCommand ){
-		Command_FOLD_TOGGLE();
+		Command_OUTLINE_FOLD_TOGGLE();
 		return TRUE;
 	}
 	// アウトライン表示中のEscキー(通常はF_CANCEL_MODE)は「戻る」
@@ -606,7 +606,7 @@ BOOL CViewCommander::HandleCommand(
 	case F_FUNCLIST_NEXT:	Command_FUNCLIST_NEXT();break;					// 次の関数リストマーク	2014.01.05
 	case F_FUNCLIST_PREV:	Command_FUNCLIST_PREV();break;					// 前の関数リストマーク	2014.01.05
 #ifdef NKMM_CODE_FOLDING
-	case F_FOLD_TOGGLE:		Command_FOLD_TOGGLE();break;				// 折りたたみのトグル(カーソル行)	20260911
+	case F_OUTLINE_FOLD_TOGGLE:		Command_OUTLINE_FOLD_TOGGLE();break;				// 折りたたみのトグル(カーソル行)	20260911
 #endif // NKMM_
 
 

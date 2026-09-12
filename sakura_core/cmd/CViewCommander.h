@@ -352,7 +352,7 @@ public:
 	void Command_FUNCLIST_NEXT( void );					// 次の関数リストマーク	2014.01.05
 	void Command_FUNCLIST_PREV( void );					// 前の関数リストマーク	2014.01.05
 #ifdef NKMM_CODE_FOLDING
-	void Command_FOLD_TOGGLE( void );						//!< 文書全体の折りたたみ(アウトライン表示⇔全展開)をトグルする 20260911
+	void Command_OUTLINE_FOLD_TOGGLE( void );						//!< 文書全体の折りたたみ(アウトライン表示⇔全展開)をトグルする 20260911
 	void Command_FOLD_CANCEL( void );						//!< アウトライン表示を終了し、折りたたみ前のキャレット位置へ戻る(Esc用) 20260911
 #endif // NKMM_
 

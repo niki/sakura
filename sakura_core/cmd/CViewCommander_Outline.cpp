@@ -32,7 +32,7 @@
 
 #ifdef NKMM_FIX_EDITVIEW_SCRBAR
 namespace {
-	/*! 20260911 Command_FOLD_TOGGLE用のRAIIガード。
+	/*! 20260911 Command_OUTLINE_FOLD_TOGGLE用のRAIIガード。
 
 		CLayoutMgr::ToggleFoldAll()は_DoLayout()により文書全体のCLayoutを一旦
 		すべて破棄して作り直す(総レイアウト行数が例えば79→9のように激減しうる)。
@@ -256,7 +256,7 @@ BOOL CViewCommander::Command_FUNCLIST(
 	@date 2026.09.11 Yu-zuki. 新規作成
 	@date 2026.09.11 Yu-zuki. カーソル行単位のトグルから文書全体のトグルへ変更(ユーザー指摘)
 */
-void CViewCommander::Command_FOLD_TOGGLE( void )
+void CViewCommander::Command_OUTLINE_FOLD_TOGGLE( void )
 {
 	if( !GetDocument()->m_bFoldRangesReady ){
 		GetDocument()->m_cDocOutline.UpdateFoldRanges();
@@ -339,7 +339,7 @@ void CViewCommander::Command_FOLD_TOGGLE( void )
 
 /*! アウトライン表示を終了し、折りたたみに入る直前のキャレット位置へ戻る(Esc用)
 
-	@note Command_FOLD_TOGGLE(Enter/Tabによる「ジャンプ」)との違いは、展開後の
+	@note Command_OUTLINE_FOLD_TOGGLE(Enter/Tabによる「ジャンプ」)との違いは、展開後の
 		キャレット位置。ジャンプはアウトライン表示中に選択していたヘッダ行へ
 		留まるが、こちらは折りたたみに入る前にいた位置へ戻す。
 	@date 2026.09.11 Yu-zuki. 新規作成

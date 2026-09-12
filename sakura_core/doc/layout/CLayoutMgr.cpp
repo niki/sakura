@@ -926,7 +926,7 @@ void CLayoutMgr::LogicToLayout(
 		}
 		if( !pLayout ){
 			// 手前に表示行が無かった -> 文書先頭から見て最初の表示行にフォールバックする
-			// (CViewCommander::Command_FOLD_TOGGLE()の「手前に無ければ直後まで進める」と同じ考え方)。
+			// (CViewCommander::Command_OUTLINE_FOLD_TOGGLE()の「手前に無ければ直後まで進める」と同じ考え方)。
 			pLayout = m_pLayoutTop;
 			nCaretPosY = CLayoutInt(0);
 			if( !pLayout ){

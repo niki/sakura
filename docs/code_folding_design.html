@@ -354,7 +354,7 @@ CLayout* pNode = m_pLayoutTop;
           <thead><tr><th>関数</th><th>役割</th></tr></thead>
           <tbody>
             <tr><td><code class="inline">CLayoutMgr::ToggleFoldAll()</code></td><td>本体。マーク更新→<code class="inline">_DoLayout()</code>→非表示行のノード除去、の3段階</td></tr>
-            <tr><td><code class="inline">CViewCommander::Command_FOLD_TOGGLE()</code></td><td>キーバインド(<code class="inline">F_FOLD_TOGGLE</code>)のエントリポイント。キャレット位置の調整・画面中央への移動も担当</td></tr>
+            <tr><td><code class="inline">CViewCommander::Command_OUTLINE_FOLD_TOGGLE()</code></td><td>キーバインド(<code class="inline">F_OUTLINE_FOLD_TOGGLE</code>)のエントリポイント。キャレット位置の調整・画面中央への移動も担当</td></tr>
             <tr><td><code class="inline">CSuppressScrBarMarkerForFoldToggle</code></td><td>RAIIガード。<code class="inline">ToggleFoldAll()</code>実行中、スクロールバーマーカーの背景スレッドを止める(<a href="#bugs">不具合#1</a>参照)</td></tr>
           </tbody>
         </table>
@@ -372,7 +372,7 @@ CLayout* pNode = m_pLayoutTop;
           <tbody>
             <tr><td>文字入力・削除・貼り付け等</td><td><span class="pill warn">禁止</span> <code class="inline">CEditDoc::IsModificationForbidden()</code>が、通常の読み取り専用時と同じ「編集禁止コマンド一覧」(<code class="inline">EIsModificationForbidden</code>)を流用してブロックする</td></tr>
             <tr><td>折りたたみ発生時のキャレット</td><td>非表示になった行にいた場合、直近の手前の表示行(=元いたスコープのヘッダ行)まで遡る。手前に無ければ直後の表示行まで進める</td></tr>
-            <tr><td>Enter / Tab / ダブルクリック</td><td><span class="pill ok">ジャンプ</span> 現在のキャレット位置(選択中のヘッダ行)を維持したまま全展開する。<code class="inline">Command_FOLD_TOGGLE()</code>をそのまま流用</td></tr>
+            <tr><td>Enter / Tab / ダブルクリック</td><td><span class="pill ok">ジャンプ</span> 現在のキャレット位置(選択中のヘッダ行)を維持したまま全展開する。<code class="inline">Command_OUTLINE_FOLD_TOGGLE()</code>をそのまま流用</td></tr>
             <tr><td>Esc</td><td><span class="pill ok">戻る</span> アウトライン表示に入る直前のキャレット位置(<code class="inline">m_ptPreFoldCaretLogic</code>)へ戻して全展開する。<code class="inline">Command_FOLD_CANCEL()</code></td></tr>
           </tbody>
         </table>

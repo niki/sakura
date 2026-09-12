@@ -858,14 +858,14 @@ static const KEYDATAINIT	KeyDataInit[] = {
 	{ 0x00c0,	(LPCTSTR)STR_KEY_BIND_AT_ENG_BQ,		{ F_0,				F_0,				F_COPYLINES,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
 #ifdef NKMM_CODE_FOLDING
 	// Shift+Ctrl+[ / Shift+Ctrl+] はVS Code等のコード折りたたみトグルに合わせた既定キー 20260911
-	{ 0x00db,	_T("["),			{ F_0,				F_0,				F_BRACKETPAIR,			F_FOLD_TOGGLE,		F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00db,	_T("["),			{ F_0,				F_0,				F_BRACKETPAIR,			F_OUTLINE_FOLD_TOGGLE,		F_0,					F_0,				F_0,					F_0 }, },
 #else
 	{ 0x00db,	_T("["),			{ F_0,				F_0,				F_BRACKETPAIR,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
 #endif // NKMM_
 	{ 0x00bb,	_T(";"),			{ F_0,				F_0,				F_INS_TIME,					F_SPLIT_VH,			F_0,				F_0,				F_0,					F_0 }, },
 	{ 0x00ba,	_T(":"),			{ F_0,				F_0,				F_INS_DATE,		F_0,				F_0,				F_0,				F_0,					F_0 }, },
 #ifdef NKMM_CODE_FOLDING
-	{ 0x00dd,	_T("]"),			{ F_0,				F_0,				F_BRACKETPAIR,			F_FOLD_TOGGLE,		F_0,					F_0,				F_0,					F_0 }, },
+	{ 0x00dd,	_T("]"),			{ F_0,				F_0,				F_BRACKETPAIR,			F_OUTLINE_FOLD_TOGGLE,		F_0,					F_0,				F_0,					F_0 }, },
 #else
 	{ 0x00dd,	_T("]"),			{ F_0,				F_0,				F_BRACKETPAIR,			F_0,				F_0,					F_0,				F_0,					F_0 }, },
 #endif // NKMM_

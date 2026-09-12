@@ -860,7 +860,7 @@ LRESULT CEditView::DispatchEvent(
 		// アウトライン表示(全折りたたみ)中のダブルクリックは、単語選択の代わりに
 		// 「その関数へジャンプ」(=全展開してクリックしたヘッダ行へ留まる)として扱う 20260911
 		if( GetDocument()->m_bOutlineFolded ){
-			GetCommander().HandleCommand( F_FOLD_TOGGLE, true, 0, 0, 0, 0 );
+			GetCommander().HandleCommand( F_OUTLINE_FOLD_TOGGLE, true, 0, 0, 0, 0 );
 			return 0L;
 		}
 #endif // NKMM_
