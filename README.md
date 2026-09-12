@@ -10,9 +10,14 @@
     <img src="https://img.shields.io/badge/license-Zlib-blue" alt="License: Zlib">
   </a>
   <br>
-  <!-- 2行目：独自機能・アクティビティ -->
+  <!-- 2行目：独自機能 -->
   <img src="https://img.shields.io/badge/DirectWrite-Supported-0078D6?logo=windows&logoColor=white" alt="DirectWrite">
   <img src="https://img.shields.io/badge/Color_Font-Supported-ff69b4?logo=artstation&logoColor=white" alt="Color Font">
+  <img src="https://img.shields.io/badge/Command_Palette-Supported-6c5ce7" alt="Command Palette">
+  <img src="https://img.shields.io/badge/Multi--Cursor-Supported-e17055" alt="Multi-Cursor">
+  <img src="https://img.shields.io/badge/Code_Folding-Supported-00b894" alt="Code Folding">
+  <br>
+  <!-- 3行目：アクティビティ -->
   <img src="https://img.shields.io/github/last-commit/niki/sakura" alt="last commit">
   <a href="https://github.com/niki/sakura/stargazers">
     <img src="https://img.shields.io/github/stars/niki/sakura?style=social" alt="Stars">
