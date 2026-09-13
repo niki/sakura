@@ -64,7 +64,6 @@ jobs:
               r"if\s*\(\s*(hWnd|hDC|hBmp|hMem|hFont|lpParam|pTarget|pNode|pThis)\s*==\s*(NULL|nullptr|INVALID_HANDLE_VALUE)\s*\)"
           )
 
-          # 分岐抽出パターン
           PAT_IF = re.compile(r"\b(if|else\s+if)\b")
           PAT_LOOP = re.compile(r"\b(for|while|do)\b")
           PAT_LOGIC = re.compile(r"(?<!&)&&(?!&)|(?<!\|)\|\|(?!\|)")
@@ -73,13 +72,13 @@ jobs:
 
           def generate_source_heatmap(filepath, start_l, end_l, is_dispatcher):
               if not os.path.exists(filepath):
-                  return "", "<div style='color: #64748b; padding: 8px;'>ソースコードが見つかりませんでした。</div>"
+                  return Counter(), "<div style='color: #64748b; padding: 8px;'>ソースコードが見つかりませんでした。</div>"
 
               try:
                   with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                       all_lines = f.readlines()
               except Exception as e:
-                  return "", f"<div style='color: #ef4444; padding: 8px;'>読み込みエラー: {html.escape(str(e))}</div>"
+                  return Counter(), f"<div style='color: #ef4444; padding: 8px;'>読み込みエラー: {html.escape(str(e))}</div>"
 
               total_lines = len(all_lines)
               s_idx = max(0, start_l - 1)
@@ -94,7 +93,6 @@ jobs:
                   line_no = start_l + offset
                   line_str = raw_line.rstrip()
 
-                  # ブロックコメントの追跡
                   if in_block_comment:
                       if "*/" in line_str:
                           in_block_comment = False
@@ -143,18 +141,17 @@ jobs:
                   indent_spaces = len(expanded) - len(expanded.lstrip())
                   indent_level = indent_spaces // 4
 
-                  # 分岐キーワードの検出と集計
                   c_if = len(PAT_IF.findall(clean_code_stripped))
                   c_loop = len(PAT_LOOP.findall(clean_code_stripped))
                   c_logic = len(PAT_LOGIC.findall(clean_code_stripped))
                   c_case = len(PAT_CASE.findall(clean_code_stripped))
                   c_catch = len(PAT_CATCH.findall(clean_code_stripped))
 
-                  if c_if: cause_counter['if分岐'] += c_if
-                  if c_loop: cause_counter['ループ'] += c_loop
-                  if c_logic: cause_counter['&& / ||'] += c_logic
-                  if c_case: cause_counter['case文'] += c_case
-                  if c_catch: cause_counter['例外処理'] += c_catch
+                  if c_if: cause_counter['if'] += c_if
+                  if c_loop: cause_counter['loop'] += c_loop
+                  if c_logic: cause_counter['logic'] += c_logic
+                  if c_case: cause_counter['case'] += c_case
+                  if c_catch: cause_counter['catch'] += c_catch
 
                   matched_reasons = []
                   if c_if: matched_reasons.append(f"if×{c_if}")
@@ -165,12 +162,10 @@ jobs:
                   row_class = "code-row"
                   badge_html = ""
 
-                  # case文単体の行は紫色で明示（CCNに寄与していることを可視化）
                   if c_case > 0 and not matched_reasons:
                       row_class += " heat-case"
                       badge_html = f"<span class='heat-tag heat-tag-purple'>🏷️ case分岐</span>"
                   elif matched_reasons:
-                      # 判定基準: 複合条件が3個以上、またはLv.5以上のネスト分岐を赤色
                       total_heavy = c_if + c_loop + c_logic + c_catch
                       if total_heavy >= 2 or indent_level >= 5:
                           row_class += " heat-high"
@@ -189,14 +184,7 @@ jobs:
                       f"</div>"
                   )
 
-              # 内訳バッジの生成
-              summary_badges = []
-              for k, v in cause_counter.most_common():
-                  bg = "#ede9fe; color: #6d28d9;" if k == 'case文' else ("#fee2e2; color: #991b1b;" if k in ['if分岐', '&& / ||'] else "#fef9c3; color: #854d0e;")
-                  summary_badges.append(f"<span style='background:{bg}; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-right: 6px; font-size: 11px;'>{k}: {v}</span>")
-
-              breakdown_html = "".join(summary_badges) if summary_badges else "<span style='color: #64748b;'>特筆すべき分岐なし</span>"
-              return breakdown_html, f"<div class='code-block'>{''.join(lines_out)}</div>"
+              return cause_counter, f"<div class='code-block'>{''.join(lines_out)}</div>"
 
           items_list = []
           if proc.stdout.strip():
@@ -260,6 +248,9 @@ jobs:
 
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
+          # 相対バー表示用の最大CCN
+          max_ccn = max([x["complexity"] for x in items_list], default=1)
+
           rows_html = ""
           for idx, item in enumerate(items_list):
               rank = item["rank"]
@@ -267,6 +258,7 @@ jobs:
               clean_file = item['file']
               s_line = item['start_line']
               e_line = item['end_line']
+              ccn = item['complexity']
 
               if repository and s_line > 0:
                   line_hash = f"#L{s_line}-L{e_line}" if e_line > s_line else f"#L{s_line}"
@@ -274,20 +266,62 @@ jobs:
               else:
                   github_link = "#"
 
-              decisions = item['complexity'] - 1
+              decisions = ccn - 1
               
-              if idx < 50 or item['complexity'] > 5:
-                  breakdown_html, heatmap_code = generate_source_heatmap(clean_file, s_line, e_line, item['is_dispatcher'])
+              # ソースコード解析
+              if idx < 50 or ccn > 5:
+                  causes, heatmap_code = generate_source_heatmap(clean_file, s_line, e_line, item['is_dispatcher'])
               else:
+                  causes, heatmap_code = Counter(), "<div style='padding: 8px; color: #64748b;'>軽微な関数のためコードプレビューは省略されました。</div>"
+
+              # 内訳バッジとスタックバー生成
+              total_causes = sum(causes.values())
+              if total_causes > 0:
+                  p_case = (causes['case'] / total_causes) * 100
+                  p_if = ((causes['if'] + causes['logic']) / total_causes) * 100
+                  p_loop = (causes['loop'] / total_causes) * 100
+                  p_other = max(0, 100 - (p_case + p_if + p_loop))
+
+                  stack_bar_html = f"""
+                  <div class="ccn-stack-bar" title="case: {causes['case']}, if/logic: {causes['if']+causes['logic']}, loop: {causes['loop']}">
+                    <span style="width: {p_case:.1f}%; background: #c084fc;"></span>
+                    <span style="width: {p_if:.1f}%; background: #f87171;"></span>
+                    <span style="width: {p_loop:.1f}%; background: #facc15;"></span>
+                    <span style="width: {p_other:.1f}%; background: #94a3b8;"></span>
+                  </div>
+                  """
+                  
+                  breakdown_badges = []
+                  if causes['case']: breakdown_badges.append(f"<span class='b-badge b-case'>case: {causes['case']}</span>")
+                  if causes['if']: breakdown_badges.append(f"<span class='b-badge b-if'>if: {causes['if']}</span>")
+                  if causes['logic']: breakdown_badges.append(f"<span class='b-badge b-if'>&&/||: {causes['logic']}</span>")
+                  if causes['loop']: breakdown_badges.append(f"<span class='b-badge b-loop'>loop: {causes['loop']}</span>")
+                  breakdown_html = "".join(breakdown_badges)
+              else:
+                  # 内訳が取れない場合や軽微な関数はCCNの全体相対比率バー
+                  relative_pct = min(100, max(6, (ccn / max_ccn) * 100))
+                  stack_bar_html = f"""
+                  <div class="ccn-stack-bar">
+                    <span style="width: {relative_pct:.1f}%; background: #94a3b8;"></span>
+                  </div>
+                  """
                   breakdown_html = "<span style='color: #64748b;'>-</span>"
-                  heatmap_code = "<div style='padding: 8px; color: #64748b;'>軽微な関数のためコードプレビューは省略されました。</div>"
+
+              # CCNセルの背景バー用比率（全体比率）
+              bg_width_pct = min(100, max(2, (ccn / max_ccn) * 100))
+              bg_color = "rgba(248, 113, 113, 0.18)" if rank == "D" else ("rgba(254, 202, 202, 0.25)" if rank == "C" else "rgba(226, 232, 240, 0.6)")
 
               disp_tag = "<span class='tag-disp'>DISPATCHER</span>" if item['is_dispatcher'] else ""
 
               rows_html += f"""
               <tr class="main-row" onclick="toggleDetail({idx})">
                 <td style="text-align: center;"><span class="badge {badge_class}">{rank}</span></td>
-                <td style="font-weight: bold; font-size: 15px; text-align: center;">{item['complexity']}</td>
+                <td class="ccn-cell" style="--bg-width: {bg_width_pct}%; --bg-color: {bg_color};">
+                  <div class="ccn-num-wrap">
+                    <span class="ccn-num">{ccn}</span>
+                  </div>
+                  {stack_bar_html}
+                </td>
                 <td class="cell-wrap">{disp_tag}<code>{item['name']}</code></td>
                 <td class="cell-wrap"><a href="{github_link}" target="_blank" class="file-link" onclick="event.stopPropagation();">{clean_file}:{s_line}</a></td>
                 <td style="color: #64748b; text-align: right;">{item['nloc']} 行</td>
@@ -304,6 +338,7 @@ jobs:
                     
                     <div class="breakdown-bar">
                       <strong>要因内訳:</strong> {breakdown_html}
+                      <span class="legend-note">(紫: case / 赤: if・論理演算 / 黄: ループ)</span>
                     </div>
 
                     <div style="margin: 10px 0 8px 0; display: flex; justify-content: space-between; align-items: center;">
@@ -335,7 +370,7 @@ jobs:
               }}
               *, *:before, *:after {{ box-sizing: inherit; }}
               .container {{
-                width: 100%; max-width: 1240px; margin: 24px auto; background: #ffffff;
+                width: 100%; max-width: 1280px; margin: 24px auto; background: #ffffff;
                 border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 24px;
               }}
               h1 {{ margin-top: 0; font-size: 20px; display: flex; align-items: center; gap: 8px; }}
@@ -355,6 +390,33 @@ jobs:
               .main-row:hover {{ background: #f1f5f9; }}
               .detail-row td {{ background: #fbfcfe; padding: 16px 20px; border-bottom: 2px solid #cbd5e1; }}
               
+              /* CCN 列の相対バー背景とスタックバー表示 */
+              .ccn-cell {{
+                position: relative;
+                padding-right: 14px !important;
+                background-image: linear-gradient(to right, var(--bg-color) var(--bg-width), transparent var(--bg-width));
+                background-repeat: no-repeat;
+              }}
+              .ccn-num-wrap {{ display: flex; align-items: baseline; justify-content: space-between; }}
+              .ccn-num {{ font-weight: 800; font-size: 14px; color: #0f172a; }}
+              
+              .ccn-stack-bar {{
+                display: flex;
+                height: 4px;
+                width: 100%;
+                background: #e2e8f0;
+                border-radius: 2px;
+                overflow: hidden;
+                margin-top: 4px;
+              }}
+              .ccn-stack-bar span {{ height: 100%; display: block; }}
+              
+              .legend-note {{ font-size: 11px; color: #64748b; margin-left: 8px; }}
+              .b-badge {{ padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 4px; }}
+              .b-case {{ background: #f3e8ff; color: #7e22ce; }}
+              .b-if {{ background: #fee2e2; color: #b91c1c; }}
+              .b-loop {{ background: #fef9c3; color: #a16207; }}
+
               .detail-container {{ font-size: 13px; }}
               .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 8px; }}
               .breakdown-bar {{ background: #ffffff; padding: 8px 12px; border-radius: 4px; border: 1px solid #e2e8f0; margin-bottom: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }}
@@ -374,7 +436,6 @@ jobs:
               .code-body {{ margin: 0; padding: 0 12px; white-space: pre; flex-grow: 1; }}
               .text-comment {{ color: #8b949e; font-style: italic; }}
               
-              /* 各種ヒートマップスタイル */
               .heat-high {{ background: rgba(239, 68, 68, 0.22) !important; }}
               .heat-high .ln {{ background: #7f1d1d !important; color: #fecaca !important; font-weight: bold; }}
               .heat-med {{ background: rgba(234, 179, 8, 0.14) !important; }}
@@ -436,9 +497,9 @@ jobs:
                 <thead>
                   <tr>
                     <th style="width: 65px; text-align: center;">Rank</th>
-                    <th style="width: 75px; text-align: center;">CCN</th>
-                    <th style="width: 45%;">Function / Method</th>
-                    <th style="width: 35%;">Location (直接リンク)</th>
+                    <th style="width: 110px; text-align: left;">CCN (内訳バー)</th>
+                    <th style="width: 42%;">Function / Method</th>
+                    <th style="width: 33%;">Location (直接リンク)</th>
                     <th style="width: 75px; text-align: right;">NLOC</th>
                   </tr>
                 </thead>
