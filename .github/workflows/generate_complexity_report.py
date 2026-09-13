@@ -1,0 +1,637 @@
+import os
+import csv
+import io
+import re
+import html
+import json
+import subprocess
+from datetime import datetime
+from collections import Counter
+
+target_dirs = os.environ.get("TARGET_DIRS", "sakura_core").split()
+raw_excludes = os.environ.get("EXCLUDE_PATTERN", "").split()
+
+server_url = os.environ.get("GITHUB_SERVER_URL", "https://github.com").rstrip('/')
+repository = os.environ.get("GITHUB_REPOSITORY", "").strip('/')
+commit_sha = os.environ.get("GITHUB_SHA", "main")
+
+cmd = ["lizard", "--csv"] + target_dirs
+for pat in raw_excludes:
+    if pat.strip():
+        cmd.extend(["-x", pat.strip()])
+
+proc = subprocess.run(cmd, capture_output=True, text=True)
+
+DISPATCHER_REGEX = re.compile(
+    r"(WndProc|HandleCommand|OnCommand|OnNotify|Dispatch|ProcessMessage|HandleFunction|_To_)",
+    re.IGNORECASE
+)
+
+WIN32_GUARD_REGEX = re.compile(
+    r"if\s*\(\s*(FAILED|SUCCEEDED)\s*\(|"
+    r"if\s*\(\s*!(bResult|bSuccess|ret|hr|res)\s*\)|"
+    r"if\s*\(\s*(hWnd|hDC|hBmp|hMem|hFont|lpParam|pTarget|pNode|pThis)\s*==\s*(NULL|nullptr|INVALID_HANDLE_VALUE)\s*\)"
+)
+
+PAT_IF = re.compile(r"\b(if|else\s+if)\b")
+PAT_LOOP = re.compile(r"\b(for|while|do)\b")
+PAT_AND = re.compile(r"(?<!&)&&(?!&)")
+PAT_OR = re.compile(r"(?<!\|)\|\|(?!\|)")
+PAT_CASE = re.compile(r"\bcase\b\s+[^:]+:")
+PAT_CATCH = re.compile(r"\bcatch\b")
+
+def generate_source_heatmap(filepath, start_l, end_l, is_dispatcher):
+    if not os.path.exists(filepath):
+        return Counter(), "<div style='color: #64748b; padding: 16px;'>ソースコードが見つかりませんでした。</div>"
+
+    try:
+        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+            all_lines = f.readlines()
+    except Exception as e:
+        return Counter(), f"<div style='color: #ef4444; padding: 16px;'>読み込みエラー: {html.escape(str(e))}</div>"
+
+    total_lines = len(all_lines)
+    s_idx = max(0, start_l - 1)
+    e_idx = min(total_lines, end_l)
+    func_lines = all_lines[s_idx:e_idx]
+
+    lines_out = []
+    in_block_comment = False
+    cause_counter = Counter()
+
+    for offset, raw_line in enumerate(func_lines):
+        line_no = start_l + offset
+        line_str = raw_line.rstrip()
+
+        if in_block_comment:
+            if "*/" in line_str:
+                in_block_comment = False
+                code_part = line_str.split("*/", 1)[1]
+            else:
+                lines_out.append(
+                    f"<div class='code-row'>"
+                    f"<span class='ln'>{line_no}</span>"
+                    f"<pre class='code-body text-comment'>{html.escape(line_str)}</pre>"
+                    f"</div>"
+                )
+                continue
+        else:
+            if "/*" in line_str and "*/" not in line_str:
+                in_block_comment = True
+                code_part = line_str.split("/*", 1)[0]
+            else:
+                code_part = line_str
+
+        clean_code = re.sub(r"/\*.*?\*/", "", code_part)
+        clean_code = re.sub(r"//.*$", "", clean_code)
+        clean_code = re.sub(r'r"[^"]*"', '""', clean_code)
+        clean_code = re.sub(r'"(?:\\.|[^"\\])*"', '""', clean_code)
+        clean_code = re.sub(r"'(?:\\.|[^'\\])*'", "''", clean_code)
+        clean_code_stripped = clean_code.strip()
+
+        if not clean_code_stripped:
+            lines_out.append(
+                f"<div class='code-row'>"
+                f"<span class='ln'>{line_no}</span>"
+                f"<pre class='code-body text-comment'>{html.escape(line_str)}</pre>"
+                f"</div>"
+            )
+            continue
+
+        if WIN32_GUARD_REGEX.search(clean_code_stripped):
+            lines_out.append(
+                f"<div class='code-row'>"
+                f"<span class='ln'>{line_no}</span>"
+                f"<pre class='code-body'>{html.escape(line_str)}</pre>"
+                f"</div>"
+            )
+            continue
+
+        expanded = raw_line.expandtabs(4)
+        indent_spaces = len(expanded) - len(expanded.lstrip())
+        indent_level = indent_spaces // 4
+
+        c_if = len(PAT_IF.findall(clean_code_stripped))
+        c_loop = len(PAT_LOOP.findall(clean_code_stripped))
+        c_and = len(PAT_AND.findall(clean_code_stripped))
+        c_or = len(PAT_OR.findall(clean_code_stripped))
+        c_case = len(PAT_CASE.findall(clean_code_stripped))
+        c_catch = len(PAT_CATCH.findall(clean_code_stripped))
+
+        if c_if: cause_counter['if'] += c_if
+        if c_loop: cause_counter['loop'] += c_loop
+        if c_and: cause_counter['and'] += c_and
+        if c_or: cause_counter['or'] += c_or
+        if c_case: cause_counter['case'] += c_case
+        if c_catch: cause_counter['catch'] += c_catch
+
+        matched_reasons = []
+        if c_if: matched_reasons.append(f"if×{c_if}")
+        if c_loop: matched_reasons.append(f"loop×{c_loop}")
+        if c_and: matched_reasons.append(f"&&×{c_and}")
+        if c_or: matched_reasons.append(f"||×{c_or}")
+        if c_catch: matched_reasons.append(f"catch×{c_catch}")
+
+        row_class = "code-row"
+        badge_html = ""
+
+        if c_case > 0 and not matched_reasons:
+            row_class += " heat-case"
+            badge_html = f"<span class='heat-tag heat-tag-purple'>🏷️ case分岐</span>"
+        elif matched_reasons:
+            total_heavy = c_if + c_loop + c_and + c_or + c_catch
+            if total_heavy >= 2 or indent_level >= 5:
+                row_class += " heat-high"
+                details = ", ".join(matched_reasons)
+                badge_html = f"<span class='heat-tag heat-tag-red'>🔥 {details} (Lv.{indent_level})</span>"
+            elif total_heavy >= 1:
+                row_class += " heat-med"
+                details = ", ".join(matched_reasons)
+                badge_html = f"<span class='heat-tag heat-tag-yellow'>⚠️ {details} (Lv.{indent_level})</span>"
+
+        lines_out.append(
+            f"<div class='{row_class}'>"
+            f"<span class='ln'>{line_no}</span>"
+            f"<pre class='code-body'>{html.escape(line_str)}</pre>"
+            f"{badge_html}"
+            f"</div>"
+        )
+
+    return cause_counter, f"<div class='code-block'>{''.join(lines_out)}</div>"
+
+items_list = []
+if proc.stdout.strip():
+    reader = csv.reader(io.StringIO(proc.stdout))
+    for row in reader:
+        if len(row) < 8:
+            continue
+
+        try:
+            nloc = int(row[0].strip())
+            ccn = int(row[1].strip())
+            tokens = row[2].strip()
+            params = row[3].strip()
+            raw_loc = row[5].strip()
+            
+            val_a = int(re.sub(r"\D", "", row[-2]))
+            val_b = int(re.sub(r"\D", "", row[-1]))
+            start_line = min(val_a, val_b)
+            end_line = max(val_a, val_b)
+
+            func_parts = [p.strip() for p in row[6:-2] if p.strip()]
+            func_name = func_parts[-1] if func_parts else "unknown"
+        except (ValueError, IndexError):
+            continue
+
+        if "@" in raw_loc:
+            sub = raw_loc.split("@")
+            filepath = sub[-1].split(":")[0].strip()
+        else:
+            filepath = raw_loc
+
+        filepath = filepath.replace('"', '').replace("'", "").replace('\\', '/').strip()
+        filepath = re.sub(r"^\.?/+", "", filepath)
+        func_name = func_name.replace('"', '').replace("'", "").strip()
+
+        is_disp = bool(DISPATCHER_REGEX.search(func_name))
+
+        if is_disp:
+            if ccn <= 25:    rank = "A"
+            elif ccn <= 60:  rank = "B"
+            elif ccn <= 120: rank = "C"
+            else:            rank = "D"
+        else:
+            if ccn <= 5:     rank = "A"
+            elif ccn <= 10:  rank = "B"
+            elif ccn <= 20:  rank = "C"
+            else:            rank = "D"
+
+        items_list.append({
+            "rank": rank,
+            "complexity": ccn,
+            "name": func_name,
+            "file": filepath,
+            "start_line": start_line,
+            "end_line": end_line,
+            "nloc": nloc,
+            "tokens": tokens,
+            "params": params,
+            "is_dispatcher": is_disp
+        })
+
+items_list.sort(key=lambda x: x["complexity"], reverse=True)
+max_ccn = max([x["complexity"] for x in items_list], default=1)
+
+rows_html = ""
+modal_data_list = []
+
+for idx, item in enumerate(items_list):
+    rank = item["rank"]
+    badge_class = f"badge-{rank.lower()}"
+    clean_file = item['file']
+    s_line = item['start_line']
+    e_line = item['end_line']
+    ccn = item['complexity']
+
+    if repository and s_line > 0:
+        line_hash = f"#L{s_line}-L{e_line}" if e_line > s_line else f"#L{s_line}"
+        github_link = f"{server_url}/{repository}/blob/{commit_sha}/{clean_file}{line_hash}"
+    else:
+        github_link = "#"
+
+    decisions = ccn - 1
+    
+    if idx < 60 or ccn > 5:
+        causes, heatmap_code = generate_source_heatmap(clean_file, s_line, e_line, item['is_dispatcher'])
+    else:
+        causes, heatmap_code = Counter(), "<div style='padding: 16px; color: #64748b;'>軽微な関数のためコードプレビューは省略されました。</div>"
+
+    total_causes = sum(causes.values())
+    if total_causes > 0:
+        p_case = (causes['case'] / total_causes) * 100
+        p_if   = (causes['if'] / total_causes) * 100
+        p_and  = (causes['and'] / total_causes) * 100
+        p_or   = (causes['or'] / total_causes) * 100
+        p_loop = (causes['loop'] / total_causes) * 100
+        p_other = max(0, 100 - (p_case + p_if + p_and + p_or + p_loop))
+
+        tooltip_text = f"case: {causes['case']}, if: {causes['if']}, &&: {causes['and']}, ||: {causes['or']}, loop: {causes['loop']}"
+        stack_bar_html = f"""
+        <div class="ccn-stack-bar" title="{tooltip_text}">
+          <span style="width: {p_case:.1f}%; background: #c084fc;"></span>
+          <span style="width: {p_if:.1f}%; background: #f87171;"></span>
+          <span style="width: {p_and:.1f}%; background: #fb7185;"></span>
+          <span style="width: {p_or:.1f}%; background: #fb923c;"></span>
+          <span style="width: {p_loop:.1f}%; background: #facc15;"></span>
+          <span style="width: {p_other:.1f}%; background: #94a3b8;"></span>
+        </div>
+        """
+        
+        breakdown_badges = []
+        if causes['case']: breakdown_badges.append(f"<span class='b-badge b-case'>case: {causes['case']}</span>")
+        if causes['if']:   breakdown_badges.append(f"<span class='b-badge b-if'>if: {causes['if']}</span>")
+        if causes['and']:  breakdown_badges.append(f"<span class='b-badge b-and'>&&: {causes['and']}</span>")
+        if causes['or']:   breakdown_badges.append(f"<span class='b-badge b-or'>||: {causes['or']}</span>")
+        if causes['loop']: breakdown_badges.append(f"<span class='b-badge b-loop'>loop: {causes['loop']}</span>")
+        breakdown_html = "".join(breakdown_badges)
+    else:
+        relative_pct = min(100, max(6, (ccn / max_ccn) * 100))
+        stack_bar_html = f"""
+        <div class="ccn-stack-bar">
+          <span style="width: {relative_pct:.1f}%; background: #94a3b8;"></span>
+        </div>
+        """
+        breakdown_html = "<span style='color: #64748b;'>-</span>"
+
+    bg_width_pct = min(100, max(2, (ccn / max_ccn) * 100))
+    bg_color = "rgba(248, 113, 113, 0.18)" if rank == "D" else ("rgba(254, 202, 202, 0.25)" if rank == "C" else "rgba(226, 232, 240, 0.6)")
+    disp_tag = "<span class='tag-disp'>DISPATCHER</span>" if item['is_dispatcher'] else ""
+
+    rows_html += f"""
+    <tr class="main-row" onclick="openModal({idx})">
+      <td style="text-align: center;"><span class="badge {badge_class}">{rank}</span></td>
+      <td class="ccn-cell" style="--bg-width: {bg_width_pct}%; --bg-color: {bg_color};">
+        <div class="ccn-num-wrap">
+          <span class="ccn-num">{ccn}</span>
+        </div>
+        {stack_bar_html}
+      </td>
+      <td class="cell-wrap">{disp_tag}<code>{item['name']}</code></td>
+      <td class="cell-wrap"><a href="{github_link}" target="_blank" class="file-link" onclick="event.stopPropagation();">{clean_file}:{s_line}</a></td>
+      <td style="color: #64748b; text-align: right;">{item['nloc']} 行</td>
+    </tr>
+    """
+
+    modal_data_list.append({
+        "idx": idx,
+        "name": item['name'],
+        "rank": rank,
+        "rank_class": badge_class,
+        "ccn": ccn,
+        "decisions": decisions,
+        "tokens": item['tokens'],
+        "params": item['params'],
+        "file": clean_file,
+        "start_line": s_line,
+        "end_line": e_line,
+        "nloc": item['nloc'],
+        "github_link": github_link,
+        "breakdown_html": breakdown_html,
+        "heatmap_html": heatmap_code
+    })
+
+total_functions = len(items_list)
+high_risk_count = sum(1 for x in items_list if x["rank"] in ["C", "D"])
+avg_ccn = round(sum(x["complexity"] for x in items_list) / max(total_functions, 1), 2)
+generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+modal_json = json.dumps(modal_data_list, ensure_ascii=False)
+
+html_content = f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C++ Complexity Heatmap Report (Windows Optimized)</title>
+  <style>
+    html, body {{
+      margin: 0; padding: 0; width: 100%; overflow-x: hidden; box-sizing: border-box;
+      background: #f8fafc; color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }}
+    *, *:before, *:after {{ box-sizing: inherit; }}
+    .container {{
+      width: 100%; max-width: 1280px; margin: 24px auto; background: #ffffff;
+      border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 24px;
+    }}
+    h1 {{ margin-top: 0; font-size: 20px; display: flex; align-items: center; gap: 8px; }}
+    .meta {{ color: #64748b; font-size: 13px; margin-bottom: 20px; word-break: break-all; }}
+    .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px; }}
+    .card {{ background: #f1f5f9; border-radius: 6px; padding: 16px; }}
+    .card-title {{ font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }}
+    .card-value {{ font-size: 22px; font-weight: 700; color: #0f172a; }}
+    .search-input {{ width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-bottom: 16px; }}
+    
+    table {{ width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }}
+    th, td {{ padding: 10px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }}
+    th {{ background: #f8fafc; font-weight: 600; color: #475569; }}
+    .cell-wrap {{ word-break: break-all; overflow-wrap: anywhere; white-space: normal; }}
+    
+    .main-row {{ cursor: pointer; transition: background 0.15s; }}
+    .main-row:hover {{ background: #f1f5f9; }}
+    
+    .ccn-cell {{
+      position: relative;
+      padding-right: 14px !important;
+      background-image: linear-gradient(to right, var(--bg-color) var(--bg-width), transparent var(--bg-width));
+      background-repeat: no-repeat;
+    }}
+    .ccn-num-wrap {{ display: flex; align-items: baseline; justify-content: space-between; }}
+    .ccn-num {{ font-weight: 800; font-size: 14px; color: #0f172a; }}
+    
+    .ccn-stack-bar {{
+      display: flex;
+      height: 4px;
+      width: 100%;
+      background: #e2e8f0;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 4px;
+    }}
+    .ccn-stack-bar span {{ height: 100%; display: block; }}
+    
+    .legend-note {{ font-size: 11px; color: #64748b; margin-left: 8px; }}
+    .b-badge {{ padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 4px; }}
+    .b-case {{ background: #f3e8ff; color: #7e22ce; }}
+    .b-if   {{ background: #fee2e2; color: #b91c1c; }}
+    .b-and  {{ background: #ffe4e6; color: #be123c; }}
+    .b-or   {{ background: #ffedd5; color: #c2410c; }}
+    .b-loop {{ background: #fef9c3; color: #a16207; }}
+
+    .file-link {{ color: #2563eb; text-decoration: none; font-family: monospace; font-size: 12px; }}
+    .file-link:hover {{ text-decoration: underline; }}
+
+    .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }}
+    .badge-a {{ background: #dcfce7; color: #166534; }}
+    .badge-b {{ background: #fef9c3; color: #854d0e; }}
+    .badge-c {{ background: #fee2e2; color: #991b1b; }}
+    .badge-d {{ background: #f87171; color: #ffffff; }}
+    
+    .tag-disp {{
+      display: inline-block; background: #e0e7ff; color: #3730a3;
+      font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 3px; margin-right: 6px;
+    }}
+
+    .modal-overlay {{
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 24px;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }}
+    .modal-overlay.active {{
+      display: flex;
+      opacity: 1;
+    }}
+    .modal-content {{
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 1100px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.96);
+      transition: transform 0.2s ease-in-out;
+    }}
+    .modal-overlay.active .modal-content {{
+      transform: scale(1);
+    }}
+    .modal-header {{
+      padding: 16px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+    }}
+    .modal-title {{
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }}
+    .modal-close-btn {{
+      background: none;
+      border: none;
+      font-size: 24px;
+      line-height: 1;
+      color: #64748b;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }}
+    .modal-close-btn:hover {{
+      background: #e2e8f0;
+      color: #0f172a;
+    }}
+    .modal-body {{
+      padding: 24px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }}
+    
+    .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 12px; font-size: 13px; }}
+    .breakdown-bar {{ background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 13px; }}
+    
+    .code-block {{
+      background: #0d1117; color: #e6edf3; border-radius: 6px;
+      max-height: 520px; overflow-y: auto; overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace;
+      font-size: 12px; border: 1px solid #30363d; margin-top: 8px;
+    }}
+    .code-row {{ display: flex; align-items: stretch; min-height: 20px; line-height: 20px; }}
+    .code-row:hover {{ background: rgba(255, 255, 255, 0.05); }}
+    .ln {{
+      width: 52px; min-width: 52px; text-align: right; padding-right: 12px;
+      color: #6e7681; user-select: none; border-right: 1px solid #30363d; background: #161b22;
+    }}
+    .code-body {{ margin: 0; padding: 0 12px; white-space: pre; flex-grow: 1; }}
+    .text-comment {{ color: #8b949e; font-style: italic; }}
+    
+    .heat-high {{ background: rgba(239, 68, 68, 0.22) !important; }}
+    .heat-high .ln {{ background: #7f1d1d !important; color: #fecaca !important; font-weight: bold; }}
+    .heat-med {{ background: rgba(234, 179, 8, 0.14) !important; }}
+    .heat-med .ln {{ background: #713f12 !important; color: #fef08a !important; }}
+    .heat-case {{ background: rgba(168, 85, 247, 0.08) !important; }}
+    .heat-case .ln {{ background: #2e1065 !important; color: #e9d5ff !important; }}
+    
+    .heat-tag {{
+      font-size: 11px; padding: 0 6px; border-radius: 3px; margin-right: 8px;
+      white-space: nowrap; align-self: center; font-weight: 500;
+    }}
+    .heat-tag-red {{ background: #991b1b; color: #fecaca; }}
+    .heat-tag-yellow {{ background: #854d0e; color: #fef9c3; }}
+    .heat-tag-purple {{ background: #581c87; color: #e9d5ff; }}
+
+    .code-btn {{
+      background: #2563eb; color: #ffffff !important; padding: 6px 14px;
+      border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
+    }}
+    .code-btn:hover {{ background: #1d4ed8; }}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚡ C++ Cyclomatic Complexity Heatmap Report (Windows Optimized)</h1>
+    <div class="meta">Generated at: {generated_at} | Targets: {', '.join(target_dirs)}</div>
+
+    <div class="stats">
+      <div class="card">
+        <div class="card-title">Total Functions</div>
+        <div class="card-value">{total_functions}</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Average Complexity</div>
+        <div class="card-value">{avg_ccn}</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Attention Needed (Rank C/D)</div>
+        <div class="card-value" style="color: {'#dc2626' if high_risk_count > 0 else '#16a34a'};">{high_risk_count}</div>
+      </div>
+    </div>
+
+    <input type="text" id="searchInput" class="search-input" placeholder="関数名、ファイル名で絞り込み（行をクリックでポップアップ表示）..." onkeyup="filterTable()">
+
+    <table id="complexityTable">
+      <thead>
+        <tr>
+          <th style="width: 65px; text-align: center;">Rank</th>
+          <th style="width: 110px; text-align: left;">CCN (内訳バー)</th>
+          <th style="width: 42%;">Function / Method</th>
+          <th style="width: 33%;">Location (直接リンク)</th>
+          <th style="width: 75px; text-align: right;">NLOC</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows_html if rows_html else '<tr><td colspan="5" style="text-align: center; color: #64748b;">対象のコードが見つかりませんでした</td></tr>'}
+      </tbody>
+    </table>
+  </div>
+
+  <div id="modalOverlay" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle"></div>
+        <button class="modal-close-btn" onclick="closeModal()" title="閉じる (Esc)">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const modalData = {modal_json};
+
+    function openModal(idx) {{
+      const item = modalData[idx];
+      if (!item) return;
+
+      document.getElementById("modalTitle").innerHTML = `
+        <span class="badge ${{item.rank_class}}">${{item.rank}}</span>
+        <span>${{item.name}}</span>
+        <span style="font-weight: normal; font-size: 13px; color: #64748b;">(CCN: ${{item.ccn}})</span>
+      `;
+
+      document.getElementById("modalBody").innerHTML = `
+        <div class="detail-grid">
+          <div><strong>推定判定分岐数:</strong> ${{item.decisions}}</div>
+          <div><strong>トークン数:</strong> ${{item.tokens}}</div>
+          <div><strong>引数の数:</strong> ${{item.params}}</div>
+          <div><strong>コード範囲:</strong> L${{item.start_line}} 〜 L${{item.end_line}} (${{item.nloc}} 行)</div>
+        </div>
+        
+        <div class="breakdown-bar">
+          <strong>要因内訳:</strong> ${{item.breakdown_html}}
+          <span class="legend-note">(紫: case / 赤: if / ローズ: && / 橙: || / 黄: loop)</span>
+        </div>
+
+        <div style="margin: 14px 0 8px 0; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 600; font-size: 13px; color: #475569;">🔍 局所複雑度ヒートマップ:</span>
+          <a href="${{item.github_link}}" target="_blank" class="code-btn">🎯 GitHubで開く (L${{item.start_line}}-L${{item.end_line}})</a>
+        </div>
+
+        ${{item.heatmap_html}}
+      `;
+
+      const overlay = document.getElementById("modalOverlay");
+      overlay.classList.add("active");
+      document.body.style.overflow = "hidden";
+    }}
+
+    function closeModal() {{
+      const overlay = document.getElementById("modalOverlay");
+      overlay.classList.remove("active");
+      document.body.style.overflow = "";
+    }}
+
+    function closeModalOnBackdrop(e) {{
+      if (e.target.id === "modalOverlay") {{
+        closeModal();
+      }}
+    }}
+
+    document.addEventListener("keydown", function(e) {{
+      if (e.key === "Escape") {{
+        closeModal();
+      }}
+    }});
+
+    function filterTable() {{
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const mainRows = document.querySelectorAll("#complexityTable tbody tr.main-row");
+      mainRows.forEach((row) => {{
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(query) ? "" : "none";
+      }});
+    }}
+  </script>
+</body>
+</html>
+"""
+
+with open("reports/cpp_complexity_report.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
