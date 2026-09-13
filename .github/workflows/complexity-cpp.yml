@@ -31,20 +31,20 @@ jobs:
 
           python - << 'EOF'
           import os
+          import csv
+          import io
           import subprocess
-          import xml.etree.ElementTree as ET
           from datetime import datetime
 
           target_dirs = os.environ.get("TARGET_DIRS", "src").split()
           raw_excludes = os.environ.get("EXCLUDE_PATTERN", "").split()
           
-          # GitHubリポジトリへのリンク生成用
           server_url = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
           repository = os.environ.get("GITHUB_REPOSITORY", "")
           commit_sha = os.environ.get("GITHUB_SHA", "main")
 
-          # lizard の XML 出力オプション (-X) を実行
-          cmd = ["lizard", "-X"] + target_dirs
+          # lizard の CSV 出力オプションを使用
+          cmd = ["lizard", "--csv"] + target_dirs
           for pat in raw_excludes:
               if pat.strip():
                   cmd.extend(["-x", pat.strip()])
@@ -53,68 +53,58 @@ jobs:
 
           items_list = []
           if proc.stdout.strip():
-              try:
-                  root = ET.fromstring(proc.stdout)
-                  for item in root.findall(".//item"):
-                      func_name = item.get("name", "")
-                      ccn_val = item.find("value")
-                      ccn = int(ccn_val.text) if ccn_val is not None and ccn_val.text.isdigit() else 1
-                      
-                      line_node = item.find("line")
-                      line = line_node.text if line_node is not None else "0"
-                      file_node = item.find("file")
-                      filename = file_node.text if file_node is not None else ""
-                      
-                      # コード行数 (NLOC)
-                      nloc_node = item.find("nr")
-                      nloc = int(nloc_node.text) if nloc_node is not None and nloc_node.text.isdigit() else 0
+              reader = csv.reader(io.StringIO(proc.stdout))
+              for row in reader:
+                  # lizard CSV フォーマット:
+                  # [0]: nloc, [1]: CCN, [2]: token, [3]: param, [4]: length, 
+                  # [5]: file, [6]: function, [7]: long_name, [8]: start_line, [9]: end_line
+                  if len(row) < 9:
+                      continue
+                  try:
+                      nloc = int(row[0].strip())
+                      ccn = int(row[1].strip())
+                      tokens = row[2].strip()
+                      params = row[3].strip()
+                      filepath = row[5].strip()
+                      func_name = row[7].strip() if len(row) > 7 and row[7].strip() else row[6].strip()
+                      start_line = row[8].strip()
+                  except ValueError:
+                      continue
 
-                      # トークン数
-                      token_node = item.find("token")
-                      tokens = token_node.text if token_node is not None else "-"
+                  if ccn <= 5:
+                      rank = "A"
+                  elif ccn <= 10:
+                      rank = "B"
+                  elif ccn <= 20:
+                      rank = "C"
+                  else:
+                      rank = "D"
 
-                      # 引数・パラメータ数
-                      param_node = item.find("param")
-                      params = param_node.text if param_node is not None else "-"
+                  items_list.append({
+                      "rank": rank,
+                      "complexity": ccn,
+                      "name": func_name,
+                      "file": filepath,
+                      "line": start_line,
+                      "nloc": nloc,
+                      "tokens": tokens,
+                      "params": params
+                  })
 
-                      if ccn <= 5:
-                          rank = "A"
-                      elif ccn <= 10:
-                          rank = "B"
-                      elif ccn <= 20:
-                          rank = "C"
-                      else:
-                          rank = "D"
-
-                      items_list.append({
-                          "rank": rank,
-                          "complexity": ccn,
-                          "name": func_name,
-                          "file": filename,
-                          "line": line,
-                          "nloc": nloc,
-                          "tokens": tokens,
-                          "params": params
-                      })
-              except Exception as e:
-                  print(f"XMLパースエラー: {e}")
-
-          # 複雑度の降順ソート
+          # 複雑度の降順（大きい順）にソート
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
-          # 詳細付きテーブル行の生成
+          # テーブル行の生成
           rows_html = ""
           for idx, item in enumerate(items_list):
               rank = item["rank"]
               badge_class = f"badge-{rank.lower()}"
               
-              # GitHub ソースコード直接リンク
               clean_file = item['file'].replace('\\', '/')
               if clean_file.startswith('./'):
                   clean_file = clean_file[2:]
               github_link = f"{server_url}/{repository}/blob/{commit_sha}/{clean_file}#L{item['line']}" if repository else "#"
 
-              # 複雑度要因の解説テキスト
               decisions = item['complexity'] - 1
               if item['complexity'] <= 5:
                   advice = "分岐が少なく明瞭で、単体テストが極めて容易な状態です。"
