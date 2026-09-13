@@ -38,8 +38,8 @@ jobs:
           target_dirs = os.environ.get("TARGET_DIRS", "src").split()
           raw_excludes = os.environ.get("EXCLUDE_PATTERN", "").split()
           
-          server_url = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
-          repository = os.environ.get("GITHUB_REPOSITORY", "")
+          server_url = os.environ.get("GITHUB_SERVER_URL", "https://github.com").rstrip('/')
+          repository = os.environ.get("GITHUB_REPOSITORY", "").strip('/')
           commit_sha = os.environ.get("GITHUB_SHA", "main")
 
           cmd = ["lizard", "--csv"] + target_dirs
@@ -56,11 +56,10 @@ jobs:
                   if not line:
                       continue
 
-                  # lizard --csv の行構成:
-                  # 前方5つ: nloc, ccn, token, param, length (すべて数値)
-                  # 後方2つ: start_line, end_line (すべて数値)
-                  # 中間: location, func_name, long_name
-                  # カンマを含むC++シグネチャ対策として正規表現で先頭5数値と末尾2数値を厳密に分離
+                  # lizard --csv フォーマット:
+                  # group(1): nloc, group(2): ccn, group(3): token, group(4): param, group(5): length
+                  # group(6): middle (location, func, long_name)
+                  # group(7): start_line, group(8): end_line
                   match = re.match(r"^(\d+),(\d+),(\d+),(\d+),(\d+),(.*),(\d+),(\d+)$", line)
                   if not match:
                       continue
@@ -70,25 +69,26 @@ jobs:
                   tokens = match.group(3)
                   params = match.group(4)
                   middle = match.group(6)
-                  start_line = match.group(7)
+                  start_line = match.group(7).strip()
+                  end_line = match.group(8).strip()
 
-                  # middle 部分からファイルパスと関数名を抽出
-                  # middleのフォーマット例:
-                  # 1) "sakura_core/view/colors/CColor_Numeric.cpp,IsNumber,IsNumber( ... )"
-                  # 2) "func@107-623@sakura_core/view/colors/CColor_Numeric.cpp:func,..."
+                  # middle 内のファイルパスと関数名を抽出
                   parts = middle.split(",", 2)
                   raw_loc = parts[0].strip()
                   func_name = parts[1].strip() if len(parts) > 1 else raw_loc
                   if len(parts) > 2 and parts[2].strip():
                       func_name = parts[2].strip()
 
-                  # "@" を含む形式の場合は純粋なファイルパスを切り出し
+                  # "func@107-623@path/to/file.cpp:func" 形式を分解
                   if "@" in raw_loc:
                       sub = raw_loc.split("@")
-                      # 例: func@107-623@sakura_core/xxx.cpp:func -> sakura_core/xxx.cpp
                       filepath = sub[-1].split(":")[0].strip()
                   else:
                       filepath = raw_loc
+
+                  # パスの正規化: バックスラッシュの置換、先頭の ./ や / の除去
+                  filepath = filepath.replace("\\", "/").strip()
+                  filepath = re.sub(r"^\.?/+", "", filepath)
 
                   if ccn <= 5:
                       rank = "A"
@@ -104,7 +104,8 @@ jobs:
                       "complexity": ccn,
                       "name": func_name,
                       "file": filepath,
-                      "line": start_line,
+                      "start_line": start_line,
+                      "end_line": end_line,
                       "nloc": nloc,
                       "tokens": tokens,
                       "params": params
@@ -119,14 +120,19 @@ jobs:
               rank = item["rank"]
               badge_class = f"badge-{rank.lower()}"
               
-              clean_file = item['file'].replace('\\', '/')
-              if clean_file.startswith('./'):
-                  clean_file = clean_file[2:]
-              
-              # 余計なコロン以降を確実に除去
-              clean_file = clean_file.split(':')[0]
+              clean_file = item['file']
+              s_line = item['start_line']
+              e_line = item['end_line']
 
-              github_link = f"{server_url}/{repository}/blob/{commit_sha}/{clean_file}#L{item['line']}" if repository else "#"
+              # GitHub上のコード範囲ハイライト用URL (#L開始行-L終了行)
+              if repository:
+                  if s_line != e_line and int(e_line) > int(s_line):
+                      line_hash = f"#L{s_line}-L{e_line}"
+                  else:
+                      line_hash = f"#L{s_line}"
+                  github_link = f"{server_url}/{repository}/blob/{commit_sha}/{clean_file}{line_hash}"
+              else:
+                  github_link = "#"
 
               decisions = item['complexity'] - 1
               if item['complexity'] <= 5:
@@ -143,7 +149,7 @@ jobs:
                 <td style="text-align: center;"><span class="badge {badge_class}">{rank}</span></td>
                 <td style="font-weight: bold; font-size: 15px; text-align: center;">{item['complexity']}</td>
                 <td class="cell-wrap"><code>{item['name']}</code></td>
-                <td class="cell-wrap"><span class="file-path">{item['file']}:{item['line']}</span></td>
+                <td class="cell-wrap"><a href="{github_link}" target="_blank" class="file-link" onclick="event.stopPropagation();">{clean_file}:{s_line}</a></td>
                 <td style="color: #64748b; text-align: right;">{item['nloc']} 行</td>
               </tr>
               <tr id="detail-{idx}" class="detail-row" style="display: none;">
@@ -153,13 +159,15 @@ jobs:
                       <div><strong>判定分岐数:</strong> {decisions}</div>
                       <div><strong>トークン数:</strong> {item['tokens']}</div>
                       <div><strong>引数の数:</strong> {item['params']}</div>
-                      <div><strong>有効コード行数:</strong> {item['nloc']} 行</div>
+                      <div><strong>有効コード行数:</strong> {item['nloc']} 行 (L{s_line} 〜 L{e_line})</div>
                     </div>
                     <div class="detail-advice">
                       <strong>💡 分析・評価:</strong> {advice}
                     </div>
                     <div style="margin-top: 10px;">
-                      <a href="{github_link}" target="_blank" class="code-link">🔗 GitHubで該当行（{clean_file}#L{item['line']}）を表示</a>
+                      <a href="{github_link}" target="_blank" class="code-btn">
+                        🎯 GitHubで該当コード範囲（L{s_line} - L{e_line}）をマーク表示
+                      </a>
                     </div>
                   </div>
                 </td>
@@ -208,7 +216,6 @@ jobs:
               .card-value {{ font-size: 22px; font-weight: 700; color: #0f172a; }}
               .search-input {{ width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-bottom: 16px; }}
               
-              /* テーブル幅の固定と強制折り返し（横スクロール防止） */
               table {{
                 width: 100%;
                 border-collapse: collapse;
@@ -232,14 +239,28 @@ jobs:
               .detail-container {{ font-size: 13px; line-height: 1.6; }}
               .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 8px; }}
               .detail-advice {{ background: #ffffff; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #3b82f6; margin-top: 6px; word-break: break-all; }}
-              .code-link {{ color: #2563eb; text-decoration: none; font-weight: 600; font-size: 13px; word-break: break-all; }}
-              .code-link:hover {{ text-decoration: underline; }}
+              
+              .file-link {{ color: #2563eb; text-decoration: none; font-family: monospace; font-size: 12px; }}
+              .file-link:hover {{ text-decoration: underline; }}
+              
+              .code-btn {{
+                display: inline-block;
+                background: #2563eb;
+                color: #ffffff !important;
+                padding: 6px 12px;
+                border-radius: 4px;
+                text-decoration: none;
+                font-size: 12px;
+                font-weight: 600;
+                transition: background 0.2s;
+              }}
+              .code-btn:hover {{ background: #1d4ed8; }}
+
               .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }}
               .badge-a {{ background: #dcfce7; color: #166534; }}
               .badge-b {{ background: #fef9c3; color: #854d0e; }}
               .badge-c {{ background: #fee2e2; color: #991b1b; }}
               .badge-d {{ background: #f87171; color: #ffffff; }}
-              .file-path {{ color: #475569; font-family: monospace; font-size: 12px; }}
             </style>
           </head>
           <body>
@@ -270,7 +291,7 @@ jobs:
                     <th style="width: 65px; text-align: center;">Rank</th>
                     <th style="width: 75px; text-align: center;">CCN</th>
                     <th style="width: 45%;">Function / Method</th>
-                    <th style="width: 35%;">Location</th>
+                    <th style="width: 35%;">Location (直接リンク)</th>
                     <th style="width: 75px; text-align: right;">NLOC</th>
                   </tr>
                 </thead>
