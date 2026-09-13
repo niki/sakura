@@ -2152,6 +2152,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("m_bInheritKeyOtherView")	, common.m_sSearch.m_bInheritKeyOtherView );
 	cProfile.IOProfileData( pszSecName, LTEXT("nTagJumpMode")			, common.m_sSearch.m_nTagJumpMode );
 	cProfile.IOProfileData( pszSecName, LTEXT("nTagJumpModeKeyword")	, common.m_sSearch.m_nTagJumpModeKeyword );
+#ifdef NKMM_CODE_FOLDING
+	cProfile.IOProfileData( pszSecName, LTEXT("bOutlineFoldElideArgs")	, common.m_sSearch.m_bOutlineFoldElideArgs );	// 2026.09.13 アウトライン折り畳み表示中、引数がある場合は表示を省略する
+#endif // NKMM_
 	
 	/* 正規表現DLL 2007.08.12 genta */
 	cProfile.IOProfileData( pszSecName, LTEXT("szRegexpLib")			, MakeStringBufferT(common.m_sSearch.m_szRegexpLib) );

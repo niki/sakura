@@ -459,6 +459,11 @@ struct CommonSetting_Search
 	int				m_nTagJumpMode;				//!< タグジャンプモード(0-3)
 	int				m_nTagJumpModeKeyword;		//!< タグジャンプモード(0-3)
 
+#ifdef NKMM_CODE_FOLDING
+	//アウトライン折り畳み
+	bool			m_bOutlineFoldElideArgs;	//!< アウトライン折り畳み表示中、引数がある場合は表示を省略する 2026.09.13
+#endif // NKMM_
+
 	//INI内設定のみ
 	BOOL			m_bUseCaretKeyWord;			//!< キャレット位置の単語を辞書検索		// 2006.03.24 fon
 };

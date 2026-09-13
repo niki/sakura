@@ -35,6 +35,9 @@ static const DWORD p_helpids[] = {	//10500
 	IDC_CHECK_GREPREALTIME,			HIDC_CHECK_GREPREALTIME,		//リアルタイムで表示する	// 2006.08.08 ryoji
 	IDC_COMBO_TAGJUMP,				HIDC_COMBO_TAGJUMP,				//タグファイルの検索
 	IDC_COMBO_KEYWORD_TAGJUMP,		HIDC_COMBO_KEYWORD_TAGJUMP,		//タグファイルの検索
+#ifdef NKMM_CODE_FOLDING
+	IDC_CHECK_OUTLINE_FOLD_ELIDE_ARGS,	HIDC_CHECK_OUTLINE_FOLD_ELIDE_ARGS,	//アウトライン折り畳み: 引数がある場合は表示を省略する 2026.09.13
+#endif // NKMM_
 //	IDC_STATIC,						-1,
 	0, 0
 };
@@ -191,6 +194,11 @@ void CPropGrep::SetData( HWND hwndDlg )
 	}
 	Combo_SetCurSel(hwndCombo, nSelPos);
 
+#ifdef NKMM_CODE_FOLDING
+	/* 2026.09.13 アウトライン折り畳み: 引数がある場合は表示を省略する */
+	::CheckDlgButton( hwndDlg, IDC_CHECK_OUTLINE_FOLD_ELIDE_ARGS, m_Common.m_sSearch.m_bOutlineFoldElideArgs );
+#endif // NKMM_
+
 	return;
 }
 
@@ -227,6 +235,11 @@ int CPropGrep::GetData( HWND hwndDlg )
 	hwndCombo = ::GetDlgItem(hwndDlg, IDC_COMBO_KEYWORD_TAGJUMP);
 	nSelPos = Combo_GetCurSel(hwndCombo);
 	m_Common.m_sSearch.m_nTagJumpModeKeyword = Combo_GetItemData(hwndCombo, nSelPos);
+
+#ifdef NKMM_CODE_FOLDING
+	/* 2026.09.13 アウトライン折り畳み: 引数がある場合は表示を省略する */
+	m_Common.m_sSearch.m_bOutlineFoldElideArgs = ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_OUTLINE_FOLD_ELIDE_ARGS ) != 0;
+#endif // NKMM_
 
 	return TRUE;
 }

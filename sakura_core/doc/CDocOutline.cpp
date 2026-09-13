@@ -680,6 +680,36 @@ void CDocOutline::UpdateFoldRanges( void )
 				if( std::wstring::npos != nFoundPos ){
 					cFoldMgr.SetLineFoldNameCol( pHeaderDocLine, (int)nFoundPos );
 					cFoldMgr.SetLineFoldNameLen( pHeaderDocLine, (int)sShortName.length() );
+
+					// 引数リスト(名前直後の丸括弧の中身)の桁範囲も特定しておく。
+					// アウトライン表示中、ここを"..."に省略して見やすくするため(ユーザー指摘)。
+					// 括弧の対応は単純な深さカウントのみ(文字列/コメント中の括弧は考慮しない、
+					// 簡易ヒューリスティックであることは名前検索自体と同様)。閉じ括弧が
+					// この行内に見つからない(複数行にまたがる引数リスト等)場合は諦める。
+					size_t nScan = nFoundPos + sShortName.length();
+					while( nScan < sLineText.length() && ( sLineText[nScan] == L' ' || sLineText[nScan] == L'\t' ) ){
+						nScan++;
+					}
+					if( nScan < sLineText.length() && sLineText[nScan] == L'(' ){
+						const size_t nOpen = nScan;
+						int nDepth = 0;
+						size_t nClose = std::wstring::npos;
+						for( size_t k = nOpen; k < sLineText.length(); ++k ){
+							if( sLineText[k] == L'(' ){
+								nDepth++;
+							}else if( sLineText[k] == L')' ){
+								nDepth--;
+								if( 0 == nDepth ){
+									nClose = k;
+									break;
+								}
+							}
+						}
+						if( std::wstring::npos != nClose && nClose > nOpen + 1 ){
+							cFoldMgr.SetLineFoldArgsCol( pHeaderDocLine, (int)( nOpen + 1 ) );
+							cFoldMgr.SetLineFoldArgsLen( pHeaderDocLine, (int)( nClose - nOpen - 1 ) );
+						}
+					}
 				}
 			}
 		}

@@ -932,6 +932,9 @@
 #define IDC_BUTTON_HISTORYCLOSE         1911
 #define IDC_STATUSBAR_HISTORYPANEL      1912
 #endif // NKMM_
+#ifdef NKMM_CODE_FOLDING
+#define IDC_CHECK_OUTLINE_FOLD_ELIDE_ARGS 1913
+#endif // NKMM_
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

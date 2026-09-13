@@ -527,6 +527,10 @@ bool CShareData::InitShareData()
 
 			sSearch.m_nTagJumpMode = 1;				//タグジャンプモード
 			sSearch.m_nTagJumpModeKeyword = 3;			//タグジャンプモード
+
+#ifdef NKMM_CODE_FOLDING
+			sSearch.m_bOutlineFoldElideArgs = true;	/* 2026.09.13 アウトライン折り畳み表示中、引数がある場合は表示を省略する */
+#endif // NKMM_
 		}
 
 		// [キー割り当て]タブ

@@ -290,6 +290,94 @@ void _DispEOF(
 }
 
 
+#ifdef NKMM_CODE_FOLDING
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+//                 折りたたみ行数表示描画実装                  //
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+/*! 折りたたみ開始行の行末に、隠れている行数を表示する
+
+	@note ドキュメント本文には存在しないテキストなので、_DispEOF()と同様に
+		レイアウト幅計算(折り返し・横スクロール幅)には一切影響させず、
+		描画パスの末尾で追加描画するだけにしている。
+	@date 2026.09.13 Yu-zuki. 新規作成
+*/
+void _DispFoldedLines(
+	CGraphics&			gr,				//!< [in] 描画対象のDevice Context
+	DispPos*			pDispPos,		//!< [in] 表示座標
+	const CEditView*	pcView,
+	COLORREF			crRowBack,		//!< [in] この行の背景色(呼び出し元がcBackType.GetBackColor()等で決定済みのもの)
+	bool				bTrans,			//!< [in] 背景を透過描画してよいか(呼び出し元のbTransTextをそのまま渡す)
+	int					nHiddenLines	//!< [in] 隠れている行数(1以上)
+)
+{
+	// 専用の色設定は持たず、半角空白記号の色を流用する(EOF記号の色だと見づらいという
+	// ユーザー指摘により変更。半角空白色が非表示なら全角空白色にフォールバックする) 2026.09.13
+	CTypeSupport cSpaceType(pcView,COLORIDX_SPACE);
+	CTypeSupport cZenSpaceType(pcView,COLORIDX_ZENSPACE);
+	CTypeSupport& cMarkType = cSpaceType.IsDisp() ? cSpaceType : cZenSpaceType;
+	if(!cMarkType.IsDisp())
+		return;
+
+	wchar_t szBuf[32];
+	auto_sprintf(szBuf, L" (+%d 行)", nHiddenLines);
+	const int nLen = wcslen(szBuf);
+
+	// 背景は呼び出し元(DrawLayoutLine)がこの行のために既に決定している背景色
+	// (cBackType、カーソル行/縞模様反映済み)をそのまま使う。この関数の描画位置は
+	// まだ「行末背景描画」で塗られる前なので、マーク自身の固定背景色のままだと
+	// 縞模様やカーソル行ハイライトの上で背景だけ浮いた矩形に見えてしまうため。
+	// 2026.09.13
+	gr.PushTextForeColor(cMarkType.GetTextColor());
+	gr.PushTextBackColor(crRowBack);
+	gr.PushMyFont(cMarkType.GetTypeFont());
+
+	int fontNo = WCODE::GetFontNo('0');
+	int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
+	pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szBuf, nLen, bTrans);
+
+	gr.PopMyFont();
+	gr.PopTextBackColor();
+	gr.PopTextForeColor();
+}
+
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+//               折りたたみヘッダの引数省略描画実装            //
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+/*! アウトライン表示中のヘッダ行で、引数リスト(丸括弧の中身)を"..."に省略して描画する
+
+	@note 背景色はここでは変更しない。呼び出し時点で色分けエンジンが既にこの桁の
+		背景色(行の縞模様/カーソル行ハイライト等を反映済み)を設定してあるので、
+		そのまま利用すれば十分で、_DispFoldedLines()のように別途決定し直す必要が
+		ない(引数の中身も普通の行の一部として同じ背景の上に乗るだけなので)。
+		文字色だけ半角空白色(非表示なら全角空白色)を流用し、実際の引数ではないことが
+		見た目で分かるよう控えめに表示する。
+	@date 2026.09.13 Yu-zuki. 新規作成
+*/
+void _DispElidedArgs(
+	CGraphics&			gr,
+	DispPos*			pDispPos,
+	const CEditView*	pcView,
+	bool				bTrans		//!< [in] 呼び出し元のbTransTextをそのまま渡す
+)
+{
+	CTypeSupport cSpaceType(pcView,COLORIDX_SPACE);
+	CTypeSupport cZenSpaceType(pcView,COLORIDX_ZENSPACE);
+	CTypeSupport& cMarkType = cSpaceType.IsDisp() ? cSpaceType : cZenSpaceType;
+	if(!cMarkType.IsDisp())
+		return;
+
+	static const wchar_t szDots[] = L"...";
+	const int nLen = _countof(szDots) - 1;
+
+	gr.PushTextForeColor(cMarkType.GetTextColor());
+	int fontNo = WCODE::GetFontNo('.');
+	int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
+	pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szDots, nLen, bTrans);
+	gr.PopTextForeColor();
+}
+#endif // NKMM_
+
+
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                       改行描画実装                          //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

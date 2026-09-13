@@ -30,7 +30,7 @@ class CDocLineMgr;
 //! 行に付加するコードフォールディング情報 20260911
 class CLineFolded{
 public:
-	CLineFolded() : m_bFoldable(false), m_bFolded(false), m_bHidden(false), m_nEndLine(-1), m_nNameCol(-1), m_nNameLen(0) { }
+	CLineFolded() : m_bFoldable(false), m_bFolded(false), m_bHidden(false), m_nEndLine(-1), m_nNameCol(-1), m_nNameLen(0), m_nArgsCol(-1), m_nArgsLen(0) { }
 
 	//! この行が折りたたみの開始行(関数/構造体等のヘッダ行)になりうるか
 	bool GetFoldable() const { return m_bFoldable; }
@@ -55,6 +55,13 @@ public:
 	int GetNameLen() const { return m_nNameLen; }
 	void SetNameLen(int nLen) { m_nNameLen = nLen; }
 
+	//! 開始行のみ意味を持つ、引数リスト(丸括弧の中身)の開始桁(0オリジン、文字単位。特定できなければ-1)
+	int GetArgsCol() const { return m_nArgsCol; }
+	void SetArgsCol(int nCol) { m_nArgsCol = nCol; }
+	//! 引数リスト(丸括弧の中身)の文字数
+	int GetArgsLen() const { return m_nArgsLen; }
+	void SetArgsLen(int nLen) { m_nArgsLen = nLen; }
+
 private:
 	bool m_bFoldable;	// 折りたたみ開始行か
 	bool m_bFolded;		// 折りたたみ中か(開始行のみ意味を持つ)
@@ -62,6 +69,8 @@ private:
 	int  m_nEndLine;	// 折りたたみ範囲の終了行(開始行のみ意味を持つ)
 	int  m_nNameCol;	// 関数/メソッド名部分の開始桁(開始行のみ意味を持つ、未特定なら-1)
 	int  m_nNameLen;	// 関数/メソッド名部分の文字数
+	int  m_nArgsCol;	// 引数リスト(丸括弧の中身)の開始桁(開始行のみ意味を持つ、未特定なら-1)
+	int  m_nArgsLen;	// 引数リスト(丸括弧の中身)の文字数
 };
 
 //! 行全体のコードフォールディング情報アクセサ
@@ -80,6 +89,10 @@ public:
 	void SetLineFoldNameCol(CDocLine* pcDocLine, int nCol);
 	int  GetLineFoldNameLen(const CDocLine* pcDocLine) const;
 	void SetLineFoldNameLen(CDocLine* pcDocLine, int nLen);
+	int  GetLineFoldArgsCol(const CDocLine* pcDocLine) const;
+	void SetLineFoldArgsCol(CDocLine* pcDocLine, int nCol);
+	int  GetLineFoldArgsLen(const CDocLine* pcDocLine) const;
+	void SetLineFoldArgsLen(CDocLine* pcDocLine, int nLen);
 
 	//一括操作
 	void ResetAllFoldMark(CDocLineMgr* pcDocLineMgr);	// 折りたたみ情報をすべてリセット(非折りたたみ状態に戻す)

@@ -76,6 +76,22 @@ void CFoldManager::SetLineFoldNameLen(CDocLine* pcDocLine, int nLen)
 {
 	pcDocLine->m_sMark.m_cFolded.SetNameLen(nLen);
 }
+int CFoldManager::GetLineFoldArgsCol(const CDocLine* pcDocLine) const
+{
+	return pcDocLine->m_sMark.m_cFolded.GetArgsCol();
+}
+void CFoldManager::SetLineFoldArgsCol(CDocLine* pcDocLine, int nCol)
+{
+	pcDocLine->m_sMark.m_cFolded.SetArgsCol(nCol);
+}
+int CFoldManager::GetLineFoldArgsLen(const CDocLine* pcDocLine) const
+{
+	return pcDocLine->m_sMark.m_cFolded.GetArgsLen();
+}
+void CFoldManager::SetLineFoldArgsLen(CDocLine* pcDocLine, int nLen)
+{
+	pcDocLine->m_sMark.m_cFolded.SetArgsLen(nLen);
+}
 
 /* 折りたたみ情報をすべてリセット */
 void CFoldManager::ResetAllFoldMark(CDocLineMgr* pcDocLineMgr)
@@ -89,6 +105,8 @@ void CFoldManager::ResetAllFoldMark(CDocLineMgr* pcDocLineMgr)
 		SetLineFoldEndLine(pDocLine, -1);
 		SetLineFoldNameCol(pDocLine, -1);
 		SetLineFoldNameLen(pDocLine, 0);
+		SetLineFoldArgsCol(pDocLine, -1);
+		SetLineFoldArgsLen(pDocLine, 0);
 		pDocLine = pDocLineNext;
 	}
 }

@@ -36,6 +36,8 @@
 #include "types/CTypeSupport.h"
 #include "doc/CEditDoc.h"
 #include "doc/layout/CLayout.h"
+#include "docplus/CFoldManager.h"
+#include "env/DLLSHAREDATA.h"
 #include "window/CEditWnd.h"
 #include "parse/CWordParse.h"
 #include "util/string_ex2.h"
@@ -1258,6 +1260,23 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			bSkipRight = CColorStrategyPool::getInstance()->IsSkipBeforeLayout();
 		}
 	}
+
+#ifdef NKMM_CODE_FOLDING
+	// アウトライン表示中の折りたたみ開始行なら、引数リスト(丸括弧の中身)を
+	// "..."に省略して見やすくする(ユーザー指摘、2026.09.13)
+	int nElideArgsCol = -1;
+	int nElideArgsLen = 0;
+	if( pcLayout && GetDocument() && GetDocument()->m_bOutlineFolded
+		&& GetDllShareData().m_Common.m_sSearch.m_bOutlineFoldElideArgs ){
+		CFoldManager cFoldMgrElide;
+		const CDocLine* pcElideDocLine = pcLayout->GetDocLineRef();
+		if( cFoldMgrElide.GetLineFoldable( pcElideDocLine ) ){
+			nElideArgsCol = cFoldMgrElide.GetLineFoldArgsCol( pcElideDocLine );
+			nElideArgsLen = cFoldMgrElide.GetLineFoldArgsLen( pcElideDocLine );
+		}
+	}
+#endif // NKMM_
+
 	//行終端または折り返しに達するまでループ
 	if(pcLayout){
 		int nPosTo = pcLayout->GetLogicOffset() + pcLayout->GetLengthWithEOL();
@@ -1319,6 +1338,15 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			}
 #endif // NKMM_
 
+#ifdef NKMM_CODE_FOLDING
+			if( nElideArgsLen > 0 && pInfo->m_nPosInLogic == nElideArgsCol ){
+				void _DispElidedArgs(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, bool bTrans);
+				_DispElidedArgs(pInfo->m_gr, pInfo->m_pDispPos, this, bTransText);
+				pInfo->m_nPosInLogic = nElideArgsCol + nElideArgsLen;
+				continue;
+			}
+#endif // NKMM_
+
 			//1文字情報取得 $$高速化可能
 			CFigure& cFigure = pcFigureManager->GetFigure(&cLineStr.GetPtr()[pInfo->GetPosInLogic()],
 				cLineStr.GetLength() - pInfo->GetPosInLogic());
@@ -1352,6 +1380,30 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 	if(pcLayout && pcLayout->GetLayoutEol().GetLen()==0 && pcLayout->GetNextLayout()!=NULL){
 		_DispWrap(pInfo->m_gr,pInfo->m_pDispPos,this,pInfo->m_pDispPos->GetLayoutLineRef());
 	}
+
+#ifdef NKMM_CODE_FOLDING
+	// 折りたたみ開始行なら、隠れている行数を表示する(行の折り返しが終わった最後の画面行でのみ)
+	if(pcLayout){
+		const CLayout* pcLayoutNextForFold = pcLayout->GetNextLayout();
+		bool bLastRowOfLogicLine = (NULL == pcLayoutNextForFold) || (pcLayoutNextForFold->GetLogicOffset() == 0);
+		if( bLastRowOfLogicLine ){
+			const CDocLine* pcFoldDocLine = pcLayout->GetDocLineRef();
+			CFoldManager cFoldMgr;
+			if( cFoldMgr.GetLineFolded( pcFoldDocLine ) ){
+				int nHiddenLines = 0;
+				const CDocLine* p = pcFoldDocLine->GetNextLine();
+				while( NULL != p && cFoldMgr.GetLineFoldHidden( p ) ){
+					nHiddenLines++;
+					p = p->GetNextLine();
+				}
+				if( nHiddenLines > 0 ){
+					void _DispFoldedLines(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, COLORREF crRowBack, bool bTrans, int nHiddenLines);
+					_DispFoldedLines(pInfo->m_gr, pInfo->m_pDispPos, this, cBackType.GetBackColor(), bTransText, nHiddenLines);
+				}
+			}
+		}
+	}
+#endif // NKMM_
 
 	// 行末背景描画
 	RECT rcClip;
