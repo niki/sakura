@@ -31,6 +31,8 @@ jobs:
 
           python - << 'EOF'
           import os
+          import csv
+          import io
           import re
           import subprocess
           from datetime import datetime
@@ -51,44 +53,40 @@ jobs:
 
           items_list = []
           if proc.stdout.strip():
-              for line in proc.stdout.splitlines():
-                  line = line.strip()
-                  if not line:
+              # csv.reader を使用してクォート（"..."）内のカンマを安全にパース
+              reader = csv.reader(io.StringIO(proc.stdout))
+              for row in reader:
+                  # lizard --csv のカラム構成:
+                  # [0]: nloc, [1]: CCN, [2]: token, [3]: param, [4]: length,
+                  # [5]: location, [6]: func_name, [7]: long_name, [8]: start_line, [9]: end_line
+                  if len(row) < 9:
                       continue
 
-                  # lizard --csv フォーマット:
-                  # group(1): nloc, group(2): ccn, group(3): token, group(4): param, group(5): length
-                  # group(6): middle (location, func, long_name)
-                  # group(7): start_line, group(8): end_line
-                  match = re.match(r"^(\d+),(\d+),(\d+),(\d+),(\d+),(.*),(\d+),(\d+)$", line)
-                  if not match:
+                  try:
+                      nloc = int(row[0].strip())
+                      ccn = int(row[1].strip())
+                      tokens = row[2].strip()
+                      params = row[3].strip()
+                      raw_loc = row[5].strip()
+                      # long_name があれば優先
+                      func_name = row[7].strip() if len(row) > 7 and row[7].strip() else row[6].strip()
+                      start_line = re.sub(r"\D", "", row[8].strip())
+                      end_line = re.sub(r"\D", "", row[9].strip()) if len(row) > 9 else start_line
+                  except (ValueError, IndexError):
                       continue
 
-                  nloc = int(match.group(1))
-                  ccn = int(match.group(2))
-                  tokens = match.group(3)
-                  params = match.group(4)
-                  middle = match.group(6)
-                  start_line = match.group(7).strip()
-                  end_line = match.group(8).strip()
-
-                  # middle 内のファイルパスと関数名を抽出
-                  parts = middle.split(",", 2)
-                  raw_loc = parts[0].strip()
-                  func_name = parts[1].strip() if len(parts) > 1 else raw_loc
-                  if len(parts) > 2 and parts[2].strip():
-                      func_name = parts[2].strip()
-
-                  # "func@107-623@path/to/file.cpp:func" 形式を分解
+                  # "func@107-623@path/to/file.cpp:func" 形式への対応
                   if "@" in raw_loc:
                       sub = raw_loc.split("@")
                       filepath = sub[-1].split(":")[0].strip()
                   else:
                       filepath = raw_loc
 
-                  # パスの正規化: バックスラッシュの置換、先頭の ./ や / の除去
-                  filepath = filepath.replace("\\", "/").strip()
+                  # クォート・余計な空白・Windowsパス記号をクリーンアップ
+                  filepath = filepath.replace('"', '').replace("'", "").replace('\\', '/').strip()
                   filepath = re.sub(r"^\.?/+", "", filepath)
+
+                  func_name = func_name.replace('"', '').replace("'", "").strip()
 
                   if ccn <= 5:
                       rank = "A"
@@ -114,7 +112,7 @@ jobs:
           # 複雑度の降順ソート
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
-          # 行データの生成
+          # HTML行データの生成
           rows_html = ""
           for idx, item in enumerate(items_list):
               rank = item["rank"]
@@ -124,9 +122,9 @@ jobs:
               s_line = item['start_line']
               e_line = item['end_line']
 
-              # GitHub上のコード範囲ハイライト用URL (#L開始行-L終了行)
-              if repository:
-                  if s_line != e_line and int(e_line) > int(s_line):
+              # GitHub の範囲ハイライト URL: #L開始行-L終了行
+              if repository and s_line:
+                  if e_line and int(e_line) > int(s_line):
                       line_hash = f"#L{s_line}-L{e_line}"
                   else:
                       line_hash = f"#L{s_line}"
