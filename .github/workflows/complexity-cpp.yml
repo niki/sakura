@@ -26,7 +26,7 @@ jobs:
         env:
           # 計測対象ディレクトリ（スペース区切りで指定）
           TARGET_DIRS: "sakura_core"
-          # 除外対象パターン（スペース区切りで指定、不要なら空文字）
+          # 除外対象パターン（スペース区切りで指定）
           EXCLUDE_PATTERN: "*test* *vendor* *third_party* *build*"
         run: |
           mkdir -p reports
@@ -38,15 +38,22 @@ jobs:
 
           target_dirs = os.environ.get("TARGET_DIRS", "src").split()
           raw_excludes = os.environ.get("EXCLUDE_PATTERN", "").split()
+
+          # lizard の CLI 引数リストを構築
+          # 例: ["lizard", "src", "include", "-x", "*test*", "-x", "*build*"]
+          args = ["lizard"] + target_dirs
+          for pat in raw_excludes:
+              if pat.strip():
+                  args.extend(["-x", pat.strip()])
+
+          # lizard 標準の引数パーサーを通してファイル一覧・解析インスタンスを取得
+          parsed_args = lizard.parse_args(args)
           
-          # lizard.get_all_files に渡す除外パターン（空要素を除去）
-          exclude_patterns = [p for p in raw_excludes if p.strip()]
-
-          # 対象パスからC/C++ソース・ヘッダーファイルを収集
-          file_list = lizard.get_all_files(target_dirs, exclude_patterns)
-
           items_list = []
-          for file_info in lizard.analyze_files(file_list):
+          # lizard.FileAnalyzer で解析を実行
+          for file_info in lizard.FileAnalyzer(lizard.print_and_ignore_warnings)(parsed_args.paths, parsed_args.exclude):
+              if not file_info:
+                  continue
               for func in file_info.function_list:
                   ccn = func.cyclomatic_complexity
                   
@@ -68,10 +75,10 @@ jobs:
                       "nloc": func.nloc
                   })
 
-          # 複雑度の降順（スコア大 → 小）にソート
+          # 複雑度の降順（大きい順）にソート
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
-          # HTML行の生成
+          # HTML 行の生成
           rows_html = ""
           for item in items_list:
               rank = item["rank"]
