@@ -53,13 +53,11 @@ jobs:
 
           items_list = []
           if proc.stdout.strip():
-              # csv.reader を使用してクォート（"..."）内のカンマを安全にパース
               reader = csv.reader(io.StringIO(proc.stdout))
               for row in reader:
-                  # lizard --csv のカラム構成:
-                  # [0]: nloc, [1]: CCN, [2]: token, [3]: param, [4]: length,
-                  # [5]: location, [6]: func_name, [7]: long_name, [8]: start_line, [9]: end_line
-                  if len(row) < 9:
+                  # 先頭5列: nloc, CCN, token, param, length
+                  # 末尾2列: 開始行, 終了行 (列数可変でも末尾2つは固定)
+                  if len(row) < 8:
                       continue
 
                   try:
@@ -67,25 +65,34 @@ jobs:
                       ccn = int(row[1].strip())
                       tokens = row[2].strip()
                       params = row[3].strip()
+                      
                       raw_loc = row[5].strip()
-                      # long_name があれば優先
-                      func_name = row[7].strip() if len(row) > 7 and row[7].strip() else row[6].strip()
-                      start_line = re.sub(r"\D", "", row[8].strip())
-                      end_line = re.sub(r"\D", "", row[9].strip()) if len(row) > 9 else start_line
+                      
+                      # 末尾から行番号を確実に取得
+                      val_a = int(re.sub(r"\D", "", row[-2]))
+                      val_b = int(re.sub(r"\D", "", row[-1]))
+                      
+                      # 大小関係を修正（GitHubは min - max の順でないとハイライトされない）
+                      start_line = min(val_a, val_b)
+                      end_line = max(val_a, val_b)
+
+                      # 関数名はインデックス6から末尾2列の手前までを結合
+                      func_parts = [p.strip() for p in row[6:-2] if p.strip()]
+                      func_name = func_parts[-1] if func_parts else "unknown"
+
                   except (ValueError, IndexError):
                       continue
 
-                  # "func@107-623@path/to/file.cpp:func" 形式への対応
+                  # "func@107-623@path/to/file.cpp:func" 形式の除去
                   if "@" in raw_loc:
                       sub = raw_loc.split("@")
                       filepath = sub[-1].split(":")[0].strip()
                   else:
                       filepath = raw_loc
 
-                  # クォート・余計な空白・Windowsパス記号をクリーンアップ
+                  # パスの正規化
                   filepath = filepath.replace('"', '').replace("'", "").replace('\\', '/').strip()
                   filepath = re.sub(r"^\.?/+", "", filepath)
-
                   func_name = func_name.replace('"', '').replace("'", "").strip()
 
                   if ccn <= 5:
@@ -112,7 +119,6 @@ jobs:
           # 複雑度の降順ソート
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
-          # HTML行データの生成
           rows_html = ""
           for idx, item in enumerate(items_list):
               rank = item["rank"]
@@ -122,9 +128,9 @@ jobs:
               s_line = item['start_line']
               e_line = item['end_line']
 
-              # GitHub の範囲ハイライト URL: #L開始行-L終了行
-              if repository and s_line:
-                  if e_line and int(e_line) > int(s_line):
+              # GitHub の行ハイライト形式: #L開始行-L終了行 (必ず 小 -> 大)
+              if repository and s_line > 0:
+                  if e_line > s_line:
                       line_hash = f"#L{s_line}-L{e_line}"
                   else:
                       line_hash = f"#L{s_line}"
@@ -138,7 +144,7 @@ jobs:
               elif item['complexity'] <= 10:
                   advice = "標準的な範囲内ですが、これ以上の分岐追加には注意してください。"
               elif item['complexity'] <= 20:
-                  advice = f"関数内に約 {decisions} 箇所の判定分岐（if / switch-case / for / while / 論理演算子）が存在します。ヘルパー関数への切り出しを検討してください。"
+                  advice = f"関数内に約 {decisions} 箇所の判定分岐が存在します。ヘルパー関数への切り出しを検討してください。"
               else:
                   advice = f"🚨 非常に危険な複雑度です（約 {decisions} 箇所の判定）。switch分岐のポリモーフィズム化や、クラス責務の分割が必要です。"
 
