@@ -64,9 +64,11 @@ jobs:
               r"if\s*\(\s*(hWnd|hDC|hBmp|hMem|hFont|lpParam|pTarget|pNode|pThis)\s*==\s*(NULL|nullptr|INVALID_HANDLE_VALUE)\s*\)"
           )
 
+          # 分岐抽出パターン（&& と || を完全に分離）
           PAT_IF = re.compile(r"\b(if|else\s+if)\b")
           PAT_LOOP = re.compile(r"\b(for|while|do)\b")
-          PAT_LOGIC = re.compile(r"(?<!&)&&(?!&)|(?<!\|)\|\|(?!\|)")
+          PAT_AND = re.compile(r"(?<!&)&&(?!&)")
+          PAT_OR = re.compile(r"(?<!\|)\|\|(?!\|)")
           PAT_CASE = re.compile(r"\bcase\b\s+[^:]+:")
           PAT_CATCH = re.compile(r"\bcatch\b")
 
@@ -143,20 +145,23 @@ jobs:
 
                   c_if = len(PAT_IF.findall(clean_code_stripped))
                   c_loop = len(PAT_LOOP.findall(clean_code_stripped))
-                  c_logic = len(PAT_LOGIC.findall(clean_code_stripped))
+                  c_and = len(PAT_AND.findall(clean_code_stripped))
+                  c_or = len(PAT_OR.findall(clean_code_stripped))
                   c_case = len(PAT_CASE.findall(clean_code_stripped))
                   c_catch = len(PAT_CATCH.findall(clean_code_stripped))
 
                   if c_if: cause_counter['if'] += c_if
                   if c_loop: cause_counter['loop'] += c_loop
-                  if c_logic: cause_counter['logic'] += c_logic
+                  if c_and: cause_counter['and'] += c_and
+                  if c_or: cause_counter['or'] += c_or
                   if c_case: cause_counter['case'] += c_case
                   if c_catch: cause_counter['catch'] += c_catch
 
                   matched_reasons = []
                   if c_if: matched_reasons.append(f"if×{c_if}")
                   if c_loop: matched_reasons.append(f"loop×{c_loop}")
-                  if c_logic: matched_reasons.append(f"&&/||×{c_logic}")
+                  if c_and: matched_reasons.append(f"&&×{c_and}")
+                  if c_or: matched_reasons.append(f"||×{c_or}")
                   if c_catch: matched_reasons.append(f"catch×{c_catch}")
 
                   row_class = "code-row"
@@ -166,7 +171,7 @@ jobs:
                       row_class += " heat-case"
                       badge_html = f"<span class='heat-tag heat-tag-purple'>🏷️ case分岐</span>"
                   elif matched_reasons:
-                      total_heavy = c_if + c_loop + c_logic + c_catch
+                      total_heavy = c_if + c_loop + c_and + c_or + c_catch
                       if total_heavy >= 2 or indent_level >= 5:
                           row_class += " heat-high"
                           details = ", ".join(matched_reasons)
@@ -247,8 +252,6 @@ jobs:
                   })
 
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
-
-          # 相対バー表示用の最大CCN
           max_ccn = max([x["complexity"] for x in items_list], default=1)
 
           rows_html = ""
@@ -268,24 +271,27 @@ jobs:
 
               decisions = ccn - 1
               
-              # ソースコード解析
               if idx < 50 or ccn > 5:
                   causes, heatmap_code = generate_source_heatmap(clean_file, s_line, e_line, item['is_dispatcher'])
               else:
                   causes, heatmap_code = Counter(), "<div style='padding: 8px; color: #64748b;'>軽微な関数のためコードプレビューは省略されました。</div>"
 
-              # 内訳バッジとスタックバー生成
               total_causes = sum(causes.values())
               if total_causes > 0:
                   p_case = (causes['case'] / total_causes) * 100
-                  p_if = ((causes['if'] + causes['logic']) / total_causes) * 100
+                  p_if   = (causes['if'] / total_causes) * 100
+                  p_and  = (causes['and'] / total_causes) * 100
+                  p_or   = (causes['or'] / total_causes) * 100
                   p_loop = (causes['loop'] / total_causes) * 100
-                  p_other = max(0, 100 - (p_case + p_if + p_loop))
+                  p_other = max(0, 100 - (p_case + p_if + p_and + p_or + p_loop))
 
+                  tooltip_text = f"case: {causes['case']}, if: {causes['if']}, &&: {causes['and']}, ||: {causes['or']}, loop: {causes['loop']}"
                   stack_bar_html = f"""
-                  <div class="ccn-stack-bar" title="case: {causes['case']}, if/logic: {causes['if']+causes['logic']}, loop: {causes['loop']}">
+                  <div class="ccn-stack-bar" title="{tooltip_text}">
                     <span style="width: {p_case:.1f}%; background: #c084fc;"></span>
                     <span style="width: {p_if:.1f}%; background: #f87171;"></span>
+                    <span style="width: {p_and:.1f}%; background: #fb7185;"></span>
+                    <span style="width: {p_or:.1f}%; background: #fb923c;"></span>
                     <span style="width: {p_loop:.1f}%; background: #facc15;"></span>
                     <span style="width: {p_other:.1f}%; background: #94a3b8;"></span>
                   </div>
@@ -293,12 +299,12 @@ jobs:
                   
                   breakdown_badges = []
                   if causes['case']: breakdown_badges.append(f"<span class='b-badge b-case'>case: {causes['case']}</span>")
-                  if causes['if']: breakdown_badges.append(f"<span class='b-badge b-if'>if: {causes['if']}</span>")
-                  if causes['logic']: breakdown_badges.append(f"<span class='b-badge b-if'>&&/||: {causes['logic']}</span>")
+                  if causes['if']:   breakdown_badges.append(f"<span class='b-badge b-if'>if: {causes['if']}</span>")
+                  if causes['and']:  breakdown_badges.append(f"<span class='b-badge b-and'>&&: {causes['and']}</span>")
+                  if causes['or']:   breakdown_badges.append(f"<span class='b-badge b-or'>||: {causes['or']}</span>")
                   if causes['loop']: breakdown_badges.append(f"<span class='b-badge b-loop'>loop: {causes['loop']}</span>")
                   breakdown_html = "".join(breakdown_badges)
               else:
-                  # 内訳が取れない場合や軽微な関数はCCNの全体相対比率バー
                   relative_pct = min(100, max(6, (ccn / max_ccn) * 100))
                   stack_bar_html = f"""
                   <div class="ccn-stack-bar">
@@ -307,10 +313,8 @@ jobs:
                   """
                   breakdown_html = "<span style='color: #64748b;'>-</span>"
 
-              # CCNセルの背景バー用比率（全体比率）
               bg_width_pct = min(100, max(2, (ccn / max_ccn) * 100))
               bg_color = "rgba(248, 113, 113, 0.18)" if rank == "D" else ("rgba(254, 202, 202, 0.25)" if rank == "C" else "rgba(226, 232, 240, 0.6)")
-
               disp_tag = "<span class='tag-disp'>DISPATCHER</span>" if item['is_dispatcher'] else ""
 
               rows_html += f"""
@@ -338,7 +342,7 @@ jobs:
                     
                     <div class="breakdown-bar">
                       <strong>要因内訳:</strong> {breakdown_html}
-                      <span class="legend-note">(紫: case / 赤: if・論理演算 / 黄: ループ)</span>
+                      <span class="legend-note">(紫: case / 赤: if / ローズ: && / 橙: || / 黄: loop)</span>
                     </div>
 
                     <div style="margin: 10px 0 8px 0; display: flex; justify-content: space-between; align-items: center;">
@@ -390,7 +394,6 @@ jobs:
               .main-row:hover {{ background: #f1f5f9; }}
               .detail-row td {{ background: #fbfcfe; padding: 16px 20px; border-bottom: 2px solid #cbd5e1; }}
               
-              /* CCN 列の相対バー背景とスタックバー表示 */
               .ccn-cell {{
                 position: relative;
                 padding-right: 14px !important;
@@ -414,7 +417,9 @@ jobs:
               .legend-note {{ font-size: 11px; color: #64748b; margin-left: 8px; }}
               .b-badge {{ padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 4px; }}
               .b-case {{ background: #f3e8ff; color: #7e22ce; }}
-              .b-if {{ background: #fee2e2; color: #b91c1c; }}
+              .b-if   {{ background: #fee2e2; color: #b91c1c; }}
+              .b-and  {{ background: #ffe4e6; color: #be123c; }}
+              .b-or   {{ background: #ffedd5; color: #c2410c; }}
               .b-loop {{ background: #fef9c3; color: #a16207; }}
 
               .detail-container {{ font-size: 13px; }}
