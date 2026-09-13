@@ -182,7 +182,18 @@ protected:
 		// しまい、バッファ外の隣接メモリを読んでゴミ混じりの長大な文字列をiniへ書き込む
 		// (次回読み込み時に上のprofile_to_valueで切り詰められるとはいえ、そもそも
 		// 不正な値を書き出さないほうがよい)。nDataCountまでに制限して走査する。
-		*profile = wstring(value.pData, wcsnlen(value.pData, value.nDataCount));
+		//
+		// 20260913 ただしnDataCount==0は「固定長配列ではなくポインタなのでサイズ不明」を
+		// 表すMakeStringBufferW0/T0の目印であり、「0文字までしか書き出さない」という意味
+		// ではない。wcsnlen(pData, 0)は常に0を返すため、上の一般ケースのロジックのままだと
+		// MakeStringBufferW0経由の書き込みが常に空文字列になってしまうバグがあった
+		// (例: タイプ別設定のブロック/行コメント定型文が保存されない)。0のときは呼び出し側が
+		// ヌル終端を保証している前提でそのまま使う
+		if( 0 == value.nDataCount ){
+			*profile = value.pData;
+		}else{
+			*profile = wstring(value.pData, wcsnlen(value.pData, value.nDataCount));
+		}
 	}
 	//StringBufferA
 	void profile_to_value(const wstring& profile, StringBufferA* value)
