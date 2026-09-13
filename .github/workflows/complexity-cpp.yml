@@ -24,43 +24,31 @@ jobs:
 
       - name: Measure and Generate HTML Report
         env:
-          # 計測対象ディレクトリ（スペース区切りで複数指定可能）
+          # 計測対象ディレクトリ（スペース区切りで指定）
           TARGET_DIRS: "sakura_core"
-          # 除外対象パターン（スペース区切りで複数指定可能）
+          # 除外対象パターン（スペース区切りで指定、不要なら空文字）
           EXCLUDE_PATTERN: "*test* *vendor* *third_party* *build*"
         run: |
           mkdir -p reports
 
           python - << 'EOF'
           import os
-          import json
-          import subprocess
+          import lizard
           from datetime import datetime
 
           target_dirs = os.environ.get("TARGET_DIRS", "src").split()
-          exclude_patterns = os.environ.get("EXCLUDE_PATTERN", "").split()
-
-          # lizard CLI を実行して JSON 出力を取得
-          cmd = ["lizard"] + target_dirs + ["--json"]
-          for pat in exclude_patterns:
-              if pat:
-                  cmd.extend(["-x", pat])
-
-          proc = subprocess.run(cmd, capture_output=True, text=True)
+          raw_excludes = os.environ.get("EXCLUDE_PATTERN", "").split()
           
-          try:
-              data = json.loads(proc.stdout)
-          except Exception as e:
-              print(f"JSONパースエラー: {e}")
-              print(f"lizard stdout: {proc.stdout}")
-              print(f"lizard stderr: {proc.stderr}")
-              data = {}
+          # lizard.get_all_files に渡す除外パターン（空要素を除去）
+          exclude_patterns = [p for p in raw_excludes if p.strip()]
+
+          # 対象パスからC/C++ソース・ヘッダーファイルを収集
+          file_list = lizard.get_all_files(target_dirs, exclude_patterns)
 
           items_list = []
-          for file_info in data.get("files", []):
-              filepath = file_info.get("filename", "")
-              for func in file_info.get("functions", []):
-                  ccn = func.get("cyclomatic_complexity", 1)
+          for file_info in lizard.analyze_files(file_list):
+              for func in file_info.function_list:
+                  ccn = func.cyclomatic_complexity
                   
                   if ccn <= 5:
                       rank = "A"
@@ -74,16 +62,16 @@ jobs:
                   items_list.append({
                       "rank": rank,
                       "complexity": ccn,
-                      "name": func.get("long_name") or func.get("name", ""),
-                      "file": filepath,
-                      "line": func.get("start_line", 0),
-                      "nloc": func.get("nloc", 0)
+                      "name": func.long_name or func.name,
+                      "file": file_info.filename,
+                      "line": func.start_line,
+                      "nloc": func.nloc
                   })
 
-          # 複雑度の降順（大きい順）にソート
+          # 複雑度の降順（スコア大 → 小）にソート
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
-          # テーブル行の組み立て
+          # HTML行の生成
           rows_html = ""
           for item in items_list:
               rank = item["rank"]
