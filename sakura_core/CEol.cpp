@@ -57,16 +57,12 @@ struct SEolDefinition{
 	bool StartsWith(const ACHAR* pData, int nLen) const{ return m_nLen<=nLen && m_szDataA[0] != '\0' && 0==auto_memcmp(pData,m_szDataA,m_nLen); }
 };
 static const SEolDefinition g_aEolTable[] = {
+	// 2026.09.13 Yu-zuki. Win/Unix/Mac表記とCRLF/LF/CR表記が呼び出し箇所によって混在し一貫性が無かった
+	// (ユーザー指摘)ため、CRLF/LF/CR表記に統一した(以前はNKMM_FIX_STATUSBARの有無で分岐していた)
 	{ _T("改行無"),	L"",			"",			0 },
-#ifdef NKMM_FIX_STATUSBAR
-	{ _T("Win"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
-	{ _T("Unix"),		L"\x0a",		"\x0a",		1 },
-	{ _T("Mac"),		L"\x0d",		"\x0d",		1 },
-#else
 	{ _T("CRLF"),	L"\x0d\x0a",	"\x0d\x0a",	2 },
 	{ _T("LF"),		L"\x0a",		"\x0a",		1 },
 	{ _T("CR"),		L"\x0d",		"\x0d",		1 },
-#endif // NKMM_
 	{ _T("NEL"),	L"\x85",		"",			1 },
 	{ _T("LS"),		L"\u2028",		"",			1 },
 	{ _T("PS"),		L"\u2029",		"",			1 },
