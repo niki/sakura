@@ -279,7 +279,11 @@ namespace WCODE
 			//「半角幅の整数倍」からズレることがある。レイアウトは半角幅の固定
 			//グリッドを前提とするため、最も近い半角幅の整数倍に丸める
 			//(CalcPxWidthByFont2と同じ理由。詳細はそちらのコメント参照)。
-			if( m_han_size.cx > 0 && size.cx > 0 ){
+			//半角ASCII(0x00-0x7F)はSystemLinkでの差し替えが起こらず本来この補正が
+			//不要で、丸め誤差(ヒンティング等でGDI実測値が半角幅ぴったりから僅かに
+			//ズレる)によりnKetaが繰り上がると文字幅が2倍になってしまう不具合が
+			//あったため、対象をASCII以外に限定する(ユーザー指摘 2026.09.13)。
+			if( c >= 0x0080 && m_han_size.cx > 0 && size.cx > 0 ){
 				int nKeta = (size.cx + m_han_size.cx / 2) / m_han_size.cx;
 				if( nKeta < 1 ) nKeta = 1;
 				return nKeta * m_han_size.cx;
