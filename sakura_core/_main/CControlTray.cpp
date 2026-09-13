@@ -28,6 +28,9 @@
 #define ID_HOTKEY_TRAYMENU	0x1234
 
 #include <HtmlHelp.h>
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+#include <memory>
+#endif // NKMM_
 #include "CControlTray.h"
 #include "CPropertyManager.h"
 #include "typeprop/CDlgTypeList.h"
@@ -775,6 +778,23 @@ LRESULT CControlTray::DispatchEvent(
 				}
 			}
 			return TRUE;
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+		case MYWM_CREATE_TYPECONFIG_AS:
+			{
+				// CreateTypeConfig()が参照するg_nKeywordsIdx_XXXはコントロール
+				// プロセス側でしか正しく初期化されていないため、必ずここ(コントロール
+				// プロセスのメッセージハンドラ)で作らせる。エディタプロセス側で直接
+				// CreateTypeConfig()を呼ぶと、強調キーワードの割り当てが必ず
+				// 無効(-1)になってしまう
+				int nSrcIdx = (int)wParam;
+				std::unique_ptr<STypeConfig> pType( CShareData::getInstance()->CreateTypeConfig(nSrcIdx) );
+				if( !pType ){
+					return FALSE;
+				}
+				m_pShareData->m_sWorkBuffer.m_TypeConfig = *pType;
+			}
+			return TRUE;
+#endif // NKMM_
 		case MYWM_ADD_TYPESETTING:
 			{
 				int nInsert = (int)wParam;

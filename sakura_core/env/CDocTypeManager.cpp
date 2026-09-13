@@ -198,6 +198,21 @@ bool CDocTypeManager::AddTypeConfig(CTypeConfig cDocumentType)
 }
 #endif // NKMM_
 
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+bool CDocTypeManager::CreateTypeConfigAs(int nSrcTypeIndex, STypeConfig& type)
+{
+	// CreateTypeConfig()が参照するg_nKeywordsIdx_XXX系グローバルはコントロール
+	// プロセス側でしか正しく初期化されないため、必ずコントロールプロセスに
+	// 作らせる(MYWM_CREATE_TYPECONFIG_ASのコメント参照)
+	LockGuard<CMutex> guard( g_cDocTypeMutex );
+	if( FALSE == SendMessageAny( m_pShareData->m_sHandles.m_hwndTray, MYWM_CREATE_TYPECONFIG_AS, (WPARAM)nSrcTypeIndex, 0 ) ){
+		return false;
+	}
+	type = m_pShareData->m_sWorkBuffer.m_TypeConfig;
+	return true;
+}
+#endif // NKMM_
+
 bool CDocTypeManager::DelTypeConfig(CTypeConfig cDocumentType)
 {
 	LockGuard<CMutex> guard( g_cDocTypeMutex );

@@ -779,6 +779,16 @@ enum e_PM_SETCARETPOS_SELECTSTATE {
 #define MYWM_HISTORYPANEL_JUMP (WM_APP+228)
 #endif // NKMM_
 
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+//! タイプ別設定の「初期化」：指定した組み込みタイプ(wParam+1)の初期値を
+//! 作成させ、MYWM_GET_TYPESETTINGと同じ作業バッファ(m_sWorkBuffer.m_TypeConfig)
+//! 経由で返す(エディタ→コントロールプロセス)。
+//! CreateTypeConfig()が参照するg_nKeywordsIdx_XXX系グローバル変数は
+//! コントロールプロセス側でしか正しく初期化されないため、必ずこのメッセージ
+//! 経由でコントロールプロセス側にSTypeConfigを作らせる必要がある 20260913
+#define MYWM_CREATE_TYPECONFIG_AS (WM_APP+229)
+#endif // NKMM_
+
 /* 再変換対応 */ // 20020331 aroka
 #ifndef WM_IME_REQUEST
 #define MYWM_IME_REQUEST 0x288  // ==WM_IME_REQUEST

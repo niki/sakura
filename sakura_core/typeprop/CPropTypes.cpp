@@ -323,19 +323,38 @@ void CPropTypes::InitializeAsType( HWND hwndSheet, int nTypeIndex )
 		LS(STR_DLGTYPELIST_INIT1), m_Types.m_szTypeName );
 	if( IDYES != nRet ) return;
 
-	std::unique_ptr<STypeConfig> pNew( CShareData::getInstance()->CreateTypeConfig(nTypeIndex) );
-	if( !pNew ) return;
+	// CreateTypeConfig()が参照するg_nKeywordsIdx_XXX系グローバルはコントロール
+	// プロセス側でしか正しく初期化されていないため、ここ(エディタプロセス)で直接
+	// CShareData::CreateTypeConfig()を呼んではいけない(強調キーワードの割り当てが
+	// 消える)。CDocTypeManager::CreateTypeConfigAs()経由でコントロールプロセスに
+	// 作らせる
+	std::unique_ptr<STypeConfig> pNew( new STypeConfig() );
+	if( !CDocTypeManager().CreateTypeConfigAs( nTypeIndex, *pNew ) ) return;
 
 	int nIdx = m_Types.m_nIdx;
 	if( 0 != nIdx ){
-		// 文字/行間隔・色設定は「基本」に追従する項目なので、基本の値で上書きする
-		// (「追加」で任意タイプを追加する際の処理(CControlTray.cpp)と同じ考え方)
+		// 文字/行間隔・色(値)は「基本」に追従する項目なので、基本の値で上書きする。
+		// ただし表示ON/OFF(m_bDisp)と太字/下線(m_sFontAttr)はタイプ固有のデータなので、
+		// CreateTypeConfigAs()が組み込んだそのタイプ本来の既定(強調キーワードの有効化等)を
+		// そのまま残す。基本の値をベースに、追従させたい項目だけを個別に上書きする
+		// (退避→全体上書き→復元、という遠回りをしなくて済む)
 		STypeConfig basis;
 		CDocTypeManager().GetTypeConfig( CTypeConfig(0), basis );
 		pNew->m_nColumnSpace = basis.m_nColumnSpace;
 		pNew->m_nLineSpace = basis.m_nLineSpace;
 		pNew->m_nColorInfoArrNum = basis.m_nColorInfoArrNum;
-		memcpy_raw( pNew->m_ColorInfoArr, basis.m_ColorInfoArr, sizeof(pNew->m_ColorInfoArr) );
+		for( int i = 0; i < COLORIDX_LAST; ++i ){
+			ColorInfo& dst = pNew->m_ColorInfoArr[i];
+			const ColorInfo& src = basis.m_ColorInfoArr[i];
+			dst.m_sColorAttr = src.m_sColorAttr;
+			dst.m_nColorIdx = src.m_nColorIdx;
+			auto_strcpy( dst.m_szName, src.m_szName );
+			if( !pNew->m_bUseTypeDisp ){
+				// タイプ別の表示を使わない設定なら、表示可否とフォントも基本に追従する
+				dst.m_bDisp = src.m_bDisp;
+				dst.m_sFontAttr = src.m_sFontAttr;
+			}
+		}
 	}
 	pNew->m_nIdx = nIdx;
 	pNew->m_id = (::GetTickCount() & 0x3fffffff) + nIdx * 0x10000;

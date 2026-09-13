@@ -49,6 +49,9 @@ public:
 	bool AddTypeConfig(CTypeConfig cDocumentType);
 #endif // NKMM_
 	bool DelTypeConfig(CTypeConfig cDocumentType);
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	bool CreateTypeConfigAs(int nSrcTypeIndex, STypeConfig& type);	//!< 組み込みタイプnSrcTypeIndexの初期値を作らせる(コントロールプロセス経由)
+#endif // NKMM_
 
 	static bool IsFileNameMatch(const TCHAR* pszTypeExts, const TCHAR* pszFileName);	// タイプ別拡張子にファイル名がマッチするか
 	static void GetFirstExt(const TCHAR* pszTypeExts, TCHAR szFirstExt[], int nBuffSize);	// タイプ別拡張子の先頭拡張子を取得する
