@@ -36,6 +36,9 @@
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "extmodule/CHtmlHelp.h"
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+#include "typeprop/CPropTypes.h"
+#endif // NKMM_
 
 int CALLBACK MYBrowseCallbackProc(
 	HWND hwnd,
@@ -201,20 +204,27 @@ static LRESULT CALLBACK PropSheetWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, L
 {
 	switch( uMsg ){
 	case WM_SHOWWINDOW:
-		// 追加ボタンの位置を調整する
+		// 追加ボタンの位置を調整する(左詰めで並べる。無いボタンは詰めて配置)
 		if( wParam ){
-			HWND hwndBtn;
 			RECT rcOk;
 			RECT rcTab;
 			POINT pt;
 
-			hwndBtn = ::GetDlgItem( hwnd, 0x02000 );
 			::GetWindowRect( ::GetDlgItem( hwnd, IDOK ), &rcOk );
 			::GetWindowRect( PropSheet_GetTabControl( hwnd ), &rcTab );
 			pt.x = rcTab.left;
 			pt.y = rcOk.top;
 			::ScreenToClient( hwnd, &pt );
-			::MoveWindow( hwndBtn, pt.x, pt.y, 140, rcOk.bottom - rcOk.top, FALSE );
+
+			const int aIds[] = { 0x02000, 0x02001 };
+			const int aWidths[] = { 140, 90 };
+			int x = pt.x;
+			for( int i = 0; i < _countof(aIds); i++ ){
+				HWND hwndBtn = ::GetDlgItem( hwnd, aIds[i] );
+				if( NULL == hwndBtn ) continue;
+				::MoveWindow( hwndBtn, x, pt.y, aWidths[i], rcOk.bottom - rcOk.top, FALSE );
+				x += aWidths[i] + 4;
+			}
 		}
 		break;
 
@@ -298,6 +308,40 @@ static LRESULT CALLBACK PropSheetWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, L
 				break;
 			}
 		}
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+		// タイプ別設定シートの「初期化」ボタン。任意のタイプの初期値を選んで、
+		// 現在編集中のタイプの設定を丸ごと置き換える
+		else if( HIWORD( wParam ) == BN_CLICKED && LOWORD( wParam ) == 0x02001 ){
+			CPropTypes* pOwner = CPropTypes::GetActiveInstance();
+			if( NULL != pOwner ){
+				HWND hwndBtn = ::GetDlgItem( hwnd, 0x02001 );
+				RECT rc;
+				POINT pt;
+
+				::GetWindowRect( hwndBtn, &rc );
+				pt.x = rc.left;
+				pt.y = rc.bottom;
+				GetMonitorWorkRect( pt, &rc );	// モニタのワークエリア
+
+				HMENU hMenu = ::CreatePopupMenu();
+				std::vector<std::tstring> names;
+				CShareData::getInstance()->GetTypeNames( names );
+				for( size_t i = 0; i < names.size(); i++ ){
+					::InsertMenu( hMenu, (UINT)i, MF_BYPOSITION | MF_STRING, (UINT_PTR)(i + 1), names[i].c_str() );
+				}
+
+				int nId = ::TrackPopupMenu( hMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON | TPM_RETURNCMD,
+											( pt.x > rc.left )? pt.x: rc.left,
+											( pt.y < rc.bottom )? pt.y: rc.bottom,
+											0, hwnd, NULL );
+				::DestroyMenu( hMenu );
+
+				if( 0 < nId ){
+					pOwner->InitializeAsType( hwnd, nId - 1 );
+				}
+			}
+		}
+#endif // NKMM_
 		break;
 
 	case WM_DESTROY:
@@ -329,12 +373,29 @@ static int CALLBACK PropSheetProc( HWND hwndDlg, UINT uMsg, LPARAM lParam )
 			}
 		}
 #endif // NKMM_
-		if( CShareData::getInstance()->IsPrivateSettings() ){
+		bool bPrivateSettings = CShareData::getInstance()->IsPrivateSettings();
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+		// タイプ別設定(CPropTypes)のシートを表示中のときだけ「初期化」ボタンを追加する
+		bool bTypeSheet = ( NULL != CPropTypes::GetActiveInstance() );
+#else
+		bool bTypeSheet = false;
+#endif // NKMM_
+		if( bPrivateSettings || bTypeSheet ){
 			s_pOldPropSheetWndProc = (WNDPROC)::SetWindowLongPtr( hwndDlg, GWLP_WNDPROC, (LONG_PTR)PropSheetWndProc );
 			HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle( NULL );
-			HWND hwndBtn = ::CreateWindowEx( 0, _T("BUTTON"), LS(STR_SHELL_INIFOLDER), BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 140, 20, hwndDlg, (HMENU)0x02000, hInstance, NULL );
-			::SendMessage( hwndBtn, WM_SETFONT, (WPARAM)::SendMessage( hwndDlg, WM_GETFONT, 0, 0 ), MAKELPARAM( FALSE, 0 ) );
-			::SetWindowPos( hwndBtn, ::GetDlgItem( hwndDlg, IDHELP), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
+			HFONT hFont = (HFONT)::SendMessage( hwndDlg, WM_GETFONT, 0, 0 );
+			if( bPrivateSettings ){
+				HWND hwndBtn = ::CreateWindowEx( 0, _T("BUTTON"), LS(STR_SHELL_INIFOLDER), BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 140, 20, hwndDlg, (HMENU)0x02000, hInstance, NULL );
+				::SendMessage( hwndBtn, WM_SETFONT, (WPARAM)hFont, MAKELPARAM( FALSE, 0 ) );
+				::SetWindowPos( hwndBtn, ::GetDlgItem( hwndDlg, IDHELP), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
+			}
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+			if( bTypeSheet ){
+				HWND hwndBtn = ::CreateWindowEx( 0, _T("BUTTON"), LS(STR_PROPTYPE_INIT_AS_TYPE), BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 90, 20, hwndDlg, (HMENU)0x02001, hInstance, NULL );
+				::SendMessage( hwndBtn, WM_SETFONT, (WPARAM)hFont, MAKELPARAM( FALSE, 0 ) );
+				::SetWindowPos( hwndBtn, ::GetDlgItem( hwndDlg, IDHELP), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
+			}
+#endif // NKMM_
 		}
 	}
 	return 0;
@@ -353,6 +414,12 @@ INT_PTR MyPropertySheet( LPPROPSHEETHEADER lppsph )
 	// 20260817 タイトルバーの「？」を消す処理(PropSheetProc内)のため、
 	// 個人設定フォルダ未使用時もコールバックを呼んでもらう必要がある
 	bNeedCallback = true;
+#endif // NKMM_
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	// タイプ別設定シートには「初期化」ボタンを追加する
+	if( NULL != CPropTypes::GetActiveInstance() ){
+		bNeedCallback = true;
+	}
 #endif // NKMM_
 	if( bNeedCallback ){
 		lppsph->dwFlags |= PSH_USECALLBACK;

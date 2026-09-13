@@ -27,6 +27,13 @@
 #include "view/colors/EColorIndexType.h"
 #include "util/shell.h"
 #include "sakura_rc.h"
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+#include <prsht.h>
+#include <memory>
+#include "env/CShareData.h"
+#include "env/CDocTypeManager.h"
+#include "CRegexKeyword.h"
+#endif // NKMM_
 
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -256,7 +263,15 @@ INT_PTR CPropTypes::DoPropertySheet( int nPageNum )
 	psh.ppsp = psp;
 	psh.pfnCallback = NULL;
 
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	// util/shell.cppのPropSheetWndProcが「初期化」ボタンからこのインスタンスに
+	// アクセスできるようにする。プロパティシートはモーダルなのでネストしない
+	s_pActiveInstance = this;
+#endif // NKMM_
 	nRet = MyPropertySheet( &psh );	// 2007.05.24 ryoji 独自拡張プロパティシート
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	s_pActiveInstance = NULL;
+#endif // NKMM_
 
 	if( -1 == nRet ){
 		TCHAR*	pszMsgBuf;
@@ -285,6 +300,62 @@ INT_PTR CPropTypes::DoPropertySheet( int nPageNum )
 
 	return nRet;
 }
+
+
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+CPropTypes* CPropTypes::s_pActiveInstance = NULL;
+
+/*! タイプ別設定シートの「初期化」ボタン(util/shell.cpp)から呼ばれる。
+	現在編集中のタイプ(m_Types)を、指定タイプ(nTypeIndex)の初期値で丸ごと置き換える。
+
+	@param hwndSheet	プロパティシート枠のウィンドウハンドル(確認/完了メッセージの親、
+						および各ページの再表示に使う)
+	@param nTypeIndex	置き換え元にするタイプの0始まりインデックス
+						(CShareData::CreateTypeConfig()/GetTypeNames()の並び順)
+
+	@date 2026.09.13 新規
+*/
+void CPropTypes::InitializeAsType( HWND hwndSheet, int nTypeIndex )
+{
+	if( m_Types.m_nIdx < 0 || MAX_TYPES <= m_Types.m_nIdx ) return;
+
+	int nRet = ::MYMESSAGEBOX( hwndSheet, MB_YESNO | MB_ICONQUESTION, GSTR_APPNAME,
+		LS(STR_DLGTYPELIST_INIT1), m_Types.m_szTypeName );
+	if( IDYES != nRet ) return;
+
+	std::unique_ptr<STypeConfig> pNew( CShareData::getInstance()->CreateTypeConfig(nTypeIndex) );
+	if( !pNew ) return;
+
+	int nIdx = m_Types.m_nIdx;
+	if( 0 != nIdx ){
+		// 文字/行間隔・色設定は「基本」に追従する項目なので、基本の値で上書きする
+		// (「追加」で任意タイプを追加する際の処理(CControlTray.cpp)と同じ考え方)
+		STypeConfig basis;
+		CDocTypeManager().GetTypeConfig( CTypeConfig(0), basis );
+		pNew->m_nColumnSpace = basis.m_nColumnSpace;
+		pNew->m_nLineSpace = basis.m_nLineSpace;
+		pNew->m_nColorInfoArrNum = basis.m_nColorInfoArrNum;
+		memcpy_raw( pNew->m_ColorInfoArr, basis.m_ColorInfoArr, sizeof(pNew->m_ColorInfoArr) );
+	}
+	pNew->m_nIdx = nIdx;
+	pNew->m_id = (::GetTickCount() & 0x3fffffff) + nIdx * 0x10000;
+	pNew->m_nRegexKeyMagicNumber = CRegexKeyword::GetNewMagicNumber();
+
+	m_Types = *pNew;
+
+	// このシート内で既に生成済みの他ページの表示も、最新のm_Typesに合わせて
+	// 更新する。まだ生成されていない(一度も開いていない)ページは、次に開いた
+	// ときのWM_INITDIALOGで最新のm_Typesが反映されるので何もしなくてよい
+	((CPropTypesScreen*)  this)->RefreshPageFromSharedType( (HWND)::SendMessage( hwndSheet, PSM_INDEXTOHWND, ID_PROPTYPE_PAGENUM_SCREEN,  0 ) );
+	((CPropTypesColor*)   this)->RefreshPageFromSharedType( (HWND)::SendMessage( hwndSheet, PSM_INDEXTOHWND, ID_PROPTYPE_PAGENUM_COLOR,   0 ) );
+	((CPropTypesWindow*)  this)->RefreshPageFromSharedType( (HWND)::SendMessage( hwndSheet, PSM_INDEXTOHWND, ID_PROPTYPE_PAGENUM_WINDOW,  0 ) );
+	((CPropTypesSupport*) this)->RefreshPageFromSharedType( (HWND)::SendMessage( hwndSheet, PSM_INDEXTOHWND, ID_PROPTYPE_PAGENUM_SUPPORT, 0 ) );
+	((CPropTypesRegex*)   this)->RefreshPageFromSharedType( (HWND)::SendMessage( hwndSheet, PSM_INDEXTOHWND, ID_PROPTYPE_PAGENUM_REGEX,   0 ) );
+	((CPropTypesKeyHelp*) this)->RefreshPageFromSharedType( (HWND)::SendMessage( hwndSheet, PSM_INDEXTOHWND, ID_PROPTYPE_PAGENUM_KEYHELP, 0 ) );
+
+	InfoMessage( hwndSheet, LS(STR_DLGTYPELIST_INIT2), m_Types.m_szTypeName );
+}
+#endif // NKMM_
 
 
 

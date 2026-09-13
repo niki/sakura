@@ -97,6 +97,15 @@ public:
 	int GetPageNum(){ return m_nPageNum; }
 	bool GetChangeKeyWordSet() const { return m_bChangeKeyWordSet; }
 
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	//!< タイプ別設定シートの「初期化」ボタン(util/shell.cppのPropSheetWndProc)から、
+	//!< 現在開いているシートのCPropTypesインスタンスにアクセスするための参照。
+	//!< プロパティシートはモーダルでネストしないため、DoPropertySheet()の実行中だけ
+	//!< 有効な単純なポインタで足りる
+	static CPropTypes* GetActiveInstance(){ return s_pActiveInstance; }
+	void InitializeAsType( HWND hwndSheet, int nTypeIndex );	//!< 現在編集中のタイプを、指定タイプの初期値で置き換える
+#endif // NKMM_
+
 protected:
 	//イベント
 	void OnHelp( HWND , int );	//!< ヘルプ
@@ -118,6 +127,10 @@ protected:
 	PropTypeSheetOrder	m_nPageNum;
 	DLLSHAREDATA*		m_pShareData;
 	STypeConfig			m_Types;
+
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	static CPropTypes* s_pActiveInstance;	//!< DoPropertySheet()実行中のみ有効。GetActiveInstance()参照
+#endif // NKMM_
 
 	// スクリーン用データ	2010/5/10 CPropTypes_P1_Screen.cppから移動
 	static std::vector<TYPE_NAME_ID2<EOutlineType> > m_OlmArr;			//!<アウトライン解析ルール配列
@@ -170,6 +183,11 @@ class CPropTypesScreen : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	//!< シート内の他ページから初期化された際、既に生成済みの自分のページ表示を
+	//!< 最新のm_Typesに合わせて再構築する(未生成のページは次回表示時に反映されるので何もしない)
+	void RefreshPageFromSharedType( HWND hwndPage ){ if( NULL != hwndPage ) SetData( hwndPage ); }
+#endif // NKMM_
 #ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
 	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
 	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
@@ -201,6 +219,11 @@ class CPropTypesWindow : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	//!< シート内の他ページから初期化された際、既に生成済みの自分のページ表示を
+	//!< 最新のm_Typesに合わせて再構築する(未生成のページは次回表示時に反映されるので何もしない)
+	void RefreshPageFromSharedType( HWND hwndPage ){ if( NULL != hwndPage ) SetData( hwndPage ); }
+#endif // NKMM_
 #ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
 	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
 	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
@@ -231,6 +254,11 @@ class CPropTypesColor : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	//!< シート内の他ページから初期化された際、既に生成済みの自分のページ表示を
+	//!< 最新のm_Typesに合わせて再構築する(未生成のページは次回表示時に反映されるので何もしない)
+	void RefreshPageFromSharedType( HWND hwndPage ){ if( NULL != hwndPage ) SetData( hwndPage ); }
+#endif // NKMM_
 #ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
 	// タイプ別設定一覧に埋め込むための機能。埋め込み先(hwndParentDlg)の子ウィンドウ
 	// として生成し、一覧側でタイプの選択が変わるたびにRefreshEmbeddedPage/
@@ -270,6 +298,11 @@ class CPropTypesSupport : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	//!< シート内の他ページから初期化された際、既に生成済みの自分のページ表示を
+	//!< 最新のm_Typesに合わせて再構築する(未生成のページは次回表示時に反映されるので何もしない)
+	void RefreshPageFromSharedType( HWND hwndPage ){ if( NULL != hwndPage ) SetData( hwndPage ); }
+#endif // NKMM_
 #ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
 	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
 	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
@@ -297,6 +330,11 @@ class CPropTypesRegex : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	//!< シート内の他ページから初期化された際、既に生成済みの自分のページ表示を
+	//!< 最新のm_Typesに合わせて再構築する(未生成のページは次回表示時に反映されるので何もしない)
+	void RefreshPageFromSharedType( HWND hwndPage ){ if( NULL != hwndPage ) SetData( hwndPage ); }
+#endif // NKMM_
 #ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
 	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
 	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
@@ -329,6 +367,11 @@ class CPropTypesKeyHelp : public CPropTypes
 {
 public:
 	INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );			//!< メッセージ処理
+#ifdef NKMM_FIX_TYPELIST_INIT_ANY_TYPE
+	//!< シート内の他ページから初期化された際、既に生成済みの自分のページ表示を
+	//!< 最新のm_Typesに合わせて再構築する(未生成のページは次回表示時に反映されるので何もしない)
+	void RefreshPageFromSharedType( HWND hwndPage ){ if( NULL != hwndPage ) SetData( hwndPage ); }
+#endif // NKMM_
 #ifdef NKMM_FIX_TYPELIST_EMBED_ALLTABS
 	// 新規メンバ変数は追加禁止(CPropTypes.h上部の注意書き参照)
 	HWND CreateEmbeddedPage( HWND hwndParentDlg, int x, int y, int cx, int cy ){
