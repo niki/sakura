@@ -1390,15 +1390,23 @@ bool CEditView::DrawLayoutLine(SColorStrategyInfo* pInfo)
 			const CDocLine* pcFoldDocLine = pcLayout->GetDocLineRef();
 			CFoldManager cFoldMgr;
 			if( cFoldMgr.GetLineFolded( pcFoldDocLine ) ){
-				int nHiddenLines = 0;
-				const CDocLine* p = pcFoldDocLine->GetNextLine();
-				while( NULL != p && cFoldMgr.GetLineFoldHidden( p ) ){
-					nHiddenLines++;
-					p = p->GetNextLine();
-				}
-				if( nHiddenLines > 0 ){
-					void _DispFoldedLines(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, COLORREF crRowBack, bool bTrans, int nHiddenLines);
-					_DispFoldedLines(pInfo->m_gr, pInfo->m_pDispPos, this, cBackType.GetBackColor(), bTransText, nHiddenLines);
+				if( cFoldMgr.GetLineFoldIsDeclaration( pcFoldDocLine ) ){
+					// 本体を持たない(プロトタイプ宣言等の)ヘッダ行。末尾に空行/コメント行が
+					// 続いて隠れていても、それは本体ではないので行数バッジは出さず、
+					// 「宣言のみ」であることを示すマークだけを出す 2026.09.13
+					void _DispDeclarationMark(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, COLORREF crRowBack, bool bTrans);
+					_DispDeclarationMark(pInfo->m_gr, pInfo->m_pDispPos, this, cBackType.GetBackColor(), bTransText);
+				}else{
+					int nHiddenLines = 0;
+					const CDocLine* p = pcFoldDocLine->GetNextLine();
+					while( NULL != p && cFoldMgr.GetLineFoldHidden( p ) ){
+						nHiddenLines++;
+						p = p->GetNextLine();
+					}
+					if( nHiddenLines > 0 ){
+						void _DispFoldedLines(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, COLORREF crRowBack, bool bTrans, int nHiddenLines);
+						_DispFoldedLines(pInfo->m_gr, pInfo->m_pDispPos, this, cBackType.GetBackColor(), bTransText, nHiddenLines);
+					}
 				}
 			}
 		}

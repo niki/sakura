@@ -653,15 +653,55 @@ void CDocOutline::UpdateFoldRanges( void )
 
 	for( size_t i = 0; i < vecRanges.size(); ++i ){
 		const SFoldRange& rRange = vecRanges[i];
-		if( rRange.nEndLine <= rRange.nStartLine ){
-			continue;	// 本体が無い(1行だけ)の項目は折りたたみ対象外
-		}
 		CDocLine* pHeaderDocLine = m_pcDocRef->m_cDocLineMgr.GetLine( rRange.nStartLine );
 		if( NULL == pHeaderDocLine ){
 			continue;
 		}
 		cFoldMgr.SetLineFoldable( pHeaderDocLine, true );
+		// 本体が無い(プロトタイプ宣言等)項目も、隠す範囲こそ無いがアウトライン表示では
+		// 見出しとして表示し続けたい(以前は丸ごと除外していたため、宣言だけの行が
+		// アウトライン表示から消えてしまっていた。ユーザー指摘 2026.09.13)。
 		cFoldMgr.SetLineFoldEndLine( pHeaderDocLine, rRange.nEndLine );
+
+		// 本体を持たない宣言(プロトタイプ)かどうかを実テキストから判定する。
+		// 「nEndLine==nStartLineか(範囲が1行だけか)」では判定できない: 宣言の直後に
+		// 空行/コメント行が続くと、それらが(隠す対象として)この項目の範囲に含まれて
+		// nEndLineが伸びてしまうし、逆に宣言自体が改行された引数リスト等で複数行に
+		// またがることもあるため(ユーザー指摘 2026.09.13)。丸括弧の深さ0の位置で
+		// '{'(本体開始)と';'(宣言の終端)のどちらに先に達するかで判定する
+		// (文字列/コメント中の記号は考慮しない簡易ヒューリスティック、名前検索等と同様)。
+		{
+			bool bIsDeclaration = false;
+			bool bDecided = false;
+			int nParenDepth = 0;
+			const CDocLine* pScanLine = pHeaderDocLine;
+			CLogicInt nScanLineNo = rRange.nStartLine;
+			while( NULL != pScanLine && nScanLineNo <= rRange.nEndLine && !bDecided ){
+				const wchar_t* pLineText = pScanLine->GetPtr();
+				int nLineLen = ToInt( pScanLine->GetLengthWithoutEOL() );
+				for( int k = 0; k < nLineLen; ++k ){
+					wchar_t ch = pLineText[k];
+					if( L'(' == ch ){
+						nParenDepth++;
+					}else if( L')' == ch ){
+						if( nParenDepth > 0 ) nParenDepth--;
+					}else if( 0 == nParenDepth && L'{' == ch ){
+						bIsDeclaration = false;
+						bDecided = true;
+						break;
+					}else if( 0 == nParenDepth && L';' == ch ){
+						bIsDeclaration = true;
+						bDecided = true;
+						break;
+					}
+				}
+				pScanLine = pScanLine->GetNextLine();
+				nScanLineNo++;
+			}
+			// 範囲内に'{'も';'も見つからなければ判定不能。安全側(本体ありとみなし、
+			// 従来通り隠れ行数バッジを出す)にフォールバックする
+			cFoldMgr.SetLineFoldIsDeclaration( pHeaderDocLine, bDecided && bIsDeclaration );
+		}
 
 		// 関数/メソッド名部分だけをハイライトできるよう、ヘッダ行のテキストから
 		// 名前の実際の桁位置を探しておく(正規表現ではなく単純な部分文字列検索)。

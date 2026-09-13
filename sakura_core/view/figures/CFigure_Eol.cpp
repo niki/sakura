@@ -294,13 +294,49 @@ void _DispEOF(
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                 折りたたみ行数表示描画実装                  //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-/*! 折りたたみ開始行の行末に、隠れている行数を表示する
+/*! 折りたたみヘッダ行の行末への付加テキスト描画共通処理(隠れ行数バッジ/宣言マーク共通)
 
 	@note ドキュメント本文には存在しないテキストなので、_DispEOF()と同様に
 		レイアウト幅計算(折り返し・横スクロール幅)には一切影響させず、
-		描画パスの末尾で追加描画するだけにしている。
+		描画パスの末尾で追加描画するだけにしている。専用の色設定は持たず、
+		半角空白記号の色を流用する(EOF記号の色だと見づらいというユーザー指摘に
+		より変更。半角空白色が非表示なら全角空白色にフォールバックする)。
+		背景は呼び出し元(DrawLayoutLine)がこの行のために既に決定している背景色
+		(cBackType、カーソル行/縞模様反映済み)をそのまま使う。この関数の描画位置は
+		まだ「行末背景描画」で塗られる前なので、マーク自身の固定背景色のままだと
+		縞模様やカーソル行ハイライトの上で背景だけ浮いた矩形に見えてしまうため。
 	@date 2026.09.13 Yu-zuki. 新規作成
 */
+static void _DispFoldAnnotationText(
+	CGraphics&			gr,
+	DispPos*			pDispPos,
+	const CEditView*	pcView,
+	COLORREF			crRowBack,
+	bool				bTrans,
+	const wchar_t*		pszText,
+	int					nLen
+)
+{
+	CTypeSupport cSpaceType(pcView,COLORIDX_SPACE);
+	CTypeSupport cZenSpaceType(pcView,COLORIDX_ZENSPACE);
+	CTypeSupport& cMarkType = cSpaceType.IsDisp() ? cSpaceType : cZenSpaceType;
+	if(!cMarkType.IsDisp())
+		return;
+
+	gr.PushTextForeColor(cMarkType.GetTextColor());
+	gr.PushTextBackColor(crRowBack);
+	gr.PushMyFont(cMarkType.GetTypeFont());
+
+	int fontNo = WCODE::GetFontNo('0');
+	int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
+	pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, pszText, nLen, bTrans);
+
+	gr.PopMyFont();
+	gr.PopTextBackColor();
+	gr.PopTextForeColor();
+}
+
+//! 折りたたみ開始行の行末に、隠れている行数を表示する
 void _DispFoldedLines(
 	CGraphics&			gr,				//!< [in] 描画対象のDevice Context
 	DispPos*			pDispPos,		//!< [in] 表示座標
@@ -310,34 +346,29 @@ void _DispFoldedLines(
 	int					nHiddenLines	//!< [in] 隠れている行数(1以上)
 )
 {
-	// 専用の色設定は持たず、半角空白記号の色を流用する(EOF記号の色だと見づらいという
-	// ユーザー指摘により変更。半角空白色が非表示なら全角空白色にフォールバックする) 2026.09.13
-	CTypeSupport cSpaceType(pcView,COLORIDX_SPACE);
-	CTypeSupport cZenSpaceType(pcView,COLORIDX_ZENSPACE);
-	CTypeSupport& cMarkType = cSpaceType.IsDisp() ? cSpaceType : cZenSpaceType;
-	if(!cMarkType.IsDisp())
-		return;
-
 	wchar_t szBuf[32];
 	auto_sprintf(szBuf, L" (+%d 行)", nHiddenLines);
-	const int nLen = wcslen(szBuf);
+	_DispFoldAnnotationText(gr, pDispPos, pcView, crRowBack, bTrans, szBuf, (int)wcslen(szBuf));
+}
 
-	// 背景は呼び出し元(DrawLayoutLine)がこの行のために既に決定している背景色
-	// (cBackType、カーソル行/縞模様反映済み)をそのまま使う。この関数の描画位置は
-	// まだ「行末背景描画」で塗られる前なので、マーク自身の固定背景色のままだと
-	// 縞模様やカーソル行ハイライトの上で背景だけ浮いた矩形に見えてしまうため。
-	// 2026.09.13
-	gr.PushTextForeColor(cMarkType.GetTextColor());
-	gr.PushTextBackColor(crRowBack);
-	gr.PushMyFont(cMarkType.GetTypeFont());
+/*! 折りたたみ開始行の行末に、本体を持たない宣言(プロトタイプ)であることを表示する
 
-	int fontNo = WCODE::GetFontNo('0');
-	int nHeightMargin = pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
-	pcView->GetTextDrawer().DispText(gr, pDispPos, nHeightMargin, szBuf, nLen, bTrans);
-
-	gr.PopMyFont();
-	gr.PopTextBackColor();
-	gr.PopTextForeColor();
+	@note アウトライン表示では折りたたみ可能なヘッダ行(関数/構造体等)と並べて
+		プロトタイプ宣言も見出しとして残すため、隠れ行数バッジ(_DispFoldedLines)
+		が出ない代わりにこちらを出し、折りたたまれた実体では無いことを示す
+		(ユーザー指摘 2026.09.13)。
+	@date 2026.09.13 Yu-zuki. 新規作成
+*/
+void _DispDeclarationMark(
+	CGraphics&			gr,
+	DispPos*			pDispPos,
+	const CEditView*	pcView,
+	COLORREF			crRowBack,
+	bool				bTrans
+)
+{
+	static const wchar_t szMark[] = L" （宣言）";
+	_DispFoldAnnotationText(gr, pDispPos, pcView, crRowBack, bTrans, szMark, _countof(szMark) - 1);
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
