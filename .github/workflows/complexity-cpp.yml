@@ -1,4 +1,4 @@
-name: C++ Complexity Detailed HTML Report
+name: C++ Complexity Detailed Heatmap Report
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
       - name: Install lizard
         run: pip install lizard
 
-      - name: Measure and Generate Detailed HTML Report
+      - name: Measure and Generate Heatmap HTML Report
         env:
           TARGET_DIRS: "sakura_core"
           EXCLUDE_PATTERN: "*test* *vendor* *third_party* *build*"
@@ -34,6 +34,7 @@ jobs:
           import csv
           import io
           import re
+          import html
           import subprocess
           from datetime import datetime
 
@@ -51,12 +52,89 @@ jobs:
 
           proc = subprocess.run(cmd, capture_output=True, text=True)
 
+          # 分岐や複雑度を押し上げる要素（C++用正規表現トークン）
+          BRANCH_PATTERNS = [
+              (re.compile(r"\b(if|else\s+if)\b"), "if分岐"),
+              (re.compile(r"\b(for|while|do)\b"), "ループ"),
+              (re.compile(r"\bcase\b.*:"), "case文"),
+              (re.compile(r"&&|\|\|"), "論理演算子"),
+              (re.compile(r"\?[^:].*:"), "三項演算子"),
+              (re.compile(r"\bcatch\b"), "例外捕捉")
+          ]
+
+          def generate_source_heatmap(filepath, start_l, end_l):
+              """関数のコード範囲を読み込み、分岐要素とネスト深さを判定してHTML行を生成"""
+              if not os.path.exists(filepath):
+                  return "<div style='color: #64748b; padding: 8px;'>ソースコードファイルが見つかりませんでした。</div>"
+
+              try:
+                  with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                      all_lines = f.readlines()
+              except Exception as e:
+                  return f"<div style='color: #ef4444; padding: 8px;'>読み込みエラー: {html.escape(str(e))}</div>"
+
+              total_lines = len(all_lines)
+              s_idx = max(0, start_l - 1)
+              e_idx = min(total_lines, end_l)
+              func_lines = all_lines[s_idx:e_idx]
+
+              lines_out = []
+              for offset, raw_line in enumerate(func_lines):
+                  line_no = start_l + offset
+                  stripped = raw_line.strip()
+                  
+                  # コメント行や空行は除外
+                  if not stripped or stripped.startswith("//") or stripped.startswith("/*") or stripped.startswith("*"):
+                      lines_out.append(
+                          f"<div class='code-row'>"
+                          f"<span class='ln'>{line_no}</span>"
+                          f"<pre class='code-body'>{html.escape(raw_line.rstrip())}</pre>"
+                          f"</div>"
+                      )
+                      continue
+
+                  # インデントによるネスト深度推定（タブ=4スペース換算）
+                  expanded = raw_line.expandtabs(4)
+                  indent_spaces = len(expanded) - len(expanded.lstrip())
+                  indent_level = indent_spaces // 4
+
+                  # 分岐キーワードの検出
+                  matched_reasons = []
+                  for pat, label in BRANCH_PATTERNS:
+                      matches = pat.findall(stripped)
+                      if matches:
+                          matched_reasons.append(f"{label}×{len(matches)}")
+
+                  # スコア判定と色分け
+                  is_high = len(matched_reasons) >= 2 or indent_level >= 4
+                  is_med = len(matched_reasons) == 1 or indent_level == 3
+
+                  row_class = "code-row"
+                  badge_html = ""
+
+                  if is_high:
+                      row_class += " heat-high"
+                      details = ", ".join(matched_reasons) if matched_reasons else f"深層ネスト (Lv.{indent_level})"
+                      badge_html = f"<span class='heat-tag heat-tag-red'>🔥 {details}</span>"
+                  elif is_med:
+                      row_class += " heat-med"
+                      details = ", ".join(matched_reasons) if matched_reasons else f"ネスト (Lv.{indent_level})"
+                      badge_html = f"<span class='heat-tag heat-tag-yellow'>⚠️ {details}</span>"
+
+                  lines_out.append(
+                      f"<div class='{row_class}'>"
+                      f"<span class='ln'>{line_no}</span>"
+                      f"<pre class='code-body'>{html.escape(raw_line.rstrip())}</pre>"
+                      f"{badge_html}"
+                      f"</div>"
+                  )
+
+              return f"<div class='code-block'>{''.join(lines_out)}</div>"
+
           items_list = []
           if proc.stdout.strip():
               reader = csv.reader(io.StringIO(proc.stdout))
               for row in reader:
-                  # 先頭5列: nloc, CCN, token, param, length
-                  # 末尾2列: 開始行, 終了行 (列数可変でも末尾2つは固定)
                   if len(row) < 8:
                       continue
 
@@ -65,32 +143,24 @@ jobs:
                       ccn = int(row[1].strip())
                       tokens = row[2].strip()
                       params = row[3].strip()
-                      
                       raw_loc = row[5].strip()
                       
-                      # 末尾から行番号を確実に取得
                       val_a = int(re.sub(r"\D", "", row[-2]))
                       val_b = int(re.sub(r"\D", "", row[-1]))
-                      
-                      # 大小関係を修正（GitHubは min - max の順でないとハイライトされない）
                       start_line = min(val_a, val_b)
                       end_line = max(val_a, val_b)
 
-                      # 関数名はインデックス6から末尾2列の手前までを結合
                       func_parts = [p.strip() for p in row[6:-2] if p.strip()]
                       func_name = func_parts[-1] if func_parts else "unknown"
-
                   except (ValueError, IndexError):
                       continue
 
-                  # "func@107-623@path/to/file.cpp:func" 形式の除去
                   if "@" in raw_loc:
                       sub = raw_loc.split("@")
                       filepath = sub[-1].split(":")[0].strip()
                   else:
                       filepath = raw_loc
 
-                  # パスの正規化
                   filepath = filepath.replace('"', '').replace("'", "").replace('\\', '/').strip()
                   filepath = re.sub(r"^\.?/+", "", filepath)
                   func_name = func_name.replace('"', '').replace("'", "").strip()
@@ -116,37 +186,29 @@ jobs:
                       "params": params
                   })
 
-          # 複雑度の降順ソート
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
           rows_html = ""
           for idx, item in enumerate(items_list):
               rank = item["rank"]
               badge_class = f"badge-{rank.lower()}"
-              
               clean_file = item['file']
               s_line = item['start_line']
               e_line = item['end_line']
 
-              # GitHub の行ハイライト形式: #L開始行-L終了行 (必ず 小 -> 大)
               if repository and s_line > 0:
-                  if e_line > s_line:
-                      line_hash = f"#L{s_line}-L{e_line}"
-                  else:
-                      line_hash = f"#L{s_line}"
+                  line_hash = f"#L{s_line}-L{e_line}" if e_line > s_line else f"#L{s_line}"
                   github_link = f"{server_url}/{repository}/blob/{commit_sha}/{clean_file}{line_hash}"
               else:
                   github_link = "#"
 
               decisions = item['complexity'] - 1
-              if item['complexity'] <= 5:
-                  advice = "分岐が少なく明瞭で、単体テストが極めて容易な状態です。"
-              elif item['complexity'] <= 10:
-                  advice = "標準的な範囲内ですが、これ以上の分岐追加には注意してください。"
-              elif item['complexity'] <= 20:
-                  advice = f"関数内に約 {decisions} 箇所の判定分岐が存在します。ヘルパー関数への切り出しを検討してください。"
+              
+              # 詳細コードヒートマップの生成（上位50件またはCCN>5の関数に絞って生成してサイズ肥大化を防止）
+              if idx < 50 or item['complexity'] > 5:
+                  heatmap_code = generate_source_heatmap(clean_file, s_line, e_line)
               else:
-                  advice = f"🚨 非常に危険な複雑度です（約 {decisions} 箇所の判定）。switch分岐のポリモーフィズム化や、クラス責務の分割が必要です。"
+                  heatmap_code = "<div style='padding: 8px; color: #64748b;'>軽微な関数のためコードプレビューは省略されました。</div>"
 
               rows_html += f"""
               <tr class="main-row" onclick="toggleDetail({idx})">
@@ -160,19 +222,18 @@ jobs:
                 <td colspan="5">
                   <div class="detail-container">
                     <div class="detail-grid">
-                      <div><strong>判定分岐数:</strong> {decisions}</div>
+                      <div><strong>推定判定分岐数:</strong> {decisions}</div>
                       <div><strong>トークン数:</strong> {item['tokens']}</div>
                       <div><strong>引数の数:</strong> {item['params']}</div>
-                      <div><strong>有効コード行数:</strong> {item['nloc']} 行 (L{s_line} 〜 L{e_line})</div>
+                      <div><strong>コード範囲:</strong> L{s_line} 〜 L{e_line} ({item['nloc']} 行)</div>
                     </div>
-                    <div class="detail-advice">
-                      <strong>💡 分析・評価:</strong> {advice}
+                    
+                    <div style="margin: 12px 0 8px 0; display: flex; justify-content: space-between; align-items: center;">
+                      <span style="font-weight: 600; font-size: 12px; color: #475569;">🔍 局所複雑度ヒートマップ (炎マークや黄色が複雑化要因):</span>
+                      <a href="{github_link}" target="_blank" class="code-btn">🎯 GitHubで開く (L{s_line}-L{e_line})</a>
                     </div>
-                    <div style="margin-top: 10px;">
-                      <a href="{github_link}" target="_blank" class="code-btn">
-                        🎯 GitHubで該当コード範囲（L{s_line} - L{e_line}）をマーク表示
-                      </a>
-                    </div>
+                    
+                    {heatmap_code}
                   </div>
                 </td>
               </tr>
@@ -188,29 +249,16 @@ jobs:
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>C++ Cyclomatic Complexity Detailed Report</title>
+            <title>C++ Complexity Heatmap Report</title>
             <style>
               html, body {{
-                margin: 0;
-                padding: 0;
-                width: 100%;
-                overflow-x: hidden;
-                box-sizing: border-box;
-                background: #f8fafc;
-                color: #1e293b;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                margin: 0; padding: 0; width: 100%; overflow-x: hidden; box-sizing: border-box;
+                background: #f8fafc; color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
               }}
-              *, *:before, *:after {{
-                box-sizing: inherit;
-              }}
+              *, *:before, *:after {{ box-sizing: inherit; }}
               .container {{
-                width: 100%;
-                max-width: 1200px;
-                margin: 24px auto;
-                background: #ffffff;
-                border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-                padding: 24px;
+                width: 100%; max-width: 1240px; margin: 24px auto; background: #ffffff;
+                border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 24px;
               }}
               h1 {{ margin-top: 0; font-size: 20px; display: flex; align-items: center; gap: 8px; }}
               .meta {{ color: #64748b; font-size: 13px; margin-bottom: 20px; word-break: break-all; }}
@@ -220,43 +268,51 @@ jobs:
               .card-value {{ font-size: 22px; font-weight: 700; color: #0f172a; }}
               .search-input {{ width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-bottom: 16px; }}
               
-              table {{
-                width: 100%;
-                border-collapse: collapse;
-                table-layout: fixed;
-                font-size: 13px;
-              }}
-              th, td {{
-                padding: 10px 12px;
-                border-bottom: 1px solid #e2e8f0;
-                vertical-align: middle;
-              }}
+              table {{ width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }}
+              th, td {{ padding: 10px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }}
               th {{ background: #f8fafc; font-weight: 600; color: #475569; }}
-              .cell-wrap {{
-                word-break: break-all;
-                overflow-wrap: anywhere;
-                white-space: normal;
-              }}
+              .cell-wrap {{ word-break: break-all; overflow-wrap: anywhere; white-space: normal; }}
+              
               .main-row {{ cursor: pointer; transition: background 0.15s; }}
               .main-row:hover {{ background: #f1f5f9; }}
-              .detail-row td {{ background: #fbfcfe; padding: 14px 18px; border-bottom: 2px solid #cbd5e1; }}
-              .detail-container {{ font-size: 13px; line-height: 1.6; }}
-              .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 8px; }}
-              .detail-advice {{ background: #ffffff; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #3b82f6; margin-top: 6px; word-break: break-all; }}
+              .detail-row td {{ background: #fbfcfe; padding: 16px 20px; border-bottom: 2px solid #cbd5e1; }}
               
+              .detail-container {{ font-size: 13px; }}
+              .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 8px; }}
+              
+              /* ソースコードヒートマップ */
+              .code-block {{
+                background: #0d1117; color: #e6edf3; border-radius: 6px;
+                max-height: 480px; overflow-y: auto; overflow-x: auto;
+                font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace;
+                font-size: 12px; border: 1px solid #30363d; margin-top: 6px;
+              }}
+              .code-row {{ display: flex; align-items: stretch; min-height: 20px; line-height: 20px; }}
+              .code-row:hover {{ background: rgba(255, 255, 255, 0.05); }}
+              .ln {{
+                width: 48px; min-width: 48px; text-align: right; padding-right: 12px;
+                color: #6e7681; user-select: none; border-right: 1px solid #30363d; background: #161b22;
+              }}
+              .code-body {{ margin: 0; padding: 0 12px; white-space: pre; flex-grow: 1; }}
+              
+              /* ヒートマップ強調スタイル */
+              .heat-high {{ background: rgba(239, 68, 68, 0.18) !important; }}
+              .heat-high .ln {{ background: #7f1d1d !important; color: #fecaca !important; font-weight: bold; }}
+              .heat-med {{ background: rgba(234, 179, 8, 0.12) !important; }}
+              .heat-med .ln {{ background: #713f12 !important; color: #fef08a !important; }}
+              
+              .heat-tag {{
+                font-size: 11px; padding: 0 6px; border-radius: 3px; margin-right: 8px;
+                white-space: nowrap; align-self: center; font-weight: 500;
+              }}
+              .heat-tag-red {{ background: #991b1b; color: #fecaca; }}
+              .heat-tag-yellow {{ background: #854d0e; color: #fef9c3; }}
+
               .file-link {{ color: #2563eb; text-decoration: none; font-family: monospace; font-size: 12px; }}
               .file-link:hover {{ text-decoration: underline; }}
-              
               .code-btn {{
-                display: inline-block;
-                background: #2563eb;
-                color: #ffffff !important;
-                padding: 6px 12px;
-                border-radius: 4px;
-                text-decoration: none;
-                font-size: 12px;
-                font-weight: 600;
-                transition: background 0.2s;
+                background: #2563eb; color: #ffffff !important; padding: 4px 10px;
+                border-radius: 4px; text-decoration: none; font-size: 11px; font-weight: 600;
               }}
               .code-btn:hover {{ background: #1d4ed8; }}
 
@@ -269,7 +325,7 @@ jobs:
           </head>
           <body>
             <div class="container">
-              <h1>⚡ C++ Cyclomatic Complexity Detailed Report</h1>
+              <h1>⚡ C++ Cyclomatic Complexity Heatmap Report</h1>
               <div class="meta">Generated at: {generated_at} | Targets: {', '.join(target_dirs)}</div>
 
               <div class="stats">
@@ -287,7 +343,7 @@ jobs:
                 </div>
               </div>
 
-              <input type="text" id="searchInput" class="search-input" placeholder="関数名、ファイル名で絞り込み（行をクリックで詳細展開）..." onkeyup="filterTable()">
+              <input type="text" id="searchInput" class="search-input" placeholder="関数名、ファイル名で絞り込み（行をクリックでソースヒートマップ展開）..." onkeyup="filterTable()">
 
               <table id="complexityTable">
                 <thead>
