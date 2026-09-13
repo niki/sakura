@@ -35,6 +35,7 @@ jobs:
           import io
           import re
           import html
+          import json
           import subprocess
           from datetime import datetime
           from collections import Counter
@@ -64,7 +65,7 @@ jobs:
               r"if\s*\(\s*(hWnd|hDC|hBmp|hMem|hFont|lpParam|pTarget|pNode|pThis)\s*==\s*(NULL|nullptr|INVALID_HANDLE_VALUE)\s*\)"
           )
 
-          # 分岐抽出パターン（&& と || を完全に分離）
+          # 分岐抽出パターン（&& と || を分離）
           PAT_IF = re.compile(r"\b(if|else\s+if)\b")
           PAT_LOOP = re.compile(r"\b(for|while|do)\b")
           PAT_AND = re.compile(r"(?<!&)&&(?!&)")
@@ -74,13 +75,13 @@ jobs:
 
           def generate_source_heatmap(filepath, start_l, end_l, is_dispatcher):
               if not os.path.exists(filepath):
-                  return Counter(), "<div style='color: #64748b; padding: 8px;'>ソースコードが見つかりませんでした。</div>"
+                  return Counter(), "<div style='color: #64748b; padding: 16px;'>ソースコードが見つかりませんでした。</div>"
 
               try:
                   with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                       all_lines = f.readlines()
               except Exception as e:
-                  return Counter(), f"<div style='color: #ef4444; padding: 8px;'>読み込みエラー: {html.escape(str(e))}</div>"
+                  return Counter(), f"<div style='color: #ef4444; padding: 16px;'>読み込みエラー: {html.escape(str(e))}</div>"
 
               total_lines = len(all_lines)
               s_idx = max(0, start_l - 1)
@@ -255,6 +256,8 @@ jobs:
           max_ccn = max([x["complexity"] for x in items_list], default=1)
 
           rows_html = ""
+          modal_data_list = []
+
           for idx, item in enumerate(items_list):
               rank = item["rank"]
               badge_class = f"badge-{rank.lower()}"
@@ -271,10 +274,10 @@ jobs:
 
               decisions = ccn - 1
               
-              if idx < 50 or ccn > 5:
+              if idx < 60 or ccn > 5:
                   causes, heatmap_code = generate_source_heatmap(clean_file, s_line, e_line, item['is_dispatcher'])
               else:
-                  causes, heatmap_code = Counter(), "<div style='padding: 8px; color: #64748b;'>軽微な関数のためコードプレビューは省略されました。</div>"
+                  causes, heatmap_code = Counter(), "<div style='padding: 16px; color: #64748b;'>軽微な関数のためコードプレビューは省略されました。</div>"
 
               total_causes = sum(causes.values())
               if total_causes > 0:
@@ -317,8 +320,9 @@ jobs:
               bg_color = "rgba(248, 113, 113, 0.18)" if rank == "D" else ("rgba(254, 202, 202, 0.25)" if rank == "C" else "rgba(226, 232, 240, 0.6)")
               disp_tag = "<span class='tag-disp'>DISPATCHER</span>" if item['is_dispatcher'] else ""
 
+              # 行HTML（クリックでモーダルを開く）
               rows_html += f"""
-              <tr class="main-row" onclick="toggleDetail({idx})">
+              <tr class="main-row" onclick="openModal({idx})">
                 <td style="text-align: center;"><span class="badge {badge_class}">{rank}</span></td>
                 <td class="ccn-cell" style="--bg-width: {bg_width_pct}%; --bg-color: {bg_color};">
                   <div class="ccn-num-wrap">
@@ -330,36 +334,33 @@ jobs:
                 <td class="cell-wrap"><a href="{github_link}" target="_blank" class="file-link" onclick="event.stopPropagation();">{clean_file}:{s_line}</a></td>
                 <td style="color: #64748b; text-align: right;">{item['nloc']} 行</td>
               </tr>
-              <tr id="detail-{idx}" class="detail-row" style="display: none;">
-                <td colspan="5">
-                  <div class="detail-container">
-                    <div class="detail-grid">
-                      <div><strong>推定判定分岐数:</strong> {decisions}</div>
-                      <div><strong>トークン数:</strong> {item['tokens']}</div>
-                      <div><strong>引数の数:</strong> {item['params']}</div>
-                      <div><strong>コード範囲:</strong> L{s_line} 〜 L{e_line} ({item['nloc']} 行)</div>
-                    </div>
-                    
-                    <div class="breakdown-bar">
-                      <strong>要因内訳:</strong> {breakdown_html}
-                      <span class="legend-note">(紫: case / 赤: if / ローズ: && / 橙: || / 黄: loop)</span>
-                    </div>
-
-                    <div style="margin: 10px 0 8px 0; display: flex; justify-content: space-between; align-items: center;">
-                      <span style="font-weight: 600; font-size: 12px; color: #475569;">🔍 局所複雑度ヒートマップ:</span>
-                      <a href="{github_link}" target="_blank" class="code-btn">🎯 GitHubで開く (L{s_line}-L{e_line})</a>
-                    </div>
-                    
-                    {heatmap_code}
-                  </div>
-                </td>
-              </tr>
               """
+
+              modal_data_list.append({
+                  "idx": idx,
+                  "name": item['name'],
+                  "rank": rank,
+                  "rank_class": badge_class,
+                  "ccn": ccn,
+                  "decisions": decisions,
+                  "tokens": item['tokens'],
+                  "params": item['params'],
+                  "file": clean_file,
+                  "start_line": s_line,
+                  "end_line": e_line,
+                  "nloc": item['nloc'],
+                  "github_link": github_link,
+                  "breakdown_html": breakdown_html,
+                  "heatmap_html": heatmap_code
+              })
 
           total_functions = len(items_list)
           high_risk_count = sum(1 for x in items_list if x["rank"] in ["C", "D"])
           avg_ccn = round(sum(x["complexity"] for x in items_list) / max(total_functions, 1), 2)
           generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+          # モーダル用データを JSON 形式で埋め込み
+          modal_json = json.dumps(modal_data_list, ensure_ascii=False)
 
           html_content = f"""<!DOCTYPE html>
           <html lang="ja">
@@ -392,7 +393,6 @@ jobs:
               
               .main-row {{ cursor: pointer; transition: background 0.15s; }}
               .main-row:hover {{ background: #f1f5f9; }}
-              .detail-row td {{ background: #fbfcfe; padding: 16px 20px; border-bottom: 2px solid #cbd5e1; }}
               
               .ccn-cell {{
                 position: relative;
@@ -422,20 +422,109 @@ jobs:
               .b-or   {{ background: #ffedd5; color: #c2410c; }}
               .b-loop {{ background: #fef9c3; color: #a16207; }}
 
-              .detail-container {{ font-size: 13px; }}
-              .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 8px; }}
-              .breakdown-bar {{ background: #ffffff; padding: 8px 12px; border-radius: 4px; border: 1px solid #e2e8f0; margin-bottom: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }}
+              .file-link {{ color: #2563eb; text-decoration: none; font-family: monospace; font-size: 12px; }}
+              .file-link:hover {{ text-decoration: underline; }}
+
+              .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }}
+              .badge-a {{ background: #dcfce7; color: #166534; }}
+              .badge-b {{ background: #fef9c3; color: #854d0e; }}
+              .badge-c {{ background: #fee2e2; color: #991b1b; }}
+              .badge-d {{ background: #f87171; color: #ffffff; }}
+              
+              .tag-disp {{
+                display: inline-block; background: #e0e7ff; color: #3730a3;
+                font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 3px; margin-right: 6px;
+              }}
+
+              /* -------------------------------------------------------------
+                 モーダルダイアログ（背景暗転＋手前ポップアップ）スタイル
+                 ------------------------------------------------------------- */
+              .modal-overlay {{
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(15, 23, 42, 0.7);
+                backdrop-filter: blur(2px);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                padding: 24px;
+                opacity: 0;
+                transition: opacity 0.2s ease-in-out;
+              }}
+              .modal-overlay.active {{
+                display: flex;
+                opacity: 1;
+              }}
+              .modal-content {{
+                background: #ffffff;
+                border-radius: 10px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+                width: 100%;
+                max-width: 1100px;
+                max-height: 90vh;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                transform: scale(0.96);
+                transition: transform 0.2s ease-in-out;
+              }}
+              .modal-overlay.active .modal-content {{
+                transform: scale(1);
+              }}
+              .modal-header {{
+                padding: 16px 24px;
+                border-bottom: 1px solid #e2e8f0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: #f8fafc;
+              }}
+              .modal-title {{
+                font-size: 16px;
+                font-weight: 700;
+                color: #0f172a;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              }}
+              .modal-close-btn {{
+                background: none;
+                border: none;
+                font-size: 24px;
+                line-height: 1;
+                color: #64748b;
+                cursor: pointer;
+                padding: 4px 8px;
+                border-radius: 6px;
+                transition: background 0.15s, color 0.15s;
+              }}
+              .modal-close-btn:hover {{
+                background: #e2e8f0;
+                color: #0f172a;
+              }}
+              .modal-body {{
+                padding: 24px;
+                overflow-y: auto;
+                flex-grow: 1;
+              }}
+              
+              .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 12px; font-size: 13px; }}
+              .breakdown-bar {{ background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 13px; }}
               
               .code-block {{
                 background: #0d1117; color: #e6edf3; border-radius: 6px;
-                max-height: 480px; overflow-y: auto; overflow-x: auto;
+                max-height: 520px; overflow-y: auto; overflow-x: auto;
                 font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace;
-                font-size: 12px; border: 1px solid #30363d; margin-top: 6px;
+                font-size: 12px; border: 1px solid #30363d; margin-top: 8px;
               }}
               .code-row {{ display: flex; align-items: stretch; min-height: 20px; line-height: 20px; }}
               .code-row:hover {{ background: rgba(255, 255, 255, 0.05); }}
               .ln {{
-                width: 48px; min-width: 48px; text-align: right; padding-right: 12px;
+                width: 52px; min-width: 52px; text-align: right; padding-right: 12px;
                 color: #6e7681; user-select: none; border-right: 1px solid #30363d; background: #161b22;
               }}
               .code-body {{ margin: 0; padding: 0 12px; white-space: pre; flex-grow: 1; }}
@@ -456,24 +545,12 @@ jobs:
               .heat-tag-yellow {{ background: #854d0e; color: #fef9c3; }}
               .heat-tag-purple {{ background: #581c87; color: #e9d5ff; }}
 
-              .file-link {{ color: #2563eb; text-decoration: none; font-family: monospace; font-size: 12px; }}
-              .file-link:hover {{ text-decoration: underline; }}
               .code-btn {{
-                background: #2563eb; color: #ffffff !important; padding: 4px 10px;
-                border-radius: 4px; text-decoration: none; font-size: 11px; font-weight: 600;
+                background: #2563eb; color: #ffffff !important; padding: 6px 14px;
+                border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;
+                display: inline-flex; align-items: center; gap: 6px;
               }}
               .code-btn:hover {{ background: #1d4ed8; }}
-
-              .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }}
-              .badge-a {{ background: #dcfce7; color: #166534; }}
-              .badge-b {{ background: #fef9c3; color: #854d0e; }}
-              .badge-c {{ background: #fee2e2; color: #991b1b; }}
-              .badge-d {{ background: #f87171; color: #ffffff; }}
-              
-              .tag-disp {{
-                display: inline-block; background: #e0e7ff; color: #3730a3;
-                font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 3px; margin-right: 6px;
-              }}
             </style>
           </head>
           <body>
@@ -496,7 +573,7 @@ jobs:
                 </div>
               </div>
 
-              <input type="text" id="searchInput" class="search-input" placeholder="関数名、ファイル名で絞り込み（行をクリックでソースヒートマップ展開）..." onkeyup="filterTable()">
+              <input type="text" id="searchInput" class="search-input" placeholder="関数名、ファイル名で絞り込み（行をクリックでポップアップ表示）..." onkeyup="filterTable()">
 
               <table id="complexityTable">
                 <thead>
@@ -514,25 +591,81 @@ jobs:
               </table>
             </div>
 
+            <!-- モーダルダイアログ構造 -->
+            <div id="modalOverlay" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <div class="modal-title" id="modalTitle"></div>
+                  <button class="modal-close-btn" onclick="closeModal()" title="閉じる (Esc)">&times;</button>
+                </div>
+                <div class="modal-body" id="modalBody"></div>
+              </div>
+            </div>
+
             <script>
-              function toggleDetail(idx) {{
-                const detailRow = document.getElementById("detail-" + idx);
-                if (detailRow) {{
-                  detailRow.style.display = (detailRow.style.display === "none") ? "table-row" : "none";
+              const modalData = {modal_json};
+
+              function openModal(idx) {{
+                const item = modalData[idx];
+                if (!item) return;
+
+                document.getElementById("modalTitle").innerHTML = `
+                  <span class="badge ${{item.rank_class}}">${{item.rank}}</span>
+                  <span>${{item.name}}</span>
+                  <span style="font-weight: normal; font-size: 13px; color: #64748b;">(CCN: ${{item.ccn}})</span>
+                `;
+
+                document.getElementById("modalBody").innerHTML = `
+                  <div class="detail-grid">
+                    <div><strong>推定判定分岐数:</strong> ${{item.decisions}}</div>
+                    <div><strong>トークン数:</strong> ${{item.tokens}}</div>
+                    <div><strong>引数の数:</strong> ${{item.params}}</div>
+                    <div><strong>コード範囲:</strong> L${{item.start_line}} 〜 L${{item.end_line}} (${{item.nloc}} 行)</div>
+                  </div>
+                  
+                  <div class="breakdown-bar">
+                    <strong>要因内訳:</strong> ${{item.breakdown_html}}
+                    <span class="legend-note">(紫: case / 赤: if / ローズ: && / 橙: || / 黄: loop)</span>
+                  </div>
+
+                  <div style="margin: 14px 0 8px 0; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; font-size: 13px; color: #475569;">🔍 局所複雑度ヒートマップ:</span>
+                    <a href="${{item.github_link}}" target="_blank" class="code-btn">🎯 GitHubで開く (L${{item.start_line}}-L${{item.end_line}})</a>
+                  </div>
+
+                  ${{item.heatmap_html}}
+                `;
+
+                const overlay = document.getElementById("modalOverlay");
+                overlay.classList.add("active");
+                document.body.style.overflow = "hidden"; // 背景のスクロールを防止
+              }}
+
+              function closeModal() {{
+                const overlay = document.getElementById("modalOverlay");
+                overlay.classList.remove("active");
+                document.body.style.overflow = ""; // スクロール復帰
+              }}
+
+              function closeModalOnBackdrop(e) {{
+                if (e.target.id === "modalOverlay") {{
+                  closeModal();
                 }}
               }}
+
+              // ESCキー押下で閉じる
+              document.addEventListener("keydown", function(e) {{
+                if (e.key === "Escape") {{
+                  closeModal();
+                }}
+              }});
 
               function filterTable() {{
                 const query = document.getElementById("searchInput").value.toLowerCase();
                 const mainRows = document.querySelectorAll("#complexityTable tbody tr.main-row");
-                mainRows.forEach((row, i) => {{
+                mainRows.forEach((row) => {{
                   const text = row.textContent.toLowerCase();
-                  const match = text.includes(query);
-                  row.style.display = match ? "" : "none";
-                  const detailRow = document.getElementById("detail-" + i);
-                  if (detailRow && !match) {{
-                    detailRow.style.display = "none";
-                  }}
+                  row.style.display = text.includes(query) ? "" : "none";
                 }});
               }}
             </script>
