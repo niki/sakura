@@ -1,4 +1,4 @@
-name: C++ Complexity HTML Report
+name: C++ Complexity Detailed HTML Report
 
 on:
   push:
@@ -22,11 +22,9 @@ jobs:
       - name: Install lizard
         run: pip install lizard
 
-      - name: Measure and Generate HTML Report
+      - name: Measure and Generate Detailed HTML Report
         env:
-          # 計測対象ディレクトリ（スペース区切り）
           TARGET_DIRS: "sakura_core"
-          # 除外対象パターン（スペース区切り）
           EXCLUDE_PATTERN: "*test* *vendor* *third_party* *build*"
         run: |
           mkdir -p reports
@@ -39,8 +37,13 @@ jobs:
 
           target_dirs = os.environ.get("TARGET_DIRS", "src").split()
           raw_excludes = os.environ.get("EXCLUDE_PATTERN", "").split()
+          
+          # GitHubリポジトリへのリンク生成用
+          server_url = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+          repository = os.environ.get("GITHUB_REPOSITORY", "")
+          commit_sha = os.environ.get("GITHUB_SHA", "main")
 
-          # lizard の XML 出力オプション (-X) を使用
+          # lizard の XML 出力オプション (-X) を実行
           cmd = ["lizard", "-X"] + target_dirs
           for pat in raw_excludes:
               if pat.strip():
@@ -52,21 +55,27 @@ jobs:
           if proc.stdout.strip():
               try:
                   root = ET.fromstring(proc.stdout)
-                  # lizard XML の構造: <cppncss><measure type="Function"><item name="func(...)"> ...
                   for item in root.findall(".//item"):
                       func_name = item.get("name", "")
                       ccn_val = item.find("value")
                       ccn = int(ccn_val.text) if ccn_val is not None and ccn_val.text.isdigit() else 1
                       
-                      # 行数・ファイル名
                       line_node = item.find("line")
                       line = line_node.text if line_node is not None else "0"
                       file_node = item.find("file")
                       filename = file_node.text if file_node is not None else ""
                       
-                      # NLOC (有効コード行数)
+                      # コード行数 (NLOC)
                       nloc_node = item.find("nr")
-                      nloc = nloc_node.text if nloc_node is not None else "-"
+                      nloc = int(nloc_node.text) if nloc_node is not None and nloc_node.text.isdigit() else 0
+
+                      # トークン数
+                      token_node = item.find("token")
+                      tokens = token_node.text if token_node is not None else "-"
+
+                      # 引数・パラメータ数
+                      param_node = item.find("param")
+                      params = param_node.text if param_node is not None else "-"
 
                       if ccn <= 5:
                           rank = "A"
@@ -83,45 +92,83 @@ jobs:
                           "name": func_name,
                           "file": filename,
                           "line": line,
-                          "nloc": nloc
+                          "nloc": nloc,
+                          "tokens": tokens,
+                          "params": params
                       })
               except Exception as e:
                   print(f"XMLパースエラー: {e}")
-                  print(f"lizard stdout: {proc.stdout[:500]}")
 
           # 複雑度の降順ソート
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
-          # HTML行生成
+          # 詳細付きテーブル行の生成
           rows_html = ""
-          for item in items_list:
+          for idx, item in enumerate(items_list):
               rank = item["rank"]
               badge_class = f"badge-{rank.lower()}"
+              
+              # GitHub ソースコード直接リンク
+              clean_file = item['file'].replace('\\', '/')
+              if clean_file.startswith('./'):
+                  clean_file = clean_file[2:]
+              github_link = f"{server_url}/{repository}/blob/{commit_sha}/{clean_file}#L{item['line']}" if repository else "#"
+
+              # 複雑度要因の解説テキスト
+              decisions = item['complexity'] - 1
+              if item['complexity'] <= 5:
+                  advice = "分岐が少なく明瞭で、単体テストが極めて容易な状態です。"
+              elif item['complexity'] <= 10:
+                  advice = "標準的な範囲内ですが、これ以上の分岐追加には注意してください。"
+              elif item['complexity'] <= 20:
+                  advice = f"関数内に約 {decisions} 箇所の判定分岐（if / switch-case / for / while / 論理演算子）が存在します。ヘルパー関数への切り出しを検討してください。"
+              else:
+                  advice = f"🚨 非常に危険な複雑度です（約 {decisions} 箇所の判定）。switch分岐のポリモーフィズム化や、クラス責務の分割が必要です。"
+
               rows_html += f"""
-              <tr>
+              <tr class="main-row" onclick="toggleDetail({idx})">
                 <td><span class="badge {badge_class}">{rank}</span></td>
                 <td style="font-weight: bold; font-size: 15px;">{item['complexity']}</td>
                 <td><code>{item['name']}</code></td>
                 <td><span class="file-path">{item['file']}:{item['line']}</span></td>
                 <td style="color: #64748b;">{item['nloc']} 行</td>
               </tr>
+              <tr id="detail-{idx}" class="detail-row" style="display: none;">
+                <td colspan="5">
+                  <div class="detail-container">
+                    <div class="detail-grid">
+                      <div><strong>判定分岐数 (Decisions):</strong> {decisions}</div>
+                      <div><strong>トークン数:</strong> {item['tokens']}</div>
+                      <div><strong>引数の数:</strong> {item['params']}</div>
+                      <div><strong>有効コード行数 (NLOC):</strong> {item['nloc']} 行</div>
+                    </div>
+                    <div class="detail-advice">
+                      <strong>💡 分析・評価:</strong> {advice}
+                    </div>
+                    <div style="margin-top: 8px;">
+                      <a href="{github_link}" target="_blank" class="code-link">🔗 GitHubで該当行（L{item['line']}）を表示</a>
+                    </div>
+                  </div>
+                </td>
+              </tr>
               """
 
           total_functions = len(items_list)
           high_risk_count = sum(1 for x in items_list if x["complexity"] > 10)
+          avg_ccn = round(sum(x["complexity"] for x in items_list) / max(total_functions, 1), 2)
           generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
 
           html_content = f"""<!DOCTYPE html>
           <html lang="ja">
           <head>
             <meta charset="UTF-8">
-            <title>C++ Cyclomatic Complexity Report</title>
+            <title>C++ Cyclomatic Complexity Detailed Report</title>
             <style>
               body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }}
               .container {{ max-width: 1140px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 32px; }}
               h1 {{ margin-top: 0; font-size: 22px; display: flex; align-items: center; gap: 8px; }}
               .meta {{ color: #64748b; font-size: 13px; margin-bottom: 24px; }}
-              .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }}
+              .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }}
               .card {{ background: #f1f5f9; border-radius: 6px; padding: 16px; }}
               .card-title {{ font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }}
               .card-value {{ font-size: 24px; font-weight: 700; color: #0f172a; }}
@@ -129,7 +176,14 @@ jobs:
               table {{ width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }}
               th, td {{ padding: 12px 14px; border-bottom: 1px solid #e2e8f0; }}
               th {{ background: #f8fafc; font-weight: 600; color: #475569; }}
-              tr:hover {{ background: #f8fafc; }}
+              .main-row {{ cursor: pointer; transition: background 0.15s; }}
+              .main-row:hover {{ background: #f1f5f9; }}
+              .detail-row td {{ background: #fbfcfe; padding: 14px 18px; border-bottom: 2px solid #e2e8f0; }}
+              .detail-container {{ font-size: 13px; line-height: 1.6; }}
+              .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin-bottom: 8px; }}
+              .detail-advice {{ background: #ffffff; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #3b82f6; margin-top: 6px; }}
+              .code-link {{ color: #2563eb; text-decoration: none; font-weight: 500; font-size: 12px; }}
+              .code-link:hover {{ text-decoration: underline; }}
               .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }}
               .badge-a {{ background: #dcfce7; color: #166534; }}
               .badge-b {{ background: #fef9c3; color: #854d0e; }}
@@ -140,7 +194,7 @@ jobs:
           </head>
           <body>
             <div class="container">
-              <h1>⚡ C++ Cyclomatic Complexity Report</h1>
+              <h1>⚡ C++ Cyclomatic Complexity Detailed Report</h1>
               <div class="meta">Generated at: {generated_at} | Targets: {', '.join(target_dirs)}</div>
 
               <div class="stats">
@@ -149,12 +203,16 @@ jobs:
                   <div class="card-value">{total_functions}</div>
                 </div>
                 <div class="card">
-                  <div class="card-title">High Complexity (&gt; 10)</div>
+                  <div class="card-title">Average Complexity</div>
+                  <div class="card-value">{avg_ccn}</div>
+                </div>
+                <div class="card">
+                  <div class="card-title">High Risk (&gt; 10)</div>
                   <div class="card-value" style="color: {'#dc2626' if high_risk_count > 0 else '#16a34a'};">{high_risk_count}</div>
                 </div>
               </div>
 
-              <input type="text" id="searchInput" class="search-input" placeholder="関数名、クラス名、ファイル名で絞り込み..." onkeyup="filterTable()">
+              <input type="text" id="searchInput" class="search-input" placeholder="関数名、ファイル名で絞り込み（行をクリックで詳細展開）..." onkeyup="filterTable()">
 
               <table id="complexityTable">
                 <thead>
@@ -173,12 +231,24 @@ jobs:
             </div>
 
             <script>
+              function toggleDetail(idx) {{
+                const detailRow = document.getElementById("detail-" + idx);
+                if (detailRow) {{
+                  detailRow.style.display = (detailRow.style.display === "none") ? "table-row" : "none";
+                }}
+              }}
+
               function filterTable() {{
                 const query = document.getElementById("searchInput").value.toLowerCase();
-                const rows = document.querySelectorAll("#complexityTable tbody tr");
-                rows.forEach(row => {{
+                const mainRows = document.querySelectorAll("#complexityTable tbody tr.main-row");
+                mainRows.forEach((row, i) => {{
                   const text = row.textContent.toLowerCase();
-                  row.style.display = text.includes(query) ? "" : "none";
+                  const match = text.includes(query);
+                  row.style.display = match ? "" : "none";
+                  const detailRow = document.getElementById("detail-" + i);
+                  if (detailRow && !match) {{
+                    detailRow.style.display = "none";
+                  }}
                 }});
               }}
             </script>
