@@ -25,7 +25,7 @@ jobs:
       - name: Measure and Generate HTML Report
         env:
           # 計測対象ディレクトリ（スペース区切りで複数指定可能）
-          TARGET_DIRS: "src include"
+          TARGET_DIRS: "sakura_core"
           # 除外対象パターン（スペース区切りで複数指定可能）
           EXCLUDE_PATTERN: "*test* *vendor* *third_party* *build*"
         run: |
