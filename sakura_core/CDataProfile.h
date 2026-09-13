@@ -172,6 +172,14 @@ protected:
 	// 「切り詰めて継続、abortしない」方針に合わせる)。
 	void profile_to_value(const wstring& profile, StringBufferW* value)
 	{
+		// 20260913 MakeStringBufferW0/T0(nDataCount==0、サイズ不明のポインタを
+		// そのまま書き出す専用)を誤って読み込み方向(IOProfileData()のm_bRead時)で
+		// 使ってしまった場合のガード。value->pDataは非nullなので、このまま
+		// wcsncpy_s(dst,0,...)を呼ぶと不正パラメータ扱いでDebugビルドが落ちる
+		// (このstruct全体の方針である「収まらなければ安全に切り詰めて継続、
+		// abortしない」に反する)。書き込み先サイズが不明で切り詰めようがないので、
+		// 何もせず安全に抜ける
+		if( 0 == value->nDataCount ) return;
 		wcsncpy_s(value->pData,value->nDataCount,profile.c_str(),_TRUNCATE);
 	}
 	void value_to_profile(const StringBufferW& value, wstring* profile)
