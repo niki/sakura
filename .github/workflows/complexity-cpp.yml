@@ -31,8 +31,7 @@ jobs:
 
           python - << 'EOF'
           import os
-          import csv
-          import io
+          import re
           import subprocess
           from datetime import datetime
 
@@ -43,7 +42,6 @@ jobs:
           repository = os.environ.get("GITHUB_REPOSITORY", "")
           commit_sha = os.environ.get("GITHUB_SHA", "main")
 
-          # lizard の CSV 出力オプションを使用
           cmd = ["lizard", "--csv"] + target_dirs
           for pat in raw_excludes:
               if pat.strip():
@@ -53,23 +51,44 @@ jobs:
 
           items_list = []
           if proc.stdout.strip():
-              reader = csv.reader(io.StringIO(proc.stdout))
-              for row in reader:
-                  # lizard CSV フォーマット:
-                  # [0]: nloc, [1]: CCN, [2]: token, [3]: param, [4]: length, 
-                  # [5]: file, [6]: function, [7]: long_name, [8]: start_line, [9]: end_line
-                  if len(row) < 9:
+              for line in proc.stdout.splitlines():
+                  line = line.strip()
+                  if not line:
                       continue
-                  try:
-                      nloc = int(row[0].strip())
-                      ccn = int(row[1].strip())
-                      tokens = row[2].strip()
-                      params = row[3].strip()
-                      filepath = row[5].strip()
-                      func_name = row[7].strip() if len(row) > 7 and row[7].strip() else row[6].strip()
-                      start_line = row[8].strip()
-                  except ValueError:
+
+                  # lizard --csv の行構成:
+                  # 前方5つ: nloc, ccn, token, param, length (すべて数値)
+                  # 後方2つ: start_line, end_line (すべて数値)
+                  # 中間: location, func_name, long_name
+                  # カンマを含むC++シグネチャ対策として正規表現で先頭5数値と末尾2数値を厳密に分離
+                  match = re.match(r"^(\d+),(\d+),(\d+),(\d+),(\d+),(.*),(\d+),(\d+)$", line)
+                  if not match:
                       continue
+
+                  nloc = int(match.group(1))
+                  ccn = int(match.group(2))
+                  tokens = match.group(3)
+                  params = match.group(4)
+                  middle = match.group(6)
+                  start_line = match.group(7)
+
+                  # middle 部分からファイルパスと関数名を抽出
+                  # middleのフォーマット例:
+                  # 1) "sakura_core/view/colors/CColor_Numeric.cpp,IsNumber,IsNumber( ... )"
+                  # 2) "func@107-623@sakura_core/view/colors/CColor_Numeric.cpp:func,..."
+                  parts = middle.split(",", 2)
+                  raw_loc = parts[0].strip()
+                  func_name = parts[1].strip() if len(parts) > 1 else raw_loc
+                  if len(parts) > 2 and parts[2].strip():
+                      func_name = parts[2].strip()
+
+                  # "@" を含む形式の場合は純粋なファイルパスを切り出し
+                  if "@" in raw_loc:
+                      sub = raw_loc.split("@")
+                      # 例: func@107-623@sakura_core/xxx.cpp:func -> sakura_core/xxx.cpp
+                      filepath = sub[-1].split(":")[0].strip()
+                  else:
+                      filepath = raw_loc
 
                   if ccn <= 5:
                       rank = "A"
@@ -91,10 +110,10 @@ jobs:
                       "params": params
                   })
 
-          # 複雑度の降順（大きい順）にソート
+          # 複雑度の降順ソート
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
-          # テーブル行の生成
+          # 行データの生成
           rows_html = ""
           for idx, item in enumerate(items_list):
               rank = item["rank"]
@@ -103,6 +122,10 @@ jobs:
               clean_file = item['file'].replace('\\', '/')
               if clean_file.startswith('./'):
                   clean_file = clean_file[2:]
+              
+              # 余計なコロン以降を確実に除去
+              clean_file = clean_file.split(':')[0]
+
               github_link = f"{server_url}/{repository}/blob/{commit_sha}/{clean_file}#L{item['line']}" if repository else "#"
 
               decisions = item['complexity'] - 1
@@ -117,26 +140,26 @@ jobs:
 
               rows_html += f"""
               <tr class="main-row" onclick="toggleDetail({idx})">
-                <td><span class="badge {badge_class}">{rank}</span></td>
-                <td style="font-weight: bold; font-size: 15px;">{item['complexity']}</td>
-                <td><code>{item['name']}</code></td>
-                <td><span class="file-path">{item['file']}:{item['line']}</span></td>
-                <td style="color: #64748b;">{item['nloc']} 行</td>
+                <td style="text-align: center;"><span class="badge {badge_class}">{rank}</span></td>
+                <td style="font-weight: bold; font-size: 15px; text-align: center;">{item['complexity']}</td>
+                <td class="cell-wrap"><code>{item['name']}</code></td>
+                <td class="cell-wrap"><span class="file-path">{item['file']}:{item['line']}</span></td>
+                <td style="color: #64748b; text-align: right;">{item['nloc']} 行</td>
               </tr>
               <tr id="detail-{idx}" class="detail-row" style="display: none;">
                 <td colspan="5">
                   <div class="detail-container">
                     <div class="detail-grid">
-                      <div><strong>判定分岐数 (Decisions):</strong> {decisions}</div>
+                      <div><strong>判定分岐数:</strong> {decisions}</div>
                       <div><strong>トークン数:</strong> {item['tokens']}</div>
                       <div><strong>引数の数:</strong> {item['params']}</div>
-                      <div><strong>有効コード行数 (NLOC):</strong> {item['nloc']} 行</div>
+                      <div><strong>有効コード行数:</strong> {item['nloc']} 行</div>
                     </div>
                     <div class="detail-advice">
                       <strong>💡 分析・評価:</strong> {advice}
                     </div>
-                    <div style="margin-top: 8px;">
-                      <a href="{github_link}" target="_blank" class="code-link">🔗 GitHubで該当行（L{item['line']}）を表示</a>
+                    <div style="margin-top: 10px;">
+                      <a href="{github_link}" target="_blank" class="code-link">🔗 GitHubで該当行（{clean_file}#L{item['line']}）を表示</a>
                     </div>
                   </div>
                 </td>
@@ -152,29 +175,66 @@ jobs:
           <html lang="ja">
           <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>C++ Cyclomatic Complexity Detailed Report</title>
             <style>
-              body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }}
-              .container {{ max-width: 1140px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 32px; }}
-              h1 {{ margin-top: 0; font-size: 22px; display: flex; align-items: center; gap: 8px; }}
-              .meta {{ color: #64748b; font-size: 13px; margin-bottom: 24px; }}
-              .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }}
+              html, body {{
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                overflow-x: hidden;
+                box-sizing: border-box;
+                background: #f8fafc;
+                color: #1e293b;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              }}
+              *, *:before, *:after {{
+                box-sizing: inherit;
+              }}
+              .container {{
+                width: 100%;
+                max-width: 1200px;
+                margin: 24px auto;
+                background: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                padding: 24px;
+              }}
+              h1 {{ margin-top: 0; font-size: 20px; display: flex; align-items: center; gap: 8px; }}
+              .meta {{ color: #64748b; font-size: 13px; margin-bottom: 20px; word-break: break-all; }}
+              .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px; }}
               .card {{ background: #f1f5f9; border-radius: 6px; padding: 16px; }}
               .card-title {{ font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }}
-              .card-value {{ font-size: 24px; font-weight: 700; color: #0f172a; }}
-              .search-input {{ width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-bottom: 16px; }}
-              table {{ width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }}
-              th, td {{ padding: 12px 14px; border-bottom: 1px solid #e2e8f0; }}
+              .card-value {{ font-size: 22px; font-weight: 700; color: #0f172a; }}
+              .search-input {{ width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-bottom: 16px; }}
+              
+              /* テーブル幅の固定と強制折り返し（横スクロール防止） */
+              table {{
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;
+                font-size: 13px;
+              }}
+              th, td {{
+                padding: 10px 12px;
+                border-bottom: 1px solid #e2e8f0;
+                vertical-align: middle;
+              }}
               th {{ background: #f8fafc; font-weight: 600; color: #475569; }}
+              .cell-wrap {{
+                word-break: break-all;
+                overflow-wrap: anywhere;
+                white-space: normal;
+              }}
               .main-row {{ cursor: pointer; transition: background 0.15s; }}
               .main-row:hover {{ background: #f1f5f9; }}
-              .detail-row td {{ background: #fbfcfe; padding: 14px 18px; border-bottom: 2px solid #e2e8f0; }}
+              .detail-row td {{ background: #fbfcfe; padding: 14px 18px; border-bottom: 2px solid #cbd5e1; }}
               .detail-container {{ font-size: 13px; line-height: 1.6; }}
-              .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin-bottom: 8px; }}
-              .detail-advice {{ background: #ffffff; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #3b82f6; margin-top: 6px; }}
-              .code-link {{ color: #2563eb; text-decoration: none; font-weight: 500; font-size: 12px; }}
+              .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 8px; }}
+              .detail-advice {{ background: #ffffff; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #3b82f6; margin-top: 6px; word-break: break-all; }}
+              .code-link {{ color: #2563eb; text-decoration: none; font-weight: 600; font-size: 13px; word-break: break-all; }}
               .code-link:hover {{ text-decoration: underline; }}
-              .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }}
+              .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }}
               .badge-a {{ background: #dcfce7; color: #166534; }}
               .badge-b {{ background: #fef9c3; color: #854d0e; }}
               .badge-c {{ background: #fee2e2; color: #991b1b; }}
@@ -207,11 +267,11 @@ jobs:
               <table id="complexityTable">
                 <thead>
                   <tr>
-                    <th style="width: 70px;">Rank</th>
-                    <th style="width: 100px;">CCN</th>
-                    <th>Function / Method</th>
-                    <th>Location</th>
-                    <th style="width: 90px;">NLOC</th>
+                    <th style="width: 65px; text-align: center;">Rank</th>
+                    <th style="width: 75px; text-align: center;">CCN</th>
+                    <th style="width: 45%;">Function / Method</th>
+                    <th style="width: 35%;">Location</th>
+                    <th style="width: 75px; text-align: right;">NLOC</th>
                   </tr>
                 </thead>
                 <tbody>
