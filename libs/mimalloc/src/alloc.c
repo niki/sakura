@@ -827,7 +827,12 @@ static mi_decl_noinline void* mi_heap_try_new(mi_heap_t* heap, size_t size, bool
 }
 
 mi_decl_nodiscard static mi_decl_restrict void* mi_theap_alloc_new(mi_theap_t* theap, size_t size) {
-  void* p = mi_theap_malloc(theap,size);
+  // sakura local patch: unlike mi_malloc()'s _mi_theap_malloc_zero(), mi_theap_malloc() has no
+  // MI_THEAP_INITASNULL null check and crashes when `theap` is the process's very first
+  // allocation on a brand new OS thread (e.g. a fresh Windows threadpool worker in a newly
+  // launched process) where _mi_theap_default() legitimately returns NULL until lazily
+  // initialized. Route through the null-safe path instead, mirroring mi_malloc()'s behavior.
+  void* p = _mi_theap_malloc_zero(theap, size, false, 0, NULL);
   if mi_unlikely(p == NULL) return mi_theap_try_new(theap, size, false);
   return p;
 }
