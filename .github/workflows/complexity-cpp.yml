@@ -37,6 +37,7 @@ jobs:
           import html
           import subprocess
           from datetime import datetime
+          from collections import Counter
 
           target_dirs = os.environ.get("TARGET_DIRS", "src").split()
           raw_excludes = os.environ.get("EXCLUDE_PATTERN", "").split()
@@ -52,41 +53,33 @@ jobs:
 
           proc = subprocess.run(cmd, capture_output=True, text=True)
 
-          # ---------------------------------------------------------
-          # Windows向け判定ルール定義
-          # ---------------------------------------------------------
-          # 1. ディスパッチャ系関数判定
           DISPATCHER_REGEX = re.compile(
-              r"(WndProc|HandleCommand|OnCommand|OnNotify|Dispatch|ProcessMessage|HandleFunction)",
+              r"(WndProc|HandleCommand|OnCommand|OnNotify|Dispatch|ProcessMessage|HandleFunction|_To_)",
               re.IGNORECASE
           )
 
-          # 2. Win32 定型エラーチェック・ハンドルNULLチェック（これらは危険視しない）
           WIN32_GUARD_REGEX = re.compile(
               r"if\s*\(\s*(FAILED|SUCCEEDED)\s*\(|"
               r"if\s*\(\s*!(bResult|bSuccess|ret|hr|res)\s*\)|"
               r"if\s*\(\s*(hWnd|hDC|hBmp|hMem|hFont|lpParam|pTarget|pNode|pThis)\s*==\s*(NULL|nullptr|INVALID_HANDLE_VALUE)\s*\)"
           )
 
-          # 3. 分岐構文（caseを再追加）
-          CRITICAL_PATTERNS = [
-              (re.compile(r"\b(if|else\s+if)\b"), "if分岐"),
-              (re.compile(r"\b(for|while|do)\b"), "ループ"),
-              (re.compile(r"\bcase\b.*:"), "case文"),
-              (re.compile(r"(?<!&)&&(?!&)|(?<!\|)\|\|(?!\|)"), "複合条件(&&/||)"),
-              (re.compile(r"\bcatch\b"), "例外捕捉")
-          ]
+          # 分岐抽出パターン
+          PAT_IF = re.compile(r"\b(if|else\s+if)\b")
+          PAT_LOOP = re.compile(r"\b(for|while|do)\b")
+          PAT_LOGIC = re.compile(r"(?<!&)&&(?!&)|(?<!\|)\|\|(?!\|)")
+          PAT_CASE = re.compile(r"\bcase\b\s+[^:]+:")
+          PAT_CATCH = re.compile(r"\bcatch\b")
 
           def generate_source_heatmap(filepath, start_l, end_l, is_dispatcher):
-              """Windows向けにサニタイズしたヒートマップ行を生成"""
               if not os.path.exists(filepath):
-                  return "<div style='color: #64748b; padding: 8px;'>ソースコードが見つかりませんでした。</div>"
+                  return "", "<div style='color: #64748b; padding: 8px;'>ソースコードが見つかりませんでした。</div>"
 
               try:
                   with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                       all_lines = f.readlines()
               except Exception as e:
-                  return f"<div style='color: #ef4444; padding: 8px;'>読み込みエラー: {html.escape(str(e))}</div>"
+                  return "", f"<div style='color: #ef4444; padding: 8px;'>読み込みエラー: {html.escape(str(e))}</div>"
 
               total_lines = len(all_lines)
               s_idx = max(0, start_l - 1)
@@ -95,12 +88,13 @@ jobs:
 
               lines_out = []
               in_block_comment = False
+              cause_counter = Counter()
 
               for offset, raw_line in enumerate(func_lines):
                   line_no = start_l + offset
                   line_str = raw_line.rstrip()
 
-                  # ブロックコメント (/* ... */) の追跡と除外
+                  # ブロックコメントの追跡
                   if in_block_comment:
                       if "*/" in line_str:
                           in_block_comment = False
@@ -120,7 +114,6 @@ jobs:
                       else:
                           code_part = line_str
 
-                  # コメントと文字列のサニタイズ
                   clean_code = re.sub(r"/\*.*?\*/", "", code_part)
                   clean_code = re.sub(r"//.*$", "", clean_code)
                   clean_code = re.sub(r'r"[^"]*"', '""', clean_code)
@@ -137,7 +130,6 @@ jobs:
                       )
                       continue
 
-                  # Win32定型エラーチェックならノイズとして通常行扱いにする
                   if WIN32_GUARD_REGEX.search(clean_code_stripped):
                       lines_out.append(
                           f"<div class='code-row'>"
@@ -147,47 +139,47 @@ jobs:
                       )
                       continue
 
-                  # インデント深度判定（タブ=4スペース換算）
                   expanded = raw_line.expandtabs(4)
                   indent_spaces = len(expanded) - len(expanded.lstrip())
                   indent_level = indent_spaces // 4
 
-                  # 分岐構文の検出
+                  # 分岐キーワードの検出と集計
+                  c_if = len(PAT_IF.findall(clean_code_stripped))
+                  c_loop = len(PAT_LOOP.findall(clean_code_stripped))
+                  c_logic = len(PAT_LOGIC.findall(clean_code_stripped))
+                  c_case = len(PAT_CASE.findall(clean_code_stripped))
+                  c_catch = len(PAT_CATCH.findall(clean_code_stripped))
+
+                  if c_if: cause_counter['if分岐'] += c_if
+                  if c_loop: cause_counter['ループ'] += c_loop
+                  if c_logic: cause_counter['&& / ||'] += c_logic
+                  if c_case: cause_counter['case文'] += c_case
+                  if c_catch: cause_counter['例外処理'] += c_catch
+
                   matched_reasons = []
-                  for pat, label in CRITICAL_PATTERNS:
-                      matches = pat.findall(clean_code_stripped)
-                      if matches:
-                          matched_reasons.append(f"{label}×{len(matches)}")
-
-                  has_branch = len(matched_reasons) > 0
-                  is_high = False
-                  is_med = False
-
-                  if has_branch:
-                      # ディスパッチャ関数の場合はフラットなcaseを許容し、ネストLv.6以上または同一行3複合条件で強調
-                      if is_dispatcher:
-                          if len(matched_reasons) >= 3 or indent_level >= 6:
-                              is_high = True
-                          elif indent_level >= 4 and "case文" not in matched_reasons:
-                              is_med = True
-                      else:
-                          # 通常関数: 同一行2複合条件、またはネストLv.5以上
-                          if len(matched_reasons) >= 2 or indent_level >= 5:
-                              is_high = True
-                          elif indent_level >= 3:
-                              is_med = True
+                  if c_if: matched_reasons.append(f"if×{c_if}")
+                  if c_loop: matched_reasons.append(f"loop×{c_loop}")
+                  if c_logic: matched_reasons.append(f"&&/||×{c_logic}")
+                  if c_catch: matched_reasons.append(f"catch×{c_catch}")
 
                   row_class = "code-row"
                   badge_html = ""
 
-                  if is_high:
-                      row_class += " heat-high"
-                      details = ", ".join(matched_reasons)
-                      badge_html = f"<span class='heat-tag heat-tag-red'>🔥 {details} (Lv.{indent_level})</span>"
-                  elif is_med:
-                      row_class += " heat-med"
-                      details = ", ".join(matched_reasons)
-                      badge_html = f"<span class='heat-tag heat-tag-yellow'>⚠️ {details} (Lv.{indent_level})</span>"
+                  # case文単体の行は紫色で明示（CCNに寄与していることを可視化）
+                  if c_case > 0 and not matched_reasons:
+                      row_class += " heat-case"
+                      badge_html = f"<span class='heat-tag heat-tag-purple'>🏷️ case分岐</span>"
+                  elif matched_reasons:
+                      # 判定基準: 複合条件が3個以上、またはLv.5以上のネスト分岐を赤色
+                      total_heavy = c_if + c_loop + c_logic + c_catch
+                      if total_heavy >= 2 or indent_level >= 5:
+                          row_class += " heat-high"
+                          details = ", ".join(matched_reasons)
+                          badge_html = f"<span class='heat-tag heat-tag-red'>🔥 {details} (Lv.{indent_level})</span>"
+                      elif total_heavy >= 1:
+                          row_class += " heat-med"
+                          details = ", ".join(matched_reasons)
+                          badge_html = f"<span class='heat-tag heat-tag-yellow'>⚠️ {details} (Lv.{indent_level})</span>"
 
                   lines_out.append(
                       f"<div class='{row_class}'>"
@@ -197,7 +189,14 @@ jobs:
                       f"</div>"
                   )
 
-              return f"<div class='code-block'>{''.join(lines_out)}</div>"
+              # 内訳バッジの生成
+              summary_badges = []
+              for k, v in cause_counter.most_common():
+                  bg = "#ede9fe; color: #6d28d9;" if k == 'case文' else ("#fee2e2; color: #991b1b;" if k in ['if分岐', '&& / ||'] else "#fef9c3; color: #854d0e;")
+                  summary_badges.append(f"<span style='background:{bg}; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-right: 6px; font-size: 11px;'>{k}: {v}</span>")
+
+              breakdown_html = "".join(summary_badges) if summary_badges else "<span style='color: #64748b;'>特筆すべき分岐なし</span>"
+              return breakdown_html, f"<div class='code-block'>{''.join(lines_out)}</div>"
 
           items_list = []
           if proc.stdout.strip():
@@ -233,18 +232,14 @@ jobs:
                   filepath = re.sub(r"^\.?/+", "", filepath)
                   func_name = func_name.replace('"', '').replace("'", "").strip()
 
-                  # ディスパッチャ判定
                   is_disp = bool(DISPATCHER_REGEX.search(func_name))
 
-                  # Windowsアプリ向けランク判定
                   if is_disp:
-                      # ディスパッチャ関数は平坦なcaseが多いため閾値を緩和
                       if ccn <= 25:    rank = "A"
                       elif ccn <= 60:  rank = "B"
                       elif ccn <= 120: rank = "C"
                       else:            rank = "D"
                   else:
-                      # 一般ロジック関数
                       if ccn <= 5:     rank = "A"
                       elif ccn <= 10:  rank = "B"
                       elif ccn <= 20:  rank = "C"
@@ -282,8 +277,9 @@ jobs:
               decisions = item['complexity'] - 1
               
               if idx < 50 or item['complexity'] > 5:
-                  heatmap_code = generate_source_heatmap(clean_file, s_line, e_line, item['is_dispatcher'])
+                  breakdown_html, heatmap_code = generate_source_heatmap(clean_file, s_line, e_line, item['is_dispatcher'])
               else:
+                  breakdown_html = "<span style='color: #64748b;'>-</span>"
                   heatmap_code = "<div style='padding: 8px; color: #64748b;'>軽微な関数のためコードプレビューは省略されました。</div>"
 
               disp_tag = "<span class='tag-disp'>DISPATCHER</span>" if item['is_dispatcher'] else ""
@@ -306,8 +302,12 @@ jobs:
                       <div><strong>コード範囲:</strong> L{s_line} 〜 L{e_line} ({item['nloc']} 行)</div>
                     </div>
                     
-                    <div style="margin: 12px 0 8px 0; display: flex; justify-content: space-between; align-items: center;">
-                      <span style="font-weight: 600; font-size: 12px; color: #475569;">🔍 局所複雑度ヒートマップ (Windows最適化):</span>
+                    <div class="breakdown-bar">
+                      <strong>要因内訳:</strong> {breakdown_html}
+                    </div>
+
+                    <div style="margin: 10px 0 8px 0; display: flex; justify-content: space-between; align-items: center;">
+                      <span style="font-weight: 600; font-size: 12px; color: #475569;">🔍 局所複雑度ヒートマップ:</span>
                       <a href="{github_link}" target="_blank" class="code-btn">🎯 GitHubで開く (L{s_line}-L{e_line})</a>
                     </div>
                     
@@ -357,6 +357,7 @@ jobs:
               
               .detail-container {{ font-size: 13px; }}
               .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 8px; }}
+              .breakdown-bar {{ background: #ffffff; padding: 8px 12px; border-radius: 4px; border: 1px solid #e2e8f0; margin-bottom: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }}
               
               .code-block {{
                 background: #0d1117; color: #e6edf3; border-radius: 6px;
@@ -373,10 +374,13 @@ jobs:
               .code-body {{ margin: 0; padding: 0 12px; white-space: pre; flex-grow: 1; }}
               .text-comment {{ color: #8b949e; font-style: italic; }}
               
+              /* 各種ヒートマップスタイル */
               .heat-high {{ background: rgba(239, 68, 68, 0.22) !important; }}
               .heat-high .ln {{ background: #7f1d1d !important; color: #fecaca !important; font-weight: bold; }}
               .heat-med {{ background: rgba(234, 179, 8, 0.14) !important; }}
               .heat-med .ln {{ background: #713f12 !important; color: #fef08a !important; }}
+              .heat-case {{ background: rgba(168, 85, 247, 0.08) !important; }}
+              .heat-case .ln {{ background: #2e1065 !important; color: #e9d5ff !important; }}
               
               .heat-tag {{
                 font-size: 11px; padding: 0 6px; border-radius: 3px; margin-right: 8px;
@@ -384,6 +388,7 @@ jobs:
               }}
               .heat-tag-red {{ background: #991b1b; color: #fecaca; }}
               .heat-tag-yellow {{ background: #854d0e; color: #fef9c3; }}
+              .heat-tag-purple {{ background: #581c87; color: #e9d5ff; }}
 
               .file-link {{ color: #2563eb; text-decoration: none; font-family: monospace; font-size: 12px; }}
               .file-link:hover {{ text-decoration: underline; }}
