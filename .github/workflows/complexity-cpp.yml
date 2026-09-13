@@ -24,61 +24,75 @@ jobs:
 
       - name: Measure and Generate HTML Report
         env:
-          # 計測対象ディレクトリ（スペース区切りで指定）
+          # 計測対象ディレクトリ（スペース区切り）
           TARGET_DIRS: "sakura_core"
-          # 除外対象パターン（スペース区切りで指定）
+          # 除外対象パターン（スペース区切り）
           EXCLUDE_PATTERN: "*test* *vendor* *third_party* *build*"
         run: |
           mkdir -p reports
 
           python - << 'EOF'
           import os
-          import lizard
+          import subprocess
+          import xml.etree.ElementTree as ET
           from datetime import datetime
 
           target_dirs = os.environ.get("TARGET_DIRS", "src").split()
           raw_excludes = os.environ.get("EXCLUDE_PATTERN", "").split()
 
-          # lizard の CLI 引数リストを構築
-          # 例: ["lizard", "src", "include", "-x", "*test*", "-x", "*build*"]
-          args = ["lizard"] + target_dirs
+          # lizard の XML 出力オプション (-X) を使用
+          cmd = ["lizard", "-X"] + target_dirs
           for pat in raw_excludes:
               if pat.strip():
-                  args.extend(["-x", pat.strip()])
+                  cmd.extend(["-x", pat.strip()])
 
-          # lizard 標準の引数パーサーを通してファイル一覧・解析インスタンスを取得
-          parsed_args = lizard.parse_args(args)
-          
+          proc = subprocess.run(cmd, capture_output=True, text=True)
+
           items_list = []
-          # lizard.FileAnalyzer で解析を実行
-          for file_info in lizard.FileAnalyzer(lizard.print_and_ignore_warnings)(parsed_args.paths, parsed_args.exclude):
-              if not file_info:
-                  continue
-              for func in file_info.function_list:
-                  ccn = func.cyclomatic_complexity
-                  
-                  if ccn <= 5:
-                      rank = "A"
-                  elif ccn <= 10:
-                      rank = "B"
-                  elif ccn <= 20:
-                      rank = "C"
-                  else:
-                      rank = "D"
+          if proc.stdout.strip():
+              try:
+                  root = ET.fromstring(proc.stdout)
+                  # lizard XML の構造: <cppncss><measure type="Function"><item name="func(...)"> ...
+                  for item in root.findall(".//item"):
+                      func_name = item.get("name", "")
+                      ccn_val = item.find("value")
+                      ccn = int(ccn_val.text) if ccn_val is not None and ccn_val.text.isdigit() else 1
+                      
+                      # 行数・ファイル名
+                      line_node = item.find("line")
+                      line = line_node.text if line_node is not None else "0"
+                      file_node = item.find("file")
+                      filename = file_node.text if file_node is not None else ""
+                      
+                      # NLOC (有効コード行数)
+                      nloc_node = item.find("nr")
+                      nloc = nloc_node.text if nloc_node is not None else "-"
 
-                  items_list.append({
-                      "rank": rank,
-                      "complexity": ccn,
-                      "name": func.long_name or func.name,
-                      "file": file_info.filename,
-                      "line": func.start_line,
-                      "nloc": func.nloc
-                  })
+                      if ccn <= 5:
+                          rank = "A"
+                      elif ccn <= 10:
+                          rank = "B"
+                      elif ccn <= 20:
+                          rank = "C"
+                      else:
+                          rank = "D"
 
-          # 複雑度の降順（大きい順）にソート
+                      items_list.append({
+                          "rank": rank,
+                          "complexity": ccn,
+                          "name": func_name,
+                          "file": filename,
+                          "line": line,
+                          "nloc": nloc
+                      })
+              except Exception as e:
+                  print(f"XMLパースエラー: {e}")
+                  print(f"lizard stdout: {proc.stdout[:500]}")
+
+          # 複雑度の降順ソート
           items_list.sort(key=lambda x: x["complexity"], reverse=True)
 
-          # HTML 行の生成
+          # HTML行生成
           rows_html = ""
           for item in items_list:
               rank = item["rank"]
