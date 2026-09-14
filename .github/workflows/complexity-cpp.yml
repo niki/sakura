@@ -169,7 +169,7 @@ jobs:
 
                   if c_case > 0 and not matched_reasons:
                       row_class += " heat-case"
-                      badge_html = f"<span class='heat-tag heat-tag-purple'>🏷️ case分岐</span>"
+                      badge_html = f"<span class='heat-tag heat-tag-purple'>🏷️ case</span>"
                   elif matched_reasons:
                       total_heavy = c_if + c_loop + c_and + c_or + c_catch
                       if total_heavy >= 2 or indent_level >= 5:
@@ -300,11 +300,11 @@ jobs:
                   """
                   
                   breakdown_badges = []
-                  if causes['case']: breakdown_badges.append(f"<span class='b-badge b-case'>case: {causes['case']}</span>")
-                  if causes['if']:   breakdown_badges.append(f"<span class='b-badge b-if'>if: {causes['if']}</span>")
-                  if causes['and']:  breakdown_badges.append(f"<span class='b-badge b-and'>&&: {causes['and']}</span>")
-                  if causes['or']:   breakdown_badges.append(f"<span class='b-badge b-or'>||: {causes['or']}</span>")
-                  if causes['loop']: breakdown_badges.append(f"<span class='b-badge b-loop'>loop: {causes['loop']}</span>")
+                  if causes['case']: breakdown_badges.append(f"<span class='b-badge b-case'>case:{causes['case']}</span>")
+                  if causes['if']:   breakdown_badges.append(f"<span class='b-badge b-if'>if:{causes['if']}</span>")
+                  if causes['and']:  breakdown_badges.append(f"<span class='b-badge b-and'>&&:{causes['and']}</span>")
+                  if causes['or']:   breakdown_badges.append(f"<span class='b-badge b-or'>||:{causes['or']}</span>")
+                  if causes['loop']: breakdown_badges.append(f"<span class='b-badge b-loop'>loop:{causes['loop']}</span>")
                   breakdown_html = "".join(breakdown_badges)
               else:
                   relative_pct = min(100, max(6, (ccn / max_ccn) * 100))
@@ -411,8 +411,7 @@ jobs:
               }}
               .ccn-stack-bar span {{ height: 100%; display: block; }}
               
-              .legend-note {{ font-size: 11px; color: #64748b; margin-left: 8px; }}
-              .b-badge {{ padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 4px; }}
+              .b-badge {{ padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; margin-right: 4px; display: inline-block; }}
               .b-case {{ background: #f3e8ff; color: #7e22ce; }}
               .b-if   {{ background: #fee2e2; color: #b91c1c; }}
               .b-and  {{ background: #ffe4e6; color: #be123c; }}
@@ -433,6 +432,9 @@ jobs:
                 font-size: 10px; font-weight: bold; padding: 1px 5px; border-radius: 3px; margin-right: 6px;
               }}
 
+              /* -------------------------------------------------------------
+                 モーダルダイアログ（最右スクロールバー排除＋ヘッダー小型化）
+                 ------------------------------------------------------------- */
               .modal-overlay {{
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;
@@ -442,7 +444,7 @@ jobs:
                 align-items: center;
                 justify-content: center;
                 z-index: 1000;
-                padding: 24px;
+                padding: 16px;
                 opacity: 0;
                 transition: opacity 0.2s ease-in-out;
               }}
@@ -452,76 +454,125 @@ jobs:
               }}
               .modal-content {{
                 background: #ffffff;
-                border-radius: 10px;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
                 width: 100%;
-                max-width: 1100px;
-                max-height: 90vh;
+                max-width: 1200px;
+                height: 92vh; /* 高さを画面の92%に固定 */
                 display: flex;
                 flex-direction: column;
-                overflow: hidden;
-                transform: scale(0.96);
+                overflow: hidden; /* モーダル外側のスクロールを完全無効化 */
+                transform: scale(0.97);
                 transition: transform 0.2s ease-in-out;
               }}
               .modal-overlay.active .modal-content {{
                 transform: scale(1);
               }}
+              
+              /* スリム化ヘッダー (1行に集約) */
               .modal-header {{
-                padding: 16px 24px;
+                padding: 10px 18px;
                 border-bottom: 1px solid #e2e8f0;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 background: #f8fafc;
+                min-height: 48px;
+                flex-shrink: 0;
               }}
-              .modal-title {{
-                font-size: 16px;
-                font-weight: 700;
-                color: #0f172a;
+              .modal-title-area {{
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 8px;
+                overflow: hidden;
+                white-space: nowrap;
+              }}
+              .modal-title {{
+                font-size: 14px;
+                font-weight: 700;
+                color: #0f172a;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                white-space: nowrap;
+              }}
+              .modal-actions {{
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-shrink: 0;
               }}
               .modal-close-btn {{
                 background: none;
                 border: none;
-                font-size: 24px;
+                font-size: 20px;
                 line-height: 1;
                 color: #64748b;
                 cursor: pointer;
                 padding: 4px 8px;
-                border-radius: 6px;
+                border-radius: 4px;
                 transition: background 0.15s, color 0.15s;
               }}
               .modal-close-btn:hover {{
                 background: #e2e8f0;
                 color: #0f172a;
               }}
+
+              /* モーダル内部: スクロールさせずコード領域を最大化 */
               .modal-body {{
-                padding: 24px;
-                overflow-y: auto;
+                padding: 10px 16px 14px 16px;
+                display: flex;
+                flex-direction: column;
                 flex-grow: 1;
+                overflow: hidden; /* 二重スクロール防止 */
               }}
               
-              .detail-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 12px; font-size: 13px; }}
-              .breakdown-bar {{ background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 13px; }}
-              
+              /* スリムなステータス＆内訳バー */
+              .compact-meta-bar {{
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 6px 10px;
+                background: #f1f5f9;
+                border-radius: 5px;
+                font-size: 12px;
+                margin-bottom: 8px;
+                flex-shrink: 0;
+              }}
+              .meta-stats {{
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: #334155;
+              }}
+              .meta-breakdown {{
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                flex-wrap: wrap;
+              }}
+
+              /* ソースコード領域: ここだけが単独スクロールする */
               .code-block {{
-                background: #0d1117; color: #e6edf3; border-radius: 6px;
-                max-height: 520px; overflow-y: auto; overflow-x: auto;
+                background: #0d1117;
+                color: #e6edf3;
+                border-radius: 6px;
+                flex-grow: 1;
+                height: 100%;
+                overflow-y: auto;
+                overflow-x: auto;
                 font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace;
-                font-size: 12px; border: 1px solid #30363d; margin-top: 8px;
+                font-size: 12px;
+                border: 1px solid #30363d;
+                margin: 0;
               }}
-              .code-row {{ display: flex; align-items: stretch; min-height: 20px; line-height: 20px; }}
+              .code-row {{ display: flex; align-items: stretch; min-height: 19px; line-height: 19px; }}
               .code-row:hover {{ background: rgba(255, 255, 255, 0.05); }}
               .ln {{
-                width: 52px; min-width: 52px; text-align: right; padding-right: 12px;
+                width: 48px; min-width: 48px; text-align: right; padding-right: 10px;
                 color: #6e7681; user-select: none; border-right: 1px solid #30363d; background: #161b22;
               }}
-              .code-body {{ margin: 0; padding: 0 12px; white-space: pre; flex-grow: 1; }}
+              .code-body {{ margin: 0; padding: 0 10px; white-space: pre; flex-grow: 1; }}
               .text-comment {{ color: #8b949e; font-style: italic; }}
               
               .heat-high {{ background: rgba(239, 68, 68, 0.22) !important; }}
@@ -532,7 +583,7 @@ jobs:
               .heat-case .ln {{ background: #2e1065 !important; color: #e9d5ff !important; }}
               
               .heat-tag {{
-                font-size: 11px; padding: 0 6px; border-radius: 3px; margin-right: 8px;
+                font-size: 10px; padding: 0 5px; border-radius: 3px; margin-right: 6px;
                 white-space: nowrap; align-self: center; font-weight: 500;
               }}
               .heat-tag-red {{ background: #991b1b; color: #fecaca; }}
@@ -540,9 +591,9 @@ jobs:
               .heat-tag-purple {{ background: #581c87; color: #e9d5ff; }}
 
               .code-btn {{
-                background: #2563eb; color: #ffffff !important; padding: 6px 14px;
-                border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600;
-                display: inline-flex; align-items: center; gap: 6px;
+                background: #2563eb; color: #ffffff !important; padding: 4px 10px;
+                border-radius: 4px; text-decoration: none; font-size: 11px; font-weight: 600;
+                display: inline-flex; align-items: center; gap: 4px;
               }}
               .code-btn:hover {{ background: #1d4ed8; }}
             </style>
@@ -585,13 +636,20 @@ jobs:
               </table>
             </div>
 
+            <!-- モーダルダイアログ（最右スクロールバー排除・ヘッダーコンパクト版） -->
             <div id="modalOverlay" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
               <div class="modal-content">
                 <div class="modal-header">
-                  <div class="modal-title" id="modalTitle"></div>
-                  <button class="modal-close-btn" onclick="closeModal()" title="閉じる (Esc)">&times;</button>
+                  <div class="modal-title-area" id="modalTitleArea"></div>
+                  <div class="modal-actions">
+                    <a id="modalGithubBtn" href="#" target="_blank" class="code-btn">🎯 GitHubで開く</a>
+                    <button class="modal-close-btn" onclick="closeModal()" title="閉じる (Esc)">&times;</button>
+                  </div>
                 </div>
-                <div class="modal-body" id="modalBody"></div>
+                <div class="modal-body">
+                  <div class="compact-meta-bar" id="modalMetaBar"></div>
+                  <div id="modalCodeArea" style="flex-grow: 1; display: flex; overflow: hidden;"></div>
+                </div>
               </div>
             </div>
 
@@ -602,27 +660,26 @@ jobs:
                 const item = modalData[idx];
                 if (!item) return;
 
-                document.getElementById("modalTitle").innerHTML =
+                document.getElementById("modalTitleArea").innerHTML =
                   '<span class="badge ' + item.rank_class + '">' + item.rank + '</span>' +
-                  '<span>' + item.name + '</span>' +
-                  '<span style="font-weight: normal; font-size: 13px; color: #64748b;">(CCN: ' + item.ccn + ')</span>';
+                  '<span class="modal-title">' + item.name + '</span>' +
+                  '<span style="font-weight: normal; font-size: 12px; color: #64748b;">(CCN: ' + item.ccn + ')</span>';
 
-                document.getElementById("modalBody").innerHTML =
-                  '<div class="detail-grid">' +
-                    '<div><strong>推定判定分岐数:</strong> ' + item.decisions + '</div>' +
-                    '<div><strong>トークン数:</strong> ' + item.tokens + '</div>' +
-                    '<div><strong>引数の数:</strong> ' + item.params + '</div>' +
-                    '<div><strong>コード範囲:</strong> L' + item.start_line + ' 〜 L' + item.end_line + ' (' + item.nloc + ' 行)</div>' +
+                document.getElementById("modalGithubBtn").href = item.github_link;
+                document.getElementById("modalGithubBtn").textContent = '🎯 GitHub (L' + item.start_line + '-L' + item.end_line + ')';
+
+                document.getElementById("modalMetaBar").innerHTML =
+                  '<div class="meta-stats">' +
+                    '<span><strong>判定数:</strong> ' + item.decisions + '</span>' +
+                    '<span><strong>有効行:</strong> ' + item.nloc + '行 (L' + item.start_line + '〜L' + item.end_line + ')</span>' +
+                    '<span><strong>引数:</strong> ' + item.params + '</span>' +
                   '</div>' +
-                  '<div class="breakdown-bar">' +
-                    '<strong>要因内訳:</strong> ' + item.breakdown_html +
-                    '<span class="legend-note">(紫: case / 赤: if / ローズ: && / 橙: || / 黄: loop)</span>' +
-                  '</div>' +
-                  '<div style="margin: 14px 0 8px 0; display: flex; justify-content: space-between; align-items: center;">' +
-                    '<span style="font-weight: 600; font-size: 13px; color: #475569;">🔍 局所複雑度ヒートマップ:</span>' +
-                    '<a href="' + item.github_link + '" target="_blank" class="code-btn">🎯 GitHubで開く (L' + item.start_line + '-L' + item.end_line + ')</a>' +
-                  '</div>' +
-                  item.heatmap_html;
+                  '<div class="meta-breakdown">' +
+                    '<span style="color: #64748b; margin-right: 4px;">要因:</span>' +
+                    item.breakdown_html +
+                  '</div>';
+
+                document.getElementById("modalCodeArea").innerHTML = item.heatmap_html;
 
                 const overlay = document.getElementById("modalOverlay");
                 overlay.classList.add("active");
