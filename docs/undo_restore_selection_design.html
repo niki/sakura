@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undo選択復元 設計リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%94%84</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --bad-bg:#F1D9D6;
+    --bad-ink:#7C2E2E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+      --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+      --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+      --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+      --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+      --scope-bg:#232C36; --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+    --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+    --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+    --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+    --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+    --scope-bg:#232C36; --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px; line-height:1.85; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600; color:var(--ink); text-wrap:balance; letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{ font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace; font-size:.88em; }
+  code.inline{
+    background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+    padding:.08em .38em; color:var(--sakura-ink);
+  }
+
+  .shell{ display:grid; grid-template-columns:248px minmax(0,1fr); max-width:1180px; margin:0 auto; }
+  .toc{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:32px 18px 32px 28px; border-right:1px solid var(--rule);
+  }
+  .toc-brand{ font-family:'Shippori Mincho',serif; font-weight:700; font-size:1.02rem; margin-bottom:2px; }
+  .toc-brand small{
+    display:block; font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:.68rem;
+    letter-spacing:.06em; color:var(--sakura-ink); margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif; font-size:.68rem; letter-spacing:.09em;
+    color:var(--ink-faint); font-weight:600; margin:0 0 8px; text-transform:uppercase;
+  }
+  .toc a{
+    display:block; font-size:.83rem; color:var(--ink-soft); text-decoration:none;
+    padding:4px 0 4px 12px; border-left:2px solid transparent; line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.1em;
+    color:var(--sakura-ink); text-transform:uppercase; margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem; padding:5px 11px; border-radius:999px; background:var(--surface);
+    border:1px solid var(--rule); color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem; padding-bottom:12px; border-bottom:1px solid var(--rule);
+    margin-bottom:24px; display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--sakura); font-weight:600; }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:70ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:68ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:22px 0 30px; }
+  .principle{ background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:18px 18px 16px; }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap; font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.bad{ background:var(--bad-bg); color:var(--bad-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  pre{
+    background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:18px 20px;
+    overflow-x:auto; margin:0 0 22px; font-size:.82rem; line-height:1.7; box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+
+  .callout{
+    border:1px solid var(--rule); border-left:3px solid var(--sakura); background:var(--surface);
+    border-radius:0 10px 10px 0; padding:16px 20px; margin:0 0 22px; font-size:.9rem; max-width:68ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+  .callout.bad{ border-left-color:var(--bad-ink); }
+  .callout.bad .label{ color:var(--bad-ink); }
+
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline:before{ content:""; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:var(--rule); }
+  .pass{ position:relative; padding-bottom:30px; }
+  .pass:last-child{ padding-bottom:0; }
+  .pass:before{
+    content:""; position:absolute; left:-28px; top:5px; width:9px; height:9px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--sakura);
+  }
+  .pass.bad:before{ border-color:var(--bad-ink); }
+  .pass-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .pass-num{ font-family:'IBM Plex Mono',monospace; color:var(--sakura-ink); font-size:.78rem; font-weight:600; }
+  .pass-title{ font-weight:700; font-size:.97rem; }
+  .pass p{ font-size:.88rem; color:var(--ink-soft); max-width:72ch; margin:0 0 8px; }
+  .pass p:last-child{ margin-bottom:0; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule); margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+  }
+  @media (prefers-reduced-motion: no-preference){ html{ scroll-behavior:smooth; } }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">Undo選択復元<small>NKMM_UNDO_RESTORE_SELECTION / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+        <a href="#data-model">データモデル</a>
+      </div>
+      <div class="toc-group">
+        <h5>中核メカニズム</h5>
+        <a href="#undo-logic">Undo時の復元ロジック</a>
+        <a href="#multicursor">マルチカーソルとの関係</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#limits">既知の制約</a>
+        <a href="#files">変更ファイル一覧</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">Undo選択復元</h1>
+      <p class="subtitle lede">範囲選択した状態での削除・置換をUndoした際に、戻ったテキストを改めて選択状態にする機能(VS Code等と同じ挙動)の設計記録。1個の真偽値フラグだけで実現しているデータモデルと、マルチカーソル環境下でのスロット単位の復元処理をまとめる。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_UNDO_RESTORE_SELECTION</b></span>
+        <span class="chip">実装日 <b>2026-08-31</b></span>
+        <span class="chip">ini設定 <b class="mono">bUndoRestoreSelection</b>(既定true)</span>
+        <span class="chip">対応 <b class="mono">CReplaceOpe</b>のみ</span>
+      </div>
+    </header>
+
+    <figure class="shot">
+      <img src="images/undo_restore_selection.png" alt="3行のテキストを全選択して削除し、Undoした直後の状態。削除前の選択範囲が復元されている。">
+      <figcaption>実機キャプチャ。</figcaption>
+    </figure>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>従来のsakuraでは、範囲選択した状態で削除・置換を行い、その後Undoでテキストを元に戻しても、キャレットのみが復元され選択状態には戻らなかった。VS Code等では「範囲選択→削除」をUndoすると、戻ったテキストが改めて選択状態になる。この挙動をsakura本体にも入れたのが本フラグ。</p>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — 向きは持たない</span>
+          <p>選択のアンカーがどちら側だったか(方向)までは記録せず、「削除・置換の直前が選択状態だったか」という1個の真偽値だけを持つ。Undo時は削除範囲の先頭〜末尾をそのまま選択範囲として使うため、方向の情報自体が不要という判断。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — CReplaceOpeのみに対応</span>
+          <p>素のBackSpace/Delete(選択なしの1文字削除)はこの分岐を通らないため対象外。矩形選択の削除は別経路(<code class="inline">DeleteData2</code>)を通るため、矩形選択モード自体の復元が別途必要になるスコープ外とした。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — Redoは対象外</span>
+          <p>削除後には選択すべき対象のテキストが存在しないため、単一カーソル時代からRedoは一貫して選択を出さない仕様。この非対称は設計判断であり、見落としではない。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">実装の経緯</span>
+        <p>コミット<code class="inline">3f678076d</code>(「マルチカーソル処理実装 Ver.3 undo選択領域の復元」、2026-08-31)。表題はマルチカーソル寄りだが、実際の内容は本機能そのものと<code class="inline">NKMM_MULTI_CURSOR</code>側のUndo/Redo復元機構(<code class="inline">nCursorSlot</code>)を同時に作った回のため両方が1コミットに含まれている。マルチカーソルの一般的なアーキテクチャ自体は<a href="multicursor_design.html">マルチカーソル編集</a>を参照。</p>
+      </div>
+    </section>
+
+    <section id="data-model">
+      <h2><span class="num">01</span>データモデル</h2>
+      <p>削除・置換のUndo/Redo単位である<code class="inline">CReplaceOpe</code>(<code class="inline">COpe.h</code>)に、<code class="inline">bool bHadSelection = false</code>を1個追加しただけ。既存の<code class="inline">CLineBookmarked</code>等と同じ「軽量な1フラグ追加」のパターンを踏襲している。</p>
+
+      <pre><code><span class="cm">// COpe.h — CReplaceOpe</span>
+bool			bHadSelection = <span class="kw">false</span>;	<span class="cm">// この置換の直前が選択状態だったか(Undoでの選択復元用)</span></code></pre>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>フィールド/設定</th><th>場所</th><th>役割</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">CReplaceOpe::bHadSelection</code></td><td><code class="inline">COpe.h</code></td><td>削除・置換の直前が選択状態だったかの1フラグ。方向は持たない</td></tr>
+            <tr><td><code class="inline">COpe::nCursorSlot</code></td><td><code class="inline">COpe.h</code></td><td><code class="inline">NKMM_MULTI_CURSOR</code>用。マルチカーソル一括編集でどのカーソルの編集かを識別する識別子(0=プライマリ、1以上=extra)。選択復元自体はこれ無しでも成立するが、マルチカーソル環境下での復元はこれに依存する</td></tr>
+            <tr><td><code class="inline">CommonSetting_Edit::m_bUndoRestoreSelection</code></td><td><code class="inline">CommonSetting.h</code></td><td>機能全体のON/OFF。既定値<code class="inline">true</code>(<code class="inline">CShareData.cpp</code>、VS Code既定に合わせる)。ini <code class="inline">[Common]</code>セクションの<code class="inline">bUndoRestoreSelection</code>として読み書き(<code class="inline">CShareData_IO.cpp</code>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>値のセットは<code class="inline">CEditView::DeleteData()</code>が「選択範囲を削除する」分岐で<code class="inline">ReplaceData_CEditView(..., true /* bHadSelection */)</code>を呼ぶことで行われる。<code class="inline">ReplaceData_CEditView</code>/<code class="inline">2</code>/<code class="inline">3</code>(<code class="inline">CEditView.h</code>/<code class="inline">CEditView_Command_New.cpp</code>)の末尾に省略可能引数<code class="inline">bool bHadSelection = false</code>が追加され、最終的に<code class="inline">ReplaceData_CEditView3</code>内で生成する<code class="inline">CReplaceOpe</code>の同名フィールドへそのまま渡される。</p>
+
+      <pre><code><span class="cm">// CEditView_Command_New.cpp — DeleteData()の選択削除分岐</span>
+..., <span class="kw">true</span>					<span class="cm">/* bHadSelection: 選択範囲の削除なのでUndoで選択復元の対象にする */</span></code></pre>
+
+      <p>素の1文字BackSpace/Deleteはこの分岐を通らないため<code class="inline">bHadSelection</code>は既定の<code class="inline">false</code>のままとなり、対象外になる。</p>
+    </section>
+
+    <section id="undo-logic">
+      <h2><span class="num">02</span>Undo時の復元ロジック</h2>
+      <p><code class="inline">Command_UNDO()</code>のOPE_REPLACE処理内、<code class="inline">bFastMode</code>(大量Opeの一括Undoで詳細な後処理を丸ごと省略する経路)ではない通常経路に、<code class="inline">bHadSelection</code>と設定<code class="inline">m_bUndoRestoreSelection</code>が両方真のときだけ選択状態を復元する分岐が入っている。</p>
+
+      <pre><code><span class="cm">// CViewCommander_Edit.cpp — Command_UNDO() の OPE_REPLACE 処理</span>
+<span class="kw">if</span>( !bFastMode && pcReplaceOpe->bHadSelection &&
+    GetDllShareData().m_Common.m_sEdit.m_bUndoRestoreSelection ){
+    CLayoutPoint ptRestoredTo;
+    GetDocument()->m_cLayoutMgr.LogicToLayout( pcReplaceOpe->m_ptCaretPos_PHY_To, &ptRestoredTo );
+    m_pCommanderView->GetSelectionInfo().m_sSelectBgn.Set( ptCaretPos_Before );
+    m_pCommanderView->GetSelectionInfo().m_sSelect = CLayoutRange( ptCaretPos_Before, ptRestoredTo );
+}</code></pre>
+
+      <p><code class="inline">ptCaretPos_Before</code>(削除範囲の先頭、レイアウト単位に変換済み)を選択アンカーとし、<code class="inline">pcReplaceOpe->m_ptCaretPos_PHY_To</code>(削除範囲の末尾、論理座標)を<code class="inline">LogicToLayout()</code>で変換した<code class="inline">ptRestoredTo</code>を選択先として<code class="inline">CLayoutRange</code>を組み立てる。選択の向きの情報を持たないため、常に「先頭→末尾」の1方向で選択範囲を組み立てる形になる。</p>
+
+      <p><code class="inline">bFastMode</code>では<code class="inline">ptCaretPos_Before</code>等がこのループ内で計算されない分岐のため、このブロック自体が対象外になる。Redo側には対応する分岐が存在しない(<a href="#overview-body">概要</a>参照)。</p>
+    </section>
+
+    <section id="multicursor">
+      <h2><span class="num">03</span>マルチカーソルとの関係</h2>
+      <p><code class="inline">NKMM_MULTI_CURSOR</code>が有効な場合、1回のUndo/Redoブロックに複数カーソル分の<code class="inline">CReplaceOpe</code>が積まれる。各Opeの<code class="inline">nCursorSlot</code>(0=プライマリ、1以上=extra)を手がかりに、スロットごとに独立して選択を復元する。</p>
+
+      <p>この復元処理は当初<code class="inline">Command_UNDO</code>/<code class="inline">Command_REDO</code>にほぼ同一のコードが2箇所複製されていたが、後続のリファクタリングコミット<code class="inline">25ba202b6</code>で<code class="inline">RestoreMultiCursorAfterUndoRedo(pcOpeBlk, nOpeBlkNum, bIsUndo)</code>という1つの共通関数に統合されている。本フラグ自体の判定ロジックはこの関数化で変わっていない。</p>
+
+      <pre><code><span class="cm">// CViewCommander_Edit.cpp — RestoreMultiCursorAfterUndoRedo() 冒頭コメントより</span>
+<span class="cm">// bIsUndoで変わる点は3つだけ:</span>
+<span class="cm">//  - 復元元: Undoは各スロットで最初に見つかったOpeの_Before、Redoは最後に見つかったOpeの_After</span>
+<span class="cm">//  - 選択復元: UndoのみNKMM_UNDO_RESTORE_SELECTION+bHadSelectionのOPE_REPLACEから復元する</span>
+<span class="cm">//    (Redoは削除後に選択すべき対象が残らないため、単一カーソル時も一貫して選択を出さない仕様)</span></code></pre>
+
+      <p>スロット収集ループでは、Undoの場合<code class="inline">bHadSelection</code>が立っている<code class="inline">OPE_REPLACE</code>を<code class="inline">SSlotRestore::pcSelOpe</code>として記録する。</p>
+
+      <pre><code><span class="kw">if</span>( bIsUndo && pcCandidate->GetCode() == OPE_REPLACE ){
+    CReplaceOpe* pcCandidateReplace = <span class="kw">static_cast</span><CReplaceOpe*>(pcCandidate);
+    <span class="kw">if</span>( pcCandidateReplace->bHadSelection ) pSlot->pcSelOpe = pcCandidateReplace;
+}</code></pre>
+
+      <p>見つかったスロットは、そのOpeの<code class="inline">m_ptCaretPos_PHY_Before</code>/<code class="inline">_To</code>からプライマリ・各extraそれぞれの選択(アンカー位置・選択先)を独立に復元する。見つからなければそのカーソルはキャレットのみ(選択なし)に戻る。extraカーソル分の選択は、プライマリの新しい選択アンカー基準の相対値(<code class="inline">nAnchorRelLine</code>/<code class="inline">nAnchorRelColumn</code>)として作り直され、既存の<code class="inline">m_vExtraCursors</code>は丸ごと置き換えられる。このブロックに現れなかったextra(非アクティブだった、または元々存在しなかったもの)は復元しようがなく消える。</p>
+
+      <div class="callout">
+        <span class="label">プライマリが見つからない場合</span>
+        <p>プライマリ自身の分がこの一括編集に含まれていない場合(通常起こらないが、プライマリの選択範囲が空で編集自体が無かった場合等)、他のextra分だけ復元しても相対化の基準点が無いため、関数は何も復元せずに戻る。</p>
+      </div>
+
+      <p>マルチカーソル全般の設計(相対オフセット方式、Alt+Clickでの追加等)は<a href="multicursor_design.html">マルチカーソル編集</a>の設計リファレンスを参照。</p>
+    </section>
+
+    <section id="limits">
+      <h2><span class="num">04</span>既知の制約</h2>
+      <ul>
+        <li>Redoは選択状態を復元しない(単一カーソル・マルチカーソルいずれも)。削除後には選択すべき対象のテキストが残らないため、という設計判断であり、単一カーソル時代から一貫した仕様。</li>
+        <li>対応は<code class="inline">CReplaceOpe</code>(<code class="inline">OPE_REPLACE</code>)のみ。矩形選択の削除は別経路(<code class="inline">DeleteData2</code>)を通るため対象外(矩形選択モード自体の復元が別途必要になるためスコープ外、と<code class="inline">my_config.h</code>のコメントに明記)。</li>
+        <li>選択の向き(アンカーがどちら側だったか)は記録しない。Undoで復元される選択は常に「削除範囲の先頭→末尾」の1方向になる。</li>
+        <li>ini <code class="inline">[Common]</code>の<code class="inline">bUndoRestoreSelection</code>(既定<code class="inline">true</code>)専用の設定で、共通設定ダイアログに対応する項目は無い(<code class="inline">NKMM_MULTI_CURSOR</code>の<code class="inline">bMultiCursorMergeOverlapping</code>と同じ運用)。</li>
+        <li>置換(検索/置換ダイアログ経由のReplace等)で選択状態から実行したケースが<code class="inline">bHadSelection=true</code>を経由するかどうかは、<code class="inline">DeleteData()</code>以外の<code class="inline">ReplaceData_CEditView</code>系呼び出し元を全て洗い出せておらず未確認(<a href="../changelog/NKMM_UNDO_RESTORE_SELECTION.md">changelog</a>参照)。</li>
+      </ul>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">05</span>変更ファイル一覧</h2>
+      <div class="filemap">
+        <ul>
+          <li><code class="inline">sakura_core/COpe.h</code> — <code class="inline">CReplaceOpe::bHadSelection</code>、<code class="inline">COpe::nCursorSlot</code>を追加</li>
+          <li><code class="inline">sakura_core/view/CEditView.h</code> / <code class="inline">CEditView_Command_New.cpp</code> — <code class="inline">ReplaceData_CEditView</code>/<code class="inline">2</code>/<code class="inline">3</code>への<code class="inline">bHadSelection</code>引数追加、<code class="inline">DeleteData()</code>からの伝播</li>
+          <li><code class="inline">sakura_core/cmd/CViewCommander_Edit.cpp</code> — <code class="inline">Command_UNDO()</code>のOPE_REPLACE処理の選択復元分岐、<code class="inline">RestoreMultiCursorAfterUndoRedo()</code>(<code class="inline">25ba202b6</code>で関数化)</li>
+          <li><code class="inline">sakura_core/env/CommonSetting.h</code> — <code class="inline">CommonSetting_Edit::m_bUndoRestoreSelection</code></li>
+          <li><code class="inline">sakura_core/env/CShareData.cpp</code> — 既定値<code class="inline">true</code>で初期化</li>
+          <li><code class="inline">sakura_core/env/CShareData_IO.cpp</code> — ini <code class="inline">[Common]</code>の<code class="inline">bUndoRestoreSelection</code>読み書き</li>
+          <li><code class="inline">sakura_core/my_config.h</code> — <code class="inline">NKMM_UNDO_RESTORE_SELECTION</code>フラグ定義</li>
+        </ul>
+      </div>
+      <p>詳細な経緯・調査範囲・未確認事項は<a href="../changelog/NKMM_UNDO_RESTORE_SELECTION.md"><code class="inline">changelog/NKMM_UNDO_RESTORE_SELECTION.md</code></a>を参照。</p>
+    </section>
+
+    <footer>
+      <span>Undo選択復元設計リファレンス</span>
+      <span>最終更新 2026-09-14</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  var links = document.querySelectorAll('.toc a[href^="#"]');
+  var map = {};
+  links.forEach(function(a){
+    var id = a.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if(el) map[id] = a;
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var a = map[entry.target.id];
+      if(!a) return;
+      if(entry.isIntersecting){
+        links.forEach(function(l){ l.classList.remove('active'); });
+        a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+})();
+</script>
+</body>
+</html>

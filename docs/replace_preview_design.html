@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>置換ダイアログ インラインプレビュー 設計リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%91%81%EF%B8%8F</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --bad-bg:#F1D9D6;
+    --bad-ink:#7C2E2E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+      --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+      --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+      --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+      --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+      --scope-bg:#232C36; --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+    --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+    --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+    --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+    --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+    --scope-bg:#232C36; --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px; line-height:1.85; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600; color:var(--ink); text-wrap:balance; letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{ font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace; font-size:.88em; }
+  code.inline{
+    background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+    padding:.08em .38em; color:var(--sakura-ink);
+  }
+
+  .shell{ display:grid; grid-template-columns:248px minmax(0,1fr); max-width:1180px; margin:0 auto; }
+  .toc{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:32px 18px 32px 28px; border-right:1px solid var(--rule);
+  }
+  .toc-brand{ font-family:'Shippori Mincho',serif; font-weight:700; font-size:1.02rem; margin-bottom:2px; }
+  .toc-brand small{
+    display:block; font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:.68rem;
+    letter-spacing:.06em; color:var(--sakura-ink); margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif; font-size:.68rem; letter-spacing:.09em;
+    color:var(--ink-faint); font-weight:600; margin:0 0 8px; text-transform:uppercase;
+  }
+  .toc a{
+    display:block; font-size:.83rem; color:var(--ink-soft); text-decoration:none;
+    padding:4px 0 4px 12px; border-left:2px solid transparent; line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.1em;
+    color:var(--sakura-ink); text-transform:uppercase; margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem; padding:5px 11px; border-radius:999px; background:var(--surface);
+    border:1px solid var(--rule); color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem; padding-bottom:12px; border-bottom:1px solid var(--rule);
+    margin-bottom:24px; display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--sakura); font-weight:600; }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:70ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:68ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:22px 0 30px; }
+  .principle{ background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:18px 18px 16px; }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap; font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.bad{ background:var(--bad-bg); color:var(--bad-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  pre{
+    background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:18px 20px;
+    overflow-x:auto; margin:0 0 22px; font-size:.82rem; line-height:1.7; box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+
+  .callout{
+    border:1px solid var(--rule); border-left:3px solid var(--sakura); background:var(--surface);
+    border-radius:0 10px 10px 0; padding:16px 20px; margin:0 0 22px; font-size:.9rem; max-width:68ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+  .callout.bad{ border-left-color:var(--bad-ink); }
+  .callout.bad .label{ color:var(--bad-ink); }
+
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline:before{ content:""; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:var(--rule); }
+  .pass{ position:relative; padding-bottom:30px; }
+  .pass:last-child{ padding-bottom:0; }
+  .pass:before{
+    content:""; position:absolute; left:-28px; top:5px; width:9px; height:9px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--sakura);
+  }
+  .pass.bad:before{ border-color:var(--bad-ink); }
+  .pass-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .pass-num{ font-family:'IBM Plex Mono',monospace; color:var(--sakura-ink); font-size:.78rem; font-weight:600; }
+  .pass-title{ font-weight:700; font-size:.97rem; }
+  .pass p{ font-size:.88rem; color:var(--ink-soft); max-width:72ch; margin:0 0 8px; }
+  .pass p:last-child{ margin-bottom:0; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule); margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+  }
+  @media (prefers-reduced-motion: no-preference){ html{ scroll-behavior:smooth; } }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">置換プレビュー<small>NKMM_FIX_REPLACE_PREVIEW / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+      </div>
+      <div class="toc-group">
+        <h5>実装</h5>
+        <a href="#sample-calc">サンプル計算</a>
+        <a href="#ui">UI: サンプル欄</a>
+        <a href="#update-timing">更新タイミング</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#scope">対象範囲</a>
+        <a href="#verification">動作確認について</a>
+        <a href="#files">変更ファイル一覧</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">置換ダイアログ インラインプレビュー</h1>
+      <p class="subtitle lede">置換ダイアログ(<code class="inline">CDlgReplace</code>)内に、カーソルに最も近い一致1件だけをライブ表示する「置換前/置換後」のインラインサンプル欄を追加した機能の設計記録。結果一覧ダイアログではなく、既存ダイアログへの追記であることを明記する。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_FIX_REPLACE_PREVIEW</b></span>
+        <span class="chip">対象コミット <b class="mono">da538dd99</b></span>
+        <span class="chip">新規ダイアログ <b>無し</b></span>
+      </div>
+    </header>
+
+    <figure class="shot">
+      <img src="images/replace_preview.png" alt="置換ダイアログで検索文字列“line”・置換後文字列“LINE”を入力した状態。下部にBefore/Afterのインラインサンプルが表示される。">
+      <figcaption>実機キャプチャ。</figcaption>
+    </figure>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>置換ダイアログで検索文字列・置換後文字列・オプション(大文字/小文字区別、単語単位、正規表現)を入力するたびに、実際に置換を実行せずその場で結果のサンプルを確認できるようにした。既存の<code class="inline">CDlgReplace</code>に、置換前1行・置換後1行の静的テキスト欄を2つ追加するだけの、小さく自己完結した拡張である。</p>
+
+      <div class="callout bad">
+        <span class="label">最初に誤って前提にしていた設計(このドキュメントの対象ではない)</span>
+        <p><code class="inline">sakura_core/my_config.h</code>のフラグ定義コメントには、複数の一致箇所を一覧表示する専用ダイアログ(<code class="inline">CDlgReplacePreview</code>、<code class="inline">Command_REPLACE_PREVIEW()</code>、<code class="inline">IDC_BUTTON_PREVIEW</code>)を想定した記述が残っている。しかし実際にコミット<code class="inline">da538dd99</code>で実装された内容はこれとは異なり、そのクラス・関数はリポジトリ中に一度も存在しない。本ドキュメントは<strong>実際のコード</strong>(既存ダイアログ内のインライン1件プレビュー)を対象に書いている。</p>
+      </div>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — 一覧ではなく1件</span>
+          <p>複数の一致箇所を集めて並べるのではなく、カーソル位置から最も近い一致を1件だけ探し、その前後を「置換前」「置換後」の2行に表示する。全行を回して一致を集める処理は行わない。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — 既存ロジックからの独立</span>
+          <p><code class="inline">ComputeReplaceSample()</code>は<code class="inline">Command_REPLACE_ALL</code>や<code class="inline">DoGrepReplaceFile</code>(Grep置換)の内部ロジックを呼び出したり共有したりしない、完全に独立した専用コードである。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — 副作用フリー</span>
+          <p>文書を一切変更しない読み取り専用の計算。検索履歴(<code class="inline">CSearchKeywordManager</code>)への登録や入力欄自体の書き換えも行わない。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="sample-calc">
+      <h2><span class="num">01</span>実装 — サンプル計算</h2>
+      <p><code class="inline">CViewCommander::ComputeReplaceSample()</code>(宣言は<code class="inline">CViewCommander.h</code>、本体は<code class="inline">CViewCommander_Search.cpp</code>)が、指定した検索文字列・置換後文字列・オプションに対して「最初に見つかる一致箇所」を1件だけ探す。探索はカーソル行(<code class="inline">nStartLine</code>)から文書末尾まで、見つからなければ先頭から<code class="inline">nStartLine</code>まで折り返して行う、通常の「次を検索」と同じ考え方である。</p>
+
+      <p>一致箇所が見つかった行について、置換前の行全体(<code class="inline">outBefore</code>)と置換後の行全体(<code class="inline">outAfter</code>)、一致箇所の位置・長さ(<code class="inline">outMatchPos</code>/<code class="inline">outMatchLenBefore</code>/<code class="inline">outMatchLenAfter</code>)を返す。検索対象は<code class="inline">CDocLine::GetLengthWithEOL()</code>で改行込みの行(単発置換<code class="inline">Command_REPLACE</code>と同じ範囲)。</p>
+
+      <pre><code><span class="cm">// 正規表現時: 行全体を置換して末尾を切り詰めるのではなく、</span>
+<span class="cm">// 一致した部分文字列だけに Replace() をもう一度かけて</span>
+<span class="cm">// $1 / $&amp; 等の後方参照を解決する(境界計算を誤りにくいため)</span>
+CBregexp::Replace( <span class="kw">...</span> ); <span class="cm">// 一致部分文字列のみに対して実行</span>
+<span class="cm">// 正規表現以外は CSearchAgent::CreateWordList + SearchStringWord(単語単位)、</span>
+<span class="cm">// または CSearchStringPattern + CSearchAgent::SearchString(通常検索)</span></code></pre>
+
+      <p>長い行や改行を挟む一致にも対応する2つのヘルパーがある。</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>ヘルパー</th><th>役割</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">MakeContextWindow()</code></td><td>無名namespace内。一致箇所の前後5文字だけを切り出し、省略した側に<code class="inline">...</code>を付ける。置換後欄が一致箇所を中心に収まるようにする</td></tr>
+            <tr><td><code class="inline">VisualizeEol()</code></td><td><code class="inline">\r\n</code>/<code class="inline">\r</code>/<code class="inline">\n</code>を<code class="inline">↵</code>記号に変換して表示する。強調表示位置(<code class="inline">nHighlightPos</code>/<code class="inline">nHighlightLen</code>)もこの変換後の位置に追従して補正される</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="ui">
+      <h2><span class="num">02</span>実装 — UI: サンプル欄(一覧リストではない)</h2>
+      <p>追加されたのは<code class="inline">IDD_REPLACE</code>ダイアログ内の2行の静的テキスト欄のみで、別ウィンドウの一覧リスト(<code class="inline">ListBox</code>/<code class="inline">ListView</code>)ではない。</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>コントロールID</th><th>種別</th><th>表示内容</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">IDC_STATIC_REPLACESAMPLE_BEFORE</code></td><td>通常の<code class="inline">LTEXT</code></td><td>「置換前:」欄。一致した語句そのもの(文脈なし)を表示。<code class="inline">WM_CTLCOLORSTATIC</code>を<code class="inline">DispatchEvent()</code>で横取りし、エディタの通常テキストの配色(<code class="inline">CTypeSupport(pcEditView, COLORIDX_TEXT)</code>)で描画</td></tr>
+            <tr><td><code class="inline">IDC_STATIC_REPLACESAMPLE_AFTER</code></td><td><code class="inline">SS_OWNERDRAW</code></td><td>「置換後:」欄。<code class="inline">OnDrawItem()</code>が自前描画。周辺の文脈込みで表示し、置換された語句の部分だけを青字(<code class="inline">RGB(0,0,255)</code>)で強調</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>いずれもフォントは<code class="inline">CTypeSupport::GetTypeFont()</code>で取得したエディタの設定フォント(通常テキスト)を<code class="inline">WM_SETFONT</code>で設定している。関連するサンプル欄用メンバ(<code class="inline">CDlgReplace.h</code>)は<code class="inline">m_crSampleText</code>/<code class="inline">m_crSampleBack</code>/<code class="inline">m_hbrSampleBack</code>/<code class="inline">m_hFontSample</code>/<code class="inline">m_strSampleAfter</code>/<code class="inline">m_nSampleAfterHighlightPos</code>/<code class="inline">m_nSampleAfterHighlightLen</code>。</p>
+    </section>
+
+    <section id="update-timing">
+      <h2><span class="num">03</span>実装 — 更新タイミング</h2>
+      <p><code class="inline">UpdateSamplePreview()</code>が以下のタイミングで呼ばれ、サンプル欄を更新する。</p>
+      <ul>
+        <li><code class="inline">OnInitDialog</code>(ダイアログを開いた直後の初期表示)</li>
+        <li><code class="inline">OnCbnEditChange</code>(<code class="inline">IDC_COMBO_TEXT</code>/<code class="inline">IDC_COMBO_TEXT2</code>の入力欄編集中、1文字入力するたびに更新されるライブプレビュー)</li>
+        <li><code class="inline">IDC_CHK_LOHICASE</code>/<code class="inline">IDC_CHK_WORD</code>/<code class="inline">IDC_CHK_REGULAREXP</code>のチェック切替時(<code class="inline">IDC_CHK_LOHICASE</code>/<code class="inline">IDC_CHK_WORD</code>は元々コメントアウトされていた<code class="inline">OnBnClicked</code>のcaseを、このコミットで有効化して流用している)</li>
+        <li><code class="inline">IDC_RADIO_TARGET</code>系(置換対象の切替)・<code class="inline">IDC_CHK_PASTE</code>(クリップボード貼り付けチェック)変更時</li>
+      </ul>
+      <p><code class="inline">UpdateSamplePreview()</code>内では、<code class="inline">CDlgFind</code>のライブ入力プレビューと同じ手法で<code class="inline">CEditView::m_strCurSearchKey</code>/<code class="inline">m_sCurSearchOption</code>を更新し、文書中の一致箇所をスクロールバー上にもマークしている(検索文字列が空ならマーク解除)。</p>
+    </section>
+
+    <section id="scope">
+      <h2><span class="num">04</span>対象範囲(スコープ外の明示)</h2>
+      <p><code class="inline">UpdateSamplePreview()</code>内で明示的にガードされている、プレビュー非対応のケースがある。</p>
+      <ul>
+        <li>置換対象ラジオが「置換」(<code class="inline">IDC_RADIO_REPLACE</code>)以外(挿入/追加/行削除等)の場合、または「クリップボードから貼り付け」(<code class="inline">IDC_CHK_PASTE</code>)がチェックされている場合は、サンプル欄に「（この設定はサンプル表示に対応していません）」と表示し、実際の計算は行わない。<code class="inline">my_config.h</code>のコメントにも「位置依存・外部データ依存で行単位の事前計算が破綻しやすいため」と理由が記されている。</li>
+        <li>このプレビューが対応するのは「置換」(現在のファイル内での「すべて置換」に使う対象設定)のみ。単発の1件置換(<code class="inline">Command_REPLACE</code>)やGrep置換(ファイル横断、<code class="inline">DoGrepReplaceFile</code>)にはこのプレビューUI自体が組み込まれていない(<code class="inline">CDlgReplace</code>とは別のダイアログのため対象外)。</li>
+        <li>プレビューから直接「すべて置換」を実行する専用ボタン(<code class="inline">IDC_BUTTON_PREVIEW</code>)は存在しない。既存の<code class="inline">IDC_BUTTON_REPALCEALL</code>(すべて置換)ボタンとそのハンドラ(<code class="inline">Command_REPLACE_ALL</code>)はこのコミットで変更された形跡がなく、実行経路は従来のまま。</li>
+      </ul>
+    </section>
+
+    <section id="verification">
+      <h2><span class="num">05</span>動作確認について</h2>
+      <div class="callout bad">
+        <span class="label">誠実な記録</span>
+        <p>このコミット自体にビルド結果や実機確認についての記述は残っていない(コミットメッセージは「feat 置換ダイアログに結果プレビューを追加」の1行のみで、本文なし)。現時点のコードを<code class="inline">grep</code>した限り、<code class="inline">NKMM_FIX_REPLACE_PREVIEW</code>は関連する6ファイル以外では参照されておらず、<code class="inline">my_config.h</code>のコメントが述べる別ダイアログ(<code class="inline">CDlgReplacePreview</code>)や専用コマンド(<code class="inline">Command_REPLACE_PREVIEW</code>)はリポジトリ内に一度も存在しない。ビルド・実機での動作確認は行われていない。</p>
+      </div>
+      <p>詳細な経緯・全記述は<a href="../changelog/NKMM_FIX_REPLACE_PREVIEW.md"><code class="inline">changelog/NKMM_FIX_REPLACE_PREVIEW.md</code></a>を参照。</p>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">06</span>変更ファイル一覧</h2>
+      <div class="filemap">
+        <ul>
+          <li><code class="inline">sakura_core/cmd/CViewCommander.h</code> — <code class="inline">ComputeReplaceSample()</code>の宣言</li>
+          <li><code class="inline">sakura_core/cmd/CViewCommander_Search.cpp</code> — <code class="inline">ComputeReplaceSample()</code>本体</li>
+          <li><code class="inline">sakura_core/dlg/CDlgReplace.h</code> — サンプル欄用メンバ、<code class="inline">OnCbnEditChange()</code>/<code class="inline">DispatchEvent()</code>/<code class="inline">OnDrawItem()</code>/<code class="inline">UpdateSamplePreview()</code>/<code class="inline">SetSampleAfterText()</code>の宣言</li>
+          <li><code class="inline">sakura_core/dlg/CDlgReplace.cpp</code> — 上記メンバ関数の実装本体。<code class="inline">OnInitDialog</code>/<code class="inline">OnDestroy</code>/<code class="inline">OnBnClicked</code>へのフック追加</li>
+          <li><code class="inline">sakura_core/sakura_rc.h</code> — 新規コントロールID <code class="inline">IDC_STATIC_REPLACESAMPLE_BEFORE</code>(1906)/<code class="inline">IDC_STATIC_REPLACESAMPLE_AFTER</code>(1907)</li>
+          <li><code class="inline">sakura_core/sakura_rc.rc</code> — <code class="inline">IDD_REPLACE</code>ダイアログに「置換前:」「置換後:」の2行を追加(UTF-16LEバイナリ差分、CLAUDE.md記載の手順で編集)</li>
+          <li><code class="inline">sakura_core/my_config.h</code> — <code class="inline">NKMM_FIX_REPLACE_PREVIEW</code>フラグを追加(コメント本文は実装と一致しない設計メモが残存)</li>
+        </ul>
+      </div>
+      <p>新規に追加されたコードファイルは無い(既存の<code class="inline">CDlgReplace.cpp</code>/<code class="inline">.h</code>と<code class="inline">CViewCommander_Search.cpp</code>/<code class="inline">.h</code>への追記のみ)。</p>
+    </section>
+
+    <footer>
+      <span>置換ダイアログ インラインプレビュー設計リファレンス</span>
+      <span>最終更新 2026-09-14</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  var links = document.querySelectorAll('.toc a[href^="#"]');
+  var map = {};
+  links.forEach(function(a){
+    var id = a.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if(el) map[id] = a;
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var a = map[entry.target.id];
+      if(!a) return;
+      if(entry.isIntersecting){
+        links.forEach(function(l){ l.classList.remove('active'); });
+        a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+})();
+</script>
+</body>
+</html>

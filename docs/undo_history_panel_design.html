@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undo履歴パネル 設計リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%95%98</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --bad-bg:#F1D9D6;
+    --bad-ink:#7C2E2E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+      --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+      --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+      --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+      --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+      --scope-bg:#232C36; --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+    --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+    --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+    --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+    --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+    --scope-bg:#232C36; --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px; line-height:1.85; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600; color:var(--ink); text-wrap:balance; letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{ font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace; font-size:.88em; }
+  code.inline{
+    background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+    padding:.08em .38em; color:var(--sakura-ink);
+  }
+
+  .shell{ display:grid; grid-template-columns:248px minmax(0,1fr); max-width:1180px; margin:0 auto; }
+  .toc{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:32px 18px 32px 28px; border-right:1px solid var(--rule);
+  }
+  .toc-brand{ font-family:'Shippori Mincho',serif; font-weight:700; font-size:1.02rem; margin-bottom:2px; }
+  .toc-brand small{
+    display:block; font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:.68rem;
+    letter-spacing:.06em; color:var(--sakura-ink); margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif; font-size:.68rem; letter-spacing:.09em;
+    color:var(--ink-faint); font-weight:600; margin:0 0 8px; text-transform:uppercase;
+  }
+  .toc a{
+    display:block; font-size:.83rem; color:var(--ink-soft); text-decoration:none;
+    padding:4px 0 4px 12px; border-left:2px solid transparent; line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.1em;
+    color:var(--sakura-ink); text-transform:uppercase; margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem; padding:5px 11px; border-radius:999px; background:var(--surface);
+    border:1px solid var(--rule); color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem; padding-bottom:12px; border-bottom:1px solid var(--rule);
+    margin-bottom:24px; display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--sakura); font-weight:600; }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:70ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:68ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:22px 0 30px; }
+  .principle{ background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:18px 18px 16px; }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap; font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.bad{ background:var(--bad-bg); color:var(--bad-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  pre{
+    background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:18px 20px;
+    overflow-x:auto; margin:0 0 22px; font-size:.82rem; line-height:1.7; box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+
+  .callout{
+    border:1px solid var(--rule); border-left:3px solid var(--sakura); background:var(--surface);
+    border-radius:0 10px 10px 0; padding:16px 20px; margin:0 0 22px; font-size:.9rem; max-width:68ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+  .callout.bad{ border-left-color:var(--bad-ink); }
+  .callout.bad .label{ color:var(--bad-ink); }
+
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline:before{ content:""; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:var(--rule); }
+  .pass{ position:relative; padding-bottom:30px; }
+  .pass:last-child{ padding-bottom:0; }
+  .pass:before{
+    content:""; position:absolute; left:-28px; top:5px; width:9px; height:9px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--sakura);
+  }
+  .pass.bad:before{ border-color:var(--bad-ink); }
+  .pass-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .pass-num{ font-family:'IBM Plex Mono',monospace; color:var(--sakura-ink); font-size:.78rem; font-weight:600; }
+  .pass-title{ font-weight:700; font-size:.97rem; }
+  .pass p{ font-size:.88rem; color:var(--ink-soft); max-width:72ch; margin:0 0 8px; }
+  .pass p:last-child{ margin-bottom:0; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule); margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+  }
+  @media (prefers-reduced-motion: no-preference){ html{ scroll-behavior:smooth; } }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">Undo履歴パネル<small>NKMM_UNDO_HISTORY_PANEL / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+        <a href="#borderless">CBorderlessWnd</a>
+        <a href="#uidata">パネルUI・データモデル</a>
+      </div>
+      <div class="toc-group">
+        <h5>中核メカニズム</h5>
+        <a href="#sync">表示/非表示の同期</a>
+        <a href="#position">位置・サイズの決定</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#bugs">見つけて修正した不具合</a>
+        <a href="#limits">既知の制約/未検証項目</a>
+        <a href="#files">変更ファイル一覧</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">Undo履歴パネル</h1>
+      <p class="subtitle lede">Paint.NETの「履歴」パネルのように、Undo/Redoの操作履歴を一覧表示し、任意の時点をクリックするだけでそこまでまとめてジャンプできる、常時表示のフローティングパネルの設計記録。ウィンドウ実装方式を1度全面的にやり直した経緯、そこから抽出した再利用可能な<code class="inline">CBorderlessWnd</code>基底クラス、実機検証で見つけた実バグの記録をまとめる。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_UNDO_HISTORY_PANEL</b></span>
+        <span class="chip">既定キー <b class="mono">F5</b></span>
+        <span class="chip">バージョン <b>Ver.1〜Ver.6</b></span>
+        <span class="chip">見つけた実バグ <b>6件以上</b></span>
+      </div>
+    </header>
+
+    <figure class="shot">
+      <img src="images/undo_history_panel.png" alt="F5で開いたUndo履歴パネル。1文字ずつの入力操作が履歴として並ぶ。">
+      <figcaption>実機キャプチャ。選択中の履歴エントリがハイライトされ、パネル下部にUndo/Redoボタンがある。</figcaption>
+    </figure>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>常時表示のタイトル付きリサイズ可能フローティングパネルとして、Undo/Redoの操作履歴を一覧表示する。トグルキーは<code class="inline">F5</code>(既存の「再描画」は<code class="inline">Shift+F5</code>へ退避)。6回のバージョンアップ(Ver.1〜Ver.6)を経ており、途中でウィンドウの実装方式自体を1度全面的にやり直している。</p>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — CDialogは早期に断念</span>
+          <p>Ver.1は<code class="inline">CDialog(true)</code>(タイトルバー・サイズ変更枠付きの可変ダイアログ機構)ベースの通常のモードレスダイアログとして実装した。見た目のタイトルバー・枠を消してボーダーレス化しようとしたところ、<code class="inline">CDialog</code>(DLGPROC)自体がこの技法と根本的に相性が悪いことが判明し、Ver.2で<code class="inline">CDialog</code>依存を完全にやめて素の<code class="inline">CreateWindowEx</code>+自前<code class="inline">WNDPROC</code>へ全面的に書き直した。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — 本物のボーダーレス化</span>
+          <p>採用した技法は<a href="https://github.com/melak47/BorderlessWindow" target="_blank" rel="noopener">melak47/BorderlessWindow</a>方式。<code class="inline">WS_CAPTION | WS_THICKFRAME</code>スタイル自体は保持してOS標準の全辺リサイズ・Aeroスナップ・DWM合成影を活かしつつ、<code class="inline">WM_NCCALCSIZE</code>/<code class="inline">WM_NCHITTEST</code>を横取りしてOS標準の非クライアント領域の描画だけを消す。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — 共通機構は基底クラスへ抽出</span>
+          <p>Ver.3で、Undo履歴パネル固有でない部分(非クライアント領域描画・ヒットテスト・アクティブ化抑制・閉じるボタン・DWM影セットアップ・親ウィンドウへの追従等)を<code class="inline">window/CBorderlessWnd</code>(<code class="inline">CWnd</code>派生)へ抽出した。<code class="inline">NKMM_UNDO_HISTORY_PANEL</code>のガード無しで常にビルド対象になっており、他機能からの再利用を前提にしている。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">この文書の読み方</span>
+        <p>「中核メカニズム」以降はコードを触る際のリファレンス。「見つけて修正した不具合」は、Ver.1〜Ver.6の一連のコミットを通しで読んで特定した実バグの記録で、Win32のモードレスウィンドウ・オーナー関係・comctl32との付き合い方全般にとっても教訓になる内容を含む。詳細は<a href="../changelog/NKMM_UNDO_HISTORY_PANEL.md"><code class="inline">changelog/NKMM_UNDO_HISTORY_PANEL.md</code></a>を参照。</p>
+      </div>
+    </section>
+
+    <section id="borderless">
+      <h2><span class="num">01</span>CBorderlessWnd</h2>
+      <p><code class="inline">sakura_core/window/CBorderlessWnd.h</code>/<code class="inline">.cpp</code>。派生クラスは<code class="inline">GetWindowClassName()</code>/<code class="inline">GetTitleText()</code>/<code class="inline">GetDefaultSize()</code>を実装するだけでボーダーレスウィンドウが得られる。閉じるボタンが必要なら<code class="inline">CreateCloseButton()</code>を呼べば、自動的に<code class="inline">BS_OWNERDRAW</code>で生成され、描画・クリック時の<code class="inline">OnCloseRequested()</code>呼び出しは基底が肩代わりする。<code class="inline">LayoutChildren()</code>をオーバーライドすれば<code class="inline">WM_SIZE</code>のたびに派生クラスの子コントロールを再配置できる(閉じるボタン自身は基底が自動配置する)。</p>
+
+      <pre><code><span class="kw">virtual</span> LPCTSTR GetWindowClassName() <span class="kw">const</span> = <span class="mono">0</span>;	<span class="cm">// ウィンドウクラス名(プロセス内で一意)</span>
+<span class="kw">virtual</span> LPCTSTR GetTitleText() <span class="kw">const</span> = <span class="mono">0</span>;			<span class="cm">// タイトル帯に表示する文字列</span>
+<span class="kw">virtual</span> <span class="kw">void</span> GetDefaultSize( <span class="kw">int</span>&amp; nWidth, <span class="kw">int</span>&amp; nHeight ) <span class="kw">const</span> = <span class="mono">0</span>;	<span class="cm">// 初回表示時の既定サイズ</span>
+<span class="kw">virtual</span> <span class="kw">void</span> LayoutChildren(){}	<span class="cm">// WM_SIZEのたびに呼ばれる</span>
+<span class="kw">virtual</span> <span class="kw">void</span> OnCloseRequested(){ ::DestroyWindow( GetHwnd() ); }	<span class="cm">// 既定は::DestroyWindow()</span></code></pre>
+
+      <p>非クライアント領域の描画抑制は<code class="inline">WM_NCCALCSIZE</code>(クライアント矩形を提案された「ウィンドウ矩形そのまま」にしてキャプション・枠の描画領域を確保させない)と<code class="inline">WM_NCHITTEST</code>(外周はリサイズ判定、タイトル帯は<code class="inline">HTCAPTION</code>)を横取りすることで実現している。見た目のタイトル帯(色付き背景+タイトル文字+閉じるボタン)は自前描画だが、ドラッグ移動はOS標準の<code class="inline">HTCAPTION</code>ドラッグそのものに任せているため、自前でドラッグループを回す必要が無い。タイトル帯の配色は決め打ちにせず<code class="inline">GetSysColor(COLOR_ACTIVECAPTION)</code>等を都度問い合わせており、Windowsの「タイトルバーにアクセントカラーを表示する」設定に自動追従する(既存の<code class="inline">CDlgFuncList</code>のドッキング時タイトル描画も同じ色を使っており、決め打ちの独自色ではない)。</p>
+
+      <p>最大化時の保険として、<code class="inline">WM_NCCALCSIZE</code>でクライアント矩形をウィンドウ矩形のまま返す実装だと万一最大化された場合にウィンドウ矩形自体がモニタ外(タスクバーの下)まで含んでしまうため、<code class="inline">IsZoomed()</code>相当の判定でモニタの作業領域に補正する処理も入れている。</p>
+
+      <div class="callout">
+        <span class="label">再利用を前提にした設計</span>
+        <p><code class="inline">CBorderlessWnd</code>はコードコメント上も「他機能でも再利用できるように」と明記されている。<code class="inline">CDlgHistoryPanel</code>専用の機構ではなく、機能フラグのガード無しで常にコンパイル対象になっている点に注意。</p>
+      </div>
+    </section>
+
+    <section id="uidata">
+      <h2><span class="num">02</span>パネルUI・データモデル</h2>
+      <p><code class="inline">sakura_core/dlg/CDlgHistoryPanel.h</code>/<code class="inline">.cpp</code>が<code class="inline">CBorderlessWnd</code>を継承するパネル本体。一覧(<code class="inline">SysListView32</code>)に操作名と、実際に挿入/削除された文字列の先頭部分を1行にまとめたプレビューを表示し、元に戻す/やり直しのボタンを備える。</p>
+
+      <h4>プレビュー文字列の専用領域</h4>
+      <p><code class="inline">COpe</code>のUndo/Redoは「今ドキュメントに実データが無い側」だけを保持するping-pong方式(Undo/Redoが実際にその方向へ適用された直後に<code class="inline">clear()</code>される)のため、そのまま読むと「一度もUndoされていない」ブロックや「一括Undoでスキップされた"間"のRedo待ちブロック」のプレビューが空になってしまう。対策として<code class="inline">COpe::cmemHistoryPreviewIns</code>/<code class="inline">cmemHistoryPreviewDel</code>という専用領域を設け、<code class="inline">InsertData_CEditView</code>/<code class="inline">DeleteData2</code>/<code class="inline">ReplaceData_CEditView3</code>が生成時に一度だけ独立してコピーしておく方式にした。</p>
+
+      <h4>任意時点へのジャンプ</h4>
+      <p>行クリックで<code class="inline">ExecuteJump()</code>が<code class="inline">Command_UNDO</code>/<code class="inline">Command_REDO</code>をN回ループ呼び出しし、目的の時点までまとめてジャンプする。この経路はcomctl32再入クラッシュと複数ステップ時の描画不整合という2件の実バグを生んだ(<a href="#bugs">見つけて修正した不具合</a>参照)。</p>
+
+      <h4>一覧の見た目</h4>
+      <p>ホバー行・現在位置行の描画は、単色反転ではなく<code class="inline">CDlgCommandPalette</code>と同じ"Explorer::ListView"テーマ(<code class="inline">LISS_SELECTED</code>/<code class="inline">LISS_HOT</code>)による半透明の選択色を使う(テーマ非対応環境では<code class="inline">COLOR_HIGHLIGHT</code>の単色反転にフォールバック)。ホバー追跡のため一覧(<code class="inline">SysListView32</code>)自体をサブクラス化している。</p>
+
+      <h4>Undo/Redoとの連動</h4>
+      <p><code class="inline">Command_UNDO()</code>/<code class="inline">Command_REDO()</code>の末尾でパネルが開いていれば<code class="inline">CDlgHistoryPanel::OnUndoStackChanged()</code>を呼び、一覧を再構築する。編集操作自体(<code class="inline">InsertData_CEditView</code>等)側にはパネルの有無に関する分岐は無く、Undo/Redoバッファへの記録(<code class="inline">COpeBuf</code>)はパネルの有無に関係なく常に行われる。</p>
+    </section>
+
+    <section id="sync">
+      <h2><span class="num">03</span>表示/非表示の同期</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>トリガ</th><th>挙動</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">F5</code>(<code class="inline">Command_SHOWUNDOHISTORYPANEL</code>)</td><td>ini<code class="inline">m_bDispUNDOHISTORYPANEL</code>を反転させ<code class="inline">CEditWnd::LayoutUndoHistoryPanel()</code>を呼ぶ。表示時は<code class="inline">m_cDlgHistoryPanel.DoModeless(...)</code>で生成、非表示時は<code class="inline">::DestroyWindow()</code>する(<code class="inline">CEditWnd</code>のメンバーとしての<code class="inline">CDlgHistoryPanel</code>オブジェクト自体は破棄されず、ウィンドウハンドルだけが作り直される)</td></tr>
+            <tr><td>タブ切替</td><td>既存の<code class="inline">ShowOwnedPopups()</code>ベースの仕組み(オーナーウィンドウ経由)にそのまま乗る。Ver.1の「オーナー誤補正バグ」修正後に正しく動作する</td></tr>
+            <tr><td>本体の最小化/復元</td><td><code class="inline">FollowParentWindow()</code>(<code class="inline">CEditWnd::DispatchEvent()</code>のウィンドウ移動/サイズ変更時に呼ばれる)で追従し、最小化中は位置を動かさず非表示相当にする</td></tr>
+            <tr><td>タブ内のペイン切替</td><td><code class="inline">ChangeView()</code>で対象<code class="inline">CEditView</code>を差し替えて一覧を再構築する</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>全ウィンドウへは<code class="inline">MYWM_BAR_CHANGE_NOTIFY</code>(<code class="inline">MYBCN_UNDOHISTORY</code>)を通知する。これは他のバー表示/非表示コマンドと同じ流儀。</p>
+    </section>
+
+    <section id="position">
+      <h2><span class="num">04</span>位置・サイズの決定</h2>
+      <p><code class="inline">CBorderlessWnd::ComputeBottomRightPosition()</code>/<code class="inline">FollowParentWindow()</code>/<code class="inline">m_nWidth</code>・<code class="inline">m_nHeight</code>/<code class="inline">m_nOffsetX</code>・<code class="inline">m_nOffsetY</code>を実際に読んで確認した、最終的な設計は次の通り。</p>
+
+      <h4>サイズ</h4>
+      <p>初回表示時は既定値(<code class="inline">GetDefaultSize()</code>。Ver.1のダイアログテンプレート初期サイズの縦横それぞれ半分に近い、コンパクトな値)。以後は<code class="inline">CBorderlessWnd</code>のメンバー<code class="inline">m_nWidth</code>/<code class="inline">m_nHeight</code>にユーザーがリサイズした値が記憶される。このメンバーは<code class="inline">CDlgHistoryPanel</code>オブジェクト自体(<code class="inline">CEditWnd</code>のメンバー変数)が生きている間保持されるため、F5でパネルのウィンドウハンドルを破棄→再生成しても、同一セッション中は直前のサイズが維持される。ウィンドウを閉じてプロセス(タブ)を終了すれば記憶は消える(iniへの永続化は無い)。</p>
+
+      <h4>位置 — オフセット追従方式</h4>
+      <p>初回表示時は<code class="inline">ComputeBottomRightPosition()</code>で親ウィンドウ(エディタ本体)の右下(20pxマージン)に配置する。以後の追従は毎回この位置へスナップし直すのではなく、パネル自身の<code class="inline">WM_MOVE</code>(ユーザーがタイトル帯をドラッグした場合を含む)のたびに親ウィンドウとの相対オフセット(<code class="inline">m_nOffsetX</code>/<code class="inline">m_nOffsetY</code>)を記録し直し、<code class="inline">FollowParentWindow()</code>はそのオフセットを保ったまま平行移動する、という「ユーザーがドラッグした位置を尊重する」相対追従方式になっている。<code class="inline">code_folding</code>系の機能で使われる<code class="inline">SetPlaceOfWindow(DLGPLACE_xx)</code>方式(毎回固定位置に再計算)とは異なる点に注意。</p>
+
+      <div class="callout bad">
+        <span class="label">実バグ — 起動直後のクランプ</span>
+        <p>Ver.4で、<code class="inline">ComputeBottomRightPosition()</code>に<code class="inline">GetParentHwnd()</code>(=<code class="inline">CWnd</code>の<code class="inline">m_hwndParent</code>)を直接読ませていたところ、<code class="inline">CreateBorderlessWindow()</code>内での最初の呼び出し時点ではまだ<code class="inline">Create()</code>を呼んでおらず<code class="inline">m_hwndParent</code>が<code class="inline">NULL</code>のままで、結果が毎回モニタ左上(0,0)にクランプされてしまう実バグが見つかった。呼び出し側から<code class="inline">hwndParent</code>を明示的に渡す形に修正した。</p>
+      </div>
+
+      <div class="callout bad">
+        <span class="label">実バグ — 「F5を押しても反応が無い」に見える再スナップ漏れ</span>
+        <p>起動直後の「前回の表示状態を復元する」経路(<code class="inline">CEditWnd::Create()</code>の子ウィンドウ生成中)では本体ウィンドウ自身がまだ最終的な位置・大きさになっていないことがあり、その時点の親矩形を基準に計算した既定位置のままオフセット追従を続けると、本体が本当の位置に落ち着いた後もパネルがずれた位置に留まり続ける(「F5を押しても反応が無いように見え、もう一度押すとようやく画面内に現れる」という紛らわしい挙動になる)。<code class="inline">m_bNeedsInitialResnap</code>フラグを設け、最初の<code class="inline">FollowParentWindow()</code>呼び出しでもう一度その時点の親矩形を取り直して1回だけ位置を補正し直すようにした。</p>
+      </div>
+    </section>
+
+    <section id="bugs">
+      <h2><span class="num">05</span>見つけて修正した不具合</h2>
+      <p>Ver.1〜Ver.6の一連のコミット(9209c7d61、5faff5540、f74677ab3、dfb62427a、0d707cf57、aa3e68b85)を通しで読んで特定した実バグの記録。</p>
+
+      <div class="timeline">
+        <div class="pass bad">
+          <div class="pass-head"><span class="pass-num">Ver.1</span><span class="pass-title">オーナー誤補正バグ</span></div>
+          <p><code class="inline">CDialog::DoModeless()</code>内部の<code class="inline">ResolveDialogOwnerWindow()</code>(既存の<code class="inline">NKMM_FIX_DIALOG_OWNER</code>機構)は、渡された<code class="inline">hwndParent</code>がその時点で非表示だと<code class="inline">GetForegroundWindow()</code>へ「補正」してしまう。タブ切替直後などで本来のオーナー(自分が属する<code class="inline">CEditWnd</code>)が一時的に非表示だと、無関係な(別プロセスの可能性もある)前面ウィンドウがオーナーにされ、以後<code class="inline">ShowOwnedPopups()</code>によるタブ切替時の自動非表示がそのオーナーには効かず、パネルが元のタブの位置に取り残される実バグ。<code class="inline">DoModeless()</code>直後に<code class="inline">GWLP_HWNDPARENT</code>を明示的に正しい<code class="inline">hwndParent</code>へ上書きすることで対処した。</p>
+        </div>
+        <div class="pass bad">
+          <div class="pass-head"><span class="pass-num">Ver.1</span><span class="pass-title">クリックによる暗黙アクティブ化・二度押し</span></div>
+          <p><code class="inline">WM_MOUSEACTIVATE</code>を横取りして<code class="inline">MA_NOACTIVATE</code>を返すだけでは、一覧(<code class="inline">SysListView32</code>)が既定のクリック処理内で自分自身へ<code class="inline">::SetFocus()</code>する際にトップレベルウィンドウを暗黙にアクティブ化してしまう問題が残った。<code class="inline">WS_EX_NOACTIVATE</code>を追加で立てることで解消。ボタン(元に戻す/やり直し)側は、非アクティブ状態からの最初のクリックが「アクティブ化だけ」で消費され<code class="inline">BN_CLICKED</code>まで届かない問題があり、<code class="inline">WM_MOUSEACTIVATE</code>の時点でボタン上かを判定して<code class="inline">BN_CLICKED</code>を合成する手当てを行った(この手当て自体はVer.2の全面書き直しで別方式に置き換わっている)。</p>
+        </div>
+        <div class="pass bad">
+          <div class="pass-head"><span class="pass-num">Ver.4</span><span class="pass-title">起動直後の位置クランプ・再スナップ漏れ</span></div>
+          <p><a href="#position">位置・サイズの決定</a>で前述した2件。<code class="inline">m_hwndParent</code>未設定時点での参照によるモニタ左上へのクランプと、本体位置確定前の既定位置計算によるずれの2つで、いずれも実機で発見・修正された。</p>
+        </div>
+        <div class="pass bad">
+          <div class="pass-head"><span class="pass-num">Ver.6</span><span class="pass-title">comctl32再入クラッシュ/ハング</span></div>
+          <p>一覧(<code class="inline">SysListView32</code>)の<code class="inline">NM_CLICK</code>ハンドラの中で同期的に<code class="inline">ExecuteJump()</code>〜<code class="inline">RefreshList()</code>(<code class="inline">ListView_SetItemCount</code>/<code class="inline">SetItemState</code>等)を呼ぶと、まだ処理中の<code class="inline">SysListView32</code>自身の<code class="inline">WM_LBUTTONUP</code>コールスタック上に再入することになり、comctl32内部でクラッシュ/ハングした。対処として<code class="inline">MYWM_HISTORYPANEL_JUMP</code>(<code class="inline">WM_APP+228</code>)を新設し、<code class="inline">NM_CLICK</code>ハンドラでは<code class="inline">PostMessage()</code>するだけに留め、実際のジャンプ処理は通知処理が完全に戻り切った後の別メッセージ(<code class="inline">DispatchEvent_WM_APP</code>)側で実行するようにした。</p>
+        </div>
+        <div class="pass bad">
+          <div class="pass-head"><span class="pass-num">Ver.6</span><span class="pass-title">複数ステップ飛びで描画が反映されない</span></div>
+          <p><code class="inline">Command_UNDO</code>/<code class="inline">REDO</code>内部の再描画は「その1ステップ単独でキャレット行・折り返しが変わったか」という条件で全体再描画(<code class="inline">Call_OnPaint</code>)するかどうかを決めている(<code class="inline">CViewCommander_Edit.cpp</code>)。複数ステップをまとめて飛ぶ場合、途中のステップは描画を止めた状態で実行され、最後の1ステップがその条件に当てはまらないと、データは正しく更新されているのに画面だけが古いまま、という表示不整合が発生した。ループ後に2ステップ以上飛ばした場合は無条件で<code class="inline">m_pcView->RedrawAll()</code>するよう修正した。</p>
+        </div>
+        <div class="pass bad">
+          <div class="pass-head"><span class="pass-num">Ver.5</span><span class="pass-title"><code class="inline">auto_sprintf()</code>のツールチップ組み立てで発生した実クラッシュ</span></div>
+          <p><code class="inline">auto_sprintf_s()</code>がMSVC&gt;=1400では<code class="inline">tchar_snprintf_s()</code>経由で<code class="inline">tchar_vsprintf_s_imp()</code>に落ちるが、これは<code class="inline">%s</code>フィールドがバッファに収まらない場合に切り詰めず<code class="inline">_invalid_parameter_internal()</code>/<code class="inline">_invoke_watson()</code>でプロセスを異常終了させる実装だった(<code class="inline">snprintf</code>という名前にもかかわらず<code class="inline">vsnprintf</code>相当の安全な切り詰めになっていない既存コードの罠)。プレビュー文字列は最大240文字程度になり得るため確実にこの罠を踏んでいた。修正は<code class="inline">printf</code>系を使わず、必ず切り詰められる<code class="inline">lstrcpyn()</code>と<code class="inline">CNativeW::AppendString(ptr,len)</code>だけで文字列を組み立てる方式に変更した。</p>
+        </div>
+      </div>
+
+      <p>詳細な経緯・コミット単位の記述は<a href="../changelog/NKMM_UNDO_HISTORY_PANEL.md"><code class="inline">changelog/NKMM_UNDO_HISTORY_PANEL.md</code></a>を参照。</p>
+    </section>
+
+    <section id="limits">
+      <h2><span class="num">06</span>既知の制約/未検証項目</h2>
+      <ul>
+        <li>実際のマウスドラッグによるリサイズ・タイトル帯ドラッグ移動そのものが「クリーンに動く」ことをGUI操作で最終検証した記録は無い(位置・サイズ計算ロジックの実バグ修正はいずれも実機で発見されたと明記されているため、少なくとも一部操作は行われているが、リサイズ・ドラッグの全パターンを網羅的になぞった記録は無い)。</li>
+        <li>最大化時のモニタ作業領域補正ロジックは、このパネルには最大化ボタンが無く<code class="inline">Win+↑</code>等の間接的な最大化要求への保険として入れられたものであり、実際に最大化させて確認した記述は無い。</li>
+        <li>一連の変更のフルビルド結果(0エラー・0警告等)がコミットログ上に明記されているものは見当たらない。</li>
+        <li>ウィンドウを閉じてプロセス(タブ)を終了すればサイズの記憶は消える(iniへの永続化は無い)。</li>
+      </ul>
+      <p>実際にユーザーの手元でF5トグル・行クリックによるジャンプ・リサイズ・タブ切替・最小化復元の一連の操作を試し、問題が無いか確認することが望ましい。</p>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">07</span>変更ファイル一覧</h2>
+      <div class="filemap">
+        <ul>
+          <li><code class="inline">sakura_core/dlg/CDlgHistoryPanel.h</code> / <code class="inline">.cpp</code> — 新規。パネル本体</li>
+          <li><code class="inline">sakura_core/window/CBorderlessWnd.h</code> / <code class="inline">.cpp</code> — 新規。ボーダーレスウィンドウの共通機構(Ver.3で抽出、機能フラグ無しで常時ビルド)</li>
+          <li><code class="inline">sakura_core/my_config.h</code> — <code class="inline">NKMM_UNDO_HISTORY_PANEL</code>フラグ本体の定義</li>
+          <li><code class="inline">sakura_core/Funccode_x.hsrc</code> — <code class="inline">F_SHOWUNDOHISTORYPANEL</code>を追加</li>
+          <li><code class="inline">sakura_core/func/Funccode.cpp</code> — コマンド一覧・ヘルプID・<code class="inline">IsFuncEnable()</code>への登録</li>
+          <li><code class="inline">sakura_core/func/CKeyBind.cpp</code> — <code class="inline">VK_F5</code>を<code class="inline">F_REDRAW</code>から<code class="inline">F_SHOWUNDOHISTORYPANEL</code>に差し替え、<code class="inline">F_REDRAW</code>は2列目(Shift+F5相当)へ退避</li>
+          <li><code class="inline">sakura_core/cmd/CViewCommander.h</code> / <code class="inline">.cpp</code> — <code class="inline">Command_SHOWUNDOHISTORYPANEL()</code>のディスパッチ登録</li>
+          <li><code class="inline">sakura_core/cmd/CViewCommander_Settings.cpp</code> — <code class="inline">Command_SHOWUNDOHISTORYPANEL()</code>本体</li>
+          <li><code class="inline">sakura_core/cmd/CViewCommander_Edit.cpp</code> — <code class="inline">Command_UNDO()</code>/<code class="inline">Command_REDO()</code>末尾での<code class="inline">OnUndoStackChanged()</code>呼び出し</li>
+          <li><code class="inline">sakura_core/window/CEditWnd.h</code> / <code class="inline">.cpp</code> — <code class="inline">m_cDlgHistoryPanel</code>、<code class="inline">LayoutUndoHistoryPanel()</code>、<code class="inline">MessageLoop()</code>登録、<code class="inline">SetActivePane()</code>/<code class="inline">DispatchEvent()</code>連携</li>
+          <li><code class="inline">sakura_core/env/CommonSetting.h</code> / <code class="inline">CShareData_IO.cpp</code> — ini設定<code class="inline">m_bDispUNDOHISTORYPANEL</code></li>
+          <li><code class="inline">sakura_core/config/system_constants.h</code> — <code class="inline">MYWM_HISTORYPANEL_JUMP</code>(<code class="inline">WM_APP+228</code>)</li>
+          <li><code class="inline">sakura_core/COpe.h</code> / <code class="inline">COpeBlk.h</code> / <code class="inline">COpeBuf.h</code> / <code class="inline">.cpp</code> — プレビュー文字列の専用領域</li>
+          <li><code class="inline">sakura_core/view/CEditView.cpp</code> / <code class="inline">CEditView_Command_New.cpp</code> — プレビュー用文字列のコピー処理</li>
+          <li><code class="inline">resource/MainMenu.ini</code> — ウィンドウメニューに項目(funccode 31339)を追加</li>
+          <li><code class="inline">sakura_core/sakura_rc.h</code> / <code class="inline">sakura_rc.rc</code> — 文字列リソース関連(UTF-16LE編集手順に従って編集)</li>
+          <li><code class="inline">docs/sakura_keybind_list.html</code> — <code class="inline">F_SHOWUNDOHISTORYPANEL</code>行の追加、<code class="inline">F_REDRAW</code>既定キーの更新</li>
+          <li><code class="inline">sakura/sakura.vcxproj</code> / <code class="inline">.vcxproj.filters</code> — 新規4ファイルの登録(既にコミット済み、追加対応不要)</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <span>Undo履歴パネル設計リファレンス</span>
+      <span>最終更新 2026-09-14</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  var links = document.querySelectorAll('.toc a[href^="#"]');
+  var map = {};
+  links.forEach(function(a){
+    var id = a.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if(el) map[id] = a;
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var a = map[entry.target.id];
+      if(!a) return;
+      if(entry.isIntersecting){
+        links.forEach(function(l){ l.classList.remove('active'); });
+        a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+})();
+</script>
+</body>
+</html>

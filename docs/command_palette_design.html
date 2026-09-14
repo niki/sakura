@@ -342,6 +342,9 @@
   @media (prefers-reduced-motion: no-preference){
     html{ scroll-behavior:smooth; }
   }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
 </style>
 </head>
 <body>
@@ -393,6 +396,11 @@
         <span class="chip">F-code <b class="mono">F_COMMAND_PALETTE = 31338</b></span>
       </div>
     </header>
+
+    <figure class="shot">
+      <img src="images/command_palette.png" alt="ローマ字 “hozon” で「保存」系コマンドをあいまい検索した状態。">
+      <figcaption>ローマ字入力からの日本語コマンド名あいまい検索の実機キャプチャ。</figcaption>
+    </figure>
 
     <section id="overview-body">
       <h3>設計方針</h3>

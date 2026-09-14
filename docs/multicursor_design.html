@@ -360,6 +360,9 @@
   @media (prefers-reduced-motion: no-preference){
     html{ scroll-behavior:smooth; }
   }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
 </style>
 </head>
 <body>
@@ -410,6 +413,11 @@
         <span class="chip">カーソル上限 <b class="mono">NKMM_MULTICURSOR_MAX = 10000</b></span>
       </div>
     </header>
+
+    <figure class="shot">
+      <img src="images/multicursor.png" alt="選択範囲の各行末にカーソルを追加した状態。行末ごとに赤いキャレットが立つ。">
+      <figcaption>Shift+Alt+I で全選択行の行末にカーソルを追加した実機キャプチャ。</figcaption>
+    </figure>
 
     <section id="overview-body">
       <h3>設計方針</h3>

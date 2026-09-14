@@ -360,6 +360,9 @@
   @media (prefers-reduced-motion: no-preference){
     html{ scroll-behavior:smooth; }
   }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
 </style>
 </head>
 <body>
@@ -419,6 +422,11 @@
         <span class="chip">OSシャットダウン対応 <b>2026-08-15</b></span>
       </div>
     </header>
+
+    <figure class="shot">
+      <img src="images/session_restore.png" alt="共通設定「ファイル」タブのセッション項目。自動復元とバッファ復元の両方を有効化した状態。">
+      <figcaption>共通設定ダイアログの実機キャプチャ。</figcaption>
+    </figure>
 
     <section id="overview-body">
       <h3>設計方針</h3>

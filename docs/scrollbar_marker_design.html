@@ -365,6 +365,9 @@
   @media (prefers-reduced-motion: no-preference){
     html{ scroll-behavior:smooth; }
   }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
 </style>
 </head>
 <body>
@@ -415,6 +418,11 @@
         <span class="chip">中核クラス <b class="mono">ScrBarMarker</b></span>
       </div>
     </header>
+
+    <figure class="shot">
+      <img src="images/scrollbar_marker.png" alt="検索文字列 “void” を入力し、一致件数がライブ表示されている状態。">
+      <figcaption>検索ダイアログでのライブ件数表示の実機キャプチャ。スクロールバー上のマーカー描画自体は本セッションの検証環境では再現できなかったため、暫定的に検索実行時の様子を掲載している。</figcaption>
+    </figure>
 
     <section id="overview-body">
       <h3>設計方針</h3>

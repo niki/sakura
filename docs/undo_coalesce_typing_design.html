@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undoの入力結合 設計リファレンス</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%E2%8C%A8%EF%B8%8F</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#FAF6F4;
+    --surface:#F1E8E5;
+    --ink:#26201F;
+    --ink-soft:#6E615D;
+    --ink-faint:#9C8F8B;
+    --rule:#E6DAD7;
+    --sakura:#AE4468;
+    --sakura-ink:#7C2E49;
+    --sakura-tint:#F4DEE6;
+    --code-bg:#241C1A;
+    --code-ink:#EDE3DD;
+    --code-soft:#B7A9A3;
+    --code-accent:#E7A6BC;
+    --ok-bg:#DFE8DC;
+    --ok-ink:#3E5C38;
+    --warn-bg:#F1E4C9;
+    --warn-ink:#7A5A1E;
+    --bad-bg:#F1D9D6;
+    --bad-ink:#7C2E2E;
+    --scope-bg:#DEE3EA;
+    --scope-ink:#3E4F63;
+    --shadow: 0 1px 2px rgba(38,32,31,.06), 0 6px 20px rgba(38,32,31,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+      --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+      --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+      --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+      --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+      --scope-bg:#232C36; --scope-ink:#9DB0C4;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1A1514; --surface:#241C1B; --ink:#EEE5E1; --ink-soft:#B3A29D; --ink-faint:#7C6E6A;
+    --rule:#3A2E2C; --sakura:#E28CA8; --sakura-ink:#F3B9CC; --sakura-tint:#3A2530;
+    --code-bg:#120E0D; --code-ink:#E9DED8; --code-soft:#96877F; --code-accent:#E7A6BC;
+    --ok-bg:#28331F; --ok-ink:#9FC28F; --warn-bg:#362C15; --warn-ink:#E0BE79;
+    --bad-bg:#3A2323; --bad-ink:#E5A8A3;
+    --scope-bg:#232C36; --scope-ink:#9DB0C4;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'IBM Plex Sans JP','Hiragino Sans','Yu Gothic',sans-serif;
+    font-size:15.5px; line-height:1.85; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--sakura-tint); color:var(--sakura-ink); }
+
+  h1,h2,h3,h4{
+    font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    font-weight:600; color:var(--ink); text-wrap:balance; letter-spacing:.01em;
+  }
+  a{ color:var(--sakura-ink); text-decoration-color:var(--sakura); text-underline-offset:3px; }
+  a:hover{ text-decoration-thickness:2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible{
+    outline:2px solid var(--sakura); outline-offset:3px; border-radius:2px;
+  }
+  code, .mono{ font-family:'IBM Plex Mono',ui-monospace,Consolas,monospace; font-size:.88em; }
+  code.inline{
+    background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+    padding:.08em .38em; color:var(--sakura-ink);
+  }
+
+  .shell{ display:grid; grid-template-columns:248px minmax(0,1fr); max-width:1180px; margin:0 auto; }
+  .toc{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:32px 18px 32px 28px; border-right:1px solid var(--rule);
+  }
+  .toc-brand{ font-family:'Shippori Mincho',serif; font-weight:700; font-size:1.02rem; margin-bottom:2px; }
+  .toc-brand small{
+    display:block; font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:.68rem;
+    letter-spacing:.06em; color:var(--sakura-ink); margin-top:4px;
+  }
+  .toc nav{ margin-top:26px; }
+  .toc-group{ margin-bottom:20px; }
+  .toc-group h5{
+    font-family:'IBM Plex Sans JP',sans-serif; font-size:.68rem; letter-spacing:.09em;
+    color:var(--ink-faint); font-weight:600; margin:0 0 8px; text-transform:uppercase;
+  }
+  .toc a{
+    display:block; font-size:.83rem; color:var(--ink-soft); text-decoration:none;
+    padding:4px 0 4px 12px; border-left:2px solid transparent; line-height:1.5;
+  }
+  .toc a:hover{ color:var(--ink); border-left-color:var(--rule); }
+  .toc a.active{ color:var(--sakura-ink); border-left-color:var(--sakura); font-weight:600; }
+
+  main{ padding:56px 56px 120px; min-width:0; }
+  .masthead{ margin-bottom:56px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.1em;
+    color:var(--sakura-ink); text-transform:uppercase; margin-bottom:14px;
+  }
+  h1.title{ font-size:2.5rem; line-height:1.25; margin:0 0 10px; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); max-width:640px; }
+  .meta-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem; padding:5px 11px; border-radius:999px; background:var(--surface);
+    border:1px solid var(--rule); color:var(--ink-soft);
+  }
+  .chip b{ color:var(--ink); font-weight:600; }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--sakura); }
+
+  section{ margin:64px 0; scroll-margin-top:24px; }
+  section > h2{
+    font-size:1.5rem; padding-bottom:12px; border-bottom:1px solid var(--rule);
+    margin-bottom:24px; display:flex; align-items:baseline; gap:10px;
+  }
+  section > h2 .num{ font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--sakura); font-weight:600; }
+  h3{ font-size:1.14rem; margin:34px 0 12px; }
+  h4{ font-size:.98rem; margin:24px 0 8px; color:var(--ink); font-family:'IBM Plex Sans JP',sans-serif; font-weight:700;}
+  p{ margin:0 0 14px; max-width:70ch; }
+  .lede{ font-size:1.03rem; color:var(--ink-soft); max-width:66ch; }
+  ul, ol{ margin:0 0 16px; padding-left:1.3em; max-width:68ch; }
+  li{ margin-bottom:6px; }
+  strong{ font-weight:700; color:var(--ink); }
+
+  .principle-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:22px 0 30px; }
+  .principle{ background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:18px 18px 16px; }
+  .principle .k{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--sakura-ink); margin-bottom:8px; display:block;
+  }
+  .principle p{ font-size:.87rem; color:var(--ink-soft); margin:0; max-width:none; }
+
+  table{ width:100%; border-collapse:collapse; margin:8px 0 26px; font-size:.87rem; }
+  caption{ text-align:left; font-size:.78rem; color:var(--ink-faint); margin-bottom:8px; }
+  th{
+    text-align:left; font-family:'IBM Plex Sans JP',sans-serif; font-weight:600;
+    color:var(--ink-soft); font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 14px; border-bottom:1px solid var(--rule);
+  }
+  td{ padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td{ border-bottom:none; }
+  td code.inline{ white-space:nowrap; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--rule); border-radius:10px; }
+  .tablewrap table{ margin:0; }
+  .tablewrap th:first-child, .tablewrap td:first-child{ padding-left:16px; }
+
+  .pill{
+    display:inline-block; font-size:.68rem; font-weight:600; letter-spacing:.02em;
+    padding:3px 9px; border-radius:999px; white-space:nowrap; font-family:'IBM Plex Sans JP',sans-serif;
+  }
+  .pill.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+  .pill.warn{ background:var(--warn-bg); color:var(--warn-ink); }
+  .pill.bad{ background:var(--bad-bg); color:var(--bad-ink); }
+  .pill.scope{ background:var(--scope-bg); color:var(--scope-ink); }
+
+  pre{
+    background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:18px 20px;
+    overflow-x:auto; margin:0 0 22px; font-size:.82rem; line-height:1.7; box-shadow:var(--shadow);
+  }
+  pre code{ font-size:1em; color:inherit; background:none; border:none; padding:0; }
+  .cm{ color:var(--code-soft); }
+  .kw{ color:var(--code-accent); }
+
+  .callout{
+    border:1px solid var(--rule); border-left:3px solid var(--sakura); background:var(--surface);
+    border-radius:0 10px 10px 0; padding:16px 20px; margin:0 0 22px; font-size:.9rem; max-width:68ch;
+  }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .label{
+    font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--sakura-ink); display:block; margin-bottom:6px;
+  }
+  .callout.bad{ border-left-color:var(--bad-ink); }
+  .callout.bad .label{ color:var(--bad-ink); }
+
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline:before{ content:""; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:var(--rule); }
+  .pass{ position:relative; padding-bottom:30px; }
+  .pass:last-child{ padding-bottom:0; }
+  .pass:before{
+    content:""; position:absolute; left:-28px; top:5px; width:9px; height:9px;
+    border-radius:50%; background:var(--paper); border:2px solid var(--sakura);
+  }
+  .pass.bad:before{ border-color:var(--bad-ink); }
+  .pass-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .pass-num{ font-family:'IBM Plex Mono',monospace; color:var(--sakura-ink); font-size:.78rem; font-weight:600; }
+  .pass-title{ font-weight:700; font-size:.97rem; }
+  .pass p{ font-size:.88rem; color:var(--ink-soft); max-width:72ch; margin:0 0 8px; }
+  .pass p:last-child{ margin-bottom:0; }
+
+  .filemap{ font-size:.85rem; }
+  .filemap code.inline{ font-size:.86em; }
+
+  footer{
+    border-top:1px solid var(--rule); margin-top:70px; padding-top:24px;
+    font-size:.78rem; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width: 880px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:relative; height:auto; border-right:none; border-bottom:1px solid var(--rule); padding:20px 20px 8px; }
+    .toc nav{ display:flex; gap:14px; overflow-x:auto; margin-top:14px; padding-bottom:10px; }
+    .toc-group{ margin-bottom:0; flex:0 0 auto; }
+    .toc-group h5{ display:none; }
+    .toc a{ padding:4px 10px; border:1px solid var(--rule); border-radius:999px; border-left:1px solid var(--rule); white-space:nowrap; }
+    .toc a.active{ border-color:var(--sakura); background:var(--sakura-tint); }
+    main{ padding:36px 20px 90px; }
+    .principle-grid{ grid-template-columns:1fr; }
+    h1.title{ font-size:1.9rem; }
+  }
+  @media (prefers-reduced-motion: no-preference){ html{ scroll-behavior:smooth; } }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="toc">
+    <div class="toc-brand">Undoの入力結合<small>NKMM_UNDO_COALESCE_TYPING / 設計リファレンス</small></div>
+    <nav id="tocnav">
+      <div class="toc-group">
+        <h5>設計</h5>
+        <a href="#overview">概要と設計方針</a>
+        <a href="#classify">分類は挿入した側が行う設計</a>
+      </div>
+      <div class="toc-group">
+        <h5>中核メカニズム</h5>
+        <a href="#breakconditions">結合を打ち切る4条件</a>
+        <a href="#merge">結合処理そのもの</a>
+        <a href="#setting">設定項目</a>
+      </div>
+      <div class="toc-group">
+        <h5>付録</h5>
+        <a href="#verify">動作確認について / 既知の制約</a>
+        <a href="#files">変更ファイル一覧</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="masthead" id="overview">
+      <div class="eyebrow">設計リファレンス — sakura_core</div>
+      <h1 class="title">Undoの入力結合</h1>
+      <p class="subtitle lede">連続したキー入力を1つのUndo単位にまとめる、VS Code風の「入力結合」機能の設計記録。<code class="inline">CInsertOpe</code>が挿入テキスト自体を保持しないという既存の制約にどう対応したか、結合を打ち切る4条件、そして動作確認状況の正直な記録をまとめる。</p>
+      <div class="meta-row">
+        <span class="chip"><span class="dot"></span>機能フラグ <b class="mono">NKMM_UNDO_COALESCE_TYPING</b></span>
+        <span class="chip">既定値 <b>OFF</b></span>
+        <span class="chip">アイドル閾値 <b>1.5秒</b></span>
+        <span class="chip">設定場所 <b>共通設定「編集」タブ</b></span>
+      </div>
+    </header>
+
+    <figure class="shot">
+      <img src="images/undo_coalesce_typing.png" alt="共通設定「編集」タブのUndo/Redoグループ。連続入力の結合オプションを有効化した状態。">
+      <figcaption>共通設定ダイアログの実機キャプチャ。</figcaption>
+    </figure>
+
+    <section id="overview-body">
+      <h3>設計方針</h3>
+      <p>従来のsakuraエディタは1文字入力するたびに1回のUndo単位が積まれる。「hello」と入力してからCtrl+Zを押すと「o」→「l」→「l」→「e」→「h」と1文字ずつしか戻せず、VS Codeなど多くのモダンエディタが採用している「区切り文字や一定時間の入力停止まで連続入力を1つのUndo単位としてまとめる」挙動とは異なる。この差を埋めるオプションとして<code class="inline">NKMM_UNDO_COALESCE_TYPING</code>を追加した。</p>
+      <p>既定値は<strong>OFF</strong>(従来通り1文字単位のUndo)で、共通設定「編集」タブから明示的に有効化する、後方互換性を優先したオプトイン設計になっている。</p>
+
+      <div class="principle-grid">
+        <div class="principle">
+          <span class="k">01 — 既存のUndo基盤に乗る</span>
+          <p>新しいUndoの仕組みを作るのではなく、既存の<code class="inline">COpeBlk</code>(操作ブロック)配列と<code class="inline">AppendOpeBlk()</code>の直前に、結合可能なら別ブロックを作らず直前のブロックへ追記する分岐(<code class="inline">TryMergeIntoLastOpeBlk()</code>)を挟むだけの設計。</p>
+        </div>
+        <div class="principle">
+          <span class="k">02 — 分類は挿入した瞬間に行う</span>
+          <p><code class="inline">COpe</code>自体は挿入した文字列データを保持しないため、後からブロックの中身を検査して「これは区切り文字だったか」を判定することはできない。実際に何を挿入したか知っている呼び出し側で、その場に分類結果をタグ付けする(<a href="#classify">詳細</a>)。</p>
+        </div>
+        <div class="principle">
+          <span class="k">03 — 既定OFFのオプトイン</span>
+          <p>1文字単位のUndoという従来挙動を変えるため、既存ユーザーの体験を壊さないよう既定値はfalse。共通設定「編集」タブのチェックボックス1つで有効化する。</p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="label">この文書の読み方</span>
+        <p>「分類は挿入した側が行う設計」がこの機能の核心。「結合を打ち切る4条件」「結合処理そのもの」は実装の中身のリファレンス。「動作確認について」は、この文書を検証した時点でわかっていた検証状況を誇張なく記した節。全体の詳細は<a href="../changelog/NKMM_UNDO_COALESCE_TYPING.md"><code class="inline">changelog/NKMM_UNDO_COALESCE_TYPING.md</code></a>を参照。</p>
+      </div>
+    </section>
+
+    <section id="classify">
+      <h2><span class="num">01</span>分類は挿入した側が行う設計</h2>
+      <p><code class="inline">InsertData_CEditView</code>経由の挿入操作(<code class="inline">COpe</code>/<code class="inline">CInsertOpe</code>)は、実際に何を挿入したかという文字列データ自体を保持しない(<code class="inline">m_cOpeLineData</code>は使われない)。そのため、結合判定のタイミングでブロックの中身を後から調べても「区切り文字を挿入したのか、通常の文字を挿入したのか」を判別できない。</p>
+
+      <div class="callout">
+        <span class="label">この機能の核心</span>
+        <p>この制約に対応するため、実際に入力された文字・文字列を知っている呼び出し側で直接分類する方式にした。<code class="inline">Command_WCHAR()</code>(<code class="inline">CViewCommander_Edit.cpp</code>、通常のキー入力1文字)と<code class="inline">Command_INSTEXT()</code>(<code class="inline">CViewCommander_Clipboard.cpp</code>、IME変換確定・クリップボード貼り付け等の文字列一括挿入)が、挿入直後にブロック末尾の<code class="inline">CInsertOpe</code>を取り出し、<code class="inline">COpe::eCoalesceKind</code>へ分類結果を書き込む。<code class="inline">COpe</code>を後から検査するのではなく、「挿入した側」がその場でタグ付けする — これが後からの解析では不可能だった問題を回避する唯一の道になっている。</p>
+      </div>
+
+      <pre><code><span class="cm">// COpe.h — 挿入した側が書き込む分類タグ</span>
+<span class="kw">enum</span> ECoalesceKind{ COALESCE_UNKNOWN = <span class="mono">0</span>, COALESCE_WORD = <span class="mono">1</span>, COALESCE_BREAK = <span class="mono">2</span> };
+ECoalesceKind	eCoalesceKind = COALESCE_UNKNOWN;</code></pre>
+
+      <p>分類していない挿入経路(想定外の呼び出し元など)は<code class="inline">COALESCE_UNKNOWN</code>のままとなり、<code class="inline">IsClassifiedSingleInsertBlk()</code>によって結合対象外として自動的に除外される — 分類漏れが「誤って結合される」方向にではなく「安全側(結合しない)」に落ちる設計。</p>
+    </section>
+
+    <section id="breakconditions">
+      <h2><span class="num">02</span>結合を打ち切る4条件</h2>
+      <p><code class="inline">COpeBuf::TryMergeIntoLastOpeBlk()</code>が、新しいブロックを直前のブロックへ結合してよいかを判定する。以下のいずれかに当たると結合が止まり、次の入力から新しいまとまりが始まる。</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>#</th><th>条件</th><th>判定方法</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>区切り文字の入力</td>
+              <td><code class="inline">IsUndoCoalesceBreakChar()</code>がtrueを返す文字。ASCIIの記号類(<code class="inline">. , ! ? ; : ' " ( ) [ ] { } &lt; &gt; / \ | ` ~ ^ * + = @ # $ % &amp; -</code>)、日本語の主な句読点・括弧類(<code class="inline">、。・「」『』【】〈〉《》</code>、全角<code class="inline">！？（），．：；</code>)、および<code class="inline">iswspace()</code>がtrueと判定する文字。識別子で使われる<code class="inline">_</code>は区切りに含めない</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>アイドル時間</td>
+              <td>直前の結合から<code class="inline">UNDO_COALESCE_IDLE_MS = 1500</code>(ミリ秒)を超えて<code class="inline">GetTickCount64()</code>の差が開いた場合。区切り文字が無くても新しいまとまりになる</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>改行(Enter)</td>
+              <td>改行専用の分岐は無い。改行文字が<code class="inline">iswspace()</code>によって条件1の区切り文字と判定されるため、他の区切り文字と同じ経路で必ず区切りになる</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>カーソル移動等の別操作の介在</td>
+              <td>直前のブロック最後の操作の「操作後」キャレット位置(<code class="inline">m_ptCaretPos_PHY_After</code>)と、新ブロック最初の操作の「操作前」キャレット位置(<code class="inline">m_ptCaretPos_PHY_Before</code>)を比較。一致しなければ結合しない。カーソル移動・マウスクリック・選択操作等が間に挟まると自動的に不一致になる</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>これに加えて、結合対象になるのは「1個の<code class="inline">CInsertOpe</code>のみで構成され、かつ挿入側で分類済みのブロック」に限られる(<code class="inline">IsClassifiedSingleInsertBlk()</code>)。<code class="inline">NKMM_MULTI_CURSOR</code>の一括編集や選択範囲への上書き入力など複数操作が混在するブロックは対象外で、結合もせず結合の起点にもしない。Redo方向の履歴が残っている場合(<code class="inline">IsEnableRedo()</code>)も結合しない。</p>
+    </section>
+
+    <section id="merge">
+      <h2><span class="num">03</span>結合処理そのもの</h2>
+      <p>条件を満たすと、新ブロックから<code class="inline">DetachSingleOpe()</code>(唯一の要素を取り出して空にする)で唯一の<code class="inline">COpe</code>を取り出し、直前のブロック(<code class="inline">m_vCOpeBlkArr[m_nCurrentPointer - 1]</code>)へ<code class="inline">AppendOpe()</code>で追記し、新ブロック自体は<code class="inline">delete</code>する。</p>
+
+      <pre><code><span class="kw">if</span>( pcTail-&gt;IsCoalesceOpen() &amp;&amp; (nNow - pcTail-&gt;GetCoalesceTick()) &lt;= UNDO_COALESCE_IDLE_MS ){
+    COpe* pcLastOpeOfTail = pcTail-&gt;GetOpe( pcTail-&gt;GetNum() - <span class="mono">1</span> );
+    COpe* pcFirstOpeOfNew = pcOpeBlk-&gt;GetOpe( <span class="mono">0</span> );
+    <span class="kw">if</span>( pcLastOpeOfTail-&gt;m_ptCaretPos_PHY_After == pcFirstOpeOfNew-&gt;m_ptCaretPos_PHY_Before ){
+        COpe* pcMovedOpe = pcOpeBlk-&gt;DetachSingleOpe();
+        pcTail-&gt;AppendOpe( pcMovedOpe );
+        <span class="cm">// 結合時刻を更新し、次の文字への猶予をここから再度計る</span>
+        pcTail-&gt;SetCoalesceTick( nNow );
+        <span class="kw">delete</span> pcOpeBlk;
+        <span class="kw">return</span> <span class="kw">true</span>;
+    }
+}</code></pre>
+
+      <p>呼び出し元の<code class="inline">CEditView::SetUndoBuffer()</code>は、この<code class="inline">TryMergeIntoLastOpeBlk()</code>が<code class="inline">false</code>を返したときのみ、従来通り<code class="inline">AppendOpeBlk()</code>する分岐になっている。結合の可否に関わらず、新ブロック(結合されなければこの後<code class="inline">AppendOpeBlk()</code>される)の<code class="inline">IsCoalesceOpen()</code>/結合時刻は、このブロック単体が「区切り文字を含まない1文字挿入」であるかどうかに応じて設定し直される。これにより、区切り文字が挟まった直後や改行の直後は結合が止まり、次の入力から新しいまとまりが始まる。</p>
+    </section>
+
+    <section id="setting">
+      <h2><span class="num">04</span>設定項目</h2>
+      <p>共通設定「編集」タブの「元に戻す」グループに、チェックボックス(<code class="inline">IDC_CHECK_bUndoCoalesceTyping</code>)としてUIを追加した。ini項目名は<code class="inline">bUndoCoalesceTyping</code>、既定値<code class="inline">false</code>。</p>
+      <ul>
+        <li><code class="inline">CommonSetting.h</code> — <code class="inline">CommonSetting_Edit::m_bUndoCoalesceTyping</code></li>
+        <li><code class="inline">CShareData.cpp</code> — 既定値<code class="inline">false</code>を設定</li>
+        <li><code class="inline">CShareData_IO.cpp</code> — ini項目<code class="inline">bUndoCoalesceTyping</code>の読み書き</li>
+        <li><code class="inline">CPropComEdit.cpp</code> — チェックボックスとの<code class="inline">SetData</code>/<code class="inline">GetData</code></li>
+      </ul>
+      <p>ダイアログリソース(<code class="inline">sakura_core/sakura_rc.rc</code>)はUTF-16LE(BOM付き)形式のバイナリ差分として追加されている。英語版<code class="inline">sakura_lang_en_US/sakura_lang_rc.rc</code>は未対応で、ビルド・実行は可能だがUIのチェックボックスは出ない。</p>
+    </section>
+
+    <section id="verify">
+      <h2><span class="num">05</span>動作確認について / 既知の制約</h2>
+      <p>この文書の作成にあたり、コミットメッセージ・diff上にはビルド確認やGUI実機確認についての記述は残っていなかった。コミット<code class="inline">1a490c48e</code>の差分と現在のコードを静的に読んだ内容からは、実際にキー入力してUndo単位がまとまるか、1.5秒のアイドル判定が意図通り働くか、共通設定ダイアログのチェックボックスが正しく表示・保存されるか、といった実機での動作確認は<strong>裏付けが取れていない</strong>。</p>
+      <p>過去のセッション記録には、この機能の実装過程で「<code class="inline">CInsertOpe</code>自体が挿入テキストを保持しない」という制約に起因する実バグが見つかり、後からブロックの中身を調べて分類する方式から現在の「挿入した側でタグ付けする」方式に修正された、という記述がある。読み取れた現在のコード構成(<code class="inline">Command_WCHAR()</code>/<code class="inline">Command_INSTEXT()</code>が挿入直後に<code class="inline">eCoalesceKind</code>を設定する構成)はこの記述と一致するが、GUI自動化による実機確認済みという記述の具体的なログはこの文書の作成時点のリポジトリ上には見当たらず、コミット差分・コードからは検証できていない。</p>
+      <ul>
+        <li>区切り文字判定は完全なUnicode網羅を狙っていない。ASCIIの記号類と主な日本語の句読点・括弧類のみを対象とする設計上の割り切り。</li>
+        <li>結合対象は「1個の<code class="inline">CInsertOpe</code>のみで構成されたブロック」に限られ、<code class="inline">NKMM_MULTI_CURSOR</code>の一括編集や選択範囲への上書き入力は対象外。</li>
+        <li>Redo方向の履歴が残っている場合は結合しない。</li>
+        <li>既定値OFFのため、有効化しない限り従来と挙動は変わらない。</li>
+      </ul>
+    </section>
+
+    <section id="files">
+      <h2><span class="num">06</span>変更ファイル一覧</h2>
+      <div class="filemap">
+        <ul>
+          <li><code class="inline">sakura_core/COpe.h</code> — <code class="inline">IsUndoCoalesceBreakChar()</code>宣言、<code class="inline">ECoalesceKind</code>/<code class="inline">eCoalesceKind</code>追加</li>
+          <li><code class="inline">sakura_core/COpeBlk.h</code> / <code class="inline">.cpp</code> — <code class="inline">IsCoalesceOpen()</code>/<code class="inline">SetCoalesceOpen()</code>、<code class="inline">GetCoalesceTick()</code>/<code class="inline">SetCoalesceTick()</code>、<code class="inline">DetachSingleOpe()</code>追加</li>
+          <li><code class="inline">sakura_core/COpeBuf.cpp</code> / <code class="inline">.h</code> — <code class="inline">IsUndoCoalesceBreakChar()</code>本体、<code class="inline">UNDO_COALESCE_IDLE_MS</code>、<code class="inline">TryMergeIntoLastOpeBlk()</code>追加</li>
+          <li><code class="inline">sakura_core/cmd/CViewCommander_Edit.cpp</code> — <code class="inline">Command_WCHAR()</code>での分類タグ付け</li>
+          <li><code class="inline">sakura_core/cmd/CViewCommander_Clipboard.cpp</code> — <code class="inline">Command_INSTEXT()</code>での分類タグ付け</li>
+          <li><code class="inline">sakura_core/view/CEditView.cpp</code> — <code class="inline">SetUndoBuffer()</code>の結合分岐</li>
+          <li><code class="inline">sakura_core/env/CommonSetting.h</code> — <code class="inline">m_bUndoCoalesceTyping</code>追加</li>
+          <li><code class="inline">sakura_core/env/CShareData.cpp</code> — 既定値設定</li>
+          <li><code class="inline">sakura_core/env/CShareData_IO.cpp</code> — ini項目の読み書き</li>
+          <li><code class="inline">sakura_core/prop/CPropComEdit.cpp</code> — 共通設定ダイアログとの連携</li>
+          <li><code class="inline">sakura_core/sakura_rc.h</code> — <code class="inline">IDC_CHECK_bUndoCoalesceTyping</code>追加</li>
+          <li><code class="inline">sakura_core/sakura_rc.rc</code> — チェックボックスのダイアログリソース追加(UTF-16LE)</li>
+          <li><code class="inline">sakura_core/my_config.h</code> — <code class="inline">NKMM_UNDO_COALESCE_TYPING</code>フラグ定義</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <span>Undoの入力結合 設計リファレンス</span>
+      <span>最終更新 2026-09-14</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  var links = document.querySelectorAll('.toc a[href^="#"]');
+  var map = {};
+  links.forEach(function(a){
+    var id = a.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if(el) map[id] = a;
+  });
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var a = map[entry.target.id];
+      if(!a) return;
+      if(entry.isIntersecting){
+        links.forEach(function(l){ l.classList.remove('active'); });
+        a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  Object.keys(map).forEach(function(id){ io.observe(document.getElementById(id)); });
+})();
+</script>
+</body>
+</html>

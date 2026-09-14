@@ -125,6 +125,9 @@
     .diagram .stage:last-child{ border-bottom:none; }
   }
   @media (prefers-reduced-motion: no-preference){ html{ scroll-behavior:smooth; } }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
 </style>
 </head>
 <body>
@@ -167,6 +170,11 @@
         <span class="chip">VBScript代替 <b>2026-08-23</b></span>
       </div>
     </header>
+
+    <figure class="shot">
+      <img src="images/macro_engine.png" alt="共通設定「マクロ」タブに .qjs マクロ(MoveLineUp)を登録した状態。">
+      <figcaption>QuickJSベースの .qjs マクロを登録した実機キャプチャ。</figcaption>
+    </figure>
 
     <section id="overview-body">
       <h2><span class="num">01</span>背景と全体像</h2>

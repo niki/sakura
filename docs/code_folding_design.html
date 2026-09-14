@@ -217,6 +217,9 @@
     h1.title{ font-size:1.9rem; }
   }
   @media (prefers-reduced-motion: no-preference){ html{ scroll-behavior:smooth; } }
+  .shot{ margin:0 0 40px; }
+  .shot img{ display:block; width:100%; border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow); }
+  .shot figcaption{ margin-top:10px; font-size:.82rem; color:var(--ink-faint); }
 </style>
 </head>
 <body>
@@ -259,6 +262,11 @@
         <span class="chip">見つけた実クラッシュ <b>3件</b></span>
       </div>
     </header>
+
+    <figure class="shot">
+      <img src="images/code_folding.png" alt="実際の .cpp ファイル(CEditWnd.cpp)でCtrl+Shift+[を実行し、ヘッダ行だけのアウトライン表示に折りたたんだ状態。">
+      <figcaption>関数名がハイライトされ、各行末に折りたたんだ行数が注記されている実機キャプチャ。</figcaption>
+    </figure>
 
     <section id="overview-body">
       <h3>設計方針</h3>

@@ -308,6 +308,46 @@
         </span>
       </a>
 
+      <a class="card" href="undo_history_panel_design.html">
+        <span class="icon">🕘</span>
+        <span class="body">
+          <span class="flag">NKMM_UNDO_HISTORY_PANEL</span>
+          <h3>Undo履歴パネル</h3>
+          <p>F5で開くタイトル付きリサイズ可能パネルからUndo/Redo履歴の任意の地点にジャンプ。CDialogを捨ててCreateWindowEx+独自WNDPROCへ全面書き換えた経緯、再利用可能なCBorderlessWndの抽出、実バグ6件の記録。</p>
+          <span class="meta"><span class="chip">2026-09-07</span><span class="chip">全6版</span></span>
+        </span>
+      </a>
+
+      <a class="card" href="undo_restore_selection_design.html">
+        <span class="icon">🔄</span>
+        <span class="body">
+          <span class="flag">NKMM_UNDO_RESTORE_SELECTION</span>
+          <h3>Undo時の選択範囲復元</h3>
+          <p>選択範囲の削除をUndoすると、VS Code同様に元の選択範囲を再選択。マルチカーソル時は各カーソルのnCursorSlot単位で独立に復元。</p>
+          <span class="meta"><span class="chip">2026-08-31</span></span>
+        </span>
+      </a>
+
+      <a class="card" href="undo_coalesce_typing_design.html">
+        <span class="icon">⌨️</span>
+        <span class="body">
+          <span class="flag">NKMM_UNDO_COALESCE_TYPING</span>
+          <h3>Undo入力結合</h3>
+          <p>連続する入力を区切り文字・1.5秒アイドル・カーソル移動・改行までひとつのUndo単位にまとめるオプション(既定OFF)。挿入した呼び出し側でその場に分類タグを付ける設計。</p>
+          <span class="meta"><span class="chip">2026-09-06</span></span>
+        </span>
+      </a>
+
+      <a class="card" href="replace_preview_design.html">
+        <span class="icon">👁️</span>
+        <span class="body">
+          <span class="flag">NKMM_FIX_REPLACE_PREVIEW</span>
+          <h3>置換結果プレビュー</h3>
+          <p>置換ダイアログ内に置換前後のサンプルをインライン表示(結果一覧ではない)。ComputeReplaceSample()による最近傍一致検索とオーナードロー描画。</p>
+          <span class="meta"><span class="chip">2026-08-26</span></span>
+        </span>
+      </a>
+
     </div>
   </section>
 
@@ -339,7 +379,7 @@
 
   <footer>
     <span>sakura fork — docs/</span>
-    <span>2026-09-12 時点</span>
+    <span>2026-09-14 時点</span>
   </footer>
 </main>
 
